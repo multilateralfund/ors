@@ -310,7 +310,7 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Cross-Cutting",
         "SORT_ORDER": 22,
-        "EDITABLE_IN_VERSIONS": [2,3],
+        "EDITABLE_IN_VERSIONS": [2],
         "VISIBLE_IN_VERSIONS": [2,3]
     },
     {

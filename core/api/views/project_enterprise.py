@@ -104,6 +104,8 @@ class EnterpriseViewSet(
     @swagger_auto_schema(
         operation_description="""
         Creates a new Pending Enterprise.
+        If the user has the 'can_create_approved_enterprise' permission,
+        the new enterprise will be created with 'Approved' status.
         """,
         responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
     )
@@ -255,6 +257,8 @@ class ProjectEnterpriseViewSet(
         A new pending Enterprise will be created if the provided enterprise data does not include an ID.
         If the provided enterprise data includes an ID, the existing enterprise with that ID will be linked
         to the new pending Project Enterprise without altering any of its data.
+        If the user has the 'has_project_enterprise_approval_access' permission, the new Project Enterprise
+        and the new Enterprise (if created) will be created with 'Approved' status.
         """,
         responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
     )
