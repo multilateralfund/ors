@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { useStore } from '@ors/store'
 
@@ -22,13 +22,44 @@ import {
 import { MetaProjectEdit } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectEdit.tsx'
 import { MetaProjectFilters } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectFilters.tsx'
 import { MetaProjectFiltersSelectedOptions } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectFiltersSelectedOptions.tsx'
+import useApi from '@ors/hooks/useApi.ts'
 
 export default function UpdateMyaData() {
   const [filters, setFilters] = useState(() => initialFilters)
 
-  const countries = useStore((state) => state.common.countries_for_listing.data)
-  const agencies = useStore((state) => state.common.agencies.data)
-  const clusters = useStore((state) => state.projects.clusters.data)
+  const countriesApi = useApi({
+    options: {},
+    path: 'api/meta-projects/countries',
+  })
+  const agenciesApi = useApi({
+    options: {},
+    path: 'api/meta-projects/lead-agencies',
+  })
+  const clustersApi = useApi({
+    options: {},
+    path: 'api/meta-projects/clusters',
+  })
+
+  const countries = useMemo(() => {
+    if (countriesApi.loaded && countriesApi.data) {
+      return countriesApi.data
+    }
+    return []
+  }, [countriesApi.loaded, countriesApi.data])
+
+  const agencies = useMemo(() => {
+    if (agenciesApi.loaded && agenciesApi.data) {
+      return agenciesApi.data
+    }
+    return []
+  }, [agenciesApi.loaded, agenciesApi.data])
+
+  const clusters = useMemo(() => {
+    if (clustersApi.loaded && clustersApi.data) {
+      return clustersApi.data
+    }
+    return []
+  }, [clustersApi.loaded, clustersApi.data])
 
   const [selected, setSelected] = useState<MetaProjectType | null>(null)
 
@@ -80,8 +111,10 @@ export default function UpdateMyaData() {
     },
     {
       headerName: 'Cluster',
-      field: 'cluster.code',
-      tooltipField: 'cluster.name',
+      sortable: false,
+      valueGetter: (params) => {
+        return params.data?.clusters.map((c) => c.name).join(', ')
+      },
     },
   ]
 

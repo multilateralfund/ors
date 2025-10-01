@@ -197,6 +197,6 @@ export type MetaProjectType = {
   new_code: string
   lead_agency: ApiAgency
   country: Country
-  cluster: ProjectCluster
+  clusters: ProjectCluster[]
   type: string
 }

@@ -122,7 +122,7 @@ export const MetaProjectEdit = (props: {
               id={fd.name}
               className="BPListUpload !ml-0 h-10 w-40"
               value={fieldValue.toString()}
-              formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+              formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
               onChange={changeSimpleInput(fd.name)}
             />
           ) : null}
@@ -133,7 +133,7 @@ export const MetaProjectEdit = (props: {
               type="text"
               value={fieldValue}
               onChange={changeSimpleInput(fd.name, {
-                numeric: fd.type === 'DecimalField',
+                numeric: ['DecimalField', 'IntegerField'].includes(fd.type),
               })}
             />
           ) : null}
@@ -144,9 +144,11 @@ export const MetaProjectEdit = (props: {
 
   return (
     <Dialog open={!!mp?.id} onClose={onCancel} fullWidth={true} maxWidth={'xl'}>
-      <DialogTitle>MYA: {mp?.new_code}</DialogTitle>
+      <DialogTitle>
+        MYA: {mp?.new_code}, Lead agency: {mp?.lead_agency?.name || '-'}
+      </DialogTitle>
       <DialogContent>
-        <Typography variant="h6">Projects</Typography>
+        <Typography variant="h6">Projects under this MYA</Typography>
         <PListingTable
           mode="listing"
           projects={projects as any}
