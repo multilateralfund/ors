@@ -54,7 +54,8 @@ const PEnterpriseEditActionButtons = ({
 
       const data = {
         project: project_id,
-        enterprise: omit(overview, 'status'),
+        enterprise: omit(overview, ['status', 'linkStatus']),
+        status: overview.linkStatus,
         ods_odp: substance_details,
         ...funding_details,
       }
@@ -63,6 +64,12 @@ const PEnterpriseEditActionButtons = ({
         data: data,
         method: 'PUT',
       })
+
+      if (result.status === 'Approved') {
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${result.id}`,
+        )
+      }
 
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)

@@ -52,6 +52,7 @@ const ProjectCrossCuttingFields = ({
   specificFieldsLoaded,
   postExComUpdate,
   canEditApprovedProj,
+  isV3ProjectEditable,
 }: ProjectDataProps &
   ProjectTabSetters & {
     currentStep: number
@@ -59,6 +60,7 @@ const ProjectCrossCuttingFields = ({
     specificFieldsLoaded: boolean
     postExComUpdate: boolean
     canEditApprovedProj: boolean
+    isV3ProjectEditable: boolean
     fieldsOpts: {
       crtProjectTypesOpts: ProjectTypeType[]
       projectTypes: ProjectTypeType[]
@@ -97,6 +99,7 @@ const ProjectCrossCuttingFields = ({
     (state) => state.projectFields,
   )
 
+  const isV3Project = postExComUpdate || isV3ProjectEditable
   const canViewAboutSection =
     canViewField(viewableFields, 'title') ||
     canViewField(viewableFields, 'description')
@@ -278,7 +281,7 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(projectTypes, option)
                     }
                     disabled={
-                      (postExComUpdate && !!project_type) ||
+                      (isV3Project && !!project_type) ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'project_type')
@@ -305,7 +308,7 @@ const ProjectCrossCuttingFields = ({
                     }
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={
-                      (postExComUpdate && !!sector) ||
+                      (isV3Project && !!sector) ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'sector')
@@ -421,7 +424,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={
-                      (postExComUpdate && !!project_start_date) ||
+                      (isV3Project && !!project_start_date) ||
                       !canEditField(editableFields, 'project_start_date')
                     }
                     formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
@@ -429,7 +432,7 @@ const ProjectCrossCuttingFields = ({
                       'border-red-500':
                         getIsInputDisabled('project_start_date'),
                       [disabledClassName]:
-                        (postExComUpdate && !!project_start_date) ||
+                        (isV3Project && !!project_start_date) ||
                         !canEditField(editableFields, 'project_start_date'),
                     })}
                   />

@@ -104,6 +104,8 @@ class EnterpriseViewSet(
     @swagger_auto_schema(
         operation_description="""
         Creates a new Pending Enterprise.
+        If the user has the 'can_create_approved_enterprise' permission,
+        the new enterprise will be created with 'Approved' status.
         """,
         responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
     )
@@ -255,6 +257,8 @@ class ProjectEnterpriseViewSet(
         A new pending Enterprise will be created if the provided enterprise data does not include an ID.
         If the provided enterprise data includes an ID, the existing enterprise with that ID will be linked
         to the new pending Project Enterprise without altering any of its data.
+        If the user has the 'has_project_enterprise_approval_access' permission, the new Project Enterprise
+        and the new Enterprise (if created) will be created with 'Approved' status.
         """,
         responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
     )
@@ -280,6 +284,18 @@ class ProjectEnterpriseViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status == EnterpriseStatus.APPROVED and not request.user.has_perm(
+            "core.has_project_enterprise_approval_access"
+        ):
+            return Response(
+                {"detail": "No access to delete approved project enterprises."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
@@ -377,6 +393,28 @@ class ProjectEnterpriseStatusView(APIView):
     View to return a list of all Project Enterprise Status choices
     """
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_obsolete",
+                openapi.IN_QUERY,
+                description="""
+                    Include 'Obsolete' status in the response.
+                    Obsolete status is used only for enterprises, not for project enterprises.
+                """,
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+        operation_description="List previous tranches of the project.",
+    )
     def get(self, request, *args, **kwargs):
         choices = EnterpriseStatus.choices
+        if not request.query_params.get("include_obsolete", "false").lower() in [
+            "true",
+            "1",
+            "yes",
+        ]:
+            choices = [
+                choice for choice in choices if choice[0] != EnterpriseStatus.OBSOLETE
+            ]
         return Response(choices)
