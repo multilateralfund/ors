@@ -32,7 +32,7 @@ import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { find, isNil, isNull } from 'lodash'
+import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
@@ -55,10 +55,12 @@ const ProjectIdentifiersFields = ({
   project,
   postExComUpdate,
   isV3ProjectEditable,
+  isProjectEditableByAdmin,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
+  const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
 
@@ -77,6 +79,7 @@ const ProjectIdentifiersFields = ({
       : crtClusters
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
+  const canUpdateFields = postExComUpdate || isProjectEditableByAdmin
   const isAddOrCopy = mode === 'add' || mode === 'copy'
   const hasNoLeadAgency = !project?.meta_project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
@@ -88,7 +91,7 @@ const ProjectIdentifiersFields = ({
     (state) => state.projectFields,
   )
   const canEditMeeting =
-    !(isV3Project && projIdentifiers?.meeting) &&
+    !(canUpdateFields && projIdentifiers?.meeting) &&
     canEditField(editableFields, 'meeting')
 
   const decisionsApi = useApi<ApiDecision[]>({
@@ -102,10 +105,8 @@ const ProjectIdentifiersFields = ({
 
   const decisions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return data.map((d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
-
-  console.log(decisions)
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -272,20 +273,25 @@ const ProjectIdentifiersFields = ({
                   {...sectionDefaultProps}
                 />
               </div>
-              <div className="flex items-end">
-                <div className="flex h-10 items-center">
-                  <CustomAlert
-                    type="error"
-                    content={
-                      <>
-                        <Typography className="text-lg">
-                          These fields are mandatory.
-                        </Typography>
-                      </>
-                    }
-                  />
+              {!(
+                projIdentifiers?.post_excom_meeting &&
+                projIdentifiers?.post_excom_decision
+              ) && (
+                <div className="flex items-end">
+                  <div className="flex h-10 items-center">
+                    <CustomAlert
+                      type="error"
+                      content={
+                        <>
+                          <Typography className="text-lg">
+                            These fields are mandatory.
+                          </Typography>
+                        </>
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <br />
@@ -495,7 +501,7 @@ const ProjectIdentifiersFields = ({
           !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NextButton
-              nextStep={2}
+              nextStep={project_type && sector ? 5 : 2}
               setCurrentStep={setCurrentStep}
               isBtnDisabled={!areNextStepsAvailable}
             />

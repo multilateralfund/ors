@@ -1,11 +1,10 @@
 import { widgets } from './SpecificFieldsHelpers'
 import { NextButton } from '../HelperComponents'
-import { canViewField, getDefaultImpactErrors } from '../utils'
+import { canViewField } from '../utils'
 import {
   SpecificFieldsSectionProps,
   ProjectData,
   ProjectTabSetters,
-  ProjectSpecificFields,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -17,14 +16,14 @@ const ProjectImpact = ({
   sectionFields,
   errors = {},
   hasSubmitted,
-  specificFields,
   setCurrentStep,
   setCurrentTab,
   postExComUpdate,
+  nextStep,
 }: SpecificFieldsSectionProps &
   ProjectTabSetters & {
-    specificFields: ProjectSpecificFields[]
     postExComUpdate: boolean
+    nextStep: number
   }) => {
   const { viewableFields, editableFields, projectFields } = useStore(
     (state) => state.projectFields,
@@ -44,16 +43,6 @@ const ProjectImpact = ({
 
     return fieldData && (fieldData.section !== 'Impact' || fieldData.is_actual)
   })
-
-  const { projectSpecificFields } = projectData
-  const defaultImpactErrors = getDefaultImpactErrors(
-    projectSpecificFields,
-    specificFields,
-  )
-
-  const hasErrors = Object.values(defaultImpactErrors).some(
-    (errors) => errors.length > 0,
-  )
 
   return (
     <>
@@ -77,7 +66,12 @@ const ProjectImpact = ({
           nextStep={5}
           setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
-          isBtnDisabled={hasErrors}
+        />
+        <NextButton
+          nextStep={nextStep}
+          nextTab={nextStep - 1}
+          type="previous"
+          setCurrentTab={setCurrentTab}
         />
       </div>
     </>

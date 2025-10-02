@@ -6,16 +6,16 @@ import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
+import { enabledButtonClassname } from './constants'
 import {
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsType,
 } from './interfaces'
-import { enabledButtonClassname } from './constants'
 
+import { filter, lowerCase, map, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
-import { filter, lowerCase, map } from 'lodash'
 import { SlReload } from 'react-icons/sl'
 import cx from 'classnames'
 import {
@@ -132,10 +132,12 @@ export const NextButton = ({
   nextTab,
   setCurrentStep,
   setCurrentTab,
+  type = 'next',
   isBtnDisabled = false,
 }: ProjectTabSetters & {
   nextStep: number
   nextTab?: number
+  type?: string
   isBtnDisabled?: boolean
 }) => {
   const moveToNextStep = () => {
@@ -144,7 +146,7 @@ export const NextButton = ({
     }
 
     if (setCurrentTab) {
-      setCurrentTab((tab) => nextTab ?? tab + 1)
+      setCurrentTab((tab) => nextTab ?? (type === 'next' ? tab + 1 : tab - 1))
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
@@ -153,14 +155,16 @@ export const NextButton = ({
     <Button
       className={cx('h-8 px-3 py-1 leading-none', {
         'border border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-          !isBtnDisabled,
+          type === 'next' && !isBtnDisabled,
+        'border border-solid border-primary bg-white text-primary':
+          type === 'previous',
       })}
       disabled={isBtnDisabled}
       size="large"
       variant="contained"
       onClick={moveToNextStep}
     >
-      Next
+      {upperCase(type)}
     </Button>
   )
 }

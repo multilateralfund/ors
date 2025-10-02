@@ -180,15 +180,19 @@ const ProjectsCreate = ({
   )
 
   const { canEditApprovedProjects } = useContext(PermissionsContext)
-  const canEditApprovedProj =
+  const canEditSubstances =
     postExComUpdate ||
     mode === 'copy' ||
     project?.submission_status !== 'Approved'
+  const hasV3EditPermissions =
+    !!project && mode === 'edit' && canEditApprovedProjects
+  const editableByAdmin = ['Withdrawn', 'Not approved'].includes(
+    project?.submission_status ?? '',
+  )
   const isV3ProjectEditable =
-    !!project &&
-    mode === 'edit' &&
-    canEditApprovedProjects &&
-    ['Withdrawn', 'Not approved'].includes(project.submission_status)
+    hasV3EditPermissions &&
+    (editableByAdmin || project.submission_status === 'Recommended')
+  const isProjectEditableByAdmin = hasV3EditPermissions && editableByAdmin
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -321,6 +325,7 @@ const ProjectsCreate = ({
             project,
             postExComUpdate,
             isV3ProjectEditable,
+            isProjectEditableByAdmin,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -350,13 +355,11 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            currentStep,
             setCurrentStep,
             setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
             postExComUpdate,
-            canEditApprovedProj,
             isV3ProjectEditable,
           }}
           nextStep={
@@ -406,7 +409,7 @@ const ProjectsCreate = ({
             getTrancheErrors,
             setCurrentStep,
             setCurrentTab,
-            canEditApprovedProj,
+            canEditSubstances,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -446,7 +449,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled || currentStep < 4,
+      disabled: isImpactTabDisabled || currentStep < 3,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
@@ -455,11 +458,11 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            specificFields,
             setCurrentStep,
             setCurrentTab,
             postExComUpdate,
           }}
+          nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />
       ),
       errors: formatErrors(impactErrors),
@@ -488,10 +491,13 @@ const ProjectsCreate = ({
             mode,
             project,
             loadedFiles,
+            setCurrentStep,
+            setCurrentTab,
           }}
-          {...(!!isApprovalTabAvailable && !isApprovalTabDisabled
-            ? { setCurrentStep, setCurrentTab }
-            : {})}
+          hasNextButton={!!isApprovalTabAvailable && !isApprovalTabDisabled}
+          nextStep={
+            !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
           {...rest}
         />
       ),
@@ -543,6 +549,8 @@ const ProjectsCreate = ({
                   projectData,
                   setProjectData,
                   hasSubmitted,
+                  setCurrentStep,
+                  setCurrentTab,
                 }}
                 errors={approvalErrors}
               />
