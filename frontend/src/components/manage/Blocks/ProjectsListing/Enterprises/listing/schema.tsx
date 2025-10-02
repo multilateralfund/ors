@@ -73,7 +73,7 @@ const getColumnDefs = (
 
   return {
     columnDefs: [
-      ...(canAccessEditPage && !(editPermissions && !approvalPermissions)
+      ...(canAccessEditPage
         ? [
             {
               minWidth: isEnterprise ? 40 : 80,
@@ -152,12 +152,20 @@ const getColumnDefs = (
         sortable: false,
         minWidth: 200,
       },
-      {
-        headerName: tableColumns.country,
-        field: isEnterprise ? 'country__name' : 'enterprise.country__name',
-        valueGetter: (params: ValueGetterParams) => getCountryName(params),
-        tooltipValueGetter: (params: ITooltipParams) => getCountryName(params),
-      },
+      ...(isEnterprise
+        ? [
+            {
+              headerName: tableColumns.country,
+              field: isEnterprise
+                ? 'country__name'
+                : 'enterprise.country__name',
+              valueGetter: (params: ValueGetterParams) =>
+                getCountryName(params),
+              tooltipValueGetter: (params: ITooltipParams) =>
+                getCountryName(params),
+            },
+          ]
+        : []),
       {
         headerName: tableColumns.location,
         field: isEnterprise ? 'location' : 'enterprise.location',

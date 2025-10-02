@@ -46,11 +46,9 @@ const PEnterpriseCreate = ({
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
     ] ?? {}
-  const searchErrors = getFieldErrors(
-    pick(overview, 'id'),
-    enterpriseErrors,
-    true,
-  )
+  const searchErrors =
+    !!rest.enterprise &&
+    getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
 
