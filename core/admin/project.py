@@ -194,8 +194,6 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectFile)
 class ProjectFileAdmin(admin.ModelAdmin):
-    list_filter = []
-
     list_filter = [
         AutocompleteFilterFactory("project", "project"),
     ]
