@@ -15,6 +15,7 @@ import { getFieldErrors } from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
+  OptionsType,
 } from '../../interfaces.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -23,9 +24,13 @@ import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
   countryId,
+  enterpriseStatuses,
   errors,
   ...rest
-}: PEnterpriseDataProps & { countryId: number }) => {
+}: PEnterpriseDataProps & {
+  countryId: number
+  enterpriseStatuses?: OptionsType[]
+}) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const userSlice = useStore((state) => state.user)
@@ -114,7 +119,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseOverviewSection
-          {...{ countryId, ...rest }}
+          {...{ countryId, enterpriseStatuses, ...rest }}
           errors={overviewErrors}
         />
       ),

@@ -71,7 +71,8 @@ const EnterpriseCommonEditActionButtons = ({
           Update {extraText} enterprise
         </Button>
       )}
-      {canApprove &&
+      {isEnterprise &&
+        canApprove &&
         !isObsolete &&
         (isApproved ? (
           <Button
@@ -109,6 +110,17 @@ const EnterpriseCommonEditActionButtons = ({
             </Dropdown.Item>
           </Dropdown>
         ))}
+      {!isEnterprise && canApproveProjectEnterprise && (
+        <Button
+          className={cx({ [dropDownClassName]: !disableButton })}
+          onClick={() => handleChangeEnterpriseStatus('Approved')}
+          disabled={disableButton}
+          variant="contained"
+          size="large"
+        >
+          Approve project enterprise
+        </Button>
+      )}
       {isObsoleteWarningOpen && (
         <ChangeStatusModal
           {...{ type, status }}

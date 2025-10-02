@@ -5,6 +5,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../../constants'
 import { useStore } from '@ors/store'
 
+import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
 import { find, map } from 'lodash'
 import { useParams } from 'wouter'
@@ -14,7 +15,10 @@ import {
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (type: string) => {
+const getColumnDefs = (
+  type: string,
+  setIdToDelete?: (idToDelete: number | null) => void,
+) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const {
@@ -69,31 +73,52 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(canAccessEditPage &&
-      (project_id || isEnterprise) &&
-      !(editPermissions && !approvalPermissions)
+      ...(canAccessEditPage && !(editPermissions && !approvalPermissions)
         ? [
             {
-              minWidth: 40,
-              maxWidth: 40,
+              minWidth: isEnterprise ? 40 : 80,
+              maxWidth: isEnterprise ? 40 : 80,
               resizable: false,
               sortable: false,
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center p-2">
-                  {props.data.status !== 'Obsolete' &&
-                    !(
-                      props.data.status === 'Approved' && !approvalPermissions
-                    ) && (
-                      <Link
-                        className="flex h-4 w-4 justify-center"
-                        href={getEditUrl(props.data.id)}
-                      >
-                        <FiEdit size={16} />
-                      </Link>
+              cellRenderer: (props: ICellRendererParams) => {
+                const canDeleteEnterprise =
+                  !isEnterprise &&
+                  canEditProjectEnterprise &&
+                  (props.data.status !== 'Approved' ||
+                    canApproveProjectEnterprise) &&
+                  setIdToDelete
+
+                return (
+                  <div className="flex items-center gap-1 p-2">
+                    {props.data.status !== 'Obsolete' &&
+                      !(
+                        props.data.status === 'Approved' && !approvalPermissions
+                      ) &&
+                      (isEnterprise ||
+                        props.data.status === 'Pending Approval') && (
+                        <>
+                          <Link
+                            className="flex h-4 w-4 justify-center"
+                            href={getEditUrl(props.data.id)}
+                          >
+                            <FiEdit size={16} />
+                          </Link>
+                          {canDeleteEnterprise && '/'}
+                        </>
+                      )}
+                    {canDeleteEnterprise && (
+                      <IoTrash
+                        size={18}
+                        className="mb-0.5 cursor-pointer fill-gray-400"
+                        onClick={() => {
+                          setIdToDelete(props.data.id)
+                        }}
+                      />
                     )}
-                </div>
-              ),
+                  </div>
+                )
+              },
             },
           ]
         : []),
@@ -149,26 +174,6 @@ const getColumnDefs = (type: string) => {
         tooltipField: 'status',
         minWidth: 120,
       },
-      ...(!project_id && !isEnterprise
-        ? [
-            {
-              headerName: 'Project',
-              field: 'project_code',
-              tooltipField: 'project_code',
-              sortable: false,
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center justify-center p-2">
-                  <Link
-                    className="overflow-hidden truncate whitespace-nowrap"
-                    href={`/projects-listing/${props.data.project}`}
-                  >
-                    <span>{props.value}</span>
-                  </Link>
-                </div>
-              ),
-            },
-          ]
-        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',
