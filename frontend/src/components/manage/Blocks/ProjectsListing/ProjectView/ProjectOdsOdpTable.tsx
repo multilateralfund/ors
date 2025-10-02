@@ -90,13 +90,23 @@ const ProjectOdsOdpTable = ({
       return {
         headerName: fieldObj.label,
         field: field,
-        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
+        valueGetter: (
+          params: ValueGetterParams<
+            OdsOdpFields & { ods_blend_composition: string }
+          >,
+        ) =>
           field === 'ods_display_name'
-            ? params.data?.ods_display_name
+            ? params.data?.ods_display_name +
+              (params.data?.ods_blend_composition
+                ? ` (${params.data?.ods_blend_composition})`
+                : '')
             : getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
           field === 'ods_display_name'
-            ? params.data?.ods_display_name
+            ? params.data?.ods_display_name +
+              (params.data?.ods_blend_composition
+                ? ` (${params.data?.ods_blend_composition})`
+                : '')
             : getFieldName(params, options, field),
         initialWidth: 140,
         minWidth: 140,
