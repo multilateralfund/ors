@@ -1,7 +1,6 @@
+import datetime
 from functools import partial
 from typing import Iterable
-
-from datetime import datetime
 
 import io
 import pathlib
@@ -38,7 +37,12 @@ logger = logging.getLogger(__name__)
 
 def format_iso_date(isodate=None):
     if isodate:
-        date = datetime.fromisoformat(isodate)
+        if isinstance(isodate, str):
+            date = datetime.datetime.fromisoformat(isodate)
+        elif isinstance(isodate, (datetime.date, datetime.datetime)):
+            date = isodate
+        else:
+            return ""
         return date.strftime("%d/%m/%Y")
     return ""
 
@@ -464,7 +468,7 @@ class ProjectsV2ProjectExportDocx:
                     p_style[k] = getattr(p.runs[0], k, False)
 
             if p.text.startswith("Generated on"):
-                now = datetime.utcnow().strftime("%d/%m/%Y")
+                now = datetime.datetime.utcnow().strftime("%d/%m/%Y")
                 user = self.user.get_full_name() or self.user.username
                 agency = self.user.agency.name if self.user.agency else ""
                 p.text = f"Generated on {now} by {user}" + (
