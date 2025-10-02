@@ -14,6 +14,7 @@ from core.utils import get_meta_project_code
 from core.utils import get_meta_project_new_code
 
 pytestmark = pytest.mark.django_db
+
 # pylint: disable=C0302,C0415,C8008,W0221,R0912,R0913,R0913,R0914,R0915,W0613
 
 

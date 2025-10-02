@@ -379,12 +379,21 @@ class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
     """
 
     ods_type = serializers.SerializerMethodField()
+    ods_blend_composition = serializers.SerializerMethodField()
 
     class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ProjectOdsOdpListSerializer.Meta.fields
+        fields = ProjectOdsOdpListSerializer.Meta.fields + [
+            "ods_type",
+            "ods_blend_composition",
+        ]
 
     def get_ods_type(self, obj):
         return obj.get_ods_type_display()
+
+    def get_ods_blend_composition(self, obj):
+        if obj.ods_blend:
+            return obj.ods_blend.composition
+        return ""
 
 
 class SerializeProjectFieldHistory:

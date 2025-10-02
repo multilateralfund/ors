@@ -333,8 +333,12 @@ class DecisionAdmin(admin.ModelAdmin):
             "project",
             "businessplan",
             "bp_projects",
+            "post_excom_projects",
+            "transfer_decision_projects",
         ]
-        return get_final_display_list(Decision, exclude)
+
+        results = get_final_display_list(Decision, exclude)
+        return results
 
 
 @admin.register(RBMMeasure)
