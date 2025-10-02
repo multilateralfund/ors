@@ -90,11 +90,7 @@ const ProjectOdsOdpTable = ({
       return {
         headerName: fieldObj.label,
         field: field,
-        valueGetter: (
-          params: ValueGetterParams<
-            OdsOdpFields & { ods_blend_composition: string }
-          >,
-        ) =>
+        valueGetter: (params: ValueGetterParams) =>
           field === 'ods_display_name'
             ? params.data?.ods_display_name +
               (params.data?.ods_blend_composition
