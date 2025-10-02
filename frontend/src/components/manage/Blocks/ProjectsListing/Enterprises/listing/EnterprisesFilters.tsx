@@ -5,8 +5,8 @@ import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
+import { filter, union } from 'lodash'
 import { useParams } from 'wouter'
-import { union } from 'lodash'
 
 const EnterprisesFilters = ({
   enterpriseStatuses,
@@ -31,6 +31,10 @@ const EnterprisesFilters = ({
       },
     },
   }
+
+  const statusOptions = project_id
+    ? filter(enterpriseStatuses, (status) => status.name !== 'Obsolete')
+    : enterpriseStatuses
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
@@ -58,7 +62,7 @@ const EnterprisesFilters = ({
       )}
       <Field
         Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, enterpriseStatuses, 'status')}
+        options={getFilterOptions(filters, statusOptions, 'status')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const status = filters.status || []
