@@ -357,6 +357,7 @@ export interface EnterpriseOverview {
   local_ownership: string | null
   export_to_non_a5: string | null
   remarks: string
+  linkStatus?: string
 }
 
 export type EnterpriseType = EnterpriseOverview & {

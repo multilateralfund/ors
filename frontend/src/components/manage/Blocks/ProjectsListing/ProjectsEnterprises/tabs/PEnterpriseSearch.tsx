@@ -58,7 +58,7 @@ const PEnterpriseSearch = ({
 
   return (
     <>
-      <Label>Enterprise</Label>
+      <Label>Select existing enterprise</Label>
       <Field
         widget="autocomplete"
         options={enterprises}

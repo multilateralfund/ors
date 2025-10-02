@@ -1,14 +1,18 @@
 import { useContext } from 'react'
 
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import {
   EnterpriseNumberField,
   EnterpriseSelectField,
   EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
+import { defaultProps } from '../../constants'
 import {
   EnterpriseType,
+  OptionsType,
   PEnterpriseData,
   PEnterpriseDataProps,
 } from '../../interfaces'
@@ -18,11 +22,14 @@ import { map } from 'lodash'
 
 const PEnterpriseOverviewSection = ({
   countryId,
+  enterpriseStatuses,
   ...rest
 }: PEnterpriseDataProps & {
   countryId: number | null
+  enterpriseStatuses?: OptionsType[]
 }) => {
-  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const { canEditProjectEnterprise, canApproveProjectEnterprise } =
+    useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
@@ -49,8 +56,31 @@ const PEnterpriseOverviewSection = ({
     },
   ]
 
+  const handleChangeLinkStatus = (value: any) => {
+    rest.setEnterpriseData((prev) => ({
+      ...prev,
+      [sectionIdentifier]: {
+        ...prev[sectionIdentifier],
+        linkStatus: value.id,
+      },
+    }))
+  }
+
   return (
     <>
+      {!!enterprise && canApproveProjectEnterprise && (
+        <div>
+          <Label>Status</Label>
+          <Field
+            widget="autocomplete"
+            disableClearable
+            options={enterpriseStatuses}
+            value={overview.linkStatus}
+            onChange={(_, value) => handleChangeLinkStatus(value)}
+            {...defaultProps}
+          />
+        </div>
+      )}
       <EnterpriseTextField<PEnterpriseData>
         field={textFields[0]}
         sectionIdentifier={sectionIdentifier}

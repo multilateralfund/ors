@@ -330,11 +330,6 @@ export default function App() {
             <EnterpriseEditPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/projects-enterprises">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesPage />
-          </ProjectsDataProvider>
-        </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id">
           <ProjectsDataProvider>
             <ProjectsEnterprisesPage />
