@@ -58,7 +58,7 @@ const EnterpriseCommonEditActionButtons = ({
 
   return (
     <>
-      {canEdit && isPending && (
+      {canEdit && !isObsolete && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableButton,
@@ -110,7 +110,7 @@ const EnterpriseCommonEditActionButtons = ({
             </Dropdown.Item>
           </Dropdown>
         ))}
-      {!isEnterprise && canApproveProjectEnterprise && (
+      {isPending && !isEnterprise && canApproveProjectEnterprise && (
         <Button
           className={cx({ [dropDownClassName]: !disableButton })}
           onClick={() => handleChangeEnterpriseStatus('Approved')}

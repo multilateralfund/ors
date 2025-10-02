@@ -37,6 +37,7 @@ const EnterpriseEditActionButtons = ({
 
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
+  const isObsolete = status === 'Obsolete'
 
   const disableSubmit = !enterpriseData.name
 
@@ -67,7 +68,7 @@ const EnterpriseEditActionButtons = ({
 
   const changeEnterpriseStatus = async (status: string) => {
     const canChangeStatus =
-      isPending && canEditEnterprise ? await editEnterprise() : true
+      !isObsolete && canEditEnterprise ? await editEnterprise() : true
 
     if (canChangeStatus) {
       try {

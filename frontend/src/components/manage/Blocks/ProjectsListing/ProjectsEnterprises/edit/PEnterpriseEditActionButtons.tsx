@@ -40,6 +40,7 @@ const PEnterpriseEditActionButtons = ({
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
   const isApproved = status === 'Approved'
+  const isObsolete = status === 'Obsolete'
 
   const overview = enterpriseData.overview as EnterpriseType
   const disableSubmit = !(overview.name && overview.id)
@@ -65,12 +66,6 @@ const PEnterpriseEditActionButtons = ({
         method: 'PUT',
       })
 
-      if (result.status === 'Approved') {
-        setLocation(
-          `/projects-listing/projects-enterprises/${project_id}/view/${result.id}`,
-        )
-      }
-
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)
 
@@ -87,7 +82,7 @@ const PEnterpriseEditActionButtons = ({
 
   const changeEnterpriseStatus = async (status: string) => {
     const canChangeStatus =
-      isPending && canEditProjectEnterprise ? await editEnterprise() : true
+      !isObsolete && canEditProjectEnterprise ? await editEnterprise() : true
 
     if (canChangeStatus) {
       try {

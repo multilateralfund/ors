@@ -27,7 +27,7 @@ const PEnterpriseFundingDetailsSection = ({
 
   const isDisabled =
     !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
+    (enterprise.status === 'Obsolete' || !canEditProjectEnterprise)
 
   return (
     <div className="flex flex-wrap gap-x-20 gap-y-3">

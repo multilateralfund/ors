@@ -44,7 +44,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   const isDisabled =
     !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
+    (enterprise.status === 'Obsolete' || !canEditProjectEnterprise)
 
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,

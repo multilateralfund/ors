@@ -91,22 +91,17 @@ const getColumnDefs = (
 
                 return (
                   <div className="flex items-center gap-1 p-2">
-                    {props.data.status !== 'Obsolete' &&
-                      !(
-                        props.data.status === 'Approved' && !approvalPermissions
-                      ) &&
-                      (isEnterprise ||
-                        props.data.status === 'Pending Approval') && (
-                        <>
-                          <Link
-                            className="flex h-4 w-4 justify-center"
-                            href={getEditUrl(props.data.id)}
-                          >
-                            <FiEdit size={16} />
-                          </Link>
-                          {canDeleteEnterprise && '/'}
-                        </>
-                      )}
+                    {props.data.status !== 'Obsolete' && (
+                      <>
+                        <Link
+                          className="flex h-4 w-4 justify-center"
+                          href={getEditUrl(props.data.id)}
+                        >
+                          <FiEdit size={16} />
+                        </Link>
+                        {canDeleteEnterprise && '/'}
+                      </>
+                    )}
                     {canDeleteEnterprise && (
                       <IoTrash
                         size={18}

@@ -73,6 +73,7 @@ const PEnterpriseOverviewSection = ({
           <Label>Status</Label>
           <Field
             widget="autocomplete"
+            disabled={enterprise.status !== 'Pending Approval'}
             disableClearable
             options={enterpriseStatuses}
             value={overview.linkStatus}
