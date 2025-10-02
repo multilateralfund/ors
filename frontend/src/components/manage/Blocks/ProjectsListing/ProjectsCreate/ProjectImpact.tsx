@@ -19,9 +19,11 @@ const ProjectImpact = ({
   setCurrentStep,
   setCurrentTab,
   postExComUpdate,
+  nextStep,
 }: SpecificFieldsSectionProps &
   ProjectTabSetters & {
     postExComUpdate: boolean
+    nextStep: number
   }) => {
   const { viewableFields, editableFields, projectFields } = useStore(
     (state) => state.projectFields,
@@ -66,9 +68,9 @@ const ProjectImpact = ({
           setCurrentTab={setCurrentTab}
         />
         <NextButton
-          nextStep={3}
+          nextStep={nextStep}
+          nextTab={nextStep - 1}
           type="previous"
-          setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
       </div>

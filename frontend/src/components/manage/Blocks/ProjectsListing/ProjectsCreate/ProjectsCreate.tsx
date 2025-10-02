@@ -462,6 +462,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             postExComUpdate,
           }}
+          nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />
       ),
       errors: formatErrors(impactErrors),
@@ -494,6 +495,9 @@ const ProjectsCreate = ({
             setCurrentTab,
           }}
           hasNextButton={!!isApprovalTabAvailable && !isApprovalTabDisabled}
+          nextStep={
+            !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
           {...rest}
         />
       ),

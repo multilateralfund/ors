@@ -32,7 +32,7 @@ import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { find, isNil, isNull } from 'lodash'
+import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
@@ -105,10 +105,8 @@ const ProjectIdentifiersFields = ({
 
   const decisions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return data.map((d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
-
-  console.log(decisions)
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 

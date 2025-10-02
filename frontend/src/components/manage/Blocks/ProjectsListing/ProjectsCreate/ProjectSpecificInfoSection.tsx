@@ -88,7 +88,6 @@ const ProjectSpecificInfoSection = ({
         <NextButton
           nextStep={2}
           type="previous"
-          setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
       </div>

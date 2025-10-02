@@ -157,7 +157,6 @@ const ProjectApprovalFields = ({
         <NextButton
           nextStep={5}
           type="previous"
-          setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
       </div>
