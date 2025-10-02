@@ -14,6 +14,8 @@ from core.models import (
     Payment,
     ScaleOfAssessmentVersion,
     AnnualProjectReport,
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -477,11 +479,34 @@ class ProjectFactory(factory.django.DjangoModelFactory):
             obj.subsectors.set(extracted)
 
 
+class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProgressReport
+
+    year = factory.Sequence(lambda n: n + 2025)
+    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    date_endorsed = factory.Faker("date")
+    remarks_endorsed = factory.Faker("pystr")
+    endorsed = factory.Faker("pybool")
+
+
+class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualAgencyProjectReport
+
+    progress_report = factory.SubFactory(AnnualProgressReportFactory)
+    agency = factory.SubFactory(AgencyFactory)
+    status = factory.fuzzy.FuzzyChoice(
+        AnnualAgencyProjectReport.SubmissionStatus.choices
+    )
+
+
 class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AnnualProjectReport
 
     project = factory.SubFactory(ProjectFactory)
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
 
     date_first_disbursement = factory.Faker("date")
     date_planned_completion = factory.Faker("date")
