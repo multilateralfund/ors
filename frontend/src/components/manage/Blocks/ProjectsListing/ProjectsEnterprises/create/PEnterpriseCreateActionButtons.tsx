@@ -33,7 +33,7 @@ const PEnterpriseCreateActionButtons = ({
 
       const data = {
         project: project_id,
-        enterprise: omit(overview, 'status'),
+        enterprise: omit(overview, ['status', 'linkStatus']),
         ods_odp: substance_details,
         ...funding_details,
       }

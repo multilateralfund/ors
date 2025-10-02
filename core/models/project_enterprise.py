@@ -12,8 +12,7 @@ class EnterpriseManager(models.Manager):
     def get_next_serial_number(self, country_id, first3lettersofname):
         return (
             self.filter(
-                country_id=country_id,
-                code__startswith=f"{country_id}/{first3lettersofname}/",
+                country_id=country_id, code__contains=f"/{first3lettersofname}/"
             ).count()
             + 1
         )

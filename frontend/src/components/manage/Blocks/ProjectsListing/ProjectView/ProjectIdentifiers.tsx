@@ -97,8 +97,11 @@ const ProjectIdentifiers = ({
           <Divider className="my-6" />
           <SectionTitle>Post ExCom updates</SectionTitle>
           <div>
-            {detailItem('Meeting', project.post_excom_meeting?.toString() ?? '-')}
-            {detailItem('Decision', project.post_excom_decision_id?.toString() ?? '-')}
+            {detailItem(
+              'Meeting',
+              project.post_excom_meeting?.toString() ?? '-',
+            )}
+            {detailItem('Decision', project.post_excom_decision?.number ?? '-')}
           </div>
         </div>
       ) : null}
@@ -113,7 +116,7 @@ const ProjectIdentifiers = ({
                 Business plan {bp.name} {' - '}
                 <span>(Meeting: {bp.meeting_number})</span>
                 {bp.decision_id ? (
-                  <span>(Decision: {bp.decision_number})</span>
+                  <span>{`(Decision: ${bp.decision_number})`})</span>
                 ) : null}
               </div>
               <BPTable

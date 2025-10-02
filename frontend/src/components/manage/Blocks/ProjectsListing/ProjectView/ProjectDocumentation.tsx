@@ -22,7 +22,7 @@ const ProjectDocumentation = ({
   ProjectTabSetters & {
     projectFiles?: ProjectFile[]
     mode: string
-    hasNextButton: boolean
+    hasNextButton?: boolean
     project?: ProjectTypeApi
     loadedFiles?: boolean
   }) => {

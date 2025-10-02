@@ -1,6 +1,7 @@
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 export type ListingProjectData = {
   projectId: number | null
@@ -22,7 +23,7 @@ export interface ProjIdentifiers {
   cluster: number | null
   production: boolean
   post_excom_meeting: number | null
-  post_excom_decision: string | null
+  post_excom_decision: number | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -93,10 +94,6 @@ export interface SpecificFields {
   meeting_approved: number | null
   decision: string | null
   decision_id: string | null
-  post_excom_meeting: number | null
-  post_excom_decision: string | null
-  post_excom_meeting_id: number | null
-  post_excom_decision_id: string | null
 }
 
 export type OdsOdpFields = {
@@ -361,6 +358,7 @@ export interface EnterpriseOverview {
   local_ownership: string | null
   export_to_non_a5: string | null
   remarks: string
+  linkStatus?: string
 }
 
 export type EnterpriseType = EnterpriseOverview & {

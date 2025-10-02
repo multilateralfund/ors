@@ -1,4 +1,5 @@
-from typing import List
+from functools import partial
+from typing import Iterable
 
 from datetime import datetime
 
@@ -17,6 +18,7 @@ from django.http import FileResponse
 
 from rest_framework import serializers
 
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.serializers.business_plan import BPActivityExportSerializer
 
@@ -32,6 +34,13 @@ from core.api.export.business_plan import BPActivitiesWriter
 from core.api.utils import workbook_response
 
 logger = logging.getLogger(__name__)
+
+
+def format_iso_date(isodate=None):
+    if isodate:
+        date = datetime.fromisoformat(isodate)
+        return date.strftime("%d/%m/%Y")
+    return ""
 
 
 def get_headers_identifiers():
@@ -108,15 +117,134 @@ def get_headers_cross_cutting():
         {
             "id": "project_start_date",
             "headerName": "Project start date",
+            "method": lambda r, h: format_iso_date(r[h["id"]]),
         },
         {
             "id": "project_end_date",
             "headerName": "Project end date",
+            "method": lambda r, h: format_iso_date(r[h["id"]]),
+        },
+        {
+            "id": "individual_consideration",
+            "headerName": "Blanket consideration",
+            "method": lambda r, h: r[h["id"]] and "No" or "Yes",
         },
     ]
 
 
-def get_headers_specific_information(fields: List[ProjectField]):
+def field_value(data, header):
+    name = header["id"]
+    field_data = data["field_data"]
+    value = field_data.get(name, {}).get("value")
+    return f"{value}" if value else "-"
+
+
+def field_value_or_computed(data, header, is_date=False):
+    name = header["id"]
+
+    field_data = data["field_data"]
+    computed_field_data = data["computed_field_data"]
+
+    value = field_data.get(name, {}).get("value")
+
+    is_computed = False
+
+    if value is None:
+        value = computed_field_data.get(name, None)
+        is_computed = True
+
+    if value and is_date:
+        value = format_iso_date(value)
+
+    value = value if value else "-"
+
+    if is_computed:
+        value = f"{value} (computed)"
+
+    return value
+
+
+def get_headers_metaproject():
+    return [
+        {
+            "id": "project_funding",
+            "headerName": "Project Funding (MYA)",
+            "method": field_value_or_computed,
+        },
+        {
+            "id": "support_cost",
+            "headerName": "Support Cost (MYA)",
+            "method": field_value_or_computed,
+        },
+        {
+            "id": "start_date",
+            "headerName": "Start date (MYA)",
+            "method": partial(field_value_or_computed, is_date=True),
+        },
+        {
+            "id": "end_date",
+            "headerName": "End date (MYA)",
+            "method": partial(field_value_or_computed, is_date=True),
+        },
+        {
+            "id": "phase_out_odp",
+            "headerName": "Phase out (ODP t) (MYA)",
+            "method": field_value_or_computed,
+        },
+        {
+            "id": "phase_out_mt",
+            "headerName": "Phase out (Mt) (MYA)",
+            "method": field_value_or_computed,
+        },
+        {
+            "id": "targets",
+            "headerName": "Targets",
+            "method": field_value,
+        },
+        {
+            "id": "starting_point",
+            "headerName": "Starting point",
+            "method": field_value,
+        },
+        {
+            "id": "baseline",
+            "headerName": "Baseline",
+            "method": field_value,
+        },
+        {
+            "id": "number_of_enterprises_assisted",
+            "headerName": "Number of enterprises assisted",
+            "method": field_value,
+        },
+        {
+            "id": "number_of_enterprises",
+            "headerName": "Number of enterprises",
+            "method": field_value,
+        },
+        {
+            "id": "aggregated_consumption",
+            "headerName": "Aggregated consumption",
+            "method": field_value,
+        },
+        {
+            "id": "number_of_production_lines_assisted",
+            "headerName": "Number of Production Lines assisted",
+            "method": field_value,
+        },
+        {
+            "id": "cost_effectiveness_kg",
+            "headerName": "Cost effectiveness (US$/ Kg)",
+            "method": field_value,
+        },
+        {
+            "id": "cost_effectiveness_co2",
+            "headerName": "Cost effectiveness (US$/ CO2-ep)",
+            "method": field_value,
+        },
+    ]
+
+
+def get_headers_specific_information(fields: Iterable[ProjectField]):
     result = []
 
     for field in fields:
@@ -315,7 +443,7 @@ class ProjectsV2ProjectExportDocx:
         if after_p_text:
             found_p = False
             for e in self.doc.element.body:
-                if isinstance(e, CT_P) and e.text.strip() == after_p_text:
+                if isinstance(e, CT_P) and after_p_text in e.text.strip():
                     found_p = True
                 elif isinstance(e, CT_Tbl) and found_p:
                     found = Table(e, self.doc)
@@ -384,7 +512,7 @@ class ProjectsV2ProjectExportDocx:
             for c_idx, cell in enumerate(row.cells):
                 cell.text = str(d.get(row_data[c_idx], "") or "")
 
-    def _write_impact_target_actual(self, headers, table, data):
+    def _write_impact_target_actual(self, project, headers, table, data):
         planned_headers = {}
         actual_headers = {}
         for header in headers:
@@ -397,6 +525,7 @@ class ProjectsV2ProjectExportDocx:
         for field_id, header in planned_headers.items():
             row = table.add_row()
             row_data = [
+                project.code,
                 header["headerName"],
                 data[field_id],
                 data[actual_headers[field_id]["id"]],
@@ -408,10 +537,9 @@ class ProjectsV2ProjectExportDocx:
         table = self.find_table(
             "Related tranches (metacode and linked projects) Only MYA"
         )
-        if table and self.project.tranche and self.project.tranche > 1:
+        if table:
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
-                tranche=self.project.tranche - 1,
             )
             row = table.add_row()
             for project in related_projects:
@@ -425,10 +553,13 @@ class ProjectsV2ProjectExportDocx:
 
     def build_cross_cutting(self, data):
         table = self.find_table("Cross-cutting fields")
-        self._write_header_to_table(get_headers_cross_cutting()[2:], table, data)
+        self._write_header_to_table(get_headers_cross_cutting(), table, data)
 
     def _get_fields_for_section(
-        self, fields_obj: ProjectSpecificFields, section_name: str, **filters
+        self,
+        fields_obj: ProjectSpecificFields,
+        section_name: str,
+        **filters,
     ):
         return fields_obj.fields.filter(section__in=[section_name], **filters)
 
@@ -442,6 +573,16 @@ class ProjectsV2ProjectExportDocx:
         writer = self._write_header_to_table if not writer else writer
         if data and table and fields:
             headers = get_headers_specific_information(fields)
+            writer(headers, table, data)
+
+    def _write_metaproject_fields(
+        self,
+        table=None,
+        data=None,
+    ):
+        writer = self._write_header_to_table
+        if data and table:
+            headers = get_headers_metaproject()
             writer(headers, table, data)
 
     def build_specific_information(self, data):
@@ -472,19 +613,45 @@ class ProjectsV2ProjectExportDocx:
                 fields=self._get_fields_for_section(
                     project_specific_fields_obj,
                     "Impact",
-                    is_actual=False,
+                    # is_actual=False,
                 ),
                 data=data,
             )
-            self._write_project_specific_fields(
-                table=self.find_table("Impact (previous MYA tranches) If applicable"),
-                fields=self._get_fields_for_section(
+
+    def build_impact_previous_tranches(self):
+        table = self.find_table("Impact (previous MYA tranches) If applicable")
+        if table and self.project.tranche:
+            related_projects = Project.objects.filter(
+                meta_project__id=self.project.meta_project.id,
+                # tranche__lt=self.project.tranche,
+            )
+            for project in related_projects:
+                project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+                    cluster=project.cluster,
+                    type=project.project_type,
+                    sector=project.sector,
+                ).first()
+
+                fields = self._get_fields_for_section(
                     project_specific_fields_obj,
                     "Impact",
-                ),
-                data=data,
-                writer=self._write_impact_target_actual,
-            )
+                )
+                data = ProjectDetailsV2Serializer(project).data
+
+                headers = get_headers_specific_information(fields)
+                self._write_impact_target_actual(project, headers, table, data)
+
+    def build_mya(self):
+        metaproject = self.project.meta_project
+        metaproject_data = {}
+
+        if metaproject:
+            metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+
+        self._write_metaproject_fields(
+            table=self.find_table("MYA (if applicable only new MYA)"),
+            data=metaproject_data,
+        )
 
     def build_document(self):
         serializer = ProjectDetailsV2Serializer(self.project)
@@ -494,7 +661,10 @@ class ProjectsV2ProjectExportDocx:
         self.build_related_tranches()
         self.build_cross_cutting(data)
         self.build_specific_information(data)
+        self.build_impact_previous_tranches()
+        self.build_mya()
 
     def export_docx(self):
         self.build_document()
-        return document_response(self.doc, filename=f"{self.project.id}.docx")
+        filename = self.project.code.replace("/", "_")
+        return document_response(self.doc, filename=f"{filename}.docx")

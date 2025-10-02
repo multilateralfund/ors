@@ -25,6 +25,8 @@ from core.api.permissions import (
     HasProjectEditAccess,
     DenyAll,
 )
+from core.api.serializers import CountrySerializer
+from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
     ProjectFundCreateSerializer,
@@ -49,6 +51,8 @@ from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.meta_project import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
+from core.models import Agency
+from core.models import Country
 from core.models.project import (
     MetaProject,
     Project,
@@ -77,6 +81,61 @@ class MetaProjectListView(generics.ListAPIView):
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
+
+
+class MetaProjectCountryListView(generics.ListAPIView):
+    """
+    List meta project countries
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return Country.objects.filter(
+            project__meta_project__in=meta_projects
+        ).distinct()
+
+
+class MetaProjectClusterListView(generics.ListAPIView):
+    """
+    List meta project clusters
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = ProjectClusterSerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return ProjectCluster.objects.filter(
+            project__meta_project__in=meta_projects
+        ).distinct()
+
+
+class MetaProjectLeadAgencyListView(generics.ListAPIView):
+    """
+    List meta project lead agencies
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = AgencySerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return Agency.objects.filter(metaproject__in=meta_projects).distinct()
 
 
 class MetaProjectMyaListView(generics.ListAPIView):
