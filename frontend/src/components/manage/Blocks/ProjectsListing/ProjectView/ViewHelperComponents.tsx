@@ -27,11 +27,13 @@ export const detailItem = (
   } = classNames ?? {}
 
   return (
-    <span className={cx('flex items-center gap-2', containerClassName)}>
-      <span className={cx(detailClassname, className)}>{fieldName}</span>
-      <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
+    <div>
+      <span className={cx('flex items-center gap-2', containerClassName)}>
+        <span className={cx(detailClassname, className)}>{fieldName}</span>
+        <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
+      </span>
       <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-    </span>
+    </div>
   )
 }
 
@@ -40,18 +42,20 @@ export const numberDetailItem = (
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
 ) => (
-  <span className="flex items-center gap-2">
-    <span>{fieldName}</span>
-    <h4 className="m-0">
-      {!isNil(fieldValue)
-        ? formatDecimalValue(parseFloat(fieldValue), {
-            maximumFractionDigits: 10,
-            minimumFractionDigits: 2,
-          })
-        : '-'}
-    </h4>
+  <div>
+    <span className="flex items-center gap-2">
+      <span>{fieldName}</span>
+      <h4 className="m-0">
+        {!isNil(fieldValue)
+          ? formatDecimalValue(parseFloat(fieldValue), {
+              maximumFractionDigits: 10,
+              minimumFractionDigits: 2,
+            })
+          : '-'}
+      </h4>
+    </span>
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
+  </div>
 )
 
 export const booleanDetailItem = (
@@ -59,11 +63,13 @@ export const booleanDetailItem = (
   fieldValue: boolean,
   fieldHistory?: detailItemExtra['fieldHistory'],
 ) => (
-  <span className="flex items-center gap-2">
-    <span>{fieldName}</span>
-    <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
+  <div>
+    <span className="flex items-center gap-2">
+      <span>{fieldName}</span>
+      <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
+    </span>
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
+  </div>
 )
 
 export const dateDetailItem = (
@@ -71,13 +77,15 @@ export const dateDetailItem = (
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
 ) => (
-  <span className="flex items-center gap-2">
-    <span>{fieldName}</span>
-    <h4 className="m-0">
-      {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
-    </h4>
+  <div>
+    <span className="flex items-center gap-2">
+      <span>{fieldName}</span>
+      <h4 className="m-0">
+        {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
+      </h4>
+    </span>
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
+  </div>
 )
 
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {

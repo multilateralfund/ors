@@ -82,8 +82,34 @@ export default function FieldHistoryIndicator({
   }
 
   return hasHistory ? (
+    // <div className="bg-primary text-white">
     <div>
-      <div
+      {latestByMeeting.map((item, idx) => {
+        let label
+        if (item.version > 3) {
+          label = `${fieldName} (updated ExCom ${item.post_excom_meeting})`
+        } else {
+          label = `${fieldName} (planned)`
+        }
+        return (
+          <div
+            key={idx}
+            className={cx('flex items-center gap-4 py-1', {
+              italic: idx >= firstDifferentIndex,
+              // 'text-mlfs-hlYellow': idx < firstDifferentIndex,
+              // 'text-red-200': idx === firstDifferentIndex,
+              // 'text-blue-400': idx > firstDifferentIndex,
+            })}
+          >
+            <div>{label}:</div>
+            <h4 className="m-0">{getItemValue(item.value) ?? '-'}</h4>
+          </div>
+        )
+      })}
+    </div>
+  ) : null
+  {
+    /* <div
         className={cx('cursor-help', className)}
         onMouseEnter={(event) => {
           setAnchorEl(event?.currentTarget)
@@ -97,8 +123,10 @@ export default function FieldHistoryIndicator({
         <div className="rounded border border-solid border-gray-400 bg-gray-200 px-0.5 py-1">
           <FaClockRotateLeft />
         </div>
-      </div>
-      <Popover
+      </div> */
+  }
+  {
+    /* <Popover
         anchorEl={anchorEl}
         open={showTooltip}
         anchorOrigin={{
@@ -119,33 +147,9 @@ export default function FieldHistoryIndicator({
         }}
         disableRestoreFocus
       >
-        <div className="bg-primary text-white">
-          {latestByMeeting.map((item, idx) => {
-            let label
-            if (item.version > 3) {
-              label = `${fieldName} (updated ExCom ${item.post_excom_meeting})`
-            } else {
-              label = `${fieldName} (planned)`
-            }
-            return (
-              <div
-                key={idx}
-                className={cx(
-                  'flex items-center justify-between gap-4 px-2 py-2',
-                  {
-                    'text-mlfs-hlYellow': idx < firstDifferentIndex,
-                    'text-red-200': idx === firstDifferentIndex,
-                    'text-blue-400': idx > firstDifferentIndex,
-                  },
-                )}
-              >
-                <div>{label}:</div>
-                <div>{getItemValue(item.value) ?? '-'}</div>
-              </div>
-            )
-          })}
-        </div>
+
       </Popover>
     </div>
-  ) : null
+  ) : null */
+  }
 }
