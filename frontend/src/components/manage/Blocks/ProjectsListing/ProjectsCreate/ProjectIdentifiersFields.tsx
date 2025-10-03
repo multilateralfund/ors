@@ -104,7 +104,7 @@ const ProjectIdentifiersFields = ({
     },
   })
 
-  const decisions = useMemo(() => {
+  const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
@@ -267,13 +267,13 @@ const ProjectIdentifiersFields = ({
                 <Label htmlFor="postExComDecision">Decision</Label>
                 <Field<any>
                   widget="autocomplete"
-                  options={decisions}
+                  options={decisionOptions}
                   value={projIdentifiers?.post_excom_decision ?? ''}
                   onChange={(_, value) =>
                     handleChangePostExComDecision(value as DecisionOption)
                   }
                   getOptionLabel={(option) => {
-                    return getOptionLabel(decisions, option, 'value')
+                    return getOptionLabel(decisionOptions, option, 'value')
                   }}
                   {...sectionDefaultProps}
                 />
