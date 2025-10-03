@@ -473,17 +473,17 @@ const ProjectCrossCuttingFields = ({
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <NextButton
+          nextStep={1}
+          type="previous"
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
+        <NextButton
           nextStep={nextStep}
           nextTab={nextStep - 1}
           setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextDisabled}
-        />
-        <NextButton
-          nextStep={1}
-          type="previous"
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
         />
       </div>
     </>

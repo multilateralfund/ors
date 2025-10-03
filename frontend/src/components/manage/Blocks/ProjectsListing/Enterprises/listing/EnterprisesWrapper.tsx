@@ -50,7 +50,7 @@ export default function EnterprisesWrapper() {
             </PageHeading>
           </div>
           {canEditEnterprise && (
-            <div className="ml-auto mt-auto flex items-center gap-2.5">
+            <div className="ml-auto mt-auto flex items-center">
               <CreateButton
                 title="Create enterprise"
                 href="/projects-listing/enterprises/create"
@@ -62,7 +62,6 @@ export default function EnterprisesWrapper() {
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <EnterprisesFiltersWrapper
-          type="enterprises"
           {...{
             filters,
             initialFilters,

@@ -6,26 +6,20 @@ import { useParams } from 'wouter'
 import { map } from 'lodash'
 
 const EnterprisesFiltersSelectedOpts = ({
-  enterpriseStatuses,
   commonSlice,
+  enterpriseStatuses,
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
-
-  const areFiltersApplied = getAreFiltersApplied(filters)
   const isEnterpriseView = !project_id
 
-  const initialParams = isEnterpriseView
-    ? {
-        country_id: [],
-        status: [],
-      }
-    : {
-        status: [],
-      }
+  const initialParams = {
+    status: [],
+    ...(isEnterpriseView && { country_id: [] }),
+  }
 
   const filterSelectedOpts = [
     {
@@ -39,6 +33,8 @@ const EnterprisesFiltersSelectedOpts = ({
       isAvailable: true,
     },
   ]
+
+  const areFiltersApplied = getAreFiltersApplied(filters)
 
   return (
     areFiltersApplied && (

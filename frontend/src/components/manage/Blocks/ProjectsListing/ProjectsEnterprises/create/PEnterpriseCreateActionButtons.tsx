@@ -42,6 +42,7 @@ const PEnterpriseCreateActionButtons = ({
         data: data,
         method: 'POST',
       })
+
       setEnterpriseId(result.id)
       setLocation(
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,

@@ -30,8 +30,8 @@ const PEnterpriseEditWrapper = () => {
   const { data, loading, error } = enterprise
 
   if (
-    !canViewEnterprises ||
     !canViewProjects ||
+    !canViewEnterprises ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
@@ -39,11 +39,7 @@ const PEnterpriseEditWrapper = () => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (
-    !(canEditProjectEnterprise || canApproveProjectEnterprise) ||
-    (data && data.status === 'Obsolete') ||
-    error
-  ) {
+  if (!(canEditProjectEnterprise || canApproveProjectEnterprise) || error) {
     return (
       <Redirect
         to={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}

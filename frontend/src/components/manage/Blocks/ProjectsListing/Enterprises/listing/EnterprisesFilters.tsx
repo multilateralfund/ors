@@ -9,8 +9,8 @@ import { filter, union } from 'lodash'
 import { useParams } from 'wouter'
 
 const EnterprisesFilters = ({
-  enterpriseStatuses,
   commonSlice,
+  enterpriseStatuses,
   filters,
   handleFilterChange,
   handleParamsChange,
