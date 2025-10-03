@@ -1366,3 +1366,35 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         project.save()
 
         return new_transfer_project
+
+
+class ProjectExportV2Serializer(ProjectListV2Serializer):
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
+    cluster = serializers.SlugRelatedField("name", read_only=True)
+    substances_list = serializers.SerializerMethodField()
+    subsectors_list = serializers.SerializerMethodField()
+
+    class Meta(ProjectListV2Serializer.Meta):
+        fields = ProjectListV2Serializer.Meta.fields + [
+            "substances_list",
+            "subsectors_list",
+            "serial_number_legacy",
+        ]
+
+    def get_substances_list(self, obj):
+        "substances names separated by comma for project list export"
+        if not obj.ods_odp.count():
+            return None
+
+        substances = []
+        for ods_odp in obj.ods_odp.all():
+            if ods_odp.ods_substance:
+                substances.append(ods_odp.ods_substance.name)
+            elif ods_odp.ods_blend:
+                substances.append(ods_odp.ods_blend.name)
+        return ", ".join(substances)
+
+    def get_subsectors_list(self, obj):
+        "subsector names separated by comma for project list export"
+        return ", ".join([s.name for s in obj.subsectors.all()])
