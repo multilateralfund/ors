@@ -224,6 +224,7 @@ def setup_project_create(
         composition=f"{substA.name}= 0.5",
         sort_order=1,
     )
+    blend.components.create(substance=substA, percentage=0.2)
     return {
         "ad_hoc_pcr": True,
         "agency": agency.id,
@@ -1127,6 +1128,7 @@ class TestProjectsV2Update:
         blend = BlendFactory.create(
             name="test blend", sort_order=1, composition=f"{substance_hcfc.name}=100"
         )
+        blend.components.create(substance=substance_hcfc, percentage=0.2)
         self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
