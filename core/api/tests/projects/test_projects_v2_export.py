@@ -16,7 +16,6 @@ from core.api.views.project_v2_export import get_activity_data_from_json
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
-from core.models import ProjectSubmissionStatus
 from core.models.substance import Substance
 from core.models.user import User
 
