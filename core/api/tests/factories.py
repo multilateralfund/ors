@@ -13,6 +13,9 @@ from core.models import (
     Invoice,
     Payment,
     ScaleOfAssessmentVersion,
+    AnnualProjectReport,
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -474,6 +477,58 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     def subsectors(obj, _, extracted, **kwargs):
         if extracted:
             obj.subsectors.set(extracted)
+
+
+class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProgressReport
+
+    year = factory.Sequence(lambda n: n + 2025)
+    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    date_endorsed = factory.Faker("date")
+    remarks_endorsed = factory.Faker("pystr")
+    endorsed = factory.Faker("pybool")
+
+
+class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualAgencyProjectReport
+
+    progress_report = factory.SubFactory(AnnualProgressReportFactory)
+    agency = factory.SubFactory(AgencyFactory)
+    status = factory.fuzzy.FuzzyChoice(
+        AnnualAgencyProjectReport.SubmissionStatus.choices
+    )
+
+
+class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProjectReport
+
+    project = factory.SubFactory(ProjectFactory)
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+
+    date_first_disbursement = factory.Faker("date")
+    date_planned_completion = factory.Faker("date")
+    date_actual_completion = factory.Faker("date")
+    date_financial_completion = factory.Faker("date")
+
+    consumption_phased_out_odp = factory.Faker("random_int")
+    consumption_phased_out_co2 = factory.Faker("random_int")
+    production_phased_out_odp = factory.Faker("random_int")
+    production_phased_out_co2 = factory.Faker("random_int")
+
+    funds_disbursed = factory.Faker("random_int")
+    funds_committed = factory.Faker("random_int")
+    estimated_disbursement_current_year = factory.Faker("random_int")
+    support_cost_disbursed = factory.Faker("random_int")
+    support_cost_committed = factory.Faker("random_int")
+    disbursements_made_to_final_beneficiaries = factory.Faker("random_int")
+    funds_advanced = factory.Faker("random_int")
+
+    last_year_remarks = factory.Faker("pystr")
+    current_year_remarks = factory.Faker("pystr")
+    gender_policy = factory.Faker("pybool")
 
 
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
