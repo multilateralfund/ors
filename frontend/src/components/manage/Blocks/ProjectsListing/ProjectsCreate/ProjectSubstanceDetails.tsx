@@ -141,7 +141,7 @@ const ProjectSubstanceDetails = ({
       {canViewSubstanceSection && (
         <>
           <div className="flex flex-col gap-y-2">
-            <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
+            <div className="flex flex-col flex-wrap gap-x-20">
               {odsOdpFields.length > 0 &&
                 odsOdpData
                   .sort(
@@ -184,7 +184,9 @@ const ProjectSubstanceDetails = ({
                           />
                         )}
                       </div>
-                      {index !== odsOdpData.length - 1 && <Divider />}
+                      {index !== odsOdpData.length - 1 && (
+                        <Divider className="my-5" />
+                      )}
                     </span>
                   ))}
             </div>

@@ -454,7 +454,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            setCurrentStep,
             setCurrentTab,
             postExComUpdate,
           }}
@@ -486,12 +485,14 @@ const ProjectsCreate = ({
             mode,
             project,
             loadedFiles,
-            setCurrentStep,
             setCurrentTab,
           }}
-          hasNextButton={!!isApprovalTabAvailable && !isApprovalTabDisabled}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
+          hasNextStep={mode === 'edit'}
+          isNextButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
           {...rest}
         />
@@ -543,7 +544,6 @@ const ProjectsCreate = ({
                   projectData,
                   setProjectData,
                   hasSubmitted,
-                  setCurrentStep,
                   setCurrentTab,
                 }}
                 errors={approvalErrors}
@@ -558,7 +558,9 @@ const ProjectsCreate = ({
           {
             id: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            component: (
+              <ProjectRelatedProjects {...{ relatedProjects, setCurrentTab }} />
+            ),
           },
         ]
       : []),
@@ -572,7 +574,7 @@ const ProjectsCreate = ({
               </div>
             ),
             disabled: false,
-            component: <ProjectHistory mode={mode} project={project} />,
+            component: <ProjectHistory {...{ project, setCurrentTab }} />,
           },
         ]
       : []),

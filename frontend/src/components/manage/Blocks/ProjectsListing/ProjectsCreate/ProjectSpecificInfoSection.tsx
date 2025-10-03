@@ -6,7 +6,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectOverview from './ProjectOverview'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { hasFields } from '../utils'
 import { useStore } from '@ors/store'
@@ -79,16 +79,14 @@ const ProjectSpecificInfoSection = ({
         </>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
+        <NavigationButton
           nextStep={2}
           type="previous"
           setCurrentTab={setCurrentTab}
         />
-        <NextButton
-          nextStep={nextStep}
+        <NavigationButton
           nextTab={nextStep - 1}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
+          {...{ nextStep, setCurrentStep, setCurrentTab }}
         />
       </div>
     </>

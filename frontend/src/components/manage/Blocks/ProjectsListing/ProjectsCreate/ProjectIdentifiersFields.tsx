@@ -18,7 +18,7 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
@@ -500,7 +500,7 @@ const ProjectIdentifiersFields = ({
           (isV3Project && areNextSectionsDisabled) ||
           !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
-            <NextButton
+            <NavigationButton
               nextStep={project_type && sector ? 5 : 2}
               setCurrentStep={setCurrentStep}
               isBtnDisabled={!areNextStepsAvailable}

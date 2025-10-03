@@ -1,5 +1,5 @@
+import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
 import { canViewField } from '../utils'
 import {
   SpecificFieldsSectionProps,
@@ -16,7 +16,6 @@ const ProjectImpact = ({
   sectionFields,
   errors = {},
   hasSubmitted,
-  setCurrentStep,
   setCurrentTab,
   postExComUpdate,
   nextStep,
@@ -62,17 +61,12 @@ const ProjectImpact = ({
         )}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={nextStep}
+        <NavigationButton
           nextTab={nextStep - 1}
           type="previous"
-          setCurrentTab={setCurrentTab}
+          {...{ nextStep, setCurrentTab }}
         />
-        <NextButton
-          nextStep={5}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
-        />
+        <NavigationButton {...{ setCurrentTab }} />
       </div>
     </>
   )
