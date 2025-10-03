@@ -95,8 +95,9 @@ const ProjectIdentifiersFields = ({
     canEditField(editableFields, 'meeting')
 
   const decisionsApi = useApi<ApiDecision[]>({
-    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    path: 'api/decisions',
     options: {
+      triggerIf: !!projIdentifiers?.post_excom_meeting,
       params: {
         meeting_id: projIdentifiers?.post_excom_meeting,
       },
@@ -201,6 +202,10 @@ const ProjectIdentifiersFields = ({
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
+    decisionsApi.setApiSettings((prev) => ({
+      ...prev,
+      options: { ...prev.options, triggerIf: !!meeting },
+    }))
   }
 
   const handleChangePostExComDecision = (
