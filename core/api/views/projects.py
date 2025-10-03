@@ -78,7 +78,28 @@ class MetaProjectListView(generics.ListAPIView):
     """
 
     permission_classes = [HasMetaProjectsViewAccess]
-    queryset = MetaProject.objects.order_by("code", "type")
+    queryset = (
+        MetaProject.objects.order_by("code", "type")
+        .prefetch_related(
+            "projects__agency",
+            "projects__comments",
+            "projects__cluster",
+            "projects__country",
+            "projects__decision",
+            "projects__files",
+            "projects__funds",
+            "projects__meeting",
+            "projects__project_type",
+            "projects__rbm_measures__measure",
+            "projects__ods_odp",
+            "projects__sector",
+            "projects__subsectors__sector",
+            "projects__status",
+            "projects__submission_amounts",
+            "projects__submission_status",
+        )
+        .select_related("lead_agency")
+    )
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
 
@@ -152,6 +173,11 @@ class MetaProjectMyaListView(generics.ListAPIView):
             MetaProject.objects.filter(
                 type=MetaProject.MetaProjectType.MYA,
                 projects__submission_status__name="Approved",
+            ).prefetch_related(
+                "projects",
+                "projects__agency",
+                "projects__cluster",
+                "projects__country",
             )
             # Maybe exclude if ALL sub-projects Completed OR Transfered.
             # .filter(

@@ -7,7 +7,6 @@ from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project_metadata import ProjectClusterSerializer
 from core.api.serializers.project_v2 import ProjectListV2Serializer
-from core.models import ProjectCluster
 from core.models.project import MetaProject
 
 
@@ -150,7 +149,7 @@ class MetaProjecMyaSerializer(serializers.ModelSerializer):
         return CountrySerializer(country).data
 
     def get_clusters(self, obj):
-        clusters = ProjectCluster.objects.filter(
-            project__in=obj.projects.all()
-        ).distinct()
+        clusters = set()
+        for project in obj.projects.all():
+            clusters.add(project.cluster)
         return [ProjectClusterSerializer(cluster).data for cluster in clusters]

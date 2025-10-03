@@ -56,7 +56,9 @@ class EnterpriseViewSet(
         """
         Filter the queryset based on the user's permissions.
         """
-
+        queryset = queryset.prefetch_related(
+            "agencies", "project_enterprises", "project_enterprises__project"
+        )
         user = self.request.user
         if user.is_superuser:
             return queryset
