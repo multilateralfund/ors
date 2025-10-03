@@ -15,10 +15,7 @@ import {
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (
-  type: string,
-  setIdToDelete?: (idToDelete: number | null) => void,
-) => {
+const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const {
@@ -33,7 +30,7 @@ const getColumnDefs = (
     agencies: state.common.agencies.data,
   }))
 
-  const isEnterprise = type === 'enterprise'
+  const isEnterprise = !project_id
   const editPermissions = isEnterprise
     ? canEditEnterprise
     : canEditProjectEnterprise
@@ -42,7 +39,9 @@ const getColumnDefs = (
     : canApproveProjectEnterprise
   const canAccessEditPage = editPermissions || approvalPermissions
 
-  const getViewUrl = (enterpriseId: number, project_id: number) =>
+  const checkboxWidth = isEnterprise || !canEditProjectEnterprise ? 40 : 80
+
+  const getViewUrl = (enterpriseId: number) =>
     isEnterprise
       ? `/projects-listing/enterprises/${enterpriseId}`
       : `/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`
@@ -71,23 +70,26 @@ const getColumnDefs = (
     ).join(', ')
   }
 
+  const getFieldName = (field: string) =>
+    isEnterprise ? field : 'enterprise.' + field
+
   return {
     columnDefs: [
       ...(canAccessEditPage
         ? [
             {
-              minWidth: isEnterprise ? 40 : 80,
-              maxWidth: isEnterprise ? 40 : 80,
+              minWidth: checkboxWidth,
+              maxWidth: checkboxWidth,
               resizable: false,
               sortable: false,
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => {
-                const canDeleteEnterprise =
+                const canDeleteProjectEnterprise =
                   !isEnterprise &&
+                  setIdToDelete &&
                   canEditProjectEnterprise &&
                   (props.data.status !== 'Approved' ||
-                    canApproveProjectEnterprise) &&
-                  setIdToDelete
+                    canApproveProjectEnterprise)
 
                 return (
                   <div className="flex items-center gap-1 p-2">
@@ -99,13 +101,13 @@ const getColumnDefs = (
                         >
                           <FiEdit size={16} />
                         </Link>
-                        {canDeleteEnterprise && '/'}
+                        {canDeleteProjectEnterprise && '/'}
                       </>
                     )}
-                    {canDeleteEnterprise && (
+                    {canDeleteProjectEnterprise && (
                       <IoTrash
                         size={18}
-                        className="mb-0.5 cursor-pointer fill-gray-400"
+                        className="cursor-pointer fill-gray-500"
                         onClick={() => {
                           setIdToDelete(props.data.id)
                         }}
@@ -119,14 +121,14 @@ const getColumnDefs = (
         : []),
       {
         headerName: tableColumns.code,
-        field: isEnterprise ? 'code' : 'enterprise.code',
-        tooltipField: isEnterprise ? 'code' : 'enterprise.code',
+        field: getFieldName('code'),
+        tooltipField: getFieldName('code'),
         minWidth: 100,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center justify-center p-2">
             <Link
               className="overflow-hidden truncate whitespace-nowrap"
-              href={getViewUrl(props.data.id, props.data.project)}
+              href={getViewUrl(props.data.id)}
             >
               <span>{props.value}</span>
             </Link>
@@ -135,8 +137,8 @@ const getColumnDefs = (
       },
       {
         headerName: tableColumns.name,
-        field: isEnterprise ? 'name' : 'enterprise.name',
-        tooltipField: isEnterprise ? 'name' : 'enterprise.name',
+        field: getFieldName('name'),
+        tooltipField: getFieldName('name'),
         cellClass: 'ag-cell-ellipsed !pl-2.5',
         minWidth: 200,
       },
@@ -151,9 +153,7 @@ const getColumnDefs = (
         ? [
             {
               headerName: tableColumns.country,
-              field: isEnterprise
-                ? 'country__name'
-                : 'enterprise.country__name',
+              field: getFieldName('country__name'),
               valueGetter: (params: ValueGetterParams) =>
                 getCountryName(params),
               tooltipValueGetter: (params: ITooltipParams) =>
@@ -163,13 +163,13 @@ const getColumnDefs = (
         : []),
       {
         headerName: tableColumns.location,
-        field: isEnterprise ? 'location' : 'enterprise.location',
-        tooltipField: isEnterprise ? 'location' : 'enterprise.location',
+        field: getFieldName('location'),
+        tooltipField: getFieldName('location'),
       },
       {
         headerName: tableColumns.application,
-        field: isEnterprise ? 'application' : 'enterprise.application',
-        tooltipField: isEnterprise ? 'application' : 'enterprise.application',
+        field: getFieldName('application'),
+        tooltipField: getFieldName('application'),
       },
       {
         headerName: 'Status',

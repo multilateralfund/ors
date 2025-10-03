@@ -43,9 +43,9 @@ const PEnterpriseEdit = ({
     setEnterpriseData((prevData) => ({
       ...prevData,
       overview: {
-        linkStatus: enterprise.status,
         id: enterpriseObj.id,
         status: enterpriseObj.status,
+        linkStatus: enterprise.status,
         name: enterpriseObj.name,
         agencies: enterpriseObj.agencies,
         country: enterpriseObj.country,

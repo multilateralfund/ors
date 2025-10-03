@@ -301,7 +301,6 @@ const ProjectsCreate = ({
   const steps = [
     {
       id: 'project-identifiers',
-      ariaControls: 'project-identifiers',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Identifiers</div>
@@ -336,7 +335,6 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-cross-cutting-section',
-      ariaControls: 'project-cross-cutting-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Cross-Cutting</div>
@@ -372,7 +370,6 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-specific-info-section',
-      ariaControls: 'project-specific-info-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
@@ -432,7 +429,6 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-impact-section',
-      ariaControls: 'project-impact-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
@@ -469,7 +465,6 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-documentation-section',
-      ariaControls: 'project-documentation-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Documentation</div>
@@ -522,7 +517,6 @@ const ProjectsCreate = ({
       ? [
           {
             id: 'project-approval-section',
-            ariaControls: 'project-approval-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
@@ -563,7 +557,6 @@ const ProjectsCreate = ({
       ? [
           {
             id: 'project-related-projects-section',
-            ariaControls: 'project-related-projects-section',
             label: 'Related projects',
             component: <ProjectRelatedProjects {...{ relatedProjects }} />,
           },
@@ -573,7 +566,6 @@ const ProjectsCreate = ({
       ? [
           {
             id: 'project-history-section',
-            ariaControls: 'project-history-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">History</div>
@@ -603,11 +595,11 @@ const ProjectsCreate = ({
           setCurrentTab(newValue)
         }}
       >
-        {steps.map(({ id, ariaControls, label, disabled }) => (
+        {steps.map(({ id, label, disabled }) => (
           <Tab
             key={id}
             id={id}
-            aria-controls={ariaControls}
+            aria-controls={id}
             label={label}
             disabled={disabled}
             classes={{

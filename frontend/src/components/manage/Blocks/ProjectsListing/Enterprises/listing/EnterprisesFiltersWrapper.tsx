@@ -7,7 +7,6 @@ import { useStore } from '@ors/store'
 
 const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
   const commonSlice = useStore((state) => state.common)
-
   const enterpriseStatuses = useGetEnterpriseStatuses()
 
   const handleParamsChange = (params: { [key: string]: any }) => {
@@ -20,6 +19,7 @@ const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
 
   const props = {
     commonSlice,
+    enterpriseStatuses,
     handleFilterChange,
     handleParamsChange,
     ...rest,
@@ -27,8 +27,8 @@ const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <EnterprisesFilters {...{ enterpriseStatuses, ...props }} />
-      <EnterprisesFiltersSelectedOpts {...{ enterpriseStatuses, ...props }} />
+      <EnterprisesFilters {...props} />
+      <EnterprisesFiltersSelectedOpts {...props} />
     </div>
   )
 }

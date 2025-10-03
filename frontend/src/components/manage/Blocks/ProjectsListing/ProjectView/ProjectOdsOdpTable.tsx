@@ -82,6 +82,15 @@ const ProjectOdsOdpTable = ({
     field: string,
   ) => find(options, { name: params.data[field] })?.name
 
+  const getOdsDisplayName = (params: ValueGetterParams | ITooltipParams) => {
+    const { ods_display_name, ods_blend_composition } = params.data ?? {}
+
+    return (
+      ods_display_name +
+      (ods_blend_composition ? ` (${ods_blend_composition})` : '')
+    )
+  }
+
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
       const field = fieldObj.write_field_name
@@ -92,17 +101,11 @@ const ProjectOdsOdpTable = ({
         field: field,
         valueGetter: (params: ValueGetterParams) =>
           field === 'ods_display_name'
-            ? params.data?.ods_display_name +
-              (params.data?.ods_blend_composition
-                ? ` (${params.data?.ods_blend_composition})`
-                : '')
+            ? getOdsDisplayName(params)
             : getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
           field === 'ods_display_name'
-            ? params.data?.ods_display_name +
-              (params.data?.ods_blend_composition
-                ? ` (${params.data?.ods_blend_composition})`
-                : '')
+            ? getOdsDisplayName(params)
             : getFieldName(params, options, field),
         initialWidth: 140,
         minWidth: 140,

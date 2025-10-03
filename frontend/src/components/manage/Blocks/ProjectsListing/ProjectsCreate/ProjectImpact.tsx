@@ -63,14 +63,14 @@ const ProjectImpact = ({
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <NextButton
-          nextStep={5}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
-        />
-        <NextButton
           nextStep={nextStep}
           nextTab={nextStep - 1}
           type="previous"
+          setCurrentTab={setCurrentTab}
+        />
+        <NextButton
+          nextStep={5}
+          setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
       </div>

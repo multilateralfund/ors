@@ -25,6 +25,7 @@ const PEnterpriseViewWrapper = () => {
   } = useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
+
   const project = useGetProject(project_id)
   const { data: projectData, error: projectError } = project ?? {}
 
@@ -32,8 +33,8 @@ const PEnterpriseViewWrapper = () => {
   const { data, loading, error } = enterprise
 
   if (
-    !canViewEnterprises ||
     !canViewProjects ||
+    !canViewEnterprises ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
@@ -71,19 +72,18 @@ const PEnterpriseViewWrapper = () => {
                   title="Cancel"
                   href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
-                {(canEditProjectEnterprise || canApproveProjectEnterprise) &&
-                  data.status !== 'Obsolete' && (
-                    <CustomLink
-                      className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                      href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
-                      color="secondary"
-                      variant="contained"
-                      size="large"
-                      button
-                    >
-                      Edit project enterprise
-                    </CustomLink>
-                  )}
+                {(canEditProjectEnterprise || canApproveProjectEnterprise) && (
+                  <CustomLink
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                    href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
+                    color="secondary"
+                    variant="contained"
+                    size="large"
+                    button
+                  >
+                    Edit project enterprise
+                  </CustomLink>
+                )}
               </div>
             </div>
             <EnterpriseStatus status={data.status} />

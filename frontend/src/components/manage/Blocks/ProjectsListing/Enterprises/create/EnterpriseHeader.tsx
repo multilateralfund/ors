@@ -27,13 +27,15 @@ const EnterpriseHeader = ({
   const [enterpriseName, setEnterpriseName] = useState(enterprise?.name ?? '')
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
+  const isEdit = mode === 'edit' && !!enterprise
+
   return (
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
           <RedirectBackButton />
           <PageHeading>
-            {mode === 'edit' ? (
+            {isEdit ? (
               <PageTitle
                 pageTitle="Edit enterprise"
                 projectTitle={enterpriseName}
@@ -42,9 +44,7 @@ const EnterpriseHeader = ({
               'New enterprise submission'
             )}
           </PageHeading>
-          {mode === 'edit' && (
-            <EnterpriseStatus status={enterprise?.status ?? ''} />
-          )}
+          {isEdit && <EnterpriseStatus status={enterprise.status} />}
         </div>
         <div
           className={cx('ml-auto flex items-center gap-2.5', {

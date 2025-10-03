@@ -50,6 +50,12 @@ const ProjectDocumentation = ({
       </div>
       {setCurrentStep && nextStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NextButton
+            nextStep={nextStep}
+            nextTab={nextStep - 1}
+            type="previous"
+            setCurrentTab={setCurrentTab}
+          />
           {hasNextButton && (
             <NextButton
               nextStep={6}
@@ -57,12 +63,6 @@ const ProjectDocumentation = ({
               setCurrentTab={setCurrentTab}
             />
           )}
-          <NextButton
-            nextStep={nextStep}
-            nextTab={nextStep - 1}
-            type="previous"
-            setCurrentTab={setCurrentTab}
-          />
         </div>
       )}
     </>
