@@ -1,31 +1,43 @@
+import { useEffect } from 'react'
+
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
-import { canViewField, getDefaultValues, hasFields } from '../utils'
+import {
+  canViewField,
+  formatOptions,
+  getDefaultValues,
+  getFieldData,
+  hasFields,
+} from '../utils'
 import {
   OdsOdpFields,
   SpecificFieldsSectionProps,
   ProjectData,
+  ProjectSpecificFields,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { groupBy } from 'lodash'
+import { find, groupBy } from 'lodash'
 
 const ProjectSubstanceDetails = ({
   projectData,
   setProjectData,
   sectionFields,
+  overviewFields,
   errors = {},
   hasSubmitted,
   odsOdpErrors,
   canEditSubstances,
 }: SpecificFieldsSectionProps & {
+  overviewFields: ProjectSpecificFields[]
   odsOdpErrors: { [key: string]: [] }[]
   canEditSubstances: boolean
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
+  const crtSectionData = projectData[sectionIdentifier] || []
   const odsOdpData = projectData[sectionIdentifier][field] || []
 
   const groupedFields = groupBy(sectionFields, 'table')
@@ -79,6 +91,36 @@ const ProjectSubstanceDetails = ({
     })
   }
 
+  useEffect(() => {
+    const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+    const groupField = getFieldData(overviewFields, 'group')
+
+    if (odsDisplayField && groupField) {
+      const substancesOptions = formatOptions(odsDisplayField, crtSectionData)
+      const hasValidData = odsOdpData.find((data) =>
+        find(
+          substancesOptions,
+          (option) => option.id === data.ods_display_name,
+        ),
+      )
+
+      if (!hasValidData) {
+        setProjectData((prevData) => {
+          return {
+            ...prevData,
+            [sectionIdentifier]: {
+              ...prevData[sectionIdentifier],
+              [field]: odsOdpData.map((data) => ({
+                ...data,
+                ods_display_name: null,
+              })),
+            },
+          }
+        })
+      }
+    }
+  }, [overviewFields, odsOdpFields, crtSectionData.group])
+
   return (
     <div className="flex flex-col gap-y-6">
       {projectFields.map(
@@ -128,6 +170,7 @@ const ProjectSubstanceDetails = ({
                                   sectionIdentifier,
                                   field,
                                   index,
+                                  !!getFieldData(overviewFields, 'group'),
                                 )}
                               </span>
                             ),

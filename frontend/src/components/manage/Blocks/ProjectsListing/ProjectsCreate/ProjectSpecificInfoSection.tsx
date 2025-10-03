@@ -73,7 +73,7 @@ const ProjectSpecificInfoSection = ({
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
-            {...{ odsOdpErrors, canEditSubstances }}
+            {...{ odsOdpErrors, canEditSubstances, overviewFields }}
             {...rest}
           />
         </>

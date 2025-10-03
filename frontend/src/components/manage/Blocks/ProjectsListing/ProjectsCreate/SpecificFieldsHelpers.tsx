@@ -188,8 +188,12 @@ export const AutocompleteWidget = <T,>(
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
+  hasField?: boolean,
 ) => {
-  const options = formatOptions(field)
+  const options = formatOptions(
+    field,
+    hasField ? fields[sectionIdentifier] : undefined,
+  )
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
