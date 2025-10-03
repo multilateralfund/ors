@@ -150,8 +150,6 @@
 | project-enterprise/{id}/                                              | PATCH  | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                                              | DELETE | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/approve                                       | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/{id}/not_approve                                   | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/{id}/obsolete                                      | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/delete                                        | DELETE | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`. Only pending enterprises can be removed if user has no `has_project_enterprise_approval_access`
 | project-enterprise/                                                   | POST   | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-settings/                                                     | GET    | has_project_settings_access              | |
