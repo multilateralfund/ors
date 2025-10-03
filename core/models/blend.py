@@ -14,17 +14,12 @@ class BlendQuerySet(models.QuerySet):
         accepted_substances = (
             Substance.objects.all()
             .filter_project_accepted_substances()
-            .values_list("name", flat=True)
+            .values_list("id", flat=True)
         )
-        blend_list = [
-            b.id
-            for b in self
-            if any(
-                subst_name in (b.composition or "")
-                for subst_name in accepted_substances
-            )
-        ]
-        return self.filter(id__in=blend_list)
+        blend_ids = BlendComponents.objects.filter(
+            substance__in=accepted_substances,
+        ).values_list("blend_id", flat=True)
+        return self.filter(id__in=blend_ids)
 
 
 class BlendManager(models.Manager):
