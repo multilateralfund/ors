@@ -12,6 +12,7 @@ export function useGetEnterpriseStatuses(include_obsolete = true) {
 
   return map(data, (status) => ({
     id: status[0],
+    label: status[1],
     name: status[1],
   }))
 }
