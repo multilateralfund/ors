@@ -232,7 +232,7 @@ class MetaProject(models.Model):
     # END: Task #32217 fields.
 
     def __str__(self):
-        return f"{self.type} {self.pcr_project_id}"
+        return f"{self.new_code}"
 
 
 class ProjectManager(models.Manager):
