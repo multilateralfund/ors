@@ -45,6 +45,8 @@ const ProjectSubstanceDetails = ({
   const odsOdpFields = (groupedFields[field] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+  const groupField = getFieldData(overviewFields, 'group')
 
   const {
     projectFields: allFields,
@@ -92,19 +94,16 @@ const ProjectSubstanceDetails = ({
   }
 
   useEffect(() => {
-    const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
-    const groupField = getFieldData(overviewFields, 'group')
-
     if (odsDisplayField && groupField) {
       const substancesOptions = formatOptions(odsDisplayField, crtSectionData)
-      const hasValidData = odsOdpData.find((data) =>
+      const validData = odsOdpData.find((data) =>
         find(
           substancesOptions,
           (option) => option.id === data.ods_display_name,
         ),
       )
 
-      if (!hasValidData) {
+      if (!validData) {
         setProjectData((prevData) => {
           return {
             ...prevData,
@@ -119,7 +118,7 @@ const ProjectSubstanceDetails = ({
         })
       }
     }
-  }, [overviewFields, odsOdpFields, crtSectionData.group])
+  }, [crtSectionData.group])
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -170,7 +169,7 @@ const ProjectSubstanceDetails = ({
                                   sectionIdentifier,
                                   field,
                                   index,
-                                  !!getFieldData(overviewFields, 'group'),
+                                  !!groupField,
                                 )}
                               </span>
                             ),

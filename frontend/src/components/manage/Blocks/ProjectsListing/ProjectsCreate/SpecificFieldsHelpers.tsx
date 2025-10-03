@@ -201,6 +201,11 @@ export const AutocompleteWidget = <T,>(
     ? find(options, { id: value }) || null
     : value
 
+  const normalizedValue =
+    fieldName === 'ods_display_name'
+      ? options.find((opt) => opt.id === value) || null
+      : formattedValue
+
   return (
     <div
       className={cx('flex h-full flex-col', {
@@ -212,7 +217,7 @@ export const AutocompleteWidget = <T,>(
         widget="autocomplete"
         options={options}
         disabled={!canEditField(editableFields, fieldName)}
-        value={formattedValue}
+        value={normalizedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
