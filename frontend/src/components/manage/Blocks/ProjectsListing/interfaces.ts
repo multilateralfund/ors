@@ -198,6 +198,7 @@ export type ViewModesHandler = (
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
   fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {

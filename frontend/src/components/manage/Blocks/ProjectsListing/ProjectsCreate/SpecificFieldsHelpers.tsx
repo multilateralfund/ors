@@ -381,13 +381,19 @@ const NumberWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <SimpleInput
         id={fieldName}
         value={value ?? ''}
@@ -434,9 +440,15 @@ const BooleanWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div className="col-span-full flex w-full">
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Checkbox
         className="pb-1 pl-2 pt-0"
         checked={Boolean(value)}

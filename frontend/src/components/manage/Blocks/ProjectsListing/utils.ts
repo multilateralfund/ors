@@ -411,7 +411,9 @@ const getFieldErrors = (
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
       ? ['title', 'project_type', 'sector'].includes(field) ||
         project?.submission_status !== 'Draft'
-        ? ['This field is required.']
+        ? field.includes('_actual')
+          ? ['This field is not completed.']
+          : ['This field is required.']
         : ['This field is required for submission.']
       : []
 
