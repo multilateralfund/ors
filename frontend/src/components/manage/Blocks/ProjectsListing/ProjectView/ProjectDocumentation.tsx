@@ -1,5 +1,5 @@
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { FilesViewer } from './FilesViewer'
 import {
   ProjectFile,
@@ -15,18 +15,19 @@ const ProjectDocumentation = ({
   mode,
   project,
   loadedFiles,
-  setCurrentStep,
   setCurrentTab,
-  hasNextButton,
   nextStep,
+  hasNextStep,
+  isNextButtonDisabled,
 }: ProjectFiles &
   ProjectTabSetters & {
     projectFiles?: ProjectFile[]
     mode: string
-    hasNextButton?: boolean
     project?: ProjectTypeApi
     loadedFiles?: boolean
     nextStep?: number
+    hasNextStep?: boolean
+    isNextButtonDisabled?: boolean
   }) => {
   return (
     <>
@@ -48,19 +49,17 @@ const ProjectDocumentation = ({
           />
         )}
       </div>
-      {setCurrentStep && nextStep && (
+      {setCurrentTab && nextStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NextButton
-            nextStep={nextStep}
+          <NavigationButton
             nextTab={nextStep - 1}
             type="previous"
-            setCurrentTab={setCurrentTab}
+            {...{ nextStep, setCurrentTab }}
           />
-          {hasNextButton && (
-            <NextButton
-              nextStep={6}
-              setCurrentStep={setCurrentStep}
-              setCurrentTab={setCurrentTab}
+          {hasNextStep && (
+            <NavigationButton
+              isBtnDisabled={isNextButtonDisabled}
+              {...{ setCurrentTab }}
             />
           )}
         </div>

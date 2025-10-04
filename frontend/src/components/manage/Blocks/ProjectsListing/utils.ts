@@ -43,10 +43,13 @@ import {
 } from 'ag-grid-community'
 import dayjs from 'dayjs'
 
-const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
+const getFieldId = <T>(
+  field: ProjectSpecificFields,
+  data: T,
+  projectData?: ProjectTypeApi,
+) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
-
-  return find(formatOptions(field), {
+  return find(formatOptions(field, projectData), {
     [fieldName]: data[field.read_field_name as keyof T]?.toString(),
   })?.id
 }
@@ -54,6 +57,7 @@ const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
+  projectData?: ProjectTypeApi,
 ) =>
   reduce(
     fields,
@@ -64,7 +68,7 @@ export const getDefaultValues = <T>(
       if (data) {
         acc[fieldName] =
           dataType === 'drop_down'
-            ? getFieldId<T>(field, data)
+            ? getFieldId<T>(field, data, projectData)
             : dataType === 'boolean'
               ? (data[fieldName] ?? false)
               : data[fieldName]
@@ -101,13 +105,28 @@ export const getIsSaveDisabled = (
   )
 }
 
-export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
+const filterSubstancesOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.group_id === group_id)
+const filterBlendsOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.substance_groups.includes(group_id))
+
+export const formatOptions = (
+  field: ProjectSpecificFields,
+  data?: any,
+): OptionsType[] => {
   const options = field.options as
     | OptionsType[]
     | Record<'substances' | 'blends', (OptionsType & { composition: string })[]>
 
+  const groupValue = data ? data.group_id || data.group : null
+
   return field.write_field_name === 'ods_display_name' && !isArray(options)
-    ? concat(options.substances, options.blends).map((option) => {
+    ? concat(
+        data
+          ? filterSubstancesOptions(options.substances, groupValue)
+          : options.substances,
+        data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
+      ).map((option) => {
         return {
           ...option,
           id: `${option.baseline_type}-${option.id}`,
@@ -392,7 +411,9 @@ const getFieldErrors = (
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
       ? ['title', 'project_type', 'sector'].includes(field) ||
         project?.submission_status !== 'Draft'
-        ? ['This field is required.']
+        ? field.includes('_actual')
+          ? ['This field is not completed.']
+          : ['This field is required.']
         : ['This field is required for submission.']
       : []
 
@@ -820,3 +841,8 @@ export const formatEntity = (currentEntity: any = [], field: string = 'id') =>
   new Map<number, any>(
     currentEntity.map((entity: any) => [entity[field], entity]),
   )
+
+export const getFieldData = (
+  data: ProjectSpecificFields[],
+  fieldName: string,
+) => find(data, (field) => field.write_field_name === fieldName)

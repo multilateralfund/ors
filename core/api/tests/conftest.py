@@ -502,6 +502,11 @@ def blend(excluded_usage, time_frames):
 
 
 @pytest.fixture
+def blend_component(blend, substance_hcfc):
+    blend.components.create(substance=substance_hcfc, percentage=0.5)
+
+
+@pytest.fixture
 def project_type():
     return ProjectTypeFactory.create(name="Project Type", code="PT", sort_order=1)
 

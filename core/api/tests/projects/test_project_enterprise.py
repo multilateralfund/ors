@@ -283,6 +283,7 @@ class TestCreateProjectEnterprise:
         agency,
     ):
         blend.composition = f"{substance.name}: 100%"
+        blend.components.create(substance=substance, percentage=0.2)
         blend.save()
         return {
             "project": project.id,
@@ -397,6 +398,7 @@ class TestUpdateProjectEnterprise:
         ods_odp = enterprise.ods_odp.first()
         blend.composition = f"{substance_hcfc.name}: 100%"
         blend.save()
+        blend.components.create(substance=substance_hcfc, percentage=0.5)
         return {
             "id": enterprise.id,
             "project": project.id,

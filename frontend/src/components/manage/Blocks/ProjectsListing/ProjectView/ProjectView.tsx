@@ -265,7 +265,7 @@ const ProjectView = ({
           {
             id: 'project-history-section',
             label: 'History',
-            component: <ProjectHistory mode="view" project={project} />,
+            component: <ProjectHistory project={project} />,
           },
         ]
       : []),

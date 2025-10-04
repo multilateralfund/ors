@@ -7,7 +7,7 @@ import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEd
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { SectionTitle } from './ProjectsCreate'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import {
   canEditField,
   canGoToSecondStep,
@@ -472,18 +472,15 @@ const ProjectCrossCuttingFields = ({
         </>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
+        <NavigationButton
           nextStep={1}
           type="previous"
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
+          {...{ setCurrentStep, setCurrentTab }}
         />
-        <NextButton
-          nextStep={nextStep}
+        <NavigationButton
           nextTab={nextStep - 1}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextDisabled}
+          {...{ nextStep, setCurrentStep, setCurrentTab }}
         />
       </div>
     </>

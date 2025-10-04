@@ -91,6 +91,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
     excluded_usages = serializers.SerializerMethodField()
     composition = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
+    substance_groups = serializers.SerializerMethodField()
     components = serializers.SerializerMethodField()
     sections = serializers.SerializerMethodField()
     chemical_note = serializers.SerializerMethodField()
@@ -116,6 +117,7 @@ class BlendSerializer(ChemicalsBaseSerializer):
             "chemical_note",
             "is_legacy",
             "remarks",
+            "substance_groups",
         ]
 
     def get_composition(self, obj):
@@ -144,6 +146,16 @@ class BlendSerializer(ChemicalsBaseSerializer):
                 }
             )
         return components
+
+    def get_substance_groups(self, obj):
+        """
+        get the groups from the substances in the blend components
+        """
+        groups = set()
+        for c in obj.components.all():
+            if c.substance and c.substance.group:
+                groups.add(c.substance.group.id)
+        return list(groups)
 
     def get_group(self, obj):
         if obj.is_related_preblended_polyol:

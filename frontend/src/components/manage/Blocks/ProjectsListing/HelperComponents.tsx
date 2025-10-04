@@ -127,7 +127,7 @@ export const CancelButton = ({ onClick }: { onClick: any }) => (
   </Button>
 )
 
-export const NextButton = ({
+export const NavigationButton = ({
   nextStep,
   nextTab,
   setCurrentStep,
@@ -135,13 +135,13 @@ export const NextButton = ({
   type = 'next',
   isBtnDisabled = false,
 }: ProjectTabSetters & {
-  nextStep: number
+  nextStep?: number
   nextTab?: number
   type?: string
   isBtnDisabled?: boolean
 }) => {
   const moveToNextStep = () => {
-    if (setCurrentStep) {
+    if (nextStep && setCurrentStep) {
       setCurrentStep(nextStep)
     }
 
@@ -153,10 +153,10 @@ export const NextButton = ({
 
   return (
     <Button
-      className={cx('h-8 px-3 py-1 leading-none', {
-        'border border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+      className={cx('h-8 border px-3 py-1 leading-none', {
+        'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
           type === 'next' && !isBtnDisabled,
-        'border border-solid border-primary bg-white text-primary':
+        'border-solid border-primary bg-white text-primary':
           type === 'previous',
       })}
       disabled={isBtnDisabled}

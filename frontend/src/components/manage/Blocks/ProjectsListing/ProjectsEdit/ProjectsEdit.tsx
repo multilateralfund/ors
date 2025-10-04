@@ -10,6 +10,7 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
   getDefaultValues,
+  getFieldData,
   getFileFromMetadata,
   getNonFieldErrors,
   hasSpecificField,
@@ -315,7 +316,13 @@ const ProjectsEdit = ({
                 ...getDefaultValues<ProjectTypeApi>(projectFields, project),
                 ods_odp: map(project.ods_odp, (ods) => {
                   return {
-                    ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
+                    ...getDefaultValues<OdsOdpFields>(
+                      odsOdpFields,
+                      ods,
+                      getFieldData(specificFields, 'group')
+                        ? project
+                        : undefined,
+                    ),
                   }
                 }),
               },

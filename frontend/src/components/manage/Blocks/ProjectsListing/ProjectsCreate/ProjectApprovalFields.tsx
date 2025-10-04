@@ -7,8 +7,8 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
+import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
 import { canEditField, canViewField } from '../utils'
 import {
   ProjectData,
@@ -42,7 +42,6 @@ const ProjectApprovalFields = ({
   errors = {},
   hasSubmitted,
   sectionFields,
-  setCurrentStep,
   setCurrentTab,
 }: SpecificFieldsSectionProps & ProjectTabSetters) => {
   const sectionIdentifier = 'approvalFields'
@@ -194,11 +193,8 @@ const ProjectApprovalFields = ({
           })}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={5}
-          type="previous"
-          setCurrentTab={setCurrentTab}
-        />
+        <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
+        <NavigationButton {...{ setCurrentTab }} />
       </div>
     </>
   )

@@ -97,7 +97,7 @@ export interface SpecificFields {
 }
 
 export type OdsOdpFields = {
-  ods_display_name: string
+  ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -198,6 +198,7 @@ export type ViewModesHandler = (
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
   fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {
