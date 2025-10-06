@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react'
+import React, { ChangeEvent, useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
@@ -19,11 +19,22 @@ import {
   defaultPropsSimpleField,
   disabledClassName,
   tableColumns,
+  defaultProps,
 } from '../constants'
 import { useStore } from '@ors/store'
 import { parseNumber } from '@ors/helpers'
 
 import cx from 'classnames'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
+import { map } from 'lodash'
+import Field from '@ors/components/manage/Form/Field.tsx'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
+
+type DecisionOption = {
+  name: string
+  value: number
+}
 
 const ProjectApprovalFields = ({
   projectData,
@@ -40,6 +51,21 @@ const ProjectApprovalFields = ({
     (state) => state.projectFields,
   )
   const canEditMeeting = canEditField(editableFields, 'meeting_approved')
+
+  const decisionsApi = useApi<ApiDecision[]>({
+    path: 'api/decisions',
+    options: {
+      triggerIf: !!crtSectionData?.meeting_approved,
+      params: {
+        meeting_id: crtSectionData?.meeting_approved,
+      },
+    },
+  })
+
+  const decisionOptions = useMemo(() => {
+    const data = decisionsApi.data ?? ([] as ApiDecision[])
+    return map(data, (d) => ({ name: d.number, value: d.id }))
+  }, [decisionsApi.data])
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
     hasSubmitted && errors[field]?.length > 0
@@ -64,13 +90,19 @@ const ProjectApprovalFields = ({
         meeting_approved: parseNumber(meeting),
       },
     }))
+    decisionsApi.setParams({ meeting_id: meeting })
+    decisionsApi.setApiSettings((prev) => ({
+      ...prev,
+      options: { ...prev.options, triggerIf: !!meeting },
+    }))
   }
 
-  const handleChangeDecision = (event: ChangeEvent<HTMLInputElement>) => {
-    const initialValue = event.target.value
+  const handleChangeDecision = (option: DecisionOption | string | null) => {
+    const initialValue =
+      typeof option === 'string' ? option : (option?.value.toString() ?? '')
 
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
-      const finalVal = initialValue ? parseInt(initialValue).toString() : null
+      const finalVal = initialValue ? parseInt(initialValue) : null
 
       setProjectData((prevData) => ({
         ...prevData,
@@ -79,8 +111,6 @@ const ProjectApprovalFields = ({
           decision: finalVal,
         },
       }))
-    } else {
-      event.preventDefault()
     }
   }
 
@@ -108,15 +138,25 @@ const ProjectApprovalFields = ({
           </div>
         )}
         {canViewField(viewableFields, 'decision') && (
-          <div>
+          <div className="w-[16rem]">
             <Label>{tableColumns.decision}</Label>
-            <SimpleInput
-              id="Decision"
-              value={crtSectionData.decision ?? ''}
-              onChange={handleChangeDecision}
+            <Field<any>
+              widget="autocomplete"
+              options={decisionOptions}
               disabled={!canEditField(editableFields, 'decision')}
-              type="text"
-              {...getFieldDefaultProps('decision')}
+              value={crtSectionData.decision ?? ''}
+              onChange={(_, value) =>
+                handleChangeDecision(value as DecisionOption)
+              }
+              getOptionLabel={(option) => {
+                return getOptionLabel(decisionOptions, option, 'value')
+              }}
+              {...{
+                ...defaultProps,
+                FieldProps: {
+                  className: defaultProps.FieldProps.className + ' w-[16rem]',
+                },
+              }}
             />
           </div>
         )}

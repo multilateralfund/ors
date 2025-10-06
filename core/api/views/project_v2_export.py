@@ -617,7 +617,7 @@ class ProjectsV2ProjectExportDocx:
                 fields=self._get_fields_for_section(
                     project_specific_fields_obj,
                     "Impact",
-                    # is_actual=False,
+                    is_actual=False,
                 ),
                 data=data,
             )

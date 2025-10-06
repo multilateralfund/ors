@@ -210,7 +210,9 @@ class BlendsListView(ChemicalBaseListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         # do not list legacy blends
-        queryset = queryset.exclude(is_legacy=True)
+        queryset = queryset.exclude(is_legacy=True).prefetch_related(
+            "components__substance__group",
+        )
 
         return queryset.order_by("sort_order")
 

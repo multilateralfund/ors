@@ -92,7 +92,7 @@ export interface SpecificFields {
   number_of_enterprises_assisted: string
   meeting: number | null
   meeting_approved: number | null
-  decision: string | null
+  decision: number | null
   decision_id: string | null
 }
 

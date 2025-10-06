@@ -95,15 +95,16 @@ const ProjectIdentifiersFields = ({
     canEditField(editableFields, 'meeting')
 
   const decisionsApi = useApi<ApiDecision[]>({
-    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    path: 'api/decisions',
     options: {
+      triggerIf: !!projIdentifiers?.post_excom_meeting,
       params: {
         meeting_id: projIdentifiers?.post_excom_meeting,
       },
     },
   })
 
-  const decisions = useMemo(() => {
+  const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
@@ -201,6 +202,10 @@ const ProjectIdentifiersFields = ({
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
+    decisionsApi.setApiSettings((prev) => ({
+      ...prev,
+      options: { ...prev.options, triggerIf: !!meeting },
+    }))
   }
 
   const handleChangePostExComDecision = (
@@ -262,13 +267,13 @@ const ProjectIdentifiersFields = ({
                 <Label htmlFor="postExComDecision">Decision</Label>
                 <Field<any>
                   widget="autocomplete"
-                  options={decisions}
+                  options={decisionOptions}
                   value={projIdentifiers?.post_excom_decision ?? ''}
                   onChange={(_, value) =>
                     handleChangePostExComDecision(value as DecisionOption)
                   }
                   getOptionLabel={(option) => {
-                    return getOptionLabel(decisions, option, 'value')
+                    return getOptionLabel(decisionOptions, option, 'value')
                   }}
                   {...sectionDefaultProps}
                 />
