@@ -81,6 +81,7 @@ const ExpandableMenu = ({
       >
         {menuItems.map(({ url, title, disabled }, index) => (
           <div
+            key={`${index}-${index}`}
             className={cx({
               'border-0 border-b-[3px] border-solid border-b-[#62BAF2]':
                 index !== menuItems.length - 1,
