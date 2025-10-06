@@ -212,7 +212,7 @@ const ProjectsCreate = ({
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
   const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
-    key.includes('(actual)') && value[0].includes('not completed')
+    key.includes('(actual)') && value?.[0]?.includes('not completed')
 
   const impactPlannedErrors = Object.fromEntries(
     Object.entries(impactErrors).filter((error) => !isActualFieldEmpty(error)),
@@ -572,7 +572,10 @@ const ProjectsCreate = ({
             id: 'project-related-projects-section',
             label: 'Related projects',
             component: (
-              <ProjectRelatedProjects {...{ relatedProjects, setCurrentTab }} />
+              <ProjectRelatedProjects
+                {...{ relatedProjects }}
+                {...(mode === 'edit' && { setCurrentTab })}
+              />
             ),
           },
         ]
@@ -587,7 +590,12 @@ const ProjectsCreate = ({
               </div>
             ),
             disabled: false,
-            component: <ProjectHistory {...{ project, setCurrentTab }} />,
+            component: (
+              <ProjectHistory
+                {...{ project }}
+                {...(mode === 'edit' && { setCurrentTab })}
+              />
+            ),
           },
         ]
       : []),

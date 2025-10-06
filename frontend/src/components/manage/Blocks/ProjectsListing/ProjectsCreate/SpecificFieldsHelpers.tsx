@@ -206,13 +206,18 @@ export const AutocompleteWidget = <T,>(
       ? options.find((opt) => opt.id === value) || null
       : formattedValue
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Field
         widget="autocomplete"
         options={options}

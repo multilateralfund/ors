@@ -42,7 +42,7 @@ export const detailItem = (
         {fieldName}
         {isDisabledImpactField ? ' (planned)' : ''}
       </span>
-      <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
+      <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
       <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
     </span>
   )
@@ -135,7 +135,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       isDisabledImpactField,
     )
   },
-  drop_down: (data, field, _, fieldHistory) => {
+  drop_down: (data, field, _, fieldHistory, hasActualFields) => {
     const readFieldName = field.read_field_name
     const updatedFieldName =
       readFieldName === 'decision' ? 'decision_id' : readFieldName
@@ -145,7 +145,13 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       ? find(field.options, { id: data[field.write_field_name] })?.name || '-'
       : value
 
-    return detailItem(field.label, formattedValue, { fieldHistory })
+    const isDisabledImpactField =
+      field.section === 'Impact' && hasActualFields && !field.is_actual
+
+    return detailItem(field.label, formattedValue, {
+      fieldHistory,
+      isDisabledImpactField,
+    })
   },
   boolean: (data, field, _, fieldHistory, hasActualFields) => {
     const className =

@@ -472,11 +472,7 @@ const ProjectCrossCuttingFields = ({
         </>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NavigationButton
-          nextStep={1}
-          type="previous"
-          {...{ setCurrentStep, setCurrentTab }}
-        />
+        <NavigationButton type="previous" {...{ setCurrentTab }} />
         <NavigationButton
           nextTab={nextStep - 1}
           isBtnDisabled={isNextDisabled}

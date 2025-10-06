@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canViewField } from '../utils'
@@ -53,38 +55,38 @@ const ProjectImpact = ({
     )
   })
 
-  const ImpactFields = ({ fields }: { fields: ProjectSpecificFields[] }) =>
-    fields.map(
-      (field) =>
-        canViewField(viewableFields, field.write_field_name) &&
-        widgets[field.data_type]<ProjectData>(
-          projectData,
-          setProjectData,
-          field,
-          errors,
-          false,
-          hasSubmitted,
-          filteredEditableFields,
-        ),
-    )
+  const ImpactFields = useMemo(() => {
+    return (fields: ProjectSpecificFields[]) =>
+      fields.map(
+        (field) =>
+          canViewField(viewableFields, field.write_field_name) &&
+          widgets[field.data_type]<ProjectData>(
+            projectData,
+            setProjectData,
+            field,
+            errors,
+            false,
+            hasSubmitted,
+            filteredEditableFields,
+          ),
+      )
+  }, [filteredEditableFields])
 
   return (
     <>
       <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-3 md:grid">
-        {find(sectionFields, (field) => field.is_actual) ? (
-          chunk(sectionFields, 2).map((group, i) => (
-            <div
-              key={i}
-              className={cx('flex flex-col gap-y-3', {
-                'col-span-2 w-full': group[0].data_type === 'boolean',
-              })}
-            >
-              <ImpactFields fields={group} />
-            </div>
-          ))
-        ) : (
-          <ImpactFields fields={sectionFields} />
-        )}
+        {find(sectionFields, (field) => field.is_actual)
+          ? chunk(sectionFields, 2).map((group, i) => (
+              <div
+                key={i}
+                className={cx('flex flex-col gap-y-3', {
+                  'col-span-2 w-full': group[0].data_type === 'boolean',
+                })}
+              >
+                {ImpactFields(group)}
+              </div>
+            ))
+          : ImpactFields(sectionFields)}
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2.5">

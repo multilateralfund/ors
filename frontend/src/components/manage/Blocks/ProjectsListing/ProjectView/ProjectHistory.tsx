@@ -83,9 +83,11 @@ const ProjectHistory = ({
         <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
         <div className="">{renderedHistory}</div>
       </div>
-      <div className="mt-5">
-        <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
-      </div>
+      {setCurrentTab && (
+        <div className="mt-5">
+          <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
+        </div>
+      )}
     </>
   )
 }
