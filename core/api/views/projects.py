@@ -15,7 +15,6 @@ from rest_framework import status
 
 from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
-from core.api.permissions import HasMetaProjectsEditAccess
 
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
