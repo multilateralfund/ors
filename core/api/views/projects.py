@@ -164,7 +164,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     List meta projects available for MYA update.
     """
 
-    permission_classes = [HasMetaProjectsViewAccess]
+    permission_classes = [HasMetaProjectsEditAccess]
     serializer_class = MetaProjecMyaSerializer
     filterset_class = MetaProjectMyaFilter
 

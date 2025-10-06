@@ -89,14 +89,14 @@ class TestListProjectEnterprise(BaseTest):
         enterprise1.save()
         # test for different user roles
         _test_user(user, 403)
-        _test_user(viewer_user, 200, response_count=1)
-        _test_user(agency_user, 200, response_count=1)
-        _test_user(agency_inputter_user, 200, response_count=1)
-        _test_user(secretariat_viewer_user, 200, response_count=1)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=1)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=1)
-        _test_user(secretariat_v3_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v3_edit_access_user, 200, response_count=3)
+        _test_user(viewer_user, 403, response_count=1)
+        _test_user(agency_user, 403, response_count=1)
+        _test_user(agency_inputter_user, 403, response_count=1)
+        _test_user(secretariat_viewer_user, 403, response_count=1)
+        _test_user(secretariat_v1_v2_edit_access_user, 403, response_count=1)
+        _test_user(secretariat_production_v1_v2_edit_access_user, 403, response_count=1)
+        _test_user(secretariat_v3_edit_access_user, 403, response_count=1)
+        _test_user(secretariat_production_v3_edit_access_user, 403, response_count=1)
         _test_user(mlfs_admin_user, 200, response_count=3)
         _test_user(admin_user, 200, response_count=3)
 
@@ -220,26 +220,26 @@ class TestProjectRetrieveProjectEnterprise:
         _test_user(user, 403, project_enterprise1)
         _test_user(user, 403, project_enterprise2)
 
-        _test_user(viewer_user, 200, project_enterprise1)
+        _test_user(viewer_user, 403, project_enterprise1)
         _test_user(
-            viewer_user, 404, project_enterprise2
+            viewer_user, 403, project_enterprise2
         )  # viewer_user has no access to project2
-        _test_user(agency_user, 200, project_enterprise1)
+        _test_user(agency_user, 403, project_enterprise1)
         _test_user(
-            agency_user, 404, project_enterprise2
+            agency_user, 403, project_enterprise2
         )  # agency_user has no access to project2
-        _test_user(agency_inputter_user, 200, project_enterprise1)
+        _test_user(agency_inputter_user, 403, project_enterprise1)
         _test_user(
-            agency_inputter_user, 404, project_enterprise2
+            agency_inputter_user, 403, project_enterprise2
         )  # agency_inputter_user has no access to project2
 
-        _test_user(secretariat_viewer_user, 404, project_enterprise2)
-        _test_user(secretariat_v1_v2_edit_access_user, 404, project_enterprise2)
+        _test_user(secretariat_viewer_user, 403, project_enterprise2)
+        _test_user(secretariat_v1_v2_edit_access_user, 403, project_enterprise2)
         _test_user(
-            secretariat_production_v1_v2_edit_access_user, 404, project_enterprise2
+            secretariat_production_v1_v2_edit_access_user, 403, project_enterprise2
         )
-        _test_user(secretariat_v3_edit_access_user, 200, project_enterprise2)
-        _test_user(secretariat_production_v3_edit_access_user, 200, project_enterprise2)
+        _test_user(secretariat_v3_edit_access_user, 403, project_enterprise2)
+        _test_user(secretariat_production_v3_edit_access_user, 403, project_enterprise2)
         _test_user(mlfs_admin_user, 200, project_enterprise2)
         _test_user(admin_user, 200, project_enterprise2)
 
@@ -356,8 +356,8 @@ class TestCreateProjectEnterprise:
         _test_user(secretariat_v1_v2_edit_access_user, 403, data)
         _test_user(secretariat_production_v1_v2_edit_access_user, 403, data)
 
-        _test_user(secretariat_v3_edit_access_user, 201, data)
-        _test_user(secretariat_production_v3_edit_access_user, 201, data)
+        _test_user(secretariat_v3_edit_access_user, 403, data)
+        _test_user(secretariat_production_v3_edit_access_user, 403, data)
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
@@ -478,8 +478,8 @@ class TestUpdateProjectEnterprise:
             secretariat_production_v1_v2_edit_access_user, 403, enterprise1, data
         )
 
-        _test_user(secretariat_v3_edit_access_user, 200, enterprise1, data)
-        _test_user(secretariat_production_v3_edit_access_user, 200, enterprise1, data)
+        _test_user(secretariat_v3_edit_access_user, 403, enterprise1, data)
+        _test_user(secretariat_production_v3_edit_access_user, 403, enterprise1, data)
         _test_user(mlfs_admin_user, 200, enterprise1, data)
         _test_user(admin_user, 200, enterprise1, data)
 
@@ -567,8 +567,8 @@ class TestProjectEnterpriseApproval:
         _test_user(secretariat_v1_v2_edit_access_user, 403, url)
         _test_user(secretariat_production_v1_v2_edit_access_user, 403, url)
 
-        _test_user(secretariat_v3_edit_access_user, 200, url)
-        _test_user(secretariat_production_v3_edit_access_user, 200, url)
+        _test_user(secretariat_v3_edit_access_user, 403, url)
+        _test_user(secretariat_production_v3_edit_access_user, 403, url)
         _test_user(mlfs_admin_user, 200, url)
         _test_user(admin_user, 200, url)
 

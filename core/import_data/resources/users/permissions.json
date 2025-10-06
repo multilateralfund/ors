@@ -126,6 +126,18 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_edit_post_excom",
+        "permission_name": "Has project v2 edit post excom access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_mya_access",
+        "permission_name": "Has project v2 manage MYA access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_project_v2_edit_approved_access",
         "permission_name": "Has project v2 edit approved access",
         "app_label": "core",

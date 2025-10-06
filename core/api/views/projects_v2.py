@@ -285,7 +285,11 @@ class ProjectV2ViewSet(
                 limit_to_draft = False
                 allowed_versions.update([1, 2])
 
-            if user.has_perm("core.has_project_v2_version3_edit_access"):
+            if user.has_perm("core.has_project_v2_version3_edit_access") or (
+                self.action == "update"
+                and self.request.data.get("post-excom-update", False)
+                and user.has_perm("has_project_v2_edit_post_excom")
+            ):
                 limit_to_draft = False
                 allowed_versions.add(3)
 
@@ -314,6 +318,13 @@ class ProjectV2ViewSet(
             queryset_filters &= version_filters
 
             queryset = queryset.filter(queryset_filters)
+
+            if (
+                self.action == "update"
+                and self.request.data.get("post-excom-update", False)
+                and not user.has_perm("has_project_v2_edit_post_excom")
+            ):
+                return queryset.none()
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
