@@ -5,13 +5,15 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import {
-  sectionColDefById,
+  sectionColDefByIdFunc,
   sectionColGroupDefById,
   sectionDefaultColDef,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -29,44 +31,71 @@ function useGridOptions() {
         headerClass: 'ag-text-left',
         headerName: 'Substance',
       },
-      {
-        ...sectionColDefById['all_uses'],
-        cellClass: 'ag-text-center px-0',
-        dataType: 'number_diff',
-        field: 'all_uses',
-        headerName: 'Total production for all uses',
-        orsAggFunc: 'sumTotal',
-      },
-      {
-        ...sectionColDefById['feedstock'],
-        cellClass: 'ag-text-center px-0',
-        dataType: 'number_diff',
-        field: 'feedstock',
-        headerName: 'Production for feedstock uses within your country',
-        orsAggFunc: 'sumTotal',
-      },
-      {
-        children: [
-          {
+      model === 'V'
+        ? {
+            ...sectionColDefById['all_uses'],
+            cellClass: 'ag-text-center px-0',
             dataType: 'number_diff',
-            field: 'other_uses_quantity',
-            headerName: 'Quantity',
+            field: 'all_uses',
+            headerName: 'Total production for all uses',
+            orsAggFunc: 'sumTotal',
+          }
+        : {
+            ...sectionColDefById['all_uses'],
+            cellClass: 'ag-text-center px-0',
+            dataType: 'number_diff',
+            field: 'all_uses',
+            headerName: 'Captured for all uses',
             orsAggFunc: 'sumTotal',
           },
-          {
-            field: 'other_uses_remarks',
-            headerName: 'Decision / type of use or remarks',
-            ...colDefById['remarks'],
-            dataType: 'text_diff',
+      model === 'V'
+        ? {
+            ...sectionColDefById['feedstock'],
+            cellClass: 'ag-text-center px-0',
+            dataType: 'number_diff',
+            field: 'feedstock',
+            headerName: 'Production for feedstock uses within your country',
+            orsAggFunc: 'sumTotal',
+          }
+        : {
+            ...sectionColDefById['feedstock'],
+            cellClass: 'ag-text-center px-0',
+            dataType: 'number_diff',
+            field: 'feedstock',
+            headerName: 'Captured for feedstock uses within your country',
+            orsAggFunc: 'sumTotal',
           },
-        ],
-        groupId: 'other_uses',
-        headerGroupComponent: 'agColumnHeaderGroup',
-        headerName:
-          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
-        marryChildren: true,
-        ...sectionColGroupDefById['other_uses'],
-      },
+      model === 'V'
+        ? {
+            children: [
+              {
+                dataType: 'number_diff',
+                field: 'other_uses_quantity',
+                headerName: 'Quantity',
+                orsAggFunc: 'sumTotal',
+              },
+              {
+                field: 'other_uses_remarks',
+                headerName: 'Decision / type of use or remarks',
+                ...colDefById['remarks'],
+                dataType: 'text_diff',
+              },
+            ],
+            groupId: 'other_uses',
+            headerGroupComponent: 'agColumnHeaderGroup',
+            headerName:
+              'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
+            marryChildren: true,
+            ...sectionColGroupDefById['other_uses'],
+          }
+        : {
+            ...sectionColDefById['destruction'],
+            cellClass: 'ag-text-center px-0',
+            dataType: 'number_diff',
+            field: 'destruction',
+            headerName: 'Captured for destruction',
+            orsAggFunc: 'sumTotal',
+          },
     ],
     defaultColDef: {
       ...sectionDefaultColDef,

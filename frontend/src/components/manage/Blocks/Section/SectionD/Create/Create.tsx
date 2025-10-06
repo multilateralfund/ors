@@ -14,9 +14,9 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionDCreate(props: SectionDCreateProps) {
-  const { TableProps, form, setForm } = props
+  const { TableProps, form, setForm, variant } = props
   const grid = useRef<AgGridReact>()
-  const gridOptions = useGridOptions()
+  const gridOptions = useGridOptions({ model: variant.model })
   const [initialRowData] = useState(form.section_d)
 
   return (
@@ -26,7 +26,15 @@ export default function SectionDCreate(props: SectionDCreateProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        <Footnotes />
+        {variant.model === 'V' ? (
+          <Footnotes />
+        ) : (
+          <Footnote id="" index="">
+            Data in Section D should be provided (if applicable) even if
+            breakdown in Section E by enterprises are not reported as reporting
+            under Section E is voluntary for the shaded column
+          </Footnote>
+        )}
       </Alert>
       <Table
         {...TableProps}
