@@ -206,9 +206,21 @@ const ProjectsCreate = ({
       ),
     [projectSpecificFields, specificFields, errors, mode, project],
   )
+
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
+
+  const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
+    key.includes('(actual)') && value?.[0]?.includes('not completed')
+
+  const impactPlannedErrors = Object.fromEntries(
+    Object.entries(impactErrors).filter((error) => !isActualFieldEmpty(error)),
+  )
+  const impactActualErrors = Object.fromEntries(
+    Object.entries(impactErrors).filter((error) => isActualFieldEmpty(error)),
+  )
+
   const { errorText, isError } = trancheErrors || {}
 
   const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
@@ -454,14 +466,14 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            setCurrentStep,
             setCurrentTab,
             postExComUpdate,
           }}
           nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />
       ),
-      errors: formatErrors(impactErrors),
+      errors: formatErrors(impactPlannedErrors),
+      actualFieldsErrors: formatErrors(impactActualErrors),
     },
     {
       id: 'project-documentation-section',
@@ -486,12 +498,14 @@ const ProjectsCreate = ({
             mode,
             project,
             loadedFiles,
-            setCurrentStep,
             setCurrentTab,
           }}
-          hasNextButton={!!isApprovalTabAvailable && !isApprovalTabDisabled}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
+          hasNextStep={mode === 'edit'}
+          isNextButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
           {...rest}
         />
@@ -543,7 +557,6 @@ const ProjectsCreate = ({
                   projectData,
                   setProjectData,
                   hasSubmitted,
-                  setCurrentStep,
                   setCurrentTab,
                 }}
                 errors={approvalErrors}
@@ -558,7 +571,12 @@ const ProjectsCreate = ({
           {
             id: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            component: (
+              <ProjectRelatedProjects
+                {...{ relatedProjects }}
+                {...(mode === 'edit' && { setCurrentTab })}
+              />
+            ),
           },
         ]
       : []),
@@ -572,7 +590,12 @@ const ProjectsCreate = ({
               </div>
             ),
             disabled: false,
-            component: <ProjectHistory mode={mode} project={project} />,
+            component: (
+              <ProjectHistory
+                {...{ project }}
+                {...(mode === 'edit' && { setCurrentTab })}
+              />
+            ),
           },
         ]
       : []),
@@ -612,7 +635,7 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ id, component, errors }) => {
+          .map(({ id, component, errors, actualFieldsErrors }) => {
             return (
               <span key={id}>
                 {mode === 'edit' &&
@@ -665,6 +688,25 @@ const ProjectsCreate = ({
                           </div>
                         </Typography>
                       </>
+                    }
+                  />
+                )}
+                {actualFieldsErrors && actualFieldsErrors.length > 0 && (
+                  <CustomAlert
+                    type="info"
+                    alertClassName="mb-5"
+                    content={
+                      <Typography>
+                        <div className="flex flex-col gap-y-3">
+                          {actualFieldsErrors.map((err, idx) =>
+                            err ? (
+                              <div key={idx}>
+                                {'\u2022'} {err.message}
+                              </div>
+                            ) : null,
+                          )}
+                        </div>
+                      </Typography>
                     }
                   />
                 )}

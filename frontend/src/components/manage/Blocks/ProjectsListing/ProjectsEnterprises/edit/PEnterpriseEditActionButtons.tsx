@@ -68,6 +68,11 @@ const PEnterpriseEditActionButtons = ({
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)
 
+      if (isPending && overview.linkStatus === 'Approved') {
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+        )
+      }
       return true
     } catch (error) {
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)

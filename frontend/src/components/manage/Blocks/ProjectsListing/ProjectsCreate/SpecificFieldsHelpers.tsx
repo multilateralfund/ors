@@ -188,8 +188,12 @@ export const AutocompleteWidget = <T,>(
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
+  hasField?: boolean,
 ) => {
-  const options = formatOptions(field)
+  const options = formatOptions(
+    field,
+    hasField ? fields[sectionIdentifier] : undefined,
+  )
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
@@ -197,18 +201,28 @@ export const AutocompleteWidget = <T,>(
     ? find(options, { id: value }) || null
     : value
 
+  const normalizedValue =
+    fieldName === 'ods_display_name'
+      ? options.find((opt) => opt.id === value) || null
+      : formattedValue
+
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Field
         widget="autocomplete"
         options={options}
         disabled={!canEditField(editableFields, fieldName)}
-        value={formattedValue}
+        value={normalizedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -372,13 +386,19 @@ const NumberWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <SimpleInput
         id={fieldName}
         value={value ?? ''}
@@ -425,9 +445,15 @@ const BooleanWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div className="col-span-full flex w-full">
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Checkbox
         className="pb-1 pl-2 pt-0"
         checked={Boolean(value)}

@@ -86,7 +86,7 @@ const ProjectOdsOdpTable = ({
     const { ods_display_name, ods_blend_composition } = params.data ?? {}
 
     return (
-      ods_display_name +
+      (ods_display_name ?? '-') +
       (ods_blend_composition ? ` (${ods_blend_composition})` : '')
     )
   }
