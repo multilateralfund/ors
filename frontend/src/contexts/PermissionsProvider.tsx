@@ -76,6 +76,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProductionProjects = user_permissions.includes(
     'can_view_production_projects',
   )
+  const canViewMetaProjects = user_permissions.includes(
+    'has_meta_projects_view_access',
+  )
 
   const canViewEnterprises = user_permissions.includes(
     'has_enterprise_view_access',
@@ -144,6 +147,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditProjects,
         canEditApprovedProjects,
         canViewProductionProjects,
+        canViewMetaProjects,
         canViewEnterprises,
         canEditEnterprise,
         canApproveEnterprise,

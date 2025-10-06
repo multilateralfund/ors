@@ -510,7 +510,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableSubmit}
@@ -542,7 +542,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableApprovalActions}

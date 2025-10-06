@@ -296,6 +296,15 @@ export const RelatedProjects = ({
               className="min-h-[16px] min-w-[16px]"
             />
             {entry.title}
+            {mode === 'view' && (
+              <div className="italic">
+                [
+                {entry.code ??
+                  entry.code_legacy ??
+                  'code to be generated upon approval'}
+                ]
+              </div>
+            )}
             {hasErrors && <ErrorTag />}
           </Link>
           {withExtraProjectInfo ? (
