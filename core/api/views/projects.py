@@ -23,6 +23,7 @@ from core.api.permissions import (
     HasProjectStatisticsViewAccess,
     HasProjectViewAccess,
     HasProjectEditAccess,
+    HasProjectV2MyaAccess,
     DenyAll,
 )
 from core.api.serializers import CountrySerializer
@@ -164,7 +165,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     List meta projects available for MYA update.
     """
 
-    permission_classes = [HasMetaProjectsEditAccess]
+    permission_classes = [HasProjectV2MyaAccess]
     serializer_class = MetaProjecMyaSerializer
     filterset_class = MetaProjectMyaFilter
 
@@ -199,13 +200,7 @@ class MetaProjectMyaDetailsViewSet(
 ):
     serializer_class = MetaProjecMyaDetailsSerializer
     queryset = MetaProject.objects.all()
-
-    @property
-    def permission_classes(self):
-        if self.action in ["retrieve"]:
-            return [HasMetaProjectsViewAccess]
-
-        return [HasMetaProjectsEditAccess]
+    permission_classes = [HasProjectV2MyaAccess]
 
     def update(self, request, *args, **kwargs):
         mp = self.get_object()
