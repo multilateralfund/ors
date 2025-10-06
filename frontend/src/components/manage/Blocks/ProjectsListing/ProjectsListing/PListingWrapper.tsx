@@ -28,6 +28,7 @@ export default function PListingWrapper() {
     canUpdateProjects,
     canAssociateProjects,
     canEditApprovedProjects,
+    canViewMetaProjects,
   } = useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
@@ -131,6 +132,7 @@ export default function PListingWrapper() {
               canViewProjects,
               canViewEnterprises,
               canEditApprovedProjects,
+              canViewMetaProjects,
             },
             projectData,
           ).map((menu) => (
