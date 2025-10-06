@@ -5,13 +5,15 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import {
-  sectionColDefById,
+  sectionColDefByIdFunc,
   sectionDefaultColDef,
   sectionColGroupDefById,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -29,41 +31,65 @@ function useGridOptions() {
         headerName: 'Substance',
         ...sectionColDefById['display_name'],
       },
-      {
-        dataType: 'number',
-        field: 'all_uses',
-        headerName: 'Total production for all uses',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['all_uses'],
-      },
-      {
-        dataType: 'number',
-        field: 'feedstock',
-        headerName: 'Production for feedstock uses within your country',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['feedstock'],
-      },
-      {
-        children: [
-          {
+      model === 'V'
+        ? {
             dataType: 'number',
-            field: 'other_uses_quantity',
-            headerName: 'Quantity',
+            field: 'all_uses',
+            headerName: 'Total production for all uses',
             orsAggFunc: 'sumTotal',
+            ...sectionColDefById['all_uses'],
+          }
+        : {
+            dataType: 'number',
+            field: 'all_uses',
+            headerName: 'Captured for all uses',
+            orsAggFunc: 'sumTotal',
+            ...sectionColDefById['all_uses'],
           },
-          {
-            field: 'other_uses_remarks',
-            headerName: 'Decision / type of use or remarks',
-            ...colDefById['remarks'],
+      model === 'V'
+        ? {
+            dataType: 'number',
+            field: 'feedstock',
+            headerName: 'Production for feedstock uses within your country',
+            orsAggFunc: 'sumTotal',
+            ...sectionColDefById['feedstock'],
+          }
+        : {
+            dataType: 'number',
+            field: 'feedstock',
+            headerName: 'Captured for feedstock uses within your country',
+            orsAggFunc: 'sumTotal',
+            ...sectionColDefById['feedstock'],
           },
-        ],
-        groupId: 'other_uses',
-        headerGroupComponent: 'agColumnHeaderGroup',
-        headerName:
-          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
-        marryChildren: true,
-        ...sectionColGroupDefById['other_uses'],
-      },
+      model === 'V'
+        ? {
+            children: [
+              {
+                dataType: 'number',
+                field: 'other_uses_quantity',
+                headerName: 'Quantity',
+                orsAggFunc: 'sumTotal',
+              },
+              {
+                field: 'other_uses_remarks',
+                headerName: 'Decision / type of use or remarks',
+                ...colDefById['remarks'],
+              },
+            ],
+            groupId: 'other_uses',
+            headerGroupComponent: 'agColumnHeaderGroup',
+            headerName:
+              'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
+            marryChildren: true,
+            ...sectionColGroupDefById['other_uses'],
+          }
+        : {
+            dataType: 'number',
+            field: 'destruction',
+            headerName: 'Captured for destruction',
+            orsAggFunc: 'sumTotal',
+            ...sectionColDefById['destruction'],
+          },
     ],
     defaultColDef: {
       ...sectionDefaultColDef,
