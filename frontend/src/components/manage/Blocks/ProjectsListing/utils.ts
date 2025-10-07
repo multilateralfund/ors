@@ -829,7 +829,7 @@ export const getPaginationSelectorOpts = (
 ) => {
   const actualMaxResults = min([count, maxResults]) ?? maxResults
 
-  const nrResultsOpts = [100, 150, 200, 250, 500, 1000]
+  const nrResultsOpts = [50, 100, 150, 200, 250, 500, 1000]
   const filteredNrResultsOptions = nrResultsOpts.filter(
     (option) => option <= actualMaxResults,
   )
