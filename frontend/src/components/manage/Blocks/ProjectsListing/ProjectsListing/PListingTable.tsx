@@ -70,7 +70,7 @@ const PListingTable = ({
         enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={PROJECTS_PER_PAGE}
+        paginationPageSize={mode === 'listing' ? PROJECTS_PER_PAGE : 50}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={100}

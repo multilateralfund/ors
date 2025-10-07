@@ -12,6 +12,7 @@ export type detailItemExtra = {
   detailClassname?: string
   classNames?: DetailItemClassname
   fieldHistory?: ProjectFieldHistoryValue[]
+  isDisabledImpactField?: boolean
 }
 
 export const detailItem = (
@@ -19,7 +20,12 @@ export const detailItem = (
   fieldValue: string,
   extra?: detailItemExtra,
 ) => {
-  const { detailClassname, classNames, fieldHistory = [] } = extra ?? {}
+  const {
+    detailClassname,
+    classNames,
+    fieldHistory = [],
+    isDisabledImpactField,
+  } = extra ?? {}
   const {
     containerClassName = '',
     className = '',
@@ -28,9 +34,16 @@ export const detailItem = (
 
   return (
     <div>
-      <span className={cx('flex items-center gap-2', containerClassName)}>
-        <span className={cx(detailClassname, className)}>{fieldName}</span>
-        <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
+      <span
+        className={cx('flex items-center gap-2', containerClassName, {
+          italic: isDisabledImpactField,
+        })}
+      >
+        <span className={cx(detailClassname, className)}>
+          {fieldName}
+          {isDisabledImpactField ? ' (planned)' : ''}
+        </span>
+        <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
       </span>
       <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
     </div>
@@ -41,10 +54,17 @@ export const numberDetailItem = (
   fieldName: string,
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
+  isDisabledImpactField?: boolean,
 ) => (
   <div>
-    <span className="flex items-center gap-2">
-      <span>{fieldName}</span>
+    <span
+      className={cx('flex items-center gap-2', {
+        italic: isDisabledImpactField,
+      })}
+    >
+      <span>
+        {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
+      </span>
       <h4 className="m-0">
         {!isNil(fieldValue)
           ? formatDecimalValue(parseFloat(fieldValue), {
@@ -62,10 +82,18 @@ export const booleanDetailItem = (
   fieldName: string,
   fieldValue: boolean,
   fieldHistory?: detailItemExtra['fieldHistory'],
+  className?: string,
+  isDisabledImpactField?: boolean,
 ) => (
   <div>
-    <span className="flex items-center gap-2">
-      <span>{fieldName}</span>
+    <span
+      className={cx('flex items-center gap-2', className, {
+        italic: isDisabledImpactField,
+      })}
+    >
+      <span>
+        {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
+      </span>
       <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
     </span>
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
@@ -95,24 +123,54 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       classNames,
       fieldHistory,
     }),
-  number: (data, field, _, fieldHistory) =>
-    detailItem(field.label, data[field.read_field_name], { fieldHistory }),
-  decimal: (data, field, _, fieldHistory) =>
-    numberDetailItem(field.label, data[field.read_field_name], fieldHistory),
-  drop_down: (data, field, _, fieldHistory) => {
-    const readFieldName = field.read_field_name
-    const updatedFieldName =
-      readFieldName === 'decision' ? 'decision_id' : readFieldName
+  number: (data, field, _, fieldHistory, hasActualFields) => {
+    const isDisabledImpactField =
+      field.section === 'Impact' && hasActualFields && !field.is_actual
 
-    const value = data[updatedFieldName]
+    return detailItem(field.label, data[field.read_field_name], {
+      fieldHistory,
+      isDisabledImpactField,
+    })
+  },
+  decimal: (data, field, _, fieldHistory, hasActualFields) => {
+    const isDisabledImpactField =
+      field.section === 'Impact' && hasActualFields && !field.is_actual
+
+    return numberDetailItem(
+      field.label,
+      data[field.read_field_name],
+      fieldHistory,
+      isDisabledImpactField,
+    )
+  },
+  drop_down: (data, field, _, fieldHistory, hasActualFields) => {
+    const value = data[field.read_field_name]
     const formattedValue = isBoolean(value)
       ? find(field.options, { id: data[field.write_field_name] })?.name || '-'
       : value
 
-    return detailItem(field.label, formattedValue, { fieldHistory })
+    const isDisabledImpactField =
+      field.section === 'Impact' && hasActualFields && !field.is_actual
+
+    return detailItem(field.label, formattedValue, {
+      fieldHistory,
+      isDisabledImpactField,
+    })
   },
-  boolean: (data, field, _, fieldHistory) =>
-    booleanDetailItem(field.label, data[field.read_field_name], fieldHistory),
+  boolean: (data, field, _, fieldHistory, hasActualFields) => {
+    const className =
+      field.section === 'Impact' ? 'col-span-full flex w-full' : ''
+    const isDisabledImpactField =
+      field.section === 'Impact' && hasActualFields && !field.is_actual
+
+    return booleanDetailItem(
+      field.label,
+      data[field.read_field_name],
+      fieldHistory,
+      className,
+      isDisabledImpactField,
+    )
+  },
   date: (data, field, _, fieldHistory) =>
     dateDetailItem(field.label, data[field.read_field_name], fieldHistory),
 }

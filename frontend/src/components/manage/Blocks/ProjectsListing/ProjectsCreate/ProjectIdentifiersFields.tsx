@@ -18,7 +18,7 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
@@ -95,15 +95,16 @@ const ProjectIdentifiersFields = ({
     canEditField(editableFields, 'meeting')
 
   const decisionsApi = useApi<ApiDecision[]>({
-    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    path: 'api/decisions',
     options: {
+      triggerIf: !!projIdentifiers?.post_excom_meeting,
       params: {
         meeting_id: projIdentifiers?.post_excom_meeting,
       },
     },
   })
 
-  const decisions = useMemo(() => {
+  const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
@@ -201,6 +202,10 @@ const ProjectIdentifiersFields = ({
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
+    decisionsApi.setApiSettings((prev) => ({
+      ...prev,
+      options: { ...prev.options, triggerIf: !!meeting },
+    }))
   }
 
   const handleChangePostExComDecision = (
@@ -262,13 +267,13 @@ const ProjectIdentifiersFields = ({
                 <Label htmlFor="postExComDecision">Decision</Label>
                 <Field<any>
                   widget="autocomplete"
-                  options={decisions}
+                  options={decisionOptions}
                   value={projIdentifiers?.post_excom_decision ?? ''}
                   onChange={(_, value) =>
                     handleChangePostExComDecision(value as DecisionOption)
                   }
                   getOptionLabel={(option) => {
-                    return getOptionLabel(decisions, option, 'value')
+                    return getOptionLabel(decisionOptions, option, 'value')
                   }}
                   {...sectionDefaultProps}
                 />
@@ -500,7 +505,7 @@ const ProjectIdentifiersFields = ({
           (isV3Project && areNextSectionsDisabled) ||
           !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
-            <NextButton
+            <NavigationButton
               nextStep={project_type && sector ? 5 : 2}
               setCurrentStep={setCurrentStep}
               isBtnDisabled={!areNextStepsAvailable}

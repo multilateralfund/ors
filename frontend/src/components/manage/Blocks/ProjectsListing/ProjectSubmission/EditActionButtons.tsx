@@ -109,7 +109,9 @@ const EditActionButtons = ({
   } = projectData
 
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version >= 3 && canUpdateV3Projects)
+    postExComUpdate ||
+    (version < 3 && canUpdateProjects) ||
+    (version >= 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =
@@ -203,13 +205,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3
-      ? isAfterApproval
-        ? disableSubmit ||
-          hasSectionErrors(approvalErrors) ||
-          approvalFields.length === 0
-        : disableSubmit
-      : isSaveDisabled)
+    (project.version >= 3 ? disableSubmit : isSaveDisabled)
 
   const disableApprovalActions =
     !specificFieldsLoaded ||
@@ -337,7 +333,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/submit`)
       }
 
-      if (canApproveProjects && isAfterApproval) {
+      if (isRecommended) {
         await editApprovalFields()
       }
       return true
@@ -510,7 +506,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableSubmit}
@@ -542,7 +538,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableApprovalActions}

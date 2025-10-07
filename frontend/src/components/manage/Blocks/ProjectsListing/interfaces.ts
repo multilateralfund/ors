@@ -92,12 +92,12 @@ export interface SpecificFields {
   number_of_enterprises_assisted: string
   meeting: number | null
   meeting_approved: number | null
-  decision: string | null
+  decision: number | null
   decision_id: string | null
 }
 
 export type OdsOdpFields = {
-  ods_display_name: string
+  ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -198,6 +198,7 @@ export type ViewModesHandler = (
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
   fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {

@@ -60,7 +60,7 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 403
 
         _test_user_permissions(user, 403)
-        _test_user_permissions(viewer_user, 200, 1)
+        _test_user_permissions(viewer_user, 403, 1)
         _test_user_permissions(secretariat_viewer_user, 403)
         _test_user_permissions(mlfs_admin_user, 200, 1)
 
@@ -68,11 +68,7 @@ class TestProjectV2List(BaseTest):
         self,
         _setup_metaprojects_list,
         _setup_project_list,
-        user,
-        viewer_user,
-        secretariat_viewer_user,
         mlfs_admin_user,
-        admin_user,
     ):
         mp = _setup_metaprojects_list[0]
         mp_url = reverse("meta-project-view", args=(mp.id,))
@@ -94,11 +90,7 @@ class TestProjectV2List(BaseTest):
         self,
         _setup_metaprojects_list,
         _setup_project_list,
-        user,
-        viewer_user,
-        secretariat_viewer_user,
         mlfs_admin_user,
-        admin_user,
     ):
         mp = _setup_metaprojects_list[0]
         mp_url = reverse("meta-project-view", args=(mp.id,))
@@ -114,11 +106,7 @@ class TestProjectV2List(BaseTest):
         self,
         _setup_metaprojects_list,
         _setup_project_list,
-        user,
         viewer_user,
-        secretariat_viewer_user,
-        mlfs_admin_user,
-        admin_user,
     ):
         mp = _setup_metaprojects_list[0]
         mp_url = reverse("meta-project-view", args=(mp.id,))

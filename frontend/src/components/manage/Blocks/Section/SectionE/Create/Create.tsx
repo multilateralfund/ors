@@ -15,7 +15,7 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function SectionECreate(props: SectionECreateProps) {
-  const { TableProps, form, setForm } = props
+  const { TableProps, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
@@ -86,7 +86,11 @@ export default function SectionECreate(props: SectionECreateProps) {
     [form.section_e, setForm],
   )
 
-  const gridOptions = useGridOptions({ addFacility, removeFacility })
+  const gridOptions = useGridOptions({
+    addFacility,
+    removeFacility,
+    model: variant.model,
+  })
 
   return (
     <>

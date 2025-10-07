@@ -32,8 +32,8 @@ function getPinnedRowData(rowData: SectionERowData[]): SectionERowData[] {
 }
 
 export default function SectionEView(props: SectionEViewProps) {
-  const { Comments, TableProps, report, showComments } = props
-  const gridOptions = useGridOptions()
+  const { Comments, TableProps, report, showComments, variant } = props
+  const gridOptions = useGridOptions({ model: variant.model })
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))

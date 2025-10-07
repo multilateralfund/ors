@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react'
 
 import LinkedBPTableWrapper from './LinkedBPTable'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { ProjectDataProps, ProjectTabSetters } from '../interfaces'
 
@@ -64,7 +64,7 @@ const ProjectBPLinking = ({
         )}
       </div>
       <div className="mt-5">
-        <NextButton
+        <NavigationButton
           nextStep={2}
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextButtonDisabled}

@@ -32,6 +32,7 @@ const PEnterpriseEditWrapper = () => {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
@@ -39,7 +40,14 @@ const PEnterpriseEditWrapper = () => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (!(canEditProjectEnterprise || canApproveProjectEnterprise) || error) {
+  if (
+    !(
+      canEditProjectEnterprise ||
+      (canApproveProjectEnterprise &&
+        (data?.status !== 'Approved' || canEditProjectEnterprise))
+    ) ||
+    error
+  ) {
     return (
       <Redirect
         to={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}

@@ -5,6 +5,7 @@ from core.models import (
     Substance,
     ProjectOdsOdp,
 )
+from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 from core.api.serializers.chemicals import (
     GroupSerializer,
     SubstanceSerializer,
@@ -245,7 +246,12 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
         """
 
         if obj.read_field_name == "group":
-            return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
+            return GroupSerializer(
+                Group.objects.filter(
+                    name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
+                ).order_by("name"),
+                many=True,
+            ).data
         if obj.read_field_name == "ods_type":
             return [
                 (
@@ -262,6 +268,7 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
 
             substances = (
                 Substance.objects.all()
+                .select_related("group")
                 .filter_project_accepted_substances()
                 .order_by("name")
             )
@@ -270,7 +277,14 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
                 entry["baseline_type"] = "substance"
 
             blends = (
-                Blend.objects.all().filter_project_accepted_blends().order_by("name")
+                Blend.objects.all()
+                .filter_project_accepted_blends()
+                .prefetch_related(
+                    "components",
+                    "components__substance",
+                    "components__substance__group",
+                )
+                .order_by("name")
             )
             data["blends"] = BlendSerializer(blends, many=True).data
             for entry in data["blends"]:

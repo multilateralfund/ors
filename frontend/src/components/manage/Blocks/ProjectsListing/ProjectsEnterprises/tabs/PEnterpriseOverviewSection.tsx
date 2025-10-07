@@ -74,7 +74,9 @@ const PEnterpriseOverviewSection = ({
             widget="autocomplete"
             options={enterpriseStatuses}
             value={overview.linkStatus}
-            disabled={enterprise.status === 'Approved'}
+            disabled={
+              !canEditProjectEnterprise || enterprise.status === 'Approved'
+            }
             onChange={(_, value) => handleChangeLinkStatus(value)}
             disableClearable
             {...defaultProps}
