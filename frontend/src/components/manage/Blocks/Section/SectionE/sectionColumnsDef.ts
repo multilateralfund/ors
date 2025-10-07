@@ -90,12 +90,16 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   ...(model === 'V'
     ? {
         stored_at_start_of_year: {
-          cellClass: 'ag-text-center',
-          headerClass: 'ag-text-center',
+          headerClass: VOLUNTARY_CLASS,
+          cellClass: () => {
+            return VOLUNTARY_CLASS
+          },
         },
         stored_at_end_of_year: {
-          cellClass: 'ag-text-center',
-          headerClass: 'ag-text-center',
+          headerClass: VOLUNTARY_CLASS,
+          cellClass: () => {
+            return VOLUNTARY_CLASS
+          },
         },
       }
     : {}),
