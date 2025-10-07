@@ -21,8 +21,8 @@ function getRowData(report: CPReport): SectionDRowData[] {
 }
 
 export default function SectionDView(props: SectionDViewProps) {
-  const { Comments, TableProps, report, showComments } = props
-  const gridOptions = useGridOptions()
+  const { Comments, TableProps, report, showComments, variant } = props
+  const gridOptions = useGridOptions({ model: variant.model })
   const grid = useRef<any>()
   const [rowData] = useState<SectionDRowData[]>(() => getRowData(report))
 
@@ -33,7 +33,15 @@ export default function SectionDView(props: SectionDViewProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        <Footnotes />
+        {variant.model === 'V' ? (
+          <Footnotes />
+        ) : (
+          <Footnote id="" index="">
+            Data in Section D should be provided (if applicable) even if
+            breakdown in Section E by enterprises are not reported as reporting
+            under Section E is voluntary for the shaded column
+          </Footnote>
+        )}
       </Alert>
       <Table
         {...TableProps}

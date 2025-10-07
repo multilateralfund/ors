@@ -102,8 +102,9 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 ) : (
-                  mode !== 'association-listing' &&
-                  mode !== 'listing' && <div className="w-4 min-w-4" />
+                  mode !== 'association-listing' && (
+                    <div className="w-4 min-w-4" />
+                  )
                 )}
                 {projectId !== undefined &&
                   setProjectData &&

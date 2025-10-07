@@ -665,12 +665,12 @@ export const getMenus = (
         {
           title: 'View business plans',
           url: '/business-plans',
-          permissions: [canViewBp],
+          disabled: !canViewBp,
         },
         {
           title: 'New business plan',
           url: '/business-plans/upload',
-          permissions: [canUpdateBp],
+          disabled: !canUpdateBp,
         },
       ],
     },
@@ -711,8 +711,8 @@ export const getMenus = (
     {
       title: 'Reporting',
       menuItems: [
-        { title: 'Create Annual Progress Report', url: null },
-        { title: 'Raise a PCR', url: null },
+        { title: 'Create Annual Progress Report', url: null, disabled: true },
+        { title: 'Raise a PCR', url: null, disabled: true },
       ],
     },
   ]
