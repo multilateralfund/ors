@@ -1,6 +1,12 @@
-import { SpecificFieldsSectionProps, ProjectData } from '../interfaces'
-import { canViewField } from '../utils'
 import { widgets } from './SpecificFieldsHelpers'
+import { NextButton } from '../HelperComponents'
+import { canViewField, getDefaultImpactErrors } from '../utils'
+import {
+  SpecificFieldsSectionProps,
+  ProjectData,
+  ProjectTabSetters,
+  ProjectSpecificFields,
+} from '../interfaces'
 import { useStore } from '@ors/store'
 
 const ProjectImpact = ({
@@ -9,27 +15,51 @@ const ProjectImpact = ({
   sectionFields,
   errors = {},
   hasSubmitted,
-}: SpecificFieldsSectionProps) => {
+  specificFields,
+  setCurrentStep,
+  setCurrentTab,
+}: SpecificFieldsSectionProps &
+  ProjectTabSetters & { specificFields: ProjectSpecificFields[] }) => {
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
 
+  const { projectSpecificFields } = projectData
+  const defaultImpactErrors = getDefaultImpactErrors(
+    projectSpecificFields,
+    specificFields,
+  )
+
+  const hasErrors = Object.values(defaultImpactErrors).some(
+    (errors) => errors.length > 0,
+  )
+
   return (
-    <div className="flex w-[50%] grid-cols-2 flex-wrap gap-x-20 gap-y-3 md:grid md:w-auto lg:grid-cols-4">
-      {sectionFields.map(
-        (field) =>
-          canViewField(viewableFields, field.write_field_name) &&
-          widgets[field.data_type]<ProjectData>(
-            projectData,
-            setProjectData,
-            field,
-            errors,
-            false,
-            hasSubmitted,
-            editableFields,
-          ),
-      )}
-    </div>
+    <>
+      <div className="flex w-[50%] grid-cols-2 flex-wrap gap-x-20 gap-y-3 md:grid md:w-auto lg:grid-cols-4">
+        {sectionFields.map(
+          (field) =>
+            canViewField(viewableFields, field.write_field_name) &&
+            widgets[field.data_type]<ProjectData>(
+              projectData,
+              setProjectData,
+              field,
+              errors,
+              false,
+              hasSubmitted,
+              editableFields,
+            ),
+        )}
+      </div>
+      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <NextButton
+          nextStep={5}
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+          isBtnDisabled={hasErrors}
+        />
+      </div>
+    </>
   )
 }
 

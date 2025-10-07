@@ -1129,15 +1129,17 @@ class TestProjectsV2Update:
         _test_permissions_for_different_project_agency(
             secretariat_production_v1_v2_edit_access_user, 200, 200, 200
         )
+
+        # those return 404 because even if those users have edit access, they only have it for v3 projects
         secretariat_v3_edit_access_user.agency = agency_user.agency
         secretariat_v3_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_v3_edit_access_user, 403, 403, 403
+            secretariat_v3_edit_access_user, 404, 404, 404
         )
         secretariat_production_v3_edit_access_user.agency = agency_user.agency
         secretariat_production_v3_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_production_v3_edit_access_user, 403, 403, 403
+            secretariat_production_v3_edit_access_user, 404, 404, 404
         )
         _test_user_permissions(admin_user, 200)
 
@@ -1426,9 +1428,9 @@ class TestProjectFiles:
             secretariat_production_v1_v2_edit_access_user, 201, 200, 204
         )
 
-        _test_user_permissions(secretariat_v3_edit_access_user, 403, 200, 403)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404, 200, 404)
         _test_user_permissions(
-            secretariat_production_v3_edit_access_user, 403, 200, 403
+            secretariat_production_v3_edit_access_user, 404, 200, 404
         )
         _test_user_permissions(admin_user, 201, 200, 204)
 

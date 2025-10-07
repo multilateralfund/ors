@@ -20,11 +20,11 @@ import {
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
-import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
   projectData,
   mode,
+  postExComUpdate = false,
   project,
   files,
   setProjectFiles = () => {},
@@ -34,6 +34,7 @@ const ProjectsHeader = ({
   ...rest
 }: ProjectHeader & {
   mode: string
+  postExComUpdate?: boolean
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
@@ -41,7 +42,6 @@ const ProjectsHeader = ({
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
-  const { project_start_date, project_end_date } = crossCuttingFields
 
   const defaultImpactErrors = getDefaultImpactErrors(
     projectSpecificFields,
@@ -54,10 +54,7 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
   )
-  const isSaveDisabled =
-    hasMissingRequiredFields ||
-    dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
-    hasValidationErrors
+  const isSaveDisabled = hasMissingRequiredFields || hasValidationErrors
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
@@ -83,7 +80,9 @@ const ProjectsHeader = ({
             <PageHeading>
               {mode === 'edit' && (
                 <PageTitle
-                  pageTitle="Edit project"
+                  pageTitle={
+                    postExComUpdate ? 'Post ExCom update' : 'Edit project'
+                  }
                   projectTitle={projectTitle}
                   project={project as ProjectTypeApi}
                 />
@@ -125,6 +124,7 @@ const ProjectsHeader = ({
                 trancheErrors,
                 specificFields,
                 approvalFields,
+                postExComUpdate,
               }}
               {...rest}
             />

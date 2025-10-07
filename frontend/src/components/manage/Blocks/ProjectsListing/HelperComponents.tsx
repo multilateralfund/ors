@@ -1,13 +1,31 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 
+import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
 import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
-import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+  RelatedProjectsType,
+} from './interfaces'
 import { enabledButtonClassname } from './constants'
 
+import { MdKeyboardArrowDown } from 'react-icons/md'
+import { FaExternalLinkAlt } from 'react-icons/fa'
+import { filter, lowerCase, map } from 'lodash'
+import { SlReload } from 'react-icons/sl'
+import cx from 'classnames'
+import {
+  Button,
+  CircularProgress,
+  Divider,
+  Typography,
+  MenuProps,
+  ButtonProps,
+} from '@mui/material'
 import {
   IoAlertCircle,
   IoChevronDown,
@@ -15,29 +33,53 @@ import {
   IoClose,
   IoReturnUpBack,
 } from 'react-icons/io5'
-import { Button, CircularProgress, Divider, Typography } from '@mui/material'
-import { FaExternalLinkAlt } from 'react-icons/fa'
-import { filter, lowerCase, map } from 'lodash'
-import { SlReload } from 'react-icons/sl'
-import cx from 'classnames'
 
-type ButtonProps = {
+type CustomButtonProps = {
   title: string
   onSubmit: () => void
   isDisabled?: boolean
   className?: string
 }
 
+type NavigationButtonProps = {
+  title: string
+  href: string
+  className?: string
+}
+
+export const CreateButton = ({
+  title,
+  href,
+  className,
+}: NavigationButtonProps) => (
+  <CustomLink
+    className={cx(
+      'mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase',
+      className,
+    )}
+    href={href}
+    color="secondary"
+    variant="contained"
+    button
+  >
+    {title}
+  </CustomLink>
+)
+
 export const SubmitButton = ({
   title,
   onSubmit,
   isDisabled = false,
   className,
-}: ButtonProps) => (
+}: CustomButtonProps) => (
   <Button
-    className={cx(className, 'mr-0 h-10 px-3 py-1', {
-      [enabledButtonClassname]: !isDisabled,
-    })}
+    className={cx(
+      className,
+      'mr-0 border border-solid border-current px-3 py-1',
+      {
+        [enabledButtonClassname]: !isDisabled,
+      },
+    )}
     size="large"
     variant="contained"
     onClick={onSubmit}
@@ -51,7 +93,7 @@ export const IncreaseVersionButton = ({
   title,
   onSubmit,
   isDisabled = false,
-}: ButtonProps) => (
+}: CustomButtonProps) => (
   <Button
     className={cx('px-4 py-2', {
       'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
@@ -89,21 +131,61 @@ export const CancelButton = ({ onClick }: { onClick: any }) => (
   </Button>
 )
 
+export const NextButton = ({
+  nextStep,
+  nextTab,
+  setCurrentStep,
+  setCurrentTab,
+  isBtnDisabled = false,
+}: ProjectTabSetters & {
+  nextStep: number
+  nextTab?: number
+  isBtnDisabled?: boolean
+}) => {
+  const moveToNextStep = () => {
+    if (setCurrentStep) {
+      setCurrentStep(nextStep)
+    }
+
+    if (setCurrentTab) {
+      setCurrentTab((tab) => nextTab ?? tab + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <Button
+      className={cx('h-8 px-3 py-1 leading-none', {
+        'border border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+          !isBtnDisabled,
+      })}
+      disabled={isBtnDisabled}
+      size="large"
+      variant="contained"
+      onClick={moveToNextStep}
+    >
+      Next
+    </Button>
+  )
+}
+
 export const PageTitle = ({
   pageTitle,
   projectTitle,
   project,
+  className,
 }: {
   pageTitle: string
   projectTitle: string
   project?: ProjectTypeApi
+  className?: string
 }) => {
   const { submission_status = '', code, code_legacy } = project || {}
 
   return (
     <>
       <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
-      <span>
+      <span className={className}>
         {projectTitle ?? 'New project'}
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </span>
@@ -147,6 +229,12 @@ export const VersionsList = ({
     submission_status,
   } = project
   const isDraft = lowerCase(submission_status) === 'draft'
+  let versionLabel
+  if (version > 3) {
+    versionLabel = `ExCom ${project.post_excom_meeting}`
+  } else {
+    versionLabel = version
+  }
 
   return (
     (!isDraft || (isDraft && version === 2)) && (
@@ -154,7 +242,7 @@ export const VersionsList = ({
         <VersionsDropdown
           {...{ versions, showVersionsMenu, setShowVersionsMenu }}
         />
-        <HeaderTag {...{ latest_project, version }} />
+        <HeaderTag {...{ latest_project, version: versionLabel }} />
       </>
     )
   )
@@ -320,6 +408,7 @@ export const displaySelectedOption = (
 ) =>
   filters?.[entityIdentifier]?.map((entity: any) => {
     const entityId = entity[field]
+    const entityData = entities?.get(entityId)
 
     return (
       <Typography
@@ -328,7 +417,10 @@ export const displaySelectedOption = (
         component="p"
         variant="h6"
       >
-        {entities?.get(entityId)?.name || entities?.get(entityId)?.label}
+        {entityData?.name ||
+          entityData?.label ||
+          entityData?.code ||
+          entityData?.code_legacy}
         <IoClose
           className="cursor-pointer"
           size={18}
@@ -354,3 +446,16 @@ export const displaySelectedOption = (
       </Typography>
     )
   })
+
+export const DropDownButtonProps: ButtonProps = {
+  endIcon: <MdKeyboardArrowDown />,
+  size: 'large',
+  variant: 'contained',
+}
+
+export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
+  PaperProps: {
+    className: 'mt-1 border border-solid border-black rounded-lg',
+  },
+  transitionDuration: 0,
+}

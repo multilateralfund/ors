@@ -1,9 +1,9 @@
 import { ChangeEvent, useContext } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SectionTitle } from './ProjectsCreate'
 import {
@@ -19,7 +19,13 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { defaultProps, disabledClassName, tableColumns } from '../constants'
+import { NextButton } from '../HelperComponents'
+import {
+  defaultProps,
+  defaultPropsSimpleField,
+  disabledClassName,
+  tableColumns,
+} from '../constants'
 import {
   canEditField,
   canViewField,
@@ -45,6 +51,8 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  project,
+  postExComUpdate,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -66,12 +74,14 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
-  const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
+  const canUpdateLeadAgency =
+    mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = canEditField(editableFields, 'meeting')
+  const canEditMeeting =
+    !postExComUpdate && canEditField(editableFields, 'meeting')
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -157,6 +167,36 @@ const ProjectIdentifiersFields = ({
     }))
   }
 
+  const handleChangePostExComMeeting = (meeting?: string) => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        post_excom_meeting: parseNumber(meeting),
+      },
+    }))
+  }
+
+  const handleChangePostExComDecision = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const initialValue = event.target.value
+
+    if (initialValue === '' || !isNaN(parseInt(initialValue))) {
+      const finalVal = initialValue ? parseInt(initialValue).toString() : null
+
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          post_excom_decision: finalVal,
+        },
+      }))
+    } else {
+      event.preventDefault()
+    }
+  }
+
   const handleChangeSubmitOnBehalf = (event: ChangeEvent<HTMLInputElement>) => {
     setProjectData((prevData) => ({
       ...prevData,
@@ -172,7 +212,63 @@ const ProjectIdentifiersFields = ({
 
   return (
     <>
-      <SectionTitle>Identifiers</SectionTitle>
+      {postExComUpdate ? (
+        <div>
+          <SectionTitle>
+            Update Project fields following Executive Committee
+          </SectionTitle>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex flex-wrap gap-x-20 gap-y-3">
+              <div className="w-32">
+                <Label>Meeting</Label>
+                <PopoverInput
+                  label={getMeetingNr(
+                    projIdentifiers?.post_excom_meeting ?? undefined,
+                  )?.toString()}
+                  options={getMeetingOptions()}
+                  onChange={handleChangePostExComMeeting}
+                  onClear={() => handleChangePostExComMeeting()}
+                  clearBtnClassName="right-1"
+                  withClear={true}
+                  className="!m-0 h-10 !py-1"
+                />
+              </div>
+              <div className="w-32">
+                <Label htmlFor="postExComDecision">Decision</Label>
+                <SimpleInput
+                  id="postExComDecision"
+                  label=""
+                  value={projIdentifiers?.post_excom_decision ?? ''}
+                  onChange={handleChangePostExComDecision}
+                  type="text"
+                  className={defaultPropsSimpleField.className}
+                  containerClassName={
+                    defaultPropsSimpleField.containerClassName
+                  }
+                />
+              </div>
+              <div className="flex items-end">
+                <div className="flex h-10 items-center">
+                  <CustomAlert
+                    type="error"
+                    content={
+                      <>
+                        <Typography className="text-lg">
+                          These fields are mandatory.
+                        </Typography>
+                      </>
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+        </div>
+      ) : null}
+      <SectionTitle>
+        {postExComUpdate ? 'Main attributes' : 'Identifiers'}
+      </SectionTitle>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'country') && (
@@ -188,8 +284,7 @@ const ProjectIdentifiersFields = ({
                 }
                 disabled={
                   !areNextSectionsDisabled ||
-                  mode === 'partial-link' ||
-                  mode === 'full-link' ||
+                  (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
                 }
                 Input={{
@@ -251,7 +346,7 @@ const ProjectIdentifiersFields = ({
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'cluster') && (
-            <div>
+            <div className="w-full max-w-[20rem] flex-shrink">
               <Label>{tableColumns.cluster}</Label>
               <Field
                 widget="autocomplete"
@@ -269,7 +364,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 {...defaultProps}
                 FieldProps={{
-                  className: defaultProps.FieldProps.className + ' w-[20rem]',
+                  className: defaultProps.FieldProps.className + ' w-full',
                 }}
               />
             </div>
@@ -356,7 +451,7 @@ const ProjectIdentifiersFields = ({
                 type="info"
                 alertClassName="mt-2 px-2 py-0"
                 content={
-                  <Typography className="pt-0.5 text-lg leading-none">
+                  <Typography className="text-lg leading-5">
                     Unless submitting on behalf of a cooperating agency,
                     selecting either the agency or the lead agency will
                     automatically update the other.
@@ -366,32 +461,30 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <NavigationButton
-            isBtnDisabled={!areNextStepsAvailable}
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NextButton
+            nextStep={2}
             setCurrentStep={setCurrentStep}
-            direction="next"
-            classname={
-              'h-8 leading-none ' +
-              (areNextStepsAvailable
-                ? 'border-secondary !bg-secondary text-white hover:border-primary hover:!bg-primary hover:text-mlfs-hlYellow'
-                : '')
-            }
+            isBtnDisabled={!areNextStepsAvailable}
           />
           {!areNextSectionsDisabled && (
-            <div className="mt-5">
-              <Button
-                className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
-                size="large"
-                variant="contained"
-                onClick={() => {
-                  setCurrentStep(0)
-                  setCurrentTab(0)
-                }}
-              >
-                Update fields
-              </Button>
-            </div>
+            <Button
+              className={cx(
+                'h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary',
+                {
+                  [disabledClassName]: postExComUpdate,
+                },
+              )}
+              size="large"
+              variant="contained"
+              disabled={postExComUpdate}
+              onClick={() => {
+                setCurrentStep?.(0)
+                setCurrentTab?.(0)
+              }}
+            >
+              Update fields
+            </Button>
           )}
         </div>
       </div>

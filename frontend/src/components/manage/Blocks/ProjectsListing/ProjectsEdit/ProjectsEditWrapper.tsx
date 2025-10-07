@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -28,7 +26,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
       ((['Withdrawn', 'Not approved'].includes(data.submission_status) &&
         (mode !== 'edit' || !canEditApprovedProjects)) ||
         (mode !== 'edit' &&
-          data.version === 3 &&
+          data.version >= 3 &&
           data.submission_status !== 'Recommended'))) ||
       !isNull(data.latest_project) ||
       (mode !== 'copy' && !data.editable))

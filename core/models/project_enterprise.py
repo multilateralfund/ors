@@ -3,6 +3,7 @@ from django.db import models
 from core.models.blend import Blend
 from core.models.project import Project
 from core.models.substance import Substance
+from core.models.utils import EnterpriseStatus
 
 # pylint: disable=C0302
 
@@ -19,6 +20,12 @@ class EnterpriseManager(models.Manager):
 
 
 class Enterprise(models.Model):
+
+    status = models.CharField(
+        max_length=64,
+        choices=EnterpriseStatus.choices,
+        default=EnterpriseStatus.PENDING,
+    )
     code = models.CharField(
         max_length=128,
         null=True,
@@ -28,6 +35,12 @@ class Enterprise(models.Model):
     name = models.CharField(
         max_length=256,
         help_text="Name of the enterprise",
+    )
+    agencies = models.ManyToManyField(
+        "core.Agency",
+        related_name="enterprises",
+        blank=True,
+        help_text="Agencies associated with the enterprise",
     )
     country = models.ForeignKey(
         "core.Country",
@@ -90,10 +103,6 @@ class Enterprise(models.Model):
 
 
 class ProjectEnterprise(models.Model):
-
-    class EnterpriseStatus(models.TextChoices):
-        PENDING = "Pending Approval", "Pending Approval"
-        APPROVED = "Approved", "Approved"
 
     project = models.ForeignKey(
         Project,

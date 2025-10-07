@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
   files,
   projectFiles,
   errors,
@@ -73,6 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -85,11 +87,6 @@ const ProjectsCreate = ({
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const [currentStep, setCurrentStep] = useState<number>(
-    mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
-  )
-  const [currentTab, setCurrentTab] = useState<number>(0)
-
   const {
     projIdentifiers,
     crossCuttingFields,
@@ -101,6 +98,9 @@ const ProjectsCreate = ({
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
+
+  const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(0)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
@@ -144,6 +144,8 @@ const ProjectsCreate = ({
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
+  const isApprovalTabAvailable =
+    project && mode === 'edit' && project.version >= 3
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -279,6 +281,8 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            project,
+            postExComUpdate,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -308,9 +312,15 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
+            currentStep,
+            setCurrentStep,
+            setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
           }}
+          nextStep={
+            !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
+          }
           errors={crossCuttingErrors}
         />
       ),
@@ -339,7 +349,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled,
+      disabled: isSpecificInfoTabDisabled || currentStep < 3,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -353,7 +363,10 @@ const ProjectsCreate = ({
             odsOdpErrors,
             trancheErrors,
             getTrancheErrors,
+            setCurrentStep,
+            setCurrentTab,
           }}
+          nextStep={!isImpactTabDisabled ? 4 : 5}
         />
       ),
       errors: [
@@ -391,12 +404,19 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled,
+      disabled: isImpactTabDisabled || currentStep < 4,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
           errors={impactErrors}
-          {...{ projectData, setProjectData, hasSubmitted }}
+          {...{
+            projectData,
+            setProjectData,
+            hasSubmitted,
+            specificFields,
+            setCurrentStep,
+            setCurrentTab,
+          }}
         />
       ),
       errors: formatErrors(impactErrors),
@@ -419,7 +439,16 @@ const ProjectsCreate = ({
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectDocumentation
-          {...{ projectFiles, files, mode, project, loadedFiles }}
+          {...{
+            projectFiles,
+            files,
+            mode,
+            project,
+            loadedFiles,
+          }}
+          {...(!!isApprovalTabAvailable && !isApprovalTabDisabled
+            ? { setCurrentStep, setCurrentTab }
+            : {})}
           {...rest}
         />
       ),
@@ -440,7 +469,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(isApprovalTabAvailable
       ? [
           {
             id: 'project-approval-section',
@@ -525,6 +554,7 @@ const ProjectsCreate = ({
       >
         {steps.map(({ id, ariaControls, label, disabled }) => (
           <Tab
+            key={id}
             id={id}
             aria-controls={ariaControls}
             label={label}
@@ -539,9 +569,9 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => {
+          .map(({ id, component, errors }) => {
             return (
-              <>
+              <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -581,7 +611,7 @@ const ProjectsCreate = ({
                   />
                 )}
                 {component}
-              </>
+              </span>
             )
           })}
       </div>

@@ -4,26 +4,22 @@ import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
 import { PageTitle, RedirectBackButton } from '../../HelperComponents'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { useGetProject } from '../../hooks/useGetProject'
 
-import { IoAddCircle } from 'react-icons/io5'
 import { Redirect, useParams } from 'wouter'
-import { FiEdit } from 'react-icons/fi'
-import { Button } from '@mui/material'
-import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
-  const form = useRef<any>()
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
+    useContext(PermissionsContext)
 
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+  const form = useRef<any>()
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -40,20 +36,12 @@ export default function PEnterprisesWrapper() {
   const enterprises = useGetProjectEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
-  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
-  const statuses = useGetEnterpriseStatuses()
-  const enterpriseStatuses = map(statuses, (status) => ({
-    id: status[0],
-    label: status[1],
-    name: status[1],
-  }))
-
-  if (
-    !canViewProjects ||
-    (project && (error || (data && data.submission_status !== 'Approved')))
-  ) {
+  if (!canViewEnterprises || !canViewProjects) {
     return <Redirect to="/projects-listing/listing" />
+  }
+
+  if (project && (error || (data && data.submission_status !== 'Approved'))) {
+    return <Redirect to="/projects-listing/projects-enterprises" />
   }
 
   return (
@@ -66,70 +54,61 @@ export default function PEnterprisesWrapper() {
         <div className="flex flex-wrap justify-between gap-3">
           <div className="flex flex-col">
             <RedirectBackButton />
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-              <PageHeading>
-                {project && data ? (
-                  <PageTitle
-                    pageTitle="Enterprises information for"
-                    projectTitle={data.code ?? data.code_legacy}
-                  />
-                ) : (
-                  <span className="font-medium text-[#4D4D4D]">
-                    Enterprises
-                  </span>
-                )}
-              </PageHeading>
-            </div>
+            <PageHeading>
+              {project && data ? (
+                <PageTitle
+                  pageTitle="Project enterprises of"
+                  projectTitle={data.code ?? data.code_legacy}
+                  className="break-all"
+                />
+              ) : (
+                <span className="font-medium text-[#4D4D4D]">
+                  Projects enterprises
+                </span>
+              )}
+            </PageHeading>
+          </div>
+          <div className="ml-auto mt-auto flex items-center gap-2.5">
+            {project_id && (
+              <CustomLink
+                className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                href="/projects-listing/projects-enterprises"
+                color="secondary"
+                variant="contained"
+                size="large"
+                button
+              >
+                View all project enterprises
+              </CustomLink>
+            )}
           </div>
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PEnterprisesFiltersWrapper
+            type="project-enterprises"
             {...{
-              enterpriseStatuses,
               filters,
               initialFilters,
               setFilters,
               setParams,
             }}
           />
-          {project_id && canEditEnterprise && (
-            <div className="mb-auto flex gap-2">
-              <Link
-                className="no-underline"
-                href={`/projects-listing/enterprises/${project_id}/create`}
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
-                  variant="contained"
-                  size="large"
-                >
-                  Add enterprise <IoAddCircle className="ml-1.5" size={20} />
-                </Button>
-              </Link>
-              <Link
-                className="p-0 no-underline"
-                href={`/projects-listing/enterprises/${project_id}/edit/${enterpriseId}`}
-                disabled={!enterpriseId}
-                button
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
-                  disabled={!enterpriseId}
-                  variant="contained"
-                  size="large"
-                >
-                  Edit enterprise <FiEdit className="ml-1.5" size={18} />
-                </Button>
-              </Link>
-            </div>
+          {project_id && canEditProjectEnterprise && (
+            <CustomLink
+              className="h-10 border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+              href={`/projects-listing/projects-enterprises/${project_id}/create`}
+              color="secondary"
+              variant="contained"
+              size="large"
+              button
+            >
+              Add project enterprise
+            </CustomLink>
           )}
         </div>
-        <PEnterprisesTable
-          {...{ enterprises, filters }}
-          {...(project_id && { enterpriseId, setEnterpriseId })}
-        />
+        <PEnterprisesTable {...{ enterprises }} />
       </form>
     </>
   )

@@ -10,7 +10,7 @@ import PListingAssociation from './PListingAssociation'
 import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
-import { CancelButton } from '../HelperComponents'
+import { CancelButton, CreateButton } from '../HelperComponents'
 import { ListingProjectData } from '../interfaces'
 import { getMenus } from '../utils'
 
@@ -24,6 +24,7 @@ export default function PListingWrapper() {
     canViewBp,
     canUpdateBp,
     canViewProjects,
+    canViewEnterprises,
     canUpdateProjects,
     canAssociateProjects,
   } = useContext(PermissionsContext)
@@ -38,7 +39,7 @@ export default function PListingWrapper() {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
 
   const projectActions = (
-    <div className="mt-1 flex flex-wrap items-center gap-3">
+    <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-4">
       {canUpdateProjects && (
         <div
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
@@ -119,25 +120,20 @@ export default function PListingWrapper() {
 
   return (
     <>
-      <div className="mt-5 flex flex-wrap justify-between gap-y-3">
+      <div className="mt-5 flex flex-wrap justify-between gap-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
           {getMenus(
-            { canViewBp, canUpdateBp, canViewProjects },
+            { canViewBp, canUpdateBp, canViewProjects, canViewEnterprises },
             projectData,
           ).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>
         {canUpdateProjects && (
-          <CustomLink
-            className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+          <CreateButton
+            title="New Project Submission"
             href="/projects-listing/create"
-            color="secondary"
-            variant="contained"
-            button
-          >
-            New Project Submission
-          </CustomLink>
+          />
         )}
       </div>
       <Box className="shadow-none">

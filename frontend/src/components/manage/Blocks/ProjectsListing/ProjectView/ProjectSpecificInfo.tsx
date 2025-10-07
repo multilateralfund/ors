@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
 import { viewModesHandler } from './ViewHelperComponents'
@@ -9,7 +10,11 @@ import { useStore } from '@ors/store'
 import { Divider } from '@mui/material'
 import { groupBy, map } from 'lodash'
 
-const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
+const ProjectSpecificInfo = ({
+  project,
+  specificFields,
+  fieldHistory,
+}: { fieldHistory: any } & ProjectViewProps) => {
   const headerFields = getSectionFields(specificFields, 'Header')
   const substanceFields = getSectionFields(specificFields, 'Substance Details')
 
@@ -44,6 +49,13 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
       (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
     ) || []
 
+  const getFieldHistory = useCallback(
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
+    },
+    [fieldHistory],
+  )
+
   return (
     <>
       {canViewOverviewSection && (
@@ -54,8 +66,16 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
               {map(
                 headerFields,
                 (field) =>
-                  canViewField(viewableFields, field.write_field_name) &&
-                  viewModesHandler[field.data_type](project, field),
+                  canViewField(viewableFields, field.write_field_name) && (
+                    <span key={field.write_field_name}>
+                      {viewModesHandler[field.data_type](
+                        project,
+                        field,
+                        undefined,
+                        getFieldHistory(field.write_field_name),
+                      )}
+                    </span>
+                  ),
               )}
             </div>
           </div>
@@ -79,7 +99,12 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
                 projectFields,
                 (field) =>
                   canViewField(viewableFields, field.write_field_name) &&
-                  viewModesHandler[field.data_type](project, field),
+                  viewModesHandler[field.data_type](
+                    project,
+                    field,
+                    undefined,
+                    getFieldHistory(field.write_field_name),
+                  ),
               )}
             </div>
             {canViewSubstanceSection && odsOdpFields.length > 0 && (

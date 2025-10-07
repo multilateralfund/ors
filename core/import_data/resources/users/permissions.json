@@ -180,6 +180,24 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_enterprise_view_access",
+        "permission_name": "Has enterprise view access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
+        "permission_codename": "has_enterprise_edit_access",
+        "permission_name": "Has enterprise edit access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
+        "permission_codename": "has_enterprise_approval_access",
+        "permission_name": "Has enterprise approval access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
         "permission_codename": "has_project_enterprise_edit_access",
         "permission_name": "Has project enterprise edit access",
         "app_label": "core",

@@ -90,9 +90,14 @@ export const getIsSaveDisabled = (
   crossCuttingFields: CrossCuttingFields,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title } = crossCuttingFields
+  const { project_type, sector, title, project_start_date, project_end_date } =
+    crossCuttingFields
 
-  return !canLinkToBp || !(project_type && sector && title)
+  return (
+    !canLinkToBp ||
+    !(project_type && sector && title) ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date))
+  )
 }
 
 export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
@@ -613,7 +618,8 @@ export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
 ) => {
-  const { canViewBp, canUpdateBp, canViewProjects } = permissions
+  const { canViewBp, canUpdateBp, canViewProjects, canViewEnterprises } =
+    permissions
   const { projectId, projectSubmissionStatus } = projectData ?? {}
 
   return [
@@ -638,11 +644,16 @@ export const getMenus = (
         { title: 'Update MYA data', url: null },
         { title: 'Update post ExCom fields', url: null },
         {
-          title: 'Update enterprises',
-          url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
-          permissions: [canViewProjects],
+          title: 'Update project enterprises',
+          url: `/projects-listing/projects-enterprises${projectId ? `/${projectId}` : ''}`,
+          permissions: [canViewProjects && canViewEnterprises],
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+        },
+        {
+          title: 'Manage enterprises',
+          url: `/projects-listing/enterprises`,
+          permissions: [canViewEnterprises],
         },
         { title: 'Transfer a project', url: null },
       ],

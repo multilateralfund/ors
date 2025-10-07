@@ -83,12 +83,12 @@ const GenerateDBMenu = () => {
       >
         {filteredMenuItems.map(({ url, title }) => (
           <MenuItem
-            className="whitespace-normal rounded-none py-2 pl-3.5 pr-7 hover:bg-white"
+            className="whitespace-normal rounded-none p-0 hover:bg-white"
             onClick={handleClose}
             disabled={!url}
           >
             <CustomLink
-              className="break-words text-lg normal-case leading-tight tracking-[0.05em] no-underline"
+              className="h-full w-full break-words py-2 pl-3.5 pr-7 text-lg normal-case leading-tight tracking-[0.05em] no-underline"
               href={url}
               variant="contained"
             >
