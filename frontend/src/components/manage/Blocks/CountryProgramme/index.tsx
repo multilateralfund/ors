@@ -292,16 +292,27 @@ export function getSections(
             title:
               'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
           },
-      {
-        id: 'section_e',
-        allowFullScreen: true,
-        component: components[mode].section_e || DefaultComponent,
-        label: 'Section E',
-        note: 'NOTE:  Columns shaded in grey are voluntary',
-        panelId: 'section-E-panel',
-        title:
-          'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
-      },
+      model === 'V'
+        ? {
+            id: 'section_e',
+            allowFullScreen: true,
+            component: components[mode].section_e || DefaultComponent,
+            label: 'Section E',
+            note: 'NOTE: Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances.',
+            panelId: 'section-E-panel',
+            title:
+              'SECTION E. ANNEX F, GROUP II – DATA ON QUANTITY OF EMISSIONS OF HFC-23 FROM FACILITIES MANUFACTURING ANNEX C GROUP I OR ANNEX F SUBSTANCES (METRIC TONNES)',
+          }
+        : {
+            id: 'section_e',
+            allowFullScreen: true,
+            component: components[mode].section_e || DefaultComponent,
+            label: 'Section E',
+            note: 'NOTE:  Columns shaded in grey are voluntary',
+            panelId: 'section-E-panel',
+            title:
+              'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
+          },
       {
         id: 'section_f',
         component: components[mode].section_f || DefaultComponent,
