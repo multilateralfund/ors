@@ -205,13 +205,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3
-      ? isAfterApproval
-        ? disableSubmit ||
-          hasSectionErrors(approvalErrors) ||
-          approvalFields.length === 0
-        : disableSubmit
-      : isSaveDisabled)
+    (project.version >= 3 ? disableSubmit : isSaveDisabled)
 
   const disableApprovalActions =
     !specificFieldsLoaded ||
@@ -339,7 +333,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/submit`)
       }
 
-      if (canApproveProjects && isAfterApproval) {
+      if (isRecommended) {
         await editApprovalFields()
       }
       return true

@@ -173,7 +173,7 @@ const ProjectsCreate = ({
 
   const approvalErrors = useMemo(
     () =>
-      mode === 'edit'
+      mode === 'edit' && project?.submission_status === 'Recommended'
         ? getApprovalErrors(approvalData, approvalFields, errors, project)
         : {},
     [approvalData, approvalFields, errors],
