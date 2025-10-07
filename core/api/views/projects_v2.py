@@ -284,10 +284,8 @@ class ProjectV2ViewSet(
                 limit_to_draft = False
                 allowed_versions.update([1, 2])
 
-            is_post_excom_request = (
-                self.action == "update"
-                and self.request.query_params.get("post-excom-update", "false").lower()
-                == "true"
+            is_post_excom_request = self.action == "update" and self.request.data.get(
+                "post-excom-update", False
             )
 
             if user.has_perm("core.has_project_v2_version3_edit_access") or (
@@ -581,15 +579,6 @@ class ProjectV2ViewSet(
         which means that the version is increased and a new archived version of the project is created.
         """,
         request_body=ProjectV2CreateUpdateSerializer,
-        manual_parameters=[
-            openapi.Parameter(
-                "post-excom-update",
-                openapi.IN_QUERY,
-                description="Set to true if the project is updated as a post-excom update.",
-                type=openapi.TYPE_BOOLEAN,
-                required=False,
-            ),
-        ],
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
