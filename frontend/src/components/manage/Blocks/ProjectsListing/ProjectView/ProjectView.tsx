@@ -136,11 +136,11 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const isAfterApproval = ['Approved', 'Not approved'].includes(
+  const hasApprovalTab = ['Recommended', 'Approved', 'Not approved'].includes(
     project.submission_status,
   )
 
-  const approvalFields = isAfterApproval
+  const approvalFields = hasApprovalTab
     ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
         (field) => field.section === 'Approval',
       ) ?? [])
@@ -222,7 +222,7 @@ const ProjectView = ({
         <ProjectDocumentation {...{ projectFiles, loadedFiles }} mode="view" />
       ),
     },
-    ...(isAfterApproval
+    ...(hasApprovalTab
       ? [
           {
             id: 'project-approval',
