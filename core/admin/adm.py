@@ -72,9 +72,10 @@ class AdmRowAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.select_related(
-            "parent",
             "country_programme_report__country",
-        )
+            "parent",
+            "time_frame",
+        ).prefetch_related("choices")
 
     def get_list_display(self, request):
         exclude = [

@@ -41,10 +41,19 @@ class MetaProjectAdmin(admin.ModelAdmin):
         ]
         return get_final_display_list(MetaProject, exclude)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("lead_agency")
+
 
 @admin.register(ProjectComponents)
 class ProjectComponentsAdmin(admin.ModelAdmin):
-    pass
+    search_fields = [
+        "id",
+    ]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("projects")
 
 
 class ProjectFileInline(admin.TabularInline):
@@ -103,6 +112,13 @@ class ProjectAdmin(admin.ModelAdmin):
         "submission_status",
     ]
     autocomplete_fields = [
+        "component",
+        "meta_project",
+        "meeting",
+        "transfer_meeting",
+        "transfer_decision",
+        "decision",
+        "post_excom_decision",
         "country",
         "sector",
         "subsectors",
@@ -135,7 +151,26 @@ class ProjectAdmin(admin.ModelAdmin):
         return get_final_display_list(Project, exclude)
 
     def get_queryset(self, request):
-        return Project.objects.really_all()
+        return Project.objects.really_all().select_related(
+            "agency",
+            "cluster",
+            "country",
+            "decision",
+            "group",
+            "meta_project",
+            "meeting",
+            "meeting_approved",
+            "meeting_transf",
+            "post_excom_meeting",
+            "post_excom_decision",
+            "project_type",
+            "sector",
+            "submission_status",
+            "status",
+            "transfer_meeting",
+            "transfer_decision",
+            "version_created_by",
+        )
 
     def other_projects_in_component(self, obj):
         if not obj.component_id:
@@ -250,6 +285,10 @@ class ProjectOdsOdpAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Project.objects.really_all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("ods_substance", "ods_blend")
+
 
 @admin.register(ProjectFund)
 class ProjectFundAdmin(admin.ModelAdmin):
@@ -269,6 +308,10 @@ class ProjectFundAdmin(admin.ModelAdmin):
             # Use Project.objects.really_all() to include all projects
             kwargs["queryset"] = Project.objects.really_all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("meeting")
 
 
 @admin.register(SubmissionAmount)
@@ -304,25 +347,29 @@ class MeetingAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
-            "project",
-            "decision",
-            "projectfund",
-            "projects",
-            "projects_approved",
-            "transferred_projects",
-            "projectcomment",
             "annualcontributionstatus",
-            "triennialcontributionstatus",
+            "bilateralassistance",
+            "bp_projects",
+            "businessplan",
+            "decision",
             "disputedcontribution",
             "externalallocation",
             "externalincomeannual",
+            "post_excom_projects",
+            "projectcomment",
+            "projectfund",
+            "projects",
+            "project",
+            "projects_approved",
+            "progress_reports",
             "statusofthefundfile",
-            "businessplan",
+            "transferred_projects",
+            "transfer_meeting_projects",
             "triennialcontributionview",
-            "bp_projects",
-            "bilateralassistance",
+            "triennialcontributionstatus",
         ]
-        return get_final_display_list(Meeting, exclude)
+        fields = get_final_display_list(Meeting, exclude)
+        return fields
 
 
 @admin.register(Decision)
@@ -340,6 +387,10 @@ class DecisionAdmin(admin.ModelAdmin):
 
         results = get_final_display_list(Decision, exclude)
         return results
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("meeting")
 
 
 @admin.register(RBMMeasure)

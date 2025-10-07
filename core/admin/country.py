@@ -40,3 +40,7 @@ class CountryAdmin(admin.ModelAdmin):
         ]
         fields = get_final_display_list(Country, exclude)
         return fields
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("parent")
