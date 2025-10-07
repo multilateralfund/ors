@@ -56,15 +56,10 @@ const PEnterpriseCreateWrapper = () => {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
-  }
-
-  if (!canEditProjectEnterprise) {
-    return (
-      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
-    )
   }
 
   return (

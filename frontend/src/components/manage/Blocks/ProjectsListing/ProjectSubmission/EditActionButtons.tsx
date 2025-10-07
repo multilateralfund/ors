@@ -109,7 +109,9 @@ const EditActionButtons = ({
   } = projectData
 
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version >= 3 && canUpdateV3Projects)
+    postExComUpdate ||
+    (version < 3 && canUpdateProjects) ||
+    (version >= 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =

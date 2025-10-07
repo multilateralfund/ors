@@ -14,8 +14,7 @@ const ProjectsPostExComUpdateWrapper = () => {
   if (
     project?.error ||
     (data &&
-      (!data.editable ||
-        !isNull(data.latest_project) ||
+      (!isNull(data.latest_project) ||
         data.submission_status !== 'Approved' ||
         data.status === 'Closed' ||
         data.status === 'Transferred'))

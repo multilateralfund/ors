@@ -650,9 +650,9 @@ export const getMenus = (
   const {
     canViewBp,
     canUpdateBp,
-    canViewProjects,
     canViewEnterprises,
-    canEditApprovedProjects,
+    canEditProjectEnterprise,
+    canUpdatePostExcom,
     canViewMetaProjects,
   } = permissions
   const { projectId, projectSubmissionStatus, projectStatus } =
@@ -680,13 +680,13 @@ export const getMenus = (
         {
           title: 'Update MYA data',
           url: '/projects-listing/update-mya-data',
-          disabled: !(canViewProjects && canViewMetaProjects),
+          disabled: !canViewMetaProjects,
         },
         {
           title: 'Update post ExCom fields',
           url: `/projects-listing/${projectId}/post-excom-update`,
           disabled:
-            !canEditApprovedProjects ||
+            !canUpdatePostExcom ||
             !projectId ||
             projectSubmissionStatus !== 'Approved' ||
             projectStatus === 'Closed' ||
@@ -696,7 +696,7 @@ export const getMenus = (
           title: 'Update project enterprises',
           url: `/projects-listing/projects-enterprises/${projectId}`,
           disabled:
-            !(canViewProjects && canViewEnterprises) ||
+            !canEditProjectEnterprise ||
             !projectId ||
             projectSubmissionStatus !== 'Approved',
         },

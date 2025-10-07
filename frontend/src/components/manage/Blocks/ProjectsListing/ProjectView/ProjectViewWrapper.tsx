@@ -42,8 +42,7 @@ const ProjectViewWrapper = () => {
     useParams<Record<string, string>>()
   const [location] = useLocation()
 
-  const { canEditProjects, canEditApprovedProjects } =
-    useContext(PermissionsContext)
+  const { canEditProjects, canUpdatePostExcom } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -139,8 +138,7 @@ const ProjectViewWrapper = () => {
                     Edit
                   </EditLink>
                 )}
-                {canEditApprovedProjects &&
-                editable &&
+                {canUpdatePostExcom &&
                 isNull(latest_project) &&
                 submission_status === 'Approved' &&
                 project_status !== 'Closed' &&

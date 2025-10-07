@@ -23,11 +23,11 @@ export default function PListingWrapper() {
   const {
     canViewBp,
     canUpdateBp,
-    canViewProjects,
     canViewEnterprises,
+    canEditProjectEnterprise,
     canUpdateProjects,
     canAssociateProjects,
-    canEditApprovedProjects,
+    canUpdatePostExcom,
     canViewMetaProjects,
   } = useContext(PermissionsContext)
 
@@ -129,9 +129,9 @@ export default function PListingWrapper() {
             {
               canViewBp,
               canUpdateBp,
-              canViewProjects,
               canViewEnterprises,
-              canEditApprovedProjects,
+              canEditProjectEnterprise,
+              canUpdatePostExcom,
               canViewMetaProjects,
             },
             projectData,
