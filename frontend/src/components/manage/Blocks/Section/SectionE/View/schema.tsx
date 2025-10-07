@@ -8,6 +8,7 @@ import {
   sectionColDefByIdFunc,
   sectionColGroupDefByIdFunc,
 } from '../sectionColumnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function useGridOptions(props: { model: string }) {
   const { model } = props
@@ -33,14 +34,13 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'total',
-        headerName:
-          model === 'V'
-            ? 'Total amount generated (tonnes)'
-            : 'Total amount generated',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Total amount generated (tonnes)'
+          : 'Total amount generated',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['total_amount_generated'],
       },
-      ...(model === 'V'
+      ...(shouldEnableNewCPDataFormatting(model)
         ? [
             {
               dataType: 'number',
@@ -63,10 +63,9 @@ function useGridOptions(props: { model: string }) {
           {
             dataType: 'number',
             field: 'feedstock_gc',
-            headerName:
-              model === 'V'
-                ? 'For feedstock use in your country'
-                : 'For all uses',
+            headerName: shouldEnableNewCPDataFormatting(model)
+              ? 'For feedstock use in your country'
+              : 'For all uses',
             orsAggFunc: 'sumTotal',
             ...sectionColDefById['feedstock_gc'],
           },
@@ -80,44 +79,40 @@ function useGridOptions(props: { model: string }) {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName:
-          model === 'V'
-            ? 'Amount generated and captured (tonnes)'
-            : 'Amount generated and captured',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount generated and captured (tonnes)'
+          : 'Amount generated and captured',
         marryChildren: true,
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
       {
         dataType: 'number',
         field: 'feedstock_wpc',
-        headerName:
-          model === 'V'
-            ? 'Amount used for feedstock without prior capture (tonnes)'
-            : 'Amount used for feedstock without prior capture',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount used for feedstock without prior capture (tonnes)'
+          : 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['feedstock_wpc'],
       },
       {
         dataType: 'number',
         field: 'destruction_wpc',
-        headerName:
-          model === 'V'
-            ? 'Amount destroyed in the facility without prior capture (tonnes)'
-            : 'Amount destroyed without prior capture',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount destroyed in the facility without prior capture (tonnes)'
+          : 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['destruction_wpc'],
       },
       {
         dataType: 'number',
         field: 'generated_emissions',
-        headerName:
-          model === 'V'
-            ? 'Amount of generated emissions (tonnes)'
-            : 'Amount of generated emissions',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount of generated emissions (tonnes)'
+          : 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['generated_emissions'],
       },
-      ...(model === 'V'
+      ...(shouldEnableNewCPDataFormatting(model)
         ? [
             {
               cellDataType: 'number',

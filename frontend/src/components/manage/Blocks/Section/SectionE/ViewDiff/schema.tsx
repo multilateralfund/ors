@@ -8,6 +8,7 @@ import {
   sectionColDefByIdFunc,
   sectionColGroupDefByIdFunc,
 } from '../sectionColumnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function useGridOptions(props: { model: string }) {
   const { model } = props
@@ -35,13 +36,12 @@ function useGridOptions(props: { model: string }) {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'total',
-        headerName:
-          model === 'V'
-            ? 'Total amount generated (tonnes)'
-            : 'Total amount generated',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Total amount generated (tonnes)'
+          : 'Total amount generated',
         orsAggFunc: 'sumTotal',
       },
-      ...(model === 'V'
+      ...(shouldEnableNewCPDataFormatting(model)
         ? [
             {
               dataType: 'number_diff',
@@ -60,8 +60,9 @@ function useGridOptions(props: { model: string }) {
             cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'all_uses',
-            headerName:
-              model === 'V' ? 'For uses excluding feedstocks' : 'For all uses',
+            headerName: shouldEnableNewCPDataFormatting(model)
+              ? 'For uses excluding feedstocks'
+              : 'For all uses',
             orsAggFunc: 'sumTotal',
           },
           {
@@ -83,10 +84,9 @@ function useGridOptions(props: { model: string }) {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName:
-          model === 'V'
-            ? 'Amount generated and captured (tonnes)'
-            : 'Amount generated and captured',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount generated and captured (tonnes)'
+          : 'Amount generated and captured',
         marryChildren: true,
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
@@ -95,10 +95,9 @@ function useGridOptions(props: { model: string }) {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock_wpc',
-        headerName:
-          model === 'V'
-            ? 'Amount used for feedstock without prior capture (tonnes)'
-            : 'Amount used for feedstock without prior capture',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount used for feedstock without prior capture (tonnes)'
+          : 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -106,10 +105,9 @@ function useGridOptions(props: { model: string }) {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'destruction_wpc',
-        headerName:
-          model === 'V'
-            ? 'Amount destroyed in the facility without prior capture (tonnes)'
-            : 'Amount destroyed without prior capture',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount destroyed in the facility without prior capture (tonnes)'
+          : 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -117,13 +115,12 @@ function useGridOptions(props: { model: string }) {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'generated_emissions',
-        headerName:
-          model === 'V'
-            ? 'Amount of generated emissions (tonnes)'
-            : 'Amount of generated emissions',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount of generated emissions (tonnes)'
+          : 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
       },
-      ...(model === 'V'
+      ...(shouldEnableNewCPDataFormatting(model)
         ? [
             {
               dataType: 'number_diff',

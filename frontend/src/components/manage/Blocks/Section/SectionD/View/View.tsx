@@ -13,6 +13,7 @@ import { SectionDRowData, SectionDViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function getRowData(report: CPReport): SectionDRowData[] {
   return (report.section_d || []).map((item) => ({
@@ -33,7 +34,7 @@ export default function SectionDView(props: SectionDViewProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        {variant.model === 'V' ? (
+        {shouldEnableNewCPDataFormatting(variant.model) ? (
           <Footnotes />
         ) : (
           <Footnote id="" index="">
