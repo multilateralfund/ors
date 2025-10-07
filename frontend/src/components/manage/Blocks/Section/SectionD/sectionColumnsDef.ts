@@ -56,7 +56,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             }),
             footnote: {
               id: '1',
-              content: 'Unintentional generation',
+              content: 'Unintentional generation.',
               order: 1,
             },
           }),

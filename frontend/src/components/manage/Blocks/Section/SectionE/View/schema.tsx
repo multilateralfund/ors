@@ -47,7 +47,7 @@ function useGridOptions(props: { model: string }) {
               field: 'stored_at_start_of_year',
               headerName: 'Amount stored at the beginning of the year (tonnes)',
               orsAggFunc: 'sumTotal',
-              ...sectionColDefById['stored_at_end_of_year'],
+              ...sectionColDefById['stored_at_start_of_year'],
             },
           ]
         : []),
