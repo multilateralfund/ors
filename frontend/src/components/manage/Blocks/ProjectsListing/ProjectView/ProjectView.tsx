@@ -136,9 +136,7 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const hasApprovalTab = ['Recommended', 'Approved', 'Not approved'].includes(
-    project.submission_status,
-  )
+  const hasApprovalTab = project.version >= 3
 
   const approvalFields = hasApprovalTab
     ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
