@@ -21,6 +21,7 @@ export default function FormattedNumberInput(
     onlyNumber,
     value,
     withoutInitialValue = false,
+    prefix,
     ...rest
   } = props
 
@@ -46,11 +47,17 @@ export default function FormattedNumberInput(
 
   return (
     <div className="relative">
+      {prefix && (
+        <span className={'absolute left-0 flex h-10 items-center px-4 py-2'}>
+          {prefix}
+        </span>
+      )}
       <NumberInput
         id={id}
         name={name || id}
         className={cx(CLASSESS, className, {
           [CSS_MASKED]: !inputMode && !onlyNumber,
+          '!pl-8': !!prefix,
         })}
         ref={realInput}
         style={STYLE}
@@ -63,6 +70,7 @@ export default function FormattedNumberInput(
         id={`${id}_mask`}
         className={cx(CLASSESS, className, {
           [CSS_MASKED]: inputMode || onlyNumber,
+          '!pl-8': !!prefix,
         })}
         readOnly={true}
         ref={maskInput}

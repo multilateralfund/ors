@@ -146,6 +146,7 @@ export const MetaProjectEdit = (props: {
             className="!m-0 h-10 w-full !border-gray-400 p-2.5"
             value={fieldValue}
             onChange={changeSimpleInput(fd.name, { numeric: true })}
+            prefix={'$'}
           />
         )
       default:
