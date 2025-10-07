@@ -18,7 +18,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-from core.models.utils import SubstancesType
+from core.models.utils import SubstancesType, EnterpriseStatus
 
 
 class ProjectFilterBackend(DjangoFilterBackend):
@@ -130,7 +130,7 @@ class ProjectEnterpriseFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     status = filters.MultipleChoiceFilter(
-        choices=ProjectEnterprise.EnterpriseStatus.choices,
+        choices=EnterpriseStatus.choices,
         widget=CSVWidget,
     )
 
@@ -153,9 +153,20 @@ class EnterpriseFilter(filters.FilterSet):
         queryset=Country.objects.all(),
         widget=CSVWidget,
     )
+    status = filters.MultipleChoiceFilter(
+        choices=EnterpriseStatus.choices,
+        widget=CSVWidget,
+    )
+    agencies = filters.ModelMultipleChoiceFilter(
+        field_name="agencies",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
 
     class Meta:
         model = Enterprise
         fields = [
             "country_id",
+            "status",
+            "agencies",
         ]

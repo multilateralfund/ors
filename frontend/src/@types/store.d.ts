@@ -123,6 +123,7 @@ type UpdatedBusinessPlan = {
   status: string
   year_end: number
   year_start: number
+  updated_at: string
 }
 
 export interface BPSlice {
@@ -184,6 +185,8 @@ export interface ProjectsFieldsSlice {
     version: number,
     submissionStatus?: string,
     canEditAll?: boolean,
+    isPostExcom?: boolean,
+    mode?: string,
   ) => void
   fetchProjectFields: () => Promise<void>
 }
@@ -196,6 +199,27 @@ export type ProjectWarningsType = {
 export interface ProjectWarningsTypeSlice {
   warnings: ProjectWarningsType
   setWarnings: (warnings: ProjectWarningsType) => void
+}
+
+export interface ProjectFieldHistoryValue {
+  version: number
+  value: any
+  post_excom_meeting: number | null
+}
+
+export type ProjectFieldHistoryEntry = Record<
+  string,
+  ProjectFieldHistoryValue[]
+>
+
+export interface ProjectFieldHistorySlice {
+  fieldHistory: {
+    loading: boolean
+    loaded: boolean
+    data: ProjectFieldHistoryEntry
+    error: any
+  }
+  fetchFieldHistory: (projectId: number) => Promise<void>
 }
 
 export interface BusinessPlanSlice {
@@ -277,6 +301,7 @@ export type StoreState = {
   projects: ProjectsSlice
   projectFields: ProjectsFieldsSlice
   projectWarnings: ProjectWarningsTypeSlice
+  projectFieldHistory: ProjectFieldHistorySlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

@@ -56,6 +56,8 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       }
       setPasting(false)
       setForm(nextForm)
+      console.debug("pendingIds", pendingIds);
+      console.debug("newValues", newValues);
       if (numInserted > 0) {
         enqueueSnackbar(
           `Successfully pasted ${numInserted}/${numEntries} entries.`,

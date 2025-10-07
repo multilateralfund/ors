@@ -1,9 +1,8 @@
-import { ChangeEvent, useContext } from 'react'
+import { ChangeEvent, useContext, useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SectionTitle } from './ProjectsCreate'
 import {
@@ -19,6 +18,7 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
+import { NextButton } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
@@ -34,6 +34,13 @@ import { useStore } from '@ors/store'
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull } from 'lodash'
 import cx from 'classnames'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
+
+type DecisionOption = {
+  name: string
+  value: number
+}
 
 const ProjectIdentifiersFields = ({
   projectData,
@@ -45,6 +52,9 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  project,
+  postExComUpdate,
+  isV3ProjectEditable,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -66,12 +76,36 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
-  const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
+  const isV3Project = postExComUpdate || isV3ProjectEditable
+  const isAddOrCopy = mode === 'add' || mode === 'copy'
+  const hasNoLeadAgency = !project?.meta_project?.lead_agency
+  const isApproved = project?.submission_status === 'Approved'
+  const canUpdateLeadAgency =
+    (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
+    (isV3Project && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = canEditField(editableFields, 'meeting')
+  const canEditMeeting =
+    !(isV3Project && projIdentifiers?.meeting) &&
+    canEditField(editableFields, 'meeting')
+
+  const decisionsApi = useApi<ApiDecision[]>({
+    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    options: {
+      params: {
+        meeting_id: projIdentifiers?.post_excom_meeting,
+      },
+    },
+  })
+
+  const decisions = useMemo(() => {
+    const data = decisionsApi.data ?? ([] as ApiDecision[])
+    return data.map((d) => ({ name: d.number, value: d.id }))
+  }, [decisionsApi.data])
+
+  console.log(decisions)
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -157,6 +191,36 @@ const ProjectIdentifiersFields = ({
     }))
   }
 
+  const handleChangePostExComMeeting = (meeting?: string) => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        post_excom_meeting: parseNumber(meeting),
+      },
+    }))
+    decisionsApi.setParams({ meeting_id: meeting })
+  }
+
+  const handleChangePostExComDecision = (
+    option: DecisionOption | string | null,
+  ) => {
+    const initialValue =
+      typeof option === 'string' ? option : (option?.value.toString() ?? '')
+
+    if (initialValue === '' || !isNaN(parseInt(initialValue))) {
+      const finalVal = initialValue ? parseInt(initialValue) : null
+
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          post_excom_decision: finalVal,
+        },
+      }))
+    }
+  }
+
   const handleChangeSubmitOnBehalf = (event: ChangeEvent<HTMLInputElement>) => {
     setProjectData((prevData) => ({
       ...prevData,
@@ -172,7 +236,64 @@ const ProjectIdentifiersFields = ({
 
   return (
     <>
-      <SectionTitle>Identifiers</SectionTitle>
+      {postExComUpdate ? (
+        <div>
+          <SectionTitle>
+            Update Project fields following Executive Committee
+          </SectionTitle>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex flex-wrap gap-x-20 gap-y-3">
+              <div className="w-32">
+                <Label>Meeting</Label>
+                <PopoverInput
+                  label={getMeetingNr(
+                    projIdentifiers?.post_excom_meeting ?? undefined,
+                  )?.toString()}
+                  options={getMeetingOptions()}
+                  onChange={handleChangePostExComMeeting}
+                  onClear={() => handleChangePostExComMeeting()}
+                  clearBtnClassName="right-1"
+                  withClear={true}
+                  className="!m-0 h-10 !py-1"
+                />
+              </div>
+              <div className="w-[16rem]">
+                <Label htmlFor="postExComDecision">Decision</Label>
+                <Field<any>
+                  widget="autocomplete"
+                  options={decisions}
+                  value={projIdentifiers?.post_excom_decision ?? ''}
+                  onChange={(_, value) =>
+                    handleChangePostExComDecision(value as DecisionOption)
+                  }
+                  getOptionLabel={(option) => {
+                    return getOptionLabel(decisions, option, 'value')
+                  }}
+                  {...sectionDefaultProps}
+                />
+              </div>
+              <div className="flex items-end">
+                <div className="flex h-10 items-center">
+                  <CustomAlert
+                    type="error"
+                    content={
+                      <>
+                        <Typography className="text-lg">
+                          These fields are mandatory.
+                        </Typography>
+                      </>
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+        </div>
+      ) : null}
+      <SectionTitle>
+        {postExComUpdate ? 'Main attributes' : 'Identifiers'}
+      </SectionTitle>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'country') && (
@@ -187,9 +308,9 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
+                  (isV3Project && !!projIdentifiers?.country) ||
                   !areNextSectionsDisabled ||
-                  mode === 'partial-link' ||
-                  mode === 'full-link' ||
+                  (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
                 }
                 Input={{
@@ -238,6 +359,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
+                  (isV3Project && !!projIdentifiers?.agency) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -260,6 +382,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
+                  (isV3Project && !!projIdentifiers?.cluster) ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -282,6 +405,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
+                    (isV3Project && !!projIdentifiers?.cluster) ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
@@ -366,34 +490,30 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <NavigationButton
-            isBtnDisabled={!areNextStepsAvailable}
-            setCurrentStep={setCurrentStep}
-            direction="next"
-            classname={
-              'h-8 leading-none ' +
-              (areNextStepsAvailable
-                ? 'border-secondary !bg-secondary text-white hover:border-primary hover:!bg-primary hover:text-mlfs-hlYellow'
-                : '')
-            }
-          />
-          {!areNextSectionsDisabled && (
-            <div className="mt-5">
+        {(mode === 'copy' ||
+          (isV3Project && areNextSectionsDisabled) ||
+          !(isV3Project || project?.submission_status === 'Approved')) && (
+          <div className="mt-5 flex flex-wrap items-center gap-2.5">
+            <NextButton
+              nextStep={2}
+              setCurrentStep={setCurrentStep}
+              isBtnDisabled={!areNextStepsAvailable}
+            />
+            {!areNextSectionsDisabled && (
               <Button
                 className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
                 size="large"
                 variant="contained"
                 onClick={() => {
-                  setCurrentStep(0)
-                  setCurrentTab(0)
+                  setCurrentStep?.(0)
+                  setCurrentTab?.(0)
                 }}
               >
                 Update fields
               </Button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   )

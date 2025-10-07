@@ -41,7 +41,7 @@ import {
 import { useStore } from '@ors/store.tsx'
 
 import { Tabs, Tab, Typography, CircularProgress } from '@mui/material'
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { filter, groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
   files,
   projectFiles,
   errors,
@@ -73,6 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -85,11 +87,6 @@ const ProjectsCreate = ({
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const [currentStep, setCurrentStep] = useState<number>(
-    mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
-  )
-  const [currentTab, setCurrentTab] = useState<number>(0)
-
   const {
     projIdentifiers,
     crossCuttingFields,
@@ -101,6 +98,9 @@ const ProjectsCreate = ({
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
+
+  const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(0)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
@@ -144,6 +144,8 @@ const ProjectsCreate = ({
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
+  const isApprovalTabAvailable =
+    project && mode === 'edit' && project.version >= 3
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -178,6 +180,15 @@ const ProjectsCreate = ({
   )
 
   const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const canEditApprovedProj =
+    postExComUpdate ||
+    mode === 'copy' ||
+    project?.submission_status !== 'Approved'
+  const isV3ProjectEditable =
+    !!project &&
+    mode === 'edit' &&
+    canEditApprovedProjects &&
+    ['Withdrawn', 'Not approved'].includes(project.submission_status)
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -196,7 +207,13 @@ const ProjectsCreate = ({
   const impactErrors = specificFieldsErrors['Impact'] || {}
   const { errorText, isError } = trancheErrors || {}
 
-  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
+  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name').filter(
+    (field) => !phaseOutFieldNames.includes(field),
+  )
+  const phaseOutFields = map(odsOdpFields, 'write_field_name').filter((field) =>
+    phaseOutFieldNames.includes(field),
+  )
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const errorMessageExtension =
@@ -210,8 +227,19 @@ const ProjectsCreate = ({
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
+          const phaseOutErrors = map(phaseOutFields, (field) =>
+            checkInvalidValue(odsOdp[field])
+              ? [
+                  'Phase out',
+                  [`At least two phase out values should be provided.`],
+                ]
+              : null,
+          ).filter(Boolean) as [string, string[]][]
 
-          return Object.fromEntries(errors)
+          const formattedPhaseOutErrors =
+            phaseOutErrors.length < 2 ? [] : phaseOutErrors
+
+          return Object.fromEntries([...errors, ...formattedPhaseOutErrors])
         })
       : []
 
@@ -239,8 +267,19 @@ const ProjectsCreate = ({
 
       if (fieldLabels.length === 0) return null
 
+      const filteredFieldLabels = filter(
+        fieldLabels,
+        (label) => label !== 'Phase out',
+      )
+
+      const regularFieldsMessage =
+        filteredFieldLabels.length > 0
+          ? `${filteredFieldLabels.join(', ')}: ${filteredFieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`
+          : ''
+      const phaseOutFieldsMessage = `${fieldLabels.includes('Phase out') ? 'At least two phase out values should be provided. ' : ''}`
+
       return {
-        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
+        message: `Substance ${Number(id) + 1} - ${regularFieldsMessage} ${phaseOutFieldsMessage}`,
       }
     },
   ).filter(Boolean)
@@ -279,6 +318,9 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            project,
+            postExComUpdate,
+            isV3ProjectEditable,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -308,9 +350,18 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
+            currentStep,
+            setCurrentStep,
+            setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
+            postExComUpdate,
+            canEditApprovedProj,
+            isV3ProjectEditable,
           }}
+          nextStep={
+            !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
+          }
           errors={crossCuttingErrors}
         />
       ),
@@ -339,7 +390,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled,
+      disabled: isSpecificInfoTabDisabled || currentStep < 3,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -353,7 +404,11 @@ const ProjectsCreate = ({
             odsOdpErrors,
             trancheErrors,
             getTrancheErrors,
+            setCurrentStep,
+            setCurrentTab,
+            canEditApprovedProj,
           }}
+          nextStep={!isImpactTabDisabled ? 4 : 5}
         />
       ),
       errors: [
@@ -391,12 +446,20 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled,
+      disabled: isImpactTabDisabled || currentStep < 4,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
           errors={impactErrors}
-          {...{ projectData, setProjectData, hasSubmitted }}
+          {...{
+            projectData,
+            setProjectData,
+            hasSubmitted,
+            specificFields,
+            setCurrentStep,
+            setCurrentTab,
+            postExComUpdate,
+          }}
         />
       ),
       errors: formatErrors(impactErrors),
@@ -419,7 +482,16 @@ const ProjectsCreate = ({
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectDocumentation
-          {...{ projectFiles, files, mode, project, loadedFiles }}
+          {...{
+            projectFiles,
+            files,
+            mode,
+            project,
+            loadedFiles,
+          }}
+          {...(!!isApprovalTabAvailable && !isApprovalTabDisabled
+            ? { setCurrentStep, setCurrentTab }
+            : {})}
           {...rest}
         />
       ),
@@ -440,7 +512,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(isApprovalTabAvailable
       ? [
           {
             id: 'project-approval-section',
@@ -525,6 +597,7 @@ const ProjectsCreate = ({
       >
         {steps.map(({ id, ariaControls, label, disabled }) => (
           <Tab
+            key={id}
             id={id}
             aria-controls={ariaControls}
             label={label}
@@ -539,9 +612,24 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => {
+          .map(({ id, component, errors }) => {
             return (
-              <>
+              <span key={id}>
+                {mode === 'edit' &&
+                  project?.submission_status === 'Approved' &&
+                  !postExComUpdate && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="pt-0.5 text-lg leading-none">
+                          You are editing the approved version of the project
+                          (version 3). Any other updates can be brought only by
+                          adding post ExCom updates.
+                        </Typography>
+                      }
+                    />
+                  )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -581,7 +669,7 @@ const ProjectsCreate = ({
                   />
                 )}
                 {component}
-              </>
+              </span>
             )
           })}
       </div>

@@ -3,10 +3,10 @@
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ExpandableMenu from '../ProjectsListing/ExpandableMenu'
 import ProjectsAssociate from './ProjectsAssociate'
+import { CreateButton } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
 import { getMenus } from '../utils'
 
@@ -16,8 +16,14 @@ import { isNull } from 'lodash'
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canViewBp, canUpdateBp, canUpdateProjects, canViewProjects } =
-    useContext(PermissionsContext)
+  const {
+    canViewBp,
+    canUpdateBp,
+    canUpdateProjects,
+    canViewProjects,
+    canViewEnterprises,
+    canEditApprovedProjects,
+  } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -30,20 +36,21 @@ const ProjectsAssociateWrapper = () => {
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
-          {getMenus({ canViewBp, canUpdateBp, canViewProjects }).map((menu) => (
+          {getMenus({
+            canViewBp,
+            canUpdateBp,
+            canViewProjects,
+            canViewEnterprises,
+            canEditApprovedProjects,
+          }).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>
         {canUpdateProjects && (
-          <CustomLink
-            className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+          <CreateButton
+            title="New Project Submission"
             href="/projects-listing/create"
-            color="secondary"
-            variant="contained"
-            button
-          >
-            New Project Submission
-          </CustomLink>
+          />
         )}
       </div>
       <Loading

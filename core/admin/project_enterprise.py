@@ -52,7 +52,6 @@ class ProjectEnterpriseAdmin(admin.ModelAdmin):
             "ods_odp",
             "project",
         ]
-
         data = get_final_display_list(ProjectEnterprise, exclude)
         return data
 

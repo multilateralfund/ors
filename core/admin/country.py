@@ -36,6 +36,7 @@ class CountryAdmin(admin.ModelAdmin):
             "ferm_gain_loss",
             "disputed_contributions",
             "finalreportsview",
+            "enterprises",
         ]
         fields = get_final_display_list(Country, exclude)
         return fields

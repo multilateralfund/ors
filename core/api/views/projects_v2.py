@@ -24,10 +24,13 @@ from core.api.permissions import (
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2ApproveAccess,
     HasProjectV2RecommendAccess,
+    HasProjectV2TransferAccess,
+    HasProjectV2EditPlusV3Access,
 )
 from core.utils import regenerate_meta_project_new_code
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
+    ProjectV2TransferSerializer,
     ProjectV2RecommendSerializer,
     ProjectV2ProjectIncludeFileSerializer,
     ProjectV2FileSerializer,
@@ -36,6 +39,8 @@ from core.api.serializers.project_v2 import (
     ProjectV2CreateUpdateSerializer,
     ProjectV2EditActualFieldsSerializer,
     ProjectV2EditApprovalFieldsSerializer,
+    SerializeProjectFieldHistory,
+    HISTORY_DESCRIPTION_CREATE_TRANSFER,
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_REJECT_V3,
@@ -43,6 +48,8 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_SUBMIT_V1,
     HISTORY_DESCRIPTION_WITHDRAW_V3,
     HISTORY_DESCRIPTION_STATUS_CHANGE,
+    HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
+    HISTORY_DESCRIPTION_TRANSFER,
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.agency import Agency
@@ -103,12 +110,69 @@ class ProjectOdsOdpTypeView(APIView):
 # pylint: disable=R1710
 
 
+class FileCreateMixin:
+    ACCEPTED_EXTENSIONS = [
+        ".pdf",
+        ".doc",
+        ".docx",
+    ]
+
+    def _file_create(self, request, dry_run, *args, **kwargs):
+        files = request.FILES
+        if not files:
+            return Response(
+                {"file": "File not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filenames = []
+        for file in files.getlist("files"):
+            filenames.append(file.name)
+            extension = os.path.splitext(file.name)[-1]
+            if extension not in self.ACCEPTED_EXTENSIONS:
+                return Response(
+                    {"file": f"File extension {extension} is not valid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if kwargs.get("project_id"):
+            existing_file = ProjectFile.objects.filter(
+                project_id=kwargs.get("project_id"),
+                filename__in=filenames,
+            ).values_list("filename", flat=True)
+
+            if existing_file:
+                return Response(
+                    {
+                        "files": "Some files already exist: "
+                        + str(", ".join(existing_file)),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if dry_run:
+            return Response(
+                {"message": "Files are valid and ready to be uploaded."},
+                status=status.HTTP_201_CREATED,
+            )
+        project_files = []
+        for file in files.getlist("files"):
+            project_files.append(
+                ProjectFile(
+                    project_id=kwargs.get("project_id"),
+                    filename=file.name,
+                    file=file,
+                )
+            )
+        ProjectFile.objects.bulk_create(project_files)
+        return Response({}, status=status.HTTP_201_CREATED)
+
+
 class ProjectV2ViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    FileCreateMixin,
 ):
     """V2 ViewSet for Project model."""
 
@@ -156,15 +220,19 @@ class ProjectV2ViewSet(
             "export",
             "list_previous_tranches",
             "list_associated_projects",
+            "field_history",
         ]:
             return [HasProjectV2ViewAccess]
         if self.action in [
             "create",
+        ]:
+            return [HasProjectV2EditAccess]
+        if self.action in [
             "update",
             "partial_update",
             "edit_actual_fields",
         ]:
-            return [HasProjectV2EditAccess]
+            return [HasProjectV2EditPlusV3Access]
         if self.action in [
             "submit",
         ]:
@@ -175,6 +243,8 @@ class ProjectV2ViewSet(
             return [HasProjectV2RecommendAccess]
         if self.action in ["approve", "reject", "edit_approval_fields"]:
             return [HasProjectV2ApproveAccess]
+        if self.action == "transfer":
+            return [HasProjectV2TransferAccess]
 
         return [DenyAll]
 
@@ -190,28 +260,35 @@ class ProjectV2ViewSet(
                 or user.has_perm("core.has_project_v2_version3_edit_access")
             )
 
+        if self.action in ["edit_actual_fields", "transfer"]:
+            queryset.filter(submission_status__name="Approved").exclude(
+                status__name__in=["Closed", "Transferred"]
+            )
+
         user = self.request.user
         if user.is_superuser:
             return queryset
 
-        if self.action in ["edit_actual_fields"]:
-            queryset.filter(submission_status__name="Approved")
         if self.action in ["update", "partial_update", "submit"] or results_for_edit:
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-            allowed_versions = set()
-            queryset_filters = {}
-            if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
-                allowed_versions.update([1, 2])
-            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
-                allowed_versions.update([1, 2])
-            if user.has_perm("core.has_project_v2_version3_edit_access"):
 
-                queryset_filters.pop("submission_status__name", None)
+            allowed_versions = set()
+            limit_to_draft = False
+
+            if user.has_perm("core.has_project_v2_draft_edit_access"):
+                limit_to_draft = True
+                allowed_versions.update([1, 2])
+
+            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
+                limit_to_draft = False
+                allowed_versions.update([1, 2])
+
+            if user.has_perm("core.has_project_v2_version3_edit_access"):
+                limit_to_draft = False
                 allowed_versions.add(3)
+
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
                 queryset = queryset.exclude(
                     submission_status__name__in=[
@@ -221,9 +298,22 @@ class ProjectV2ViewSet(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -262,7 +352,6 @@ class ProjectV2ViewSet(
                 "meta_project",
             )
             .prefetch_related(
-                "coop_agencies",
                 "submission_amounts",
                 "subsectors",
                 "funds",
@@ -298,6 +387,8 @@ class ProjectV2ViewSet(
             serializer = ProjectListV2Serializer
         elif self.action in ["create", "update", "partial_update"]:
             serializer = ProjectV2CreateUpdateSerializer
+        elif self.action == "transfer":
+            return
         return serializer
 
     @swagger_auto_schema(
@@ -466,6 +557,18 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
+    def update(self, request, *args, **kwargs):
+        post_excom_update = request.data.get("post-excom-update", False)
+        if post_excom_update:
+            project = self.get_object()
+            project.increase_version(request.user)
+            log_project_history(
+                project,
+                request.user,
+                HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
+            )
+        return super().update(request, *args, **kwargs)
+
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
@@ -501,6 +604,14 @@ class ProjectV2ViewSet(
             send_project_recomended_notification.delay(project.id)
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["GET"], detail=True)
+    def field_history(self, request, *args, **kwargs):
+        project = self.get_object()
+        return Response(
+            SerializeProjectFieldHistory.serialize(project),
             status=status.HTTP_200_OK,
         )
 
@@ -700,6 +811,104 @@ class ProjectV2ViewSet(
         )
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        parser_classes=[parsers.MultiPartParser, parsers.FormParser],
+    )
+    @swagger_auto_schema(
+        operation_description="Transfer the project to a new agency.",
+        auto_schema=FileUploadAutoSchema,
+        manual_parameters=[
+            openapi.Parameter(
+                name="files",
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(type=openapi.TYPE_FILE),
+                required=True,
+                description="List of documents",
+            ),
+            openapi.Parameter(
+                "agency",
+                openapi.IN_FORM,
+                description="Agency ID",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+            openapi.Parameter(
+                "transfer_meeting",
+                openapi.IN_FORM,
+                description="Meeting ID",
+                type=openapi.TYPE_INTEGER,
+                required=False,
+            ),
+            openapi.Parameter(
+                "transfer_decision",
+                openapi.IN_FORM,
+                description="Transfer decision",
+                type=openapi.TYPE_STRING,
+                required=False,
+            ),
+            openapi.Parameter(
+                "transfer_excom_provision",
+                openapi.IN_FORM,
+                description="ExCom provision",
+                type=openapi.TYPE_STRING,
+                required=False,
+            ),
+            openapi.Parameter(
+                "fund_transferred",
+                openapi.IN_FORM,
+                description="Fund transferred",
+                type=openapi.TYPE_NUMBER,
+                required=False,
+            ),
+            openapi.Parameter(
+                "psc_transferred",
+                openapi.IN_FORM,
+                description="PSC transferred",
+                type=openapi.TYPE_NUMBER,
+                required=False,
+            ),
+            openapi.Parameter(
+                "psc_received",
+                openapi.IN_FORM,
+                description="PSC received",
+                type=openapi.TYPE_NUMBER,
+                required=False,
+            ),
+        ],
+        responses={
+            status.HTTP_200_OK: ProjectV2TransferSerializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def transfer(self, request, *args, **kwargs):
+        with transaction.atomic():
+            project = self.get_object()
+            serializer = ProjectV2TransferSerializer(
+                project,
+                data=request.data,
+            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            new_project = serializer.save(request=request)
+
+            response = self._file_create(
+                request, project_id=new_project.id, dry_run=False, *args, **kwargs
+            )
+            if response.status_code != status.HTTP_201_CREATED:
+                return response
+
+        log_project_history(project, request.user, HISTORY_DESCRIPTION_TRANSFER)
+        log_project_history(
+            new_project, request.user, HISTORY_DESCRIPTION_CREATE_TRANSFER
+        )
+        return Response(
+            ProjectDetailsV2Serializer(new_project).data,
             status=status.HTTP_200_OK,
         )
 
@@ -1006,62 +1215,6 @@ class ProjectV2ViewSet(
         )
 
 
-class FileCreateMixin:
-    ACCEPTED_EXTENSIONS = [
-        ".pdf",
-        ".doc",
-        ".docx",
-    ]
-
-    def _file_create(self, request, dry_run, *args, **kwargs):
-        files = request.FILES
-        if not files:
-            return Response(
-                {"file": "File not provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        filenames = []
-        for file in files.getlist("files"):
-            filenames.append(file.name)
-            extension = os.path.splitext(file.name)[-1]
-            if extension not in self.ACCEPTED_EXTENSIONS:
-                return Response(
-                    {"file": f"File extension {extension} is not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        if self.kwargs.get("project_id"):
-            existing_file = ProjectFile.objects.filter(
-                project_id=self.kwargs.get("project_id"),
-                filename__in=filenames,
-            ).values_list("filename", flat=True)
-
-            if existing_file:
-                return Response(
-                    {
-                        "files": "Some files already exist: "
-                        + str(", ".join(existing_file)),
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        if dry_run:
-            return Response(
-                {"message": "Files are valid and ready to be uploaded."},
-                status=status.HTTP_201_CREATED,
-            )
-        project_files = []
-        for file in files.getlist("files"):
-            project_files.append(
-                ProjectFile(
-                    project_id=self.kwargs.get("project_id"),
-                    filename=file.name,
-                    file=file,
-                )
-            )
-        ProjectFile.objects.bulk_create(project_files)
-        return Response({}, status=status.HTTP_201_CREATED)
-
-
 class ProjectV2FileView(
     FileCreateMixin,
     mixins.CreateModelMixin,
@@ -1081,7 +1234,7 @@ class ProjectV2FileView(
         if self.request.method in ["GET"]:
             return [HasProjectV2ViewAccess]
         if self.request.method in ["POST", "DELETE"]:
-            return [HasProjectV2EditAccess]
+            return [HasProjectV2EditPlusV3Access]
         return [DenyAll]
 
     def get_serializer_context(self):
@@ -1115,17 +1268,18 @@ class ProjectV2FileView(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
+
             allowed_versions = set()
-            queryset_filters = {}
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1137,9 +1291,22 @@ class ProjectV2FileView(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -1207,7 +1374,12 @@ class ProjectV2FileView(
     )
     def post(self, request, *args, **kwargs):
         self.get_queryset()
-        return self._file_create(request, dry_run=False, *args, **kwargs)
+        return self._file_create(
+            request,
+            dry_run=False,
+            *args,
+            **kwargs,
+        )
 
     @swagger_auto_schema(
         operation_description="Receives a list of files ids and deletes them.",
@@ -1273,17 +1445,18 @@ class ProjectV2FileIncludePreviousVersionsView(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
+
             allowed_versions = set()
-            queryset_filters = {}
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1295,9 +1468,22 @@ class ProjectV2FileIncludePreviousVersionsView(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -1344,7 +1530,7 @@ class ProjectV2FileIncludePreviousVersionsView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
-    permission_classes = [HasProjectV2EditAccess]
+    permission_classes = [HasProjectV2EditPlusV3Access]
 
     @swagger_auto_schema(
         operation_description="""
@@ -1365,7 +1551,12 @@ class ProjectFilesValidationView(FileCreateMixin, APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
-        response = self._file_create(request, dry_run=True, *args, **kwargs)
+        response = self._file_create(
+            request,
+            dry_run=True,
+            *args,
+            **kwargs,
+        )
         if response.status_code == status.HTTP_201_CREATED:
             return Response(
                 {"message": "Files are valid and ready to be uploaded."},

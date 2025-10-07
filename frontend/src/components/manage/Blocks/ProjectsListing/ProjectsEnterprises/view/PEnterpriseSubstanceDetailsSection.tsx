@@ -1,0 +1,121 @@
+import { useContext } from 'react'
+
+import ViewTable from '@ors/components/manage/Form/ViewTable'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import { PEnterpriseType } from '../../interfaces'
+import { formatNumberColumns } from '../../utils'
+import { tableColumns } from '../../constants'
+import { ApiSubstance } from '@ors/types/api_substances'
+import { ApiBlend } from '@ors/types/api_blends'
+
+import { find, sumBy } from 'lodash'
+import {
+  CellClassParams,
+  GetRowIdParams,
+  ITooltipParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
+
+const PEnterpriseSubstanceDetailsSection = ({
+  enterprise,
+}: {
+  enterprise: PEnterpriseType
+}) => {
+  const { substances, blends } = useContext(ProjectsDataContext)
+
+  const odsOdpData = enterprise.ods_odp ?? []
+
+  const getFieldValue = (params: ITooltipParams | ValueGetterParams) => {
+    if (params.node?.rowPinned) {
+      return 'TOTAL'
+    }
+
+    const options: (ApiSubstance | ApiBlend)[] = params.data.ods_substance
+      ? substances
+      : blends
+    const field = params.data.ods_substance ? 'ods_substance' : 'ods_blend'
+    const currentValueObj = find(options, { id: params.data[field] })
+
+    return (
+      currentValueObj?.name +
+      (field === 'ods_blend' ? (currentValueObj as ApiBlend)?.composition : '')
+    )
+  }
+
+  const totalRow =
+    odsOdpData.length > 0
+      ? [
+          {
+            phase_out_mt: sumBy(
+              odsOdpData,
+              (ods_odp) => Number(ods_odp.phase_out_mt) || 0,
+            ),
+            ods_replacement: '-',
+            ods_replacement_phase_in: sumBy(
+              odsOdpData,
+              (ods_odp) => Number(ods_odp.ods_replacement_phase_in) || 0,
+            ),
+          },
+        ]
+      : []
+
+  const defaultColDef = {
+    headerClass: 'ag-text-center',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
+    resizable: true,
+    minWidth: 210,
+  }
+
+  const columnDefs = [
+    {
+      headerName: tableColumns.ods_substance,
+      valueGetter: (params: ValueGetterParams) => getFieldValue(params),
+      tooltipValueGetter: (params: ITooltipParams) => getFieldValue(params),
+      cellClassRules: {
+        'font-bold': (params: CellClassParams) => !!params.node?.rowPinned,
+      },
+    },
+    {
+      headerName: tableColumns.phase_out_mt,
+      valueGetter: (params: ValueGetterParams) =>
+        formatNumberColumns(params, 'phase_out_mt'),
+      tooltipValueGetter: (params: ITooltipParams) =>
+        formatNumberColumns(params, 'phase_out_mt', {
+          maximumFractionDigits: 10,
+          minimumFractionDigits: 2,
+        }),
+    },
+    {
+      headerName: tableColumns.ods_replacement,
+      field: 'ods_replacement',
+      tooltipField: 'ods_replacement',
+    },
+    {
+      headerName: tableColumns.ods_replacement_phase_in,
+      valueGetter: (params: ValueGetterParams) =>
+        formatNumberColumns(params, 'ods_replacement_phase_in'),
+      tooltipValueGetter: (params: ITooltipParams) =>
+        formatNumberColumns(params, 'ods_replacement_phase_in', {
+          maximumFractionDigits: 10,
+          minimumFractionDigits: 2,
+        }),
+    },
+  ]
+
+  return (
+    <ViewTable
+      getRowId={(props: GetRowIdParams) => props.data.id}
+      rowData={odsOdpData}
+      defaultColDef={defaultColDef}
+      columnDefs={columnDefs}
+      pinnedBottomRowData={totalRow}
+      className={odsOdpData.length > 0 ? 'enterprise-table' : ''}
+      domLayout="autoHeight"
+      enablePagination={false}
+      suppressCellFocus={true}
+      withSeparators={true}
+    />
+  )
+}
+
+export default PEnterpriseSubstanceDetailsSection

@@ -16,12 +16,13 @@ export const createProjectFieldsSlice = ({
     setViewableFields: (version: number, submissionStatus?: string) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const viewableFields = filter(
-        fields,
-        ({ visible_in_versions }) =>
-          visible_in_versions?.includes(version) &&
-          (submissionStatus !== 'Draft' || visible_in_versions.includes(1)),
-      ).map((field) => field.write_field_name)
+      const viewableFields = filter(fields, ({ visible_in_versions }) => {
+        const versionCheck = version >= 3 ? 3 : version
+        return (
+          visible_in_versions?.includes(versionCheck) &&
+          (submissionStatus !== 'Draft' || visible_in_versions.includes(1))
+        )
+      }).map((field) => field.write_field_name)
 
       set(
         produce((state) => {
@@ -33,6 +34,8 @@ export const createProjectFieldsSlice = ({
       version: number,
       submissionStatus?: string,
       canEditAll?: boolean,
+      isPostExcom?: boolean,
+      mode?: string,
     ) => {
       const fields = get().projectFields.projectFields?.data ?? []
       const isAfterApproval = ['Approved', 'Not approved'].includes(
@@ -41,6 +44,14 @@ export const createProjectFieldsSlice = ({
 
       const editableFields = fields
         .filter(({ editable_in_versions, is_actual, section }) => {
+          if (
+            !isPostExcom &&
+            mode !== 'copy' &&
+            submissionStatus === 'Approved'
+          ) {
+            return is_actual || section === 'Approval'
+          }
+
           const isEditableInVersion = editable_in_versions?.includes(version)
           const isFieldEditable =
             section !== 'Impact' || !isAfterApproval || is_actual

@@ -18,6 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   cluster: 'Cluster',
   tranche: 'Tranche number',
   agency: 'Agency',
+  agencies: 'Agency(ies)',
   lead_agency: 'Lead agency',
   title: 'Title',
   type: 'Type',
@@ -36,9 +37,9 @@ export const tableColumns: { [key: string]: string } = {
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
   decision: 'Decision',
-  name: 'Enterprise name',
-  location: 'Enterprise location',
-  application: 'Enterprise application',
+  name: 'Name',
+  location: 'Location',
+  application: 'Application',
   local_ownership: 'Percentage of goods exported to non-Article 5 countries',
   export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
   ods_substance: 'Substance baseline technology',
@@ -52,6 +53,7 @@ export const tableColumns: { [key: string]: string } = {
   funds_approved: 'Funds approved',
   cost_effectiveness_approved: 'Cost effectiveness approved',
   remarks: 'Remarks',
+  id: 'Enterprise',
 }
 
 export const defaultProps = {
@@ -65,8 +67,7 @@ export const defaultPropsSimpleField = {
   containerClassName: '!h-fit w-40',
 }
 
-export const textFieldClassName =
-  ' min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px]'
+export const textFieldClassName = ' min-h-[20px] w-full'
 
 export const textAreaClassname =
   'rounded-lg border bg-white p-2 pb-10 shadow-none' + textFieldClassName
@@ -74,7 +75,7 @@ export const textAreaClassname =
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-full',
+      className: defaultProps.FieldProps.className + ' w-full min-w-64',
     },
   },
   ods_type: {
@@ -90,6 +91,8 @@ export const initialProjectIdentifiers = {
   lead_agency: null,
   cluster: null,
   production: false,
+  post_excom_meeting: null,
+  post_excom_decision: null,
 }
 
 export const initialCrossCuttingFields = {
@@ -168,11 +171,13 @@ export const viewColumnsClassName =
 
 export const initialOverviewFields = {
   name: '',
+  agencies: [],
   country: null,
   location: '',
   application: '',
   local_ownership: null,
   export_to_non_a5: null,
+  remarks: '',
 }
 
 export const initialSubstanceDetailsFields = {
@@ -189,9 +194,9 @@ export const initialFundingDetailsFields = {
   funds_disbursed: null,
 }
 
-export const initialRemarksFields = {
-  remarks: '',
-}
-
 export const enabledButtonClassname =
   'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+
+export const dropDownClassName =
+  'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+export const dropdownItemClassname = 'bg-transparent font-medium normal-case'

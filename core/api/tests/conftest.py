@@ -1238,3 +1238,149 @@ def setup_bp_activity_create(
             },
         ],
     }
+
+
+@pytest.fixture(name="_setup_project_list")
+def setup_project_list(
+    country_ro,
+    agency,
+    new_agency,
+    new_country,
+    project_type,
+    new_project_type,
+    project_status,
+    submitted_status,
+    project_draft_status,
+    project_submitted_status,
+    project_approved_status,
+    subsector,
+    meeting,
+    new_meeting,
+    sector,
+    new_sector,
+    project_cluster_kpp,
+    project_cluster_kip,
+):
+    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
+    projects = []
+    projects_data = [
+        {
+            "country": country_ro,
+            "agency": agency,
+            "project_type": project_type,
+            "status": project_status,
+            "submission_status": project_draft_status,
+            "sector": sector,
+            "subsectors": [subsector],
+            "substance_type": "HCFC",
+            "meeting": meeting,
+            "cluster": project_cluster_kpp,
+        },
+        {
+            "country": new_country,
+            "agency": new_agency,
+            "project_type": new_project_type,
+            "status": submitted_status,
+            "submission_status": project_submitted_status,
+            "sector": new_sector,
+            "subsectors": [new_subsector],
+            "substance_type": "CFC",
+            "meeting": new_meeting,
+            "cluster": project_cluster_kip,
+        },
+    ]
+
+    for i in range(4):
+        for project_data in projects_data:
+            project_data["code"] = get_project_sub_code(
+                project_data["country"],
+                project_data["cluster"],
+                project_data["agency"],
+                project_data["project_type"],
+                project_data["sector"],
+                project_data["meeting"],
+                project_data["meeting"],
+                i + 1,
+            )
+
+            ProjectFactory.create(
+                title=f"Project {i}",
+                serial_number=i + 1,
+                **project_data,
+            )
+
+    # project_without cluster
+    proj_data = projects_data[0].copy()
+    proj_data.pop("cluster")
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        None,
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        25,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 25",
+            **proj_data,
+        )
+    )
+
+    # project_without sector and subsector
+    proj_data = projects_data[0].copy()
+    proj_data["sector"] = None
+    proj_data["subsectors"] = None
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        proj_data["cluster"],
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        26,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 26",
+            serial_number=26,
+            **proj_data,
+        )
+    )
+
+    proj_data = projects_data[0].copy()
+    proj_data["production"] = True
+
+    projects.append(
+        ProjectFactory.create(
+            title="Project 27",
+            serial_number=27,
+            **proj_data,
+        )
+    )
+
+    proj_data["production"] = False
+    proj_data["version"] = 2
+    proj_data["submission_status"] = project_submitted_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 28",
+            serial_number=28,
+            **proj_data,
+        )
+    )
+
+    proj_data["version"] = 3
+    proj_data["submission_status"] = project_approved_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 29",
+            serial_number=29,
+            **proj_data,
+        )
+    )
+
+    return projects

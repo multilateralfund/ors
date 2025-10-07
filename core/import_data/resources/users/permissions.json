@@ -96,6 +96,12 @@
         "model_name": "metaproject"
     },
     {
+        "permission_codename": "has_meta_projects_edit_access",
+        "permission_name": "Has meta projects edit access",
+        "app_label": "core",
+        "model_name": "metaproject"
+    },
+    {
         "permission_codename": "has_project_metainfo_view_access",
         "permission_name": "Has project metadata view access",
         "app_label": "core",
@@ -180,6 +186,30 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_transfer_projects_access",
+        "permission_name": "Has project v2 transfer projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_enterprise_view_access",
+        "permission_name": "Has enterprise view access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
+        "permission_codename": "has_enterprise_edit_access",
+        "permission_name": "Has enterprise edit access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
+        "permission_codename": "has_enterprise_approval_access",
+        "permission_name": "Has enterprise approval access",
+        "app_label": "core",
+        "model_name": "enterprise"
+    },
+    {
         "permission_codename": "has_project_enterprise_edit_access",
         "permission_name": "Has project enterprise edit access",
         "app_label": "core",
@@ -220,5 +250,23 @@
         "permission_name": "Has sectors and subsectors edit access",
         "app_label": "core",
         "model_name": "projectsector"
+    },
+    {
+        "permission_codename": "has_apr_view_access",
+        "permission_name": "Has APR view access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_edit_access",
+        "permission_name": "Has APR edit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_submit_access",
+        "permission_name": "Has APR submit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
     }
 ]

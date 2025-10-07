@@ -1,8 +1,9 @@
 import { ChangeEvent } from 'react'
 
 import LinkedBPTableWrapper from './LinkedBPTable'
+import { NextButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { ProjectDataProps } from '../interfaces'
+import { ProjectDataProps, ProjectTabSetters } from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
@@ -11,7 +12,13 @@ const ProjectBPLinking = ({
   projectData,
   setProjectData,
   isDisabled,
-}: Omit<ProjectDataProps, 'hasSubmitted'> & { isDisabled: boolean }) => {
+  setCurrentTab,
+  canEditApprovedProj,
+}: Omit<ProjectDataProps, 'hasSubmitted'> &
+  ProjectTabSetters & {
+    canEditApprovedProj: boolean
+    isDisabled: boolean
+  }) => {
   const { isLinkedToBP } = projectData.bpLinking
 
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +58,15 @@ const ProjectBPLinking = ({
       />
       {isLinkedToBP && (
         <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
+      )}
+      {canEditApprovedProj && (
+        <div className="mt-5">
+          <NextButton
+            nextStep={2}
+            setCurrentTab={setCurrentTab}
+            isBtnDisabled={isDisabled}
+          />
+        </div>
       )}
     </div>
   )

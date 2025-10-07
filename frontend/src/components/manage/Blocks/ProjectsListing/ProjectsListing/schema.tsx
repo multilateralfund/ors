@@ -29,6 +29,7 @@ const getColumnDefs = (
     canAssociateProjects,
     canUpdateProjects,
     canEditProjects,
+    canEditApprovedProjects,
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
@@ -106,7 +107,9 @@ const getColumnDefs = (
                 )}
                 {projectId !== undefined &&
                   setProjectData &&
-                  (canAssociateProjects || canUpdateProjects) && (
+                  (canAssociateProjects ||
+                    canUpdateProjects ||
+                    canEditApprovedProjects) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {
@@ -117,11 +120,13 @@ const getColumnDefs = (
                                 projectTitle: props.data.title,
                                 projectSubmissionStatus:
                                   props.data.submission_status,
+                                projectStatus: props.data.status,
                               }
                             : {
                                 projectId: null,
                                 projectTitle: '',
                                 projectSubmissionStatus: '',
+                                projectStatus: '',
                               },
                         )
                       }}
@@ -149,7 +154,7 @@ const getColumnDefs = (
                 canViewProjects ? `/projects-listing/${props.data.id}` : null
               }
             >
-              {props.value}
+              <span>{props.value}</span>
             </Link>
           </div>
         ),

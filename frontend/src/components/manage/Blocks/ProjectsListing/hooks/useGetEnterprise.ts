@@ -5,6 +5,6 @@ export function useGetEnterprise(enterprise_id: string) {
     options: {
       withStoreCache: false,
     },
-    path: `api/project-enterprise/${enterprise_id}/`,
+    path: `api/enterprises/${enterprise_id}/`,
   })
 }

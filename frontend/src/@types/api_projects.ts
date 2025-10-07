@@ -1,5 +1,8 @@
 import { ApiUser } from '@ors/types/api_auth_user.ts'
 import { ApiBPActivity } from './api_bp_get'
+import { ApiAgency } from '@ors/types/api_agencies.ts'
+import { Country } from '@ors/types/store'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 export type ProjectSubSectorType = {
   id: number
@@ -163,6 +166,10 @@ export type ProjectType = {
   umbrella_project: boolean
   withdrawn: boolean
   decision_id: number
+  post_excom_meeting: number
+  post_excom_decision: ApiDecision
+  post_excom_meeting_id: number | null
+  post_excom_decision_id: number | null
 }
 
 export type ProjectAssociationType = {
@@ -173,4 +180,23 @@ export type ProjectAssociationType = {
   code: string
   pcr_project_id: string
   projects: ProjectType[]
+}
+
+export type ProjectCluster = {
+  category: string
+  code: string
+  id: number
+  name: string
+  sort_order: number
+  obsolete: boolean
+  production: boolean
+}
+
+export type MetaProjectType = {
+  id: number
+  new_code: string
+  lead_agency: ApiAgency
+  country: Country
+  clusters: ProjectCluster[]
+  type: string
 }

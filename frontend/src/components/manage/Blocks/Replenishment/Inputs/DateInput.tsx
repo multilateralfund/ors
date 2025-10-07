@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -49,7 +49,11 @@ export default function DateInput(props: IDateInputProps) {
       <input
         id={id}
         name={name || id}
-        className={cx(CLASSESS, className, { [CSS_MASKED]: !inputMode })}
+        className={cx(CLASSESS, className, {
+          [CSS_MASKED]: !inputMode && !formatValue,
+          'pointer-events-auto absolute bottom-0 left-0 h-1 w-1 pb-[30px] opacity-0':
+            formatValue,
+        })}
         ref={realInput}
         style={STYLE}
         type="date"
@@ -60,7 +64,10 @@ export default function DateInput(props: IDateInputProps) {
       />
       <input
         id={`${id}_mask`}
-        className={cx(CLASSESS, className, { [CSS_MASKED]: inputMode })}
+        className={cx(CLASSESS, className, {
+          [CSS_MASKED]: inputMode && !formatValue,
+          'z-10': formatValue,
+        })}
         ref={maskInput}
         style={STYLE}
         type="text"

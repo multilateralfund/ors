@@ -21,7 +21,7 @@ import {
   textFieldClassName,
 } from '../constants'
 
-import { find, get, isObject, isBoolean, isNil, isArray } from 'lodash'
+import { find, get, isObject, isBoolean, isNil, isArray, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -198,7 +198,11 @@ export const AutocompleteWidget = <T,>(
     : value
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
       <Label>{field.label}</Label>
       <Field
         widget="autocomplete"
@@ -216,7 +220,12 @@ export const AutocompleteWidget = <T,>(
           )
         }
         getOptionLabel={(option) => {
-          const field = fieldName === 'group' ? 'name_alt' : 'name'
+          const field =
+            fieldName === 'group'
+              ? 'name_alt'
+              : fieldName === 'ods_display_name'
+                ? 'label'
+                : 'name'
 
           return (
             (isObject(option)
@@ -290,7 +299,9 @@ export const TextWidget = <T,>(
         )}
         containerClassName={
           defaultPropsSimpleField.containerClassName +
-          (fieldName === 'programme_officer' ? textFieldClassName : '')
+          (fieldName === 'programme_officer'
+            ? textFieldClassName + ' max-w-[370px]'
+            : '')
         }
       />
     </div>
@@ -311,9 +322,10 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+  const isOdsReplacement = fieldName === 'ods_replacement'
 
   return (
-    <div className="w-full md:w-auto">
+    <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
       <Label>{field.label}</Label>
       <TextareaAutosize
         value={value as string}
@@ -328,8 +340,8 @@ export const TextAreaWidget = <T,>(
             index,
           )
         }
-        className={cx(textAreaClassname, {
-          'md:w-[255px] md:min-w-[255px]': field.table === 'ods_odp',
+        className={cx(textAreaClassname, 'max-w-[415px]', {
+          '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
           'border-red-500': getIsInputDisabled(
             hasSubmitted,
             errors,
@@ -338,7 +350,7 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
-        minRows={2}
+        minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}
       />
     </div>
@@ -361,7 +373,11 @@ const NumberWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
       <Label>{field.label}</Label>
       <SimpleInput
         id={fieldName}
@@ -464,7 +480,7 @@ const DateWidget = <T,>(
         id={fieldName}
         value={value}
         disabled={!canEditField(editableFields, fieldName)}
-        formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+        formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -475,16 +491,19 @@ const DateWidget = <T,>(
             index,
           )
         }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
+        {...omit(
+          getFieldDefaultProps(
+            getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+            editableFields,
+            field,
           ),
-          editableFields,
-          field,
+          ['containerClassName'],
         )}
       />
     </div>

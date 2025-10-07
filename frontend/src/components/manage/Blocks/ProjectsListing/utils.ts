@@ -31,6 +31,7 @@ import {
   isNil,
   keys,
   map,
+  min,
   omit,
   pick,
   reduce,
@@ -90,19 +91,31 @@ export const getIsSaveDisabled = (
   crossCuttingFields: CrossCuttingFields,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title } = crossCuttingFields
+  const { project_type, sector, title, project_start_date, project_end_date } =
+    crossCuttingFields
 
-  return !canLinkToBp || !(project_type && sector && title)
+  return (
+    !canLinkToBp ||
+    !(project_type && sector && title) ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date))
+  )
 }
 
 export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
   const options = field.options as
     | OptionsType[]
-    | Record<'substances' | 'blends', OptionsType[]>
+    | Record<'substances' | 'blends', (OptionsType & { composition: string })[]>
 
   return field.write_field_name === 'ods_display_name' && !isArray(options)
     ? concat(options.substances, options.blends).map((option) => {
-        return { ...option, id: `${option.baseline_type}-${option.id}` }
+        return {
+          ...option,
+          id: `${option.baseline_type}-${option.id}`,
+          label:
+            option.baseline_type === 'blend'
+              ? option.name + ' (' + option.composition + ')'
+              : option.name,
+        }
       })
     : map(options, (option) =>
         isArray(option) ? { id: option[0], name: option[1] } : option,
@@ -613,8 +626,15 @@ export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
 ) => {
-  const { canViewBp, canUpdateBp, canViewProjects } = permissions
-  const { projectId, projectSubmissionStatus } = projectData ?? {}
+  const {
+    canViewBp,
+    canUpdateBp,
+    canViewProjects,
+    canViewEnterprises,
+    canEditApprovedProjects,
+  } = permissions
+  const { projectId, projectSubmissionStatus, projectStatus } =
+    projectData ?? {}
 
   return [
     {
@@ -635,14 +655,27 @@ export const getMenus = (
     {
       title: 'Approved Projects',
       menuItems: [
-        { title: 'Update MYA data', url: null },
-        { title: 'Update post ExCom fields', url: null },
+        { title: 'Update MYA data', url: '/projects-listing/update-mya-data' },
         {
-          title: 'Update enterprises',
-          url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
-          permissions: [canViewProjects],
+          title: 'Update post ExCom fields',
+          url: `/projects-listing/${projectId}/post-excom-update`,
+          permissions: [canEditApprovedProjects],
           disabled:
-            !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+            !projectId ||
+            projectSubmissionStatus !== 'Approved' ||
+            projectStatus === 'Closed' ||
+            projectStatus === 'Transferred',
+        },
+        {
+          title: 'Update project enterprises',
+          url: `/projects-listing/projects-enterprises/${projectId}`,
+          permissions: [canViewProjects && canViewEnterprises],
+          disabled: !projectId || projectSubmissionStatus !== 'Approved',
+        },
+        {
+          title: 'Manage enterprises',
+          url: `/projects-listing/enterprises`,
+          permissions: [canViewEnterprises],
         },
         { title: 'Transfer a project', url: null },
       ],
@@ -762,13 +795,20 @@ export const filterClusterOptions = (
   canViewProdProjects: boolean,
 ) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)
 
-export const getPaginationSelectorOpts = (count: number) => {
-  const nrResultsOpts = [100, 250, 500, 1000]
+export const getPaginationSelectorOpts = (
+  count: number,
+  maxResults: number,
+) => {
+  const actualMaxResults = min([count, maxResults]) ?? maxResults
+
+  const nrResultsOpts = [100, 150, 200, 250, 500, 1000]
   const filteredNrResultsOptions = nrResultsOpts.filter(
-    (option) => option < count,
+    (option) => option <= actualMaxResults,
   )
 
-  return [...filteredNrResultsOptions, count]
+  return count < maxResults
+    ? [...filteredNrResultsOptions, count]
+    : filteredNrResultsOptions
 }
 
 export const getAreFiltersApplied = (filters: Record<string, any>) =>

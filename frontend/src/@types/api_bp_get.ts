@@ -4,6 +4,7 @@ import { ApiAgency } from './api_agencies'
 import { ProjectSectorType } from './api_project_sector'
 import { ProjectSubSectorType } from './api_project_subsector'
 import { Country } from './store'
+import { ProjectCluster } from '@ors/types/api_projects.ts'
 
 export type ApiBaseBP = {
   id: number
@@ -28,14 +29,6 @@ export interface ApiBP extends ApiBaseBP {
 }
 
 export interface ApiBPProjectType {
-  code: string
-  id: number
-  name: string
-  sort_order: number
-}
-
-export interface ApiBPProjectCluster {
-  category: string
   code: string
   id: number
   name: string
@@ -72,7 +65,7 @@ export interface ApiBPActivity {
   is_updated: boolean
   legacy_sector_and_subsector: string
   lvc_status: string
-  project_cluster: ApiBPProjectCluster
+  project_cluster: ProjectCluster
   project_cluster_id: number
   project_type: ApiBPProjectType
   project_type_code: string

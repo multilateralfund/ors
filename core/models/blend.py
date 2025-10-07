@@ -9,6 +9,24 @@ from core.models.substance import Substance
 CUST_MIX_NUMBER_REGEX = r"CustMix\-(\d+)$"
 
 
+class BlendQuerySet(models.QuerySet):
+    def filter_project_accepted_blends(self):
+        accepted_substances = (
+            Substance.objects.all()
+            .filter_project_accepted_substances()
+            .values_list("name", flat=True)
+        )
+        blend_list = [
+            b.id
+            for b in self
+            if any(
+                subst_name in (b.composition or "")
+                for subst_name in accepted_substances
+            )
+        ]
+        return self.filter(id__in=blend_list)
+
+
 class BlendManager(models.Manager):
     def find_by_name(self, name):
         """
@@ -91,6 +109,9 @@ class BlendManager(models.Manager):
 
         # if no custom blends exist, start from 0
         return "CustMix-0"
+
+    def get_queryset(self):
+        return BlendQuerySet(self.model, using=self._db)
 
 
 class Blend(models.Model):

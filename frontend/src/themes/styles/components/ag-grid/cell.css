@@ -208,7 +208,7 @@
     padding-left: 2px;
   }
 
-  .ag-row .ag-cell:first-child {
+  .ag-row .ag-cell.remove-activity-col {
     border: none;
   }
 }
@@ -267,4 +267,8 @@
       border-top: 1px solid #d8dade;
     }
   }
+}
+
+.ag-table .ag-cell.ag-cell-no-border-r {
+  @apply border-r-0;
 }

@@ -1,10 +1,13 @@
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 export type ListingProjectData = {
   projectId: number | null
   projectTitle: string
   projectSubmissionStatus: string
+  projectStatus: string
 }
 export interface PListingProps {
   tableToolbar: ReactNode
@@ -19,6 +22,8 @@ export interface ProjIdentifiers {
   lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
+  post_excom_meeting: number | null
+  post_excom_decision: number | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -114,6 +119,7 @@ export type FieldType =
 export type OptionsType = {
   id: number | string
   name: string
+  label?: string
   name_alt?: string
   baseline_type?: string
 }
@@ -191,6 +197,7 @@ export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
+  fieldHistory?: ProjectFieldHistoryValue[],
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -214,8 +221,10 @@ export interface ProjectVersions {
   title: string
   version: number
   final_version_id: number
+  submission_status: string
   created_by: string
   date_created: string
+  post_excom_meeting: number | null
 }
 
 export interface ProjectData {
@@ -254,16 +263,22 @@ export type ActionButtons = ProjectHeader & {
   setIsLoading: (value: boolean) => void
 }
 
-export type ProjectIdentifiersSectionProps = {
+export type ProjectTabSetters = {
+  setCurrentStep?: Dispatch<SetStateAction<number>>
+  setCurrentTab?: Dispatch<SetStateAction<number>>
+}
+
+export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
-  setCurrentStep: Dispatch<SetStateAction<number>>
-  setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
+  project?: ProjectTypeApi
+  postExComUpdate?: boolean
+  isV3ProjectEditable: boolean
   specificFieldsLoaded: boolean
 }
 
@@ -297,35 +312,58 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type EnterpriseType = EnterpriseFundingDetails & {
+export type PEnterpriseType = EnterpriseFundingDetails & {
+  id: number | null
+  status: string
+  enterprise: EnterpriseType
+  ods_odp: EnterpriseSubstanceDetails[]
   funds_approved: string | null
   cost_effectiveness_approved: string | null
-} & {
-  ods_odp: EnterpriseSubstanceDetails[]
-} & {
-  enterprise: EnterpriseOverview & EnterpriseRemarks & { id: number | null }
 }
 
-export interface EnterpriseData {
+export interface PEnterpriseData {
   overview: EnterpriseOverview
   substance_details: EnterpriseSubstanceDetails[]
   funding_details: EnterpriseFundingDetails
-  remarks: EnterpriseRemarks
 }
 
-export interface EnterpriseDataProps {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-  hasSubmitted: boolean
-  errors?: { [key: string]: string[] }
+export type PEnterpriseDataType = {
+  enterpriseData: PEnterpriseData
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>
+  enterprise?: PEnterpriseType
 }
+
+export type EnterpriseDataType = {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+  enterprise?: EnterpriseType
+}
+
+export type EnterprisesCommonProps = {
+  hasSubmitted: boolean
+  errors: { [key: string]: string[] }
+}
+
+export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
+
+export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
+
 export interface EnterpriseOverview {
   name: string
+  agencies: number[]
   country: number | null
   location: string
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
+  remarks: string
+  linkStatus?: string
+}
+
+export type EnterpriseType = EnterpriseOverview & {
+  id: number
+  status: string
+  code: string
 }
 
 export interface EnterpriseSubstanceDetails {
@@ -342,18 +380,13 @@ export interface EnterpriseFundingDetails {
   funds_disbursed: string | null
 }
 
-export interface EnterpriseRemarks {
-  remarks: string
-}
-
-export interface EnterpriseHeader {
-  enterpriseData: EnterpriseData
+export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void
-  setErrors: (value: { [key: string]: [] }) => void
+  setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }
 
-export type EnterpriseActionButtons = EnterpriseHeader & {
+export type EnterpriseActionButtons = EnterpriseHeaderProps & {
   setIsLoading: (value: boolean) => void
 }

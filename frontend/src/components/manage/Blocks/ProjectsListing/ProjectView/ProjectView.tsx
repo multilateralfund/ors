@@ -108,6 +108,14 @@ const ProjectView = ({
     setViewableFields,
   } = useStore((state) => state.projectFields)
 
+  const { fieldHistory, fetchFieldHistory } = useStore(
+    (state) => state.projectFieldHistory,
+  )
+
+  useEffect(() => {
+    fetchFieldHistory(project.id)
+  }, [fetchFieldHistory, JSON.stringify(project)])
+
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
     [fetchProjectFields],
@@ -149,7 +157,11 @@ const ProjectView = ({
       id: 'project-identifiers',
       ariaControls: 'project-identifiers',
       label: 'Identifiers',
-      component: <ProjectIdentifiers {...{ project, specificFields }} />,
+      component: (
+        <ProjectIdentifiers
+          {...{ project, specificFields, fieldHistory: fieldHistory.data }}
+        />
+      ),
     },
     {
       id: 'project-cross-cutting',
@@ -157,7 +169,11 @@ const ProjectView = ({
       label: 'Cross-Cutting',
       disabled: !hasFields(allFields, viewableFields, 'Cross-Cutting'),
       classes: classes,
-      component: <ProjectCrossCutting {...{ project }} />,
+      component: (
+        <ProjectCrossCutting
+          {...{ project, fieldHistory: fieldHistory.data }}
+        />
+      ),
     },
     {
       id: 'project-specific-info',
@@ -175,7 +191,12 @@ const ProjectView = ({
         (!hasFields(allFields, viewableFields, 'Header') &&
           !hasFields(allFields, viewableFields, 'Substance Details')),
       classes: classes,
-      component: <ProjectSpecificInfo {...{ project, specificFields }} />,
+      component: (
+        <ProjectSpecificInfo
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-impact',
@@ -191,7 +212,12 @@ const ProjectView = ({
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
       classes: classes,
-      component: <ProjectImpact {...{ project, specificFields }} />,
+      component: (
+        <ProjectImpact
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-documentation',
@@ -225,6 +251,7 @@ const ProjectView = ({
               <ProjectApproval
                 specificFields={approvalFields}
                 {...{ project }}
+                fieldHistory={fieldHistory.data}
               />
             ),
           },
@@ -272,6 +299,7 @@ const ProjectView = ({
         >
           {tabs.map(({ id, ariaControls, label, disabled, classes }) => (
             <Tab
+              key={id}
               id={id}
               aria-controls={ariaControls}
               label={label}
@@ -289,7 +317,9 @@ const ProjectView = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs
           .filter((_, index) => index === activeTab)
-          .map(({ component }) => component)}
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
       </div>
     </>
   )

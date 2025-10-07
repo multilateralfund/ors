@@ -40,18 +40,22 @@ import { enqueueSnackbar } from 'notistack'
 const ProjectsEdit = ({
   project,
   mode,
+  postExComUpdate = false,
 }: {
   project: ProjectTypeApi
   mode: string
+  postExComUpdate?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
-  const isVersion3 = isEditMode && project.version === 3
+  const isVersion3 = isEditMode && project.version >= 3
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
   const { clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+
+  const commonSlice = useStore((state) => state.common)
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -126,7 +130,13 @@ const ProjectsEdit = ({
         : undefined
 
       setViewableFields?.(version, submissionStatus)
-      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
+      setEditableFields?.(
+        version,
+        submissionStatus,
+        canEditApprovedProjects,
+        postExComUpdate,
+        mode,
+      )
     }
   }, [allFields, setViewableFields, setEditableFields])
 
@@ -196,6 +206,7 @@ const ProjectsEdit = ({
     setProjectData((prevData) => ({
       ...prevData,
       projIdentifiers: {
+        ...prevData.projIdentifiers,
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
         agency: project.agency_id,
@@ -204,6 +215,8 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
+        post_excom_meeting: project.post_excom_meeting_id,
+        post_excom_decision: project.post_excom_decision_id,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -240,7 +253,9 @@ const ProjectsEdit = ({
             bpLinking: { isLinkedToBP: false, bpId: null },
             crossCuttingFields: {
               ...initialCrossCuttingFields,
-              is_lvc: project.is_lvc,
+              is_lvc:
+                find(commonSlice.countries.data, { id: project.country_id })
+                  ?.is_lvc ?? null,
             },
           }),
     }))
@@ -278,10 +293,11 @@ const ProjectsEdit = ({
         ...prevData,
         approvalFields: {
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-          meeting_approved: find(
-            meetings,
-            (option) => option.number === project.meeting_approved,
-          )?.id,
+          meeting_approved:
+            find(
+              meetings,
+              (option) => option.number === project.meeting_approved,
+            )?.id ?? project.meeting_id,
           decision: project.decision_id,
         },
       }))
@@ -421,6 +437,7 @@ const ProjectsEdit = ({
         <ProjectsHeader
           {...{
             mode,
+            postExComUpdate,
             project,
             projectData,
             projectFiles,
@@ -443,6 +460,7 @@ const ProjectsEdit = ({
             projectData,
             setProjectData,
             mode,
+            postExComUpdate,
             specificFields,
             project,
             files,
@@ -457,7 +475,8 @@ const ProjectsEdit = ({
             approvalFields,
           }}
           specificFieldsLoaded={
-            specificFieldsLoaded && fieldsValuesLoaded.current
+            (specificFieldsLoaded && fieldsValuesLoaded.current) ||
+            !(cluster && project_type && sector)
           }
           loadedFiles={loadedFiles && filesLoaded.current}
         />

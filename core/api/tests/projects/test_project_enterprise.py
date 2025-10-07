@@ -11,13 +11,14 @@ from core.api.tests.factories import (
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913
+# pylint: disable=C8008,W0221,R0913,R0914
 
 
 @pytest.fixture(name="_setup_enterprises")
-def setup_enterprises(project, project2, new_country, new_agency):
+def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc):
     project2.country = new_country
     project2.meta_project.lead_agency = new_agency
     project2.save()
@@ -25,16 +26,21 @@ def setup_enterprises(project, project2, new_country, new_agency):
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
     project_enterprise1 = ProjectEnterprise.objects.create(
-        project=project,
-        enterprise=enterprise1,
+        project=project, enterprise=enterprise1
     )
-    ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
-    ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
+    ProjectEnterpriseOdsOdp.objects.create(
+        project_enterprise=project_enterprise1, ods_substance=substance_hcfc
+    )
+    ProjectEnterpriseOdsOdp.objects.create(
+        project_enterprise=project_enterprise1, ods_substance=substance_hcfc
+    )
     project_enterprise2 = ProjectEnterprise.objects.create(
         project=project2,
         enterprise=enterprise2,
     )
-    ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise2)
+    ProjectEnterpriseOdsOdp.objects.create(
+        project_enterprise=project_enterprise2, ods_substance=substance_hcfc
+    )
     project_enterprise3 = ProjectEnterprise.objects.create(
         project=project2,
         enterprise=enterprise3,
@@ -45,7 +51,7 @@ def setup_enterprises(project, project2, new_country, new_agency):
 class TestListProjectEnterprise(BaseTest):
     url = reverse("project-enterprise-list")
 
-    def test_project_list_permissions(
+    def test_enterprise_list_permissions(
         self,
         _setup_enterprises,
         user,
@@ -78,15 +84,17 @@ class TestListProjectEnterprise(BaseTest):
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
         project2.save()
-
+        enterprise1, _, _ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         # test for different user roles
         _test_user(user, 403)
         _test_user(viewer_user, 200, response_count=1)
         _test_user(agency_user, 200, response_count=1)
         _test_user(agency_inputter_user, 200, response_count=1)
-        _test_user(secretariat_viewer_user, 200, response_count=3)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=3)
+        _test_user(secretariat_viewer_user, 200, response_count=1)
+        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=1)
+        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=1)
         _test_user(secretariat_v3_edit_access_user, 200, response_count=3)
         _test_user(secretariat_production_v3_edit_access_user, 200, response_count=3)
         _test_user(mlfs_admin_user, 200, response_count=3)
@@ -187,6 +195,9 @@ class TestProjectRetrieveProjectEnterprise:
         new_country,
         new_agency,
     ):
+        enterprise1, _, _ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         project2.agency = new_agency
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
@@ -222,10 +233,10 @@ class TestProjectRetrieveProjectEnterprise:
             agency_inputter_user, 404, project_enterprise2
         )  # agency_inputter_user has no access to project2
 
-        _test_user(secretariat_viewer_user, 200, project_enterprise2)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, project_enterprise2)
+        _test_user(secretariat_viewer_user, 404, project_enterprise2)
+        _test_user(secretariat_v1_v2_edit_access_user, 404, project_enterprise2)
         _test_user(
-            secretariat_production_v1_v2_edit_access_user, 200, project_enterprise2
+            secretariat_production_v1_v2_edit_access_user, 404, project_enterprise2
         )
         _test_user(secretariat_v3_edit_access_user, 200, project_enterprise2)
         _test_user(secretariat_production_v3_edit_access_user, 200, project_enterprise2)
@@ -264,7 +275,15 @@ class TestCreateProjectEnterprise:
     client = APIClient()
     url = reverse("project-enterprise-list")
 
-    def get_create_data(self, project, substance, blend):
+    def get_create_data(
+        self,
+        project,
+        substance,
+        blend,
+        agency,
+    ):
+        blend.composition = f"{substance.name}: 100%"
+        blend.save()
         return {
             "project": project.id,
             "enterprise": {
@@ -272,6 +291,7 @@ class TestCreateProjectEnterprise:
                 "country": project.country.id,
                 "location": "New City",
                 "application": "New Application",
+                "agencies": [agency.id],
                 "local_ownership": 50.0,
                 "export_to_non_a5": 30.0,
                 "remarks": "Some remarks",
@@ -295,7 +315,7 @@ class TestCreateProjectEnterprise:
             ],
         }
 
-    def test_project_create_permissions(
+    def test_enterprise_create_permissions(
         self,
         _setup_enterprises,
         user,
@@ -310,10 +330,11 @@ class TestCreateProjectEnterprise:
         mlfs_admin_user,
         admin_user,
         project,
-        substance,
+        agency,
+        substance_hcfc,
         blend,
     ):
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance_hcfc, blend, agency)
 
         def _test_user(user, expected_status, data):
             self.client.force_authenticate(user=user)
@@ -339,9 +360,9 @@ class TestCreateProjectEnterprise:
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
-    def test_create(self, mlfs_admin_user, project, substance, blend):
+    def test_create(self, mlfs_admin_user, project, substance_hcfc, blend, agency):
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance_hcfc, blend, agency)
         assert ProjectEnterprise.objects.all().count() == 0
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
@@ -358,7 +379,7 @@ class TestCreateProjectEnterprise:
         assert project_enterprise.enterprise.remarks == "Some remarks"
         assert project_enterprise.project == project
         assert project_enterprise.ods_odp.count() == 2
-        ods_odp_1 = project_enterprise.ods_odp.get(ods_substance=substance)
+        ods_odp_1 = project_enterprise.ods_odp.get(ods_substance=substance_hcfc)
         assert ods_odp_1.phase_out_mt == 10.0
         assert ods_odp_1.ods_replacement == "Alternative Tech 1"
         assert ods_odp_1.ods_replacement_phase_in == 50.0
@@ -372,8 +393,10 @@ class TestUpdateProjectEnterprise:
 
     client = APIClient()
 
-    def get_update_data(self, project, substance, blend, enterprise):
+    def get_update_data(self, project, substance_hcfc, blend, enterprise, agency):
         ods_odp = enterprise.ods_odp.first()
+        blend.composition = f"{substance_hcfc.name}: 100%"
+        blend.save()
         return {
             "id": enterprise.id,
             "project": project.id,
@@ -381,6 +404,7 @@ class TestUpdateProjectEnterprise:
                 "name": "Updated Enterprise",
                 "country": project.country.id,
                 "location": "Updated City",
+                "agencies": [agency.id],
                 "application": "Updated Application",
                 "local_ownership": 60.0,
                 "export_to_non_a5": 40.0,
@@ -392,7 +416,7 @@ class TestUpdateProjectEnterprise:
             "ods_odp": [
                 {
                     "ods_odp": ods_odp.id,
-                    "ods_substance": substance.id,
+                    "ods_substance": substance_hcfc.id,
                     "phase_out_mt": 15.0,
                     "ods_replacement": "Updated Alternative Tech 1",
                     "ods_replacement_phase_in": 50.0,
@@ -421,11 +445,13 @@ class TestUpdateProjectEnterprise:
         mlfs_admin_user,
         admin_user,
         project,
-        substance,
+        substance_hcfc,
         blend,
+        agency,
     ):
         enterprise1, _, _ = _setup_enterprises
-        data = self.get_update_data(project, substance, blend, enterprise1)
+
+        data = self.get_update_data(project, substance_hcfc, blend, enterprise1, agency)
 
         def _test_user(user, expected_status, enterprise, data):
             url = reverse("project-enterprise-detail", args=[enterprise.id])
@@ -456,11 +482,19 @@ class TestUpdateProjectEnterprise:
         _test_user(admin_user, 200, enterprise1, data)
 
     def test_update(
-        self, mlfs_admin_user, _setup_enterprises, project, substance, blend
+        self,
+        mlfs_admin_user,
+        _setup_enterprises,
+        project,
+        substance_hcfc,
+        blend,
+        agency,
     ):
         project_enterprise1, _, _ = _setup_enterprises
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_update_data(project, substance, blend, project_enterprise1)
+        data = self.get_update_data(
+            project, substance_hcfc, blend, project_enterprise1, agency
+        )
         url = reverse("project-enterprise-detail", args=[project_enterprise1.id])
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
@@ -476,7 +510,7 @@ class TestUpdateProjectEnterprise:
         assert project_enterprise1.enterprise.remarks == "Updated remarks"
         assert project_enterprise1.project == project
         assert project_enterprise1.ods_odp.count() == 2
-        ods_odp_1 = project_enterprise1.ods_odp.get(ods_substance=substance)
+        ods_odp_1 = project_enterprise1.ods_odp.get(ods_substance=substance_hcfc)
         assert ods_odp_1.phase_out_mt == 15.0
         assert ods_odp_1.ods_replacement == "Updated Alternative Tech 1"
         assert ods_odp_1.ods_replacement_phase_in == 50.0

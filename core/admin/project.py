@@ -37,6 +37,7 @@ class MetaProjectAdmin(admin.ModelAdmin):
             "pcrlearnedlessons",
             "pcrdelayexplanation",
             "projects",
+            "code",
         ]
         return get_final_display_list(MetaProject, exclude)
 
@@ -193,8 +194,6 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectFile)
 class ProjectFileAdmin(admin.ModelAdmin):
-    list_filter = []
-
     list_filter = [
         AutocompleteFilterFactory("project", "project"),
     ]
@@ -334,8 +333,12 @@ class DecisionAdmin(admin.ModelAdmin):
             "project",
             "businessplan",
             "bp_projects",
+            "post_excom_projects",
+            "transfer_decision_projects",
         ]
-        return get_final_display_list(Decision, exclude)
+
+        results = get_final_display_list(Decision, exclude)
+        return results
 
 
 @admin.register(RBMMeasure)
