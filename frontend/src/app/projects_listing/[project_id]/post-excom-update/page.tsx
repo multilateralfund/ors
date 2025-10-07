@@ -11,9 +11,9 @@ export default function PostExComUpdateProject() {
   usePageTitle('Post ExCom update')
 
   const { project_id } = useParams<Record<string, string>>()
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const { canUpdatePostExcom } = useContext(PermissionsContext)
 
-  if (!canEditApprovedProjects) {
+  if (!canUpdatePostExcom) {
     return <Redirect to="/projects-listing/listing" />
   }
 

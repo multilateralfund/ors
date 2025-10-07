@@ -42,6 +42,7 @@ export default function PEnterprisesWrapper() {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />

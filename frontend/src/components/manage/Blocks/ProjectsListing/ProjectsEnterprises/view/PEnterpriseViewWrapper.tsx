@@ -35,6 +35,7 @@ const PEnterpriseViewWrapper = () => {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
