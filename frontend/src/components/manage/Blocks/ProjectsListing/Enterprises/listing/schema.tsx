@@ -96,7 +96,8 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
                     {props.data.status !== 'Obsolete' &&
                       (isEnterprise ||
                         props.data.status !== 'Approved' ||
-                        canEditProjectEnterprise) && (
+                        (canEditProjectEnterprise &&
+                          canApproveProjectEnterprise)) && (
                         <>
                           <Link
                             className="flex h-4 w-4 justify-center"
