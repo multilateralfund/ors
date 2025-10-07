@@ -119,6 +119,10 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
         exclude = ["projects", "bpactivity"]
         return get_final_display_list(ProjectSubSector, exclude)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("sector")
+
 
 @admin.register(ProjectType)
 class ProjectTypeAdmin(admin.ModelAdmin):

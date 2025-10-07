@@ -37,6 +37,10 @@ class BlendAdmin(admin.ModelAdmin):
         ]
         return get_final_display_list(Blend, exclude)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("created_by")
+
 
 @admin.register(BlendAltName)
 class BlendAltNameAdmin(admin.ModelAdmin):
