@@ -14,7 +14,6 @@ from core.api.permissions import (
     HasEnterpriseViewAccess,
     HasEnterpriseEditAccess,
     HasEnterpriseApprovalAccess,
-    HasProjectV2ViewAccess,
     HasProjectEnterpriseEditAccess,
     HasProjectEnterpriseApprovalAccess,
 )
@@ -193,7 +192,7 @@ class ProjectEnterpriseViewSet(
             "list",
             "retrieve",
         ]:
-            return [HasProjectV2ViewAccess]
+            return [HasProjectEnterpriseEditAccess]
         if self.action in [
             "create",
             "update",

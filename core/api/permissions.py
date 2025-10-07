@@ -255,6 +255,14 @@ class HasProjectV2RecommendAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_project_v2_recommend_projects_access")
 
 
+class HasProjectV2MyaAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to manage MYA in Project V2.
+        """
+        return request.user.has_perm("core.has_project_v2_mya_access")
+
+
 class HasProjectV2TransferAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """

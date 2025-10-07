@@ -264,7 +264,6 @@ class ProjectV2ViewSet(
             queryset.filter(submission_status__name="Approved").exclude(
                 status__name__in=["Closed", "Transferred"]
             )
-
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -285,11 +284,21 @@ class ProjectV2ViewSet(
                 limit_to_draft = False
                 allowed_versions.update([1, 2])
 
-            if user.has_perm("core.has_project_v2_version3_edit_access"):
+            is_post_excom_request = self.action == "update" and self.request.data.get(
+                "post-excom-update", False
+            )
+
+            if user.has_perm("core.has_project_v2_version3_edit_access") or (
+                is_post_excom_request
+                and user.has_perm("core.has_project_v2_edit_post_excom")
+            ):
                 limit_to_draft = False
                 allowed_versions.add(3)
 
-            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+            if not user.has_perm("core.has_project_v2_edit_approved_access") and not (
+                is_post_excom_request
+                and user.has_perm("core.has_project_v2_edit_post_excom")
+            ):
                 queryset = queryset.exclude(
                     submission_status__name__in=[
                         "Approved",
@@ -314,6 +323,11 @@ class ProjectV2ViewSet(
             queryset_filters &= version_filters
 
             queryset = queryset.filter(queryset_filters)
+
+            if is_post_excom_request and not user.has_perm(
+                "core.has_project_v2_edit_post_excom"
+            ):
+                return queryset.none()
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -557,6 +571,19 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
+    @swagger_auto_schema(
+        operation_description="""
+        V2 projects endpoint for updating a project. This endpoint should be used in the
+        project editing workflow.
+        If the field "post-excom-update" is set to true, the project is updated as a post-excom update,
+        which means that the version is increased and a new archived version of the project is created.
+        """,
+        request_body=ProjectV2CreateUpdateSerializer,
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
     def update(self, request, *args, **kwargs):
         post_excom_update = request.data.get("post-excom-update", False)
         if post_excom_update:
