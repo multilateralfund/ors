@@ -66,8 +66,6 @@ const ProjectCrossCutting = ({
     })?.name,
   }))
 
-  console.log(formattedHistoryLvc)
-
   return (
     <>
       {canViewAboutSection && (

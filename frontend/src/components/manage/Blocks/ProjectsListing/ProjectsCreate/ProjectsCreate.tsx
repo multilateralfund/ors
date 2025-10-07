@@ -465,9 +465,11 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
+            project,
             hasSubmitted,
             setCurrentTab,
             postExComUpdate,
+            hasV3EditPermissions,
           }}
           nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />

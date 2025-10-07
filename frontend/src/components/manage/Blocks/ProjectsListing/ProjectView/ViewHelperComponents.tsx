@@ -4,9 +4,62 @@ import { formatDecimalValue } from '@ors/helpers'
 
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
 
-import { capitalize, find, isBoolean, isNil } from 'lodash'
+import { capitalize, find, isBoolean, isNil, lowerCase } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+
+const getItemValue = (value: any, fieldName: string): any => {
+  if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
+    return dayjs(value).format('DD/MM/YYYY')
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value?.hasOwnProperty('title')
+  ) {
+    return value?.title
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value?.hasOwnProperty('name')
+  ) {
+    return value?.name
+  } else if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No'
+  } else if (Array.isArray(value)) {
+    return value.map((v) => getItemValue(v, fieldName)).join(', ')
+  }
+  return value
+}
+
+const hasExcomUpdate = (
+  history: ProjectFieldHistoryValue[],
+  fieldName: string,
+) => {
+  const filteredHistory = history.filter(
+    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
+  )
+
+  const latestByMeeting = Object.values(
+    filteredHistory.reduce(
+      (acc, item) => {
+        const key = item.post_excom_meeting ?? '-'
+        if (!acc[key] || item.version > acc[key].version) {
+          acc[key] = item
+        }
+        return acc
+      },
+      {} as Record<string, any>,
+    ),
+  )
+
+  const historicValues =
+    latestByMeeting.reduce((acc, item) => {
+      acc.add(getItemValue(item.value, fieldName))
+      return acc
+    }, new Set()) ?? new Set()
+
+  return historicValues.size > 1
+}
 
 export type detailItemExtra = {
   detailClassname?: string
@@ -32,21 +85,20 @@ export const detailItem = (
     fieldClassName = '',
   } = classNames ?? {}
 
-  return (
-    <div>
-      <span
-        className={cx('flex items-center gap-2', containerClassName, {
-          italic: isDisabledImpactField,
-        })}
-      >
-        <span className={cx(detailClassname, className)}>
-          {fieldName}
-          {isDisabledImpactField ? ' (planned)' : ''}
-        </span>
-        <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
+  return fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+  ) : (
+    <span
+      className={cx('flex gap-2', containerClassName, {
+        italic: isDisabledImpactField,
+      })}
+    >
+      <span className={cx(detailClassname, className)}>
+        {fieldName}
+        {isDisabledImpactField ? ' (planned)' : ''}
       </span>
-      <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-    </div>
+      <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
+    </span>
   )
 }
 
@@ -55,10 +107,12 @@ export const numberDetailItem = (
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
   isDisabledImpactField?: boolean,
-) => (
-  <div>
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+  ) : (
     <span
-      className={cx('flex items-center gap-2', {
+      className={cx('flex gap-2', {
         italic: isDisabledImpactField,
       })}
     >
@@ -74,9 +128,7 @@ export const numberDetailItem = (
           : '-'}
       </h4>
     </span>
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </div>
-)
+  )
 
 export const booleanDetailItem = (
   fieldName: string,
@@ -84,10 +136,12 @@ export const booleanDetailItem = (
   fieldHistory?: detailItemExtra['fieldHistory'],
   className?: string,
   isDisabledImpactField?: boolean,
-) => (
-  <div>
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+  ) : (
     <span
-      className={cx('flex items-center gap-2', className, {
+      className={cx('flex gap-2', className, {
         italic: isDisabledImpactField,
       })}
     >
@@ -96,25 +150,23 @@ export const booleanDetailItem = (
       </span>
       <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
     </span>
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </div>
-)
+  )
 
 export const dateDetailItem = (
   fieldName: string,
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
-) => (
-  <div>
-    <span className="flex items-center gap-2">
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+  ) : (
+    <span className="flex gap-2">
       <span>{fieldName}</span>
       <h4 className="m-0">
         {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
       </h4>
     </span>
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </div>
-)
+  )
 
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   text: (data, field, classNames, fieldHistory) =>

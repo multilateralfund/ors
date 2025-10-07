@@ -58,7 +58,7 @@ export default function FieldHistoryIndicator({
       },
       {} as Record<string, any>,
     ),
-  )
+  ).sort((a, b) => b.version - a.version)
 
   const historicValues =
     latestByMeeting.reduce((acc, item) => {

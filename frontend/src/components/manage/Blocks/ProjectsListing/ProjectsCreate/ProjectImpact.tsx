@@ -8,7 +8,7 @@ import {
   ProjectData,
   ProjectTabSetters,
   ProjectSpecificFields,
-  SpecificFields,
+  ProjectTypeApi,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -18,25 +18,25 @@ import cx from 'classnames'
 const ProjectImpact = ({
   projectData,
   setProjectData,
+  project,
   sectionFields,
   errors = {},
   hasSubmitted,
   setCurrentTab,
   postExComUpdate,
   nextStep,
+  hasV3EditPermissions,
 }: SpecificFieldsSectionProps &
   ProjectTabSetters & {
+    project?: ProjectTypeApi
     postExComUpdate: boolean
     nextStep: number
+    hasV3EditPermissions: boolean
   }) => {
   const { viewableFields, editableFields, projectFields } = useStore(
     (state) => state.projectFields,
   )
   const filteredEditableFields = editableFields.filter((field) => {
-    if (!postExComUpdate) {
-      return true
-    }
-
     const allFields = isArray(projectFields)
       ? projectFields
       : projectFields?.data
@@ -45,14 +45,21 @@ const ProjectImpact = ({
       (projField) => projField.write_field_name === field,
     )
 
-    return (
-      fieldData &&
-      (fieldData.section !== 'Impact' ||
-        fieldData.is_actual ||
-        isNull(
-          projectData['projectSpecificFields'][field as keyof SpecificFields],
-        ))
-    )
+    if (!postExComUpdate) {
+      if (
+        hasV3EditPermissions &&
+        project?.submission_status === 'Approved' &&
+        fieldData &&
+        fieldData.section === 'Impact' &&
+        !fieldData.is_actual
+      ) {
+        return isNull(project[field as keyof ProjectTypeApi])
+      } else {
+        return true
+      }
+    }
+
+    return fieldData && (fieldData.section !== 'Impact' || fieldData.is_actual)
   })
 
   const ImpactFields = useMemo(() => {
