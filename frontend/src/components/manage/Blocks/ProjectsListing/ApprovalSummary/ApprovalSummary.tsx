@@ -38,7 +38,7 @@ const ApprovalSummary = () => {
   ]
 
   const approvalSummaryApi = useApi<ApiApprovalSummary>({
-    path: 'api/decisions',
+    path: 'api/projects-approval-summary',
     options: {
       triggerIf: false,
       params: requestParams,
@@ -52,6 +52,8 @@ const ApprovalSummary = () => {
       options: { ...prevSettings.options, triggerIf: true },
     }))
   }
+
+  console.log(approvalSummaryApi.data)
 
   return (
     <>
