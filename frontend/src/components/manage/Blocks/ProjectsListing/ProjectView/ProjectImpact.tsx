@@ -19,8 +19,18 @@ const ProjectImpact = ({
   const { viewableFields } = useStore((state) => state.projectFields)
 
   const getFieldHistory = useCallback(
-    (name: string) => {
-      return fieldHistory?.[name] ?? []
+    (name: string, dataType: string) => {
+      const history = fieldHistory?.[name] ?? []
+
+      return map(history, (historyItem) => ({
+        ...historyItem,
+        value:
+          dataType === 'boolean'
+            ? historyItem.value
+              ? 'Yes'
+              : 'No'
+            : historyItem.value,
+      }))
     },
     [fieldHistory],
   )
@@ -34,7 +44,7 @@ const ProjectImpact = ({
           project,
           field,
           undefined,
-          getFieldHistory(field.write_field_name),
+          getFieldHistory(field.write_field_name, field.data_type),
           !!hasActualFields,
         ),
     )

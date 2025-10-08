@@ -16,7 +16,7 @@ import {
   ListingProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
-import { Cluster } from '@ors/types/store'
+import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
 
 import {
   concat,
@@ -30,6 +30,7 @@ import {
   isNaN,
   isNil,
   keys,
+  lowerCase,
   map,
   min,
   omit,
@@ -853,3 +854,61 @@ export const getFieldData = (
   data: ProjectSpecificFields[],
   fieldName: string,
 ) => find(data, (field) => field.write_field_name === fieldName)
+
+export const getHistoryItemValue = (value: any, fieldName: string): any => {
+  if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
+    return dayjs(value).format('DD/MM/YYYY')
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('title')
+  ) {
+    return value.title
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('name')
+  ) {
+    return value.name
+  } else if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No'
+  } else if (Array.isArray(value)) {
+    return value.map((v) => getHistoryItemValue(v, fieldName)).join(', ')
+  }
+  return value
+}
+
+export const filterHistoryField = (history: ProjectFieldHistoryValue[]) =>
+  history.filter(
+    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
+  )
+
+export const getLatesValueByMeeting = (history: ProjectFieldHistoryValue[]) =>
+  Object.values(
+    history.reduce(
+      (acc, item) => {
+        const key = item.post_excom_meeting ?? '-'
+        if (!acc[key] || item.version > acc[key].version) {
+          acc[key] = item
+        }
+        return acc
+      },
+      {} as Record<string, any>,
+    ),
+  ).sort((a, b) => b.version - a.version)
+
+export const hasExcomUpdate = (
+  history: ProjectFieldHistoryValue[],
+  fieldName: string,
+) => {
+  const filteredHistory = filterHistoryField(history)
+  const latestByMeeting = getLatesValueByMeeting(filteredHistory)
+
+  const historicValues =
+    latestByMeeting.reduce((acc, item) => {
+      acc.add(getHistoryItemValue(item.value, fieldName))
+      return acc
+    }, new Set()) ?? new Set()
+
+  return historicValues.size > 1
+}

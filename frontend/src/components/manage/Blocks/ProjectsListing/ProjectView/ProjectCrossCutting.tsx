@@ -61,9 +61,7 @@ const ProjectCrossCutting = ({
 
   const formattedHistoryLvc = map(getFieldHistory('is_lvc'), (history) => ({
     ...history,
-    value: find(lvcNonLvcOpts, {
-      id: project.is_lvc,
-    })?.name,
+    value: find(lvcNonLvcOpts, { id: history.value })?.name,
   }))
 
   return (

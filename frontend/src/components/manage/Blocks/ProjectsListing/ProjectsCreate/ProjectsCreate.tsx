@@ -401,7 +401,7 @@ const ProjectsCreate = ({
               ))}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled || currentStep < 3,
+      disabled: isSpecificInfoTabDisabled,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -454,7 +454,7 @@ const ProjectsCreate = ({
               ))}
         </div>
       ),
-      disabled: isImpactTabDisabled || currentStep < 3,
+      disabled: isImpactTabDisabled,
       component: (
         <ProjectImpact
           sectionFields={impactFields}

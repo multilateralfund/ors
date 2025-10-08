@@ -1,65 +1,12 @@
-import type { ProjectFieldHistoryValue } from '@ors/types/store'
-import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
-import { formatDecimalValue } from '@ors/helpers'
-
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
+import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
+import { hasExcomUpdate } from '../utils'
+import { formatDecimalValue } from '@ors/helpers'
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
-import { capitalize, find, isBoolean, isNil, lowerCase } from 'lodash'
+import { capitalize, find, isBoolean, isNil } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-
-const getItemValue = (value: any, fieldName: string): any => {
-  if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
-    return dayjs(value).format('DD/MM/YYYY')
-  } else if (
-    value &&
-    typeof value === 'object' &&
-    value?.hasOwnProperty('title')
-  ) {
-    return value?.title
-  } else if (
-    value &&
-    typeof value === 'object' &&
-    value?.hasOwnProperty('name')
-  ) {
-    return value?.name
-  } else if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No'
-  } else if (Array.isArray(value)) {
-    return value.map((v) => getItemValue(v, fieldName)).join(', ')
-  }
-  return value
-}
-
-const hasExcomUpdate = (
-  history: ProjectFieldHistoryValue[],
-  fieldName: string,
-) => {
-  const filteredHistory = history.filter(
-    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
-  )
-
-  const latestByMeeting = Object.values(
-    filteredHistory.reduce(
-      (acc, item) => {
-        const key = item.post_excom_meeting ?? '-'
-        if (!acc[key] || item.version > acc[key].version) {
-          acc[key] = item
-        }
-        return acc
-      },
-      {} as Record<string, any>,
-    ),
-  )
-
-  const historicValues =
-    latestByMeeting.reduce((acc, item) => {
-      acc.add(getItemValue(item.value, fieldName))
-      return acc
-    }, new Set()) ?? new Set()
-
-  return historicValues.size > 1
-}
 
 export type detailItemExtra = {
   detailClassname?: string

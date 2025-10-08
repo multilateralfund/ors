@@ -81,12 +81,12 @@ const ProjectImpact = ({
 
   return (
     <>
-      <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-3 md:grid">
+      <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
         {find(sectionFields, (field) => field.is_actual)
           ? chunk(sectionFields, 2).map((group, i) => (
               <div
                 key={i}
-                className={cx('flex flex-col gap-y-3', {
+                className={cx('flex flex-col gap-y-2', {
                   'col-span-2 w-full': group[0].data_type === 'boolean',
                 })}
               >
