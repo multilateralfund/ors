@@ -1,4 +1,4 @@
-import { Box, Checkbox } from '@mui/material'
+import { Box, Button, Checkbox } from '@mui/material'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
@@ -6,6 +6,9 @@ import { IoChevronDown } from 'react-icons/io5'
 import { useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import { canEditField } from '@ors/components/manage/Blocks/ProjectsListing/utils.ts'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
+import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -34,10 +37,26 @@ const ApprovalSummary = () => {
     { name: 'Approved', value: 'approved' },
   ]
 
+  const approvalSummaryApi = useApi<ApiApprovalSummary>({
+    path: 'api/decisions',
+    options: {
+      triggerIf: false,
+      params: requestParams,
+    },
+  })
+
+  const handleFetchPreview = () => {
+    approvalSummaryApi.setParams(requestParams)
+    approvalSummaryApi.setApiSettings((prevSettings) => ({
+      ...prevSettings,
+      options: { ...prevSettings.options, triggerIf: true },
+    }))
+  }
+
   return (
     <>
       <Box className="shadow-none">
-        <div className="flex gap-4">
+        <div className="flex w-full gap-4">
           <div className="w-full md:w-[7.76rem]">
             <Label htmlFor="meetingPopover">Meeting</Label>
             <PopoverInput
@@ -94,6 +113,15 @@ const ApprovalSummary = () => {
                 color: 'black',
               }}
             />
+          </div>
+          <div className="flex grow flex-row-reverse items-center">
+            <Button
+              size="large"
+              variant="contained"
+              onClick={handleFetchPreview}
+            >
+              Preview summary
+            </Button>
           </div>
         </div>
       </Box>
