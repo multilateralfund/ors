@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from core.api.filters.project_approval_summary import ProjectApprovalSummaryFilter
 from core.api.permissions import HasProjectV2ApproveAccess
+from core.api.serializers.project_approval_summary import ApprovalSummarySerializer
 from core.models import Project
 
 
@@ -20,4 +21,5 @@ class ProjectApprovalSummaryViewSet(
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        return Response({"found": queryset.count()})
+        serializer = ApprovalSummarySerializer(queryset)
+        return Response(serializer.data)
