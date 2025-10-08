@@ -12,7 +12,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import {
   getMeetingNr,
-  getMeetingOptions,
+  useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
@@ -255,7 +255,7 @@ const ProjectIdentifiersFields = ({
                   label={getMeetingNr(
                     projIdentifiers?.post_excom_meeting ?? undefined,
                   )?.toString()}
-                  options={getMeetingOptions()}
+                  options={useMeetingOptions()}
                   onChange={handleChangePostExComMeeting}
                   onClear={() => handleChangePostExComMeeting()}
                   clearBtnClassName="right-1"
@@ -338,7 +338,7 @@ const ProjectIdentifiersFields = ({
                 label={getMeetingNr(
                   projIdentifiers?.meeting ?? undefined,
                 )?.toString()}
-                options={getMeetingOptions()}
+                options={useMeetingOptions()}
                 onChange={handleChangeMeeting}
                 onClear={() => handleChangeMeeting()}
                 disabled={!canEditMeeting}
