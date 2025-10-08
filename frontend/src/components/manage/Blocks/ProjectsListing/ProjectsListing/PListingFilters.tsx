@@ -3,7 +3,7 @@
 import ProjectsFilters from './ProjectsFilters'
 import ProjectsFiltersSelectedOpts from './ProjectsFiltersSelectedOpts'
 
-import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
+import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { useStore } from '@ors/store'
 
 const PListingFilters = ({ mode, setFilters, setParams, ...rest }: any) => {
@@ -11,7 +11,7 @@ const PListingFilters = ({ mode, setFilters, setParams, ...rest }: any) => {
     state.common,
     state.projects,
   ])
-  const meetings = getMeetingOptions()
+  const meetings = useMeetingOptions()
 
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
