@@ -43,10 +43,10 @@ const ProjectCrossCutting = ({
   const individual_consideration = find(blanketOrIndConsiderationOpts, {
     id: project.individual_consideration,
   }) as BooleanOptionsType
-
   const is_lvc = find(lvcNonLvcOpts, {
     id: project.is_lvc,
   }) as BooleanOptionsType
+
   const subsectors =
     project.subsectors.length > 0
       ? map(project.subsectors, 'name').join(', ')
@@ -58,6 +58,11 @@ const ProjectCrossCutting = ({
     },
     [fieldHistory],
   )
+
+  const formattedHistoryLvc = map(getFieldHistory('is_lvc'), (history) => ({
+    ...history,
+    value: find(lvcNonLvcOpts, { id: history.value })?.name,
+  }))
 
   return (
     <>
@@ -103,7 +108,7 @@ const ProjectCrossCutting = ({
                   })}
                 {canViewField(viewableFields, 'is_lvc') &&
                   detailItem(tableColumns.is_lvc, is_lvc?.name, {
-                    fieldHistory: getFieldHistory('is_lvc'),
+                    fieldHistory: formattedHistoryLvc,
                   })}
               </div>
             </div>

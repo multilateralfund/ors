@@ -1,8 +1,8 @@
-import type { ProjectFieldHistoryValue } from '@ors/types/store'
-import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
-import { formatDecimalValue } from '@ors/helpers'
-
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
+import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
+import { hasExcomUpdate } from '../utils'
+import { formatDecimalValue } from '@ors/helpers'
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
 import { capitalize, find, isBoolean, isNil } from 'lodash'
 import cx from 'classnames'
@@ -32,9 +32,11 @@ export const detailItem = (
     fieldClassName = '',
   } = classNames ?? {}
 
-  return (
+  return fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+  ) : (
     <span
-      className={cx('flex items-center gap-2', containerClassName, {
+      className={cx('flex gap-2', containerClassName, {
         italic: isDisabledImpactField,
       })}
     >
@@ -43,7 +45,6 @@ export const detailItem = (
         {isDisabledImpactField ? ' (planned)' : ''}
       </span>
       <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
-      <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
     </span>
   )
 }
@@ -53,26 +54,28 @@ export const numberDetailItem = (
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
   isDisabledImpactField?: boolean,
-) => (
-  <span
-    className={cx('flex items-center gap-2', {
-      italic: isDisabledImpactField,
-    })}
-  >
-    <span>
-      {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
-    </span>
-    <h4 className="m-0">
-      {!isNil(fieldValue)
-        ? formatDecimalValue(parseFloat(fieldValue), {
-            maximumFractionDigits: 10,
-            minimumFractionDigits: 2,
-          })
-        : '-'}
-    </h4>
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
-)
+  ) : (
+    <span
+      className={cx('flex gap-2', {
+        italic: isDisabledImpactField,
+      })}
+    >
+      <span>
+        {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
+      </span>
+      <h4 className="m-0">
+        {!isNil(fieldValue)
+          ? formatDecimalValue(parseFloat(fieldValue), {
+              maximumFractionDigits: 10,
+              minimumFractionDigits: 2,
+            })
+          : '-'}
+      </h4>
+    </span>
+  )
 
 export const booleanDetailItem = (
   fieldName: string,
@@ -80,33 +83,37 @@ export const booleanDetailItem = (
   fieldHistory?: detailItemExtra['fieldHistory'],
   className?: string,
   isDisabledImpactField?: boolean,
-) => (
-  <span
-    className={cx('flex items-center gap-2', className, {
-      italic: isDisabledImpactField,
-    })}
-  >
-    <span>
-      {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
-    </span>
-    <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
-)
+  ) : (
+    <span
+      className={cx('flex gap-2', className, {
+        italic: isDisabledImpactField,
+      })}
+    >
+      <span>
+        {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
+      </span>
+      <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
+    </span>
+  )
 
 export const dateDetailItem = (
   fieldName: string,
   fieldValue: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
-) => (
-  <span className="flex items-center gap-2">
-    <span>{fieldName}</span>
-    <h4 className="m-0">
-      {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
-    </h4>
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
     <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
-  </span>
-)
+  ) : (
+    <span className="flex gap-2">
+      <span>{fieldName}</span>
+      <h4 className="m-0">
+        {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
+      </h4>
+    </span>
+  )
 
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   text: (data, field, classNames, fieldHistory) =>

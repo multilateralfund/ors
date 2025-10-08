@@ -184,51 +184,53 @@ const ProjectCrossCuttingFields = ({
       {canViewAboutSection && (
         <>
           <SectionTitle>About</SectionTitle>
-          {canViewField(viewableFields, 'title') && (
-            <div>
-              <Label>{tableColumns.title}</Label>
-              <SimpleInput
-                id={title}
-                value={title}
-                onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                  changeHandler['text']<ProjectData, CrossCuttingFields>(
-                    event,
-                    'title',
-                    setProjectData,
-                    sectionIdentifier,
-                  )
-                }
-                disabled={!canEditField(editableFields, 'title')}
-                type="text"
-                {...getFieldDefaultProps('title')}
-                containerClassName={
-                  defaultPropsSimpleField.containerClassName + ' !w-[55rem]'
-                }
-              />
-            </div>
-          )}
-          {canViewField(viewableFields, 'description') && (
-            <div>
-              <Label>{tableColumns.description}</Label>
-              <TextareaAutosize
-                value={description}
-                onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                  changeHandler['text']<ProjectData, CrossCuttingFields>(
-                    event,
-                    'description',
-                    setProjectData,
-                    sectionIdentifier,
-                  )
-                }
-                disabled={!canEditField(editableFields, 'description')}
-                className={cx(textAreaClassname + ' max-w-[64rem]', {
-                  'border-red-500': getIsInputDisabled('description'),
-                })}
-                minRows={7}
-                tabIndex={-1}
-              />
-            </div>
-          )}
+          <div className="flex flex-col gap-y-2">
+            {canViewField(viewableFields, 'title') && (
+              <div>
+                <Label>{tableColumns.title}</Label>
+                <SimpleInput
+                  id={title}
+                  value={title}
+                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                    changeHandler['text']<ProjectData, CrossCuttingFields>(
+                      event,
+                      'title',
+                      setProjectData,
+                      sectionIdentifier,
+                    )
+                  }
+                  disabled={!canEditField(editableFields, 'title')}
+                  type="text"
+                  {...getFieldDefaultProps('title')}
+                  containerClassName={
+                    defaultPropsSimpleField.containerClassName + ' !w-[55rem]'
+                  }
+                />
+              </div>
+            )}
+            {canViewField(viewableFields, 'description') && (
+              <div>
+                <Label>{tableColumns.description}</Label>
+                <TextareaAutosize
+                  value={description}
+                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                    changeHandler['text']<ProjectData, CrossCuttingFields>(
+                      event,
+                      'description',
+                      setProjectData,
+                      sectionIdentifier,
+                    )
+                  }
+                  disabled={!canEditField(editableFields, 'description')}
+                  className={cx(textAreaClassname + ' max-w-[64rem]', {
+                    'border-red-500': getIsInputDisabled('description'),
+                  })}
+                  minRows={7}
+                  tabIndex={-1}
+                />
+              </div>
+            )}
+          </div>
         </>
       )}
 

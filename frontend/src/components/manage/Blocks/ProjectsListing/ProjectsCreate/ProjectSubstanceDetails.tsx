@@ -150,7 +150,7 @@ const ProjectSubstanceDetails = ({
                   )
                   .map((_, index) => (
                     <span key={index}>
-                      <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
+                      <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
                         {odsOdpFields.map(
                           (odsOdpField) =>
                             canViewField(

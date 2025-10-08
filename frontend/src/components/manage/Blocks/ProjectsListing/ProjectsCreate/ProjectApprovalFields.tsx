@@ -116,7 +116,7 @@ const ProjectApprovalFields = ({
 
   return (
     <>
-      <div className="flex flex-wrap gap-x-20 gap-y-5">
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
         {canViewField(viewableFields, 'meeting_approved') && (
           <div className="w-32">
             <Label>{tableColumns.meeting}</Label>
