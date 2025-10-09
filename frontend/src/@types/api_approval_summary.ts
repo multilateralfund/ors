@@ -1,8 +1,9 @@
 type ComputedValue = {
+  projects_count: number
   hcfc: string
   hfc: string
-  project: string
-  support: string
+  project_funding: string
+  project_support_cost: string
   total: string
 }
 
@@ -14,6 +15,16 @@ type BaseSummary = {
 }
 
 export type ApiApprovalSummary = {
+  projects: {
+    data: {
+      id: string
+      code: string
+      version: number
+      status_submission: string
+      status_project: string
+    }[]
+    count: number
+  }
   bilateral_cooperation: BaseSummary & {
     destruction: ComputedValue
   }
