@@ -115,10 +115,12 @@ class ApprovalSummaryByPartiesAndImplementingAgenciesSerializer(
         return projects.values(
             agency_name=F("agency__name"), agency_type=F("agency__agency_type")
         ).annotate(
+            projects_count=Count("id", distinct=True),
             hcfc=Sum("ods_odp__odp"),
             hfc=Sum("ods_odp__co2_mt"),
             project_funding=Sum("total_fund"),
             project_support_cost=Sum("support_cost_psc"),
+            total=Sum(F("total_fund") + F("support_cost_psc")),
         )
 
 
@@ -151,4 +153,5 @@ class ApprovalSummarySerializer(serializers.BaseSerializer):
             "investment_project": investment_project,
             "work_programme_amendment": work_programme_amendment,
             "summary_by_parties_and_implementing_agencies": summary_by_parties_and_implementing_agencies,
+            "grand_total": compute_fields(projects),
         }

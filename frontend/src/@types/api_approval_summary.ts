@@ -33,9 +33,9 @@ export type ApiApprovalSummary = {
     destruction: ComputedValue
     several: ComputedValue
   }
-  summary_by_parties_and_implementing_agencies: {
-    name: string
-    type: 'agency' | 'country'
-    value: ComputedValue
-  }[]
+  summary_by_parties_and_implementing_agencies: ({
+    agency_name: string
+    agency_type: string
+  } & ComputedValue)[]
+  grand_total: ComputedValue
 }
