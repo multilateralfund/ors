@@ -3,7 +3,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
@@ -96,9 +96,219 @@ const ApprovalSummaryPreviewTable = (props: {
   )
 }
 
+const ColsFundsRecommended = (props: {
+  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+}) => {
+  const { data } = props
+  return (
+    <>
+      <td>
+        {'$'}
+        {data.project_funding}
+      </td>
+      <td>
+        {'$'}
+        {data.project_support_cost}
+      </td>
+      <td>
+        {'$'}
+        {data.total}
+      </td>
+    </>
+  )
+}
+
+const TrHcfc = (props: {
+  sector: ReactNode
+  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+}) => {
+  const { data, sector } = props
+  return (
+    <tr>
+      <td>{sector}</td>
+      <td>{data.hcfc}</td>
+      <td></td>
+      <ColsFundsRecommended data={data} />
+    </tr>
+  )
+}
+const TrHfc = (props: {
+  sector: ReactNode
+  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+}) => {
+  const { data, sector } = props
+  return (
+    <tr>
+      <td>{sector}</td>
+      <td></td>
+      <td>{data.hfc}</td>
+      <ColsFundsRecommended data={data} />
+    </tr>
+  )
+}
+
+const TrFundsRecommended = (props: {
+  sector: ReactNode
+  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+}) => {
+  const { data, sector } = props
+  return (
+    <tr>
+      <td>{sector}</td>
+      <td></td>
+      <td></td>
+      <ColsFundsRecommended data={data} />
+    </tr>
+  )
+}
+const TrAllCells = (props: {
+  sector: ReactNode
+  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+}) => {
+  const { data, sector } = props
+  return (
+    <tr>
+      <td>{sector}</td>
+      <td>{data.hcfc}</td>
+      <td>{data.hfc}</td>
+      <ColsFundsRecommended data={data} />
+    </tr>
+  )
+}
+
+const TrSection = (props: { title: ReactNode }) => {
+  const { title } = props
+  return (
+    <tr>
+      <td className="font-bold">{title}</td>
+      <td colSpan={5}></td>
+    </tr>
+  )
+}
+
+const RowSectionBilateralCooperation = (props: {
+  data: ApiApprovalSummary['bilateral_cooperation']
+  title: string
+}) => {
+  const { title, data } = props
+  return (
+    <>
+      <TrSection title={title} />
+      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrFundsRecommended sector="Destruction" data={data.destruction} />
+      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrFundsRecommended
+        sector="Energy efficiency"
+        data={data.energy_efficiency}
+      />
+      <TrFundsRecommended
+        sector={<span className="font-bold">TOTAL:</span>}
+        data={data.total}
+      />
+    </>
+  )
+}
+
+const RowSectionInvestmentProject = (props: {
+  data: ApiApprovalSummary['investment_project']
+  title: ReactNode
+}) => {
+  const { title, data } = props
+  return (
+    <>
+      <TrSection title={title} />
+      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrFundsRecommended
+        sector="Energy efficiency"
+        data={data.energy_efficiency}
+      />
+      <TrFundsRecommended
+        sector={<span className="font-bold">TOTAL:</span>}
+        data={data.total}
+      />
+    </>
+  )
+}
+const RowSectionWorkProgrammeAmendment = (props: {
+  data: ApiApprovalSummary['work_programme_amendment']
+  title: ReactNode
+}) => {
+  const { title, data } = props
+  return (
+    <>
+      <TrSection title={title} />
+      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrFundsRecommended sector="Destruction" data={data.destruction} />
+      <TrFundsRecommended sector="Several" data={data.several} />
+      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrFundsRecommended
+        sector="Energy efficiency"
+        data={data.energy_efficiency}
+      />
+      <TrFundsRecommended
+        sector={<span className="font-bold">TOTAL:</span>}
+        data={data.total}
+      />
+    </>
+  )
+}
+
 const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
   const { previewData } = props
-  return <Box className="shadow-none">the preview comes here</Box>
+  return (
+    <Box className="shadow-none">
+      <table>
+        <thead>
+          <tr>
+            <th>Sector</th>
+            <th>HCFC</th>
+            <th>HFC</th>
+            <th colSpan={3}>Funds reccommended (US $)</th>
+          </tr>
+          <tr>
+            <th></th>
+            <th>(ODP tonnes)</th>
+            <th>(CO2-eq '000 tonnes)</th>
+            <th>Project</th>
+            <th>Support</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <RowSectionBilateralCooperation
+            title="BILATERAL COOPERATION"
+            data={previewData.bilateral_cooperation}
+          />
+          <RowSectionInvestmentProject
+            title="INVESTMENT PROJECT"
+            data={previewData.investment_project}
+          />
+          <RowSectionWorkProgrammeAmendment
+            title="WORK PROGRAMME AMENDMENT"
+            data={previewData.work_programme_amendment}
+          />
+          <tr>
+            <td
+              colSpan={6}
+              className="border border-x-0 border-b border-solid border-primary text-center font-bold"
+            >
+              Summary by Parties and Implementing Agencies
+            </td>
+          </tr>
+          {previewData.summary_by_parties_and_implementing_agencies.map((a) => (
+            <TrAllCells key={a.agency_name} sector={a.agency_name} data={a} />
+          ))}
+          <TrAllCells
+            sector={
+              <span className="font-bold">GRAND TOTAL (HCFCs and HFCs):</span>
+            }
+            data={previewData.grand_total}
+          />
+        </tbody>
+      </table>
+    </Box>
+  )
 }
 
 const initialRequestParams = () => ({
