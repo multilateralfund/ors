@@ -199,6 +199,9 @@ const ProjectIdentifiersFields = ({
       [sectionIdentifier]: {
         ...prevData[sectionIdentifier],
         post_excom_meeting: parseNumber(meeting),
+        ...(parseNumber(meeting) !== projIdentifiers?.post_excom_meeting
+          ? { post_excom_decision: null }
+          : {}),
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
@@ -268,7 +271,7 @@ const ProjectIdentifiersFields = ({
                 <Field<any>
                   widget="autocomplete"
                   options={decisionOptions}
-                  value={projIdentifiers?.post_excom_decision ?? ''}
+                  value={projIdentifiers?.post_excom_decision ?? null}
                   onChange={(_, value) =>
                     handleChangePostExComDecision(value as DecisionOption)
                   }

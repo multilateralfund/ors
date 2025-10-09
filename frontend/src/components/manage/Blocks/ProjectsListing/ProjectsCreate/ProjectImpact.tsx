@@ -100,7 +100,7 @@ const ProjectImpact = ({
         <NavigationButton
           nextTab={nextStep - 1}
           type="previous"
-          {...{ nextStep, setCurrentTab }}
+          setCurrentTab={setCurrentTab}
         />
         <NavigationButton {...{ setCurrentTab }} />
       </div>

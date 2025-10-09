@@ -22,7 +22,6 @@ const ProjectSpecificInfoSection = ({
   trancheErrors,
   getTrancheErrors,
   nextStep,
-  setCurrentStep,
   setCurrentTab,
   canEditSubstances,
   ...rest
@@ -79,14 +78,10 @@ const ProjectSpecificInfoSection = ({
         </>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NavigationButton
-          nextStep={2}
-          type="previous"
-          setCurrentTab={setCurrentTab}
-        />
+        <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
         <NavigationButton
           nextTab={nextStep - 1}
-          {...{ nextStep, setCurrentStep, setCurrentTab }}
+          setCurrentTab={setCurrentTab}
         />
       </div>
     </>

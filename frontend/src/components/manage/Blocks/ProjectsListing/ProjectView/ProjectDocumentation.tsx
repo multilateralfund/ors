@@ -54,7 +54,7 @@ const ProjectDocumentation = ({
           <NavigationButton
             nextTab={nextStep - 1}
             type="previous"
-            {...{ nextStep, setCurrentTab }}
+            setCurrentTab={setCurrentTab}
           />
           {hasNextStep && (
             <NavigationButton

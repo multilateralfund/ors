@@ -366,7 +366,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            setCurrentStep,
             setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
@@ -415,7 +414,6 @@ const ProjectsCreate = ({
             odsOdpErrors,
             trancheErrors,
             getTrancheErrors,
-            setCurrentStep,
             setCurrentTab,
             canEditSubstances,
           }}

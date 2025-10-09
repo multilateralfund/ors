@@ -45,7 +45,6 @@ const ProjectCrossCuttingFields = ({
   errors = {},
   hasSubmitted,
   nextStep,
-  setCurrentStep,
   setCurrentTab,
   fieldsOpts,
   specificFieldsLoaded,
@@ -478,7 +477,7 @@ const ProjectCrossCuttingFields = ({
         <NavigationButton
           nextTab={nextStep - 1}
           isBtnDisabled={isNextDisabled}
-          {...{ nextStep, setCurrentStep, setCurrentTab }}
+          setCurrentTab={setCurrentTab}
         />
       </div>
     </>
