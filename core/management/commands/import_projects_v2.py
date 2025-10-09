@@ -211,6 +211,20 @@ def migrate_subsectors_sector_data():
     logger.info("✅ Successfully migrated subsectors sector data.")
 
 
+def set_production_attribute():
+    """
+    The production attribute was added to the Project model after the initial data import.
+    This function sets the production attribute for existing projects based on the production
+    field of the project's cluster.
+    """
+    logger.info("⏳ Setting production attribute for existing projects...")
+    production_clusters = ProjectCluster.objects.filter(production=True)
+    projects_in_production_clusters = Project.objects.filter(
+        cluster__in=production_clusters, production=False
+    )
+    projects_in_production_clusters.update(production=True)
+
+
 class Command(BaseCommand):
     help = """
         Import projects v2.
@@ -231,6 +245,7 @@ class Command(BaseCommand):
                 "set-meta-project-for-existing-projects",
                 "mark_obsolete_values",
                 "migrate-subsectors-sector-data",
+                "set-production-attribute",
             ],
         )
 
@@ -245,5 +260,7 @@ class Command(BaseCommand):
             mark_obsolete_values()
         elif imp_type == "migrate-subsectors-sector-data":
             migrate_subsectors_sector_data()
+        elif imp_type == "set-production-attribute":
+            set_production_attribute()
         else:
             logger.error(f"Unknown import type: {imp_type}")
