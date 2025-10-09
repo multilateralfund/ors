@@ -165,8 +165,6 @@ export interface ProjectsSlice {
   statuses: SliceData<ProjectStatusType[]>
   submission_statuses: SliceData<ProjectSubmissionStatusType[]>
   subsectors: SliceData<ProjectSubSectorType[]>
-  setProjectSettings: (newProjectSettings: Partial<Settings>) => void
-  project_settings: SliceData<Settings>
   types: SliceData<ProjectTypeType[]>
   substances_groups: SliceData<ProjectSubstancesGroupsType[]>
 }
