@@ -26,6 +26,7 @@ const initialRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
   blanket_consideration: false,
+  individual_consideration: true,
 })
 
 const ApprovalSummary = () => {
@@ -109,6 +110,7 @@ const ApprovalSummary = () => {
                 setRequestParams((prev) => ({
                   ...prev,
                   blanket_consideration: value,
+                  individual_consideration: !value,
                 }))
               }
               sx={{
