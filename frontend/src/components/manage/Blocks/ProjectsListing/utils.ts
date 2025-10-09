@@ -912,3 +912,24 @@ export const hasExcomUpdate = (
 
   return historicValues.size > 1
 }
+
+export const formatFieldsHistory = (
+  history: ProjectFieldHistoryValue[],
+  dataType: string,
+) =>
+  map(history, (historyItem) => ({
+    ...historyItem,
+    value:
+      dataType === 'decimal'
+        ? !isNil(historyItem.value)
+          ? formatDecimalValue(parseFloat(historyItem.value), {
+              maximumFractionDigits: 10,
+              minimumFractionDigits: 2,
+            })
+          : '-'
+        : dataType === 'boolean'
+          ? historyItem.value
+            ? 'Yes'
+            : 'No'
+          : historyItem.value,
+  }))

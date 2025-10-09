@@ -11,8 +11,8 @@ import {
   tableColumns,
   viewColumnsClassName,
 } from '../constants'
+import { canViewField, formatFieldsHistory, hasFields } from '../utils'
 import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
-import { canViewField, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
@@ -53,8 +53,9 @@ const ProjectCrossCutting = ({
       : '-'
 
   const getFieldHistory = useCallback(
-    (name: string) => {
-      return fieldHistory?.[name] ?? []
+    (name: string, dataType?: string) => {
+      const history = fieldHistory?.[name] ?? []
+      return dataType ? formatFieldsHistory(history, dataType) : history
     },
     [fieldHistory],
   )
@@ -118,13 +119,13 @@ const ProjectCrossCutting = ({
                   numberDetailItem(
                     tableColumns.total_fund,
                     project.total_fund as string,
-                    getFieldHistory('total_fund'),
+                    getFieldHistory('total_fund', 'decimal'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
                     tableColumns.support_cost_psc,
                     project.support_cost_psc as string,
-                    getFieldHistory('support_cost_psc'),
+                    getFieldHistory('support_cost_psc', 'decimal'),
                   )}
               </div>
             </div>

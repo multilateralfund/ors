@@ -88,6 +88,9 @@ const ProjectApprovalFields = ({
       [sectionIdentifier]: {
         ...prevData[sectionIdentifier],
         meeting_approved: parseNumber(meeting),
+        ...(parseNumber(meeting) !== crtSectionData?.meeting_approved
+          ? { decision: null }
+          : {}),
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
@@ -144,7 +147,7 @@ const ProjectApprovalFields = ({
               widget="autocomplete"
               options={decisionOptions}
               disabled={!canEditField(editableFields, 'decision')}
-              value={crtSectionData.decision ?? ''}
+              value={crtSectionData.decision ?? null}
               onChange={(_, value) =>
                 handleChangeDecision(value as DecisionOption)
               }

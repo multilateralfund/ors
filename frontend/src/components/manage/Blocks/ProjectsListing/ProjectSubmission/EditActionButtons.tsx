@@ -103,6 +103,7 @@ const EditActionButtons = ({
 
   const { id, submission_status, version } = project
   const {
+    projIdentifiers,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -205,7 +206,12 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3 ? disableSubmit : isSaveDisabled)
+    (project.version >= 3 ? disableSubmit : isSaveDisabled) ||
+    (postExComUpdate &&
+      !(
+        projIdentifiers.post_excom_meeting &&
+        projIdentifiers.post_excom_decision
+      ))
 
   const disableApprovalActions =
     !specificFieldsLoaded ||

@@ -65,7 +65,6 @@ const ProjectBPLinking = ({
       </div>
       <div className="mt-5">
         <NavigationButton
-          nextStep={2}
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextButtonDisabled}
         />
