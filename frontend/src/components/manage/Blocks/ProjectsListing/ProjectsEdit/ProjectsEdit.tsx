@@ -35,8 +35,17 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+import {
+  debounce,
+  groupBy,
+  map,
+  filter,
+  find,
+  replace,
+  isArray,
+  isNull,
+} from 'lodash'
 
 const ProjectsEdit = ({
   project,
@@ -245,9 +254,13 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: isEditMode
-                ? project.individual_consideration
-                : true,
+              individual_consideration:
+                isEditMode &&
+                (project.submission_status !== 'Draft' || project.version === 2)
+                  ? isNull(project.individual_consideration)
+                    ? true
+                    : project.individual_consideration
+                  : null,
             },
           }
         : {
