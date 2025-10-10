@@ -3,7 +3,11 @@ import { useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { displaySelectedOption } from '../HelperComponents'
-import { formatEntity, getAreFiltersApplied } from '../utils'
+import {
+  formatEntity,
+  getAreFiltersApplied,
+  getIndividualConsiderationOpts,
+} from '../utils'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
@@ -18,6 +22,7 @@ export const initialParams = {
   meeting_id: [],
   submission_status_id: [],
   status_id: [],
+  individual_consideration: [],
   search: '',
 }
 
@@ -82,6 +87,11 @@ const ProjectsFiltersSelectedOpts = ({
       entities: formatEntity(statuses.data),
       entityIdentifier: 'status_id',
       hasPermissions: canViewMetainfoProjects,
+    },
+    {
+      entities: formatEntity(getIndividualConsiderationOpts()),
+      entityIdentifier: 'individual_consideration',
+      hasPermissions: true,
     },
   ]
 

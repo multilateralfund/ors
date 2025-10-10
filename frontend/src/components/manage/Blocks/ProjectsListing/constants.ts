@@ -106,7 +106,7 @@ export const initialCrossCuttingFields = {
   project_end_date: null,
   total_fund: null,
   support_cost_psc: null,
-  individual_consideration: true,
+  individual_consideration: null,
 }
 
 export const blanketOrIndConsiderationOpts = [

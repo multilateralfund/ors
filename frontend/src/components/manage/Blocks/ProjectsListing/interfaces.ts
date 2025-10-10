@@ -36,7 +36,7 @@ export interface CrossCuttingFields {
   project_end_date: string | null
   total_fund: string | null
   support_cost_psc: string | null
-  individual_consideration: boolean
+  individual_consideration: boolean | null
 }
 
 export interface SpecificFields {
