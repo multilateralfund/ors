@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, useContext } from 'react'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import {
   getMeetingNr,
-  getMeetingOptions,
+  useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
@@ -79,7 +79,7 @@ const BPSummary = (props: {
               <PopoverInput
                 key={bpForm?.meeting}
                 className="!m-0 h-10 !py-1"
-                options={getMeetingOptions()}
+                options={useMeetingOptions()}
                 onChange={handleChangeMeeting}
                 label={getMeetingNr(bpForm.meeting)?.toString()}
                 value={bpForm.meeting}
