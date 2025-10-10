@@ -952,16 +952,6 @@ class Project(models.Model):
         blank=True,
         help_text="Number of female NOU personnel supported (actual)",
     )
-    number_of_enterprises_assisted = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises assisted (planned)",
-    )
-    number_of_enterprises_assisted_actual = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises assisted (actual)",
-    )
     certification_system_for_technicians = models.BooleanField(
         null=True,
         blank=True,
