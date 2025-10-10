@@ -110,6 +110,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "meta_project__type",
         "status",
         "submission_status",
+        "individual_consideration",
     ]
     autocomplete_fields = [
         "component",
