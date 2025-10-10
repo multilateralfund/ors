@@ -1,14 +1,23 @@
-import { Box, Button, Checkbox, Divider, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import { GridOptions, ICellRendererParams } from 'ag-grid-community'
+import Link from '@ors/components/ui/Link/Link.tsx'
+import { formatApiUrl } from '@ors/helpers'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -124,7 +133,7 @@ const TrHcfc = (props: {
 }) => {
   const { data, sector } = props
   return (
-    <tr>
+    <tr className="leading-7">
       <td>{sector}</td>
       <td>{data.hcfc}</td>
       <td></td>
@@ -138,7 +147,7 @@ const TrHfc = (props: {
 }) => {
   const { data, sector } = props
   return (
-    <tr>
+    <tr className="leading-7">
       <td>{sector}</td>
       <td></td>
       <td>{data.hfc}</td>
@@ -153,7 +162,7 @@ const TrFundsRecommended = (props: {
 }) => {
   const { data, sector } = props
   return (
-    <tr>
+    <tr className="leading-7">
       <td>{sector}</td>
       <td></td>
       <td></td>
@@ -167,7 +176,7 @@ const TrAllCells = (props: {
 }) => {
   const { data, sector } = props
   return (
-    <tr>
+    <tr className="leading-7">
       <td>{sector}</td>
       <td>{data.hcfc}</td>
       <td>{data.hfc}</td>
@@ -179,12 +188,18 @@ const TrAllCells = (props: {
 const TrSection = (props: { title: ReactNode }) => {
   const { title } = props
   return (
-    <tr>
+    <tr className="leading-7">
       <td className="font-bold">{title}</td>
       <td colSpan={5}></td>
     </tr>
   )
 }
+
+const TrSpacing = () => (
+  <tr>
+    <td colSpan={6} className="h-5"></td>
+  </tr>
+)
 
 const RowSectionBilateralCooperation = (props: {
   data: ApiApprovalSummary['bilateral_cooperation']
@@ -205,6 +220,7 @@ const RowSectionBilateralCooperation = (props: {
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
+      <TrSpacing />
     </>
   )
 }
@@ -227,6 +243,7 @@ const RowSectionInvestmentProject = (props: {
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
+      <TrSpacing />
     </>
   )
 }
@@ -250,6 +267,7 @@ const RowSectionWorkProgrammeAmendment = (props: {
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
+      <TrSpacing />
     </>
   )
 }
@@ -257,8 +275,8 @@ const RowSectionWorkProgrammeAmendment = (props: {
 const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
   const { previewData } = props
   return (
-    <Box className="shadow-none">
-      <table>
+    <Box className="flex justify-center shadow-none">
+      <table className="sm:w-full md:w-3/5">
         <thead>
           <tr>
             <th>Sector</th>
@@ -296,6 +314,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
               Summary by Parties and Implementing Agencies
             </td>
           </tr>
+          <TrSpacing />
           {previewData.summary_by_parties_and_implementing_agencies.map((a) => (
             <TrAllCells key={a.agency_name} sector={a.agency_name} data={a} />
           ))}
@@ -319,13 +338,15 @@ const initialRequestParams = () => ({
 })
 
 const ApprovalSummaryFilters = (props: {
+  hasPreviewData: boolean
   requestParams: ReturnType<typeof initialRequestParams>
   setRequestParams: React.Dispatch<
     React.SetStateAction<ReturnType<typeof initialRequestParams>>
   >
   onFetchPreview: () => void
 }) => {
-  const { requestParams, setRequestParams, onFetchPreview } = props
+  const { requestParams, hasPreviewData, setRequestParams, onFetchPreview } =
+    props
 
   const meetings = useMeetingOptions()
 
@@ -333,6 +354,13 @@ const ApprovalSummaryFilters = (props: {
     { name: 'Recommended', value: 'recommended' },
     { name: 'Approved', value: 'approved' },
   ]
+
+  const downloadUrl = useMemo(() => {
+    const encodedParams = new URLSearchParams(
+      requestParams as unknown as Record<string, string>,
+    ).toString()
+    return formatApiUrl(`api/projects-approval-summary/export?${encodedParams}`)
+  }, [requestParams])
 
   return (
     <Box className="shadow-none">
@@ -396,9 +424,20 @@ const ApprovalSummaryFilters = (props: {
           />
         </div>
         <div className="flex grow flex-row-reverse items-center">
-          <Button size="large" variant="contained" onClick={onFetchPreview}>
-            Preview summary
-          </Button>
+          <div className="flex gap-4">
+            <Button size="large" variant="contained" onClick={onFetchPreview}>
+              Preview summary
+            </Button>
+            <Link
+              button
+              disabled={!hasPreviewData}
+              size="large"
+              href={downloadUrl}
+              variant="contained"
+            >
+              Download summary
+            </Link>
+          </div>
         </div>
       </div>
     </Box>
@@ -435,6 +474,7 @@ const ApprovalSummary = () => {
           requestParams={requestParams}
           setRequestParams={setRequestParams}
           onFetchPreview={handleFetchPreview}
+          hasPreviewData={!!previewData}
         />
         <Divider className="my-2 border-0" />
         {previewData && <ApprovalSummaryPreview previewData={previewData} />}
