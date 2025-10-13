@@ -4,9 +4,15 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
+import {
+  sectionColDefByIdFunc,
+  sectionColGroupDefByIdFunc,
+} from '../sectionColumnsDef'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
+  const sectionColGroupDefById = sectionColGroupDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -29,17 +35,24 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'total',
-        headerName: 'Total amount generated (tonnes)',
+        headerName:
+          model === 'V'
+            ? 'Total amount generated (tonnes)'
+            : 'Total amount generated',
         orsAggFunc: 'sumTotal',
       },
-      {
-        dataType: 'number_diff',
-        cellClass: 'bg-white ag-text-center px-0',
-        field: 'stored_at_start_of_year',
-        headerName: 'Amount stored at the beginning of the year (tonnes)',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['stored_at_end_of_year'],
-      },
+      ...(model === 'V'
+        ? [
+            {
+              dataType: 'number_diff',
+              cellClass: 'bg-white ag-text-center px-0',
+              field: 'stored_at_start_of_year',
+              headerName: 'Amount stored at the beginning of the year (tonnes)',
+              orsAggFunc: 'sumTotal',
+              ...sectionColDefById['stored_at_start_of_year'],
+            },
+          ]
+        : []),
       {
         children: [
           {
@@ -47,7 +60,8 @@ function useGridOptions() {
             cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'all_uses',
-            headerName: 'For uses excluding feedstocks',
+            headerName:
+              model === 'V' ? 'For uses excluding feedstocks' : 'For all uses',
             orsAggFunc: 'sumTotal',
           },
           {
@@ -69,7 +83,10 @@ function useGridOptions() {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName: 'Amount generated and captured (tonnes)',
+        headerName:
+          model === 'V'
+            ? 'Amount generated and captured (tonnes)'
+            : 'Amount generated and captured',
         marryChildren: true,
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
@@ -78,7 +95,10 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock_wpc',
-        headerName: 'Amount used for feedstock without prior capture (tonnes)',
+        headerName:
+          model === 'V'
+            ? 'Amount used for feedstock without prior capture (tonnes)'
+            : 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -87,7 +107,9 @@ function useGridOptions() {
         dataType: 'number_diff',
         field: 'destruction_wpc',
         headerName:
-          'Amount destroyed in the facility without prior capture (tonnes)',
+          model === 'V'
+            ? 'Amount destroyed in the facility without prior capture (tonnes)'
+            : 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -95,17 +117,24 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'generated_emissions',
-        headerName: 'Amount of generated emissions (tonnes)',
+        headerName:
+          model === 'V'
+            ? 'Amount of generated emissions (tonnes)'
+            : 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
       },
-      {
-        dataType: 'number_diff',
-        cellClass: 'bg-white ag-text-center px-0',
-        field: 'stored_at_end_of_year',
-        headerName: 'Amount stored at the end of the year (tonnes)',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['stored_at_end_of_year'],
-      },
+      ...(model === 'V'
+        ? [
+            {
+              dataType: 'number_diff',
+              cellClass: 'bg-white ag-text-center px-0',
+              field: 'stored_at_end_of_year',
+              headerName: 'Amount stored at the end of the year (tonnes)',
+              orsAggFunc: 'sumTotal',
+              ...sectionColDefById['stored_at_end_of_year'],
+            },
+          ]
+        : []),
       {
         ...sectionColDefById['remarks'],
         cellClass: 'ag-text-left remarks-cell',

@@ -13,7 +13,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
-import { DisabledAlert } from '../HelperComponents.tsx'
+import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
   ProjectFile,
@@ -40,8 +40,8 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { Tabs, Tab, Typography, CircularProgress } from '@mui/material'
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { filter, groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -144,8 +144,9 @@ const ProjectsCreate = ({
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
-  const isApprovalTabAvailable =
-    project && mode === 'edit' && project.version >= 3
+
+  const isEditMode = project && mode === 'edit'
+  const isApprovalTabAvailable = isEditMode && project.version >= 3
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -173,13 +174,26 @@ const ProjectsCreate = ({
 
   const approvalErrors = useMemo(
     () =>
-      mode === 'edit'
+      mode === 'edit' && project?.submission_status === 'Recommended'
         ? getApprovalErrors(approvalData, approvalFields, errors, project)
         : {},
     [approvalData, approvalFields, errors],
   )
 
   const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const canEditSubstances =
+    postExComUpdate ||
+    mode === 'copy' ||
+    project?.submission_status !== 'Approved'
+  const hasV3EditPermissions =
+    !!project && mode === 'edit' && canEditApprovedProjects
+  const editableByAdmin = ['Withdrawn', 'Not approved'].includes(
+    project?.submission_status ?? '',
+  )
+  const isV3ProjectEditable =
+    hasV3EditPermissions &&
+    (editableByAdmin || project.submission_status === 'Recommended')
+  const isProjectEditableByAdmin = hasV3EditPermissions && editableByAdmin
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -193,12 +207,30 @@ const ProjectsCreate = ({
       ),
     [projectSpecificFields, specificFields, errors, mode, project],
   )
+
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
+
+  const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
+    key.includes('(actual)') && value?.[0]?.includes('not completed')
+
+  const impactPlannedErrors = Object.fromEntries(
+    Object.entries(impactErrors).filter((error) => !isActualFieldEmpty(error)),
+  )
+  const impactActualErrors = Object.fromEntries(
+    Object.entries(impactErrors).filter((error) => isActualFieldEmpty(error)),
+  )
+
   const { errorText, isError } = trancheErrors || {}
 
-  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
+  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name').filter(
+    (field) => !phaseOutFieldNames.includes(field),
+  )
+  const phaseOutFields = map(odsOdpFields, 'write_field_name').filter((field) =>
+    phaseOutFieldNames.includes(field),
+  )
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const errorMessageExtension =
@@ -212,8 +244,19 @@ const ProjectsCreate = ({
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
+          const phaseOutErrors = map(phaseOutFields, (field) =>
+            checkInvalidValue(odsOdp[field])
+              ? [
+                  'Phase out',
+                  [`At least two phase out values should be provided.`],
+                ]
+              : null,
+          ).filter(Boolean) as [string, string[]][]
 
-          return Object.fromEntries(errors)
+          const formattedPhaseOutErrors =
+            phaseOutErrors.length < 2 ? [] : phaseOutErrors
+
+          return Object.fromEntries([...errors, ...formattedPhaseOutErrors])
         })
       : []
 
@@ -241,8 +284,19 @@ const ProjectsCreate = ({
 
       if (fieldLabels.length === 0) return null
 
+      const filteredFieldLabels = filter(
+        fieldLabels,
+        (label) => label !== 'Phase out',
+      )
+
+      const regularFieldsMessage =
+        filteredFieldLabels.length > 0
+          ? `${filteredFieldLabels.join(', ')}: ${filteredFieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`
+          : ''
+      const phaseOutFieldsMessage = `${fieldLabels.includes('Phase out') ? 'At least two phase out values should be provided. ' : ''}`
+
       return {
-        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
+        message: `Substance ${Number(id) + 1} - ${regularFieldsMessage} ${phaseOutFieldsMessage}`,
       }
     },
   ).filter(Boolean)
@@ -260,7 +314,6 @@ const ProjectsCreate = ({
   const steps = [
     {
       id: 'project-identifiers',
-      ariaControls: 'project-identifiers',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Identifiers</div>
@@ -283,6 +336,8 @@ const ProjectsCreate = ({
             mode,
             project,
             postExComUpdate,
+            isV3ProjectEditable,
+            isProjectEditableByAdmin,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -293,7 +348,6 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-cross-cutting-section',
-      ariaControls: 'project-cross-cutting-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Cross-Cutting</div>
@@ -312,11 +366,11 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            currentStep,
-            setCurrentStep,
             setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
+            postExComUpdate,
+            isV3ProjectEditable,
           }}
           nextStep={
             !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
@@ -328,28 +382,25 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-specific-info-section',
-      ariaControls: 'project-specific-info-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            !hasNoSpecificInfoFields &&
-            (hasSectionErrors(overviewErrors) ||
-              hasSectionErrors(substanceDetailsErrors) ||
-              formattedOdsOdpErrors.length > 0 ||
-              errorText ||
-              (mode === 'edit' && odsOdpData.length === 0)) &&
-            (isSpecificInfoTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : !hasNoSpecificInfoFields &&
+              (hasSectionErrors(overviewErrors) ||
+                hasSectionErrors(substanceDetailsErrors) ||
+                formattedOdsOdpErrors.length > 0 ||
+                errorText ||
+                (mode === 'edit' && odsOdpData.length === 0)) &&
+              (isSpecificInfoTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled || currentStep < 3,
+      disabled: isSpecificInfoTabDisabled,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -363,8 +414,8 @@ const ProjectsCreate = ({
             odsOdpErrors,
             trancheErrors,
             getTrancheErrors,
-            setCurrentStep,
             setCurrentTab,
+            canEditSubstances,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -387,24 +438,21 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-impact-section',
-      ariaControls: 'project-impact-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            impactFields.length >= 1 &&
-            hasSectionErrors(impactErrors) &&
-            (isImpactTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : impactFields.length >= 1 &&
+              hasSectionErrors(impactErrors) &&
+              (isImpactTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
-      disabled: isImpactTabDisabled || currentStep < 4,
+      disabled: isImpactTabDisabled,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
@@ -412,18 +460,20 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
+            project,
             hasSubmitted,
-            specificFields,
-            setCurrentStep,
             setCurrentTab,
+            postExComUpdate,
+            hasV3EditPermissions,
           }}
+          nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />
       ),
-      errors: formatErrors(impactErrors),
+      errors: formatErrors(impactPlannedErrors),
+      actualFieldsErrors: formatErrors(impactActualErrors),
     },
     {
       id: 'project-documentation-section',
-      ariaControls: 'project-documentation-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Documentation</div>
@@ -445,10 +495,15 @@ const ProjectsCreate = ({
             mode,
             project,
             loadedFiles,
+            setCurrentTab,
           }}
-          {...(!!isApprovalTabAvailable && !isApprovalTabDisabled
-            ? { setCurrentStep, setCurrentTab }
-            : {})}
+          nextStep={
+            !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
+          hasNextStep={mode === 'edit'}
+          isNextButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
+          }
           {...rest}
         />
       ),
@@ -473,23 +528,17 @@ const ProjectsCreate = ({
       ? [
           {
             id: 'project-approval-section',
-            ariaControls: 'project-approval-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 ? (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                ) : (
-                  hasSectionErrors(approvalErrors) &&
-                  (isApprovalTabDisabled ? (
-                    DisabledAlert
-                  ) : (
-                    <SectionErrorIndicator errors={[]} />
-                  ))
-                )}
+                {approvalFields.length === 0
+                  ? LoadingTab
+                  : hasSectionErrors(approvalErrors) &&
+                    (isApprovalTabDisabled ? (
+                      DisabledAlert
+                    ) : (
+                      <SectionErrorIndicator errors={[]} />
+                    ))}
               </div>
             ),
             disabled: isApprovalTabDisabled,
@@ -500,6 +549,7 @@ const ProjectsCreate = ({
                   projectData,
                   setProjectData,
                   hasSubmitted,
+                  setCurrentTab,
                 }}
                 errors={approvalErrors}
               />
@@ -508,28 +558,28 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode
       ? [
           {
             id: 'project-related-projects-section',
-            ariaControls: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            component: (
+              <ProjectRelatedProjects {...{ relatedProjects, setCurrentTab }} />
+            ),
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode
       ? [
           {
             id: 'project-history-section',
-            ariaControls: 'project-history-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">History</div>
               </div>
             ),
             disabled: false,
-            component: <ProjectHistory mode={mode} project={project} />,
+            component: <ProjectHistory {...{ project, setCurrentTab }} />,
           },
         ]
       : []),
@@ -552,11 +602,11 @@ const ProjectsCreate = ({
           setCurrentTab(newValue)
         }}
       >
-        {steps.map(({ id, ariaControls, label, disabled }) => (
+        {steps.map(({ id, label, disabled }) => (
           <Tab
             key={id}
             id={id}
-            aria-controls={ariaControls}
+            aria-controls={id}
             label={label}
             disabled={disabled}
             classes={{
@@ -569,9 +619,24 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ id, component, errors }) => {
+          .map(({ id, component, errors, actualFieldsErrors }) => {
             return (
               <span key={id}>
+                {mode === 'edit' &&
+                  project?.submission_status === 'Approved' &&
+                  !postExComUpdate && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="text-lg leading-5">
+                          You are editing the approved version of the project
+                          (version 3). Any other updates can be brought only by
+                          adding post ExCom updates.
+                        </Typography>
+                      }
+                    />
+                  )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -607,6 +672,25 @@ const ProjectsCreate = ({
                           </div>
                         </Typography>
                       </>
+                    }
+                  />
+                )}
+                {actualFieldsErrors && actualFieldsErrors.length > 0 && (
+                  <CustomAlert
+                    type="info"
+                    alertClassName="mb-5"
+                    content={
+                      <Typography>
+                        <div className="flex flex-col gap-y-3">
+                          {actualFieldsErrors.map((err, idx) =>
+                            err ? (
+                              <div key={idx}>
+                                {'\u2022'} {err.message}
+                              </div>
+                            ) : null,
+                          )}
+                        </div>
+                      </Typography>
                     }
                   />
                 )}

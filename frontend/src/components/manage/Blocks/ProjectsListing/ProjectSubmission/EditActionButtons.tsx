@@ -103,13 +103,16 @@ const EditActionButtons = ({
 
   const { id, submission_status, version } = project
   const {
+    projIdentifiers,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
   } = projectData
 
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version >= 3 && canUpdateV3Projects)
+    postExComUpdate ||
+    (version < 3 && canUpdateProjects) ||
+    (version >= 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =
@@ -163,10 +166,23 @@ const EditActionButtons = ({
     specificFields,
     (field) => field.table === 'ods_odp',
   )
+
+  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
+  const areFieldsMissing = odsOdpData.some((data) =>
+    Object.entries(data).some(
+      ([field, value]) =>
+        !phaseOutFieldNames.includes(field) && checkInvalidValue(value),
+    ),
+  )
+  const hasPhaseOutErrors = odsOdpData.some(
+    (data) =>
+      phaseOutFieldNames.filter(
+        (field) => !checkInvalidValue(data[field as keyof typeof data]),
+      ).length < 2,
+  )
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
-      odsOdpData.length === 0)
+    (areFieldsMissing || hasPhaseOutErrors || odsOdpData.length === 0)
 
   const {
     Header: headerErrors = {},
@@ -190,13 +206,12 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3
-      ? isAfterApproval
-        ? disableSubmit ||
-          hasSectionErrors(approvalErrors) ||
-          approvalFields.length === 0
-        : disableSubmit
-      : isSaveDisabled)
+    (project.version >= 3 ? disableSubmit : isSaveDisabled) ||
+    (postExComUpdate &&
+      !(
+        projIdentifiers.post_excom_meeting &&
+        projIdentifiers.post_excom_decision
+      ))
 
   const disableApprovalActions =
     !specificFieldsLoaded ||
@@ -324,7 +339,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/submit`)
       }
 
-      if (canApproveProjects && isAfterApproval) {
+      if (isRecommended) {
         await editApprovalFields()
       }
       return true
@@ -497,7 +512,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableSubmit}
@@ -529,7 +544,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableApprovalActions}

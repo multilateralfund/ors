@@ -12,9 +12,20 @@ from core.models.business_plan import (
 
 @admin.register(BusinessPlan)
 class BusinessPlanAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        "meeting",
+        "decision",
+    ]
+
     def get_list_display(self, request):
         exclude = ["bphistory", "bpactivity", "activities"]
         return get_final_display_list(BusinessPlan, exclude)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "created_by", "updated_by", "meeting", "decision"
+        )
 
 
 @admin.register(BPActivity)

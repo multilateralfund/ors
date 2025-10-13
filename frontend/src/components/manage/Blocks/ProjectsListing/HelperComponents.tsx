@@ -6,16 +6,16 @@ import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
+import { enabledButtonClassname } from './constants'
 import {
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsType,
 } from './interfaces'
-import { enabledButtonClassname } from './constants'
 
+import { filter, lowerCase, map, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
-import { filter, lowerCase, map } from 'lodash'
 import { SlReload } from 'react-icons/sl'
 import cx from 'classnames'
 import {
@@ -131,40 +131,44 @@ export const CancelButton = ({ onClick }: { onClick: any }) => (
   </Button>
 )
 
-export const NextButton = ({
+export const NavigationButton = ({
   nextStep,
   nextTab,
   setCurrentStep,
   setCurrentTab,
+  type = 'next',
   isBtnDisabled = false,
 }: ProjectTabSetters & {
-  nextStep: number
+  nextStep?: number
   nextTab?: number
+  type?: string
   isBtnDisabled?: boolean
 }) => {
   const moveToNextStep = () => {
-    if (setCurrentStep) {
+    if (nextStep && setCurrentStep) {
       setCurrentStep(nextStep)
     }
 
     if (setCurrentTab) {
-      setCurrentTab((tab) => nextTab ?? tab + 1)
+      setCurrentTab((tab) => nextTab ?? (type === 'next' ? tab + 1 : tab - 1))
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
   return (
     <Button
-      className={cx('h-8 px-3 py-1 leading-none', {
-        'border border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-          !isBtnDisabled,
+      className={cx('h-8 border px-3 py-1 leading-none', {
+        'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+          type === 'next' && !isBtnDisabled,
+        'border-solid border-primary bg-white text-primary':
+          type === 'previous',
       })}
       disabled={isBtnDisabled}
       size="large"
       variant="contained"
       onClick={moveToNextStep}
     >
-      Next
+      {upperCase(type)}
     </Button>
   )
 }
@@ -227,13 +231,14 @@ export const VersionsList = ({
     version = 0,
     latest_project = null,
     submission_status,
+    post_excom_meeting,
   } = project
   const isDraft = lowerCase(submission_status) === 'draft'
   let versionLabel
   if (version > 3) {
-    versionLabel = `ExCom ${project.post_excom_meeting}`
+    versionLabel = `${version}: Updated after ExCom ${post_excom_meeting}`
   } else {
-    versionLabel = version
+    versionLabel = `${version}: ${submission_status}`
   }
 
   return (
@@ -295,6 +300,15 @@ export const RelatedProjects = ({
               className="min-h-[16px] min-w-[16px]"
             />
             {entry.title}
+            {mode === 'view' && (
+              <div className="italic">
+                [
+                {entry.code ??
+                  entry.code_legacy ??
+                  'code to be generated upon approval'}
+                ]
+              </div>
+            )}
             {hasErrors && <ErrorTag />}
           </Link>
           {withExtraProjectInfo ? (
@@ -459,3 +473,7 @@ export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
   },
   transitionDuration: 0,
 }
+
+export const LoadingTab = (
+  <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
+)

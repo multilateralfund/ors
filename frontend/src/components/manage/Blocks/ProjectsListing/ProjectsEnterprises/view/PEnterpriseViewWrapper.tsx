@@ -25,23 +25,22 @@ const PEnterpriseViewWrapper = () => {
   } = useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
+
+  const project = useGetProject(project_id)
   const { data: projectData, error: projectError } = project ?? {}
 
   const enterprise = useGetProjectEnterprise(enterprise_id)
   const { data, loading, error } = enterprise
 
-  if (!canViewEnterprises || !canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
-
   if (
-    !project_id ||
+    !canViewProjects ||
+    !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/projects-enterprises" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   if (error) {
@@ -74,22 +73,21 @@ const PEnterpriseViewWrapper = () => {
                   title="Cancel"
                   href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
-                {(canEditProjectEnterprise || canApproveProjectEnterprise) &&
-                  data.status !== 'Obsolete' &&
-                  !(
-                    data.status === 'Approved' && !canApproveProjectEnterprise
-                  ) && (
-                    <CustomLink
-                      className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                      href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
-                      color="secondary"
-                      variant="contained"
-                      size="large"
-                      button
-                    >
-                      Edit project enterprise
-                    </CustomLink>
-                  )}
+                {(canEditProjectEnterprise ||
+                  (canApproveProjectEnterprise &&
+                    (data.status !== 'Approved' ||
+                      canEditProjectEnterprise))) && (
+                  <CustomLink
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                    href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
+                    color="secondary"
+                    variant="contained"
+                    size="large"
+                    button
+                  >
+                    Edit project enterprise
+                  </CustomLink>
+                )}
               </div>
             </div>
             <EnterpriseStatus status={data.status} />

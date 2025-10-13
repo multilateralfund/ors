@@ -10,6 +10,7 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
   getDefaultValues,
+  getFieldData,
   getFileFromMetadata,
   getNonFieldErrors,
   hasSpecificField,
@@ -34,8 +35,17 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+import {
+  debounce,
+  groupBy,
+  map,
+  filter,
+  find,
+  replace,
+  isArray,
+  isNull,
+} from 'lodash'
 
 const ProjectsEdit = ({
   project,
@@ -54,6 +64,8 @@ const ProjectsEdit = ({
     useContext(PermissionsContext)
   const { clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+
+  const commonSlice = useStore((state) => state.common)
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -128,7 +140,13 @@ const ProjectsEdit = ({
         : undefined
 
       setViewableFields?.(version, submissionStatus)
-      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
+      setEditableFields?.(
+        version,
+        submissionStatus,
+        canEditApprovedProjects,
+        postExComUpdate,
+        mode,
+      )
     }
   }, [allFields, setViewableFields, setEditableFields])
 
@@ -236,16 +254,22 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: isEditMode
-                ? project.individual_consideration
-                : true,
+              individual_consideration:
+                isEditMode &&
+                (project.submission_status !== 'Draft' || project.version === 2)
+                  ? isNull(project.individual_consideration)
+                    ? true
+                    : project.individual_consideration
+                  : null,
             },
           }
         : {
             bpLinking: { isLinkedToBP: false, bpId: null },
             crossCuttingFields: {
               ...initialCrossCuttingFields,
-              is_lvc: project.is_lvc,
+              is_lvc:
+                find(commonSlice.countries.data, { id: project.country_id })
+                  ?.is_lvc ?? null,
             },
           }),
     }))
@@ -305,7 +329,13 @@ const ProjectsEdit = ({
                 ...getDefaultValues<ProjectTypeApi>(projectFields, project),
                 ods_odp: map(project.ods_odp, (ods) => {
                   return {
-                    ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
+                    ...getDefaultValues<OdsOdpFields>(
+                      odsOdpFields,
+                      ods,
+                      getFieldData(specificFields, 'group')
+                        ? project
+                        : undefined,
+                    ),
                   }
                 }),
               },

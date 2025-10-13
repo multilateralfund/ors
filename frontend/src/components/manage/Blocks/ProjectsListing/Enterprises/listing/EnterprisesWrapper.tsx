@@ -6,7 +6,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterprisesFiltersWrapper from '../../ProjectsEnterprises/listing/PEnterprisesFiltersWrapper'
+import EnterprisesFiltersWrapper from './EnterprisesFiltersWrapper'
 import EnterprisesTable from './EnterprisesTable'
 import { CreateButton, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
@@ -44,23 +44,24 @@ export default function EnterprisesWrapper() {
           <div className="flex flex-col">
             <RedirectBackButton />
             <PageHeading>
-              <span className="font-medium text-[#4D4D4D]">Enterprises</span>
+              <span className="font-medium text-[#4D4D4D]">
+                Manage enterprises
+              </span>
             </PageHeading>
           </div>
           {canEditEnterprise && (
-            <div className="ml-auto mt-auto flex items-center gap-2.5">
+            <div className="ml-auto mt-auto flex items-center">
               <CreateButton
                 title="Create enterprise"
                 href="/projects-listing/enterprises/create"
-                className="!mb-1"
+                className="!mb-0"
               />
             </div>
           )}
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
-        <PEnterprisesFiltersWrapper
-          type="enterprises"
+        <EnterprisesFiltersWrapper
           {...{
             filters,
             initialFilters,

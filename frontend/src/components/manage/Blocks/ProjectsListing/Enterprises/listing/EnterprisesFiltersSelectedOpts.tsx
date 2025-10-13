@@ -5,43 +5,27 @@ import { Typography } from '@mui/material'
 import { useParams } from 'wouter'
 import { map } from 'lodash'
 
-const PEnterprisesFiltersSelectedOpts = ({
-  type,
-  enterpriseStatuses,
+const EnterprisesFiltersSelectedOpts = ({
   commonSlice,
+  enterpriseStatuses,
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
+  const isEnterpriseView = !project_id
 
-  const areFiltersApplied = getAreFiltersApplied(filters)
-  const hasProjectsFilter = !project_id && type === 'project-enterprises'
-
-  const initialParams = hasProjectsFilter
-    ? {
-        project_id: [],
-        country_id: [],
-        status: [],
-      }
-    : {
-        country_id: [],
-        status: [],
-      }
+  const initialParams = {
+    status: [],
+    ...(isEnterpriseView && { country_id: [] }),
+  }
 
   const filterSelectedOpts = [
     {
-      entities: hasProjectsFilter
-        ? formatEntity(filters?.['project_id'] ?? [])
-        : [],
-      entityIdentifier: 'project_id',
-      isAvailable: hasProjectsFilter,
-    },
-    {
       entities: formatEntity(commonSlice.countries.data),
       entityIdentifier: 'country_id',
-      isAvailable: true,
+      isAvailable: isEnterpriseView,
     },
     {
       entities: formatEntity(enterpriseStatuses),
@@ -49,6 +33,8 @@ const PEnterprisesFiltersSelectedOpts = ({
       isAvailable: true,
     },
   ]
+
+  const areFiltersApplied = getAreFiltersApplied(filters)
 
   return (
     areFiltersApplied && (
@@ -81,4 +67,4 @@ const PEnterprisesFiltersSelectedOpts = ({
   )
 }
 
-export default PEnterprisesFiltersSelectedOpts
+export default EnterprisesFiltersSelectedOpts

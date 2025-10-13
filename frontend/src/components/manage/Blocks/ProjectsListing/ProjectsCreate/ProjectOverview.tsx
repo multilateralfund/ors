@@ -33,7 +33,7 @@ const ProjectOverview = ({
 
   return (
     <>
-      <div className="flex flex-wrap gap-x-20 gap-y-5">
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
         {sectionFields.map(
           (field) =>
             canViewField(viewableFields, field.write_field_name) && (

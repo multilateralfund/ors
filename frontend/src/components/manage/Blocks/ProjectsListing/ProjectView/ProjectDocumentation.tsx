@@ -1,8 +1,5 @@
-import { useContext } from 'react'
-
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { FilesViewer } from './FilesViewer'
 import {
   ProjectFile,
@@ -18,22 +15,20 @@ const ProjectDocumentation = ({
   mode,
   project,
   loadedFiles,
-  setCurrentStep,
   setCurrentTab,
+  nextStep,
+  hasNextStep,
+  isNextButtonDisabled,
 }: ProjectFiles &
   ProjectTabSetters & {
     projectFiles?: ProjectFile[]
     mode: string
     project?: ProjectTypeApi
     loadedFiles?: boolean
+    nextStep?: number
+    hasNextStep?: boolean
+    isNextButtonDisabled?: boolean
   }) => {
-  const { canUpdateProjects, canUpdateV3Projects } =
-    useContext(PermissionsContext)
-
-  const { version = 0 } = project ?? {}
-  const canEditProject =
-    (version < 3 && canUpdateProjects) || (version === 3 && canUpdateV3Projects)
-
   return (
     <>
       <div className="flex w-full flex-col gap-4">
@@ -42,7 +37,7 @@ const ProjectDocumentation = ({
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
 
-        {mode !== 'view' && canEditProject && (
+        {mode !== 'view' && (
           <FileInput
             {...{ files, setFiles }}
             extensionsList="Allowed files extensions: .pdf, .doc, .docx"
@@ -54,13 +49,19 @@ const ProjectDocumentation = ({
           />
         )}
       </div>
-      {setCurrentStep && setCurrentTab && (
+      {setCurrentTab && nextStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NextButton
-            nextStep={6}
-            setCurrentStep={setCurrentStep}
+          <NavigationButton
+            nextTab={nextStep - 1}
+            type="previous"
             setCurrentTab={setCurrentTab}
           />
+          {hasNextStep && (
+            <NavigationButton
+              isBtnDisabled={isNextButtonDisabled}
+              {...{ setCurrentTab }}
+            />
+          )}
         </div>
       )}
     </>

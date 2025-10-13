@@ -42,8 +42,7 @@ const ProjectViewWrapper = () => {
     useParams<Record<string, string>>()
   const [location] = useLocation()
 
-  const { canEditProjects, canEditApprovedProjects } =
-    useContext(PermissionsContext)
+  const { canEditProjects, canUpdatePostExcom } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -134,18 +133,16 @@ const ProjectViewWrapper = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                {canEditProjects &&
-                  editable &&
-                  isNull(latest_project) &&
-                  (!['Withdrawn', 'Not approved'].includes(submission_status) ||
-                    canEditApprovedProjects) && (
-                    <EditLink href={`/projects-listing/${project_id}/edit`}>
-                      Edit
-                    </EditLink>
-                  )}
-                {canEditProjects &&
+                {canEditProjects && editable && isNull(latest_project) && (
+                  <EditLink href={`/projects-listing/${project_id}/edit`}>
+                    Edit
+                  </EditLink>
+                )}
+                {canUpdatePostExcom &&
+                isNull(latest_project) &&
                 submission_status === 'Approved' &&
-                project_status !== 'Completed' ? (
+                project_status !== 'Closed' &&
+                project_status !== 'Transferred' ? (
                   <EditLink
                     href={`/projects-listing/${project_id}/post-excom-update`}
                   >

@@ -64,51 +64,29 @@ const useInternalNavSections = () => {
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
 
+  if (!(P.canViewCPReports || P.canEditCPReports || P.canExportCPReports)) {
+    return []
+  }
+
   return [
     {
       label: 'Online CP Reporting',
       menu: [
-        P.canViewCPReports
-          ? { label: 'View reports', url: '/country-programme/reports' }
-          : null,
-        P.canEditCPReports
-          ? { label: 'Add new report', url: '/country-programme/create' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Export data', url: '/country-programme/export-data' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Settings', url: '/country-programme/settings' }
-          : null,
+        ...(P.canViewCPReports
+          ? [{ label: 'View reports', url: '/country-programme/reports' }]
+          : []),
+        ...(P.canEditCPReports
+          ? [{ label: 'Add new report', url: '/country-programme/create' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Export data', url: '/country-programme/export-data' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Settings', url: '/country-programme/settings' }]
+          : []),
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(P.canViewBp
-      ? [{ label: 'Business plans', url: '/business-plans' }]
-      : []),
-    ...(P.canViewV1Projects
-      ? [{ label: 'Project submissions', url: '/project-submissions' }]
-      : []),
-    ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
-    ...(P.canViewProjects || P.canSetProjectSettings
-      ? [
-          {
-            label: 'Projects Listing',
-            menu: [
-              P.canViewProjects
-                ? { label: 'View projects', url: '/projects-listing/listing' }
-                : null,
-              P.canSetProjectSettings
-                ? {
-                    label: 'IA/BA Portal - Settings',
-                    url: '/projects-listing/settings',
-                  }
-                : null,
-            ].filter(Boolean),
-            url: '/projects-listing/listing',
-          },
-        ]
-      : []),
     // @ts-ignore
   ].map((item) => nI(item))
 }
@@ -117,33 +95,75 @@ const useInternalNavSectionsReplenishment = () => {
   const { canViewReplenishment } = useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  return canViewReplenishment
-    ? [
-        {
-          label: 'Contributions',
-          menu: [
-            {
-              label: 'Scale of assessment',
-              url: '/replenishment/scale-of-assessment',
-            },
-            {
-              label: 'Status of the fund',
-              url: '/replenishment/status-of-the-fund',
-            },
-            { label: 'Statistics', url: '/replenishment/statistics' },
-            {
-              label: 'Status of contributions',
-              url: '/replenishment/status-of-contributions',
-            },
-            { label: 'In/out flows', url: '/replenishment/in-out-flows' },
-            { label: 'Dashboard', url: '/replenishment/dashboard' },
-          ],
-          url: '/replenishment',
-        },
-      ]
-    : []
-        // @ts-ignore
-        .map((item) => nI(item))
+
+  if (!canViewReplenishment) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'Scale of assessment',
+        url: '/replenishment/scale-of-assessment',
+      },
+      {
+        label: 'Status of the fund',
+        url: '/replenishment/status-of-the-fund',
+      },
+      { label: 'Statistics', url: '/replenishment/statistics' },
+      {
+        label: 'Status of contributions',
+        url: '/replenishment/status-of-contributions',
+      },
+      { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+      { label: 'Dashboard', url: '/replenishment/dashboard' },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
+}
+
+const useInternalNavSectionsIaBaPortal = () => {
+  const { canViewBp, canViewProjects, canSetProjectSettings } =
+    useContext(PermissionsContext)
+  const [pathname] = useLocation()
+  const nI = makeInternalNavItem.bind(null, pathname)
+
+  if (!(canViewBp || canViewProjects || canSetProjectSettings)) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'IA/BA Portal',
+        menu: [
+          ...(canViewBp
+            ? [{ label: 'Business plans', url: '/business-plans' }]
+            : []),
+          ...(canViewProjects
+            ? [
+                {
+                  label: 'Projects Listing',
+                  url: '/projects-listing/listing',
+                },
+              ]
+            : []),
+          ...(canSetProjectSettings
+            ? [
+                {
+                  label: 'IA/BA portal settings',
+                  url: '/projects-listing/settings',
+                },
+              ]
+            : []),
+        ],
+        url: '/projects-listing/listing',
+      },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
 }
 
 interface navItem {
@@ -184,15 +204,20 @@ const useMenuItems = () => {
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
-      makeExternalNavItem('Projects', '/projects-data/dashboards'),
-      ...useInternalNavSectionsReplenishment(),
-      makeExternalNavItem('Countries', '/projects-data/funding-dashboard'),
-      makeExternalNavItem('Our impact', '/projects-data/people-environment'),
       makeExternalNavItem(
-        'CP Data Center',
-        '/projects-data/projects-dashboard',
+        'Projects and impact',
+        '/projects-data/projects-impacts',
       ),
+      makeExternalNavItem('Countries', '/projects-data/countries'),
+      makeExternalNavItem('CP Data Center', '/projects-data/cp-data-center'),
       ...useInternalNavSections(),
+      makeExternalNavItem(
+        'Contributions',
+        '/projects-data/contributions',
+        useInternalNavSectionsReplenishment(),
+      ),
+      makeExternalNavItem('Portals', '/projects-data/portals'),
+      ...useInternalNavSectionsIaBaPortal(),
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decisions', '/resources/decisions'),
@@ -324,21 +349,25 @@ const DesktopHeaderNavigation = ({
             >
               {item.menu?.map((menuItem, menuItemIdx) => {
                 const Component = menuItem?.internal ? Link : 'a'
-                const regularSubMenuLink = !menuItem.menu ? (
-                  <Component
-                    key={menuItem.label + menuItemIdx}
-                    className={cx(
-                      'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                      {
-                        'bg-mlfs-hlYellow': menuItem.current,
-                      },
-                    )}
-                    href={menuItem.url}
-                    onClick={() => toggleCollapseOpen(menuItem.label)}
-                  >
-                    {menuItem.label}
-                  </Component>
-                ) : null
+                const regularSubMenuLink =
+                  !menuItem.menu || menuItem.menu.length === 0 ? (
+                    <Component
+                      key={menuItem.label + menuItemIdx}
+                      className={cx(
+                        'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                        {
+                          'bg-mlfs-hlYellow': menuItem.current,
+                        },
+                      )}
+                      href={menuItem.url}
+                      onClick={() => toggleCollapseOpen(menuItem.label)}
+                    >
+                      {menuItem.label}
+                    </Component>
+                  ) : null
+                const isExternalWithMenu =
+                  menuItem.external && menuItem.menu && menuItem.menu.length > 0
+
                 return (
                   regularSubMenuLink || (
                     <List
@@ -354,13 +383,32 @@ const DesktopHeaderNavigation = ({
                               menuItem.current && !menuItem.menu,
                           },
                         )}
-                        onClick={() => toggleCollapseOpen(menuItem.label)}
+                        {...(isExternalWithMenu ? { href: menuItem.url } : {})}
+                        onClick={() => {
+                          if (!isExternalWithMenu) {
+                            toggleCollapseOpen(menuItem.label)
+                          }
+                        }}
                       >
                         {menuItem.label}
                         {openMenus[menuItem.label] ? (
-                          <IoChevronUp />
+                          <IoChevronUp
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         ) : (
-                          <IoChevronDown />
+                          <IoChevronDown
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         )}
                       </ListItemButton>
                       <Collapse
@@ -477,7 +525,6 @@ const MobileHeaderNavigation = ({
                 {item.label}
               </ListItem>
             ) : null
-
             return (
               regularMenuLink || (
                 <div key={item.label}>
@@ -503,32 +550,58 @@ const MobileHeaderNavigation = ({
                     <List component="div">
                       {item.menu &&
                         item.menu.map((menuItem) => {
-                          const regularSubMenuLink = !menuItem.menu ? (
-                            <ListItem
-                              key={menuItem.label}
-                              className={cx(styling, 'pl-10')}
-                              component={'a'}
-                              href={menuItem.url}
-                            >
-                              {menuItem.label}
-                            </ListItem>
-                          ) : null
+                          const regularSubMenuLink =
+                            !menuItem.menu || menuItem.menu.length === 0 ? (
+                              <ListItem
+                                key={menuItem.label}
+                                className={cx(styling, 'pl-10')}
+                                component={'a'}
+                                href={menuItem.url}
+                              >
+                                {menuItem.label}
+                              </ListItem>
+                            ) : null
+                          const isExternalWithMenu =
+                            menuItem.external &&
+                            menuItem.menu &&
+                            menuItem.menu.length > 0
 
                           return (
                             regularSubMenuLink || (
                               <div key={menuItem.label}>
                                 <ListItemButton
                                   className={cx(
-                                    'flex items-center justify-between rounded-none',
+                                    'flex items-center justify-between rounded-none pl-10',
                                     styling,
                                   )}
-                                  onClick={() => toggleOpenMenu(menuItem.label)}
+                                  {...(isExternalWithMenu
+                                    ? { href: menuItem.url }
+                                    : {})}
+                                  onClick={() => {
+                                    if (!isExternalWithMenu) {
+                                      toggleOpenMenu(menuItem.label)
+                                    }
+                                  }}
                                 >
                                   {menuItem.label}
                                   {openMenus[menuItem.label] ? (
-                                    <IoChevronUp />
+                                    <IoChevronUp
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   ) : (
-                                    <IoChevronDown />
+                                    <IoChevronDown
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   )}
                                 </ListItemButton>
                                 <Collapse

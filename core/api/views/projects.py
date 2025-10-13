@@ -13,15 +13,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
+
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
     HasProjectMetaInfoViewAccess,
     HasProjectStatisticsViewAccess,
     HasProjectViewAccess,
     HasProjectEditAccess,
+    HasProjectV2MyaAccess,
     DenyAll,
 )
+from core.api.serializers import CountrySerializer
+from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
     ProjectFundCreateSerializer,
@@ -41,8 +46,13 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
+from core.api.serializers.meta_project import MetaProjecMyaSerializer
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
+from core.api.serializers.meta_project import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
+from core.models import Agency
+from core.models import Country
 from core.models.project import (
     MetaProject,
     Project,
@@ -68,9 +78,142 @@ class MetaProjectListView(generics.ListAPIView):
     """
 
     permission_classes = [HasMetaProjectsViewAccess]
-    queryset = MetaProject.objects.order_by("code", "type")
+    queryset = (
+        MetaProject.objects.order_by("code", "type")
+        .prefetch_related(
+            "projects__agency",
+            "projects__comments",
+            "projects__cluster",
+            "projects__country",
+            "projects__decision",
+            "projects__files",
+            "projects__funds",
+            "projects__meeting",
+            "projects__project_type",
+            "projects__rbm_measures__measure",
+            "projects__ods_odp",
+            "projects__sector",
+            "projects__subsectors__sector",
+            "projects__status",
+            "projects__submission_amounts",
+            "projects__submission_status",
+        )
+        .select_related("lead_agency")
+    )
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
+
+
+class MetaProjectCountryListView(generics.ListAPIView):
+    """
+    List meta project countries
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return Country.objects.filter(
+            project__meta_project__in=meta_projects
+        ).distinct()
+
+
+class MetaProjectClusterListView(generics.ListAPIView):
+    """
+    List meta project clusters
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = ProjectClusterSerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return ProjectCluster.objects.filter(
+            project__meta_project__in=meta_projects
+        ).distinct()
+
+
+class MetaProjectLeadAgencyListView(generics.ListAPIView):
+    """
+    List meta project lead agencies
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = AgencySerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return Agency.objects.filter(metaproject__in=meta_projects).distinct()
+
+
+class MetaProjectMyaListView(generics.ListAPIView):
+    """
+    List meta projects available for MYA update.
+    """
+
+    permission_classes = [HasProjectV2MyaAccess]
+    serializer_class = MetaProjecMyaSerializer
+    filterset_class = MetaProjectMyaFilter
+
+    def get_queryset(self):
+        result = (
+            MetaProject.objects.filter(
+                type=MetaProject.MetaProjectType.MYA,
+                projects__submission_status__name="Approved",
+            ).prefetch_related(
+                "projects",
+                "projects__agency",
+                "projects__cluster",
+                "projects__country",
+            )
+            # Maybe exclude if ALL sub-projects Completed OR Transfered.
+            # .filter(
+            #     Exists(
+            #         Project.objects.filter(metaproject=OuterRef("pk")).exclude(
+            #             status__name=["Completed", "Transferred"]
+            #         )
+            #     )
+            # )
+            .distinct()
+        )
+        return result
+
+
+class MetaProjectMyaDetailsViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
+    serializer_class = MetaProjecMyaDetailsSerializer
+    queryset = MetaProject.objects.all()
+    permission_classes = [HasProjectV2MyaAccess]
+
+    def update(self, request, *args, **kwargs):
+        mp = self.get_object()
+
+        serializer = MetaProjectFieldSerializer(mp, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        return Response(
+            MetaProjectFieldSerializer(mp).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProjectStatusListView(generics.ListAPIView):

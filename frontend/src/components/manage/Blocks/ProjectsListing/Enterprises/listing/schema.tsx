@@ -5,6 +5,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../../constants'
 import { useStore } from '@ors/store'
 
+import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
 import { find, map } from 'lodash'
 import { useParams } from 'wouter'
@@ -14,7 +15,7 @@ import {
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (type: string) => {
+const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const {
@@ -29,7 +30,7 @@ const getColumnDefs = (type: string) => {
     agencies: state.common.agencies.data,
   }))
 
-  const isEnterprise = type === 'enterprise'
+  const isEnterprise = !project_id
   const editPermissions = isEnterprise
     ? canEditEnterprise
     : canEditProjectEnterprise
@@ -38,7 +39,9 @@ const getColumnDefs = (type: string) => {
     : canApproveProjectEnterprise
   const canAccessEditPage = editPermissions || approvalPermissions
 
-  const getViewUrl = (enterpriseId: number, project_id: number) =>
+  const checkboxWidth = isEnterprise || !canEditProjectEnterprise ? 40 : 80
+
+  const getViewUrl = (enterpriseId: number) =>
     isEnterprise
       ? `/projects-listing/enterprises/${enterpriseId}`
       : `/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`
@@ -67,44 +70,69 @@ const getColumnDefs = (type: string) => {
     ).join(', ')
   }
 
+  const getFieldName = (field: string) =>
+    isEnterprise ? field : 'enterprise.' + field
+
   return {
     columnDefs: [
-      ...(canAccessEditPage && (project_id || isEnterprise)
+      ...(canAccessEditPage
         ? [
             {
-              minWidth: 40,
-              maxWidth: 40,
+              minWidth: checkboxWidth,
+              maxWidth: checkboxWidth,
               resizable: false,
               sortable: false,
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center p-2">
-                  {props.data.status !== 'Obsolete' &&
-                    !(
-                      props.data.status === 'Approved' && !approvalPermissions
-                    ) && (
-                      <Link
-                        className="flex h-4 w-4 justify-center"
-                        href={getEditUrl(props.data.id)}
-                      >
-                        <FiEdit size={16} />
-                      </Link>
+              cellRenderer: (props: ICellRendererParams) => {
+                const canDeleteProjectEnterprise =
+                  !isEnterprise &&
+                  setIdToDelete &&
+                  canEditProjectEnterprise &&
+                  (props.data.status !== 'Approved' ||
+                    canApproveProjectEnterprise)
+
+                return (
+                  <div className="flex items-center gap-1 p-2">
+                    {props.data.status !== 'Obsolete' &&
+                      (isEnterprise ||
+                        props.data.status !== 'Approved' ||
+                        (canEditProjectEnterprise &&
+                          canApproveProjectEnterprise)) && (
+                        <>
+                          <Link
+                            className="flex h-4 w-4 justify-center"
+                            href={getEditUrl(props.data.id)}
+                          >
+                            <FiEdit size={16} />
+                          </Link>
+                          {canDeleteProjectEnterprise && '/'}
+                        </>
+                      )}
+                    {canDeleteProjectEnterprise && (
+                      <IoTrash
+                        size={18}
+                        className="cursor-pointer fill-gray-500"
+                        onClick={() => {
+                          setIdToDelete(props.data.id)
+                        }}
+                      />
                     )}
-                </div>
-              ),
+                  </div>
+                )
+              },
             },
           ]
         : []),
       {
         headerName: tableColumns.code,
-        field: isEnterprise ? 'code' : 'enterprise.code',
-        tooltipField: isEnterprise ? 'code' : 'enterprise.code',
+        field: getFieldName('code'),
+        tooltipField: getFieldName('code'),
         minWidth: 100,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center justify-center p-2">
             <Link
               className="overflow-hidden truncate whitespace-nowrap"
-              href={getViewUrl(props.data.id, props.data.project)}
+              href={getViewUrl(props.data.id)}
             >
               <span>{props.value}</span>
             </Link>
@@ -113,8 +141,8 @@ const getColumnDefs = (type: string) => {
       },
       {
         headerName: tableColumns.name,
-        field: isEnterprise ? 'name' : 'enterprise.name',
-        tooltipField: isEnterprise ? 'name' : 'enterprise.name',
+        field: getFieldName('name'),
+        tooltipField: getFieldName('name'),
         cellClass: 'ag-cell-ellipsed !pl-2.5',
         minWidth: 200,
       },
@@ -125,21 +153,27 @@ const getColumnDefs = (type: string) => {
         sortable: false,
         minWidth: 200,
       },
-      {
-        headerName: tableColumns.country,
-        field: isEnterprise ? 'country__name' : 'enterprise.country__name',
-        valueGetter: (params: ValueGetterParams) => getCountryName(params),
-        tooltipValueGetter: (params: ITooltipParams) => getCountryName(params),
-      },
+      ...(isEnterprise
+        ? [
+            {
+              headerName: tableColumns.country,
+              field: getFieldName('country__name'),
+              valueGetter: (params: ValueGetterParams) =>
+                getCountryName(params),
+              tooltipValueGetter: (params: ITooltipParams) =>
+                getCountryName(params),
+            },
+          ]
+        : []),
       {
         headerName: tableColumns.location,
-        field: isEnterprise ? 'location' : 'enterprise.location',
-        tooltipField: isEnterprise ? 'location' : 'enterprise.location',
+        field: getFieldName('location'),
+        tooltipField: getFieldName('location'),
       },
       {
         headerName: tableColumns.application,
-        field: isEnterprise ? 'application' : 'enterprise.application',
-        tooltipField: isEnterprise ? 'application' : 'enterprise.application',
+        field: getFieldName('application'),
+        tooltipField: getFieldName('application'),
       },
       {
         headerName: 'Status',
@@ -147,26 +181,6 @@ const getColumnDefs = (type: string) => {
         tooltipField: 'status',
         minWidth: 120,
       },
-      ...(!project_id && !isEnterprise
-        ? [
-            {
-              headerName: 'Project',
-              field: 'project_code',
-              tooltipField: 'project_code',
-              sortable: false,
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center justify-center p-2">
-                  <Link
-                    className="overflow-hidden truncate whitespace-nowrap"
-                    href={`/projects-listing/${props.data.project}`}
-                  >
-                    <span>{props.value}</span>
-                  </Link>
-                </div>
-              ),
-            },
-          ]
-        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

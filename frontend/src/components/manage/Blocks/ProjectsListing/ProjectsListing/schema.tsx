@@ -29,6 +29,8 @@ const getColumnDefs = (
     canAssociateProjects,
     canUpdateProjects,
     canEditProjects,
+    canEditApprovedProjects,
+    canEditProjectEnterprise,
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
@@ -100,13 +102,15 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 ) : (
-                  mode !== 'association-listing' && (
-                    <div className="w-4 min-w-4" />
-                  )
+                  mode !== 'association-listing' &&
+                  canEditProjects && <div className="w-4 min-w-4" />
                 )}
                 {projectId !== undefined &&
                   setProjectData &&
-                  (canAssociateProjects || canUpdateProjects) && (
+                  (canAssociateProjects ||
+                    canUpdateProjects ||
+                    canEditApprovedProjects ||
+                    canEditProjectEnterprise) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {
@@ -117,11 +121,13 @@ const getColumnDefs = (
                                 projectTitle: props.data.title,
                                 projectSubmissionStatus:
                                   props.data.submission_status,
+                                projectStatus: props.data.status,
                               }
                             : {
                                 projectId: null,
                                 projectTitle: '',
                                 projectSubmissionStatus: '',
+                                projectStatus: '',
                               },
                         )
                       }}

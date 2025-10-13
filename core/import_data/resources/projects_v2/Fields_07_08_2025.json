@@ -310,7 +310,7 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Cross-Cutting",
         "SORT_ORDER": 22,
-        "EDITABLE_IN_VERSIONS": [2,3],
+        "EDITABLE_IN_VERSIONS": [2],
         "VISIBLE_IN_VERSIONS": [2,3]
     },
     {
@@ -459,7 +459,7 @@
     },
     {
         "IMPORT_NAME": "Ods type",
-        "LABEL": "Ods type",
+        "LABEL": "ODS type",
         "WRITE_FIELD_NAME": "ods_type",
         "READ_FIELD_NAME": "ods_type",
         "TABLE": "ods_odp",
@@ -1331,19 +1331,6 @@
         "SORT_ORDER": 105,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
-    },
-    {
-        "IMPORT_NAME": "Number of enterprises assisted actual",
-        "LABEL": "Number of enterprises assisted (actual)",
-        "WRITE_FIELD_NAME": "number_of_enterprises_assisted_actual",
-        "READ_FIELD_NAME": "number_of_enterprises_assisted_actual",
-        "TABLE": "project",
-        "DATA_TYPE": "number",
-        "SECTION": "MYA",
-        "IS_ACTUAL": true,
-        "SORT_ORDER": 106,
-        "EDITABLE_IN_VERSIONS": [3],
-        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Start date (MYA)",

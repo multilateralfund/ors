@@ -18,11 +18,11 @@ import { useStore } from '@ors/store.tsx'
 import { Redirect, useParams } from 'wouter'
 
 const PEnterpriseCreateWrapper = () => {
-  const { canViewProjects, canEditProjectEnterprise } =
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
     useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
+  const project = useGetProject(project_id)
   const { data, loading, error } = project ?? {}
 
   const userSlice = useStore((state) => state.user)
@@ -53,23 +53,13 @@ const PEnterpriseCreateWrapper = () => {
     }))
   }, [data])
 
-  if (!canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
-
   if (
-    !project_id ||
+    !canViewProjects ||
+    !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/projects-enterprises" />
-  }
-
-  if (!canEditProjectEnterprise) {
-    return (
-      <Redirect
-        to={`/projects-listing/projects-enterprises${project_id ? '/' + project_id : ''}`}
-      />
-    )
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

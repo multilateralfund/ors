@@ -188,8 +188,12 @@ export const AutocompleteWidget = <T,>(
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
+  hasField?: boolean,
 ) => {
-  const options = formatOptions(field)
+  const options = formatOptions(
+    field,
+    hasField ? fields[sectionIdentifier] : undefined,
+  )
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
@@ -197,18 +201,28 @@ export const AutocompleteWidget = <T,>(
     ? find(options, { id: value }) || null
     : value
 
+  const normalizedValue =
+    fieldName === 'ods_display_name'
+      ? options.find((opt) => opt.id === value) || null
+      : formattedValue
+
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Field
         widget="autocomplete"
         options={options}
         disabled={!canEditField(editableFields, fieldName)}
-        value={formattedValue}
+        value={normalizedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -220,7 +234,12 @@ export const AutocompleteWidget = <T,>(
           )
         }
         getOptionLabel={(option) => {
-          const field = fieldName === 'group' ? 'name_alt' : 'name'
+          const field =
+            fieldName === 'group'
+              ? 'name_alt'
+              : fieldName === 'ods_display_name'
+                ? 'label'
+                : 'name'
 
           return (
             (isObject(option)
@@ -317,6 +336,7 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+  const isOdsReplacement = fieldName === 'ods_replacement'
 
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
@@ -335,7 +355,7 @@ export const TextAreaWidget = <T,>(
           )
         }
         className={cx(textAreaClassname, 'max-w-[415px]', {
-          'md:min-w-[415px]': field.table === 'ods_odp',
+          '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
           'border-red-500': getIsInputDisabled(
             hasSubmitted,
             errors,
@@ -344,7 +364,7 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
-        minRows={2}
+        minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}
       />
     </div>
@@ -366,13 +386,19 @@ const NumberWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <SimpleInput
         id={fieldName}
         value={value ?? ''}
@@ -419,9 +445,15 @@ const BooleanWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div className="col-span-full flex w-full">
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Checkbox
         className="pb-1 pl-2 pt-0"
         checked={Boolean(value)}
@@ -474,7 +506,7 @@ const DateWidget = <T,>(
         id={fieldName}
         value={value}
         disabled={!canEditField(editableFields, fieldName)}
-        formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+        formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,

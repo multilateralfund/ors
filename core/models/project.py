@@ -1,8 +1,10 @@
 import os
+import shutil
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
+from functools import cached_property
 
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -23,17 +25,31 @@ from core.models.utils import SubstancesType, get_protected_storage
 
 # pylint: disable=C0302
 
+OLD_FIELD_HELP_TEXT = """
+    Old field from the initial imported data/implementation of projects.
+    TBD if the information can be transferred to the new structure.
+"""
+
 
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
         MYA = "Multi-year agreement", "Multi-year agreement"
         IND = "Individual", "Individual"
 
+    class MetaProjectState(models.TextChoices):
+        DRAFT = "Draft", "Draft"
+        FINAL = "Final", "Final"
+
     lead_agency = models.ForeignKey(
         Agency, on_delete=models.PROTECT, null=True, blank=True
     )
     type = models.CharField(max_length=255, choices=MetaProjectType.choices)
-    code = models.CharField(max_length=255, null=True, blank=True)
+    code = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Obsolete. Replaced by the new 'new_code' field.",
+    )
     new_code = models.CharField(
         max_length=255,
         null=True,
@@ -48,8 +64,175 @@ class MetaProject(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
+    # START: Task #32217 fields.
+
+    workflow_state = models.CharField(
+        max_length=255, choices=MetaProjectState.choices, default="Final"
+    )
+
+    # START: auto calculated from projects
+    project_funding = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Project Funding (MYA)",
+    )
+    support_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Support Cost (MYA)",
+    )
+
+    start_date = models.DateTimeField(
+        null=True, blank=True, help_text="Start date (MYA)"
+    )
+    end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
+
+    phase_out_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (ODP t) (MYA)",
+    )
+    phase_out_mt = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (Mt) (MYA)",
+    )
+    # END: auto calculated from projects
+
+    targets = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
+    )
+    starting_point = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point",
+    )
+    baseline = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
+    )
+    number_of_enterprises_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises assisted"
+    )
+    number_of_enterprises = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises"
+    )
+    aggregated_consumption = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Aggregated consumption",
+    )
+    number_of_production_lines_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of Production Lines assisted"
+    )
+    cost_effectiveness_kg = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg)",
+    )
+    cost_effectiveness_co2 = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-ep)",
+    )
+
+    draft_project_funding = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Project Funding (MYA)",
+    )
+    draft_support_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Support Cost (MYA)",
+    )
+    draft_start_date = models.DateTimeField(
+        null=True, blank=True, help_text="Start date (MYA)"
+    )
+    draft_end_date = models.DateTimeField(
+        null=True, blank=True, help_text="End date (MYA)"
+    )
+    draft_phase_out_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (ODP t) (MYA)",
+    )
+    draft_phase_out_mt = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (Mt) (MYA)",
+    )
+    draft_targets = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
+    )
+    draft_starting_point = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point",
+    )
+    draft_baseline = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
+    )
+    draft_number_of_enterprises_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises assisted"
+    )
+    draft_number_of_enterprises = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises"
+    )
+    draft_aggregated_consumption = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Aggregated consumption",
+    )
+    draft_number_of_production_lines_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of Production Lines assisted"
+    )
+    draft_cost_effectiveness_kg = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg)",
+    )
+    draft_cost_effectiveness_co2 = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-ep)",
+    )
+
+    # END: Task #32217 fields.
+
     def __str__(self):
-        return f"{self.type} {self.pcr_project_id}"
+        return f"{self.new_code}"
 
 
 class ProjectManager(models.Manager):
@@ -170,23 +353,65 @@ class Project(models.Model):
         help_text="True if the user is the lead agency submitting on behalf of a cooperating agency.",
     )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
-    national_agency = models.CharField(max_length=255, null=True, blank=True)
+    national_agency = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     coop_agencies = models.ManyToManyField(
-        Agency, related_name="coop_projects", blank=True
+        Agency,
+        related_name="coop_projects",
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    legacy_code = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the export/filtering?! of the projects.
+        """,
     )
 
-    legacy_code = models.CharField(max_length=128, null=True, blank=True)
-
     code = models.CharField(max_length=128, null=True, blank=True)
-    serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
-    serial_number = models.IntegerField(null=True, blank=True)
-    additional_funding = models.BooleanField(default=False)
-    mya_code = models.CharField(max_length=128, null=True, blank=True)
+    serial_number_legacy = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the generation of the meta project code?!
+        """,
+    )  # number
+    serial_number = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the generation of the project code?!
+        """,
+    )
+    additional_funding = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    mya_code = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     title = models.CharField(max_length=256)
     description = models.TextField(null=True, blank=True)
     excom_provision = models.TextField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
-    project_type_legacy = models.CharField(max_length=256, null=True, blank=True)
+    project_type_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -220,51 +445,153 @@ class Project(models.Model):
         null=True,
         blank=True,
         related_name="transferred_projects",
-    )
+        help_text="Old meeting field used for transferred projects.Should be removed in the future.",
+    )  # obsolete
+
     decision = models.ForeignKey(
         Decision, on_delete=models.CASCADE, null=True, blank=True
     )
-    project_duration = models.IntegerField(null=True, blank=True)
-    stage = models.IntegerField(null=True, blank=True)
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    stage = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     tranche = models.IntegerField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     compliance = models.CharField(
-        max_length=256, choices=ProjectCompliance.choices, null=True, blank=True
-    )
+        max_length=256,
+        choices=ProjectCompliance.choices,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     sector = models.ForeignKey(
         ProjectSector, on_delete=models.CASCADE, null=True, blank=True
     )
-    sector_legacy = models.CharField(max_length=256, null=True, blank=True)
+    sector_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
+    )
     subsectors = models.ManyToManyField(
         ProjectSubSector, related_name="projects", blank=True
     )
-    subsector_legacy = models.CharField(max_length=256, null=True, blank=True)
-    mya_subsector = models.CharField(max_length=256, null=True, blank=True)
+    subsector_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
+    )
+    mya_subsector = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     substance_type = models.CharField(
-        max_length=256, choices=SubstancesType.choices, null=True, blank=True
+        max_length=256,
+        choices=SubstancesType.choices,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
     )
 
-    impact = models.FloatField(null=True, blank=True)
-    impact_production = models.FloatField(null=True, blank=True)
-    substance_phasedout = models.FloatField(null=True, blank=True)  # ods_phasedout
+    impact = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_production = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    substance_phasedout = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # ods_phasedout # obsolete
 
-    fund_disbursed = models.FloatField(null=True, blank=True)
-    fund_disbursed_psc = models.FloatField(null=True, blank=True)  # fund_disbursed_13
-    capital_cost = models.FloatField(null=True, blank=True)
-    operating_cost = models.FloatField(null=True, blank=True)
-    contingency_cost = models.FloatField(null=True, blank=True)
-    effectiveness_cost = models.FloatField(null=True, blank=True)
+    fund_disbursed = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    fund_disbursed_psc = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # fund_disbursed_13 # obsolete
+    capital_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    operating_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    contingency_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    effectiveness_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     total_fund = models.FloatField(null=True, blank=True)
-    total_fund_transferred = models.FloatField(null=True, blank=True)
-    total_psc_transferred = models.FloatField(null=True, blank=True)
-    total_fund_approved = models.FloatField(null=True, blank=True)
-    total_psc_cost = models.FloatField(null=True, blank=True)
-    total_grant = models.FloatField(null=True, blank=True)
+    total_fund_transferred = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Old field used for transferred projects. Should be removed in the future.",
+    )  # obsolete
+    total_psc_transferred = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Old field used for transferred projects. Should be removed in the future.",
+    )  # obsolete
+    total_fund_approved = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    total_psc_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+
+    total_grant = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     date_approved = models.DateField(null=True, blank=True)
     meeting_approved = models.ForeignKey(
@@ -275,48 +602,179 @@ class Project(models.Model):
         blank=True,
     )
     date_completion = models.DateField(null=True, blank=True)
-    date_actual = models.DateField(null=True, blank=True)
-    date_per_agreement = models.DateField(null=True, blank=True)
+    date_actual = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_per_agreement = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     remarks = models.TextField(null=True, blank=True)
 
     # other fields
-    umbrella_project = models.BooleanField(default=False)
-    loan = models.BooleanField(default=False)
-    intersessional_approval = models.BooleanField(default=False)
-    retroactive_finance = models.BooleanField(default=False)
-    withdrawn = models.BooleanField(default=False)
-    incomplete = models.BooleanField(default=False)
-    issue = models.BooleanField(default=False)
-    issue_description = models.TextField(null=True, blank=True)
-    application = models.CharField(max_length=256, null=True, blank=True)
-    products_manufactured = models.TextField(null=True, blank=True)
-    plan = models.TextField(null=True, blank=True)
-    technology = models.CharField(max_length=256, null=True, blank=True)
-    impact_co2mt = models.FloatField(null=True, blank=True)
-    impact_prod_co2mt = models.FloatField(null=True, blank=True)
-    ods_phasedout_co2mt = models.FloatField(null=True, blank=True)
-    hcfc_stage = models.FloatField(null=True, blank=True)
-    date_comp_revised = models.DateField(null=True, blank=True)
-    date_per_decision = models.DateField(null=True, blank=True)
-    local_ownership = models.FloatField(null=True, blank=True)
-    export_to = models.FloatField(null=True, blank=True)
-    submission_category = models.CharField(
-        max_length=164, choices=SubmissionCategory.choices, null=True, blank=True
+    umbrella_project = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    loan = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    intersessional_approval = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    retroactive_finance = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    withdrawn = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    incomplete = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    issue = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    issue_description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    application = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    products_manufactured = models.TextField(
+        null=True,
+        blank=True,
     )
-    submission_number = models.IntegerField(null=True, blank=True)
+    plan = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    technology = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_prod_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    ods_phasedout_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    hcfc_stage = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_comp_revised = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_per_decision = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    local_ownership = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    export_to = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    submission_category = models.CharField(
+        max_length=164,
+        choices=SubmissionCategory.choices,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    submission_number = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     programme_officer = models.CharField(max_length=255, null=True, blank=True)
-    funds_allocated = models.FloatField(null=True, blank=True)
+    funds_allocated = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     support_cost_psc = models.FloatField(null=True, blank=True)
-    project_cost = models.FloatField(null=True, blank=True)
-    date_received = models.DateField(null=True, blank=True)
-    revision_number = models.TextField(null=True, blank=True)
-    date_of_revision = models.DateField(null=True, blank=True)
-    agency_remarks = models.TextField(null=True, blank=True)
-    submission_comments = models.TextField(null=True, blank=True)  # comments
-    reviewed_mfs = models.BooleanField(default=False)
-    correspondance_no = models.IntegerField(null=True, blank=True)
-    plus = models.BooleanField(default=False)
-    source_file = models.CharField(max_length=255, null=True, blank=True)
+    project_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_received = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    revision_number = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_of_revision = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    agency_remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    submission_comments = models.TextField(
+        null=True, blank=True, help_text=OLD_FIELD_HELP_TEXT
+    )  # obsolete # comments
+    reviewed_mfs = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    correspondance_no = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    plus = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    source_file = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     # new fields
     is_lvc = models.BooleanField(
@@ -354,59 +812,6 @@ class Project(models.Model):
         blank=True,
     )
     is_sme = models.BooleanField(null=True, blank=True)
-
-    # new MYA fields
-    mya_start_date = models.DateField(
-        null=True, blank=True, help_text="Start date (MYA)"
-    )
-    mya_end_date = models.DateField(null=True, blank=True, help_text="End date (MYA)")
-    mya_project_funding = models.FloatField(
-        null=True, blank=True, help_text="Project Funding (MYA)"
-    )
-    mya_support_cost = models.FloatField(
-        null=True, blank=True, help_text="Support Cost (MYA)"
-    )
-    number_of_enterprises = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises (MYA)",
-    )
-    aggregated_consumption = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="The field is the aggregated consumption of all enterprises",
-    )
-    targets = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Targets for the MYA project. The field is the aggregated consumption of all enterprises",
-    )
-    starting_point = models.FloatField(null=True, blank=True)
-    baseline = models.FloatField(null=True, blank=True)
-    mya_phase_out_co2_eq_t = models.FloatField(
-        null=True, blank=True, help_text="Phase out (CO2-eq t) (MYA)"
-    )
-    mya_phase_out_odp_t = models.FloatField(
-        null=True, blank=True, help_text="Phase out (ODP t) (MYA)"
-    )
-    mya_phase_out_mt = models.FloatField(
-        null=True, blank=True, help_text="Phase out (Mt) (MYA)"
-    )
-    cost_effectiveness = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US$/ Kg) (MYA)",
-    )
-    cost_effectiveness_co2 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US$/ CO2-eq) (MYA)",
-    )
-    number_of_production_lines_assisted = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of production lines assisted (MYA)",
-    )
 
     # new approval fields
     funding_window = models.CharField(
@@ -546,16 +951,6 @@ class Project(models.Model):
         null=True,
         blank=True,
         help_text="Number of female NOU personnel supported (actual)",
-    )
-    number_of_enterprises_assisted = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises assisted (planned)",
-    )
-    number_of_enterprises_assisted_actual = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises assisted (actual)",
     )
     certification_system_for_technicians = models.BooleanField(
         null=True,
@@ -778,6 +1173,31 @@ class Project(models.Model):
         help_text="Quantity of HFC-23 by-product (Emitted) (actual)",
     )
 
+    # fields used in transfering projects
+    transfer_meeting = models.ForeignKey(
+        Meeting,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transfer_meeting_projects",
+        help_text="The meeting at which the project is transferred",
+    )
+    transfer_decision = models.ForeignKey(
+        Decision,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transfer_decision_projects",
+        help_text="The decision to transfer the project",
+    )
+    transfer_excom_provision = models.TextField(null=True, blank=True)
+    fund_transferred = models.FloatField(
+        null=True, blank=True, help_text="Fund transferred"
+    )
+    psc_transferred = models.FloatField(
+        null=True, blank=True, help_text="Project support cost transferred"
+    )
+
     objects = ProjectManager()
 
     class Meta:
@@ -790,8 +1210,44 @@ class Project(models.Model):
         ]
         ordering = ["-date_actual", "country__name", "serial_number"]
 
-    def increase_version(self, user):
+    @cached_property
+    def phase_out_data(self):
+        data = {
+            "consumption_odp": 0,
+            "consumption_co2": 0,
+            "production_odp": 0,
+            "production_co2": 0,
+        }
 
+        for substance in self.ods_odp.all():
+            substance_odp = substance.odp or 0
+            substance_co2_mt = substance.co2_mt or 0
+            if substance.ods_type == ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION:
+                data["production_odp"] += substance_odp
+                data["production_co2"] += substance_co2_mt
+            else:
+                data["consumption_odp"] += substance_odp
+                data["consumption_co2"] += substance_co2_mt
+
+        return data
+
+    @property
+    def consumption_odp(self):
+        return self.phase_out_data["consumption_odp"]
+
+    @property
+    def consumption_co2(self):
+        return self.phase_out_data["consumption_co2"]
+
+    @property
+    def production_odp(self):
+        return self.phase_out_data["production_odp"]
+
+    @property
+    def production_co2(self):
+        return self.phase_out_data["production_co2"]
+
+    def copy_project(self, duplicate_files=False, remove_legacy_data=False):
         def _get_new_file_path(original_file_name, new_project_id):
             # Generate a new file path for the duplicated file
             base_dir, file_name = os.path.split(original_file_name)
@@ -800,63 +1256,87 @@ class Project(models.Model):
 
         with transaction.atomic():
             # Duplicate the project
-            old_project = Project.objects.get(pk=self.pk)
-            old_project.pk = None
-            old_project.latest_project = self
-
-            old_project.save()
+            new_project = Project.objects.get(pk=self.pk)
+            new_project.pk = None
+            if remove_legacy_data:
+                new_project.legacy_code = None
+            new_project.save()
 
             # set subsectors M2M field
-            old_project.subsectors.set(self.subsectors.all())
-
-            self.version += 1
-            self.version_created_by = user
-            self.save()
+            new_project.subsectors.set(self.subsectors.all())
 
             # Duplicate the linked ProjectOdsOdp entries
             ods_odp_entries = ProjectOdsOdp.objects.filter(project=self)
             for entry in ods_odp_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectFund entries
             fund_entries = ProjectFund.objects.filter(project=self)
             for entry in fund_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectRBMMeasure entries
             rbm_entries = ProjectRBMMeasure.objects.filter(project=self)
             for entry in rbm_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectProgressReport entries
             progress_report_entries = ProjectProgressReport.objects.filter(project=self)
             for entry in progress_report_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked SubmissionAmount entries
             submission_amount_entries = SubmissionAmount.objects.filter(project=self)
             for entry in submission_amount_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the ProjectComment entries
             comment_entries = ProjectComment.objects.filter(project=self)
             for entry in comment_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
-            # Transfer files to the archive project
-            ProjectFile.objects.filter(project=self).update(project=old_project)
+            if duplicate_files:
+                file_entries = ProjectFile.objects.filter(project=self)
+                for entry in file_entries:
+                    original_file_path = entry.file.path
+                    new_file_path = _get_new_file_path(entry.file.name, new_project.id)
+                    storage = get_protected_storage()
+                    with storage.open(original_file_path, "rb") as original_file:
+                        with storage.open(new_file_path, "wb") as new_file:
+                            shutil.copyfileobj(original_file, new_file)
+                    entry.pk = None
+                    entry.project = new_project
+                    entry.file.name = (
+                        new_file_path  # Update the file field to point to the new file
+                    )
+                    entry.save()
+        return new_project
+
+    def increase_version(self, user):
+
+        # Create an archived copy of the current project. The archived project will have
+        # the same code as the current project.
+        archieved_project = self.copy_project(duplicate_files=False)
+        archieved_project.latest_project = self
+        archieved_project.save()
+
+        self.version += 1
+        self.version_created_by = user
+        self.save()
+
+        ProjectFile.objects.filter(project=self).update(project=archieved_project)
 
     def __str__(self):
         return self.title

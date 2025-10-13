@@ -16,18 +16,14 @@ import { keys, map } from 'lodash'
 const PEnterpriseFundingDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
-  enterprise,
   hasSubmitted,
   errors = {},
 }: PEnterpriseDataProps) => {
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const isDisabled = !canEditProjectEnterprise
 
   const sectionId = 'funding_details'
   const sectionData: EnterpriseFundingDetails = enterpriseData[sectionId]
-
-  const isDisabled =
-    !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
 
   return (
     <div className="flex flex-wrap gap-x-20 gap-y-3">

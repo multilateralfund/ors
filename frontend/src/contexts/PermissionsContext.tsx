@@ -23,6 +23,8 @@ interface PermissionsContextProps {
   canEditProjects: boolean
   canEditApprovedProjects: boolean
   canViewProductionProjects: boolean
+  canUpdatePostExcom: boolean
+  canViewMetaProjects: boolean
   canViewEnterprises: boolean
   canEditEnterprise: boolean
   canApproveEnterprise: boolean

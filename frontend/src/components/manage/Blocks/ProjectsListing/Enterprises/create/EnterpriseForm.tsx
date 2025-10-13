@@ -28,8 +28,7 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   const { enterprise } = props
   const isDisabled =
-    !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditEnterprise)
+    !!enterprise && (enterprise.status === 'Obsolete' || !canEditEnterprise)
 
   return (
     <>

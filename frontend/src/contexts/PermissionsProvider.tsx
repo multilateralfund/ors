@@ -76,6 +76,12 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProductionProjects = user_permissions.includes(
     'can_view_production_projects',
   )
+  const canViewMetaProjects = user_permissions.includes(
+    'has_project_v2_mya_access',
+  )
+  const canUpdatePostExcom = user_permissions.includes(
+    'has_project_v2_edit_post_excom',
+  )
 
   const canViewEnterprises = user_permissions.includes(
     'has_enterprise_view_access',
@@ -144,6 +150,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditProjects,
         canEditApprovedProjects,
         canViewProductionProjects,
+        canUpdatePostExcom,
+        canViewMetaProjects,
         canViewEnterprises,
         canEditEnterprise,
         canApproveEnterprise,

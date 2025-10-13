@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import PEnterpriseHeader from '../create/PEnterpriseHeader'
 import PEnterpriseCreate from '../create/PEnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
+import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { PEnterpriseData, PEnterpriseType } from '../../interfaces'
 import {
   initialOverviewFields,
@@ -21,6 +22,8 @@ const PEnterpriseEdit = ({
   countryId: number
 }) => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const enterpriseStatuses = useGetEnterpriseStatuses(false)
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
@@ -42,6 +45,7 @@ const PEnterpriseEdit = ({
       overview: {
         id: enterpriseObj.id,
         status: enterpriseObj.status,
+        linkStatus: enterprise.status,
         name: enterpriseObj.name,
         agencies: enterpriseObj.agencies,
         country: enterpriseObj.country,
@@ -78,6 +82,7 @@ const PEnterpriseEdit = ({
           enterpriseData,
           setEnterpriseData,
           enterprise,
+          enterpriseStatuses,
           countryId,
           hasSubmitted,
           errors,

@@ -1,5 +1,10 @@
 from rest_framework import serializers
 
+from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
+from core.models import (
+    Blend,
+    Substance,
+)
 from core.models.project_enterprise import (
     Enterprise,
     ProjectEnterprise,
@@ -46,8 +51,16 @@ class EnterpriseSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        user = self.context["request"].user
         if not self.instance:
-            attrs["status"] = EnterpriseStatus.PENDING
+            if user.has_perm("core.has_enterprise_approval_access"):
+                attrs["status"] = EnterpriseStatus.APPROVED
+            else:
+                attrs["status"] = EnterpriseStatus.PENDING
+        else:
+            if not user.has_perm("core.has_enterprise_approval_access"):
+                attrs.pop("status", None)  # prevent status change if no permission
+
         return super().validate(attrs)
 
     def create(self, validated_data):
@@ -119,6 +132,21 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
                     "Cannot update ods_blend when ods_substance is set"
                 )
 
+        if attrs.get("ods_substance"):
+            accepted_substances = (
+                Substance.objects.all().filter_project_accepted_substances()
+            )
+            if not accepted_substances.filter(id=attrs["ods_substance"].id).exists():
+                raise serializers.ValidationError(
+                    f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
+
+        if attrs.get("ods_blend"):
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
+            if not accepted_blends.filter(id=attrs["ods_blend"].id).exists():
+                raise serializers.ValidationError(
+                    f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
         return super().validate(attrs)
 
 
@@ -147,18 +175,20 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        user = self.context["request"].user
         _ = validated_data.pop("request", None)
-        validated_data.pop("status", None)  # status will be set to PENDING
         ods_odp_data = validated_data.pop("ods_odp", [])
         enterprise_data = validated_data.pop("enterprise")
-        enterprise_data.pop("status", None)  # status will be set to PENDING if new
         if "id" in enterprise_data:
             # if enterprise exists, use it in linking, but don't alter any of its data
             enterprise_data_id = enterprise_data.pop("id")
             try:
                 enterprise = Enterprise.objects.get(id=enterprise_data_id)
-                if enterprise.status == EnterpriseStatus.PENDING:
+                if enterprise.status == EnterpriseStatus.PENDING or user.has_perm(
+                    "core.has_project_enterprise_approval_access"
+                ):
                     # allow updating enterprise data only if its status is not APPROVED
+                    # for users with approval permission, allow updating any status
                     agencies_data = enterprise_data.pop("agencies", None)
                     for attr, value in enterprise_data.items():
                         setattr(enterprise, attr, value)
@@ -171,14 +201,10 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
                 ) from exc
         else:
             agencies = enterprise_data.pop("agencies", [])
-            enterprise = Enterprise.objects.create(
-                **enterprise_data, status=EnterpriseStatus.PENDING
-            )
+            enterprise = Enterprise.objects.create(**enterprise_data)
             enterprise.agencies.set(agencies)
         project_enterprise = ProjectEnterprise.objects.create(
-            **validated_data,
-            enterprise=enterprise,
-            status=EnterpriseStatus.PENDING,
+            **validated_data, enterprise=enterprise
         )
         for ods_odp in ods_odp_data:
             ProjectEnterpriseOdsOdp.objects.create(
@@ -189,22 +215,37 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         # validate partial updates
         instance = self.instance
+        user = self.context["request"].user
         if not instance and attrs.get("id"):
             try:
                 instance = ProjectEnterprise.objects.get(id=attrs["id"])
             except ProjectEnterprise.DoesNotExist:
                 instance = None
+        if user.has_perm("core.has_project_enterprise_approval_access"):
+            if not instance:
+                attrs["status"] = EnterpriseStatus.APPROVED
+                attrs["enterprise"]["status"] = EnterpriseStatus.APPROVED
 
+        else:
+            if instance:
+                attrs.pop("status", None)
+                attrs["enterprise"].pop("status", None)
+                if instance.status == EnterpriseStatus.APPROVED:
+                    # Approved entries cannot be updated directly, only new pending ones can be created
+                    # unless the user has the approval permission
+                    raise serializers.ValidationError(
+                        "Cannot update an approved ProjectEnterprise directly. Create a new pending entry instead."
+                    )
+            else:
+                attrs["status"] = EnterpriseStatus.PENDING
+                if "id" not in attrs.get("enterprise", {}):
+                    attrs["enterprise"]["status"] = EnterpriseStatus.PENDING
+
+        # prevent changing project on update
         if instance:
-            # prevent changing project on update
             if "project" in attrs and attrs["project"] != instance.project:
                 raise serializers.ValidationError("Cannot change project of the entry")
 
-            if instance.status == EnterpriseStatus.APPROVED:
-                # Approved entries cannot be updated directly, only new pending ones can be created
-                raise serializers.ValidationError(
-                    "Cannot update an approved ProjectEnterprise directly. Create a new pending entry instead."
-                )
         return super().validate(attrs)
 
     def update(self, instance, validated_data):

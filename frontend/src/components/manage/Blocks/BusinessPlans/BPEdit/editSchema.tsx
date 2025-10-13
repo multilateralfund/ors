@@ -148,6 +148,7 @@ const useColumnsOptions = (
     () => ({
       columnDefs: [
         {
+          cellClass: 'remove-activity-col',
           cellRenderer: (props: any) => (
             <IoTrash
               className="cursor-pointer fill-gray-400"
@@ -158,6 +159,7 @@ const useColumnsOptions = (
             />
           ),
           editable: false,
+          resizable: false,
           field: '',
           minWidth: 20,
         },

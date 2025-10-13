@@ -1,63 +1,108 @@
+import { useMemo } from 'react'
+
+import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
-import { canViewField, getDefaultImpactErrors } from '../utils'
+import { canViewField } from '../utils'
 import {
   SpecificFieldsSectionProps,
   ProjectData,
   ProjectTabSetters,
   ProjectSpecificFields,
+  ProjectTypeApi,
 } from '../interfaces'
 import { useStore } from '@ors/store'
+
+import { chunk, find, isArray, isNull } from 'lodash'
+import cx from 'classnames'
 
 const ProjectImpact = ({
   projectData,
   setProjectData,
+  project,
   sectionFields,
   errors = {},
   hasSubmitted,
-  specificFields,
-  setCurrentStep,
   setCurrentTab,
+  postExComUpdate,
+  nextStep,
+  hasV3EditPermissions,
 }: SpecificFieldsSectionProps &
-  ProjectTabSetters & { specificFields: ProjectSpecificFields[] }) => {
-  const { viewableFields, editableFields } = useStore(
+  ProjectTabSetters & {
+    project?: ProjectTypeApi
+    postExComUpdate: boolean
+    nextStep: number
+    hasV3EditPermissions: boolean
+  }) => {
+  const { viewableFields, editableFields, projectFields } = useStore(
     (state) => state.projectFields,
   )
+  const filteredEditableFields = editableFields.filter((field) => {
+    const allFields = isArray(projectFields)
+      ? projectFields
+      : projectFields?.data
 
-  const { projectSpecificFields } = projectData
-  const defaultImpactErrors = getDefaultImpactErrors(
-    projectSpecificFields,
-    specificFields,
-  )
+    const fieldData = allFields.find(
+      (projField) => projField.write_field_name === field,
+    )
 
-  const hasErrors = Object.values(defaultImpactErrors).some(
-    (errors) => errors.length > 0,
-  )
+    if (!postExComUpdate) {
+      if (
+        hasV3EditPermissions &&
+        project?.submission_status === 'Approved' &&
+        fieldData &&
+        fieldData.section === 'Impact' &&
+        !fieldData.is_actual
+      ) {
+        return isNull(project[field as keyof ProjectTypeApi])
+      } else {
+        return true
+      }
+    }
+
+    return fieldData && (fieldData.section !== 'Impact' || fieldData.is_actual)
+  })
+
+  const ImpactFields = useMemo(() => {
+    return (fields: ProjectSpecificFields[]) =>
+      fields.map(
+        (field) =>
+          canViewField(viewableFields, field.write_field_name) &&
+          widgets[field.data_type]<ProjectData>(
+            projectData,
+            setProjectData,
+            field,
+            errors,
+            false,
+            hasSubmitted,
+            filteredEditableFields,
+          ),
+      )
+  }, [filteredEditableFields])
 
   return (
     <>
-      <div className="flex w-[50%] grid-cols-2 flex-wrap gap-x-20 gap-y-3 md:grid md:w-auto lg:grid-cols-4">
-        {sectionFields.map(
-          (field) =>
-            canViewField(viewableFields, field.write_field_name) &&
-            widgets[field.data_type]<ProjectData>(
-              projectData,
-              setProjectData,
-              field,
-              errors,
-              false,
-              hasSubmitted,
-              editableFields,
-            ),
-        )}
+      <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
+        {find(sectionFields, (field) => field.is_actual)
+          ? chunk(sectionFields, 2).map((group, i) => (
+              <div
+                key={i}
+                className={cx('flex flex-col gap-y-2', {
+                  'col-span-2 w-full': group[0].data_type === 'boolean',
+                })}
+              >
+                {ImpactFields(group)}
+              </div>
+            ))
+          : ImpactFields(sectionFields)}
       </div>
+
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={5}
-          setCurrentStep={setCurrentStep}
+        <NavigationButton
+          nextTab={nextStep - 1}
+          type="previous"
           setCurrentTab={setCurrentTab}
-          isBtnDisabled={hasErrors}
         />
+        <NavigationButton {...{ setCurrentTab }} />
       </div>
     </>
   )

@@ -123,6 +123,7 @@ type UpdatedBusinessPlan = {
   status: string
   year_end: number
   year_start: number
+  updated_at: string
 }
 
 export interface BPSlice {
@@ -164,8 +165,6 @@ export interface ProjectsSlice {
   statuses: SliceData<ProjectStatusType[]>
   submission_statuses: SliceData<ProjectSubmissionStatusType[]>
   subsectors: SliceData<ProjectSubSectorType[]>
-  setProjectSettings: (newProjectSettings: Partial<Settings>) => void
-  project_settings: SliceData<Settings>
   types: SliceData<ProjectTypeType[]>
   substances_groups: SliceData<ProjectSubstancesGroupsType[]>
 }
@@ -184,6 +183,8 @@ export interface ProjectsFieldsSlice {
     version: number,
     submissionStatus?: string,
     canEditAll?: boolean,
+    isPostExcom?: boolean,
+    mode?: string,
   ) => void
   fetchProjectFields: () => Promise<void>
 }

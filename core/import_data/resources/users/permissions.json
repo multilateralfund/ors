@@ -120,6 +120,18 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_edit_post_excom",
+        "permission_name": "Has project v2 edit post excom access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_mya_access",
+        "permission_name": "Has project v2 manage MYA access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_project_v2_edit_approved_access",
         "permission_name": "Has project v2 edit approved access",
         "app_label": "core",
@@ -176,6 +188,12 @@
     {
         "permission_codename": "has_project_v2_approve_projects_access",
         "permission_name": "Has project v2 approve projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_transfer_projects_access",
+        "permission_name": "Has project v2 transfer projects access",
         "app_label": "core",
         "model_name": "project"
     },
@@ -238,5 +256,23 @@
         "permission_name": "Has sectors and subsectors edit access",
         "app_label": "core",
         "model_name": "projectsector"
+    },
+    {
+        "permission_codename": "has_apr_view_access",
+        "permission_name": "Has APR view access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_edit_access",
+        "permission_name": "Has APR edit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_submit_access",
+        "permission_name": "Has APR submit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
     }
 ]

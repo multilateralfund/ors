@@ -10,6 +10,7 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
@@ -19,7 +20,7 @@ import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
-import { Tabs, Tab, Tooltip, CircularProgress } from '@mui/material'
+import { Tabs, Tab, Tooltip } from '@mui/material'
 import { debounce, isArray, isNull } from 'lodash'
 
 import cx from 'classnames'
@@ -114,7 +115,7 @@ const ProjectView = ({
 
   useEffect(() => {
     fetchFieldHistory(project.id)
-  }, [fetchFieldHistory])
+  }, [fetchFieldHistory, JSON.stringify(project)])
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -136,11 +137,9 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const isAfterApproval = ['Approved', 'Not approved'].includes(
-    project.submission_status,
-  )
+  const hasApprovalTab = project.version >= 3
 
-  const approvalFields = isAfterApproval
+  const approvalFields = hasApprovalTab
     ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
         (field) => field.section === 'Approval',
       ) ?? [])
@@ -148,14 +147,9 @@ const ProjectView = ({
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 
-  const classes = {
-    disabled: 'text-gray-200',
-  }
-
   const tabs = [
     {
       id: 'project-identifiers',
-      ariaControls: 'project-identifiers',
       label: 'Identifiers',
       component: (
         <ProjectIdentifiers
@@ -165,10 +159,8 @@ const ProjectView = ({
     },
     {
       id: 'project-cross-cutting',
-      ariaControls: 'project-cross-cutting',
       label: 'Cross-Cutting',
       disabled: !hasFields(allFields, viewableFields, 'Cross-Cutting'),
-      classes: classes,
       component: (
         <ProjectCrossCutting
           {...{ project, fieldHistory: fieldHistory.data }}
@@ -177,72 +169,65 @@ const ProjectView = ({
     },
     {
       id: 'project-specific-info',
-      ariaControls: 'project-specific-info',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         (!substanceDetailsFields.length && !overviewFields.length) ||
         (!hasFields(allFields, viewableFields, 'Header') &&
           !hasFields(allFields, viewableFields, 'Substance Details')),
-      classes: classes,
       component: (
-        <ProjectSpecificInfo {...{ project, specificFields, fieldHistory }} />
+        <ProjectSpecificInfo
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
       ),
     },
     {
       id: 'project-impact',
-      ariaControls: 'project-impact',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
-      classes: classes,
-      component: <ProjectImpact {...{ project, specificFields }} />,
+      component: (
+        <ProjectImpact
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-documentation',
-      ariaControls: 'project-documentation',
       label: 'Documentation',
       component: (
         <ProjectDocumentation {...{ projectFiles, loadedFiles }} mode="view" />
       ),
     },
-    ...(isAfterApproval
+    ...(hasApprovalTab
       ? [
           {
             id: 'project-approval',
-            ariacontrols: 'project-approval',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 && (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                )}
+                {approvalFields.length === 0 && LoadingTab}
               </div>
             ),
             disabled:
               !approvalFields.length ||
               !hasFields(allFields, viewableFields, 'Approval'),
-            classes: classes,
             component: (
               <ProjectApproval
                 specificFields={approvalFields}
-                {...{ project, fieldHistory }}
+                {...{ project }}
+                fieldHistory={fieldHistory.data}
               />
             ),
           },
@@ -252,7 +237,6 @@ const ProjectView = ({
       ? [
           {
             id: 'project-related-projects-section',
-            ariaControls: 'project-related-projects-section',
             label: 'Related projects',
             component: <ProjectRelatedProjects {...{ relatedProjects }} />,
           },
@@ -262,9 +246,8 @@ const ProjectView = ({
       ? [
           {
             id: 'project-history-section',
-            ariaControls: 'project-history-section',
             label: 'History',
-            component: <ProjectHistory mode="view" project={project} />,
+            component: <ProjectHistory project={project} />,
           },
         ]
       : []),
@@ -288,14 +271,16 @@ const ProjectView = ({
             setActiveTab(newValue)
           }}
         >
-          {tabs.map(({ id, ariaControls, label, disabled, classes }) => (
+          {tabs.map(({ id, label, disabled }) => (
             <Tab
               key={id}
               id={id}
-              aria-controls={ariaControls}
+              aria-controls={id}
               label={label}
               disabled={disabled}
-              classes={classes}
+              classes={{
+                disabled: 'text-gray-200',
+              }}
             />
           ))}
         </Tabs>

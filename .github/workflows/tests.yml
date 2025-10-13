@@ -5,10 +5,12 @@ on:
   push:
     branches:
       - main
+      - staging
       - develop
   pull_request:
     branches:
       - main
+      - staging
       - develop
 
 jobs:
@@ -31,6 +33,7 @@ jobs:
       - name: "Backend tests"
         id: "backendTests"
         run: |
+          docker compose exec -T app ./manage.py makemigrations --check
           docker compose exec -T app pytest -vv --cov
       - name: Display container logs if tests fail
         if: failure()

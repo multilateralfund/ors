@@ -44,7 +44,7 @@ class ScaleOfAssessmentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("country", "version")
+        return queryset.select_related("country", "version", "version__replenishment")
 
 
 @admin.register(ScaleOfAssessmentVersion)
@@ -163,6 +163,10 @@ class DisputedContributionAdmin(admin.ModelAdmin):
             "amount",
         ]
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country")
+
 
 @admin.register(AnnualContributionStatus)
 class AnnualContributionStatusAdmin(admin.ModelAdmin):
@@ -234,3 +238,7 @@ class StatusOfTheFundFileAdmin(admin.ModelAdmin):
         "uploaded_at",
         "file_link",
     ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("meeting")

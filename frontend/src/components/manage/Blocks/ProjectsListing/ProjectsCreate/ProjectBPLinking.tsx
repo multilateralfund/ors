@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react'
 
 import LinkedBPTableWrapper from './LinkedBPTable'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { ProjectDataProps, ProjectTabSetters } from '../interfaces'
 
@@ -11,11 +11,13 @@ import cx from 'classnames'
 const ProjectBPLinking = ({
   projectData,
   setProjectData,
-  isDisabled,
+  isSectionDisabled,
+  isNextButtonDisabled,
   setCurrentTab,
 }: Omit<ProjectDataProps, 'hasSubmitted'> &
   ProjectTabSetters & {
-    isDisabled: boolean
+    isSectionDisabled: boolean
+    isNextButtonDisabled: boolean
   }) => {
   const { isLinkedToBP } = projectData.bpLinking
 
@@ -36,35 +38,38 @@ const ProjectBPLinking = ({
   }
 
   return (
-    <div className={cx({ 'pointer-events-none opacity-50': isDisabled })}>
-      <SectionTitle>Business Plan</SectionTitle>
-      <FormControlLabel
-        label="The proposal is included in a BP"
-        control={
-          <Checkbox
-            checked={isLinkedToBP}
-            onChange={handleChangeBPLink}
-            size="small"
-            sx={{
-              color: 'black',
-            }}
-          />
-        }
-        componentsProps={{
-          typography: { fontSize: '1.05rem' },
-        }}
-      />
-      {isLinkedToBP && (
-        <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
-      )}
+    <>
+      <div
+        className={cx({ 'pointer-events-none opacity-50': isSectionDisabled })}
+      >
+        <SectionTitle>Business Plan</SectionTitle>
+        <FormControlLabel
+          label="The proposal is included in a BP"
+          control={
+            <Checkbox
+              checked={isLinkedToBP}
+              onChange={handleChangeBPLink}
+              size="small"
+              sx={{
+                color: 'black',
+              }}
+            />
+          }
+          componentsProps={{
+            typography: { fontSize: '1.05rem' },
+          }}
+        />
+        {isLinkedToBP && (
+          <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
+        )}
+      </div>
       <div className="mt-5">
-        <NextButton
-          nextStep={2}
+        <NavigationButton
           setCurrentTab={setCurrentTab}
-          isBtnDisabled={isDisabled}
+          isBtnDisabled={isNextButtonDisabled}
         />
       </div>
-    </div>
+    </>
   )
 }
 

@@ -23,10 +23,12 @@ export default function PListingWrapper() {
   const {
     canViewBp,
     canUpdateBp,
-    canViewProjects,
     canViewEnterprises,
+    canEditProjectEnterprise,
     canUpdateProjects,
     canAssociateProjects,
+    canUpdatePostExcom,
+    canViewMetaProjects,
   } = useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
@@ -34,6 +36,7 @@ export default function PListingWrapper() {
     projectId: null,
     projectTitle: '',
     projectSubmissionStatus: '',
+    projectStatus: '',
   })
   const { projectId, projectTitle } = projectData
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
@@ -123,7 +126,14 @@ export default function PListingWrapper() {
       <div className="mt-5 flex flex-wrap justify-between gap-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
           {getMenus(
-            { canViewBp, canUpdateBp, canViewProjects, canViewEnterprises },
+            {
+              canViewBp,
+              canUpdateBp,
+              canViewEnterprises,
+              canEditProjectEnterprise,
+              canUpdatePostExcom,
+              canViewMetaProjects,
+            },
             projectData,
           ).map((menu) => (
             <ExpandableMenu menu={menu} />

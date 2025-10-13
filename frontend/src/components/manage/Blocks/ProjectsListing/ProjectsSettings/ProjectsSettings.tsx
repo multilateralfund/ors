@@ -3,7 +3,6 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 
 import api from '@ors/helpers/Api/_api'
-import { useStore } from '@ors/store'
 import { Settings } from '@ors/types/store'
 
 import { useSnackbar } from 'notistack'
@@ -26,17 +25,21 @@ type EmailSettingsType = {
 }
 type SetEmailSettingsType = Dispatch<SetStateAction<EmailSettingsType>>
 
-const ProjectsSettings = () => {
+const ProjectsSettings = ({
+  data,
+  setParams,
+}: {
+  data: any
+  setParams: any
+}) => {
   const { enqueueSnackbar } = useSnackbar()
-  const { setProjectSettings, project_settings } = useStore(
-    (state) => state.projects,
-  )
+
   const {
     project_submission_notifications_enabled,
     project_submission_notifications_emails,
     project_recommendation_notifications_enabled,
     project_recommendation_notifications_emails,
-  } = project_settings.data
+  } = data
 
   const [submissionEmail, setSubmissionEmail] = useState<EmailSettingsType>({
     withNotifications: project_submission_notifications_enabled || false,
@@ -108,7 +111,7 @@ const ProjectsSettings = () => {
 
     try {
       const newSettings = {
-        ...project_settings.data,
+        ...data,
         [field]: withNotifications,
         ...(isSameAsAbove
           ? { project_recommendation_notifications_enabled: withNotifications }
@@ -136,10 +139,7 @@ const ProjectsSettings = () => {
         }))
       }
 
-      setProjectSettings({
-        // @ts-ignore
-        data: newSettings,
-      })
+      setParams((prev: any) => ({ ...prev }))
 
       enqueueSnackbar('Email settings updated successfully', {
         variant: 'success',
@@ -175,7 +175,7 @@ const ProjectsSettings = () => {
   ) => {
     try {
       const newSettings = {
-        ...project_settings.data,
+        ...data,
         [field]: emailAddresses,
       }
 
@@ -189,10 +189,7 @@ const ProjectsSettings = () => {
         emailAddresses: newSettings[field as keyof Settings] as string,
         errors: null,
       }))
-      setProjectSettings({
-        // @ts-ignore
-        data: newSettings,
-      })
+      setParams((prev: any) => ({ ...prev }))
 
       if (type === 'submission' && areSameEmails) {
         setRecommendationEmail((prev) => ({

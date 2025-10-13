@@ -1,11 +1,13 @@
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 export type ListingProjectData = {
   projectId: number | null
   projectTitle: string
   projectSubmissionStatus: string
+  projectStatus: string
 }
 export interface PListingProps {
   tableToolbar: ReactNode
@@ -21,7 +23,7 @@ export interface ProjIdentifiers {
   cluster: number | null
   production: boolean
   post_excom_meeting: number | null
-  post_excom_decision: string | null
+  post_excom_decision: number | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -34,7 +36,7 @@ export interface CrossCuttingFields {
   project_end_date: string | null
   total_fund: string | null
   support_cost_psc: string | null
-  individual_consideration: boolean
+  individual_consideration: boolean | null
 }
 
 export interface SpecificFields {
@@ -90,16 +92,12 @@ export interface SpecificFields {
   number_of_enterprises_assisted: string
   meeting: number | null
   meeting_approved: number | null
-  decision: string | null
+  decision: number | null
   decision_id: string | null
-  post_excom_meeting: number | null
-  post_excom_decision: string | null
-  post_excom_meeting_id: number | null
-  post_excom_decision_id: string | null
 }
 
 export type OdsOdpFields = {
-  ods_display_name: string
+  ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -121,6 +119,7 @@ export type FieldType =
 export type OptionsType = {
   id: number | string
   name: string
+  label?: string
   name_alt?: string
   baseline_type?: string
 }
@@ -199,6 +198,7 @@ export type ViewModesHandler = (
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
   fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -222,6 +222,7 @@ export interface ProjectVersions {
   title: string
   version: number
   final_version_id: number
+  submission_status: string
   created_by: string
   date_created: string
   post_excom_meeting: number | null
@@ -278,6 +279,8 @@ export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   mode: string
   project?: ProjectTypeApi
   postExComUpdate?: boolean
+  isV3ProjectEditable: boolean
+  isProjectEditableByAdmin: boolean
   specificFieldsLoaded: boolean
 }
 
@@ -356,6 +359,7 @@ export interface EnterpriseOverview {
   local_ownership: string | null
   export_to_non_a5: string | null
   remarks: string
+  linkStatus?: string
 }
 
 export type EnterpriseType = EnterpriseOverview & {

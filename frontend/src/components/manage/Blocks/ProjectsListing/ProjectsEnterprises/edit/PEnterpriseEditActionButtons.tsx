@@ -1,9 +1,9 @@
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/EnterpriseCommonEditActionButtons'
 import { handleErrors } from '../FormHelperComponents'
+import { dropDownClassName, enabledButtonClassname } from '../../constants'
 import {
   EnterpriseActionButtons,
   EnterpriseType,
@@ -14,7 +14,9 @@ import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { Button } from '@mui/material'
 import { omit } from 'lodash'
+import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
   enterpriseData,
@@ -33,13 +35,11 @@ const PEnterpriseEditActionButtons = ({
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
 
-  const { canEditProjectEnterprise } = useContext(PermissionsContext)
-
-  const [isObsoleteWarningOpen, setIsObsoleteWarningOpen] = useState(false)
+  const { canEditProjectEnterprise, canApproveProjectEnterprise } =
+    useContext(PermissionsContext)
 
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
-  const isApproved = status === 'Approved'
 
   const overview = enterpriseData.overview as EnterpriseType
   const disableSubmit = !(overview.name && overview.id)
@@ -54,7 +54,8 @@ const PEnterpriseEditActionButtons = ({
 
       const data = {
         project: project_id,
-        enterprise: omit(overview, 'status'),
+        enterprise: omit(overview, ['status', 'linkStatus']),
+        status: overview.linkStatus,
         ods_odp: substance_details,
         ...funding_details,
       }
@@ -67,6 +68,11 @@ const PEnterpriseEditActionButtons = ({
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)
 
+      if (isPending && overview.linkStatus === 'Approved') {
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+        )
+      }
       return true
     } catch (error) {
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
@@ -78,44 +84,29 @@ const PEnterpriseEditActionButtons = ({
     }
   }
 
-  const changeEnterpriseStatus = async (status: string) => {
-    const canChangeStatus =
-      isPending && canEditProjectEnterprise ? await editEnterprise() : true
+  const approveProjectEnterprise = async () => {
+    const canChangeStatus = canEditProjectEnterprise
+      ? await editEnterprise()
+      : true
 
     if (canChangeStatus) {
       try {
-        if (status === 'Approved') {
-          await api(`api/project-enterprise/${enterprise_id}/approve/`, {
-            method: 'POST',
-          })
-        }
-
-        if (isPending && status === 'Obsolete') {
-          await api(`api/project-enterprise/${enterprise_id}/not_approve/`, {
-            method: 'POST',
-          })
-        }
-
-        if (isApproved && status === 'Obsolete') {
-          await api(`api/project-enterprise/${enterprise_id}/obsolete/`, {
-            method: 'POST',
-          })
-        }
+        await api(`api/project-enterprise/${enterprise_id}/approve/`, {
+          method: 'POST',
+        })
 
         setLocation(
           `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
         )
       } catch (error) {
         enqueueSnackbar(
-          <>Could not change project enterprise status. Please try again.</>,
+          <>Could not approve project enterprise. Please try again.</>,
           {
             variant: 'error',
           },
         )
       }
     }
-
-    setIsObsoleteWarningOpen(false)
   }
 
   return (
@@ -124,14 +115,30 @@ const PEnterpriseEditActionButtons = ({
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
       />
-      <EnterpriseCommonEditActionButtons
-        type="project-enterprise"
-        status={enterprise?.status ?? ''}
-        disableButton={disableSubmit}
-        handleEdit={editEnterprise}
-        handleChangeStatus={changeEnterpriseStatus}
-        {...{ isObsoleteWarningOpen, setIsObsoleteWarningOpen }}
-      />
+      {canEditProjectEnterprise && (
+        <Button
+          className={cx('px-4 py-2 shadow-none', {
+            [enabledButtonClassname]: !disableSubmit,
+          })}
+          onClick={editEnterprise}
+          disabled={disableSubmit}
+          variant="contained"
+          size="large"
+        >
+          Update project enterprise
+        </Button>
+      )}
+      {isPending && canApproveProjectEnterprise && (
+        <Button
+          className={cx({ [dropDownClassName]: !disableSubmit })}
+          onClick={approveProjectEnterprise}
+          disabled={disableSubmit}
+          variant="contained"
+          size="large"
+        >
+          Approve project enterprise
+        </Button>
+      )}
     </div>
   )
 }

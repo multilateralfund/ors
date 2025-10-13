@@ -24,7 +24,7 @@ export default function BusinessPlansEditConsolidated() {
   return (
     <PageWrapper>
       <BPEditConsolidated
-        key={businessPlan?.id}
+        key={businessPlan.updated_at}
         {...{ activitiesRef, isFirstRender }}
       />
     </PageWrapper>

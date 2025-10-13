@@ -15,6 +15,7 @@ import { getFieldErrors } from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
+  OptionsType,
 } from '../../interfaces.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -23,9 +24,13 @@ import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
   countryId,
+  enterpriseStatuses,
   errors,
   ...rest
-}: PEnterpriseDataProps & { countryId: number }) => {
+}: PEnterpriseDataProps & {
+  countryId: number
+  enterpriseStatuses?: OptionsType[]
+}) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const userSlice = useStore((state) => state.user)
@@ -36,16 +41,14 @@ const PEnterpriseCreate = ({
   }
   const { results } = useGetEnterprises(filters, countryId)
 
-  const { overview, funding_details } = rest.enterpriseData ?? {}
+  const { enterpriseData, enterprise } = rest
+  const { overview, funding_details } = enterpriseData ?? {}
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
     ] ?? {}
-  const searchErrors = getFieldErrors(
-    pick(overview, 'id'),
-    enterpriseErrors,
-    true,
-  )
+  const searchErrors =
+    !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
 
@@ -82,7 +85,6 @@ const PEnterpriseCreate = ({
   const steps = [
     {
       id: 'enterprise-search',
-      ariaControls: 'enterprise-search',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Search</div>
@@ -103,7 +105,6 @@ const PEnterpriseCreate = ({
     },
     {
       id: 'enterprise-overview',
-      ariaControls: 'enterprise-overview',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Overview</div>
@@ -114,7 +115,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseOverviewSection
-          {...{ countryId, ...rest }}
+          {...{ countryId, enterpriseStatuses, ...rest }}
           errors={overviewErrors}
         />
       ),
@@ -122,7 +123,6 @@ const PEnterpriseCreate = ({
     },
     {
       id: 'enterprise-substance-details',
-      ariaControls: 'enterprise-substance-details',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Substance details</div>
@@ -142,7 +142,6 @@ const PEnterpriseCreate = ({
     },
     {
       id: 'enterprise-funding-details',
-      ariaControls: 'enterprise-funding-details',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Funding details</div>
@@ -178,8 +177,8 @@ const PEnterpriseCreate = ({
           setCurrentTab(newValue)
         }}
       >
-        {steps.map(({ id, ariaControls, label }) => (
-          <Tab id={id} aria-controls={ariaControls} label={label} />
+        {steps.map(({ id, label }) => (
+          <Tab id={id} aria-controls={id} label={label} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">

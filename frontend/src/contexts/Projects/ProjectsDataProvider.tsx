@@ -48,6 +48,26 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
     path: 'api/project-subsector/',
   })
 
+  const { data: substances } = useApi({
+    options: {
+      params: {
+        filter_for_projects: true,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/substances/',
+  })
+
+  const { data: blends } = useApi({
+    options: {
+      params: {
+        filter_for_projects: true,
+      },
+      withStoreCache: true,
+    },
+    path: 'api/blends/',
+  })
+
   return (
     <ProjectsDataContext.Provider
       value={{
@@ -55,6 +75,8 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
         project_types,
         sectors,
         subsectors,
+        substances,
+        blends,
       }}
     >
       {children}

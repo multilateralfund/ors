@@ -6,7 +6,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectOverview from './ProjectOverview'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { hasFields } from '../utils'
 import { useStore } from '@ors/store'
@@ -22,12 +22,13 @@ const ProjectSpecificInfoSection = ({
   trancheErrors,
   getTrancheErrors,
   nextStep,
-  setCurrentStep,
   setCurrentTab,
+  canEditSubstances,
   ...rest
 }: ProjectDataProps &
   ProjectTabSetters &
   TrancheErrors & {
+    canEditSubstances: boolean
     overviewFields: ProjectSpecificFields[]
     substanceDetailsFields: ProjectSpecificFields[]
     overviewErrors?: { [key: string]: string[] }
@@ -71,16 +72,15 @@ const ProjectSpecificInfoSection = ({
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
-            odsOdpErrors={odsOdpErrors}
+            {...{ odsOdpErrors, canEditSubstances, overviewFields }}
             {...rest}
           />
         </>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={nextStep}
+        <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
+        <NavigationButton
           nextTab={nextStep - 1}
-          setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
       </div>

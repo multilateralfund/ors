@@ -3,6 +3,8 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from core.api.views import MetaProjectClusterListView
+from core.api.views import MetaProjectLeadAgencyListView
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
@@ -96,6 +98,9 @@ from core.api.views.cp_resources import CPResourcesView
 from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
+    MetaProjectCountryListView,
+    MetaProjectMyaListView,
+    MetaProjectMyaDetailsViewSet,
     ProjectClusterListView,
     ProjectSpecificFieldsListView,
     ProjectOdsOdpViewSet,
@@ -439,6 +444,31 @@ urlpatterns = [
         "meta-projects/",
         MetaProjectListView.as_view(),
         name="meta-project-list",
+    ),
+    path(
+        "meta-projects/countries/",
+        MetaProjectCountryListView.as_view(),
+        name="meta-project-country-list",
+    ),
+    path(
+        "meta-projects/clusters/",
+        MetaProjectClusterListView.as_view(),
+        name="meta-project-cluster-list",
+    ),
+    path(
+        "meta-projects/lead-agencies/",
+        MetaProjectLeadAgencyListView.as_view(),
+        name="meta-project-lead-agency-list",
+    ),
+    path(
+        "meta-projects-for-mya-update/",
+        MetaProjectMyaListView.as_view(),
+        name="meta-projects-for-mya-update",
+    ),
+    path(
+        "meta-projects/<int:pk>/",
+        MetaProjectMyaDetailsViewSet.as_view({"get": "retrieve", "put": "update"}),
+        name="meta-project-view",
     ),
     path(
         "project-statuses/",

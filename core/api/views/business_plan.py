@@ -204,7 +204,9 @@ class BusinessPlanViewSet(
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
-        ret_code, ret_data = self.update_bp(request.data, current_obj)
+        ret_code, ret_data = self.update_bp(
+            request.data, current_obj, from_import=False
+        )
         return Response(ret_data, status=ret_code)
 
 
@@ -457,7 +459,9 @@ class BPImportView(
             "activities": ret_data["activities"],
         }
         ret_code, _ = (
-            self.update_bp(data, current_bp) if current_bp else self.create_bp(data)
+            self.update_bp(data, current_bp, from_import=True)
+            if current_bp
+            else self.create_bp(data)
         )
 
         if ret_code == status.HTTP_400_BAD_REQUEST:

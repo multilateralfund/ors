@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { ProjectDocs, ProjectFile } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -12,8 +11,6 @@ import { filter, isNil } from 'lodash'
 
 export function FilesViewer(props: ProjectDocs) {
   const { bpFiles, files, setFiles, mode, project, loadedFiles } = props
-
-  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
 
@@ -52,30 +49,29 @@ export function FilesViewer(props: ProjectDocs) {
   return (
     <div className="flex flex-col gap-2">
       <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-      {mode !== 'view' &&
-        (!project || project?.submission_status === 'Draft') && (
-          <>
-            <div className="mt-5 flex gap-4">
-              <a
-                className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-                href={formatApiUrl(
-                  `/api/projects/v2/export?project_id=${project?.id}&output_format=docx`,
-                )}
-              >
-                Download project template
-              </a>
-              <a
-                className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-                href={formatApiUrl(
-                  `/api/projects/v2/export?project_id=${project?.id}`,
-                )}
-              >
-                Download Excel
-              </a>
-            </div>
-            <Divider className="mt-4" />
-          </>
-        )}
+      {mode === 'edit' && project?.submission_status === 'Draft' && (
+        <>
+          <div className="mt-5 flex gap-4">
+            <a
+              className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
+              href={formatApiUrl(
+                `/api/projects/v2/export?project_id=${project?.id}&output_format=docx`,
+              )}
+            >
+              Download project template
+            </a>
+            <a
+              className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
+              href={formatApiUrl(
+                `/api/projects/v2/export?project_id=${project?.id}`,
+              )}
+            >
+              Download Excel
+            </a>
+          </div>
+          <Divider className="mt-4" />
+        </>
+      )}
       {!isNil(loadedFiles) && !loadedFiles ? (
         <CircularProgress color="inherit" size="30px" className="mt-2" />
       ) : (
@@ -106,14 +102,12 @@ export function FilesViewer(props: ProjectDocs) {
                   </span>
                 </a>
 
-                {setFiles &&
-                  canUpdateProjects &&
-                  ('editable' in file ? file.editable : true) && (
-                    <IoTrash
-                      className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                      onClick={() => handleDelete(file)}
-                    />
-                  )}
+                {setFiles && ('editable' in file ? file.editable : true) && (
+                  <IoTrash
+                    className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                    onClick={() => handleDelete(file)}
+                  />
+                )}
               </div>
             ))
           )}

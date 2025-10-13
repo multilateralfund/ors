@@ -37,7 +37,7 @@ class ExcludedUsageAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("blend", "substance", "usage")
+        return queryset.select_related("blend", "substance", "usage", "time_frame")
 
     def get_list_display(self, request):
         return get_final_display_list(ExcludedUsage, [])

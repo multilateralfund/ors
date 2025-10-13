@@ -15,3 +15,4 @@ from .substance import *
 from .time_frame import *
 from .usage import *
 from .user import *
+from .annual_project_report import *
