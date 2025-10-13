@@ -1,4 +1,10 @@
-from django.db.models import QuerySet, Sum, Q, F, Count
+# pylint:disable=abstract-method,arguments-renamed
+
+from django.db.models import Count
+from django.db.models import F
+from django.db.models import Q
+from django.db.models import QuerySet
+from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from rest_framework import serializers
 

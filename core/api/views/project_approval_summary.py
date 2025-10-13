@@ -81,12 +81,16 @@ class ProjectApprovalSummaryViewSet(
                 sheet[row_idx][w_idx].value = data[c]
 
     @staticmethod
-    def _duplicate_row(sheet, target_idx, copy_source, border_top=False, col_size=6, col_offset=1):
+    def _duplicate_row(
+        sheet, target_idx, copy_source, border_top=False, col_size=6, col_offset=1
+    ):
         sheet.insert_rows(target_idx)
 
         top_border = Border(top=Side(style="thin"))
 
-        for idx, c in enumerate(copy_source[col_offset:col_size + 1], start=col_offset):
+        for idx, c in enumerate(
+            copy_source[col_offset : col_size + 1], start=col_offset
+        ):
             sheet[target_idx][idx].font = copy(c.font)
             sheet[target_idx][idx].number_format = copy(c.number_format)
             sheet[target_idx][idx].alignment = copy(c.alignment)
@@ -190,14 +194,18 @@ class ProjectApprovalSummaryViewSet(
         )
         copy_from = sheet[agencies_row_idx + 1]
 
-
         for a_idx, agency in enumerate(agencies):
             agencies_row_idx += 1
 
-            is_first_agency = agencies[a_idx-1]["agency_type"] == "National" and agency["agency_type"] == "Agency"
-            self._duplicate_row(sheet, agencies_row_idx, copy_from, border_top=is_first_agency)
+            is_first_agency = (
+                agencies[a_idx - 1]["agency_type"] == "National"
+                and agency["agency_type"] == "Agency"
+            )
+            self._duplicate_row(
+                sheet, agencies_row_idx, copy_from, border_top=is_first_agency
+            )
             self._write_full_row(sheet, agencies_row_idx, agency["agency_name"], agency)
 
-        sheet.delete_rows(agencies_row_idx+1, 10)
+        sheet.delete_rows(agencies_row_idx + 1, 10)
 
-        return workbook_response(f"Approval summary meeting", wb)
+        return workbook_response("Approval summary meeting", wb)
