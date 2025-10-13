@@ -5,7 +5,7 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import {
   getMeetingNr,
-  getMeetingOptions,
+  useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
@@ -127,7 +127,7 @@ const ProjectApprovalFields = ({
               label={getMeetingNr(
                 crtSectionData?.meeting_approved ?? undefined,
               )?.toString()}
-              options={getMeetingOptions()}
+              options={useMeetingOptions()}
               onChange={handleChangeMeeting}
               onClear={() => handleChangeMeeting()}
               disabled={!canEditMeeting}

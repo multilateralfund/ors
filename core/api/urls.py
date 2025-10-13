@@ -63,6 +63,7 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
 from core.api.views.projects_metadata import (
     ProjectClusterTypeSectorAssociationView,
     ProjectFieldView,
@@ -137,6 +138,11 @@ from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 
 router = routers.SimpleRouter()
+router.register(
+    "projects-approval-summary",
+    ProjectApprovalSummaryViewSet,
+    basename="projects-approval-summary",
+)
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")
 router.register(

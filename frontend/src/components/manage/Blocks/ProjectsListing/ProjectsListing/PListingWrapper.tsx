@@ -136,7 +136,7 @@ export default function PListingWrapper() {
             },
             projectData,
           ).map((menu) => (
-            <ExpandableMenu menu={menu} />
+            <ExpandableMenu key={menu.title} menu={menu} />
           ))}
         </div>
         {canUpdateProjects && (
