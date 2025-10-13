@@ -1,18 +1,24 @@
 import { useEffect, useState } from 'react'
 
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
+import ExportConfirmModal from './ExportConfirmModal'
 import { ProjectDocs, ProjectFile } from '../interfaces'
+import { exportButtonClassname } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
 import { TbFiles } from 'react-icons/tb'
 import { filter, isNil } from 'lodash'
+import cx from 'classnames'
 
 export function FilesViewer(props: ProjectDocs) {
   const { bpFiles, files, setFiles, mode, project, loadedFiles } = props
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
+  const [exportConfirmModalType, setExportConfirmModalType] = useState<
+    string | null
+  >(null)
 
   useEffect(() => {
     const existingFiles = filter(
@@ -47,72 +53,87 @@ export function FilesViewer(props: ProjectDocs) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-      {mode === 'edit' && project?.submission_status === 'Draft' && (
-        <>
-          <div className="mt-5 flex gap-4">
-            <a
-              className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-              href={formatApiUrl(
-                `/api/projects/v2/export?project_id=${project?.id}&output_format=docx`,
-              )}
-            >
-              Download project template
-            </a>
-            <a
-              className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-              href={formatApiUrl(
-                `/api/projects/v2/export?project_id=${project?.id}`,
-              )}
-            >
-              Download Excel
-            </a>
-          </div>
-          <Divider className="mt-4" />
-        </>
-      )}
-      {!isNil(loadedFiles) && !loadedFiles ? (
-        <CircularProgress color="inherit" size="30px" className="mt-2" />
-      ) : (
-        <div className="mt-3 flex flex-col gap-2.5">
-          {currentFiles.length === 0 ? (
-            <p className="m-1 ml-0 text-lg font-normal text-gray-500">
-              No files available
-            </p>
-          ) : (
-            currentFiles.map((file, index: number) => (
-              <div key={index} className="flex items-center gap-2">
-                <a
-                  className="m-0 flex items-center gap-2.5 no-underline"
-                  href={
-                    (file as ProjectFile).download_url
-                      ? formatApiUrl((file as ProjectFile).download_url)
-                      : URL.createObjectURL(file as File)
-                  }
-                  {...(!(file as ProjectFile).download_url && {
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                  })}
-                  download={(file as ProjectFile).filename || file.name}
-                >
-                  <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
-                  <span className="text-lg font-medium text-secondary">
-                    {(file as ProjectFile).filename || file.name}
-                  </span>
-                </a>
-
-                {setFiles && ('editable' in file ? file.editable : true) && (
-                  <IoTrash
-                    className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                    onClick={() => handleDelete(file)}
-                  />
+    <>
+      <div className="flex flex-col gap-2">
+        <HeaderWithIcon title="File attachments" Icon={TbFiles} />
+        {mode === 'edit' && project?.submission_status === 'Draft' && (
+          <>
+            <div className="mt-5 flex gap-4">
+              <a
+                className={cx(
+                  exportButtonClassname,
+                  'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
                 )}
-              </div>
-            ))
-          )}
-        </div>
+                onClick={() => {
+                  setExportConfirmModalType('word-export')
+                }}
+              >
+                Download project template
+              </a>
+              <a
+                className={cx(
+                  exportButtonClassname,
+                  'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
+                )}
+                onClick={() => {
+                  setExportConfirmModalType('excel-export')
+                }}
+              >
+                Download Excel
+              </a>
+            </div>
+            <Divider className="mt-4" />
+          </>
+        )}
+        {!isNil(loadedFiles) && !loadedFiles ? (
+          <CircularProgress color="inherit" size="30px" className="mt-2" />
+        ) : (
+          <div className="mt-3 flex flex-col gap-2.5">
+            {currentFiles.length === 0 ? (
+              <p className="m-1 ml-0 text-lg font-normal text-gray-500">
+                No files available
+              </p>
+            ) : (
+              currentFiles.map((file, index: number) => (
+                <div key={index} className="flex items-center gap-2">
+                  <a
+                    className="m-0 flex items-center gap-2.5 no-underline"
+                    href={
+                      (file as ProjectFile).download_url
+                        ? formatApiUrl((file as ProjectFile).download_url)
+                        : URL.createObjectURL(file as File)
+                    }
+                    {...(!(file as ProjectFile).download_url && {
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                    })}
+                    download={(file as ProjectFile).filename || file.name}
+                  >
+                    <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                    <span className="text-lg font-medium text-secondary">
+                      {(file as ProjectFile).filename || file.name}
+                    </span>
+                  </a>
+
+                  {setFiles && ('editable' in file ? file.editable : true) && (
+                    <IoTrash
+                      className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                      onClick={() => handleDelete(file)}
+                    />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+      {!!exportConfirmModalType && (
+        <ExportConfirmModal
+          mode={exportConfirmModalType}
+          projectId={project?.id}
+          setModalType={setExportConfirmModalType}
+        />
       )}
-    </div>
+    </>
   )
 }
