@@ -202,7 +202,8 @@ const ProjectCrossCuttingFields = ({
                   type="text"
                   {...getFieldDefaultProps('title')}
                   containerClassName={
-                    defaultPropsSimpleField.containerClassName + ' !w-[55rem]'
+                    defaultPropsSimpleField.containerClassName +
+                    ' w-full max-w-[55rem]'
                   }
                 />
               </div>
@@ -308,7 +309,7 @@ const ProjectCrossCuttingFields = ({
             </div>
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'subsectors') && (
-                <div>
+                <div className="w-full max-w-[40rem] flex-shrink">
                   <Label>{tableColumns.subsectors}</Label>
                   <Field
                     widget="autocomplete"
@@ -329,7 +330,7 @@ const ProjectCrossCuttingFields = ({
                     Input={{
                       error: getIsInputDisabled('subsector_ids'),
                     }}
-                    FieldProps={{ className: 'mb-0 w-[40rem] BPListUpload' }}
+                    FieldProps={{ className: 'mb-0 w-full BPListUpload' }}
                   />
                 </div>
               )}

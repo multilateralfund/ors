@@ -259,7 +259,7 @@ const ProjectsSettings = ({
               </FormGroup>
               <div className="mt-4 flex flex-wrap gap-2">
                 <TextField
-                  className="min-w-48 flex-1"
+                  className="min-w-60 flex-1"
                   label="Notified emails"
                   variant="outlined"
                   value={emailSettings.emailAddresses}

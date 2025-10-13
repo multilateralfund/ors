@@ -46,7 +46,7 @@ export default function PExport() {
           />
           {canViewProjects && (
             <Link
-              className="mb-0.5 px-4 py-2 text-lg uppercase"
+              className="mb-auto px-4 py-2 text-lg uppercase md:mb-0.5"
               color="secondary"
               href={downloadUrl}
               variant="contained"

@@ -109,7 +109,7 @@ const CreateActionButtons = ({
           title="Create project (draft)"
           isDisabled={!specificFieldsLoaded || isSaveDisabled}
           onSubmit={createProject}
-          className="ml-auto"
+          className="!py-2"
         />
       )}
     </div>
