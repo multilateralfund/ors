@@ -78,6 +78,9 @@ def regenerate_meta_project_new_code(meta_project):
     projects = Project.objects.filter(
         meta_project=meta_project, submission_status__name="Approved"
     )
+    if not projects:
+        # if there are no approved projects, consider all projects
+        projects = Project.objects.filter(meta_project=meta_project)
     new_code = get_meta_project_new_code(projects, meta_project)
     meta_project.new_code = new_code
     meta_project.save()
