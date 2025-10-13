@@ -1393,7 +1393,7 @@ class TestProjectFiles:
         }
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
     def test_file_validation_endpoint(
         self, agency_inputter_user, test_file1, test_file2, wrong_format_file3
@@ -1407,7 +1407,7 @@ class TestProjectFiles:
         }
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-validation")
