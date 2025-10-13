@@ -2,6 +2,7 @@ import pathlib
 from copy import copy
 
 import openpyxl
+from openpyxl.styles import Side, Border
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -72,20 +73,27 @@ class ProjectApprovalSummaryViewSet(
                     if c is not None:
                         sheet[idx][w_idx].value = data_from[c]
 
-    def _write_agency(self, sheet, row_idx, data, col_offset=1):
-        columns = ["agency_name"] + self._make_row()
-        for w_idx, c in enumerate(columns, start=col_offset):
+    def _write_full_row(self, sheet, row_idx, name, data, col_offset=1):
+        columns = self._make_row()
+        sheet[row_idx][col_offset].value = name
+        for w_idx, c in enumerate(columns, start=col_offset + 1):
             if c is not None:
                 sheet[row_idx][w_idx].value = data[c]
 
     @staticmethod
-    def _duplicate_row(sheet, target_idx, copy_source):
+    def _duplicate_row(sheet, target_idx, copy_source, border_top=False, col_size=6, col_offset=1):
         sheet.insert_rows(target_idx)
-        for idx, c in enumerate(copy_source):
+
+        top_border = Border(top=Side(style="thin"))
+
+        for idx, c in enumerate(copy_source[col_offset:col_size + 1], start=col_offset):
             sheet[target_idx][idx].font = copy(c.font)
             sheet[target_idx][idx].number_format = copy(c.number_format)
             sheet[target_idx][idx].alignment = copy(c.alignment)
-            sheet[target_idx][idx].border = copy(c.border)
+            if border_top:
+                sheet[target_idx][idx].border = top_border
+            else:
+                sheet[target_idx][idx].border = copy(c.border)
             sheet[target_idx][idx].fill = copy(c.fill)
 
     @action(methods=["GET"], detail=False)
@@ -171,6 +179,7 @@ class ProjectApprovalSummaryViewSet(
 
         grand_total_agency = copy(data["grand_total"])
         grand_total_agency["agency_name"] = "GRAND TOTAL (HCFCs and HFCs)"
+        grand_total_agency["agency_type"] = "GT"
 
         agencies = list(data["summary_by_parties_and_implementing_agencies"]) + [
             grand_total_agency
@@ -181,12 +190,14 @@ class ProjectApprovalSummaryViewSet(
         )
         copy_from = sheet[agencies_row_idx + 1]
 
-        for agency in agencies:
+
+        for a_idx, agency in enumerate(agencies):
             agencies_row_idx += 1
 
-            self._duplicate_row(sheet, agencies_row_idx, copy_from)
-            sheet.insert_rows(agencies_row_idx)
+            is_first_agency = agencies[a_idx-1]["agency_type"] == "National" and agency["agency_type"] == "Agency"
+            self._duplicate_row(sheet, agencies_row_idx, copy_from, border_top=is_first_agency)
+            self._write_full_row(sheet, agencies_row_idx, agency["agency_name"], agency)
 
-            self._write_agency(sheet, agencies_row_idx, agency)
+        sheet.delete_rows(agencies_row_idx+1, 10)
 
         return workbook_response(f"Approval summary meeting", wb)
