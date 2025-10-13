@@ -88,6 +88,7 @@ const GenerateDBMenu = () => {
       >
         {filteredMenuItems.map(({ url, title }) => (
           <MenuItem
+            key={title}
             className="whitespace-normal rounded-none p-0 hover:bg-white"
             onClick={handleClose}
             disabled={!url}
