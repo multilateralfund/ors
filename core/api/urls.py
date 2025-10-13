@@ -138,7 +138,11 @@ from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 
 router = routers.SimpleRouter()
-router.register("projects-approval-summary", ProjectApprovalSummaryViewSet, basename="projects-approval-summary")
+router.register(
+    "projects-approval-summary",
+    ProjectApprovalSummaryViewSet,
+    basename="projects-approval-summary",
+)
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")
 router.register(

@@ -15,7 +15,7 @@ class ProjectApprovalSummaryFilter(filters.FilterSet):
 
     submission_status = filters.CharFilter(
         field_name="submission_status__name",
-        lookup_expr='iexact',
+        lookup_expr="iexact",
     )
 
     individual_consideration = filters.BooleanFilter(
