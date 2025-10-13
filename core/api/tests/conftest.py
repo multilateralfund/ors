@@ -704,7 +704,7 @@ def _test_file2(tmp_path):
 
 @pytest.fixture(name="wrong_format_file3")
 def _wrong_format_file3(tmp_path):
-    p = tmp_path / "project_file3.csv"
+    p = tmp_path / "project_file3.zip"
     p.write_text("This is the third project test file")
     return p
 

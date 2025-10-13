@@ -40,12 +40,12 @@ const ProjectDocumentation = ({
         {mode !== 'view' && (
           <FileInput
             {...{ files, setFiles }}
-            extensionsList="Allowed files extensions: .pdf, .doc, .docx"
+            extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
             label="Upload completed template and any supporting documentation"
             value=""
             clearable={false}
             inputValue={[]}
-            accept=".pdf,.doc,.docx"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg,.gif"
           />
         )}
       </div>

@@ -115,6 +115,15 @@ class FileCreateMixin:
         ".pdf",
         ".doc",
         ".docx",
+        ".xls",
+        ".xlsx",
+        ".csv",
+        ".ppt",
+        ".pptx",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
     ]
 
     def _file_create(self, request, dry_run, *args, **kwargs):
