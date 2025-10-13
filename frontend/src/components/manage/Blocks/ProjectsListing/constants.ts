@@ -169,6 +169,9 @@ export const disabledClassName =
 export const viewColumnsClassName =
   'flex flex-wrap gap-x-7 gap-y-4 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'
 
+export const exportButtonClassname =
+  'cursor-pointer justify-content-center flex items-center rounded-lg border border-solid bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline'
+
 export const initialOverviewFields = {
   name: '',
   agencies: [],

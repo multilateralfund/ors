@@ -119,9 +119,18 @@ export const RedirectBackButton = () => (
   </div>
 )
 
-export const CancelButton = ({ onClick }: { onClick: any }) => (
+export const CancelButton = ({
+  onClick,
+  className,
+}: {
+  onClick: any
+  className?: string
+}) => (
   <Button
-    className="h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 leading-none text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
+    className={cx(
+      'h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 leading-none text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]',
+      className,
+    )}
     color="primary"
     size="large"
     variant="contained"
