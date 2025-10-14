@@ -912,7 +912,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         _ = validated_data.pop("request", None)
         lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
-        status = ProjectStatus.objects.get(code="NEWSUB")
+        status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id

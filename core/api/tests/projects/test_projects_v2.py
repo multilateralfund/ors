@@ -195,7 +195,6 @@ def setup_project_create(
 ):
     statuses_dict = [
         {"name": "N/A", "code": "NA"},
-        {"name": "New submission", "code": "NEWSUB"},
     ]
 
     submission_statuses_dict = [
@@ -834,7 +833,7 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][1]["sort_order"]
             == data["ods_odp"][1]["sort_order"]
         )
-        assert response.data["status"] == "New submission"
+        assert response.data["status"] == "N/A"
         assert response.data["submission_status"] == "Draft"
 
         assert (

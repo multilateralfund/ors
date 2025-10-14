@@ -533,7 +533,7 @@ def project_closed_status():
 
 @pytest.fixture
 def submitted_status():
-    return ProjectStatusFactory.create(code="NEWSUB")
+    return ProjectStatusFactory.create(code="NA")
 
 
 @pytest.fixture
