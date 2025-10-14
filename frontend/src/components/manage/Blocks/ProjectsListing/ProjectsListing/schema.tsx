@@ -166,7 +166,7 @@ const getColumnDefs = (
         tooltipField: 'submission_status',
       },
       {
-        headerName: tableColumns.status,
+        headerName: tableColumns.project_status,
         field: 'status',
         tooltipField: 'status',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
