@@ -492,7 +492,7 @@ const ProjectsCreate = ({
       id: 'project-documentation-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div className="leading-tight">Documentation</div>
+          <div className="leading-tight">Attachments</div>
           {fileErrors || (loadedFiles && hasNoFiles) ? (
             areNextSectionsDisabled ? (
               DisabledAlert
