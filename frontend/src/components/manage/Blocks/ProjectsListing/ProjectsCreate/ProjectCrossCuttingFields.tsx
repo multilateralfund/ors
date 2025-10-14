@@ -28,6 +28,7 @@ import {
   ProjectDataProps,
   ProjectData,
   ProjectTabSetters,
+  ProjectTypeApi,
 } from '../interfaces'
 import { ProjectTypeType } from '@ors/types/api_project_types'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
@@ -42,6 +43,7 @@ import dayjs from 'dayjs'
 const ProjectCrossCuttingFields = ({
   projectData,
   setProjectData,
+  project,
   errors = {},
   hasSubmitted,
   nextStep,
@@ -52,6 +54,7 @@ const ProjectCrossCuttingFields = ({
   isV3ProjectEditable,
 }: ProjectDataProps &
   ProjectTabSetters & {
+    project?: ProjectTypeApi
     nextStep: number
     specificFieldsLoaded: boolean
     postExComUpdate: boolean
@@ -269,7 +272,7 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(projectTypes, option)
                     }
                     disabled={
-                      (isV3Project && !!project_type) ||
+                      (isV3Project && !!project?.project_type_id) ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'project_type')
                     }
@@ -295,7 +298,7 @@ const ProjectCrossCuttingFields = ({
                     }
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={
-                      (isV3Project && !!sector) ||
+                      (isV3Project && !!project?.sector_id) ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'sector')
                     }
@@ -410,7 +413,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={
-                      (postExComUpdate && !!project_start_date) ||
+                      (postExComUpdate && !!project?.project_start_date) ||
                       !canEditField(editableFields, 'project_start_date')
                     }
                     formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}

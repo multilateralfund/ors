@@ -24,6 +24,7 @@ import {
   canEditField,
   canViewField,
   filterClusterOptions,
+  getAgencyErrorType,
   getProduction,
 } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
@@ -91,7 +92,7 @@ const ProjectIdentifiersFields = ({
     (state) => state.projectFields,
   )
   const canEditMeeting =
-    !(canUpdateFields && projIdentifiers?.meeting) &&
+    !(canUpdateFields && project?.meeting_id) &&
     canEditField(editableFields, 'meeting')
 
   const decisionsApi = useApi<ApiDecision[]>({
@@ -322,7 +323,7 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
-                  (isV3Project && !!projIdentifiers?.country) ||
+                  (isV3Project && !!project?.country_id) ||
                   !areNextSectionsDisabled ||
                   (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
@@ -373,7 +374,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
-                  (isV3Project && !!projIdentifiers?.agency) ||
+                  (isV3Project && !!project?.agency_id) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -396,7 +397,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
-                  (isV3Project && !!projIdentifiers?.cluster) ||
+                  (isV3Project && !!project?.cluster_id) ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -419,7 +420,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
-                    (isV3Project && !!projIdentifiers?.cluster) ||
+                    (isV3Project && !!project?.cluster_id) ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
@@ -447,7 +448,7 @@ const ProjectIdentifiersFields = ({
                 checked={projIdentifiers?.lead_agency_submitting_on_behalf}
                 disabled={
                   !areNextSectionsDisabled ||
-                  !canUpdateLeadAgency ||
+                  (isV3Project && project && !getAgencyErrorType(project)) ||
                   !canEditField(
                     editableFields,
                     'lead_agency_submitting_on_behalf',
