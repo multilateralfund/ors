@@ -89,7 +89,7 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
     projIdentifiers.cluster &&
     projIdentifiers.agency &&
     projIdentifiers.lead_agency
-  )
+  ) && !getAgencyErrorType(projIdentifiers)
 
 export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
@@ -398,6 +398,23 @@ export const getProjIdentifiersErrors = (
     }, {}),
     ...filteredErrors,
   }
+}
+
+export const getAgencyErrorType = (
+  projIdentifiers: ProjIdentifiers | ProjectTypeApi,
+) => {
+  const { agency, lead_agency, lead_agency_submitting_on_behalf } =
+    projIdentifiers
+
+  if (!(agency || lead_agency)) return null
+
+  return lead_agency_submitting_on_behalf
+    ? agency === lead_agency
+      ? 'similar_agencies'
+      : null
+    : agency !== lead_agency
+      ? 'different_agencies'
+      : null
 }
 
 export const checkInvalidValue = (value: any) =>

@@ -37,6 +37,7 @@ import {
   hasSectionErrors,
   hasFields,
   getApprovalErrors,
+  getAgencyErrorType,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -152,6 +153,7 @@ const ProjectsCreate = ({
     () => getProjIdentifiersErrors(projIdentifiers, errors),
     [projIdentifiers, errors],
   )
+  const agencyErrorType = getAgencyErrorType(projIdentifiers)
 
   const bpErrors = useMemo(
     () =>
@@ -318,6 +320,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
+            !!agencyErrorType ||
             hasSectionErrors(bpErrors)) && (
             <SectionErrorIndicator errors={[]} />
           )}
@@ -344,7 +347,19 @@ const ProjectsCreate = ({
           errors={projIdentifiersErrors}
         />
       ),
-      errors: formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
+      errors: [
+        ...formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
+        ...(!!agencyErrorType
+          ? [
+              {
+                message:
+                  agencyErrorType === 'similar_agencies'
+                    ? 'Agency and lead agency cannot be similar when submitting on behalf of a cooperating agency.'
+                    : 'Agency and lead agency cannot be different unless submitting on behalf of a cooperating agency.',
+              },
+            ]
+          : []),
+      ],
     },
     {
       id: 'project-cross-cutting-section',
@@ -365,6 +380,7 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
+            project,
             hasSubmitted,
             setCurrentTab,
             fieldsOpts,
