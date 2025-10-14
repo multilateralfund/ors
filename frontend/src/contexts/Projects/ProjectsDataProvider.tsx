@@ -12,6 +12,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
     options: {
       withStoreCache: false,
       params: {
+        ordering: 'agency_type,name',
         values_exclusive_for: 'projects',
       },
     },
