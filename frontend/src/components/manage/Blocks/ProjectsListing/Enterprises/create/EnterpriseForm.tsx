@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseTextField,
@@ -17,7 +18,7 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
+  const { agencies } = useContext(ProjectsDataContext)
 
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']

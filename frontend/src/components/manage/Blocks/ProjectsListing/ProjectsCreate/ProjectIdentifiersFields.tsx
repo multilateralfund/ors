@@ -64,10 +64,9 @@ const ProjectIdentifiersFields = ({
   const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
+  const { agencies } = useContext(ProjectsDataContext)
 
   const commonSlice = useStore((state) => state.common)
-  const agencies = commonSlice.agencies.data
-
   const projectSlice = useStore((state) => state.projects)
   const crtClusters = filterClusterOptions(
     projectSlice.clusters.data,

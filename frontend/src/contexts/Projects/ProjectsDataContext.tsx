@@ -5,8 +5,10 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
+import { ApiAgency } from '@ors/types/api_agencies'
 
 interface ProjectsDataContextProps {
+  agencies: ApiAgency[]
   clusters: Cluster[]
   project_types: ProjectTypeType[]
   sectors: ProjectSectorType[]

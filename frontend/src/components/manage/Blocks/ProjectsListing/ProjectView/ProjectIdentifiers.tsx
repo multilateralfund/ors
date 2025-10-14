@@ -1,6 +1,7 @@
 import { useContext, useCallback } from 'react'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
@@ -23,11 +24,10 @@ const ProjectIdentifiers = ({
   const { viewableFields } = useStore((state) => state.projectFields)
   const canViewBpSection = canViewField(viewableFields, 'bp_activity')
 
-  const commonSlice = useStore((state) => state.common)
+  const { agencies } = useContext(ProjectsDataContext)
   const leadAgency =
-    commonSlice.agencies.data.find(
-      (agency) => agency.id === project.meta_project?.lead_agency,
-    )?.name ?? '-'
+    agencies.find((agency) => agency.id === project.meta_project?.lead_agency)
+      ?.name ?? '-'
 
   const bpActivity = {
     ...project.bp_activity,

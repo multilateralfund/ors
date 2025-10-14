@@ -7,6 +7,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
@@ -14,7 +15,6 @@ import { SubmitButton } from '../HelperComponents'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { defaultProps, initialFilters } from '../constants'
 import { ProjectTypeApi } from '../interfaces'
-import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { filter, find, flatMap, map } from 'lodash'
@@ -40,9 +40,7 @@ const ProjectsAssociateConfirmation = ({
   const form = useRef<any>()
   const [_, setLocation] = useLocation()
   const { canAssociateProjects } = useContext(PermissionsContext)
-
-  const commonSlice = useStore((state) => state.common)
-  const agencies = commonSlice.agencies.data
+  const { agencies } = useContext(ProjectsDataContext)
 
   const [errors, setErrors] = useState(null)
 
