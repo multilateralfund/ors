@@ -205,7 +205,7 @@ const ProjectView = ({
     },
     {
       id: 'project-documentation',
-      label: 'Documentation',
+      label: 'Attachments',
       component: (
         <ProjectDocumentation {...{ projectFiles, loadedFiles }} mode="view" />
       ),
