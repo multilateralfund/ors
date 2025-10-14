@@ -36,7 +36,7 @@ SECTION_GROUP_MAPPING_12_18 = [
     "Annex E, Group I",
 ]
 
-SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
+SUBMISSION_STATUSE_CODES = ["NA", "UNK"]
 
 PROJECT_SECTOR_TYPE_MAPPING = {
     # sector code: available project types

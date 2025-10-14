@@ -499,7 +499,7 @@ class ProjectV2ViewSet(
         ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
         are also duplicated and linked to the archived project.
         An email notification is sent to the secretariat team
-        to inform them about the new submission. (TO BE IMPLEMENTED)
+        to inform them about the new submission.
         """,
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
         responses={
@@ -518,7 +518,7 @@ class ProjectV2ViewSet(
         ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
         are also duplicated and linked to the archived project.
         An email notification is sent to the secretariat team
-        to inform them about the new submission. (TO BE IMPLEMENTED)
+        to inform them about the new submission.
         """
         project = self.get_object()
 

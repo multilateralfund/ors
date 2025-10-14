@@ -591,7 +591,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         subsectors_data = validated_data.pop("subsector_ids", [])
 
         # a new project = new submission ?
-        status = ProjectStatus.objects.get(code="NEWSUB")
+        status = ProjectStatus.objects.get(code="NA")
         validated_data["status_id"] = status.id
         # set submission status
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")

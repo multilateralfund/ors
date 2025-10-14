@@ -77,8 +77,8 @@ OUTDATED_SUBSECTORS = {
 
 NEW_STATUSES = [
     {
-        "STATUS": "New Submission",
-        "STATUS_CODE": "NEWSUB",
+        "STATUS": "N/A",
+        "STATUS_CODE": "NA",
     },
     {
         "STATUS": "Unknow",
@@ -173,18 +173,16 @@ def clean_up_project_statuses():
     else:
         ProjectStatus.objects.filter(code="UNK").delete()
 
-    # change the status 'N/A' into 'New submission' and delete status 'N/A'
+    # change the status 'New submission' into 'N/A' and delete status 'New submission'
 
     new_submission_status, _ = ProjectStatus.objects.update_or_create(
-        name="New submission",
+        name="N/A",
         defaults={
-            "code": "NEWSUB",
+            "code": "NA",
         },
     )
-    Project.objects.filter(status__code="NA").update(status=new_submission_status)
-    ProjectStatus.objects.filter(code="NA").delete()
-
-    ProjectStatus.objects.filter(code="NEWSUB").update(name="New submission")
+    Project.objects.filter(status__code="NEWSUB").update(status=new_submission_status)
+    ProjectStatus.objects.filter(code="NEWSUB").delete()
 
 
 def import_project_type(file_path):

@@ -280,7 +280,7 @@ def setup_project_list(
     new_country = CountryFactory.create(iso3="NwC")
     new_agency = AgencyFactory.create(code="NewAg")
     new_project_type = ProjectTypeFactory.create(code="NewType")
-    new_project_status = ProjectStatusFactory.create(code="NEWSUB")
+    new_project_status = ProjectStatusFactory.create(code="NA")
     new_sector = ProjectSectorFactory.create(name="New Sector")
     new_subsectors = [ProjectSubSectorFactory.create(sectors=[new_sector])]
     new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
@@ -608,7 +608,7 @@ def setup_project_create(
     rbm_measure,
 ):
     statuses_dict = [
-        {"name": "New Submission", "code": "NEWSUB"},
+        {"name": "N/A", "code": "NA"},
         {"name": "New", "code": "NEW"},
     ]
 
@@ -757,7 +757,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
-        assert response.data["status"] == "New Submission"
+        assert response.data["status"] == "N/A"
         assert response.data["substance_type"] == "HCFC"
         assert response.data["national_agency"] == "National Agency"
         assert response.data["submission_category"] == "bilateral cooperation"
