@@ -1,7 +1,8 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
-
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from core.api.serializers.agency import AgencySerializer, BusinessPlanAgencySerializer
 from core.models.agency import Agency
 
@@ -13,6 +14,15 @@ class AgencyListView(generics.ListAPIView):
 
     queryset = Agency.objects.all()
     serializer_class = AgencySerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    ordering_fields = [
+        "name",
+        "agency_type",
+    ]
 
     def get_queryset(self):
         queryset = super().get_queryset()
