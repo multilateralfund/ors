@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../../constants'
 import { useStore } from '@ors/store'
@@ -25,10 +26,10 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
     canApproveProjectEnterprise,
   } = useContext(PermissionsContext)
 
-  const { countries, agencies } = useStore((state) => ({
+  const { countries } = useStore((state) => ({
     countries: state.common.countries.data,
-    agencies: state.common.agencies.data,
   }))
+  const { agencies } = useContext(ProjectsDataContext)
 
   const isEnterprise = !project_id
   const editPermissions = isEnterprise

@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   detailItem,
   numberDetailItem,
@@ -18,7 +21,7 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
+  const { agencies } = useContext(ProjectsDataContext)
 
   const country = getEntityById(countries, enterprise.country)?.name
   const crtAgencies =

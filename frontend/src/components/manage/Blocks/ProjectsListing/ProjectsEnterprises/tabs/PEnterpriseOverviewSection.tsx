@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseNumberField,
@@ -33,7 +34,7 @@ const PEnterpriseOverviewSection = ({
 
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
+  const { agencies } = useContext(ProjectsDataContext)
 
   const { enterprise, enterpriseData, setEnterpriseData } = rest
   const { overview } = enterpriseData

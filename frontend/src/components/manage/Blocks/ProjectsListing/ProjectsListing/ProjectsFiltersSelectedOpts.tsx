@@ -39,9 +39,10 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
+  const { agencies, clusters, project_types, sectors } =
+    useContext(ProjectsDataContext)
 
-  const { agencies, countries } = commonSlice
+  const { countries } = commonSlice
   const { submission_statuses, statuses } = projectSlice
 
   const areFiltersApplied = getAreFiltersApplied(filters)
@@ -53,7 +54,7 @@ const ProjectsFiltersSelectedOpts = ({
       hasPermissions: mode === 'listing',
     },
     {
-      entities: formatEntity(agencies.data),
+      entities: formatEntity(agencies),
       entityIdentifier: 'agency_id',
       hasPermissions: true,
     },
