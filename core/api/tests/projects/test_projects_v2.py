@@ -770,7 +770,7 @@ class TestCreateProjects(BaseTest):
         for field in fields:
             if field == "bp_activity":
                 assert response.data[field]["id"] == data[field]
-            elif type(data[field]) == Decimal:
+            elif isinstance(data[field], Decimal):
                 assert Decimal(response.data[field]) == (data[field])
             else:
                 assert response.data[field] == data[field]
