@@ -1506,7 +1506,7 @@
         "WRITE_FIELD_NAME": "number_of_production_lines_assisted",
         "READ_FIELD_NAME": "number_of_production_lines_assisted",
         "TABLE": "project",
-        "DATA_TYPE": "drop_down",
+        "DATA_TYPE": "number",
         "SECTION": "MYA",
         "SORT_ORDER": 121,
         "EDITABLE_IN_VERSIONS": [1,2,3],
