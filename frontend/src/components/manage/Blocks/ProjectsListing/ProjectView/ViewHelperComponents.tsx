@@ -1,6 +1,11 @@
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
-import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
 import { hasExcomUpdate } from '../utils'
+import {
+  DetailItemClassname,
+  FieldType,
+  ProjectSpecificFields,
+  ViewModesHandler,
+} from '../interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
@@ -14,6 +19,11 @@ export type detailItemExtra = {
   fieldHistory?: ProjectFieldHistoryValue[]
   isDisabledImpactField?: boolean
 }
+
+const getIsDisabledImpactField = (
+  field: ProjectSpecificFields,
+  hasActualFields?: boolean,
+) => field.section === 'Impact' && hasActualFields && !field.is_actual
 
 export const detailItem = (
   fieldName: string,
@@ -123,8 +133,10 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       fieldHistory,
     }),
   number: (data, field, _, fieldHistory, hasActualFields) => {
-    const isDisabledImpactField =
-      field.section === 'Impact' && hasActualFields && !field.is_actual
+    const isDisabledImpactField = getIsDisabledImpactField(
+      field,
+      hasActualFields,
+    )
 
     return detailItem(field.label, data[field.read_field_name], {
       fieldHistory,
@@ -132,8 +144,10 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
     })
   },
   decimal: (data, field, _, fieldHistory, hasActualFields) => {
-    const isDisabledImpactField =
-      field.section === 'Impact' && hasActualFields && !field.is_actual
+    const isDisabledImpactField = getIsDisabledImpactField(
+      field,
+      hasActualFields,
+    )
 
     return numberDetailItem(
       field.label,
@@ -148,8 +162,10 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       ? find(field.options, { id: data[field.write_field_name] })?.name || '-'
       : value
 
-    const isDisabledImpactField =
-      field.section === 'Impact' && hasActualFields && !field.is_actual
+    const isDisabledImpactField = getIsDisabledImpactField(
+      field,
+      hasActualFields,
+    )
 
     return detailItem(field.label, formattedValue, {
       fieldHistory,
@@ -159,8 +175,10 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   boolean: (data, field, _, fieldHistory, hasActualFields) => {
     const className =
       field.section === 'Impact' ? 'col-span-full flex w-full' : ''
-    const isDisabledImpactField =
-      field.section === 'Impact' && hasActualFields && !field.is_actual
+    const isDisabledImpactField = getIsDisabledImpactField(
+      field,
+      hasActualFields,
+    )
 
     return booleanDetailItem(
       field.label,

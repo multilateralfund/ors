@@ -258,6 +258,13 @@ export const AutocompleteWidget = <T,>(
         }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
+        {...(field.section === 'Impact' || field.section === 'MYA'
+          ? {
+              FieldProps: {
+                className: defaultProps.FieldProps.className + ' !w-40',
+              },
+            }
+          : {})}
       />
     </div>
   )
@@ -500,7 +507,7 @@ const DateWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div>
+    <div className="w-40">
       <Label>{field.label}</Label>
       <DateInput
         id={fieldName}

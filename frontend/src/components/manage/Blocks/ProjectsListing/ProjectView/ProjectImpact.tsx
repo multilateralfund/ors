@@ -14,6 +14,7 @@ const ProjectImpact = ({
   fieldHistory,
 }: ProjectViewProps & { fieldHistory: any }) => {
   const fields = getSectionFields(specificFields, 'Impact')
+  const myaFields = getSectionFields(specificFields, 'MYA')
   const hasActualFields = find(fields, (field) => field.is_actual)
 
   const { viewableFields } = useStore((state) => state.projectFields)
@@ -57,6 +58,9 @@ const ProjectImpact = ({
         ) : (
           <ImpactFields fields={fields} />
         )}
+      </div>
+      <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-4 md:grid">
+        <ImpactFields fields={myaFields} />
       </div>
     </div>
   )

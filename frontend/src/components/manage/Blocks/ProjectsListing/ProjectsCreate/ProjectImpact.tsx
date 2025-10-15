@@ -20,6 +20,7 @@ const ProjectImpact = ({
   setProjectData,
   project,
   sectionFields,
+  myaFields,
   errors = {},
   hasSubmitted,
   setCurrentTab,
@@ -28,6 +29,7 @@ const ProjectImpact = ({
   hasV3EditPermissions,
 }: SpecificFieldsSectionProps &
   ProjectTabSetters & {
+    myaFields: ProjectSpecificFields[]
     project?: ProjectTypeApi
     postExComUpdate: boolean
     nextStep: number
@@ -95,7 +97,9 @@ const ProjectImpact = ({
             ))
           : ImpactFields(sectionFields)}
       </div>
-
+      <div className="mt-2 flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
+        {ImpactFields(myaFields)}
+      </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <NavigationButton
           nextTab={nextStep - 1}
