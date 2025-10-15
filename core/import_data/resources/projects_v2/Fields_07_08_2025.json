@@ -1321,18 +1321,6 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Number of enterprises assisted",
-        "LABEL": "Number of enterprises assisted",
-        "WRITE_FIELD_NAME": "number_of_enterprises_assisted",
-        "READ_FIELD_NAME": "number_of_enterprises_assisted",
-        "TABLE": "project",
-        "DATA_TYPE": "number",
-        "SECTION": "MYA",
-        "SORT_ORDER": 105,
-        "EDITABLE_IN_VERSIONS": [1,2,3],
-        "VISIBLE_IN_VERSIONS": [1,2,3]
-    },
-    {
         "IMPORT_NAME": "Start date (MYA)",
         "LABEL": "Start date (MYA)",
         "WRITE_FIELD_NAME": "mya_start_date",
@@ -1340,7 +1328,7 @@
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA",
-        "SORT_ORDER": 107,
+        "SORT_ORDER": 105,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
@@ -1352,7 +1340,7 @@
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA",
-        "SORT_ORDER": 108,
+        "SORT_ORDER": 106,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
@@ -1364,7 +1352,7 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 109,
+        "SORT_ORDER": 107,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
@@ -1376,7 +1364,7 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 110,
+        "SORT_ORDER": 108,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
@@ -1385,6 +1373,30 @@
         "LABEL": "Number of enterprises",
         "WRITE_FIELD_NAME": "number_of_enterprises",
         "READ_FIELD_NAME": "number_of_enterprises",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "MYA",
+        "SORT_ORDER": 109,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Number of enterprises assisted",
+        "LABEL": "Number of enterprises assisted",
+        "WRITE_FIELD_NAME": "number_of_enterprises_assisted",
+        "READ_FIELD_NAME": "number_of_enterprises_assisted",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "MYA",
+        "SORT_ORDER": 110,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Number of Production Lines assisted",
+        "LABEL": "Number of production lines assisted",
+        "WRITE_FIELD_NAME": "number_of_production_lines_assisted",
+        "READ_FIELD_NAME": "number_of_production_lines_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "MYA",
@@ -1499,17 +1511,5 @@
         "SORT_ORDER": 120,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
-    },
-    {
-        "IMPORT_NAME": "Number of Production Lines assisted",
-        "LABEL": "Number of production lines assisted",
-        "WRITE_FIELD_NAME": "number_of_production_lines_assisted",
-        "READ_FIELD_NAME": "number_of_production_lines_assisted",
-        "TABLE": "project",
-        "DATA_TYPE": "drop_down",
-        "SECTION": "MYA",
-        "SORT_ORDER": 121,
-        "EDITABLE_IN_VERSIONS": [1,2,3],
-        "VISIBLE_IN_VERSIONS": [1,2,3]
-    }
+    } 
 ]
