@@ -123,6 +123,7 @@ const EditActionButtons = ({
   const submissionStatus = lowerCase(submission_status)
   const isDraft = submissionStatus === 'draft'
   const isSubmitted = submissionStatus === 'submitted'
+  const isWithdrawn = submissionStatus === 'withdrawn'
   const isRecommended = submissionStatus === 'recommended'
   const isApproved = submissionStatus === 'approved'
   const isAfterApproval = isApproved || submissionStatus === 'not approved'
@@ -197,7 +198,9 @@ const EditActionButtons = ({
     hasSectionErrors(substanceErrors) ||
     hasSectionErrors(myaErrors) ||
     hasOdsOdpErrors ||
-    (getHasNoFiles(id, files, projectFiles) && (version ?? 0) < 3)
+    (getHasNoFiles(id, files, projectFiles) &&
+      (version ?? 0) < 3 &&
+      !isWithdrawn)
 
   const hasErrors =
     commonErrors ||
@@ -208,7 +211,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3 ? disableSubmit : isSaveDisabled) ||
+    (project.version >= 3 || isWithdrawn ? disableSubmit : isSaveDisabled) ||
     (postExComUpdate &&
       !(
         projIdentifiers.post_excom_meeting &&
