@@ -1403,7 +1403,7 @@
         "SORT_ORDER": 111,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
-    }
+    },
     {
         "IMPORT_NAME": "Aggregated consumption",
         "LABEL": "Aggregated consumption",
