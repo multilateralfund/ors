@@ -320,11 +320,6 @@ def import_project_specific_fields(file_path):
     df = pd.read_excel(file_path).fillna("")
 
     for _, row in df.iterrows():
-        if (
-            row["Sector name"].strip() == "Other Sector"
-            or row["Project type name"].strip() == "Other Type"
-        ):
-            continue
         if row["Project type name"].strip() == "Project preparation":
             row["Project type name"] = "Preparation"
         try:

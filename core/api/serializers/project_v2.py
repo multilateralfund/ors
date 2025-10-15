@@ -1158,7 +1158,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "cluster",
             "project_type",
             "sector",
-            "subsectors",
             "country",
             "agency",
             "meeting",
