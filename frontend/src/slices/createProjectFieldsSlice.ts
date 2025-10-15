@@ -49,7 +49,9 @@ export const createProjectFieldsSlice = ({
             mode === 'edit' &&
             submissionStatus === 'Approved'
           ) {
-            return canEditAll ? section === 'Impact' : is_actual
+            return canEditAll
+              ? section !== 'Approval' && (section !== 'Impact' || is_actual)
+              : is_actual
           }
 
           if (

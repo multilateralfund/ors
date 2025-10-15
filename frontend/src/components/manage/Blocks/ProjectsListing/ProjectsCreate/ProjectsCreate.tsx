@@ -192,7 +192,7 @@ const ProjectsCreate = ({
     project?.submission_status !== 'Approved'
   const hasV3EditPermissions =
     !!project && mode === 'edit' && canEditApprovedProjects
-  const editableByAdmin = ['Withdrawn', 'Not approved'].includes(
+  const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
     project?.submission_status ?? '',
   )
   const isV3ProjectEditable =
@@ -314,8 +314,9 @@ const ProjectsCreate = ({
 
   const hasNoFiles =
     mode === 'edit' &&
-    getHasNoFiles(parseInt(project_id), files, projectFiles) &&
-    (project?.version ?? 0) < 3
+    project?.submission_status !== 'Withdrawn' &&
+    (project?.version ?? 0) < 3 &&
+    getHasNoFiles(parseInt(project_id), files, projectFiles)
 
   const steps = [
     {
@@ -391,6 +392,7 @@ const ProjectsCreate = ({
             specificFieldsLoaded,
             postExComUpdate,
             isV3ProjectEditable,
+            mode,
           }}
           nextStep={
             !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
@@ -645,7 +647,8 @@ const ProjectsCreate = ({
               <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Approved' &&
-                  !postExComUpdate && (
+                  !postExComUpdate &&
+                  !canEditApprovedProjects && (
                     <CustomAlert
                       type="info"
                       alertClassName="mb-3"

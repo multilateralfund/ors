@@ -558,6 +558,9 @@ export const getSpecificFieldsErrors = (
   canEditApprovedProjects: boolean,
   project?: ProjectTypeApi,
 ) => {
+  const isEditMode = project && mode === 'edit'
+  const version = isEditMode ? project.version : 1
+
   const fieldNames = map(
     filter(
       specificFields,
@@ -565,9 +568,8 @@ export const getSpecificFieldsErrors = (
         table === 'project' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
-          editable_in_versions.includes(
-            project && mode === 'edit' ? project.version : 1,
-          )),
+          (isEditMode && project.version > 3) ||
+          editable_in_versions.includes(version)),
     ),
     'write_field_name',
   ) as string[]
