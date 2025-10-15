@@ -100,7 +100,6 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Number of female customs officers trained",
     "Total number of NOU personnel supported",
     "Number of female NOU personnel supported",
-    "Number of enterprises assisted",
     "Certification system for technicians established or further enhanced (yes or no)",
     "Operation of recovery and recycling scheme (yes or no)",
     "Operation of reclamation scheme (yes or no)",
@@ -433,6 +432,46 @@ def import_cluster_type_sector_links(file_path):
                 )
 
 
+def generate_new_cluster_type_sector_file(file_path):
+    """
+    Generate new cluster type sector file based on the current data in the database
+
+    @param file_path = str (file path for import file)
+    """
+    combinations = {}  # {cluster: {type: [sectors]}}
+    df = pd.read_excel(file_path).fillna("")
+
+    for _, row in df.iterrows():
+        if row["Project type name"].strip() == "Project preparation":
+            row["Project type name"] = "Preparation"
+
+        combinations.setdefault(row["Cluster name"].strip(), {})
+        combinations[row["Cluster name"].strip()].setdefault(
+            row["Project type name"].strip(), []
+        )
+        combinations[row["Cluster name"].strip()][
+            row["Project type name"].strip()
+        ].append(row["Sector name"].strip())
+
+    new_data = []
+    for cluster_name, types in combinations.items():
+        new_data.append(
+            {
+                "cluster": cluster_name,
+                "types": [
+                    {
+                        "type": type_name,
+                        "sectors": sorted(list(set(sector_names))),  # remove duplicates
+                    }
+                    for type_name, sector_names in types.items()
+                ],
+            }
+        )
+
+    with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
+        json.dump(new_data, f, indent=4)
+
+
 def import_fields(file_path):
     """
     Import project type from file
@@ -483,7 +522,7 @@ def import_project_resources_v2():
     import_project_type(file_path)
     logger.info("✔ project types imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_06_05_2025.json"
+    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_15_10_2025.json"
     import_sector(file_path)
     logger.info("✔ sectors imported")
 
@@ -509,7 +548,14 @@ def import_project_resources_v2():
     logger.info("✔ fields imported")
 
     file_path = (
-        IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_22_05_2025.xlsx"
+        IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_15_10_2025.xlsx"
     )
     import_project_specific_fields(file_path)
     logger.info("✔ cluster type sector fields imported")
+
+    # # use to generate new ClusterTypeSectorLinks.json file
+    # file_path = (
+    #     IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_15_10_2025.xlsx"
+    # )
+    # generate_new_cluster_type_sector_file(file_path)
+    # logger.info("✔ new cluster type sector file generated")
