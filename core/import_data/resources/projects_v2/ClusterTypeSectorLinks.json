@@ -5,42 +5,42 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
+                    "Foam",
+                    "Other Sector",
+                    "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
-                    "Foam",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Other Sector",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Foam"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Other Sector",
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
-                    "Solvent",
                     "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
-                    "Refrigeration"
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
         ]
@@ -51,43 +51,42 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination",
-                    "Servicing",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Firefighting",
                     "Air-Conditioning",
-                    "Refrigeration",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
-                    "Other Sector"
+                    "Other Sector",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Other Sector",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Foam"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-
-                    "Other Sector",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Foam"
+                    "Solvent"
                 ]
             }
         ]
@@ -98,59 +97,59 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination",
-                    "Servicing",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Air-Conditioning",
+                    "Other Sector",
+                    "Project monitoring and coordination",
                     "Refrigeration",
-                    "Other Sector"
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Other Sector",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Foam"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Other Sector",
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
-                    "Solvent",
                     "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
-                    "Refrigeration"
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
-        ]  
+        ]
     },
     {
         "cluster": "Kigali Implementation Plan Production Stage 1",
         "types": [
             {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Project monitoring and coordination"
-                ]
-            },
-            {
                 "type": "Investment",
                 "sectors": [
                     "Production"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Project monitoring and coordination"
                 ]
             }
         ]
@@ -159,15 +158,15 @@
         "cluster": "Kigali Implementation Plan Production Stage 2",
         "types": [
             {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Project monitoring and coordination"
-                ]
-            },
-            {
                 "type": "Investment",
                 "sectors": [
                     "Production"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Project monitoring and coordination"
                 ]
             }
         ]
@@ -176,15 +175,15 @@
         "cluster": "Kigali Implementation Plan Production Stage 3",
         "types": [
             {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Project monitoring and coordination"
-                ]
-            },
-            {
                 "type": "Investment",
                 "sectors": [
                     "Production"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Project monitoring and coordination"
                 ]
             }
         ]
@@ -196,42 +195,42 @@
                 "type": "Investment",
                 "sectors": [
                     "Aerosol",
-                    "Electronics Manufacturing",
-                    "Firefighting",
                     "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
-                    "Solvent",
+                    "Other Sector",
                     "Refrigeration",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
+                    "Other Sector",
                     "Project monitoring and coordination",
-                    "Servicing",
                     "Refrigeration",
                     "SERVCEE-89/6",
-                    "Other Sector"
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Other Sector",
-                    "Firefighting",
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
-                    "Air-Conditioning"
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
         ]
@@ -242,43 +241,43 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
-                    "Foam",
                     "Aerosol",
-                    "Solvent",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
-                    "Refrigeration",
-                    "Project monitoring and coordination",
-                    "Servicing",
-                    "SERVCEE-89/6",
                     "Foam",
-                    "Other Sector"
+                    "Other Sector",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "SERVCEE-89/6",
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Firefighting",
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Foam",
                     "Air-Conditioning",
-                    "Other Sector"
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
         ]
@@ -289,43 +288,43 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Servicing",
-                    "Project monitoring and coordination",
-                    "SERVCEE-89/6",
-                    "Foam",
                     "Air-Conditioning",
-                    "Other Sector"
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "SERVCEE-89/6",
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Firefighting",
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Foam",
                     "Air-Conditioning",
-                    "Other Sector"
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
         ]
@@ -336,43 +335,43 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Refrigeration",
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
                     "Project monitoring and coordination",
+                    "Refrigeration",
                     "SERVCEE-89/6",
                     "Servicing",
-                    "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Firefighting",
-                    "Air-Conditioning",
-                    "Foam",
-                    "Other Sector"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Firefighting",
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
-                    "Foam",
                     "Air-Conditioning",
-                    "Other Sector"
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Other Sector",
+                    "Refrigeration",
+                    "Solvent"
                 ]
             }
         ]
@@ -451,10 +450,10 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Verification",
-                    "Project monitoring and coordination",
                     "Enabling activities",
-                    "Other Sector"
+                    "Other Sector",
+                    "Project monitoring and coordination",
+                    "Verification"
                 ]
             },
             {
@@ -474,12 +473,12 @@
                 "sectors": [
                     "Aerosol",
                     "Air-Conditioning",
-                    "Refrigeration",
-                    "Foam",
-                    "Solvent",
-                    "Production",
                     "Firefighting",
-                    "Servicing"
+                    "Foam",
+                    "Production",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
                 ]
             }
         ]
@@ -490,41 +489,41 @@
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Other Sector",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
+                    "Other Sector",
                     "Refrigeration",
-                    "Air-Conditioning"
+                    "Solvent"
                 ]
             },
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Verification",
-                    "Other Sector",
-                    "Air-Conditioning",
-                    "Foam",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
-                    "Servicing",
+                    "Foam",
+                    "Other Sector",
+                    "Project monitoring and coordination",
                     "Refrigeration",
-                    "Project monitoring and coordination"
+                    "Servicing",
+                    "Solvent",
+                    "Verification"
                 ]
             },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Other Sector",
                     "Aerosol",
-                    "Electronics Manufacturing",
-                    "Firefighting",
                     "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
                     "Foam",
+                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -534,12 +533,12 @@
                 "sectors": [
                     "Aerosol",
                     "Air-Conditioning",
-                    "Refrigeration",
-                    "Foam",
-                    "Solvent",
-                    "Production",
                     "Firefighting",
-                    "Servicing"
+                    "Foam",
+                    "Production",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
                 ]
             }
         ]
@@ -550,52 +549,52 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Air-Conditioning",
+                    "Project monitoring and coordination",
                     "Refrigeration",
-                    "Servicing"
+                    "Servicing",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Air-Conditioning",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Refrigeration"
+                    "Refrigeration",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Air-Conditioning"
+                    "Refrigeration",
+                    "Solvent"
                 ]
             },
             {
                 "type": "Preparation",
                 "sectors": [
-                    "Refrigeration",
                     "Aerosol",
-                    "Solvent",
-                    "Electronics Manufacturing",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
+                    "Refrigeration",
                     "Servicing",
-                    "Air-Conditioning"
+                    "Solvent"
                 ]
             }
         ]
@@ -612,8 +611,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination",
-                    "Disposal"
+                    "Disposal",
+                    "Project monitoring and coordination"
                 ]
             },
             {
@@ -621,7 +620,6 @@
                 "sectors": [
                     "Disposal"
                 ]
-
             },
             {
                 "type": "Preparation",
@@ -634,17 +632,23 @@
     {
         "cluster": "Government Support",
         "types": [
-                {
-                    "type": "Institutional strengthening",
-                    "sectors": [
-                        "National Ozone Unit"
-                    ]
-                }
+            {
+                "type": "Institutional strengthening",
+                "sectors": [
+                    "National Ozone Unit"
+                ]
+            }
         ]
     },
     {
         "cluster": "Agency Programme",
         "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Compliance Assistance Programme"
+                ]
+            },
             {
                 "type": "Project support",
                 "sectors": [

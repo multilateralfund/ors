@@ -20,3 +20,7 @@ The scripts should be run in the following order when installing locally or when
     python manage.py import_projects_v2 migrate-subsectors-sector-data
     python manage.py import_projects_v2 mark_obsolete_values
 ```
+
+
+You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and
+the `generate_new_cluster_type_sector_file` function from `import_project_resources_v2.py`
