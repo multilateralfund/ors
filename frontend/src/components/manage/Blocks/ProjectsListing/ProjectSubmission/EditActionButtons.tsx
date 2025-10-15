@@ -188,12 +188,14 @@ const EditActionButtons = ({
     Header: headerErrors = {},
     'Substance Details': substanceErrors = {},
     Impact: impactErrors = {},
+    MYA: myaErrors = {},
   } = specificErrors
 
   const commonErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
+    hasSectionErrors(myaErrors) ||
     hasOdsOdpErrors ||
     (getHasNoFiles(id, files, projectFiles) && (version ?? 0) < 3)
 

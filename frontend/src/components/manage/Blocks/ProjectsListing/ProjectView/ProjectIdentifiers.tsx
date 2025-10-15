@@ -11,6 +11,7 @@ import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectIdentifiers = ({
   project,
@@ -26,7 +27,7 @@ const ProjectIdentifiers = ({
 
   const { agencies } = useContext(ProjectsDataContext)
   const leadAgency =
-    agencies.find((agency) => agency.id === project.meta_project?.lead_agency)
+    find(agencies, (agency) => agency.id === project.meta_project?.lead_agency)
       ?.name ?? '-'
 
   const bpActivity = {

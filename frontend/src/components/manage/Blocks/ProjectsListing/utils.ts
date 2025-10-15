@@ -406,7 +406,7 @@ export const getAgencyErrorType = (
   const { agency, lead_agency, lead_agency_submitting_on_behalf } =
     projIdentifiers
 
-  if (!(agency || lead_agency)) return null
+  if (!(agency && lead_agency)) return null
 
   return lead_agency_submitting_on_behalf
     ? agency === lead_agency
@@ -561,9 +561,8 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section, editable_in_versions, data_type }) =>
+      ({ table, editable_in_versions, data_type }) =>
         table === 'project' &&
-        section !== 'MYA' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
           editable_in_versions.includes(

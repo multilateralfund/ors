@@ -132,10 +132,11 @@ const ProjectView = ({
     }
   }, [allFields, setViewableFields])
 
-  const [overviewFields, substanceDetailsFields, impactFields] = [
+  const [overviewFields, substanceDetailsFields, impactFields, myaFields] = [
     getSectionFields(specificFields, 'Header'),
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
+    getSectionFields(specificFields, 'MYA'),
   ]
   const hasApprovalTab = project.version >= 3
 
@@ -195,7 +196,10 @@ const ProjectView = ({
         </div>
       ),
       disabled:
-        !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
+        !(
+          impactFields.length && hasFields(allFields, viewableFields, 'Impact')
+        ) || !(myaFields.length && hasFields(allFields, viewableFields, 'MYA')),
+
       component: (
         <ProjectImpact
           {...{ project, specificFields }}
