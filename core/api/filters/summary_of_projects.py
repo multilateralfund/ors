@@ -33,6 +33,8 @@ class SummaryOfProjectsFilter(filters.FilterSet):
         lookup_expr="in",
     )
 
+    tranche = filters.NumberFilter()
+
     class Meta:
         model = Project
         fields = [
@@ -41,4 +43,5 @@ class SummaryOfProjectsFilter(filters.FilterSet):
             "country_id",
             "sector_id",
             "agency_id",
+            "tranche",
         ]

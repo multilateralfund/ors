@@ -70,6 +70,13 @@ class SummaryOfProjectsViewSet(
             "project_type": get_available_values(queryset, "project_type"),
             "sector": get_available_values(queryset, "sector"),
             "agency": get_available_values(queryset, "agency"),
+            "tranche": [
+                {"name": str(t), "id": t}
+                for t in queryset.order_by("tranche")
+                .values_list("tranche", flat=True)
+                .distinct()
+                if t is not None
+            ],
         }
 
         return Response(result)
