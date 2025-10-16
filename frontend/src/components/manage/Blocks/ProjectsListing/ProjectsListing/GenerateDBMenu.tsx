@@ -11,7 +11,6 @@ const GenerateDBMenu = () => {
   const { canViewProjects, canApproveProjects } = useContext(PermissionsContext)
 
   const menuItems = [
-    { title: 'Funding amounts', url: null },
     {
       title: 'Project warehouse',
       url: '/projects-listing/export',
