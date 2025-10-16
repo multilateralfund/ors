@@ -322,10 +322,8 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
-                  (isV3Project && !!project?.country_id) ||
-                  !areNextSectionsDisabled ||
-                  (mode !== 'copy' && !!project?.country_id) ||
-                  !canEditField(editableFields, 'country')
+                  (mode !== 'add' && mode !== 'copy') ||
+                  !areNextSectionsDisabled
                 }
                 Input={{
                   error: getIsInputDisabled('country'),
@@ -373,7 +371,6 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
-                  (isV3Project && !!project?.agency_id) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }

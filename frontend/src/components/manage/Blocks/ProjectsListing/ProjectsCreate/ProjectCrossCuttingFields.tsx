@@ -114,7 +114,7 @@ const ProjectCrossCuttingFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[15rem]',
+      className: defaultProps.FieldProps.className + ' w-[17.5rem]',
     },
   }
   const defaultPropsDateInput = {

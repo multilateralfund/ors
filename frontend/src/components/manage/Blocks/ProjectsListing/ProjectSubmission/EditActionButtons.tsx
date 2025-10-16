@@ -46,6 +46,7 @@ import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const EditActionButtons = ({
   projectData,
@@ -206,7 +207,9 @@ const EditActionButtons = ({
     commonErrors ||
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors))
+      : hasSectionErrors(impactErrors)) ||
+    (isRecommended &&
+      dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
