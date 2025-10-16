@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "explorer",
     "mptt",
     "django_celery_beat",
+    "rangefilter",
     "core",
 ]
 

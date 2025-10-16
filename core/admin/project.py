@@ -1,7 +1,12 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
+from rangefilter.filters import (
+    DateTimeRangeFilterBuilder,
+)
+
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.utils.html import format_html_join
+
 
 from core.admin.utils import get_final_display_list
 from core.models.meeting import Decision, Meeting
@@ -111,6 +116,11 @@ class ProjectAdmin(admin.ModelAdmin):
         "status",
         "submission_status",
         "individual_consideration",
+        (
+            "date_created",
+            DateTimeRangeFilterBuilder(),
+        ),
+        AutocompleteFilterFactory("version_created_by", "version_created_by"),
     ]
     autocomplete_fields = [
         "component",
