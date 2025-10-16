@@ -181,7 +181,9 @@ def clean_up_project_statuses():
             "code": "NA",
         },
     )
-    Project.objects.really_all().filter(status__code="NEWSUB").update(status=new_submission_status)
+    Project.objects.really_all().filter(status__code="NEWSUB").update(
+        status=new_submission_status
+    )
     ProjectStatus.objects.filter(code="NEWSUB").delete()
 
 
@@ -516,7 +518,9 @@ def import_project_resources_v2(option):
         logger.info("✔ project clusters imported")
 
     if option in ["all", "import_project_type"]:
-        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbTypeOfProject_06_05_2025.json"
+        file_path = (
+            IMPORT_RESOURCES_DIR / "projects_v2" / "tbTypeOfProject_06_05_2025.json"
+        )
         import_project_type(file_path)
         logger.info("✔ project types imported")
 
@@ -553,7 +557,9 @@ def import_project_resources_v2(option):
 
     if option in ["all", "import_project_specific_fields"]:
         file_path = (
-            IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_15_10_2025.xlsx"
+            IMPORT_RESOURCES_DIR
+            / "projects_v2"
+            / "project_specific_fields_15_10_2025.xlsx"
         )
         import_project_specific_fields(file_path)
         logger.info("✔ cluster type sector fields imported")
@@ -561,7 +567,9 @@ def import_project_resources_v2(option):
     if option == "generate_new_cluster_type_sector_file":
         # use to generate new ClusterTypeSectorLinks.json file
         file_path = (
-            IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_15_10_2025.xlsx"
+            IMPORT_RESOURCES_DIR
+            / "projects_v2"
+            / "project_specific_fields_15_10_2025.xlsx"
         )
         generate_new_cluster_type_sector_file(file_path)
         logger.info("✔ new cluster type sector file generated")
