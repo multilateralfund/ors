@@ -283,7 +283,7 @@ const ProjectView = ({
               label={label}
               disabled={disabled}
               classes={{
-                disabled: 'text-gray-200',
+                disabled: 'text-gray-300',
               }}
             />
           ))}

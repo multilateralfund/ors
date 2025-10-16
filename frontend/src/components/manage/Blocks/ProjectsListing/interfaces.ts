@@ -94,6 +94,7 @@ export interface SpecificFields {
   meeting_approved: number | null
   decision: number | null
   decision_id: string | null
+  date_completion: string | null
 }
 
 export type OdsOdpFields = {
