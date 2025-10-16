@@ -41,7 +41,7 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { filter, groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -230,13 +230,7 @@ const ProjectsCreate = ({
 
   const { errorText, isError } = trancheErrors || {}
 
-  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
-  const fieldsForValidation = map(odsOdpFields, 'write_field_name').filter(
-    (field) => !phaseOutFieldNames.includes(field),
-  )
-  const phaseOutFields = map(odsOdpFields, 'write_field_name').filter((field) =>
-    phaseOutFieldNames.includes(field),
-  )
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const errorMessageExtension =
@@ -250,19 +244,8 @@ const ProjectsCreate = ({
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
-          const phaseOutErrors = map(phaseOutFields, (field) =>
-            checkInvalidValue(odsOdp[field])
-              ? [
-                  'Phase out',
-                  [`At least two phase out values should be provided.`],
-                ]
-              : null,
-          ).filter(Boolean) as [string, string[]][]
 
-          const formattedPhaseOutErrors =
-            phaseOutErrors.length < 2 ? [] : phaseOutErrors
-
-          return Object.fromEntries([...errors, ...formattedPhaseOutErrors])
+          return Object.fromEntries(errors)
         })
       : []
 
@@ -290,19 +273,8 @@ const ProjectsCreate = ({
 
       if (fieldLabels.length === 0) return null
 
-      const filteredFieldLabels = filter(
-        fieldLabels,
-        (label) => label !== 'Phase out',
-      )
-
-      const regularFieldsMessage =
-        filteredFieldLabels.length > 0
-          ? `${filteredFieldLabels.join(', ')}: ${filteredFieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`
-          : ''
-      const phaseOutFieldsMessage = `${fieldLabels.includes('Phase out') ? 'At least two phase out values should be provided. ' : ''}`
-
       return {
-        message: `Substance ${Number(id) + 1} - ${regularFieldsMessage} ${phaseOutFieldsMessage}`,
+        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
       }
     },
   ).filter(Boolean)
