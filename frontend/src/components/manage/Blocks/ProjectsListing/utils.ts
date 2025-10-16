@@ -96,12 +96,20 @@ export const getIsSaveDisabled = (
   crossCuttingFields: CrossCuttingFields,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title, project_start_date, project_end_date } =
-    crossCuttingFields
+  const {
+    project_type,
+    sector,
+    title,
+    total_fund,
+    support_cost_psc,
+    project_start_date,
+    project_end_date,
+  } = crossCuttingFields
 
   return (
     !canLinkToBp ||
     !(project_type && sector && title) ||
+    (total_fund && support_cost_psc && total_fund < support_cost_psc) ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date))
   )
 }
@@ -449,7 +457,6 @@ export const getCrossCuttingErrors = (
     'project_type',
     'sector',
     'description',
-    'subsector_ids',
     'is_lvc',
     'total_fund',
     'support_cost_psc',
@@ -461,13 +468,19 @@ export const getCrossCuttingErrors = (
     Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
 
-  const { project_start_date, project_end_date } = crossCuttingFields
+  const { total_fund, support_cost_psc, project_start_date, project_end_date } =
+    crossCuttingFields
 
   const fieldsToCheck =
     mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
+    ...(total_fund &&
+      support_cost_psc &&
+      total_fund < support_cost_psc && {
+        support_cost_psc: ['Value cannot be greater than project funding.'],
+      }),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
@@ -494,6 +507,9 @@ export const getApprovalErrors = (
 
   const allErrors = {
     ...getFieldErrors(requiredFields, approvalData, project),
+    ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
+      date_completion: ['Cannot be a past date.'],
+    }),
     ...filteredErrors,
   }
 
