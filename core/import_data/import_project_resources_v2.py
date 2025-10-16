@@ -337,17 +337,14 @@ def import_project_specific_fields(file_path):
             )
             continue
 
+        cluster_sector_type.fields.clear()
+
         # particular fields start from row 22
         field_names = [
             _clean_up_field_name(row[field_index].strip())
             for field_index in range(22, len(row) - 1)
             if row[field_index] != ""
         ]
-
-        # check if ods odp fields are present; if they are all fields should be added,
-        #  regardless of the information in the file
-        if set(field_names) & set(SUBSTANCE_FIELDS):
-            field_names.extend(SUBSTANCE_FIELDS)
 
         # search for fields that also have an actual field that is not in the file
         # and add them to the list of fields to be added (for Impact fields)

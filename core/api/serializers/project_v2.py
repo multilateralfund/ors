@@ -4,10 +4,10 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.serializers.project import (
     ProjectListSerializer,
-    ProjectOdsOdpListSerializer,
     ProjectOdsOdpCreateSerializer,
     MetaProjectSerializer,
 )
@@ -380,27 +380,56 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return None
 
 
-class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectOdsOdpListSerializer):
-
-    ods_type = serializers.CharField(required=False, allow_null=True)
-
-    class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ProjectOdsOdpListSerializer.Meta.fields
-
-
-class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
+class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
     """
-    ProjectOdsOdpListSerializer class
+    ProjectOdsOdpSerializer class
     """
 
+    ods_display_name = serializers.SerializerMethodField()
+    ods_substance_name = serializers.SerializerMethodField()
+    ods_substance_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Substance.objects.all().values_list("id", flat=True),
+    )
+    ods_blend_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Blend.objects.all().values_list("id", flat=True)
+    )
     ods_type = serializers.SerializerMethodField()
     ods_blend_composition = serializers.SerializerMethodField()
 
-    class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ProjectOdsOdpListSerializer.Meta.fields + [
+    class Meta:
+        model = ProjectOdsOdp
+        fields = [
+            "id",
+            "project_id",
+            "ods_display_name",
+            "ods_substance_name",
+            "odp",
+            "ods_replacement",
+            "co2_mt",
+            "phase_out_mt",
+            "ods_type",
+            "ods_substance_id",
+            "ods_blend_id",
+            "sort_order",
             "ods_type",
             "ods_blend_composition",
         ]
+        read_only_fields = ["id", "project_id"]
+
+    def get_ods_display_name(self, obj):
+        if obj.ods_display_name:
+            return obj.ods_display_name
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        if obj.ods_blend:
+            return obj.ods_blend.name
+        return None
+
+    def get_ods_substance_name(self, obj):
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        return None
 
     def get_ods_type(self, obj):
         return obj.get_ods_type_display()
@@ -409,6 +438,36 @@ class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
         if obj.ods_blend:
             return obj.ods_blend.composition
         return ""
+
+    def validate(self, attrs):
+        if attrs.get("ods_substance_id") and attrs.get("ods_blend_id"):
+            raise serializers.ValidationError(
+                "Only one of ods_substance_id or ods_blend_id is required"
+            )
+
+        # validate partial updates
+        if self.instance:
+            # set ods_substance_id wile ods_blend_id is set
+            if attrs.get("ods_substance_id") and self.instance.ods_blend_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_substance_id when ods_blend_id is set"
+                )
+
+            # set ods_blend_id wile ods_substance_id is set
+            if attrs.get("ods_blend_id") and self.instance.ods_substance_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_blend_id when ods_substance_id is set"
+                )
+
+        return super().validate(attrs)
+
+
+class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectV2OdsOdpListSerializer):
+
+    ods_type = serializers.CharField(required=False, allow_null=True)
+
+    class Meta(ProjectV2OdsOdpListSerializer.Meta):
+        fields = ProjectV2OdsOdpListSerializer.Meta.fields
 
 
 class SerializeProjectFieldHistory:
@@ -618,7 +677,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         return versions
 
 
-class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
+class ProjectV2OdsOdpCreateUpdateSerializer(
+    ProjectV2OdsOdpListSerializer, BaseProjectUtilityCreateSerializer
+):
     id = serializers.IntegerField(required=False)
 
     project_id = serializers.PrimaryKeyRelatedField(
@@ -684,7 +745,7 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
                 raise serializers.ValidationError(
                     f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
                 )
-        return super(ProjectOdsOdpListSerializer, self).validate(attrs)
+        return super(ProjectV2OdsOdpListSerializer, self).validate(attrs)
 
 
 class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSerializer):
