@@ -1,11 +1,12 @@
 import { Box, Button } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
-import { formatDecimalValue } from '@ors/helpers'
+import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi.ts'
 import cx from 'classnames'
 import React, { useCallback, useMemo, useState } from 'react'
 import { IoChevronDown } from 'react-icons/io5'
 import IntrinsicElements = React.JSX.IntrinsicElements
+import Link from '@ors/components/ui/Link/Link.tsx'
 
 type ApiSummaryOfProjects = {
   projects_count: number
@@ -50,6 +51,15 @@ const initialRequestParams = () => ({
   tranche: '',
 })
 
+const initialRowData = () => {
+  return {
+    params: initialRequestParams(),
+    text: '',
+  }
+}
+type RequestParams = ReturnType<typeof initialRequestParams>
+type RowData = ReturnType<typeof initialRowData>
+
 const TableCell = ({ className, children }: IntrinsicElements['div']) => {
   return (
     <div
@@ -84,24 +94,28 @@ const FilterField = (props: {
 }
 
 const SummaryOfProjectsRow = (props: {
+  rowData: RowData
+  setRowData: (updater: RowData | ((prevRowData: RowData) => RowData)) => void
   rowFilters: ApiSummaryOfProjectsFilters
 }) => {
-  const { rowFilters } = props
-  const [requestParams, setRequestParams] = useState(initialRequestParams)
+  const { rowFilters, rowData, setRowData } = props
 
   const summaryOfProjectsApi = useApi<ApiSummaryOfProjects>({
     path: 'api/summary-of-projects',
     options: {
       // triggerIf: false,
-      params: requestParams,
+      params: rowData.params,
       withStoreCache: false,
     },
   })
 
   const handleFilterChanged = useCallback(
-    (paramName: keyof ReturnType<typeof initialRequestParams>) => {
+    (paramName: keyof RequestParams) => {
       return (value: string) => {
-        console.log('Changing value of ', paramName, value)
+        setRowData((prevRowData) => ({
+          ...prevRowData,
+          params: { ...prevRowData.params, [paramName]: value },
+        }))
         summaryOfProjectsApi.setParams({ [paramName]: value })
         summaryOfProjectsApi.setApiSettings((prev) => ({
           ...prev,
@@ -109,13 +123,21 @@ const SummaryOfProjectsRow = (props: {
         }))
       }
     },
-    [summaryOfProjectsApi],
+    [summaryOfProjectsApi, setRowData],
   )
 
   return (
     <div className="table-row">
       <TableCell>
-        <textarea></textarea>
+        <textarea
+          value={rowData.text}
+          onChange={(evt) =>
+            setRowData((prevRowData) => ({
+              ...prevRowData,
+              text: evt.target.value,
+            }))
+          }
+        ></textarea>
       </TableCell>
       <TableCell>
         <div className="flex w-[20rem] flex-col gap-2">
@@ -168,10 +190,26 @@ const SummaryOfProjectsRow = (props: {
 }
 
 const SummaryOfProjectsTable = (props: {
-  rows: Record<string, string>[]
+  rows: RowData[]
+  setRows: React.Dispatch<React.SetStateAction<RowData[]>>
   rowFilters: ApiSummaryOfProjectsFilters
 }) => {
-  const { rows, rowFilters } = props
+  const { rows, rowFilters, setRows } = props
+
+  const setRow = useCallback(
+    (idx: number) => (updater: RowData | ((prevRowData: RowData) => RowData)) =>
+      setRows((prevState) => {
+        const newRows = [...prevState]
+        if (typeof updater === 'function') {
+          newRows[idx] = updater(newRows[idx])
+        } else {
+          newRows[idx] = updater
+        }
+        return newRows
+      }),
+    [setRows],
+  )
+
   return (
     <div className="table w-full border-collapse">
       <div className="table-header-group font-bold">
@@ -190,17 +228,22 @@ const SummaryOfProjectsTable = (props: {
           </TableCell>
         </div>
       </div>
-      {rows.map((r, i) => (
-        <SummaryOfProjectsRow key={i} rowFilters={rowFilters} />
+      {rows.map((row, i) => (
+        <SummaryOfProjectsRow
+          key={i}
+          rowFilters={rowFilters}
+          rowData={row}
+          setRowData={setRow(i)}
+        />
       ))}
     </div>
   )
 }
 
 const SummaryOfProjects = () => {
-  const [rows, setRows] = useState<Record<string, string>[]>([])
+  const [rows, setRows] = useState<RowData[]>([initialRowData()])
   const addRow = () => {
-    setRows((prevState) => [...prevState, {}])
+    setRows((prevState) => [...prevState, initialRowData()])
   }
   const removeRow = () => {
     setRows((prevState) => prevState.slice(0, prevState.length - 1))
@@ -218,19 +261,52 @@ const SummaryOfProjects = () => {
     return null
   }, [rowFiltersApi.loaded, rowFiltersApi.data])
 
+  const downloadUrl = useMemo(() => {
+    const validRowData = rows.map((row) => {
+      // Filter out parameters with falsy values to reduce encoded size.
+      const params = Object.fromEntries(
+        Object.entries(row.params).filter(([_, value]) => value),
+      )
+      return { ...row, params: params }
+    })
+    const b64rowData = btoa(JSON.stringify(validRowData))
+    const encodedParams = new URLSearchParams({
+      row_data: b64rowData,
+    }).toString()
+    return formatApiUrl(`api/summary-of-projects/export?${encodedParams}`)
+  }, [rows])
+
   return (
     <>
       <Box className="shadow-none">
         {rowFilters && (
           <>
-            <SummaryOfProjectsTable rowFilters={rowFilters} rows={rows} />
+            <SummaryOfProjectsTable
+              rowFilters={rowFilters}
+              rows={rows}
+              setRows={setRows}
+            />
             <div className="mt-4 flex gap-x-2">
               <Button size="large" variant="contained" onClick={addRow}>
                 Add row
               </Button>
-              <Button size="large" variant="contained" onClick={removeRow}>
+              <Button
+                size="large"
+                variant="contained"
+                onClick={removeRow}
+                disabled={rows.length === 0}
+              >
                 Remove row
               </Button>
+              <Link
+                button
+                disabled={!rows.filter((row) => row.text).length}
+                size="large"
+                href={downloadUrl}
+                variant="contained"
+              >
+                Download summary
+              </Link>
             </div>
           </>
         )}

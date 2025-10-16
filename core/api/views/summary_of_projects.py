@@ -1,9 +1,12 @@
+import base64
+import json
 from decimal import Decimal
 from django.db.models import Count, DecimalField
 from django.db.models import F
 from django.db.models import QuerySet
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+from django.http import JsonResponse
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -34,9 +37,7 @@ class SummaryOfProjectsViewSet(
     queryset = Project.objects.really_all()
     permission_classes = (HasProjectV2ApproveAccess,)
 
-    def list(self, request, *args, **kwargs):
-        projects: QuerySet[Project] = self.filter_queryset(self.get_queryset())
-
+    def _extract_data(self, projects: QuerySet[Project]):
         meta_project_funding_expression = Coalesce(
             F("meta_project__project_funding"), Decimal(0.0)
         ) + Coalesce(F("meta_project__support_cost"), Decimal(0.0))
@@ -58,7 +59,11 @@ class SummaryOfProjectsViewSet(
             ),
         )
 
-        return Response(result)
+        return result
+
+    def list(self, request, *args, **kwargs):
+        projects: QuerySet[Project] = self.filter_queryset(self.get_queryset())
+        return Response(self._extract_data(projects))
 
     @action(methods=["GET"], detail=False)
     def filters(self, request, *args, **kwargs):
@@ -80,3 +85,27 @@ class SummaryOfProjectsViewSet(
         }
 
         return Response(result)
+
+    @action(methods=["GET"], detail=False)
+    def export(self, request, *args, **kwargs):
+        queryset: QuerySet[Project] = self.get_queryset()
+        params: str = request.query_params.get("row_data")
+
+        result = []
+
+        if params:
+            params: dict = json.loads(base64.b64decode(params).decode())
+
+            for query in params:
+                project_filter = self.filterset_class(query["params"], queryset)
+                filtered_projects = project_filter.qs
+                data = self._extract_data(filtered_projects)
+                data["text"] = query["text"]
+                result.append(
+                    {
+                        "params": query["params"],
+                        "result": data,
+                    }
+                )
+
+        return JsonResponse({"result": result})
