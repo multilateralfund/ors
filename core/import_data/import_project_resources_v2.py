@@ -344,11 +344,6 @@ def import_project_specific_fields(file_path):
             if row[field_index] != ""
         ]
 
-        # check if ods odp fields are present; if they are all fields should be added,
-        #  regardless of the information in the file
-        if set(field_names) & set(SUBSTANCE_FIELDS):
-            field_names.extend(SUBSTANCE_FIELDS)
-
         # search for fields that also have an actual field that is not in the file
         # and add them to the list of fields to be added (for Impact fields)
         actual_field_names = [
