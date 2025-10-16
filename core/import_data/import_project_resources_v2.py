@@ -337,6 +337,8 @@ def import_project_specific_fields(file_path):
             )
             continue
 
+        cluster_sector_type.fields.clear()
+
         # particular fields start from row 22
         field_names = [
             _clean_up_field_name(row[field_index].strip())
