@@ -1,12 +1,10 @@
-import React, { ChangeEvent, useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
+import Field from '@ors/components/manage/Form/Field.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import {
-  getMeetingNr,
-  useMeetingOptions,
-} from '@ors/components/manage/Utils/utilFunctions'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
+import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canEditField, canViewField } from '../utils'
@@ -21,15 +19,12 @@ import {
   tableColumns,
   defaultProps,
 } from '../constants'
-import { useStore } from '@ors/store'
-import { parseNumber } from '@ors/helpers'
-
-import cx from 'classnames'
 import useApi from '@ors/hooks/useApi.ts'
+import { useStore } from '@ors/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
+
 import { map } from 'lodash'
-import Field from '@ors/components/manage/Form/Field.tsx'
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
+import cx from 'classnames'
 
 type DecisionOption = {
   name: string
@@ -50,7 +45,6 @@ const ProjectApprovalFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = canEditField(editableFields, 'meeting_approved')
 
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
@@ -82,24 +76,6 @@ const ProjectApprovalFields = ({
     }
   }
 
-  const handleChangeMeeting = (meeting?: string) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        meeting_approved: parseNumber(meeting),
-        ...(parseNumber(meeting) !== crtSectionData?.meeting_approved
-          ? { decision: null }
-          : {}),
-      },
-    }))
-    decisionsApi.setParams({ meeting_id: meeting })
-    decisionsApi.setApiSettings((prev) => ({
-      ...prev,
-      options: { ...prev.options, triggerIf: !!meeting },
-    }))
-  }
-
   const handleChangeDecision = (option: DecisionOption | string | null) => {
     const initialValue =
       typeof option === 'string' ? option : (option?.value.toString() ?? '')
@@ -127,16 +103,11 @@ const ProjectApprovalFields = ({
               label={getMeetingNr(
                 crtSectionData?.meeting_approved ?? undefined,
               )?.toString()}
-              options={useMeetingOptions()}
-              onChange={handleChangeMeeting}
-              onClear={() => handleChangeMeeting()}
-              disabled={!canEditMeeting}
-              className={cx('!m-0 h-10 !py-1', {
+              options={[]}
+              disabled={true}
+              className={cx('!m-0 h-10 !py-1', disabledClassName, {
                 'border-red-500': getIsInputDisabled('meeting_approved'),
-                [disabledClassName]: !canEditMeeting,
               })}
-              clearBtnClassName="right-1"
-              withClear={canEditMeeting}
             />
           </div>
         )}

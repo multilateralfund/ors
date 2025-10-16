@@ -46,6 +46,7 @@ import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const EditActionButtons = ({
   projectData,
@@ -168,22 +169,10 @@ const EditActionButtons = ({
     (field) => field.table === 'ods_odp',
   )
 
-  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
-  const areFieldsMissing = odsOdpData.some((data) =>
-    Object.entries(data).some(
-      ([field, value]) =>
-        !phaseOutFieldNames.includes(field) && checkInvalidValue(value),
-    ),
-  )
-  const hasPhaseOutErrors = odsOdpData.some(
-    (data) =>
-      phaseOutFieldNames.filter(
-        (field) => !checkInvalidValue(data[field as keyof typeof data]),
-      ).length < 2,
-  )
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (areFieldsMissing || hasPhaseOutErrors || odsOdpData.length === 0)
+    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+      odsOdpData.length === 0)
 
   const {
     Header: headerErrors = {},
@@ -206,7 +195,9 @@ const EditActionButtons = ({
     commonErrors ||
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors))
+      : hasSectionErrors(impactErrors)) ||
+    (isRecommended &&
+      dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =

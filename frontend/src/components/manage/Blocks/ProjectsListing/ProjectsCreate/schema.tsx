@@ -63,6 +63,15 @@ const bpLinkColumnDefs = (
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   },
   {
+    headerName: tableColumns.project_cluster_id,
+    field: 'project_cluster.code',
+    tooltipField: 'project_cluster.name',
+    minWidth: 70,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
+    valueGetter: (params: any) =>
+      params.data.project_cluster?.code ?? params.data.project_cluster?.name,
+  },
+  {
     headerName: tableColumns.project_type_id,
     field: 'project_type.code',
     tooltipField: 'project_type.name',
