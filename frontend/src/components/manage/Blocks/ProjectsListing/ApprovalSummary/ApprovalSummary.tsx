@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  Checkbox,
-  Divider,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Checkbox, Divider, Typography } from '@mui/material'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
@@ -18,6 +11,7 @@ import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import { GridOptions, ICellRendererParams } from 'ag-grid-community'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import { formatApiUrl } from '@ors/helpers'
+import cx from 'classnames'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -58,9 +52,19 @@ const ApprovalSummaryPreviewTable = (props: {
       },
     },
     {
-      headerName: 'Status',
-      field: 'status_project',
-      tooltipField: 'status_project',
+      headerName: 'Cluster',
+      field: 'project_cluster',
+      tooltipField: 'project_cluster',
+    },
+    {
+      headerName: 'Type',
+      field: 'type',
+      tooltipField: 'type',
+    },
+    {
+      headerName: 'Sector',
+      field: 'project_sector',
+      tooltipField: 'project_sector',
     },
     {
       headerName: 'Submission status',
@@ -107,19 +111,20 @@ const ApprovalSummaryPreviewTable = (props: {
 
 const ColsFundsRecommended = (props: {
   data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+  cellClass?: string
 }) => {
-  const { data } = props
+  const { data, cellClass } = props
   return (
     <>
-      <td>
+      <td className={cellClass}>
         {'$'}
         {data.project_funding}
       </td>
-      <td>
+      <td className={cellClass}>
         {'$'}
         {data.project_support_cost}
       </td>
-      <td>
+      <td className={cellClass}>
         {'$'}
         {data.total}
       </td>
@@ -127,60 +132,23 @@ const ColsFundsRecommended = (props: {
   )
 }
 
-const TrHcfc = (props: {
-  sector: ReactNode
-  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
-}) => {
-  const { data, sector } = props
-  return (
-    <tr className="leading-7">
-      <td>{sector}</td>
-      <td>{data.hcfc}</td>
-      <td></td>
-      <ColsFundsRecommended data={data} />
-    </tr>
-  )
-}
-const TrHfc = (props: {
-  sector: ReactNode
-  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
-}) => {
-  const { data, sector } = props
-  return (
-    <tr className="leading-7">
-      <td>{sector}</td>
-      <td></td>
-      <td>{data.hfc}</td>
-      <ColsFundsRecommended data={data} />
-    </tr>
-  )
-}
-
-const TrFundsRecommended = (props: {
-  sector: ReactNode
-  data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
-}) => {
-  const { data, sector } = props
-  return (
-    <tr className="leading-7">
-      <td>{sector}</td>
-      <td></td>
-      <td></td>
-      <ColsFundsRecommended data={data} />
-    </tr>
-  )
-}
 const TrAllCells = (props: {
   sector: ReactNode
   data: ApiApprovalSummary['bilateral_cooperation']['phase_out_plan']
+  hasTopBorder?: boolean
 }) => {
-  const { data, sector } = props
+  const { data, sector, hasTopBorder } = props
+
+  const cellClass = cx({
+    'border border-x-0 border-b-0 border-solid border-primary': !!hasTopBorder,
+  })
+
   return (
     <tr className="leading-7">
-      <td>{sector}</td>
-      <td>{data.hcfc}</td>
-      <td>{data.hfc}</td>
-      <ColsFundsRecommended data={data} />
+      <td className={cellClass}>{sector}</td>
+      <td className={cellClass}>{data.hcfc}</td>
+      <td className={cellClass}>{data.hfc}</td>
+      <ColsFundsRecommended cellClass={cellClass} data={data} />
     </tr>
   )
 }
@@ -209,14 +177,11 @@ const RowSectionBilateralCooperation = (props: {
   return (
     <>
       <TrSection title={title} />
-      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
-      <TrFundsRecommended sector="Destruction" data={data.destruction} />
-      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
-      <TrFundsRecommended
-        sector="Energy efficiency"
-        data={data.energy_efficiency}
-      />
-      <TrFundsRecommended
+      <TrAllCells sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrAllCells sector="Destruction" data={data.destruction} />
+      <TrAllCells sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrAllCells sector="Energy efficiency" data={data.energy_efficiency} />
+      <TrAllCells
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
@@ -233,13 +198,10 @@ const RowSectionInvestmentProject = (props: {
   return (
     <>
       <TrSection title={title} />
-      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
-      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
-      <TrFundsRecommended
-        sector="Energy efficiency"
-        data={data.energy_efficiency}
-      />
-      <TrFundsRecommended
+      <TrAllCells sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrAllCells sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrAllCells sector="Energy efficiency" data={data.energy_efficiency} />
+      <TrAllCells
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
@@ -255,15 +217,12 @@ const RowSectionWorkProgrammeAmendment = (props: {
   return (
     <>
       <TrSection title={title} />
-      <TrHcfc sector="Phase-out plan" data={data.phase_out_plan} />
-      <TrFundsRecommended sector="Destruction" data={data.destruction} />
-      <TrFundsRecommended sector="Several" data={data.several} />
-      <TrHfc sector="HFC phase-down" data={data.hfc_phase_down} />
-      <TrFundsRecommended
-        sector="Energy efficiency"
-        data={data.energy_efficiency}
-      />
-      <TrFundsRecommended
+      <TrAllCells sector="Phase-out plan" data={data.phase_out_plan} />
+      <TrAllCells sector="Destruction" data={data.destruction} />
+      <TrAllCells sector="Several" data={data.several} />
+      <TrAllCells sector="HFC phase-down" data={data.hfc_phase_down} />
+      <TrAllCells sector="Energy efficiency" data={data.energy_efficiency} />
+      <TrAllCells
         sector={<span className="font-bold">TOTAL:</span>}
         data={data.total}
       />
@@ -276,7 +235,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
   const { previewData } = props
   return (
     <Box className="flex justify-center shadow-none">
-      <table className="sm:w-full md:w-3/5">
+      <table className="border-collapse sm:w-full md:w-3/5">
         <thead>
           <tr>
             <th>Sector</th>
@@ -315,9 +274,24 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
             </td>
           </tr>
           <TrSpacing />
-          {previewData.summary_by_parties_and_implementing_agencies.map((a) => (
-            <TrAllCells key={a.agency_name} sector={a.agency_name} data={a} />
-          ))}
+          {previewData.summary_by_parties_and_implementing_agencies.map(
+            (a, idx) => {
+              const addTopBorder =
+                idx > 1 &&
+                a.agency_type !==
+                  previewData.summary_by_parties_and_implementing_agencies[
+                    idx - 1
+                  ].agency_type
+              return (
+                <TrAllCells
+                  key={a.agency_name}
+                  sector={a.agency_name}
+                  hasTopBorder={addTopBorder}
+                  data={a}
+                />
+              )
+            },
+          )}
           <TrAllCells
             sector={
               <span className="font-bold">GRAND TOTAL (HCFCs and HFCs):</span>

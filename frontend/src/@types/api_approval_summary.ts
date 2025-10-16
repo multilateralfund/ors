@@ -21,7 +21,9 @@ export type ApiApprovalSummary = {
       code: string
       version: number
       status_submission: string
-      status_project: string
+      project_cluster: string
+      type: string
+      project_sector: string
     }[]
     count: number
   }

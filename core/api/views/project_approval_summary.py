@@ -71,7 +71,7 @@ class ProjectApprovalSummaryViewSet(
                 data_from = data[options["data_key"]]
                 for w_idx, c in enumerate(options["columns"], start=writing_offset):
                     if c is not None:
-                        sheet[idx][w_idx].value = data_from[c]
+                        sheet[idx][w_idx].value = data_from.get(c)
 
     def _write_full_row(self, sheet, row_idx, name, data, col_offset=1):
         columns = self._make_row()
@@ -112,27 +112,27 @@ class ProjectApprovalSummaryViewSet(
         row_types = {
             "phase-out plan": {
                 "data_key": "phase_out_plan",
-                "columns": self._make_row("hfc"),
+                "columns": self._make_row(),
             },
             "destruction": {
                 "data_key": "destruction",
-                "columns": self._make_row("hcfc", "hfc"),
+                "columns": self._make_row(),
             },
             "several": {
                 "data_key": "several",
-                "columns": self._make_row("hcfc", "hfc"),
+                "columns": self._make_row(),
             },
             "hfc phase-down": {
                 "data_key": "hfc_phase_down",
-                "columns": self._make_row("hcfc"),
+                "columns": self._make_row(),
             },
             "energy efficiency": {
                 "data_key": "energy_efficiency",
-                "columns": self._make_row("hcfc", "hfc"),
+                "columns": self._make_row(),
             },
             "total:": {
                 "data_key": "total",
-                "columns": self._make_row("hcfc", "hfc"),
+                "columns": self._make_row(),
             },
         }
 
