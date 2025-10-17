@@ -495,6 +495,7 @@ export const getApprovalErrors = (
   const requiredFields = [
     'meeting_approved',
     'decision',
+    'programme_officer',
     'excom_provision',
     'date_completion',
   ]
