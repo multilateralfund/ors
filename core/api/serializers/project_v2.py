@@ -139,6 +139,7 @@ class ProjectComponentsSerializer(serializers.ModelSerializer):
         original_project = obj.original_project
         if original_project:
             return original_project.id
+        return None
 
 
 class ProjectV2ProjectIncludeFileSerializer(serializers.ModelSerializer):
