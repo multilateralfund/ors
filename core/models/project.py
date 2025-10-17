@@ -255,8 +255,12 @@ class ProjectComponents(models.Model):
     """
 
     def __str__(self):
-        projects = Project.objects.really_all().filter(component=self)
-        return f"{[x.id for x in projects]}"
+        projects = self.projects.all()
+        return f"{[p.id for p in projects]}"
+
+    @cached_property
+    def original_project(self):
+        return Project.objects.filter(component=self).order_by("date_created").first()
 
 
 class Project(models.Model):
