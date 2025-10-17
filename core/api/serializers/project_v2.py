@@ -358,6 +358,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
+            if "metaproject_new_code" in data:
+                data["metaproject_new_code"] = None
+            if "metaproject_code" in data:
+                data["metaproject_code"] = None
         return data
 
     def get_bp_activity(self, obj: Project):
