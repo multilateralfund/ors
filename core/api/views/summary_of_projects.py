@@ -1,6 +1,8 @@
 import base64
 import json
 from decimal import Decimal
+
+import openpyxl
 from django.db.models import Count, DecimalField
 from django.db.models import F
 from django.db.models import QuerySet
@@ -8,12 +10,14 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from rest_framework import mixins
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from django.conf import settings
 from core.api.filters.summary_of_projects import SummaryOfProjectsFilter
 from core.api.permissions import HasProjectV2ApproveAccess
+from core.api.utils import workbook_response
 from core.models import Project
 
 
@@ -86,26 +90,66 @@ class SummaryOfProjectsViewSet(
 
         return Response(result)
 
+    def _export_debug(self, params: dict):
+        queryset: QuerySet[Project] = self.get_queryset()
+        result = []
+
+        for query in params:
+            project_filter = self.filterset_class(query["params"], queryset)
+            filtered_projects = project_filter.qs
+            data = self._extract_data(filtered_projects)
+            data["text"] = query["text"]
+            result.append(
+                {
+                    "params": query["params"],
+                    "result": data,
+                }
+            )
+
+        return JsonResponse({"DEBUG": result})
+
+    def _export_wb(self, params: dict):
+        queryset: QuerySet[Project] = self.get_queryset()
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Summary of projects"
+        header = [
+            "Projects and activities",
+            "No. of countries",
+            "No. of funding requests",
+            "Amounts recommended (US $)",
+            "Amounts in principle (US $)",
+        ]
+        sheet.append(header)
+        for query in params:
+            project_filter = self.filterset_class(query["params"], queryset)
+            filtered_projects = project_filter.qs
+            data = self._extract_data(filtered_projects)
+            sheet.append(
+                [
+                    query["text"],
+                    data["countries_count"],
+                    data["projects_count"],
+                    data["amounts_recommended"],
+                    data["amounts_in_principle"],
+                ]
+            )
+        return workbook_response("Summary of projects", wb)
+
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
-        queryset: QuerySet[Project] = self.get_queryset()
-        params: str = request.query_params.get("row_data")
 
-        result = []
+        params: str = request.query_params.get("row_data")
+        is_debug_request = settings.DEBUG and request.query_params.get("debug")
 
         if params:
             params: dict = json.loads(base64.b64decode(params).decode())
 
-            for query in params:
-                project_filter = self.filterset_class(query["params"], queryset)
-                filtered_projects = project_filter.qs
-                data = self._extract_data(filtered_projects)
-                data["text"] = query["text"]
-                result.append(
-                    {
-                        "params": query["params"],
-                        "result": data,
-                    }
-                )
+            if is_debug_request:
+                return self._export_debug(params)
+            else:
+                return self._export_wb(params)
 
-        return JsonResponse({"result": result})
+        return Response(
+            {"error": "row_data is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
