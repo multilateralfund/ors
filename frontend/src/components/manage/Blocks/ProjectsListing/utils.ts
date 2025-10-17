@@ -109,9 +109,7 @@ export const getIsSaveDisabled = (
   return (
     !canLinkToBp ||
     !(project_type && sector && title) ||
-    (total_fund &&
-      support_cost_psc &&
-      Number(total_fund) < Number(support_cost_psc)) ||
+    Number(total_fund) < Number(support_cost_psc) ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date))
   )
 }
@@ -478,11 +476,9 @@ export const getCrossCuttingErrors = (
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
-    ...(total_fund &&
-      support_cost_psc &&
-      Number(total_fund) < Number(support_cost_psc) && {
-        support_cost_psc: ['Value cannot be greater than project funding.'],
-      }),
+    ...(Number(total_fund) < Number(support_cost_psc) && {
+      support_cost_psc: ['Value cannot be greater than project funding.'],
+    }),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
