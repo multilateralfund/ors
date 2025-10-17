@@ -1254,7 +1254,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
 
         if project_specific_fields_obj:
             for field in project_specific_fields_obj.fields.filter(
-                section__in=["Header", "Substance Details", "Impact"],
+                section__in=["Header", "Substance Details", "Impact", "MYA"],
                 is_actual=False,
             ):
                 if field.table == "ods_odp":
