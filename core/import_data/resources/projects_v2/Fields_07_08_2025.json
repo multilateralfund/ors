@@ -172,8 +172,8 @@
     {
         "IMPORT_NAME": "Meeting number",
         "LABEL": "Meeting number",
-        "WRITE_FIELD_NAME": "meeting_approved",
-        "READ_FIELD_NAME": "meeting_approved",
+        "WRITE_FIELD_NAME": "meeting",
+        "READ_FIELD_NAME": "meeting",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Approval",

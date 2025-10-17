@@ -170,7 +170,6 @@ class ProjectAdmin(admin.ModelAdmin):
             "group",
             "meta_project",
             "meeting",
-            "meeting_approved",
             "meeting_transf",
             "post_excom_meeting",
             "post_excom_decision",
