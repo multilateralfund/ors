@@ -1,6 +1,9 @@
 import { useContext } from 'react'
 
-import { ProjectIdentifiersSectionProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import {
+  BpDataProps,
+  ProjectIdentifiersSectionProps,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiersFields from './ProjectIdentifiersFields'
 import ProjectBPLinking from './ProjectBPLinking'
@@ -18,8 +21,13 @@ const ProjectIdentifiersSection = ({
   isProjectEditableByAdmin,
   setCurrentStep,
   setCurrentTab,
+  bpData,
+  onBpDataChange,
   ...rest
-}: ProjectIdentifiersSectionProps) => {
+}: ProjectIdentifiersSectionProps & {
+  bpData: BpDataProps
+  onBpDataChange: (bpData: BpDataProps) => void
+}) => {
   const { canViewBp } = useContext(PermissionsContext)
 
   const { projectFields, viewableFields, editableFields } = useStore(
@@ -65,6 +73,8 @@ const ProjectIdentifiersSection = ({
             projectData,
             setProjectData,
             setCurrentTab,
+            onBpDataChange,
+            bpData,
           }}
           isSectionDisabled={
             postExComUpdate ||
@@ -72,7 +82,7 @@ const ProjectIdentifiersSection = ({
             areNextSectionsDisabled ||
             !canEditField(editableFields, 'bp_activity')
           }
-          isNextButtonDisabled={areNextSectionsDisabled}
+          isNextButtonDisabled={areNextSectionsDisabled || bpData.bpDataLoading}
         />
       )}
     </>

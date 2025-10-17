@@ -23,6 +23,7 @@ import {
   ProjectDataProps,
   TrancheErrors,
   RelatedProjectsSectionType,
+  BpDataProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -38,6 +39,7 @@ import {
   hasFields,
   getApprovalErrors,
   getAgencyErrorType,
+  canEditField,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -69,6 +71,8 @@ const ProjectsCreate = ({
   approvalFields = [],
   specificFieldsLoaded,
   loadedFiles,
+  onBpDataChange,
+  bpData,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -85,11 +89,14 @@ const ProjectsCreate = ({
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
     loadedFiles?: boolean
+    bpData: BpDataProps
+    onBpDataChange: (bpData: BpDataProps) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const {
     projIdentifiers,
+    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -119,7 +126,7 @@ const ProjectsCreate = ({
   )
 
   const { warnings } = useStore((state) => state.projectWarnings)
-  const { projectFields, viewableFields } = useStore(
+  const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
 
@@ -199,6 +206,15 @@ const ProjectsCreate = ({
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
   const isProjectEditableByAdmin = hasV3EditPermissions && editableByAdmin
+
+  const hasBpDefaultErrors =
+    !(
+      postExComUpdate ||
+      isV3ProjectEditable ||
+      !canEditField(editableFields, 'bp_activity')
+    ) &&
+    bpData.hasBpData &&
+    !bpLinking.bpId
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -296,11 +312,14 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Identifiers</div>
-          {(hasSectionErrors(projIdentifiersErrors) ||
-            !!agencyErrorType ||
-            hasSectionErrors(bpErrors)) && (
-            <SectionErrorIndicator errors={[]} />
-          )}
+          {bpData.bpDataLoading
+            ? LoadingTab
+            : (hasSectionErrors(projIdentifiersErrors) ||
+                !!agencyErrorType ||
+                hasBpDefaultErrors ||
+                hasSectionErrors(bpErrors)) && (
+                <SectionErrorIndicator errors={[]} />
+              )}
         </div>
       ),
       disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
@@ -319,6 +338,8 @@ const ProjectsCreate = ({
             isV3ProjectEditable,
             isProjectEditableByAdmin,
             specificFieldsLoaded,
+            onBpDataChange,
+            bpData,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -333,6 +354,13 @@ const ProjectsCreate = ({
                   agencyErrorType === 'similar_agencies'
                     ? 'Agency and lead agency cannot be similar when submitting on behalf of a cooperating agency.'
                     : 'Agency and lead agency cannot be different unless submitting on behalf of a cooperating agency.',
+              },
+            ]
+          : []),
+        ...(hasBpDefaultErrors
+          ? [
+              {
+                message: 'A business plan activity should be selected.',
               },
             ]
           : []),

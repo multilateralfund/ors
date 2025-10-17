@@ -3,7 +3,7 @@ import { ChangeEvent } from 'react'
 import LinkedBPTableWrapper from './LinkedBPTable'
 import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { ProjectDataProps, ProjectTabSetters } from '../interfaces'
+import { BpDataProps, ProjectDataProps, ProjectTabSetters } from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
@@ -14,10 +14,14 @@ const ProjectBPLinking = ({
   isSectionDisabled,
   isNextButtonDisabled,
   setCurrentTab,
+  bpData,
+  onBpDataChange,
 }: Omit<ProjectDataProps, 'hasSubmitted'> &
   ProjectTabSetters & {
     isSectionDisabled: boolean
     isNextButtonDisabled: boolean
+    bpData: BpDataProps
+    onBpDataChange: (bpData: BpDataProps) => void
   }) => {
   const { isLinkedToBP } = projectData.bpLinking
 
@@ -37,6 +41,8 @@ const ProjectBPLinking = ({
     })
   }
 
+  const { country, agency, cluster } = projectData.projIdentifiers
+
   return (
     <>
       <div
@@ -47,8 +53,8 @@ const ProjectBPLinking = ({
           label="The proposal is included in a BP"
           control={
             <Checkbox
-              checked={isLinkedToBP}
-              onChange={handleChangeBPLink}
+              checked={isLinkedToBP || bpData.hasBpData}
+              // onChange={handleChangeBPLink}
               size="small"
               sx={{
                 color: 'black',
@@ -59,9 +65,13 @@ const ProjectBPLinking = ({
             typography: { fontSize: '1.05rem' },
           }}
         />
-        {isLinkedToBP && (
-          <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
+        {/* {isLinkedToBP && ( */}
+        {country && agency && cluster && (
+          <LinkedBPTableWrapper
+            {...{ projectData, setProjectData, onBpDataChange, bpData }}
+          />
         )}
+        {/* )} */}
       </div>
       <div className="mt-5">
         <NavigationButton

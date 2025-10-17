@@ -3,12 +3,14 @@ import type { Country } from '@ors/@types/store'
 
 import { useEffect, useMemo, useRef } from 'react'
 
-import Loading from '@ors/components/theme/Loading/Loading'
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
-import { ProjectDataProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import {
+  BpDataProps,
+  ProjectDataProps,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { ApiBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
 
@@ -17,9 +19,12 @@ import { find, map } from 'lodash'
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
 const LinkedBPTableWrapper = (
-  props: Omit<ProjectDataProps, 'hasSubmitted'>,
+  props: Omit<ProjectDataProps, 'hasSubmitted'> & {
+    bpData: BpDataProps
+    onBpDataChange: (bpData: BpDataProps) => void
+  },
 ) => {
-  const { results: yearRanges } = useGetYearRanges()
+  const { results: yearRanges, loading } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
   const latestEndorsedBpPeriod = find(
@@ -27,14 +32,20 @@ const LinkedBPTableWrapper = (
     ({ status = [] }) => status.length > 0 && status.includes('Endorsed'),
   )
 
+  const { cluster, country, agency } = props.projectData.projIdentifiers
+
   return (
     yearRanges &&
     yearRanges.length > 0 &&
+    cluster &&
+    country &&
+    agency &&
     (latestEndorsedBpPeriod ? (
       <LinkedBPTable
         {...props}
         period={latestEndorsedBpPeriod}
         yearRanges={yearRanges}
+        loading={loading}
       />
     ) : (
       <p>There is no Endorsed BP</p>
@@ -52,9 +63,11 @@ type LinkedBPTableProps = Omit<
 const LinkedBPTable = ({
   projectData,
   period,
+  loading,
   ...rest
 }: LinkedBPTableProps) => {
   const projIdentifiers = projectData.projIdentifiers
+  const { country, agency, cluster } = projIdentifiers
 
   const agencies = useStore((state) => state?.common.agencies_with_all.data)
   const countries = useStore((state) => state?.common.countries.data)
@@ -75,20 +88,26 @@ const LinkedBPTable = ({
     offset: 0,
   }
 
-  const activities = useGetActivities(filters)
-  const { loading, results: foundActivities } = activities
+  const shouldFetch = !!country && !!agency && !!cluster
+  const activities = useGetActivities(filters, shouldFetch)
+  const { loading: loading2, results: foundActivities } = activities
 
   const bp = useMemo(() => {
     return foundActivities.length > 0 ? foundActivities[0].business_plan : null
   }, [foundActivities])
 
+  useEffect(() => {
+    if (rest.onBpDataChange) {
+      rest.onBpDataChange({
+        hasBpData: bp ? rest.bpData.hasBpData : false,
+        bpDataLoading: loading || loading2,
+      })
+    }
+  }, [bp, loading2])
+
   return (
     <>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading}
-      />
-      {bp ? (
+      {bp && rest.bpData.hasBpData ? (
         <div>
           Business plan {bp.name} {' - '}
           <span>(Meeting: {bp.meeting_number})</span>
@@ -97,14 +116,18 @@ const LinkedBPTable = ({
           ) : null}
         </div>
       ) : null}
-      <LatestEndorsedBPActivities
-        {...{
-          projectData,
-          activities,
-          filters,
-        }}
-        {...rest}
-      />
+      {bp && (
+        <LatestEndorsedBPActivities
+          {...{
+            projectData,
+            activities,
+            filters,
+            loading,
+            loading2,
+          }}
+          {...rest}
+        />
+      )}
     </>
   )
 }
@@ -115,6 +138,10 @@ type LatestEndorsedBPActivitiesProps = Omit<
 > & {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
+  bpData: BpDataProps
+  onBpDataChange: (bpData: BpDataProps) => void
+  loading: boolean
+  loading2?: boolean
 }
 
 export type LinkableActivity = ApiBPActivity & {
@@ -122,7 +149,17 @@ export type LinkableActivity = ApiBPActivity & {
 }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
-  const { activities, yearRanges, projectData, setProjectData, ...rest } = props
+  const {
+    activities,
+    yearRanges,
+    projectData,
+    setProjectData,
+    bpData,
+    onBpDataChange,
+    loading,
+    loading2,
+    ...rest
+  } = props
   const { results, ...restActivities } = activities
   const { bpId } = projectData.bpLinking
 
@@ -155,20 +192,44 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     }
   }, [areActivitiesLoaded])
 
+  useEffect(() => {
+    if (formattedResults.length === 1 && !projectData.bpLinking.bpId) {
+      setProjectData((prevData) => {
+        const { bpLinking } = prevData
+
+        return {
+          ...prevData,
+          bpLinking: {
+            ...bpLinking,
+            bpId: formattedResults[0].id,
+          },
+        }
+      })
+    }
+    if (onBpDataChange) {
+      onBpDataChange({
+        hasBpData: formattedResults.length > 0,
+        bpDataLoading: loading || !!loading2,
+      })
+    }
+  }, [formattedResults, onBpDataChange, projectData])
+
   const form = useRef<HTMLFormElement>(null)
 
   return (
     <div className="activities flex flex-1 flex-col justify-start gap-6 pt-3">
       <form className="flex flex-col gap-6" ref={form}>
-        <BPTable
-          results={formattedResults}
-          yearRanges={yearRanges}
-          bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
-          setProjectData={setProjectData}
-          isProjectsSection
-          {...rest}
-          {...restActivities}
-        />
+        {bpData.hasBpData && (
+          <BPTable
+            results={formattedResults}
+            yearRanges={yearRanges}
+            bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
+            setProjectData={setProjectData}
+            isProjectsSection
+            {...rest}
+            {...restActivities}
+          />
+        )}
       </form>
     </div>
   )

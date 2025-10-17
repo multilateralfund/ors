@@ -393,3 +393,8 @@ export interface EnterpriseHeaderProps {
 export type EnterpriseActionButtons = EnterpriseHeaderProps & {
   setIsLoading: (value: boolean) => void
 }
+
+export interface BpDataProps {
+  hasBpData: boolean
+  bpDataLoading: boolean
+}

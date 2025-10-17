@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -10,16 +10,23 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
+import {
+  canEditField,
+  getDefaultImpactErrors,
+  getIsSaveDisabled,
+} from '../utils'
 import {
   ProjectFile,
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectHeader,
   TrancheErrorType,
+  BpDataProps,
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
+import { useStore } from '@ors/store'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectsHeader = ({
   projectData,
@@ -31,6 +38,7 @@ const ProjectsHeader = ({
   trancheErrors,
   specificFields,
   approvalFields,
+  bpData,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -39,9 +47,14 @@ const ProjectsHeader = ({
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
+  bpData: BpDataProps
 }) => {
-  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
-    projectData
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    bpLinking,
+  } = projectData
 
   const defaultImpactErrors = getDefaultImpactErrors(
     projectSpecificFields,
@@ -54,7 +67,29 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
   )
-  const isSaveDisabled = hasMissingRequiredFields || hasValidationErrors
+  const { editableFields } = useStore((state) => state.projectFields)
+  const { canEditApprovedProjects } = useContext(PermissionsContext)
+
+  const hasV3EditPermissions =
+    !!project && mode === 'edit' && canEditApprovedProjects
+  const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
+    project?.submission_status ?? '',
+  )
+  const isV3ProjectEditable =
+    hasV3EditPermissions &&
+    (editableByAdmin || project.submission_status === 'Recommended')
+
+  const isSaveDisabled =
+    hasMissingRequiredFields ||
+    hasValidationErrors ||
+    bpData.bpDataLoading ||
+    (!(
+      postExComUpdate ||
+      isV3ProjectEditable ||
+      !canEditField(editableFields, 'bp_activity')
+    ) &&
+      bpData.hasBpData &&
+      !bpLinking.bpId)
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 

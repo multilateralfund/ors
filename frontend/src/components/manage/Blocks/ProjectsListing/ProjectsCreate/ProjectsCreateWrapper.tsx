@@ -6,18 +6,19 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
+import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import {
+  initialCrossCuttingFields,
+  initialProjectIdentifiers,
+} from '../constants.ts'
+import {
+  BpDataProps,
   ProjectData,
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
 } from '../interfaces.ts'
-import {
-  initialCrossCuttingFields,
-  initialProjectIdentifiers,
-} from '../constants.ts'
-import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
 import { debounce, groupBy } from 'lodash'
@@ -84,6 +85,11 @@ const ProjectsCreateWrapper = () => {
     deletedFilesIds: [],
     newFiles: [],
   })
+
+  const [bpData, setBpData] = useState({
+    hasBpData: false,
+    bpDataLoading: false,
+  })
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
@@ -110,6 +116,10 @@ const ProjectsCreateWrapper = () => {
     }
   }, [cluster, project_type, sector])
 
+  const onBpDataChange = (bpData: BpDataProps) => {
+    setBpData(bpData)
+  }
+
   return (
     <>
       <ProjectsHeader
@@ -125,6 +135,7 @@ const ProjectsCreateWrapper = () => {
           specificFields,
           specificFieldsLoaded,
           setProjectData,
+          bpData,
         }}
       />
       <ProjectsCreate
@@ -139,6 +150,8 @@ const ProjectsCreateWrapper = () => {
           hasSubmitted,
           fileErrors,
           specificFieldsLoaded,
+          bpData,
+          onBpDataChange,
         }}
       />
       <ProjectFormFooter

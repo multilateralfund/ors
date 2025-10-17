@@ -30,13 +30,17 @@ const bpLinkColumnDefs = (
             <Checkbox
               checked={params.data?.selected}
               onChange={(event) => {
-                setProjectData((prevData) => ({
-                  ...prevData,
-                  bpLinking: {
-                    ...prevData.bpLinking,
-                    bpId: event.target.checked ? params.data!.id : null,
-                  },
-                }))
+                const nrRows = params.api.getDisplayedRowCount()
+
+                if (nrRows > 1) {
+                  setProjectData((prevData) => ({
+                    ...prevData,
+                    bpLinking: {
+                      ...prevData.bpLinking,
+                      bpId: event.target.checked ? params.data!.id : null,
+                    },
+                  }))
+                }
               }}
               sx={{
                 color: 'black',
