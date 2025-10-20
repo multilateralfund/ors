@@ -339,6 +339,7 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "orsauth",
     "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
+    "JWT_SERIALIZER": "core.api.serializers.CustomJWTSerializer",
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
     "USER_DETAILS_SERIALIZER": "core.api.serializers.CustomUserDetailsSerializer",
