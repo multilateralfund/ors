@@ -15,7 +15,6 @@ const ProjectIdentifiersSection = ({
   areNextSectionsDisabled,
   postExComUpdate,
   isV3ProjectEditable,
-  isProjectEditableByAdmin,
   setCurrentStep,
   setCurrentTab,
   ...rest
@@ -50,7 +49,6 @@ const ProjectIdentifiersSection = ({
             areNextSectionsDisabled,
             postExComUpdate,
             isV3ProjectEditable,
-            isProjectEditableByAdmin,
             setCurrentStep,
             setCurrentTab,
           }}

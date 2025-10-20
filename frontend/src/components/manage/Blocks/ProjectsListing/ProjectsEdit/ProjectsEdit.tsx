@@ -218,7 +218,7 @@ const ProjectsEdit = ({
       projIdentifiers: {
         ...prevData.projIdentifiers,
         country: project.country_id,
-        meeting: mode !== 'partial-link' ? project.meeting_id : null,
+        meeting: project.meeting_id,
         agency: project.agency_id,
         lead_agency: project.meta_project?.lead_agency,
         lead_agency_submitting_on_behalf:

@@ -198,7 +198,6 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
-  const isProjectEditableByAdmin = hasV3EditPermissions && editableByAdmin
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -317,7 +316,6 @@ const ProjectsCreate = ({
             project,
             postExComUpdate,
             isV3ProjectEditable,
-            isProjectEditableByAdmin,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}

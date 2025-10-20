@@ -177,6 +177,7 @@ export type ProjectTypeApi = ProjIdentifiers &
   SpecificFields &
   ProjectType & {
     meeting_id: number | null
+    component: { id: number; original_project_id: number }
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
@@ -281,7 +282,6 @@ export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   project?: ProjectTypeApi
   postExComUpdate?: boolean
   isV3ProjectEditable: boolean
-  isProjectEditableByAdmin: boolean
   specificFieldsLoaded: boolean
 }
 
