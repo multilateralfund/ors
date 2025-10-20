@@ -47,6 +47,7 @@ class AgencyListView(generics.ListAPIView):
                 name__in=[
                     "China (FECO)",
                     "Treasurer (Cash Pool)",
+                    "Secretariat",
                 ]
             )
 
