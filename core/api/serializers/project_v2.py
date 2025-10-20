@@ -124,6 +124,24 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.id in edit_queryset_ids
 
 
+class ProjectComponentsSerializer(serializers.ModelSerializer):
+
+    original_project_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectComponents
+        fields = [
+            "id",
+            "original_project_id",
+        ]
+
+    def get_original_project_id(self, obj):
+        original_project = obj.original_project
+        if original_project:
+            return original_project.id
+        return None
+
+
 class ProjectV2ProjectIncludeFileSerializer(serializers.ModelSerializer):
     """
     Serializer for including files in the project list serializer.
@@ -518,6 +536,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
@@ -954,6 +973,38 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 raise serializers.ValidationError(
                     "The decision number is invalid for the selected meeting."
                 )
+
+        if self.instance:
+            original_project = (
+                self.instance.component.original_project
+                if self.instance.component
+                else None
+            )
+            if original_project and original_project.id != self.instance.id:
+                if (
+                    attrs.get("meeting", None)
+                    and attrs["meeting"] != original_project.meeting
+                ):
+                    raise serializers.ValidationError(
+                        "The meeting cannot be changed for a component project."
+                    )
+        else:
+            associate_project_id = attrs.get("associate_project_id", None)
+            if associate_project_id:
+                try:
+                    associate_project = Project.objects.get(id=associate_project_id)
+                    if associate_project.component:
+                        original_project = associate_project.component.original_project
+                        if (
+                            attrs.get("meeting", None)
+                            and attrs["meeting"] != original_project.meeting
+                        ):
+                            raise serializers.ValidationError(
+                                "The meeting cannot be changed for a component project."
+                            )
+                except Project.DoesNotExist:
+                    pass
+
         return attrs
 
     def get_meta_project(self, project, lead_agency):
@@ -1071,7 +1122,19 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
 
+        meeting_changed = instance.meeting != validated_data.get(
+            "meeting", instance.meeting
+        )
         super().update(instance, validated_data)
+        if instance.component:
+            original_project = instance.component.original_project
+            if original_project and original_project.id == instance.id:
+                if meeting_changed:
+                    for comp_project in instance.component.projects.exclude(
+                        id=instance.id
+                    ):
+                        comp_project.meeting = instance.meeting
+                        comp_project.save()
 
         # update, create, delete ods_odp
         if ods_odp_data is not None:
@@ -1289,6 +1352,21 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )
+        original_project = (
+            self.instance.component.original_project
+            if self.instance.component
+            else None
+        )
+
+        if (
+            self.instance.component
+            and original_project
+            and original_project.id != self.instance.id
+        ):
+            # only original project of a component needs to have files attached
+            # other component projects are not required to have files attached
+            # projects that are not components also need to have files attached
+            return errors
         if ProjectFile.objects.filter(project=self.instance).count() < 1:
             errors["files"] = (
                 "At least one file must be attached to the project for submission."
