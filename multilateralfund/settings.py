@@ -344,6 +344,8 @@ REST_AUTH = {
 }
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+# Application-specific setting for Ekimetrics token expiry
+EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS = 365
 
 CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
 CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
