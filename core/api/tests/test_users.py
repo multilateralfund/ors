@@ -1,12 +1,12 @@
 import pytest
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
 
-from core.api.serializers import EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS
 from core.api.tests.factories import UserFactory
 from core.api.tests.base import BaseTest
 
@@ -67,7 +67,7 @@ class TestCustomTokenLifetime:
     Tests for custom JWT token lifetime based on user type
     """
 
-    # In seconds
+    # Tolerance (in seconds) for token lifetime comparisons
     token_lifetime_tolerance = 60
 
     def test_regular_user_token_lifetime(self, client):
@@ -118,8 +118,8 @@ class TestCustomTokenLifetime:
         iat_timestamp = token.payload["iat"]
         lifetime_seconds = exp_timestamp - iat_timestamp
 
-        # Should be around EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS (with some tolerance)
+        # Should be around EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS (with a bit of tolerance)
         expected_lifetime = timedelta(
-            days=EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS
+            days=settings.EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS
         ).total_seconds()
         assert abs(lifetime_seconds - expected_lifetime) < self.token_lifetime_tolerance

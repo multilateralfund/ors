@@ -11,3 +11,4 @@ from .projects import *
 from .projects_v2 import *
 from .replenishment import *
 from .users import *
+from .auth import *

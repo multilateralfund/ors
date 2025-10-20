@@ -339,13 +339,14 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "orsauth",
     "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
-    "JWT_SERIALIZER": "core.api.serializers.CustomJWTSerializer",
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
     "USER_DETAILS_SERIALIZER": "core.api.serializers.CustomUserDetailsSerializer",
 }
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+# Application-specific setting for Ekimetrics token expiry
+EXTERNAL_USERS_TOKEN_EXIPIRY_DAYS = 365
 
 CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
 CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
