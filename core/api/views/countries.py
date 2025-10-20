@@ -57,6 +57,8 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
         ):
             queryset = queryset.filter(id=user.country_id)
 
+        return queryset.order_by("name")
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
