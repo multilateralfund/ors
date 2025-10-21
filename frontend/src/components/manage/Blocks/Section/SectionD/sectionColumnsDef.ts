@@ -3,6 +3,7 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   ...colDefById,
@@ -10,7 +11,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     ...colDefById['all_uses'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    ...(model === 'V'
+    ...(shouldEnableNewCPDataFormatting(model)
       ? {}
       : {
           headerComponentParams: {
@@ -25,7 +26,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
         }),
     // initialWidth: 200,
   },
-  ...(model === 'V'
+  ...(shouldEnableNewCPDataFormatting(model)
     ? {}
     : {
         destruction: {
@@ -43,7 +44,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           },
         },
       }),
-  ...(model === 'V'
+  ...(shouldEnableNewCPDataFormatting(model)
     ? {
         display_name: {
           ...colDefById['display_name'],
@@ -81,7 +82,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           }),
         },
       }),
-  ...(model === 'V'
+  ...(shouldEnableNewCPDataFormatting(model)
     ? {
         feedstock: {
           ...colDefById['feedstock'],

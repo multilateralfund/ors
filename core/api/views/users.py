@@ -1,6 +1,6 @@
+from django.contrib.auth.models import Permission
 from rest_framework import views
 from rest_framework.response import Response
-from django.contrib.auth.models import Permission
 
 
 class UserPermissionsView(views.APIView):

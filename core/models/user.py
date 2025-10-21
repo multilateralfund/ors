@@ -19,11 +19,13 @@ class User(AbstractUser, PermissionsMixin):
 
         # Project
         SECRETARIAT_VIEWER = "secretariat_viewer", _("Secretariat Viewer")
-        SECRETARIAT_V1_V2_EDIT_ACCESS = "secretariat_v1_v2_edit_access", _(
-            "Secretariat V1 V2 Edit Access"
+        SECRETARIAT_V1_V2_EDIT_ACCESS = (
+            "secretariat_v1_v2_edit_access",
+            _("Secretariat V1 V2 Edit Access"),
         )
-        SECRETARIAT_V3_EDIT_ACCESS = "secretariat_v3_edit_access", _(
-            "Secretariat V3 Edit Access"
+        SECRETARIAT_V3_EDIT_ACCESS = (
+            "secretariat_v3_edit_access",
+            _("Secretariat V3 Edit Access"),
         )
         SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS = (
             "secretariat_production_v1_v2_edit_access",
@@ -45,3 +47,8 @@ class User(AbstractUser, PermissionsMixin):
         "Agency", null=True, blank=True, on_delete=models.CASCADE
     )
     user_type = models.CharField(max_length=50, choices=UserType.choices, blank=True)
+
+    is_external_service = models.BooleanField(
+        default=False,
+        help_text="User is an external service that consumes our API - e.g. ekimetrics",
+    )

@@ -57,6 +57,28 @@ class ProjectComponentsAdmin(admin.ModelAdmin):
         "id",
     ]
 
+    def get_list_display(self, request):
+
+        fields = get_final_display_list(ProjectComponents, ["projects"])
+        fields = list(fields) + ["id", "original_project_display", "__str__"]
+        return fields
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if "original_project_display" not in fields:
+            fields = list(fields) + ["original_project_display"]
+        return fields
+
+    readonly_fields = ["original_project_display"]
+
+    def original_project_display(self, obj):
+        original = getattr(obj, "original_project", None)
+        if not original:
+            return None
+        return original.id
+
+    original_project_display.short_description = "Original Project"
+
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("projects")
 

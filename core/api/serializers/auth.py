@@ -1,5 +1,7 @@
-from dj_rest_auth.serializers import PasswordResetSerializer, UserDetailsSerializer
-
+from dj_rest_auth.serializers import (
+    PasswordResetSerializer,
+    UserDetailsSerializer,
+)
 from rest_framework import serializers
 
 

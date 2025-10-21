@@ -12,6 +12,7 @@ import { SectionDCreateProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 export default function SectionDCreate(props: SectionDCreateProps) {
   const { TableProps, form, setForm, variant } = props
@@ -26,7 +27,7 @@ export default function SectionDCreate(props: SectionDCreateProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        {variant.model === 'V' ? (
+        {shouldEnableNewCPDataFormatting(variant.model) ? (
           <Footnotes />
         ) : (
           <Footnote id="" index="">

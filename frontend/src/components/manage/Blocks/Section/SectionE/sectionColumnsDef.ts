@@ -1,6 +1,7 @@
 import { ColDef, ColGroupDef } from 'ag-grid-community'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 const VOLUNTARY_CLASS =
   'bg-gray-200 theme-dark:bg-gray-900/40 text-inherit ag-text-center'
@@ -20,7 +21,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(model === 'V'
+    ...(shouldEnableNewCPDataFormatting(model)
       ? {
           headerComponentParams: {
             footnote: {
@@ -39,7 +40,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(model === 'V'
+    ...(shouldEnableNewCPDataFormatting(model)
       ? {}
       : {
           headerComponentParams: {
@@ -69,7 +70,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(model === 'V'
+    ...(shouldEnableNewCPDataFormatting(model)
       ? {}
       : {
           headerComponentParams: {
@@ -87,7 +88,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
   },
-  ...(model === 'V'
+  ...(shouldEnableNewCPDataFormatting(model)
     ? {
         stored_at_start_of_year: {
           headerClass: VOLUNTARY_CLASS,
@@ -115,7 +116,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     },
     // flex: 1.2,
     headerClass: VOLUNTARY_CLASS,
-    ...(model === 'V'
+    ...(shouldEnableNewCPDataFormatting(model)
       ? {
           headerComponentParams: {
             footnote: {
@@ -150,7 +151,7 @@ const sectionColGroupDefByIdFunc = (
     headerClass: VOLUNTARY_CLASS,
     headerGroupComponentParams: {
       ...defaultColGroupDef.headerGroupComponentParams,
-      ...(model === 'V'
+      ...(shouldEnableNewCPDataFormatting(model)
         ? {}
         : {
             footnote: {
