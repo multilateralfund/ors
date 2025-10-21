@@ -56,35 +56,38 @@ export function FilesViewer(props: ProjectDocs) {
     <>
       <div className="flex flex-col gap-2">
         <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-        {mode === 'edit' && project?.submission_status === 'Draft' && (
-          <>
-            <div className="mt-5 flex gap-4">
-              <a
-                className={cx(
-                  exportButtonClassname,
-                  'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
-                )}
-                onClick={() => {
-                  setExportConfirmModalType('word-export')
-                }}
-              >
-                Download project template
-              </a>
-              <a
-                className={cx(
-                  exportButtonClassname,
-                  'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
-                )}
-                onClick={() => {
-                  setExportConfirmModalType('excel-export')
-                }}
-              >
-                Download Excel
-              </a>
-            </div>
-            <Divider className="mt-4" />
-          </>
-        )}
+        {mode === 'edit' &&
+          ['Draft', 'Submitted', 'Recommended'].includes(
+            project?.submission_status ?? '',
+          ) && (
+            <>
+              <div className="mt-5 flex gap-4">
+                <a
+                  className={cx(
+                    exportButtonClassname,
+                    'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
+                  )}
+                  onClick={() => {
+                    setExportConfirmModalType('word-export')
+                  }}
+                >
+                  Download project template
+                </a>
+                <a
+                  className={cx(
+                    exportButtonClassname,
+                    'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
+                  )}
+                  onClick={() => {
+                    setExportConfirmModalType('excel-export')
+                  }}
+                >
+                  Download Excel
+                </a>
+              </div>
+              <Divider className="mt-4" />
+            </>
+          )}
         {!isNil(loadedFiles) && !loadedFiles ? (
           <CircularProgress color="inherit" size="30px" className="mt-2" />
         ) : (

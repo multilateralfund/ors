@@ -56,7 +56,6 @@ const ProjectIdentifiersFields = ({
   project,
   postExComUpdate,
   isV3ProjectEditable,
-  isProjectEditableByAdmin,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -79,7 +78,6 @@ const ProjectIdentifiersFields = ({
       : crtClusters
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
-  const canUpdateFields = postExComUpdate || isProjectEditableByAdmin
   const isAddOrCopy = mode === 'add' || mode === 'copy'
   const hasNoLeadAgency = !project?.meta_project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
@@ -90,9 +88,15 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
+  const isMeetingUpdateEnabled =
+    isAddOrCopy ||
+    (mode === 'edit' &&
+      (!project?.component ||
+        project?.id === project?.component?.original_project_id) &&
+      (project?.submission_status === 'Withdrawn' || project?.version === 1))
   const canEditMeeting =
-    !(canUpdateFields && project?.meeting_id) &&
-    canEditField(editableFields, 'meeting')
+    canEditField(editableFields, 'meeting') && isMeetingUpdateEnabled
 
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
