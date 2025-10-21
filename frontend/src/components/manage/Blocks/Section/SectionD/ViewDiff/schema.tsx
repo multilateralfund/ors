@@ -10,6 +10,7 @@ import {
   sectionDefaultColDef,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function useGridOptions(props: { model: string }) {
   const { model } = props
@@ -31,7 +32,7 @@ function useGridOptions(props: { model: string }) {
         headerClass: 'ag-text-left',
         headerName: 'Substance',
       },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             ...sectionColDefById['all_uses'],
             cellClass: 'ag-text-center px-0',
@@ -48,7 +49,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for all uses',
             orsAggFunc: 'sumTotal',
           },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             ...sectionColDefById['feedstock'],
             cellClass: 'ag-text-center px-0',
@@ -65,7 +66,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for feedstock uses within your country',
             orsAggFunc: 'sumTotal',
           },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             children: [
               {

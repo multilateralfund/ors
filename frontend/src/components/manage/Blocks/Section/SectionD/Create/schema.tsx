@@ -8,6 +8,7 @@ import {
   sectionColGroupDefById,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function useGridOptions(props: { model: string }) {
   const { model } = props
@@ -21,7 +22,7 @@ function useGridOptions(props: { model: string }) {
         headerName: 'Substance',
         ...sectionColDefById['display_name'],
       },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
@@ -40,7 +41,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for all uses',
             ...sectionColDefById['all_uses'],
           },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
@@ -59,7 +60,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for feedstock uses within your country',
             ...sectionColDefById['feedstock'],
           },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             children: [
               {

@@ -36,6 +36,7 @@ import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/ViewDiff'
 
 import { DefaultComponentType, SectionMeta } from './types'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 const constants: ConstantsType = {
   I: undefined,
@@ -271,7 +272,7 @@ export function getSections(
           'D. Qualitative assessment of the operation of HPMP',
       },
 
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             id: 'section_d',
             allowFullScreen: true,
@@ -292,7 +293,7 @@ export function getSections(
             title:
               'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
           },
-      model === 'V'
+      shouldEnableNewCPDataFormatting(model)
         ? {
             id: 'section_e',
             allowFullScreen: true,

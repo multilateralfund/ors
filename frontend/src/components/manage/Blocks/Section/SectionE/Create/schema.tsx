@@ -18,6 +18,7 @@ import {
 } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function FacilityCellRenderer({ addFacility, ...props }: any) {
   const validation =
@@ -95,14 +96,13 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'total',
-          headerName:
-            model === 'V'
-              ? 'Total amount generated (tonnes)'
-              : 'Total amount generated',
+          headerName: shouldEnableNewCPDataFormatting(model)
+            ? 'Total amount generated (tonnes)'
+            : 'Total amount generated',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['total_amount_generated'],
         },
-        ...(model === 'V'
+        ...(shouldEnableNewCPDataFormatting(model)
           ? [
               {
                 cellDataType: 'number',
@@ -123,10 +123,9 @@ function useGridOptions(props: {
               cellEditor: 'agNumberCellEditor',
               dataType: 'number',
               field: 'all_uses',
-              headerName:
-                model === 'V'
-                  ? 'For uses excluding feedstocks'
-                  : 'For all uses',
+              headerName: shouldEnableNewCPDataFormatting(model)
+                ? 'For uses excluding feedstocks'
+                : 'For all uses',
               orsAggFunc: 'sumTotal',
               ...sectionColDefById['all_uses'],
             },
@@ -151,10 +150,9 @@ function useGridOptions(props: {
           ],
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
-          headerName:
-            model === 'V'
-              ? 'Amount generated and captured (tonnes)'
-              : 'Amount generated and captured',
+          headerName: shouldEnableNewCPDataFormatting(model)
+            ? 'Amount generated and captured (tonnes)'
+            : 'Amount generated and captured',
           marryChildren: true,
           ...sectionColGroupDefById['amount_generated_and_captured'],
         },
@@ -163,10 +161,9 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'feedstock_wpc',
-          headerName:
-            model === 'V'
-              ? 'Amount used for feedstock without prior capture (tonnes)'
-              : 'Amount used for feedstock without prior capture',
+          headerName: shouldEnableNewCPDataFormatting(model)
+            ? 'Amount used for feedstock without prior capture (tonnes)'
+            : 'Amount used for feedstock without prior capture',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['feedstock_wpc'],
         },
@@ -175,10 +172,9 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'destruction_wpc',
-          headerName:
-            model === 'V'
-              ? 'Amount destroyed in the facility without prior capture (tonnes)'
-              : 'Amount destroyed without prior capture',
+          headerName: shouldEnableNewCPDataFormatting(model)
+            ? 'Amount destroyed in the facility without prior capture (tonnes)'
+            : 'Amount destroyed without prior capture',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['destruction_wpc'],
         },
@@ -187,14 +183,13 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'generated_emissions',
-          headerName:
-            model === 'V'
-              ? 'Amount of generated emissions (tonnes)'
-              : 'Amount of generated emissions',
+          headerName: shouldEnableNewCPDataFormatting(model)
+            ? 'Amount of generated emissions (tonnes)'
+            : 'Amount of generated emissions',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['generated_emissions'],
         },
-        ...(model === 'V'
+        ...(shouldEnableNewCPDataFormatting(model)
           ? [
               {
                 cellDataType: 'number',
