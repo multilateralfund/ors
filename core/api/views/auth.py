@@ -32,7 +32,7 @@ class CustomLoginView(LoginView):
             if hasattr(response, "set_cookie"):
                 response.set_cookie(
                     "orsauth",
-                    str(refresh.access_token),
+                    str(access),
                     max_age=duration.total_seconds(),
                     httponly=False,
                     samesite="Lax",
