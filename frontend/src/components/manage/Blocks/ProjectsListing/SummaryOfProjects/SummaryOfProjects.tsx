@@ -54,11 +54,14 @@ const initialRequestParams = () => ({
 const initialRowData = () => {
   return {
     params: initialRequestParams(),
+    apiData: null,
     text: '',
   }
 }
 type RequestParams = ReturnType<typeof initialRequestParams>
-type RowData = ReturnType<typeof initialRowData>
+type RowData = Omit<ReturnType<typeof initialRowData>, 'apiData'> & {
+  apiData: ApiSummaryOfProjects | null
+}
 
 const TableCell = ({ className, children }: IntrinsicElements['div']) => {
   return (
@@ -106,6 +109,9 @@ const SummaryOfProjectsRow = (props: {
       // triggerIf: false,
       params: rowData.params,
       withStoreCache: false,
+    },
+    onSuccess: (data: ApiSummaryOfProjects) => {
+      setRowData((prevRowData) => ({ ...prevRowData, apiData: data }))
     },
   })
 
@@ -210,6 +216,8 @@ const SummaryOfProjectsTable = (props: {
     [setRows],
   )
 
+  console.log(rows)
+
   return (
     <div className="table w-full border-collapse">
       <div className="table-header-group font-bold">
@@ -236,6 +244,26 @@ const SummaryOfProjectsTable = (props: {
           setRowData={setRow(i)}
         />
       ))}
+      {rows.length ? (
+        <div className="table-row">
+          <TableCell>Total</TableCell>
+          <TableCell></TableCell>
+          <TableCell></TableCell>
+          <TableCell>
+            {rows
+              .map((r) => r.apiData?.projects_count ?? 0)
+              .reduce((acc, v) => acc + v, 0)}
+          </TableCell>
+          <TableCell>
+            {formatDecimalValue(
+              rows
+                .map((r) => r.apiData?.amounts_recommended ?? 0)
+                .reduce((acc, v) => acc + v, 0),
+            )}
+          </TableCell>
+          <TableCell></TableCell>
+        </div>
+      ) : null}
     </div>
   )
 }

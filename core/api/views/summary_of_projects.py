@@ -15,6 +15,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.conf import settings
+
+from core.api.export.summary_of_projects import SummaryOfProjectsWriter
 from core.api.filters.summary_of_projects import SummaryOfProjectsFilter
 from core.api.permissions import HasProjectV2ApproveAccess
 from core.api.utils import workbook_response
@@ -113,27 +115,30 @@ class SummaryOfProjectsViewSet(
         wb = openpyxl.Workbook()
         sheet = wb.active
         sheet.title = "Summary of projects"
-        header = [
-            "Projects and activities",
-            "No. of countries",
-            "No. of funding requests",
-            "Amounts recommended (US $)",
-            "Amounts in principle (US $)",
-        ]
-        sheet.append(header)
+
+        total = {
+            "text": "Total",
+            "projects_count": 0,
+            "amounts_recommended": 0,
+        }
+
+        row_data = []
+
         for query in params:
             project_filter = self.filterset_class(query["params"], queryset)
             filtered_projects = project_filter.qs
             data = self._extract_data(filtered_projects)
-            sheet.append(
-                [
-                    query["text"],
-                    data["countries_count"],
-                    data["projects_count"],
-                    data["amounts_recommended"],
-                    data["amounts_in_principle"],
-                ]
-            )
+            data["text"] = query["text"]
+
+            for key in (k for k in total if k != "text"):
+                total[key] += data.get(key, 0)
+
+            row_data.append(data)
+
+        row_data.append(total)
+
+        SummaryOfProjectsWriter(sheet).write(row_data)
+
         return workbook_response("Summary of projects", wb)
 
     @action(methods=["GET"], detail=False)
