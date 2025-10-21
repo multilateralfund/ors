@@ -65,10 +65,9 @@ const ProjectIdentifiers = ({
             detailItem(tableColumns.country, project.country, {
               fieldHistory: getFieldHistory('country'),
             })}
-          {canViewField(viewableFields, 'meeting') &&
-            detailItem(tableColumns.meeting, project.meeting, {
-              fieldHistory: getFieldHistory('meeting'),
-            })}
+          {detailItem(tableColumns.meeting, project.meeting, {
+            fieldHistory: getFieldHistory('meeting'),
+          })}
           {canViewField(viewableFields, 'agency') &&
             detailItem(tableColumns.agency, project.agency, {
               fieldHistory: getFieldHistory('agency'),
