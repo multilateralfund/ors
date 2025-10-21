@@ -1241,7 +1241,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
         }
 
@@ -1276,7 +1276,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
             "excom_provision": "test excom_provision",
             "date_completion": "2023-10-01",
