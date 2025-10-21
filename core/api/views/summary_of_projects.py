@@ -3,7 +3,9 @@ import json
 from decimal import Decimal
 
 import openpyxl
-from django.db.models import Count, DecimalField
+from django.conf import settings
+from django.db.models import Count
+from django.db.models import DecimalField
 from django.db.models import F
 from django.db.models import QuerySet
 from django.db.models import Sum
@@ -14,7 +16,6 @@ from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.conf import settings
 
 from core.api.export.summary_of_projects import SummaryOfProjectsWriter
 from core.api.filters.summary_of_projects import SummaryOfProjectsFilter
@@ -152,8 +153,8 @@ class SummaryOfProjectsViewSet(
 
             if is_debug_request:
                 return self._export_debug(params)
-            else:
-                return self._export_wb(params)
+
+            return self._export_wb(params)
 
         return Response(
             {"error": "row_data is required"}, status=status.HTTP_400_BAD_REQUEST
