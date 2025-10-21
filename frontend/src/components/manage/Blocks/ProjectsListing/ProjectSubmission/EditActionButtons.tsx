@@ -102,7 +102,7 @@ const EditActionButtons = ({
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
-  const { id, submission_status, version } = project
+  const { id, submission_status, version, component } = project
   const {
     projIdentifiers,
     crossCuttingFields,
@@ -189,7 +189,8 @@ const EditActionButtons = ({
     hasOdsOdpErrors ||
     (getHasNoFiles(id, files, projectFiles) &&
       (version ?? 0) < 3 &&
-      !isWithdrawn)
+      !isWithdrawn &&
+      (!component || id === component.original_project_id))
 
   const hasErrors =
     commonErrors ||
