@@ -107,10 +107,5 @@
     "SEC": "EERF",
     "SECTOR": "Energy Efficiency End-user Revolving fund",
     "SORT_SECTOR": 21
-  },
-  {
-    "SEC": "OtherS",
-    "SECTOR": "Other Sector",
-    "SORT_SECTOR": 99
   }
 ]
