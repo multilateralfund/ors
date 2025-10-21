@@ -91,7 +91,6 @@ export interface SpecificFields {
   number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
   meeting: number | null
-  meeting_approved: number | null
   decision: number | null
   decision_id: string | null
   date_completion: string | null

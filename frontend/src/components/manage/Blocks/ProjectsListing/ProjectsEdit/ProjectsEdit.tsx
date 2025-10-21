@@ -307,11 +307,7 @@ const ProjectsEdit = ({
         ...prevData,
         approvalFields: {
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-          meeting_approved:
-            find(
-              meetings,
-              (option) => option.number === project.meeting_approved,
-            )?.id ?? project.meeting_id,
+          meeting: project.meeting_id,
           decision: project.decision_id,
         },
       }))

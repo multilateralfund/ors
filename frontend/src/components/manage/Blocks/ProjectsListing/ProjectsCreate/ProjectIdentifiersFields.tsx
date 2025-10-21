@@ -89,14 +89,12 @@ const ProjectIdentifiersFields = ({
     (state) => state.projectFields,
   )
 
-  const isMeetingUpdateEnabled =
+  const canEditMeeting =
     isAddOrCopy ||
     (mode === 'edit' &&
       (!project?.component ||
         project?.id === project?.component?.original_project_id) &&
       (project?.submission_status === 'Withdrawn' || project?.version === 1))
-  const canEditMeeting =
-    canEditField(editableFields, 'meeting') && isMeetingUpdateEnabled
 
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
@@ -325,10 +323,7 @@ const ProjectIdentifiersFields = ({
                 getOptionLabel={(option) =>
                   getOptionLabel(commonSlice.countries.data, option)
                 }
-                disabled={
-                  (mode !== 'add' && mode !== 'copy') ||
-                  !areNextSectionsDisabled
-                }
+                disabled={!isAddOrCopy || !areNextSectionsDisabled}
                 Input={{
                   error: getIsInputDisabled('country'),
                 }}
@@ -336,26 +331,24 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          {canViewField(viewableFields, 'meeting') && (
-            <div className="w-32">
-              <Label>{tableColumns.meeting}</Label>
-              <PopoverInput
-                label={getMeetingNr(
-                  projIdentifiers?.meeting ?? undefined,
-                )?.toString()}
-                options={useMeetingOptions()}
-                onChange={handleChangeMeeting}
-                onClear={() => handleChangeMeeting()}
-                disabled={!canEditMeeting}
-                className={cx('!m-0 h-10 !py-1', {
-                  'border-red-500': getIsInputDisabled('meeting'),
-                  [disabledClassName]: !canEditMeeting,
-                })}
-                clearBtnClassName="right-1"
-                withClear={canEditMeeting}
-              />
-            </div>
-          )}
+          <div className="w-32">
+            <Label>{tableColumns.meeting}</Label>
+            <PopoverInput
+              label={getMeetingNr(
+                projIdentifiers?.meeting ?? undefined,
+              )?.toString()}
+              options={useMeetingOptions()}
+              onChange={handleChangeMeeting}
+              onClear={() => handleChangeMeeting()}
+              disabled={!canEditMeeting}
+              className={cx('!m-0 h-10 !py-1', {
+                'border-red-500': getIsInputDisabled('meeting'),
+                [disabledClassName]: !canEditMeeting,
+              })}
+              clearBtnClassName="right-1"
+              withClear={canEditMeeting}
+            />
+          </div>
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>

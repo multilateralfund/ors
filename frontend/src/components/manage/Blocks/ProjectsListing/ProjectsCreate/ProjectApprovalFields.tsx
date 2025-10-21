@@ -49,9 +49,9 @@ const ProjectApprovalFields = ({
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
     options: {
-      triggerIf: !!crtSectionData?.meeting_approved,
+      triggerIf: !!crtSectionData?.meeting,
       params: {
-        meeting_id: crtSectionData?.meeting_approved,
+        meeting_id: crtSectionData?.meeting,
       },
     },
   })
@@ -96,17 +96,17 @@ const ProjectApprovalFields = ({
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {canViewField(viewableFields, 'meeting_approved') && (
+        {canViewField(viewableFields, 'meeting') && (
           <div className="w-32">
             <Label>{tableColumns.meeting}</Label>
             <PopoverInput
               label={getMeetingNr(
-                crtSectionData?.meeting_approved ?? undefined,
+                crtSectionData?.meeting ?? undefined,
               )?.toString()}
               options={[]}
               disabled={true}
               className={cx('!m-0 h-10 !py-1', disabledClassName, {
-                'border-red-500': getIsInputDisabled('meeting_approved'),
+                'border-red-500': getIsInputDisabled('meeting'),
               })}
             />
           </div>
@@ -137,7 +137,7 @@ const ProjectApprovalFields = ({
         {sectionFields
           .filter(
             (field) =>
-              !['meeting_approved', 'decision', 'date_approved'].includes(
+              !['meeting', 'decision', 'date_approved'].includes(
                 field.write_field_name,
               ),
           )
