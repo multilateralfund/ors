@@ -1,7 +1,10 @@
 'use client'
 
+import { useContext } from 'react'
+
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -9,13 +12,13 @@ import { filter, union } from 'lodash'
 import { useParams } from 'wouter'
 
 const EnterprisesFilters = ({
-  commonSlice,
   enterpriseStatuses,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
+  const { countries } = useContext(ProjectsDataContext)
 
   const defaultProps = {
     multiple: true,
@@ -41,11 +44,7 @@ const EnterprisesFilters = ({
       {!project_id && (
         <Field
           Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(
-            filters,
-            commonSlice.countries.data,
-            'country_id',
-          )}
+          options={getFilterOptions(filters, countries, 'country_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const country = filters.country_id || []

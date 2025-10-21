@@ -8,6 +8,16 @@ interface ProjectsDataProviderProps extends PropsWithChildren {}
 const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { children } = props
 
+  const { data: countries } = useApi({
+    options: {
+      withStoreCache: false,
+      params: {
+        values_exclusive_for: 'projects',
+      },
+    },
+    path: 'api/countries/',
+  })
+
   const { data: agencies } = useApi({
     options: {
       withStoreCache: false,
@@ -82,6 +92,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   return (
     <ProjectsDataContext.Provider
       value={{
+        countries,
         agencies,
         clusters,
         project_types,

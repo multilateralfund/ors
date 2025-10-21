@@ -78,7 +78,6 @@ import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
 
 function RedirectToSection() {
-  const user = useStore((state) => state.user)
   const { canEditReplenishment } = useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
