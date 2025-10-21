@@ -8,7 +8,6 @@ import {
 import { EnterpriseOverview } from '../../interfaces'
 import { tableColumns } from '../../constants'
 import { getEntityById } from '../utils'
-import { useStore } from '@ors/store'
 
 import { toLower, map } from 'lodash'
 
@@ -19,9 +18,7 @@ const PEnterpriseOverviewSection = ({
   type: string
   enterprise: EnterpriseOverview
 }) => {
-  const commonSlice = useStore((state) => state.common)
-  const countries = commonSlice.countries.data
-  const { agencies } = useContext(ProjectsDataContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
   const country = getEntityById(countries, enterprise.country)?.name
   const crtAgencies =

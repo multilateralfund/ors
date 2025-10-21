@@ -17,7 +17,6 @@ import {
   PEnterpriseData,
   PEnterpriseDataProps,
 } from '../../interfaces'
-import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
 
@@ -31,10 +30,7 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
-
-  const commonSlice = useStore((state) => state.common)
-  const countries = commonSlice.countries.data
-  const { agencies } = useContext(ProjectsDataContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
   const { enterprise, enterpriseData, setEnterpriseData } = rest
   const { overview } = enterpriseData

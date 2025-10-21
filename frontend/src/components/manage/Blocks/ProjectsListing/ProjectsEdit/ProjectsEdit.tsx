@@ -62,10 +62,8 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors, subsectors } =
+  const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
-
-  const commonSlice = useStore((state) => state.common)
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -268,8 +266,7 @@ const ProjectsEdit = ({
             crossCuttingFields: {
               ...initialCrossCuttingFields,
               is_lvc:
-                find(commonSlice.countries.data, { id: project.country_id })
-                  ?.is_lvc ?? null,
+                find(countries, { id: project.country_id })?.is_lvc ?? null,
             },
           }),
     }))

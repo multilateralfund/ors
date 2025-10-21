@@ -27,6 +27,8 @@ import {
   getAgencyErrorType,
   getProduction,
 } from '../utils'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 import { ApiAgency } from '@ors/types/api_agencies'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
@@ -35,8 +37,6 @@ import { useStore } from '@ors/store'
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
-import useApi from '@ors/hooks/useApi.ts'
-import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 type DecisionOption = {
   name: string
@@ -63,9 +63,8 @@ const ProjectIdentifiersFields = ({
   const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
-  const { agencies } = useContext(ProjectsDataContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
-  const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
   const crtClusters = filterClusterOptions(
     projectSlice.clusters.data,
@@ -132,8 +131,7 @@ const ProjectIdentifiersFields = ({
       ...prevData,
       crossCuttingFields: {
         ...prevData.crossCuttingFields,
-        is_lvc:
-          find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
+        is_lvc: find(countries, { id: country?.id })?.is_lvc ?? null,
       },
     }))
   }
@@ -317,12 +315,10 @@ const ProjectIdentifiersFields = ({
               <Label>{tableColumns.country}</Label>
               <Field
                 widget="autocomplete"
-                options={commonSlice.countries.data}
+                options={countries}
                 value={projIdentifiers?.country}
                 onChange={(_, value) => handleChangeCountry(value)}
-                getOptionLabel={(option) =>
-                  getOptionLabel(commonSlice.countries.data, option)
-                }
+                getOptionLabel={(option) => getOptionLabel(countries, option)}
                 disabled={!isAddOrCopy || !areNextSectionsDisabled}
                 Input={{
                   error: getIsInputDisabled('country'),
