@@ -27,7 +27,7 @@ export default function UpdateMyaData() {
   const countriesApi = useApi({
     options: {
       params: {
-        values_exclusive_for: 'meta-project',
+        values_exclusive_for: 'meta_project',
       },
     },
     path: 'api/countries',
