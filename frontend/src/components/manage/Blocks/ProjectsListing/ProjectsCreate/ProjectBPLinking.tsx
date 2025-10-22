@@ -63,7 +63,7 @@ const ProjectBPLinking = ({
           <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
         )}
       </div>
-      <div className="mt-5">
+      <div className="mt-7">
         <NavigationButton
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextButtonDisabled}
