@@ -25,6 +25,7 @@ import {
   SpecificFields,
   RelatedProjectsType,
   TrancheErrorType,
+  BpDataProps,
 } from '../interfaces'
 import {
   initialCrossCuttingFields,
@@ -199,6 +200,11 @@ const ProjectsEdit = ({
     loaded: false,
   }
 
+  const { canViewBp } = useContext(PermissionsContext)
+  const [bpData, setBpData] = useState({
+    hasBpData: false,
+    bpDataLoading: false,
+  })
   const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
@@ -353,6 +359,21 @@ const ProjectsEdit = ({
     }
   }, [specificFields, fieldsValuesLoaded])
 
+  useEffect(() => {
+    const { country, agency, cluster } = projIdentifiers
+
+    if (mode === 'edit' && canViewBp && country && agency && cluster) {
+      setBpData({
+        hasBpData: false,
+        bpDataLoading: true,
+      })
+    }
+  }, [projIdentifiers])
+
+  const onBpDataChange = (bpData: BpDataProps) => {
+    setBpData(bpData)
+  }
+
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
@@ -466,6 +487,7 @@ const ProjectsEdit = ({
             approvalFields,
             specificFieldsLoaded,
             setProjectData,
+            bpData,
           }}
         />
         <ProjectsCreate
@@ -486,6 +508,8 @@ const ProjectsEdit = ({
             getTrancheErrors,
             relatedProjects,
             approvalFields,
+            bpData,
+            onBpDataChange,
           }}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
