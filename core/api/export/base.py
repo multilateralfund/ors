@@ -1,15 +1,32 @@
+from typing import Any
+from typing import Callable
+from typing import Literal
+from typing import NotRequired
+from typing import TypedDict
+
 import openpyxl
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment
 from openpyxl.styles import Border
+from openpyxl.styles import DEFAULT_FONT
+from openpyxl.styles import Font
 from openpyxl.styles import PatternFill
 from openpyxl.styles import Side
-from openpyxl.styles import Font
-from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
 
+
 # pylint: disable=R0913
+
+
+class HeaderType(TypedDict):
+    id: str
+    headerName: str
+    method: NotRequired[Callable[[dict, "HeaderType"], Any]]
+    column_width: NotRequired[float | int]
+    type: NotRequired[Literal["date", "number", "int", "bool"]]
+    align: NotRequired[Literal["left", "right"]]
+    cell_format: NotRequired[str]
 
 
 class BaseWriter:

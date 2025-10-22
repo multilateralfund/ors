@@ -1,38 +1,42 @@
 import datetime
-from functools import partial
-from typing import Iterable
-
 import io
-import pathlib
 import logging
+import pathlib
+from functools import partial
+from typing import Annotated
+from typing import Iterable
+from typing import List
+from typing import Union
 
-import openpyxl
 import docx
-
-from docx.table import Table
+import openpyxl
+from django.http import FileResponse
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
-
-from django.http import FileResponse
-
+from docx.table import Table
 from rest_framework import serializers
 
+from core.api.export.base import BaseWriter
+from core.api.export.base import HeaderType
+from core.api.export.base import WriteOnlyBase
+from core.api.export.base import configure_sheet_print
+from core.api.export.business_plan import BPActivitiesWriter
+from core.api.serializers.business_plan import BPActivityExportSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
-from core.api.serializers.business_plan import BPActivityExportSerializer
-
-from core.models.user import User
-from core.models.project import Project
-from core.models.business_plan import BPActivity
-from core.models.project_metadata import ProjectSpecificFields
-from core.models.project_metadata import ProjectField
-
-from core.api.export.base import configure_sheet_print, WriteOnlyBase
-from core.api.export.business_plan import BPActivitiesWriter
-
 from core.api.utils import workbook_response
+from core.models.business_plan import BPActivity
+from core.models.project import Project
+from core.models.project_metadata import ProjectField
+from core.models.project_metadata import ProjectSpecificFields
+from core.models.user import User
 
 logger = logging.getLogger(__name__)
+
+
+class ProjectWriter(BaseWriter):
+    header_row_start_idx = 1
+    COLUMN_WIDTH = 20
 
 
 def format_iso_date(isodate=None):
@@ -47,7 +51,7 @@ def format_iso_date(isodate=None):
     return ""
 
 
-def get_headers_identifiers():
+def get_headers_identifiers() -> List[HeaderType]:
     return [
         {
             "id": "country",
@@ -78,7 +82,21 @@ def get_headers_bp():
     return []
 
 
-def get_headers_cross_cutting():
+def get_blanket_consideration_value(row: dict, header: HeaderType):
+    value: Union[bool, None] = row[header["id"]]
+    if value is None:
+        return ""
+
+    if not value:
+        return "Yes"
+
+    if value:
+        return "No"
+
+    return ""
+
+
+def get_headers_cross_cutting() -> List[HeaderType]:
     return [
         {
             "id": "title",
@@ -113,10 +131,16 @@ def get_headers_cross_cutting():
         {
             "id": "total_fund",
             "headerName": "Project funding",
+            "type": "number",
+            "align": "right",
+            "cell_format": "$###,###,##0.00#############",
         },
         {
             "id": "support_cost_psc",
             "headerName": "Project support cost",
+            "type": "number",
+            "align": "right",
+            "cell_format": "$###,###,##0.00#############",
         },
         {
             "id": "project_start_date",
@@ -131,7 +155,7 @@ def get_headers_cross_cutting():
         {
             "id": "individual_consideration",
             "headerName": "Blanket consideration",
-            "method": lambda r, h: r[h["id"]] and "No" or "Yes",
+            "method": get_blanket_consideration_value,
         },
     ]
 
@@ -168,7 +192,7 @@ def field_value_or_computed(data, header, is_date=False):
     return value
 
 
-def get_headers_metaproject():
+def get_headers_metaproject() -> List[HeaderType]:
     return [
         {
             "id": "project_funding",
@@ -258,7 +282,6 @@ def get_headers_specific_information(fields: Iterable[ProjectField]):
 
 
 def dict_as_obj(d):
-
     class Dummy:
         pass
 
@@ -338,7 +361,7 @@ class ProjectsV2ProjectExport:
 
     def build_identifiers(self, data):
         sheet = self.add_sheet("Identifiers")
-        WriteOnlyBase(sheet, get_headers_identifiers()).write([data])
+        ProjectWriter(sheet, get_headers_identifiers()).write([data])
 
     def build_bp(self, data):
         activity_data = get_activity_data(data)
@@ -352,19 +375,26 @@ class ProjectsV2ProjectExport:
 
     def build_cross_cutting(self, data):
         sheet = self.add_sheet("Cross-cutting")
-        WriteOnlyBase(sheet, get_headers_cross_cutting()).write([data])
+        ProjectWriter(sheet, get_headers_cross_cutting()).write([data])
 
     def _write_project_specific_fields(
         self,
         fields_obj: ProjectSpecificFields,
         fields_section: str,
-        sheet_name: str,
+        sheet_name: Annotated[str, "max_length=31"],
         data,
     ):
-        fields = fields_obj.fields.filter(section__in=[fields_section])
+        """
+        Writes a new sheet.
+
+        :param sheet_name: The sheet name should not exceed 31 characters, this is as Excel constraint.
+        """
+        fields = fields_obj.fields.filter(section__in=[fields_section]).exclude(
+            read_field_name="sort_order"
+        )
         if fields:
             sheet = self.add_sheet(sheet_name)
-            WriteOnlyBase(
+            ProjectWriter(
                 sheet,
                 get_headers_specific_information(fields),
             ).write(data)
@@ -380,15 +410,18 @@ class ProjectsV2ProjectExport:
             self._write_project_specific_fields(
                 project_specific_fields_obj,
                 "Header",
-                "Specific information - Overview",
+                "SI - Overview",
                 [data],
             )
 
             self._write_project_specific_fields(
                 project_specific_fields_obj,
                 "Substance Details",
-                "Specific information - Substance details",
-                data.get("ods_odp", []),
+                "SI - Substance details",
+                [
+                    {**d, "products_manufactured": data.get("products_manufactured")}
+                    for d in data.get("ods_odp", [])
+                ],
             )
 
             self._write_project_specific_fields(
