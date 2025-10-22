@@ -134,6 +134,7 @@ from core.api.views.project_associations import ProjectAssociationViewSet
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
 from core.api.views.settings import ProjectSettingsView, SettingsView
+from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 
@@ -142,6 +143,11 @@ router.register(
     "projects-approval-summary",
     ProjectApprovalSummaryViewSet,
     basename="projects-approval-summary",
+)
+router.register(
+    "summary-of-projects",
+    SummaryOfProjectsViewSet,
+    basename="summary-of-projects",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")

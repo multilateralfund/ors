@@ -21,6 +21,11 @@ const GenerateDBMenu = () => {
       url: '/projects-listing/approval-summary',
       permissions: [canApproveProjects],
     },
+    {
+      title: 'Summary of projects',
+      url: '/projects-listing/summary-of-projects',
+      permissions: [canApproveProjects],
+    },
     { title: 'MYA warehouse', url: null },
     { title: 'ExCom provisions', url: null },
     { title: 'Enterprise warehouse', url: null },

@@ -1,9 +1,13 @@
 import muiGrey from '@mui/material/colors/grey'
 import { createThemes } from 'tw-colors'
 
+import { Config } from 'tailwindcss'
+
+import plugin from 'tailwindcss/plugin'
+
 import colors from 'tailwindcss/colors'
 
-import bgPatterns from 'tailwindcss-bg-patterns'
+import bgPatterns from './src/plugins/tailwind/bg-patterns.ts'
 
 const gray = {
   ...colors.gray,
@@ -154,14 +158,12 @@ const originalColors = {
   },
 }
 
-/** @type {import('tailwindcss').Config} */
-export default {
+const config: Config = {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/themes/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  important: '#next-app',
   corePlugins: {
     container: false,
     preflight: false,
@@ -181,7 +183,7 @@ export default {
         produceThemeVariant: (themeName) => `theme-${themeName}`,
       },
     ),
-    function ({ addComponents, addUtilities }) {
+    plugin(function ({ addComponents, addUtilities }) {
       addComponents({
         '.container': {
           margin: '0 auto',
@@ -227,7 +229,7 @@ export default {
             'translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))',
         },
       })
-    },
+    }),
     bgPatterns,
   ],
   theme: {
@@ -322,3 +324,5 @@ export default {
     },
   },
 }
+
+export default config
