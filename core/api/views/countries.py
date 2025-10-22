@@ -68,7 +68,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
                 type=openapi.TYPE_STRING,
                 enum=[
                     "business_plan",
-                    "meta-project",
+                    "meta_project",
                     "projects",
                     "replenishment",
                     "all",
