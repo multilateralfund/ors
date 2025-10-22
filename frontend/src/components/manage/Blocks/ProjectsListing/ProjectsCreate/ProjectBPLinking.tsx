@@ -50,14 +50,10 @@ const ProjectBPLinking = ({
               checked={isLinkedToBP}
               onChange={handleChangeBPLink}
               size="small"
-              sx={{
-                color: 'black',
-              }}
+              sx={{ color: 'black' }}
             />
           }
-          componentsProps={{
-            typography: { fontSize: '1.05rem' },
-          }}
+          componentsProps={{ typography: { fontSize: '1rem' } }}
         />
         {isLinkedToBP && (
           <LinkedBPTableWrapper {...{ projectData, setProjectData }} />

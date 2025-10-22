@@ -44,9 +44,9 @@ export const tableColumns: { [key: string]: string } = {
   export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
   ods_substance: 'Substance baseline technology',
   ods_blend: 'Substance baseline technology',
-  phase_out_mt: 'Substance phase out (mt)',
+  phase_out_mt: 'Substance phase out (Mt)',
   ods_replacement: 'Replacement technology(ies)',
-  ods_replacement_phase_in: 'Replacement technology phased in (mt)',
+  ods_replacement_phase_in: 'Replacement technology phased in (Mt)',
   capital_cost_approved: 'Capital cost approved',
   operating_cost_approved: 'Operating cost approved',
   funds_disbursed: 'Funds disbursed',
@@ -70,7 +70,8 @@ export const defaultPropsSimpleField = {
 export const textFieldClassName = ' min-h-[20px] w-full'
 
 export const textAreaClassname =
-  'rounded-lg border bg-white p-2 pb-10 shadow-none' + textFieldClassName
+  'rounded-lg border bg-white p-2 pb-10 shadow-none text-base' +
+  textFieldClassName
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {

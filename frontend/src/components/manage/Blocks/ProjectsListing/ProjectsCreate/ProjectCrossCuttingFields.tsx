@@ -5,6 +5,7 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
 import { NavigationButton } from '../HelperComponents'
@@ -230,6 +231,7 @@ const ProjectCrossCuttingFields = ({
                   className={cx(textAreaClassname + ' max-w-[64rem]', {
                     'border-red-500': getIsInputDisabled('description'),
                   })}
+                  style={STYLE}
                   minRows={7}
                   tabIndex={-1}
                 />
@@ -473,9 +475,7 @@ const ProjectCrossCuttingFields = ({
                     isV3Project ||
                     !canEditField(editableFields, 'individual_consideration')
                   }
-                  sx={{
-                    color: 'black',
-                  }}
+                  sx={{ color: 'black' }}
                 />
               </div>
             )}
