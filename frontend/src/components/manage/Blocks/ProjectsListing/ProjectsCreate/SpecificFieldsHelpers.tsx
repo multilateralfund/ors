@@ -7,6 +7,7 @@ import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
@@ -375,6 +376,7 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
+        style={STYLE}
         minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}
       />

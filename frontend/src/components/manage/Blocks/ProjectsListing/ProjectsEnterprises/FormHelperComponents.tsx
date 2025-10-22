@@ -4,6 +4,7 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { EnterpriseOverview, EnterprisesCommonProps } from '../interfaces'
 import {
   getFieldDefaultProps,
@@ -175,6 +176,7 @@ export const EnterpriseTextAreaField = <T,>({
       className={cx(textAreaClassname + ' max-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
       })}
+      style={STYLE}
       minRows={5}
       tabIndex={-1}
     />

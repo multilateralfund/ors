@@ -253,7 +253,7 @@ const ProjectsSettings = ({
                     />
                   }
                   componentsProps={{
-                    typography: { fontSize: '1.05rem', marginTop: '2px' },
+                    typography: { fontSize: '1rem', marginTop: '2px' },
                   }}
                 />
               </FormGroup>
