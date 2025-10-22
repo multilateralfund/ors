@@ -124,6 +124,24 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.id in edit_queryset_ids
 
 
+class ProjectComponentsSerializer(serializers.ModelSerializer):
+
+    original_project_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectComponents
+        fields = [
+            "id",
+            "original_project_id",
+        ]
+
+    def get_original_project_id(self, obj):
+        original_project = obj.original_project
+        if original_project:
+            return original_project.id
+        return None
+
+
 class ProjectV2ProjectIncludeFileSerializer(serializers.ModelSerializer):
     """
     Serializer for including files in the project list serializer.
@@ -270,8 +288,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_id",
             "meeting_transf",
             "meeting_transf_id",
-            "meeting_approved",
-            "meeting_approved_id",
             "post_excom_meeting",
             "post_excom_meeting_id",
             "post_excom_decision",
@@ -358,6 +374,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
+            if "metaproject_new_code" in data:
+                data["metaproject_new_code"] = None
+            if "metaproject_code" in data:
+                data["metaproject_code"] = None
         return data
 
     def get_bp_activity(self, obj: Project):
@@ -514,6 +534,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
@@ -841,7 +862,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meeting",
-            "meeting_approved",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
@@ -950,6 +970,38 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 raise serializers.ValidationError(
                     "The decision number is invalid for the selected meeting."
                 )
+
+        if self.instance:
+            original_project = (
+                self.instance.component.original_project
+                if self.instance.component
+                else None
+            )
+            if original_project and original_project.id != self.instance.id:
+                if (
+                    attrs.get("meeting", None)
+                    and attrs["meeting"] != original_project.meeting
+                ):
+                    raise serializers.ValidationError(
+                        "The meeting cannot be changed for a component project."
+                    )
+        else:
+            associate_project_id = attrs.get("associate_project_id", None)
+            if associate_project_id:
+                try:
+                    associate_project = Project.objects.get(id=associate_project_id)
+                    if associate_project.component:
+                        original_project = associate_project.component.original_project
+                        if (
+                            attrs.get("meeting", None)
+                            and attrs["meeting"] != original_project.meeting
+                        ):
+                            raise serializers.ValidationError(
+                                "The meeting cannot be changed for a component project."
+                            )
+                except Project.DoesNotExist:
+                    pass
+
         return attrs
 
     def get_meta_project(self, project, lead_agency):
@@ -1067,7 +1119,19 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
 
+        meeting_changed = instance.meeting != validated_data.get(
+            "meeting", instance.meeting
+        )
         super().update(instance, validated_data)
+        if instance.component:
+            original_project = instance.component.original_project
+            if original_project and original_project.id == instance.id:
+                if meeting_changed:
+                    for comp_project in instance.component.projects.exclude(
+                        id=instance.id
+                    ):
+                        comp_project.meeting = instance.meeting
+                        comp_project.save()
 
         # update, create, delete ods_odp
         if ods_odp_data is not None:
@@ -1150,7 +1214,7 @@ class ProjectV2EditApprovalFieldsSerializer(
     class Meta:
         model = Project
         fields = [
-            "meeting_approved",  # *
+            "meeting",  # *
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
@@ -1169,7 +1233,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting_approved"].end_date
+        validated_data["date_approved"] = validated_data["meeting"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1191,7 +1255,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             return attrs
         errors = {}
         if self.instance.meeting is None:
-            errors["meeting_approved"] = "Meeting is required for approval."
+            errors["meeting"] = "Meeting is required for approval."
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
         if self.instance.excom_provision is None:
@@ -1250,7 +1314,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
 
         if project_specific_fields_obj:
             for field in project_specific_fields_obj.fields.filter(
-                section__in=["Header", "Substance Details", "Impact"],
+                section__in=["Header", "Substance Details", "Impact", "MYA"],
                 is_actual=False,
             ):
                 if field.table == "ods_odp":
@@ -1276,22 +1340,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                     errors["ods_display_name"] = (
                                         "Ods name is required for submission."
                                     )
-                            elif field.write_field_name in [
-                                "co2_mt",
-                                "odp",
-                                "phase_out_mt",
-                            ]:
-                                # at least two of the three fields must be filled
-                                ods_value_fields = ["co2_mt", "odp", "phase_out_mt"]
-                                count_filled = 0
-                                for field_name in ods_value_fields:
-                                    if getattr(ods_odp, field_name) is not None:
-                                        count_filled += 1
-                                if count_filled < 2:
-                                    errors[f"{field.write_field_name}_ods_odp"] = (
-                                        "At least two of CO2 (t), ODP (t) and Phase-out (t) must be filled."
-                                    )
-
                             elif getattr(ods_odp, field.write_field_name) is None:
                                 errors[f"{field.write_field_name}_ods_odp"] = (
                                     f"{field.label} is required for submission."
@@ -1301,6 +1349,21 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )
+        original_project = (
+            self.instance.component.original_project
+            if self.instance.component
+            else None
+        )
+
+        if (
+            self.instance.component
+            and original_project
+            and original_project.id != self.instance.id
+        ):
+            # only original project of a component needs to have files attached
+            # other component projects are not required to have files attached
+            # projects that are not components also need to have files attached
+            return errors
         if ProjectFile.objects.filter(project=self.instance).count() < 1:
             errors["files"] = (
                 "At least one file must be attached to the project for submission."

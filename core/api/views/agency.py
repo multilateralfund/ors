@@ -32,21 +32,22 @@ class AgencyListView(generics.ListAPIView):
             ).lower()
             == "true"
         )
-        validate_exclusive_for = self.request.query_params.get(
+        values_exclusive_for = self.request.query_params.get(
             "values_exclusive_for", None
         )
 
-        if validate_exclusive_for == "business_plan":
+        if values_exclusive_for == "business_plan":
             queryset = queryset.exclude(
                 name__in=[
                     "China (FECO)",
                 ]
             )
-        elif validate_exclusive_for == "projects":
+        elif values_exclusive_for == "projects":
             queryset = queryset.exclude(
                 name__in=[
                     "China (FECO)",
                     "Treasurer (Cash Pool)",
+                    "Secretariat",
                 ]
             )
 
@@ -67,7 +68,7 @@ class AgencyListView(generics.ListAPIView):
             openapi.Parameter(
                 "values_exclusive_for",
                 openapi.IN_QUERY,
-                description="Comma-separated list of values to exclude from the response",
+                description="Give the module for which the agencies are being requested",
                 type=openapi.TYPE_STRING,
                 enum=["business_plan", "projects", "all"],
             ),

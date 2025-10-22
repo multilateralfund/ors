@@ -91,7 +91,6 @@ export interface SpecificFields {
   number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
   meeting: number | null
-  meeting_approved: number | null
   decision: number | null
   decision_id: string | null
   date_completion: string | null
@@ -177,6 +176,7 @@ export type ProjectTypeApi = ProjIdentifiers &
   SpecificFields &
   ProjectType & {
     meeting_id: number | null
+    component: { id: number; original_project_id: number }
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
@@ -281,7 +281,6 @@ export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   project?: ProjectTypeApi
   postExComUpdate?: boolean
   isV3ProjectEditable: boolean
-  isProjectEditableByAdmin: boolean
   specificFieldsLoaded: boolean
 }
 

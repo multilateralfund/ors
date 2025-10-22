@@ -28,7 +28,6 @@ export const initialParams = {
 
 const ProjectsFiltersSelectedOpts = ({
   mode,
-  commonSlice,
   projectSlice,
   meetings,
   form,
@@ -39,17 +38,16 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { agencies, clusters, project_types, sectors } =
+  const { countries, agencies, clusters, project_types, sectors } =
     useContext(ProjectsDataContext)
 
-  const { countries } = commonSlice
   const { submission_statuses, statuses } = projectSlice
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(countries.data),
+      entities: formatEntity(countries),
       entityIdentifier: 'country_id',
       hasPermissions: mode === 'listing',
     },

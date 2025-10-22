@@ -205,7 +205,6 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
-  const isProjectEditableByAdmin = hasV3EditPermissions && editableByAdmin
 
   const hasBpDefaultErrors =
     !(
@@ -304,6 +303,8 @@ const ProjectsCreate = ({
     mode === 'edit' &&
     project?.submission_status !== 'Withdrawn' &&
     (project?.version ?? 0) < 3 &&
+    (!project?.component ||
+      project?.id === project?.component.original_project_id) &&
     getHasNoFiles(parseInt(project_id), files, projectFiles)
 
   const steps = [
@@ -336,7 +337,6 @@ const ProjectsCreate = ({
             project,
             postExComUpdate,
             isV3ProjectEditable,
-            isProjectEditableByAdmin,
             specificFieldsLoaded,
             onBpDataChange,
             bpData,

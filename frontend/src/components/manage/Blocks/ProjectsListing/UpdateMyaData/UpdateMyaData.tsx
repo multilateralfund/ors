@@ -25,8 +25,12 @@ export default function UpdateMyaData() {
   const [filters, setFilters] = useState(() => initialFilters)
 
   const countriesApi = useApi({
-    options: {},
-    path: 'api/meta-projects/countries',
+    options: {
+      params: {
+        values_exclusive_for: 'meta_project',
+      },
+    },
+    path: 'api/countries',
   })
   const agenciesApi = useApi({
     options: {},

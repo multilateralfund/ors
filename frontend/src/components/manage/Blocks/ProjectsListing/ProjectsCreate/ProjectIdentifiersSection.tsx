@@ -18,7 +18,6 @@ const ProjectIdentifiersSection = ({
   areNextSectionsDisabled,
   postExComUpdate,
   isV3ProjectEditable,
-  isProjectEditableByAdmin,
   setCurrentStep,
   setCurrentTab,
   bpData,
@@ -58,7 +57,6 @@ const ProjectIdentifiersSection = ({
             areNextSectionsDisabled,
             postExComUpdate,
             isV3ProjectEditable,
-            isProjectEditableByAdmin,
             setCurrentStep,
             setCurrentTab,
           }}

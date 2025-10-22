@@ -102,7 +102,7 @@ const EditActionButtons = ({
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
-  const { id, submission_status, version } = project
+  const { id, submission_status, version, component } = project
   const {
     projIdentifiers,
     crossCuttingFields,
@@ -189,7 +189,8 @@ const EditActionButtons = ({
     hasOdsOdpErrors ||
     (getHasNoFiles(id, files, projectFiles) &&
       (version ?? 0) < 3 &&
-      !isWithdrawn)
+      !isWithdrawn &&
+      (!component || id === component.original_project_id))
 
   const hasErrors =
     commonErrors ||
@@ -470,7 +471,7 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton title="Close" href={`/projects-listing/${id}`} />
+      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
       {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {

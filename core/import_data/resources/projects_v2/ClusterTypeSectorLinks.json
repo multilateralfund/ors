@@ -10,7 +10,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
@@ -25,7 +24,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -38,7 +36,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -56,7 +53,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
@@ -71,7 +67,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -84,7 +79,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -102,7 +96,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
@@ -117,7 +110,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -130,7 +122,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -199,7 +190,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -212,7 +202,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "SERVCEE-89/6",
@@ -228,7 +217,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -246,7 +234,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -259,7 +246,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "SERVCEE-89/6",
@@ -275,7 +261,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -293,7 +278,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -306,7 +290,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "SERVCEE-89/6",
@@ -322,7 +305,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -340,7 +322,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -353,7 +334,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "SERVCEE-89/6",
@@ -369,7 +349,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -451,21 +430,8 @@
                 "type": "Technical assistance",
                 "sectors": [
                     "Enabling activities",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Verification"
-                ]
-            },
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Other Sector"
-                ]
-            },
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Other Sector"
                 ]
             },
             {
@@ -494,7 +460,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]
@@ -507,7 +472,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
@@ -523,7 +487,6 @@
                     "Electronics manufacturing",
                     "Firefighting",
                     "Foam",
-                    "Other Sector",
                     "Refrigeration",
                     "Solvent"
                 ]

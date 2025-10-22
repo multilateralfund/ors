@@ -63,10 +63,8 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors, subsectors } =
+  const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
-
-  const commonSlice = useStore((state) => state.common)
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -224,7 +222,7 @@ const ProjectsEdit = ({
       projIdentifiers: {
         ...prevData.projIdentifiers,
         country: project.country_id,
-        meeting: mode !== 'partial-link' ? project.meeting_id : null,
+        meeting: project.meeting_id,
         agency: project.agency_id,
         lead_agency: project.meta_project?.lead_agency,
         lead_agency_submitting_on_behalf:
@@ -274,8 +272,7 @@ const ProjectsEdit = ({
             crossCuttingFields: {
               ...initialCrossCuttingFields,
               is_lvc:
-                find(commonSlice.countries.data, { id: project.country_id })
-                  ?.is_lvc ?? null,
+                find(countries, { id: project.country_id })?.is_lvc ?? null,
             },
           }),
     }))
@@ -313,11 +310,7 @@ const ProjectsEdit = ({
         ...prevData,
         approvalFields: {
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-          meeting_approved:
-            find(
-              meetings,
-              (option) => option.number === project.meeting_approved,
-            )?.id ?? project.meeting_id,
+          meeting: project.meeting_id,
           decision: project.decision_id,
         },
       }))

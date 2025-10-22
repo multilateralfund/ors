@@ -440,6 +440,9 @@ def generate_new_cluster_type_sector_file(file_path):
         if row["Project type name"].strip() == "Project preparation":
             row["Project type name"] = "Preparation"
 
+        if row["Sector name"].strip() == "Other Sector":
+            continue
+
         combinations.setdefault(row["Cluster name"].strip(), {})
         combinations[row["Cluster name"].strip()].setdefault(
             row["Project type name"].strip(), []

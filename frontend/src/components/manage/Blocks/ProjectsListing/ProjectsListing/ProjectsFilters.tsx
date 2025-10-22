@@ -18,7 +18,6 @@ import { union } from 'lodash'
 
 const ProjectsFilters = ({
   mode,
-  commonSlice,
   projectSlice,
   meetings,
   form,
@@ -28,7 +27,7 @@ const ProjectsFilters = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { agencies, clusters, project_types, sectors } =
+  const { countries, agencies, clusters, project_types, sectors } =
     useContext(ProjectsDataContext)
 
   const searchRef = useFocusOnCtrlF()
@@ -101,11 +100,7 @@ const ProjectsFilters = ({
       {mode === 'listing' && (
         <Field
           Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(
-            filters,
-            commonSlice.countries.data,
-            'country_id',
-          )}
+          options={getFilterOptions(filters, countries, 'country_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const country = filters.country_id || []
