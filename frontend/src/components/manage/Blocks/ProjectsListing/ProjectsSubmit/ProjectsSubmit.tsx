@@ -124,7 +124,7 @@ const ProjectsSubmit = ({
           data={associatedProjects}
           getErrors={getErrors}
           isLoaded={loaded}
-          canRefreshStatus={!isSubmitSuccessful}
+          canRefreshStatus={!isSubmitSuccessful && !!hasErrors}
         />
         {!isSubmitSuccessful && (
           <div className="flex items-center gap-2">
