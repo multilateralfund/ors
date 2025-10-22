@@ -471,7 +471,7 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton title="Close" href={`/projects-listing/${id}`} />
+      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
       {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {

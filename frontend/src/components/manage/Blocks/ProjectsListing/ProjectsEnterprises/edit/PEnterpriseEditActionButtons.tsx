@@ -113,7 +113,7 @@ const PEnterpriseEditActionButtons = ({
     <div className="flex flex-wrap items-center gap-2.5">
       <CancelLinkButton
         title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
+        href={`/projects-listing/projects-enterprises/${project_id}`}
       />
       {canEditProjectEnterprise && (
         <Button

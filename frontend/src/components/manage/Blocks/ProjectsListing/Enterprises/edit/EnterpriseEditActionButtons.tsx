@@ -111,10 +111,7 @@ const EnterpriseEditActionButtons = ({
   return (
     <>
       <div className="flex flex-wrap items-center gap-2.5">
-        <CancelLinkButton
-          title="Cancel"
-          href={`/projects-listing/enterprises/${enterprise_id}`}
-        />
+        <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
         {canEditEnterprise && !isObsolete && (
           <Button
             className={cx('px-4 py-2 shadow-none', {
