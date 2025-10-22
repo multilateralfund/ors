@@ -1,6 +1,7 @@
 import { useContext, useCallback } from 'react'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
@@ -10,6 +11,7 @@ import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectIdentifiers = ({
   project,
@@ -23,11 +25,10 @@ const ProjectIdentifiers = ({
   const { viewableFields } = useStore((state) => state.projectFields)
   const canViewBpSection = canViewField(viewableFields, 'bp_activity')
 
-  const commonSlice = useStore((state) => state.common)
+  const { agencies } = useContext(ProjectsDataContext)
   const leadAgency =
-    commonSlice.agencies.data.find(
-      (agency) => agency.id === project.meta_project?.lead_agency,
-    )?.name ?? '-'
+    find(agencies, (agency) => agency.id === project.meta_project?.lead_agency)
+      ?.name ?? '-'
 
   const bpActivity = {
     ...project.bp_activity,
@@ -64,10 +65,9 @@ const ProjectIdentifiers = ({
             detailItem(tableColumns.country, project.country, {
               fieldHistory: getFieldHistory('country'),
             })}
-          {canViewField(viewableFields, 'meeting') &&
-            detailItem(tableColumns.meeting, project.meeting, {
-              fieldHistory: getFieldHistory('meeting'),
-            })}
+          {detailItem(tableColumns.meeting, project.meeting, {
+            fieldHistory: getFieldHistory('meeting'),
+          })}
           {canViewField(viewableFields, 'agency') &&
             detailItem(tableColumns.agency, project.agency, {
               fieldHistory: getFieldHistory('agency'),
@@ -116,7 +116,7 @@ const ProjectIdentifiers = ({
                 Business plan {bp.name} {' - '}
                 <span>(Meeting: {bp.meeting_number})</span>
                 {bp.decision_id ? (
-                  <span>{`(Decision: ${bp.decision_number})`})</span>
+                  <span>{`(Decision: ${bp.decision_number})`}</span>
                 ) : null}
               </div>
               <BPTable

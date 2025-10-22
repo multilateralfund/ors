@@ -15,7 +15,6 @@ from rest_framework import status
 
 from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
-from core.api.permissions import HasMetaProjectsEditAccess
 
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
@@ -23,6 +22,7 @@ from core.api.permissions import (
     HasProjectStatisticsViewAccess,
     HasProjectViewAccess,
     HasProjectEditAccess,
+    HasProjectV2MyaAccess,
     DenyAll,
 )
 from core.api.serializers import CountrySerializer
@@ -78,7 +78,28 @@ class MetaProjectListView(generics.ListAPIView):
     """
 
     permission_classes = [HasMetaProjectsViewAccess]
-    queryset = MetaProject.objects.order_by("code", "type")
+    queryset = (
+        MetaProject.objects.order_by("code", "type")
+        .prefetch_related(
+            "projects__agency",
+            "projects__comments",
+            "projects__cluster",
+            "projects__country",
+            "projects__decision",
+            "projects__files",
+            "projects__funds",
+            "projects__meeting",
+            "projects__project_type",
+            "projects__rbm_measures__measure",
+            "projects__ods_odp",
+            "projects__sector",
+            "projects__subsectors__sector",
+            "projects__status",
+            "projects__submission_amounts",
+            "projects__submission_status",
+        )
+        .select_related("lead_agency")
+    )
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
 
@@ -143,7 +164,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     List meta projects available for MYA update.
     """
 
-    permission_classes = [HasMetaProjectsViewAccess]
+    permission_classes = [HasProjectV2MyaAccess]
     serializer_class = MetaProjecMyaSerializer
     filterset_class = MetaProjectMyaFilter
 
@@ -152,6 +173,11 @@ class MetaProjectMyaListView(generics.ListAPIView):
             MetaProject.objects.filter(
                 type=MetaProject.MetaProjectType.MYA,
                 projects__submission_status__name="Approved",
+            ).prefetch_related(
+                "projects",
+                "projects__agency",
+                "projects__cluster",
+                "projects__country",
             )
             # Maybe exclude if ALL sub-projects Completed OR Transfered.
             # .filter(
@@ -173,13 +199,7 @@ class MetaProjectMyaDetailsViewSet(
 ):
     serializer_class = MetaProjecMyaDetailsSerializer
     queryset = MetaProject.objects.all()
-
-    @property
-    def permission_classes(self):
-        if self.action in ["retrieve"]:
-            return [HasMetaProjectsViewAccess]
-
-        return [HasMetaProjectsEditAccess]
+    permission_classes = [HasProjectV2MyaAccess]
 
     def update(self, request, *args, **kwargs):
         mp = self.get_object()

@@ -106,7 +106,7 @@ export const initialCrossCuttingFields = {
   project_end_date: null,
   total_fund: null,
   support_cost_psc: null,
-  individual_consideration: true,
+  individual_consideration: null,
 }
 
 export const blanketOrIndConsiderationOpts = [
@@ -167,7 +167,10 @@ export const disabledClassName =
   '!bg-white !text-[#9ca3af] !border border-solid !border-[#00000042] !cursor-default'
 
 export const viewColumnsClassName =
-  'flex flex-wrap gap-x-7 gap-y-5 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'
+  'flex flex-wrap gap-x-7 gap-y-4 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'
+
+export const exportButtonClassname =
+  'cursor-pointer justify-content-center flex items-center rounded-lg border border-solid bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline'
 
 export const initialOverviewFields = {
   name: '',

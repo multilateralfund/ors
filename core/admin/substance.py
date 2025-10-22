@@ -34,7 +34,7 @@ class SubstanceAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("group")
+        return queryset.select_related("group", "created_by")
 
     def get_list_display(self, request):
         exclude = [

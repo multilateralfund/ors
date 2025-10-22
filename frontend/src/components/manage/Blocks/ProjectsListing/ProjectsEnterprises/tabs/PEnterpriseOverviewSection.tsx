@@ -1,8 +1,9 @@
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseNumberField,
   EnterpriseSelectField,
@@ -16,7 +17,6 @@ import {
   PEnterpriseData,
   PEnterpriseDataProps,
 } from '../../interfaces'
-import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
 
@@ -30,19 +30,15 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
-  const commonSlice = useStore((state) => state.common)
-  const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
-
-  const { enterprise, enterpriseData } = rest
+  const { enterprise, enterpriseData, setEnterpriseData } = rest
   const { overview } = enterpriseData
   const overviewStatus = (overview as EnterpriseType).status
   const isDisabled =
-    (!!enterprise &&
-      (enterprise.status !== 'Pending Approval' ||
-        !canEditProjectEnterprise)) ||
-    (!!overviewStatus && overviewStatus !== 'Pending Approval')
+    !canEditProjectEnterprise ||
+    enterprise?.status === 'Approved' ||
+    overviewStatus === 'Approved'
 
   const sectionIdentifier = 'overview'
   const textFields = ['name', 'location', 'application']
@@ -57,7 +53,7 @@ const PEnterpriseOverviewSection = ({
   ]
 
   const handleChangeLinkStatus = (value: any) => {
-    rest.setEnterpriseData((prev) => ({
+    setEnterpriseData((prev) => ({
       ...prev,
       [sectionIdentifier]: {
         ...prev[sectionIdentifier],
@@ -73,10 +69,13 @@ const PEnterpriseOverviewSection = ({
           <Label>Status</Label>
           <Field
             widget="autocomplete"
-            disableClearable
             options={enterpriseStatuses}
             value={overview.linkStatus}
+            disabled={
+              !canEditProjectEnterprise || enterprise.status === 'Approved'
+            }
             onChange={(_, value) => handleChangeLinkStatus(value)}
+            disableClearable
             {...defaultProps}
           />
         </div>

@@ -4,10 +4,10 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.serializers.project import (
     ProjectListSerializer,
-    ProjectOdsOdpListSerializer,
     ProjectOdsOdpCreateSerializer,
     MetaProjectSerializer,
 )
@@ -124,6 +124,24 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.id in edit_queryset_ids
 
 
+class ProjectComponentsSerializer(serializers.ModelSerializer):
+
+    original_project_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectComponents
+        fields = [
+            "id",
+            "original_project_id",
+        ]
+
+    def get_original_project_id(self, obj):
+        original_project = obj.original_project
+        if original_project:
+            return original_project.id
+        return None
+
+
 class ProjectV2ProjectIncludeFileSerializer(serializers.ModelSerializer):
     """
     Serializer for including files in the project list serializer.
@@ -217,8 +235,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "ad_hoc_pcr",
             "agency",
             "agency_id",
+            "aggregated_consumption",
             "ban_of_equipment",
             "ban_of_substances",
+            "baseline",
             "bp_activity",
             "capacity_building_programmes",
             "certification_system_for_technicians",
@@ -229,6 +249,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "code_legacy",
             "comments",
             "component",
+            "cost_effectiveness",
+            "cost_effectiveness_co2",
             "country",
             "country_id",
             "date_approved",
@@ -266,19 +288,26 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_id",
             "meeting_transf",
             "meeting_transf_id",
-            "meeting_approved",
-            "meeting_approved_id",
             "post_excom_meeting",
             "post_excom_meeting_id",
             "post_excom_decision",
             "post_excom_decision_id",
             "mya_code",
+            "mya_end_date",
+            "mya_phase_out_co2_eq_t",
+            "mya_phase_out_odp_t",
+            "mya_phase_out_mt",
+            "mya_project_funding",
+            "mya_start_date",
+            "mya_support_cost",
+            "number_of_enterprises",
             "number_of_enterprises_assisted",
             "number_of_female_customs_officers_trained",
             "number_of_female_nou_personnel_supported",
             "number_of_female_technicians_certified",
             "number_of_female_technicians_trained",
             "number_of_female_trainers_trained",
+            "number_of_production_lines_assisted",
             "number_of_tools_sets_distributed",
             "number_of_training_institutions_newly_assisted",
             "ods_odp",
@@ -309,6 +338,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "serial_number",
             "status",
             "status_id",
+            "starting_point",
             "submission_amounts",
             "substance_name",
             "submission_status",
@@ -319,6 +349,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "subsectors",
             "subsector_legacy",
             "support_cost_psc",
+            "targets",
             "title",
             "tranche",
             "total_fund_transferred",
@@ -343,6 +374,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
+            if "metaproject_new_code" in data:
+                data["metaproject_new_code"] = None
+            if "metaproject_code" in data:
+                data["metaproject_code"] = None
         return data
 
     def get_bp_activity(self, obj: Project):
@@ -365,27 +400,56 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return None
 
 
-class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectOdsOdpListSerializer):
-
-    ods_type = serializers.CharField(required=False, allow_null=True)
-
-    class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ProjectOdsOdpListSerializer.Meta.fields
-
-
-class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
+class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
     """
-    ProjectOdsOdpListSerializer class
+    ProjectOdsOdpSerializer class
     """
 
+    ods_display_name = serializers.SerializerMethodField()
+    ods_substance_name = serializers.SerializerMethodField()
+    ods_substance_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Substance.objects.all().values_list("id", flat=True),
+    )
+    ods_blend_id = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Blend.objects.all().values_list("id", flat=True)
+    )
     ods_type = serializers.SerializerMethodField()
     ods_blend_composition = serializers.SerializerMethodField()
 
-    class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ProjectOdsOdpListSerializer.Meta.fields + [
+    class Meta:
+        model = ProjectOdsOdp
+        fields = [
+            "id",
+            "project_id",
+            "ods_display_name",
+            "ods_substance_name",
+            "odp",
+            "ods_replacement",
+            "co2_mt",
+            "phase_out_mt",
+            "ods_type",
+            "ods_substance_id",
+            "ods_blend_id",
+            "sort_order",
             "ods_type",
             "ods_blend_composition",
         ]
+        read_only_fields = ["id", "project_id"]
+
+    def get_ods_display_name(self, obj):
+        if obj.ods_display_name:
+            return obj.ods_display_name
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        if obj.ods_blend:
+            return obj.ods_blend.name
+        return None
+
+    def get_ods_substance_name(self, obj):
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        return None
 
     def get_ods_type(self, obj):
         return obj.get_ods_type_display()
@@ -394,6 +458,36 @@ class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
         if obj.ods_blend:
             return obj.ods_blend.composition
         return ""
+
+    def validate(self, attrs):
+        if attrs.get("ods_substance_id") and attrs.get("ods_blend_id"):
+            raise serializers.ValidationError(
+                "Only one of ods_substance_id or ods_blend_id is required"
+            )
+
+        # validate partial updates
+        if self.instance:
+            # set ods_substance_id wile ods_blend_id is set
+            if attrs.get("ods_substance_id") and self.instance.ods_blend_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_substance_id when ods_blend_id is set"
+                )
+
+            # set ods_blend_id wile ods_substance_id is set
+            if attrs.get("ods_blend_id") and self.instance.ods_substance_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_blend_id when ods_substance_id is set"
+                )
+
+        return super().validate(attrs)
+
+
+class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectV2OdsOdpListSerializer):
+
+    ods_type = serializers.CharField(required=False, allow_null=True)
+
+    class Meta(ProjectV2OdsOdpListSerializer.Meta):
+        fields = ProjectV2OdsOdpListSerializer.Meta.fields
 
 
 class SerializeProjectFieldHistory:
@@ -440,6 +534,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
@@ -471,7 +566,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "number_of_female_customs_officers_trained_actual",
             "total_number_of_nou_personnel_supported_actual",
             "number_of_female_nou_personnel_supported_actual",
-            "number_of_enterprises_assisted_actual",
             "certification_system_for_technicians_actual",
             "operation_of_recovery_and_recycling_scheme_actual",
             "operation_of_reclamation_scheme_actual",
@@ -604,7 +698,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         return versions
 
 
-class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
+class ProjectV2OdsOdpCreateUpdateSerializer(
+    ProjectV2OdsOdpListSerializer, BaseProjectUtilityCreateSerializer
+):
     id = serializers.IntegerField(required=False)
 
     project_id = serializers.PrimaryKeyRelatedField(
@@ -670,7 +766,7 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
                 raise serializers.ValidationError(
                     f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
                 )
-        return super(ProjectOdsOdpListSerializer, self).validate(attrs)
+        return super(ProjectV2OdsOdpListSerializer, self).validate(attrs)
 
 
 class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSerializer):
@@ -726,11 +822,13 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         fields = [
             "ad_hoc_pcr",
             "agency",
+            "aggregated_consumption",
             "associate_project_id",
             "ban_of_equipment",
             "ban_of_equipment_actual",
             "ban_of_substances",
             "ban_of_substances_actual",
+            "baseline",
             "bp_activity",
             "cluster",
             "capacity_building_programmes",
@@ -740,6 +838,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "checklist_regulations",
             "checklist_regulations_actual",
             "country",
+            "cost_effectiveness",
+            "cost_effectiveness_co2",
             "date_approved",
             "date_completion",
             "decision",
@@ -762,7 +862,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meeting",
-            "meeting_approved",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
@@ -771,10 +870,17 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac",
             "meps_developed_commercial_ac_actual",
+            "mya_end_date",
+            "mya_phase_out_co2_eq_t",
+            "mya_phase_out_odp_t",
+            "mya_phase_out_mt",
+            "mya_project_funding",
+            "mya_start_date",
+            "mya_support_cost",
+            "number_of_enterprises",
+            "number_of_enterprises_assisted",
             "number_of_female_nou_personnel_supported",
             "number_of_female_nou_personnel_supported_actual",
-            "number_of_enterprises_assisted",
-            "number_of_enterprises_assisted_actual",
             "number_of_female_customs_officers_trained",
             "number_of_female_customs_officers_trained_actual",
             "number_of_female_technicians_trained",
@@ -783,6 +889,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "number_of_female_trainers_trained_actual",
             "number_of_female_technicians_certified",
             "number_of_female_technicians_certified_actual",
+            "number_of_production_lines_assisted",
             "number_of_training_institutions_newly_assisted",
             "number_of_training_institutions_newly_assisted_actual",
             "number_of_tools_sets_distributed",
@@ -814,10 +921,12 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "quantity_hfc_23_by_product_emitted_actual",
             "quantity_controlled_substances_destroyed_mt_actual",
             "quantity_controlled_substances_destroyed_co2_eq_t_actual",
+            "starting_point",
             "sector",
             "subsectors",
             "subsector_ids",
             "support_cost_psc",
+            "targets",
             "tranche",
             "title",
             "total_fund",
@@ -861,6 +970,38 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 raise serializers.ValidationError(
                     "The decision number is invalid for the selected meeting."
                 )
+
+        if self.instance:
+            original_project = (
+                self.instance.component.original_project
+                if self.instance.component
+                else None
+            )
+            if original_project and original_project.id != self.instance.id:
+                if (
+                    attrs.get("meeting", None)
+                    and attrs["meeting"] != original_project.meeting
+                ):
+                    raise serializers.ValidationError(
+                        "The meeting cannot be changed for a component project."
+                    )
+        else:
+            associate_project_id = attrs.get("associate_project_id", None)
+            if associate_project_id:
+                try:
+                    associate_project = Project.objects.get(id=associate_project_id)
+                    if associate_project.component:
+                        original_project = associate_project.component.original_project
+                        if (
+                            attrs.get("meeting", None)
+                            and attrs["meeting"] != original_project.meeting
+                        ):
+                            raise serializers.ValidationError(
+                                "The meeting cannot be changed for a component project."
+                            )
+                except Project.DoesNotExist:
+                    pass
+
         return attrs
 
     def get_meta_project(self, project, lead_agency):
@@ -916,7 +1057,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         _ = validated_data.pop("request", None)
         lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
-        status = ProjectStatus.objects.get(code="NEWSUB")
+        status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
@@ -978,7 +1119,19 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
 
+        meeting_changed = instance.meeting != validated_data.get(
+            "meeting", instance.meeting
+        )
         super().update(instance, validated_data)
+        if instance.component:
+            original_project = instance.component.original_project
+            if original_project and original_project.id == instance.id:
+                if meeting_changed:
+                    for comp_project in instance.component.projects.exclude(
+                        id=instance.id
+                    ):
+                        comp_project.meeting = instance.meeting
+                        comp_project.save()
 
         # update, create, delete ods_odp
         if ods_odp_data is not None:
@@ -1027,7 +1180,6 @@ class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac_actual",
             "number_of_female_nou_personnel_supported_actual",
-            "number_of_enterprises_assisted_actual",
             "number_of_female_customs_officers_trained_actual",
             "number_of_female_technicians_trained_actual",
             "number_of_female_trainers_trained_actual",
@@ -1062,7 +1214,7 @@ class ProjectV2EditApprovalFieldsSerializer(
     class Meta:
         model = Project
         fields = [
-            "meeting_approved",  # *
+            "meeting",  # *
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
@@ -1081,7 +1233,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting_approved"].end_date
+        validated_data["date_approved"] = validated_data["meeting"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1103,7 +1255,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             return attrs
         errors = {}
         if self.instance.meeting is None:
-            errors["meeting_approved"] = "Meeting is required for approval."
+            errors["meeting"] = "Meeting is required for approval."
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
         if self.instance.excom_provision is None:
@@ -1131,7 +1283,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "cluster",
             "project_type",
             "sector",
-            "subsectors",
             "country",
             "agency",
             "meeting",
@@ -1163,7 +1314,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
 
         if project_specific_fields_obj:
             for field in project_specific_fields_obj.fields.filter(
-                section__in=["Header", "Substance Details", "Impact"],
+                section__in=["Header", "Substance Details", "Impact", "MYA"],
                 is_actual=False,
             ):
                 if field.table == "ods_odp":
@@ -1189,22 +1340,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                     errors["ods_display_name"] = (
                                         "Ods name is required for submission."
                                     )
-                            elif field.write_field_name in [
-                                "co2_mt",
-                                "odp",
-                                "phase_out_mt",
-                            ]:
-                                # at least two of the three fields must be filled
-                                ods_value_fields = ["co2_mt", "odp", "phase_out_mt"]
-                                count_filled = 0
-                                for field_name in ods_value_fields:
-                                    if getattr(ods_odp, field_name) is not None:
-                                        count_filled += 1
-                                if count_filled < 2:
-                                    errors[f"{field.write_field_name}_ods_odp"] = (
-                                        "At least two of CO2 (t), ODP (t) and Phase-out (t) must be filled."
-                                    )
-
                             elif getattr(ods_odp, field.write_field_name) is None:
                                 errors[f"{field.write_field_name}_ods_odp"] = (
                                     f"{field.label} is required for submission."
@@ -1214,6 +1349,21 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )
+        original_project = (
+            self.instance.component.original_project
+            if self.instance.component
+            else None
+        )
+
+        if (
+            self.instance.component
+            and original_project
+            and original_project.id != self.instance.id
+        ):
+            # only original project of a component needs to have files attached
+            # other component projects are not required to have files attached
+            # projects that are not components also need to have files attached
+            return errors
         if ProjectFile.objects.filter(project=self.instance).count() < 1:
             errors["files"] = (
                 "At least one file must be attached to the project for submission."
@@ -1366,3 +1516,35 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         project.save()
 
         return new_transfer_project
+
+
+class ProjectExportV2Serializer(ProjectListV2Serializer):
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
+    cluster = serializers.SlugRelatedField("name", read_only=True)
+    substances_list = serializers.SerializerMethodField()
+    subsectors_list = serializers.SerializerMethodField()
+
+    class Meta(ProjectListV2Serializer.Meta):
+        fields = ProjectListV2Serializer.Meta.fields + [
+            "substances_list",
+            "subsectors_list",
+            "serial_number_legacy",
+        ]
+
+    def get_substances_list(self, obj):
+        "substances names separated by comma for project list export"
+        if not obj.ods_odp.count():
+            return None
+
+        substances = []
+        for ods_odp in obj.ods_odp.all():
+            if ods_odp.ods_substance:
+                substances.append(ods_odp.ods_substance.name)
+            elif ods_odp.ods_blend:
+                substances.append(ods_odp.ods_blend.name)
+        return ", ".join(substances)
+
+    def get_subsectors_list(self, obj):
+        "subsector names separated by comma for project list export"
+        return ", ".join([s.name for s in obj.subsectors.all()])

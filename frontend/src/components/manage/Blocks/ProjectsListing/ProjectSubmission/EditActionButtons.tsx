@@ -46,6 +46,7 @@ import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const EditActionButtons = ({
   projectData,
@@ -101,15 +102,18 @@ const EditActionButtons = ({
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
-  const { id, submission_status, version } = project
+  const { id, submission_status, version, component } = project
   const {
+    projIdentifiers,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
   } = projectData
 
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version >= 3 && canUpdateV3Projects)
+    postExComUpdate ||
+    (version < 3 && canUpdateProjects) ||
+    (version >= 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =
@@ -120,6 +124,7 @@ const EditActionButtons = ({
   const submissionStatus = lowerCase(submission_status)
   const isDraft = submissionStatus === 'draft'
   const isSubmitted = submissionStatus === 'submitted'
+  const isWithdrawn = submissionStatus === 'withdrawn'
   const isRecommended = submissionStatus === 'recommended'
   const isApproved = submissionStatus === 'approved'
   const isAfterApproval = isApproved || submissionStatus === 'not approved'
@@ -164,52 +169,46 @@ const EditActionButtons = ({
     (field) => field.table === 'ods_odp',
   )
 
-  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
-  const areFieldsMissing = odsOdpData.some((data) =>
-    Object.entries(data).some(
-      ([field, value]) =>
-        !phaseOutFieldNames.includes(field) && checkInvalidValue(value),
-    ),
-  )
-  const hasPhaseOutErrors = odsOdpData.some(
-    (data) =>
-      phaseOutFieldNames.filter(
-        (field) => !checkInvalidValue(data[field as keyof typeof data]),
-      ).length < 2,
-  )
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (areFieldsMissing || hasPhaseOutErrors || odsOdpData.length === 0)
+    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+      odsOdpData.length === 0)
 
   const {
     Header: headerErrors = {},
     'Substance Details': substanceErrors = {},
     Impact: impactErrors = {},
+    MYA: myaErrors = {},
   } = specificErrors
 
   const commonErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
+    hasSectionErrors(myaErrors) ||
     hasOdsOdpErrors ||
-    (getHasNoFiles(id, files, projectFiles) && (version ?? 0) < 3)
+    (getHasNoFiles(id, files, projectFiles) &&
+      (version ?? 0) < 3 &&
+      !isWithdrawn &&
+      (!component || id === component.original_project_id))
 
   const hasErrors =
     commonErrors ||
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors))
+      : hasSectionErrors(impactErrors)) ||
+    (isRecommended &&
+      dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3
-      ? isAfterApproval
-        ? disableSubmit ||
-          hasSectionErrors(approvalErrors) ||
-          approvalFields.length === 0
-        : disableSubmit
-      : isSaveDisabled)
+    (project.version >= 3 || isWithdrawn ? disableSubmit : isSaveDisabled) ||
+    (postExComUpdate &&
+      !(
+        projIdentifiers.post_excom_meeting &&
+        projIdentifiers.post_excom_decision
+      ))
 
   const disableApprovalActions =
     !specificFieldsLoaded ||
@@ -337,7 +336,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/submit`)
       }
 
-      if (canApproveProjects && isAfterApproval) {
+      if (isRecommended) {
         await editApprovalFields()
       }
       return true
@@ -472,7 +471,7 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton title="Close" href={`/projects-listing/${id}`} />
+      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
       {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -510,7 +509,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableSubmit}
@@ -542,7 +541,7 @@ const EditActionButtons = ({
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
-          label={<>Edit project</>}
+          label={<>Approval</>}
         >
           <Dropdown.Item
             disabled={disableApprovalActions}

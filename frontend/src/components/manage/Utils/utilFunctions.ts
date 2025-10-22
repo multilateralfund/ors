@@ -1,7 +1,7 @@
 import { useStore } from '@ors/store'
 import { find, reverse } from 'lodash'
 
-export const getMeetingOptions = () => {
+export const useMeetingOptions = () => {
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
   const formattedMeetings = meetings?.map((meeting: any) => ({
@@ -38,4 +38,9 @@ export const getMeetingNr = (meeting_id?: number) => {
   const meetings = projectSlice.meetings.data
 
   return find(meetings, (option) => option.id === meeting_id)?.number
+}
+
+const SHOULD_ENABLE_NEW_CP_DATA_FORMATTING = false
+export const shouldEnableNewCPDataFormatting = (model: string) => {
+  return SHOULD_ENABLE_NEW_CP_DATA_FORMATTING && model === 'V'
 }

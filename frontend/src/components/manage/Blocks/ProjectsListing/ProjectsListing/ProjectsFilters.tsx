@@ -7,6 +7,7 @@ import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import { getIndividualConsiderationOpts } from '../utils'
 import { tableColumns } from '../constants'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import { debounce } from '@ors/helpers/Utils/Utils'
@@ -17,7 +18,6 @@ import { union } from 'lodash'
 
 const ProjectsFilters = ({
   mode,
-  commonSlice,
   projectSlice,
   meetings,
   form,
@@ -27,7 +27,8 @@ const ProjectsFilters = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
+  const { countries, agencies, clusters, project_types, sectors } =
+    useContext(ProjectsDataContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -99,11 +100,7 @@ const ProjectsFilters = ({
       {mode === 'listing' && (
         <Field
           Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(
-            filters,
-            commonSlice.countries.data,
-            'country_id',
-          )}
+          options={getFilterOptions(filters, countries, 'country_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const country = filters.country_id || []
@@ -120,11 +117,7 @@ const ProjectsFilters = ({
       )}
       <Field
         Input={{ placeholder: tableColumns.agency }}
-        options={getFilterOptions(
-          filters,
-          commonSlice.agencies.data,
-          'agency_id',
-        )}
+        options={getFilterOptions(filters, agencies, 'agency_id')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const agency = filters.agency_id || []
@@ -266,6 +259,31 @@ const ProjectsFilters = ({
           />
         </>
       )}
+      <Field
+        Input={{ placeholder: 'Blanket/individual consideration' }}
+        options={getFilterOptions(
+          filters,
+          getIndividualConsiderationOpts(),
+          'individual_consideration',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const consideration = filters.individual_consideration || []
+          const newValue = union(consideration, value)
+
+          handleFilterChange({ individual_consideration: newValue })
+          handleParamsChange({
+            individual_consideration: newValue
+              .map((item: any) => item.id)
+              .join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+        FieldProps={{
+          className: defaultProps.FieldProps.className + ' md:!w-[15.5rem]',
+        }}
+      />
     </div>
   )
 }

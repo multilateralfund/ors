@@ -1,15 +1,9 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useStore } from '@ors/store'
-
-import { Box, Divider } from '@mui/material'
-
 import { MetaProjectType } from '@ors/types/api_projects.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import NotFoundPage from '@ors/app/not-found'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import { GridOptions } from 'ag-grid-community'
-import { Country } from '@ors/types/store'
 import {
   initialFilters,
   initialParams,
@@ -24,12 +18,19 @@ import { MetaProjectFilters } from '@ors/components/manage/Blocks/ProjectsListin
 import { MetaProjectFiltersSelectedOptions } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectFiltersSelectedOptions.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 
+import { Box, Divider } from '@mui/material'
+import { Redirect } from 'wouter'
+
 export default function UpdateMyaData() {
   const [filters, setFilters] = useState(() => initialFilters)
 
   const countriesApi = useApi({
-    options: {},
-    path: 'api/meta-projects/countries',
+    options: {
+      params: {
+        values_exclusive_for: 'meta_project',
+      },
+    },
+    path: 'api/countries',
   })
   const agenciesApi = useApi({
     options: {},
@@ -63,7 +64,8 @@ export default function UpdateMyaData() {
 
   const [selected, setSelected] = useState<MetaProjectType | null>(null)
 
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canViewMetaProjects } =
+    useContext(PermissionsContext)
 
   const { loaded, loading, results, count, setParams } =
     useGetMetaProjects(initialParams)
@@ -81,8 +83,8 @@ export default function UpdateMyaData() {
     })
   }
 
-  if (!canViewProjects) {
-    return <NotFoundPage />
+  if (!(canViewProjects && canViewMetaProjects)) {
+    return <Redirect to="/projects-listing" />
   }
 
   const columnDefs: GridOptions<MetaProjectType>['columnDefs'] = [

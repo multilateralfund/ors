@@ -42,6 +42,7 @@ const PEnterpriseCreateActionButtons = ({
         data: data,
         method: 'POST',
       })
+
       setEnterpriseId(result.id)
       setLocation(
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
@@ -65,7 +66,7 @@ const PEnterpriseCreateActionButtons = ({
           title="Create project enterprise"
           isDisabled={!enterpriseData.overview.name}
           onSubmit={createEnterprise}
-          className="ml-auto"
+          className="!py-2"
         />
       )}
     </div>

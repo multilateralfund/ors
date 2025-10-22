@@ -36,6 +36,7 @@ import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/ViewDiff'
 
 import { DefaultComponentType, SectionMeta } from './types'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 const constants: ConstantsType = {
   I: undefined,
@@ -270,26 +271,49 @@ export function getSections(
           constants[model]?.adm_d?.title ||
           'D. Qualitative assessment of the operation of HPMP',
       },
-      {
-        id: 'section_d',
-        allowFullScreen: true,
-        component: components[mode].section_d || DefaultComponent,
-        label: 'Section D',
-        note: 'NOTE:  Fill in this form only if your country generated HFC-23',
-        panelId: 'section-D-panel',
-        title:
-          'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
-      },
-      {
-        id: 'section_e',
-        allowFullScreen: true,
-        component: components[mode].section_e || DefaultComponent,
-        label: 'Section E',
-        note: 'NOTE:  Columns shaded in grey are voluntary',
-        panelId: 'section-E-panel',
-        title:
-          'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
-      },
+
+      shouldEnableNewCPDataFormatting(model)
+        ? {
+            id: 'section_d',
+            allowFullScreen: true,
+            component: components[mode].section_d || DefaultComponent,
+            label: 'Section D',
+            note: 'NOTE:  Fill in this form only if your country generated HFC-23',
+            panelId: 'section-D-panel',
+            title:
+              'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
+          }
+        : {
+            id: 'section_d',
+            allowFullScreen: true,
+            component: components[mode].section_d || DefaultComponent,
+            label: 'Section D',
+            note: 'NOTE:  Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances',
+            panelId: 'section-D-panel',
+            title:
+              'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
+          },
+      shouldEnableNewCPDataFormatting(model)
+        ? {
+            id: 'section_e',
+            allowFullScreen: true,
+            component: components[mode].section_e || DefaultComponent,
+            label: 'Section E',
+            note: 'NOTE: Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances.',
+            panelId: 'section-E-panel',
+            title:
+              'SECTION E. ANNEX F, GROUP II – DATA ON QUANTITY OF EMISSIONS OF HFC-23 FROM FACILITIES MANUFACTURING ANNEX C GROUP I OR ANNEX F SUBSTANCES (METRIC TONNES)',
+          }
+        : {
+            id: 'section_e',
+            allowFullScreen: true,
+            component: components[mode].section_e || DefaultComponent,
+            label: 'Section E',
+            note: 'NOTE:  Columns shaded in grey are voluntary',
+            panelId: 'section-E-panel',
+            title:
+              'SECTION E. ANNEX F, GROUP II - DATA ON HFC-23 EMISSIONS (METRIC TONNES)',
+          },
       {
         id: 'section_f',
         component: components[mode].section_f || DefaultComponent,

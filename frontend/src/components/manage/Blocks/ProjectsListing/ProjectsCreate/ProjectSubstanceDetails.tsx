@@ -1,31 +1,43 @@
+import { useEffect } from 'react'
+
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
-import { canViewField, getDefaultValues, hasFields } from '../utils'
+import {
+  canViewField,
+  formatOptions,
+  getDefaultValues,
+  getFieldData,
+  hasFields,
+} from '../utils'
 import {
   OdsOdpFields,
   SpecificFieldsSectionProps,
   ProjectData,
+  ProjectSpecificFields,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { groupBy } from 'lodash'
+import { find, groupBy } from 'lodash'
 
 const ProjectSubstanceDetails = ({
   projectData,
   setProjectData,
   sectionFields,
+  overviewFields,
   errors = {},
   hasSubmitted,
   odsOdpErrors,
-  canEditApprovedProj,
+  canEditSubstances,
 }: SpecificFieldsSectionProps & {
+  overviewFields: ProjectSpecificFields[]
   odsOdpErrors: { [key: string]: [] }[]
-  canEditApprovedProj: boolean
+  canEditSubstances: boolean
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
+  const crtSectionData = projectData[sectionIdentifier] || []
   const odsOdpData = projectData[sectionIdentifier][field] || []
 
   const groupedFields = groupBy(sectionFields, 'table')
@@ -33,6 +45,8 @@ const ProjectSubstanceDetails = ({
   const odsOdpFields = (groupedFields[field] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+  const groupField = getFieldData(overviewFields, 'group')
 
   const {
     projectFields: allFields,
@@ -79,6 +93,33 @@ const ProjectSubstanceDetails = ({
     })
   }
 
+  useEffect(() => {
+    if (odsDisplayField && groupField) {
+      const substancesOptions = formatOptions(odsDisplayField, crtSectionData)
+      const validData = odsOdpData.find((data) =>
+        find(
+          substancesOptions,
+          (option) => option.id === data.ods_display_name,
+        ),
+      )
+
+      if (!validData) {
+        setProjectData((prevData) => {
+          return {
+            ...prevData,
+            [sectionIdentifier]: {
+              ...prevData[sectionIdentifier],
+              [field]: odsOdpData.map((data) => ({
+                ...data,
+                ods_display_name: null,
+              })),
+            },
+          }
+        })
+      }
+    }
+  }, [crtSectionData.group])
+
   return (
     <div className="flex flex-col gap-y-6">
       {projectFields.map(
@@ -100,7 +141,7 @@ const ProjectSubstanceDetails = ({
       {canViewSubstanceSection && (
         <>
           <div className="flex flex-col gap-y-2">
-            <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
+            <div className="flex flex-col flex-wrap gap-x-20">
               {odsOdpFields.length > 0 &&
                 odsOdpData
                   .sort(
@@ -109,7 +150,7 @@ const ProjectSubstanceDetails = ({
                   )
                   .map((_, index) => (
                     <span key={index}>
-                      <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
+                      <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
                         {odsOdpFields.map(
                           (odsOdpField) =>
                             canViewField(
@@ -128,11 +169,12 @@ const ProjectSubstanceDetails = ({
                                   sectionIdentifier,
                                   field,
                                   index,
+                                  !!groupField,
                                 )}
                               </span>
                             ),
                         )}
-                        {canEditApprovedProj && (
+                        {canEditSubstances && (
                           <IoTrash
                             className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                             size={16}
@@ -142,12 +184,14 @@ const ProjectSubstanceDetails = ({
                           />
                         )}
                       </div>
-                      {index !== odsOdpData.length - 1 && <Divider />}
+                      {index !== odsOdpData.length - 1 && (
+                        <Divider className="my-5" />
+                      )}
                     </span>
                   ))}
             </div>
           </div>
-          {canEditApprovedProj && odsOdpFields.length > 0 && (
+          {canEditSubstances && odsOdpFields.length > 0 && (
             <SubmitButton
               title="Add substance"
               onSubmit={onAddSubstance}

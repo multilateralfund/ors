@@ -40,17 +40,18 @@
     {
         "name": "Projects - MLFS Viewer",
         "permissions": [
+            "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "has_project_v2_view_access",
             "has_sectors_and_subsectors_view_access",
-            "has_enterprise_view_access",
             "has_apr_view_access"
         ]
     },
     {
         "name": "Projects - MLFS Submission V1/V2",
         "permissions": [
+            "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "has_project_v2_draft_edit_access",
@@ -60,26 +61,23 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access",
-            "has_enterprise_view_access"
+            "has_sectors_and_subsectors_view_access"
         ]
     },
     {
         "name": "Projects - MLFS Submission V3",
         "permissions": [
+            "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "has_project_v2_view_access",
+            "has_project_v2_mya_access",
             "has_project_v2_version3_edit_access",
+            "has_project_v2_edit_post_excom",
             "has_project_v2_approve_projects_access",
             "has_project_v2_transfer_projects_access",
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
-            "has_project_enterprise_approval_access",
-            "has_project_enterprise_edit_access",
-            "has_enterprise_view_access",
-            "has_enterprise_edit_access",
-            "has_enterprise_approval_access",
             "has_apr_view_access",
             "has_apr_edit_access"
         ]
@@ -88,6 +86,7 @@
     {
         "name": "Projects - MLFS Submission V1/V2 Production",
         "permissions": [
+            "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "can_view_production_projects",
@@ -98,27 +97,24 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access",
-            "has_enterprise_view_access"
+            "has_sectors_and_subsectors_view_access"
         ]
     },
     {
         "name": "Projects - MLFS Submission V3 Production",
         "permissions": [
+            "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "can_view_production_projects",
             "has_project_v2_view_access",
             "has_project_v2_version3_edit_access",
+            "has_project_v2_edit_post_excom",
+            "has_project_v2_mya_access",
             "has_project_v2_approve_projects_access",
             "has_project_v2_transfer_projects_access",
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
-            "has_project_enterprise_approval_access",
-            "has_project_enterprise_edit_access",
-            "has_enterprise_view_access",
-            "has_enterprise_edit_access",
-            "has_enterprise_approval_access",
             "has_apr_view_access",
             "has_apr_edit_access"
         ]
@@ -155,6 +151,7 @@
             "can_view_production_projects",
             "has_project_v2_view_access",
             "has_project_v2_edit_access",
+            "has_project_v2_edit_post_excom",
             "has_project_v2_draft_edit_access",
             "has_project_v2_submit_access",
             "has_project_view_access",
@@ -229,11 +226,12 @@
         "name": "Projects - MLFS Admin",
         "permissions": [
             "has_meta_projects_view_access",
-            "has_meta_projects_edit_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",
             "has_project_v2_view_access",
             "has_project_v2_edit_access",
+            "has_project_v2_edit_post_excom",
+            "has_project_v2_mya_access",
             "has_project_v2_edit_approved_access",
             "has_project_view_access",
             "has_project_edit_access",

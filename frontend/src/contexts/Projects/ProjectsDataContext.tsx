@@ -1,12 +1,15 @@
 import { createContext } from 'react'
-import { Cluster } from '@ors/types/store'
+import { Cluster, Country } from '@ors/types/store'
 import { ProjectTypeType } from '@ors/types/api_project_types'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
+import { ApiAgency } from '@ors/types/api_agencies'
 
 interface ProjectsDataContextProps {
+  countries: Country[]
+  agencies: ApiAgency[]
   clusters: Cluster[]
   project_types: ProjectTypeType[]
   sectors: ProjectSectorType[]

@@ -20,9 +20,10 @@ const ProjectsAssociateWrapper = () => {
     canViewBp,
     canUpdateBp,
     canUpdateProjects,
-    canViewProjects,
     canViewEnterprises,
-    canEditApprovedProjects,
+    canEditProjectEnterprise,
+    canUpdatePostExcom,
+    canViewMetaProjects,
   } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
@@ -34,14 +35,15 @@ const ProjectsAssociateWrapper = () => {
 
   return (
     <>
-      <div className="mt-5 flex flex-wrap justify-between gap-y-3">
+      <div className="mt-5 flex flex-wrap justify-between gap-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
           {getMenus({
             canViewBp,
             canUpdateBp,
-            canViewProjects,
             canViewEnterprises,
-            canEditApprovedProjects,
+            canEditProjectEnterprise,
+            canUpdatePostExcom,
+            canViewMetaProjects,
           }).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}

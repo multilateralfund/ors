@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseTextField,
@@ -8,16 +9,12 @@ import {
   EnterpriseTextAreaField,
 } from '../../ProjectsEnterprises/FormHelperComponents'
 import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
-import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
 
 const EnterpriseForm = (props: EnterpriseDataProps) => {
   const { canEditEnterprise } = useContext(PermissionsContext)
-
-  const commonSlice = useStore((state) => state.common)
-  const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']
@@ -28,8 +25,7 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   const { enterprise } = props
   const isDisabled =
-    !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditEnterprise)
+    !!enterprise && (enterprise.status === 'Obsolete' || !canEditEnterprise)
 
   return (
     <>

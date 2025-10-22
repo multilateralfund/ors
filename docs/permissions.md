@@ -81,8 +81,8 @@
 | country-programme-archive/print/                                      | GET    | has_cp_report_view_access                | Entries filtered for `can_view_only_own_country`. |
 | countries/                                                            | GET    | -                                        | Entries filtered for `can_view_only_own_country`. |
 | meta-projects/                                                        | GET    | has_meta_projects_view_access            | |
-| meta-projects/{id}/                                                   | PUT    | has_meta_projects_edit_access            | |
-| meta-projects-for-mya-update/                                         | GET    | has_meta_projects_view_access            | |
+| meta-projects/{id}/                                                   | PUT    | has_project_v2_mya_access                | |
+| meta-projects-for-mya-update/                                         | GET    | has_project_v2_mya_access                | |
 | project-statuses/                                                     | GET    | has_project_metainfo_view_access         | |
 | project-submission-statuses/                                          | GET    | has_project_metainfo_view_access         | |
 | project-types/                                                        | GET    | has_project_metainfo_view_access         | |
@@ -129,7 +129,8 @@
 | projects/v2/{id}/                                                     | PUT    | has_project_v2_edit_access               |  Entries filtered for 'can_view_only_own_agency' and `can_view_production_projects`.  Further filtering using `has_project_v2_draft_edit_access`, `has_project_v2_version1_version2_edit_access` and `has_project_v2_version3_edit_access`, `has_project_v2_edit_approved_access` (matches editable from GET)
 | projects/v2/{id}/edit_actual_fields/                                  | PUT    | has_project_v2_edit_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`. Only allowed for projects with submission status = `Appproved`
 | projects/v2/{id}/edit_approval_fields/                                | PUT    | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| projects/v2/{id}/                                                     | PATCH  | has_project_v2_edit_access               | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.  Further filtering using `has_project_v2_draft_edit_access`, `has_project_v2_version1_version2_edit_access` and `has_project_v2_version3_edit_access`, `has_project_v2_edit_approved_access` (matches editable from GET)
+| projects/v2/{id}/                                                     | PATCH  | has_project_v2_edit_access               | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.  Further filtering using `has_project_v2_draft_edit_access`, `has_project_v2_version1_version2_edit_access` and `has_project_v2_version3_edit_access`, `has_project_v2_edit_approved_access` (matches editable from GET). Update post excom fields can be done
+only if user has `has_project_v2_edit_post_excom` permission.
 | projects/v2/{id}/list_previous_tranches/                              | GET    | has_project_v2_view_access               | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`. *only given project is filtered, all tranches are returned*
 | projects/v2/{id}/list_associated_projects/                            | GET    | has_project_v2_view_access               | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`. *only given project is filtred, all associated projects are not.
 | projects/v2/{id}/recommend/                                           | POST   | has_project_v2_recommend_projects_access | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
@@ -144,14 +145,12 @@
 | enterprise/{id}/                                                      | GET    | has_enterprise_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | enterprise/{id}/                                                      | PUT    | has_enterprise_edit_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | enterprise/{id}/change_status                                         | POST   | has_enterprise_approval_access           |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/                                                   | GET    | has_project_v2_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/{id}/                                              | GET    | has_project_v2_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/                                                   | GET    | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/                                              | GET    | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                                              | PUT    | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                                              | PATCH  | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                                              | DELETE | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/approve                                       | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/{id}/not_approve                                   | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
-| project-enterprise/{id}/obsolete                                      | POST   | has_project_enterprise_approval_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/delete                                        | DELETE | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`. Only pending enterprises can be removed if user has no `has_project_enterprise_approval_access`
 | project-enterprise/                                                   | POST   | has_project_enterprise_edit_access       |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-settings/                                                     | GET    | has_project_settings_access              | |

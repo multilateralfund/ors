@@ -60,6 +60,7 @@ export interface IFormattedNumberInputProps
   onlyNumber?: boolean
   value?: number | string
   withoutInitialValue?: boolean
+  prefix?: string
 }
 
 export interface DateRangeInputProps

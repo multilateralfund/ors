@@ -107,8 +107,8 @@ const ProjectsSubmit = ({
         {!isSubmitSuccessful ? (
           <span className="text-[22px]">
             {hasErrors || hasSubmitErrors
-              ? `${hasAssociatedProjects ? 'Some associated projects need' : 'A project needs'} adjustments before submission:`
-              : `The following ${hasAssociatedProjects ? 'associated' : ''} ${formattedText} will be submitted:`}
+              ? `${hasAssociatedProjects ? 'Some projects need' : 'The project needs'} adjustments before submission:`
+              : `The following ${formattedText} will be submitted:`}
           </span>
         ) : (
           <span className="flex items-center gap-1.5 text-[22px]">
@@ -124,7 +124,7 @@ const ProjectsSubmit = ({
           data={associatedProjects}
           getErrors={getErrors}
           isLoaded={loaded}
-          canRefreshStatus={!isSubmitSuccessful}
+          canRefreshStatus={!isSubmitSuccessful && !!hasErrors}
         />
         {!isSubmitSuccessful && (
           <div className="flex items-center gap-2">

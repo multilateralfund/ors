@@ -3,8 +3,8 @@
 import { useRef, useState } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import getColumnDefs from '../../Enterprises/listing/schema'
 import DeletePEnterpriseModal from './DeletePEnterpriseModal'
+import getColumnDefs from '../../Enterprises/listing/schema'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { getPaginationSelectorOpts } from '../../utils'
 import { PROJECTS_PER_PAGE } from '../../constants'
@@ -23,10 +23,7 @@ const PEnterprisesTable = ({
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null)
 
-  const { columnDefs, defaultColDef } = getColumnDefs(
-    'project-enterprise',
-    setIdToDelete,
-  )
+  const { columnDefs, defaultColDef } = getColumnDefs(setIdToDelete)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 500)
 
   const handleDeleteProjectEnterprise = async () => {
@@ -44,7 +41,6 @@ const PEnterprisesTable = ({
         },
       )
     }
-
     setIdToDelete(null)
   }
 

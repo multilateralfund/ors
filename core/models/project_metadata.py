@@ -2,6 +2,7 @@ from colorfield.fields import ColorField
 
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
 
 ALL_TYPE_CODES = ["CPG", "DEM", "INS", "INV", "PRP", "TAS", "TRA", "DOC", "PS", "PHA"]
 
@@ -186,7 +187,7 @@ class ProjectType(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def allowed_sectors(self):
         sector_codes = [
             sector
@@ -233,7 +234,7 @@ class ProjectSector(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def allowed_types(self):
         type_codes = PROJECT_SECTOR_TO_TYPE_MAPPINGS.get(self.code, [])
         return list(

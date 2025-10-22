@@ -8,14 +8,23 @@ import { MdExpandMore } from 'react-icons/md'
 import { GoDatabase } from 'react-icons/go'
 
 const GenerateDBMenu = () => {
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canApproveProjects } = useContext(PermissionsContext)
 
   const menuItems = [
-    { title: 'Funding amounts', url: null },
     {
       title: 'Project warehouse',
       url: '/projects-listing/export',
       permissions: [canViewProjects],
+    },
+    {
+      title: 'Approval summary',
+      url: '/projects-listing/approval-summary',
+      permissions: [canApproveProjects],
+    },
+    {
+      title: 'Summary of projects',
+      url: '/projects-listing/summary-of-projects',
+      permissions: [canApproveProjects],
     },
     { title: 'MYA warehouse', url: null },
     { title: 'ExCom provisions', url: null },
@@ -83,6 +92,7 @@ const GenerateDBMenu = () => {
       >
         {filteredMenuItems.map(({ url, title }) => (
           <MenuItem
+            key={title}
             className="whitespace-normal rounded-none p-0 hover:bg-white"
             onClick={handleClose}
             disabled={!url}

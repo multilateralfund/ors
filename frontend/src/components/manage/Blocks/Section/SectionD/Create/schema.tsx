@@ -3,13 +3,16 @@ import { useState } from 'react'
 import { GridOptions } from 'ag-grid-community'
 
 import {
-  sectionColDefById,
+  sectionColDefByIdFunc,
   sectionDefaultColDef,
   sectionColGroupDefById,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -19,48 +22,78 @@ function useGridOptions() {
         headerName: 'Substance',
         ...sectionColDefById['display_name'],
       },
-      {
-        cellDataType: 'number',
-        cellEditor: 'agNumberCellEditor',
-        dataType: 'number',
-        editable: true,
-        field: 'all_uses',
-        headerName: 'Total production for all uses',
-        ...sectionColDefById['all_uses'],
-      },
-      {
-        cellDataType: 'number',
-        cellEditor: 'agNumberCellEditor',
-        dataType: 'number',
-        editable: true,
-        field: 'feedstock',
-        headerName: 'Production for feedstock uses within your country',
-        ...sectionColDefById['feedstock'],
-      },
-      {
-        children: [
-          {
+      shouldEnableNewCPDataFormatting(model)
+        ? {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
             dataType: 'number',
-            field: 'other_uses_quantity',
-            headerName: 'Quantity',
-            orsAggFunc: 'sumTotal',
+            editable: true,
+            field: 'all_uses',
+            headerName: 'Total production for all uses',
+            ...sectionColDefById['all_uses'],
+          }
+        : {
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            dataType: 'number',
+            editable: true,
+            field: 'all_uses',
+            headerName: 'Captured for all uses',
+            ...sectionColDefById['all_uses'],
           },
-          {
-            cellEditor: 'agTextCellEditor',
-            field: 'other_uses_remarks',
-            headerName: 'Decision / type of use or remarks',
-            ...colDefById['remarks'],
+      shouldEnableNewCPDataFormatting(model)
+        ? {
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            dataType: 'number',
+            editable: true,
+            field: 'feedstock',
+            headerName: 'Production for feedstock uses within your country',
+            ...sectionColDefById['feedstock'],
+          }
+        : {
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            dataType: 'number',
+            editable: true,
+            field: 'feedstock',
+            headerName: 'Captured for feedstock uses within your country',
+            ...sectionColDefById['feedstock'],
           },
-        ],
-        groupId: 'other_uses',
-        headerGroupComponent: 'agColumnHeaderGroup',
-        headerName:
-          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
-        marryChildren: true,
-        ...sectionColGroupDefById['other_uses'],
-      },
+      shouldEnableNewCPDataFormatting(model)
+        ? {
+            children: [
+              {
+                cellDataType: 'number',
+                cellEditor: 'agNumberCellEditor',
+                dataType: 'number',
+                field: 'other_uses_quantity',
+                headerName: 'Quantity',
+                orsAggFunc: 'sumTotal',
+              },
+              {
+                cellEditor: 'agTextCellEditor',
+                field: 'other_uses_remarks',
+                headerName: 'Decision / type of use or remarks',
+                ...colDefById['remarks'],
+              },
+            ],
+            groupId: 'other_uses',
+            headerGroupComponent: 'agColumnHeaderGroup',
+            headerName:
+              'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
+            marryChildren: true,
+            ...sectionColGroupDefById['other_uses'],
+          }
+        : {
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            dataType: 'number',
+            editable: true,
+            field: 'destruction',
+            headerName: 'Captured for destruction',
+            ...sectionColDefById['destruction'],
+          },
     ],
     defaultColDef: {
       ...sectionDefaultColDef,

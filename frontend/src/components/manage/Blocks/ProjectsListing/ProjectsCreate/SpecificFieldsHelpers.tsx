@@ -3,7 +3,10 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
@@ -56,7 +59,8 @@ const getFieldDefaultProps = (
     ...{
       ...defaultPropsSimpleField,
       className: cx(defaultPropsSimpleField.className, {
-        '!ml-0 h-10': field.data_type === 'date',
+        '!ml-0 h-10':
+          field.data_type === 'date' || field.data_type === 'decimal',
         'w-[125px]': isOdp,
         'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
@@ -188,8 +192,12 @@ export const AutocompleteWidget = <T,>(
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
+  hasField?: boolean,
 ) => {
-  const options = formatOptions(field)
+  const options = formatOptions(
+    field,
+    hasField ? fields[sectionIdentifier] : undefined,
+  )
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
@@ -197,18 +205,28 @@ export const AutocompleteWidget = <T,>(
     ? find(options, { id: value }) || null
     : value
 
+  const normalizedValue =
+    fieldName === 'ods_display_name'
+      ? options.find((opt) => opt.id === value) || null
+      : formattedValue
+
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Field
         widget="autocomplete"
         options={options}
         disabled={!canEditField(editableFields, fieldName)}
-        value={formattedValue}
+        value={normalizedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -244,6 +262,13 @@ export const AutocompleteWidget = <T,>(
         }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
+        {...(field.section === 'Impact' || field.section === 'MYA'
+          ? {
+              FieldProps: {
+                className: defaultProps.FieldProps.className + ' !w-40',
+              },
+            }
+          : {})}
       />
     </div>
   )
@@ -372,18 +397,82 @@ const NumberWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div
       className={cx('flex h-full flex-col', {
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <SimpleInput
         id={fieldName}
         value={value ?? ''}
         disabled={!canEditField(editableFields, fieldName)}
         type="text"
+        onChange={(value) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            value,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        {...getFieldDefaultProps(
+          getIsInputDisabled(
+            hasSubmitted,
+            errors,
+            hasTrancheErrors,
+            field.label,
+            index,
+          ),
+          editableFields,
+          field,
+        )}
+      />
+    </div>
+  )
+}
+
+const DecimalWidget = <T,>(
+  fields: T,
+  setFields: Dispatch<SetStateAction<T>>,
+  field: ProjectSpecificFields,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  hasTrancheErrors: boolean,
+  hasSubmitted: boolean,
+  editableFields: string[],
+  sectionIdentifier: keyof T = identifier as keyof T,
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
+  return (
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
+      <FormattedNumberInput
+        id={fieldName}
+        disabled={!canEditField(editableFields, fieldName)}
+        value={value ?? ''}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -425,9 +514,15 @@ const BooleanWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+
   return (
     <div className="col-span-full flex w-full">
-      <Label>{field.label}</Label>
+      <Label className={cx({ italic: isDisabledImpactField })}>
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
       <Checkbox
         className="pb-1 pl-2 pt-0"
         checked={Boolean(value)}
@@ -474,7 +569,7 @@ const DateWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div>
+    <div className="w-40">
       <Label>{field.label}</Label>
       <DateInput
         id={fieldName}
@@ -515,7 +610,7 @@ export const widgets = {
   text: TextAreaWidget,
   simpleText: TextWidget,
   number: NumberWidget,
-  decimal: NumberWidget,
+  decimal: DecimalWidget,
   boolean: BooleanWidget,
   date: DateWidget,
 }

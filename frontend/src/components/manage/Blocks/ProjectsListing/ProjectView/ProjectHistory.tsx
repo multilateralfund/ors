@@ -1,12 +1,15 @@
-import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import React from 'react'
-import dayjs from 'dayjs'
-import { FaClockRotateLeft } from 'react-icons/fa6'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader.tsx'
+import { NavigationButton } from '../HelperComponents'
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+
+import { FaClockRotateLeft } from 'react-icons/fa6'
+import dayjs from 'dayjs'
 
 type ProjectHistoryProps = {
   project: ProjectTypeApi
-  mode: string
 }
 
 const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
@@ -56,7 +59,10 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
   )
 }
 
-const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
+const ProjectHistory = ({
+  project,
+  setCurrentTab,
+}: ProjectHistoryProps & ProjectTabSetters) => {
   const historyItems = project.history
 
   const renderCollection = (items: typeof historyItems) => {
@@ -71,11 +77,18 @@ const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
   const renderedHistory = renderCollection(historyItems)
 
   return (
-    <div>
-      <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
-      <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
-      <div className="">{renderedHistory}</div>
-    </div>
+    <>
+      <div>
+        <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
+        <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
+        <div className="">{renderedHistory}</div>
+      </div>
+      {setCurrentTab && (
+        <div className="mt-5">
+          <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
+        </div>
+      )}
+    </>
   )
 }
 

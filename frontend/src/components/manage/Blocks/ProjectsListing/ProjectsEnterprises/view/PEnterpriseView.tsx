@@ -15,7 +15,6 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
   const tabs = [
     {
       id: 'enterprise-overview',
-      ariaControls: 'enterprise-overview',
       label: 'Overview',
       component: (
         <PEnterpriseOverviewSection
@@ -26,13 +25,11 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
     },
     {
       id: 'enterprise-substance-details',
-      ariaControls: 'enterprise-substance-details',
       label: 'Substance details',
       component: <PEnterpriseSubstanceDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-funding-details',
-      ariaControls: 'enterprise-funding-details',
       label: 'Funding details',
       component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
     },
@@ -56,8 +53,8 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
             setActiveTab(newValue)
           }}
         >
-          {tabs.map(({ id, ariaControls, label }) => (
-            <Tab id={id} aria-controls={ariaControls} label={label} />
+          {tabs.map(({ id, label }) => (
+            <Tab id={id} aria-controls={id} label={label} />
           ))}
         </Tabs>
       </div>

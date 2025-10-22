@@ -3,7 +3,11 @@ import { useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { displaySelectedOption } from '../HelperComponents'
-import { formatEntity, getAreFiltersApplied } from '../utils'
+import {
+  formatEntity,
+  getAreFiltersApplied,
+  getIndividualConsiderationOpts,
+} from '../utils'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
@@ -18,12 +22,12 @@ export const initialParams = {
   meeting_id: [],
   submission_status_id: [],
   status_id: [],
+  individual_consideration: [],
   search: '',
 }
 
 const ProjectsFiltersSelectedOpts = ({
   mode,
-  commonSlice,
   projectSlice,
   meetings,
   form,
@@ -34,21 +38,21 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
+  const { countries, agencies, clusters, project_types, sectors } =
+    useContext(ProjectsDataContext)
 
-  const { agencies, countries } = commonSlice
   const { submission_statuses, statuses } = projectSlice
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(countries.data),
+      entities: formatEntity(countries),
       entityIdentifier: 'country_id',
       hasPermissions: mode === 'listing',
     },
     {
-      entities: formatEntity(agencies.data),
+      entities: formatEntity(agencies),
       entityIdentifier: 'agency_id',
       hasPermissions: true,
     },
@@ -82,6 +86,11 @@ const ProjectsFiltersSelectedOpts = ({
       entities: formatEntity(statuses.data),
       entityIdentifier: 'status_id',
       hasPermissions: canViewMetainfoProjects,
+    },
+    {
+      entities: formatEntity(getIndividualConsiderationOpts()),
+      entityIdentifier: 'individual_consideration',
+      hasPermissions: true,
     },
   ]
 

@@ -16,7 +16,7 @@ import {
   ListingProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
-import { Cluster } from '@ors/types/store'
+import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
 
 import {
   concat,
@@ -30,6 +30,7 @@ import {
   isNaN,
   isNil,
   keys,
+  lowerCase,
   map,
   min,
   omit,
@@ -43,10 +44,13 @@ import {
 } from 'ag-grid-community'
 import dayjs from 'dayjs'
 
-const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
+const getFieldId = <T>(
+  field: ProjectSpecificFields,
+  data: T,
+  projectData?: ProjectTypeApi,
+) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
-
-  return find(formatOptions(field), {
+  return find(formatOptions(field, projectData), {
     [fieldName]: data[field.read_field_name as keyof T]?.toString(),
   })?.id
 }
@@ -54,6 +58,7 @@ const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
+  projectData?: ProjectTypeApi,
 ) =>
   reduce(
     fields,
@@ -64,7 +69,7 @@ export const getDefaultValues = <T>(
       if (data) {
         acc[fieldName] =
           dataType === 'drop_down'
-            ? getFieldId<T>(field, data)
+            ? getFieldId<T>(field, data, projectData)
             : dataType === 'boolean'
               ? (data[fieldName] ?? false)
               : data[fieldName]
@@ -84,30 +89,53 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
     projIdentifiers.cluster &&
     projIdentifiers.agency &&
     projIdentifiers.lead_agency
-  )
+  ) && !getAgencyErrorType(projIdentifiers)
 
 export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title, project_start_date, project_end_date } =
-    crossCuttingFields
+  const {
+    project_type,
+    sector,
+    title,
+    total_fund,
+    support_cost_psc,
+    project_start_date,
+    project_end_date,
+  } = crossCuttingFields
 
   return (
     !canLinkToBp ||
     !(project_type && sector && title) ||
+    Number(total_fund) < Number(support_cost_psc) ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date))
   )
 }
 
-export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
+const filterSubstancesOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.group_id === group_id)
+const filterBlendsOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.substance_groups.includes(group_id))
+
+export const formatOptions = (
+  field: ProjectSpecificFields,
+  data?: any,
+): OptionsType[] => {
   const options = field.options as
     | OptionsType[]
     | Record<'substances' | 'blends', (OptionsType & { composition: string })[]>
 
+  const groupValue = data ? data.group_id || data.group : null
+
   return field.write_field_name === 'ods_display_name' && !isArray(options)
-    ? concat(options.substances, options.blends).map((option) => {
+    ? concat(
+        data
+          ? filterSubstancesOptions(options.substances, groupValue)
+          : options.substances,
+        data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
+      ).map((option) => {
         return {
           ...option,
           id: `${option.baseline_type}-${option.id}`,
@@ -380,6 +408,23 @@ export const getProjIdentifiersErrors = (
   }
 }
 
+export const getAgencyErrorType = (
+  projIdentifiers: ProjIdentifiers | ProjectTypeApi,
+) => {
+  const { agency, lead_agency, lead_agency_submitting_on_behalf } =
+    projIdentifiers
+
+  if (!(agency && lead_agency)) return null
+
+  return lead_agency_submitting_on_behalf
+    ? agency === lead_agency
+      ? 'similar_agencies'
+      : null
+    : agency !== lead_agency
+      ? 'different_agencies'
+      : null
+}
+
 export const checkInvalidValue = (value: any) =>
   isNil(value) || value === '' || value.length === 0
 
@@ -392,7 +437,9 @@ const getFieldErrors = (
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
       ? ['title', 'project_type', 'sector'].includes(field) ||
         project?.submission_status !== 'Draft'
-        ? ['This field is required.']
+        ? field.includes('_actual')
+          ? ['This field is not completed.']
+          : ['This field is required.']
         : ['This field is required for submission.']
       : []
 
@@ -410,7 +457,6 @@ export const getCrossCuttingErrors = (
     'project_type',
     'sector',
     'description',
-    'subsector_ids',
     'is_lvc',
     'total_fund',
     'support_cost_psc',
@@ -422,13 +468,17 @@ export const getCrossCuttingErrors = (
     Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
 
-  const { project_start_date, project_end_date } = crossCuttingFields
+  const { total_fund, support_cost_psc, project_start_date, project_end_date } =
+    crossCuttingFields
 
   const fieldsToCheck =
     mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
+    ...(Number(total_fund) < Number(support_cost_psc) && {
+      support_cost_psc: ['Value cannot be greater than project funding.'],
+    }),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
@@ -443,10 +493,10 @@ export const getApprovalErrors = (
   project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
-    'meeting_approved',
     'decision',
-    'excom_provision',
     'date_completion',
+    'programme_officer',
+    'excom_provision',
   ]
 
   const filteredErrors = Object.fromEntries(
@@ -455,6 +505,9 @@ export const getApprovalErrors = (
 
   const allErrors = {
     ...getFieldErrors(requiredFields, approvalData, project),
+    ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
+      date_completion: ['Cannot be a past date.'],
+    }),
     ...filteredErrors,
   }
 
@@ -519,17 +572,18 @@ export const getSpecificFieldsErrors = (
   canEditApprovedProjects: boolean,
   project?: ProjectTypeApi,
 ) => {
+  const isEditMode = project && mode === 'edit'
+  const version = isEditMode ? project.version : 1
+
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section, editable_in_versions, data_type }) =>
+      ({ table, editable_in_versions, data_type }) =>
         table === 'project' &&
-        section !== 'MYA' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
-          editable_in_versions.includes(
-            project && mode === 'edit' ? project.version : 1,
-          )),
+          (isEditMode && project.version > 3) ||
+          editable_in_versions.includes(version)),
     ),
     'write_field_name',
   ) as string[]
@@ -629,9 +683,10 @@ export const getMenus = (
   const {
     canViewBp,
     canUpdateBp,
-    canViewProjects,
     canViewEnterprises,
-    canEditApprovedProjects,
+    canEditProjectEnterprise,
+    canUpdatePostExcom,
+    canViewMetaProjects,
   } = permissions
   const { projectId, projectSubmissionStatus, projectStatus } =
     projectData ?? {}
@@ -643,24 +698,28 @@ export const getMenus = (
         {
           title: 'View business plans',
           url: '/business-plans',
-          permissions: [canViewBp],
+          disabled: !canViewBp,
         },
         {
           title: 'New business plan',
           url: '/business-plans/upload',
-          permissions: [canUpdateBp],
+          disabled: !canUpdateBp,
         },
       ],
     },
     {
       title: 'Approved Projects',
       menuItems: [
-        { title: 'Update MYA data', url: '/projects-listing/update-mya-data' },
+        {
+          title: 'Update MYA data',
+          url: '/projects-listing/update-mya-data',
+          disabled: !canViewMetaProjects,
+        },
         {
           title: 'Update post ExCom fields',
           url: `/projects-listing/${projectId}/post-excom-update`,
-          permissions: [canEditApprovedProjects],
           disabled:
+            !canUpdatePostExcom ||
             !projectId ||
             projectSubmissionStatus !== 'Approved' ||
             projectStatus === 'Closed' ||
@@ -669,22 +728,24 @@ export const getMenus = (
         {
           title: 'Update project enterprises',
           url: `/projects-listing/projects-enterprises/${projectId}`,
-          permissions: [canViewProjects && canViewEnterprises],
-          disabled: !projectId || projectSubmissionStatus !== 'Approved',
+          disabled:
+            !canEditProjectEnterprise ||
+            !projectId ||
+            projectSubmissionStatus !== 'Approved',
         },
         {
           title: 'Manage enterprises',
           url: `/projects-listing/enterprises`,
-          permissions: [canViewEnterprises],
+          disabled: !canViewEnterprises,
         },
-        { title: 'Transfer a project', url: null },
+        { title: 'Transfer a project', url: null, disabled: true },
       ],
     },
     {
       title: 'Reporting',
       menuItems: [
-        { title: 'Create Annual Progress Report', url: null },
-        { title: 'Raise a PCR', url: null },
+        { title: 'Create Annual Progress Report', url: null, disabled: true },
+        { title: 'Raise a PCR', url: null, disabled: true },
       ],
     },
   ]
@@ -801,7 +862,7 @@ export const getPaginationSelectorOpts = (
 ) => {
   const actualMaxResults = min([count, maxResults]) ?? maxResults
 
-  const nrResultsOpts = [100, 150, 200, 250, 500, 1000]
+  const nrResultsOpts = [50, 100, 150, 200, 250, 500, 1000]
   const filteredNrResultsOptions = nrResultsOpts.filter(
     (option) => option <= actualMaxResults,
   )
@@ -820,3 +881,97 @@ export const formatEntity = (currentEntity: any = [], field: string = 'id') =>
   new Map<number, any>(
     currentEntity.map((entity: any) => [entity[field], entity]),
   )
+
+export const getFieldData = (
+  data: ProjectSpecificFields[],
+  fieldName: string,
+) => find(data, (field) => field.write_field_name === fieldName)
+
+export const getHistoryItemValue = (value: any, fieldName: string): any => {
+  if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
+    return dayjs(value).format('DD/MM/YYYY')
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('title')
+  ) {
+    return value.title
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('name')
+  ) {
+    return value.name
+  } else if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No'
+  } else if (Array.isArray(value)) {
+    return value.map((v) => getHistoryItemValue(v, fieldName)).join(', ')
+  }
+  return value
+}
+
+export const filterHistoryField = (history: ProjectFieldHistoryValue[]) =>
+  history.filter(
+    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
+  )
+
+export const getLatesValueByMeeting = (history: ProjectFieldHistoryValue[]) =>
+  Object.values(
+    history.reduce(
+      (acc, item) => {
+        const key = item.post_excom_meeting ?? '-'
+        if (!acc[key] || item.version > acc[key].version) {
+          acc[key] = item
+        }
+        return acc
+      },
+      {} as Record<string, any>,
+    ),
+  ).sort((a, b) => b.version - a.version)
+
+export const hasExcomUpdate = (
+  history: ProjectFieldHistoryValue[],
+  fieldName: string,
+) => {
+  const filteredHistory = filterHistoryField(history)
+  const latestByMeeting = getLatesValueByMeeting(filteredHistory)
+
+  const historicValues =
+    latestByMeeting.reduce((acc, item) => {
+      acc.add(getHistoryItemValue(item.value, fieldName))
+      return acc
+    }, new Set()) ?? new Set()
+
+  return historicValues.size > 1
+}
+
+export const formatFieldsHistory = (
+  history: ProjectFieldHistoryValue[],
+  dataType: string,
+) =>
+  map(history, (historyItem) => ({
+    ...historyItem,
+    value:
+      dataType === 'decimal'
+        ? !isNil(historyItem.value)
+          ? formatDecimalValue(parseFloat(historyItem.value), {
+              maximumFractionDigits: 10,
+              minimumFractionDigits: 2,
+            })
+          : '-'
+        : dataType === 'boolean'
+          ? historyItem.value
+            ? 'Yes'
+            : 'No'
+          : historyItem.value,
+  }))
+
+export const getIndividualConsiderationOpts = () => {
+  const options = ['Blanket consideration', 'Individual consideration', 'N/A']
+
+  return map(options, (option, index) => ({
+    id: index === 0 ? 'Blanket' : option,
+    value: option,
+    name: option,
+  }))
+}

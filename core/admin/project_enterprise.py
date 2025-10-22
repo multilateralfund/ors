@@ -35,6 +35,10 @@ class EnterpriseAdmin(admin.ModelAdmin):
         data = get_final_display_list(Enterprise, exclude)
         return data
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("country")
+
 
 @admin.register(ProjectEnterprise)
 class ProjectEnterpriseAdmin(admin.ModelAdmin):

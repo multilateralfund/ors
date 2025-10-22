@@ -204,13 +204,23 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: Response = self.client.get(self.url, {"project_id": project.id})
         assert response.status_code == HTTPStatus.FORBIDDEN, response.data
 
-    def test_export_projects_agency_submitter(self, project, agency_inputter_user):
+    def test_export_projects_agency_submitter(
+        self, project, agency_inputter_user, project_approved_status
+    ):
+        # Set submission status to approved to have the project code shown in the export
+        project.submission_status = project_approved_status
+        project.save()
         self.client.force_authenticate(user=agency_inputter_user)
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
 
-    def test_export_projects_secretariat(self, project, secretariat_viewer_user):
+    def test_export_projects_secretariat(
+        self, project, secretariat_viewer_user, project_approved_status
+    ):
+        # Set submission status to approved to have the project code shown in the export
+        project.submission_status = project_approved_status
+        project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK

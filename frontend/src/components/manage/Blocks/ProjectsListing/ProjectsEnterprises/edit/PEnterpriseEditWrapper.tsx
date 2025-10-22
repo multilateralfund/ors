@@ -30,8 +30,9 @@ const PEnterpriseEditWrapper = () => {
   const { data, loading, error } = enterprise
 
   if (
-    !canViewEnterprises ||
     !canViewProjects ||
+    !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
@@ -40,8 +41,11 @@ const PEnterpriseEditWrapper = () => {
   }
 
   if (
-    !(canEditProjectEnterprise || canApproveProjectEnterprise) ||
-    (data && data.status !== 'Pending Approval') ||
+    !(
+      canEditProjectEnterprise ||
+      (canApproveProjectEnterprise &&
+        (data?.status !== 'Approved' || canEditProjectEnterprise))
+    ) ||
     error
   ) {
     return (

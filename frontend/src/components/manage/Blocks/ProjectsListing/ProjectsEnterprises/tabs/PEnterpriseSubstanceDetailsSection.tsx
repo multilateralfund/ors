@@ -1,4 +1,4 @@
-import { ChangeEvent, useContext, useEffect } from 'react'
+import { ChangeEvent, useContext } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -28,23 +28,19 @@ import cx from 'classnames'
 const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
-  enterprise,
   hasSubmitted,
   odsOdpErrors,
 }: PEnterpriseDataProps & {
   odsOdpErrors: { [key: string]: string[] }[]
 }) => {
-  const { canEditProjectEnterprise } = useContext(PermissionsContext)
   const { substances, blends } = useContext(ProjectsDataContext)
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const isDisabled = !canEditProjectEnterprise
 
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
 
   const fields = ['phase_out_mt', 'ods_replacement', 'ods_replacement_phase_in']
-
-  const isDisabled =
-    !!enterprise &&
-    (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
 
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,
@@ -176,23 +172,6 @@ const PEnterpriseSubstanceDetailsSection = ({
       : substance.ods_blend
         ? `blend_${substance.ods_blend}`
         : null
-
-  useEffect(() => {
-    const updatedSectionData = map(sectionData, (data) => {
-      const crtValue = getSubstanceValue(data)
-
-      return !find(options, (option) => option.id === crtValue)
-        ? { ...data, ods_substance: null, ods_blend: null }
-        : data
-    })
-
-    setEnterpriseData((prevData) => {
-      return {
-        ...prevData,
-        [sectionId]: updatedSectionData,
-      }
-    })
-  }, [])
 
   return (
     <>

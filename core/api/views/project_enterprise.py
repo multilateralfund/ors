@@ -14,7 +14,6 @@ from core.api.permissions import (
     HasEnterpriseViewAccess,
     HasEnterpriseEditAccess,
     HasEnterpriseApprovalAccess,
-    HasProjectV2ViewAccess,
     HasProjectEnterpriseEditAccess,
     HasProjectEnterpriseApprovalAccess,
 )
@@ -56,7 +55,9 @@ class EnterpriseViewSet(
         """
         Filter the queryset based on the user's permissions.
         """
-
+        queryset = queryset.prefetch_related(
+            "agencies", "project_enterprises", "project_enterprises__project"
+        )
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -191,7 +192,7 @@ class ProjectEnterpriseViewSet(
             "list",
             "retrieve",
         ]:
-            return [HasProjectV2ViewAccess]
+            return [HasProjectEnterpriseEditAccess]
         if self.action in [
             "create",
             "update",
@@ -318,72 +319,6 @@ class ProjectEnterpriseViewSet(
             )
         instance.status = EnterpriseStatus.APPROVED
         instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
-        Not approve a Project Enterprise. Will be marked as 'Obsolete'.
-        If the Project Enterprise is already approved, it cannot be marked as obsolete.
-        If the Project Enterprise is pending, but linked to at least one Project Enterprise
-        that is not obsolete, it cannot be marked as obsolete.
-        """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
-        responses={
-            status.HTTP_200_OK: ProjectEnterpriseSerializer,
-            status.HTTP_400_BAD_REQUEST: "Bad request",
-        },
-    )
-    def not_approve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.status != EnterpriseStatus.PENDING:
-            return Response(
-                {"detail": "Only pending enterprises can be marked as 'obsolete'."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        instance.status = EnterpriseStatus.OBSOLETE
-        instance.save()
-
-        enterprise = instance.enterprise
-
-        # If the enterprise is pending and not linked to any other non-obsolete ProjectEnterprise,
-        # mark it as obsolete too
-        if enterprise.status != EnterpriseStatus.APPROVED:
-            linked_active_entries = ProjectEnterprise.objects.filter(
-                enterprise=enterprise
-            ).exclude(status=EnterpriseStatus.OBSOLETE)
-            if not linked_active_entries.exists():
-                enterprise.status = EnterpriseStatus.OBSOLETE
-                enterprise.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
-        mark as obsolete a Project Enterprise.
-        The linked enterprise will be marked as obsolete too if it is not approved and
-        not linked to any other non-obsolete ProjectEnterprise.
-        """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
-        responses={
-            status.HTTP_200_OK: ProjectEnterpriseSerializer,
-            status.HTTP_400_BAD_REQUEST: "Bad request",
-        },
-    )
-    def obsolete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.status = EnterpriseStatus.OBSOLETE
-        instance.save()
-        enterprise = instance.enterprise
-        if enterprise.status != EnterpriseStatus.APPROVED:
-            linked_active_entries = ProjectEnterprise.objects.filter(
-                enterprise=enterprise
-            ).exclude(status=EnterpriseStatus.OBSOLETE)
-            if not linked_active_entries.exists():
-                enterprise.status = EnterpriseStatus.OBSOLETE
-                enterprise.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

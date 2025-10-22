@@ -7,7 +7,10 @@ import { api, getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects.ts'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import dayjs from 'dayjs'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput.tsx'
 import {
@@ -122,9 +125,47 @@ export const MetaProjectEdit = (props: {
     return formValue === null && computedValue !== undefined
   }
 
+  const fieldComponent = (fd: any) => {
+    const fieldValue = getFieldValue(fd.name)
+
+    switch (fd.type) {
+      case 'DateTimeField':
+        return (
+          <DateInput
+            id={fd.name}
+            className="BPListUpload !ml-0 h-10 w-40"
+            value={fieldValue.toString()}
+            formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+            onChange={changeSimpleInput(fd.name)}
+          />
+        )
+      case 'DecimalField':
+        return (
+          <FormattedNumberInput
+            id={fd.name}
+            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            value={fieldValue}
+            onChange={changeSimpleInput(fd.name, { numeric: true })}
+            prefix={'$'}
+          />
+        )
+      default:
+        return (
+          <SimpleInput
+            id={fd.name}
+            label=""
+            type="text"
+            value={fieldValue}
+            onChange={changeSimpleInput(fd.name, {
+              numeric: ['IntegerField'].includes(fd.type),
+            })}
+          />
+        )
+    }
+  }
+
   const renderFieldData = (fieldData: any) => {
     return fieldData.map((fd: any) => {
-      const fieldValue = getFieldValue(fd.name)
       const isComputed = valueIsComputed(fd.name)
       return (
         <div key={fd.name} className="py-2">
@@ -145,26 +186,7 @@ export const MetaProjectEdit = (props: {
               ) : null}
             </span>
           </Label>
-          {fd.type === 'DateTimeField' ? (
-            <DateInput
-              id={fd.name}
-              className="BPListUpload !ml-0 h-10 w-40"
-              value={fieldValue.toString()}
-              formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-              onChange={changeSimpleInput(fd.name)}
-            />
-          ) : null}
-          {fd.type !== 'DateTimeField' ? (
-            <SimpleInput
-              id={fd.name}
-              label=""
-              type="text"
-              value={fieldValue}
-              onChange={changeSimpleInput(fd.name, {
-                numeric: ['DecimalField', 'IntegerField'].includes(fd.type),
-              })}
-            />
-          ) : null}
+          {fieldComponent(fd)}
           {fieldErrors[fd.name] ? (
             <Typography variant={'subtitle1'} className={'text-red-500'}>
               {fieldErrors[fd.name]}

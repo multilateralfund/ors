@@ -40,8 +40,9 @@ export default function PEnterprisesWrapper() {
   const { loading, setParams } = enterprises
 
   if (
-    !canViewEnterprises ||
     !canViewProjects ||
+    !canViewEnterprises ||
+    !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
@@ -70,7 +71,6 @@ export default function PEnterprisesWrapper() {
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <EnterprisesFiltersWrapper
-            type="project-enterprises"
             {...{
               filters,
               initialFilters,
@@ -79,7 +79,7 @@ export default function PEnterprisesWrapper() {
             }}
           />
           {canEditProjectEnterprise && (
-            <div className="ml-auto mt-auto flex items-center gap-2.5">
+            <div className="ml-auto mt-auto flex items-center">
               <CreateButton
                 title="Add project enterprise"
                 href={`/projects-listing/projects-enterprises/${project_id}/create`}

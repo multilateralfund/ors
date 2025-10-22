@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
 
@@ -7,29 +10,23 @@ import { map } from 'lodash'
 
 const EnterprisesFiltersSelectedOpts = ({
   enterpriseStatuses,
-  commonSlice,
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
+  const { countries } = useContext(ProjectsDataContext)
   const { project_id } = useParams<Record<string, string>>()
-
-  const areFiltersApplied = getAreFiltersApplied(filters)
   const isEnterpriseView = !project_id
 
-  const initialParams = isEnterpriseView
-    ? {
-        country_id: [],
-        status: [],
-      }
-    : {
-        status: [],
-      }
+  const initialParams = {
+    status: [],
+    ...(isEnterpriseView && { country_id: [] }),
+  }
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(commonSlice.countries.data),
+      entities: formatEntity(countries),
       entityIdentifier: 'country_id',
       isAvailable: isEnterpriseView,
     },
@@ -39,6 +36,8 @@ const EnterprisesFiltersSelectedOpts = ({
       isAvailable: true,
     },
   ]
+
+  const areFiltersApplied = getAreFiltersApplied(filters)
 
   return (
     areFiltersApplied && (

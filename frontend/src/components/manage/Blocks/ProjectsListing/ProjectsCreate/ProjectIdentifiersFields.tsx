@@ -12,30 +12,31 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import {
   getMeetingNr,
-  getMeetingOptions,
+  useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
   canViewField,
   filterClusterOptions,
+  getAgencyErrorType,
   getProduction,
 } from '../utils'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
 import { ApiAgency } from '@ors/types/api_agencies'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { find, isNil, isNull } from 'lodash'
+import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
-import useApi from '@ors/hooks/useApi.ts'
-import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 type DecisionOption = {
   name: string
@@ -59,11 +60,10 @@ const ProjectIdentifiersFields = ({
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
+  const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
-
-  const commonSlice = useStore((state) => state.common)
-  const agencies = commonSlice.agencies.data
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
   const projectSlice = useStore((state) => state.projects)
   const crtClusters = filterClusterOptions(
@@ -87,25 +87,28 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
   const canEditMeeting =
-    !(isV3Project && projIdentifiers?.meeting) &&
-    canEditField(editableFields, 'meeting')
+    isAddOrCopy ||
+    (mode === 'edit' &&
+      (!project?.component ||
+        project?.id === project?.component?.original_project_id) &&
+      (project?.submission_status === 'Withdrawn' || project?.version === 1))
 
   const decisionsApi = useApi<ApiDecision[]>({
-    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    path: 'api/decisions',
     options: {
+      triggerIf: !!projIdentifiers?.post_excom_meeting,
       params: {
         meeting_id: projIdentifiers?.post_excom_meeting,
       },
     },
   })
 
-  const decisions = useMemo(() => {
+  const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return data.map((d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
-
-  console.log(decisions)
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -128,8 +131,7 @@ const ProjectIdentifiersFields = ({
       ...prevData,
       crossCuttingFields: {
         ...prevData.crossCuttingFields,
-        is_lvc:
-          find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
+        is_lvc: find(countries, { id: country?.id })?.is_lvc ?? null,
       },
     }))
   }
@@ -197,9 +199,16 @@ const ProjectIdentifiersFields = ({
       [sectionIdentifier]: {
         ...prevData[sectionIdentifier],
         post_excom_meeting: parseNumber(meeting),
+        ...(parseNumber(meeting) !== projIdentifiers?.post_excom_meeting
+          ? { post_excom_decision: null }
+          : {}),
       },
     }))
     decisionsApi.setParams({ meeting_id: meeting })
+    decisionsApi.setApiSettings((prev) => ({
+      ...prev,
+      options: { ...prev.options, triggerIf: !!meeting },
+    }))
   }
 
   const handleChangePostExComDecision = (
@@ -249,7 +258,7 @@ const ProjectIdentifiersFields = ({
                   label={getMeetingNr(
                     projIdentifiers?.post_excom_meeting ?? undefined,
                   )?.toString()}
-                  options={getMeetingOptions()}
+                  options={useMeetingOptions()}
                   onChange={handleChangePostExComMeeting}
                   onClear={() => handleChangePostExComMeeting()}
                   clearBtnClassName="right-1"
@@ -261,31 +270,36 @@ const ProjectIdentifiersFields = ({
                 <Label htmlFor="postExComDecision">Decision</Label>
                 <Field<any>
                   widget="autocomplete"
-                  options={decisions}
-                  value={projIdentifiers?.post_excom_decision ?? ''}
+                  options={decisionOptions}
+                  value={projIdentifiers?.post_excom_decision ?? null}
                   onChange={(_, value) =>
                     handleChangePostExComDecision(value as DecisionOption)
                   }
                   getOptionLabel={(option) => {
-                    return getOptionLabel(decisions, option, 'value')
+                    return getOptionLabel(decisionOptions, option, 'value')
                   }}
                   {...sectionDefaultProps}
                 />
               </div>
-              <div className="flex items-end">
-                <div className="flex h-10 items-center">
-                  <CustomAlert
-                    type="error"
-                    content={
-                      <>
-                        <Typography className="text-lg">
-                          These fields are mandatory.
-                        </Typography>
-                      </>
-                    }
-                  />
+              {!(
+                projIdentifiers?.post_excom_meeting &&
+                projIdentifiers?.post_excom_decision
+              ) && (
+                <div className="flex items-end">
+                  <div className="flex h-10 items-center">
+                    <CustomAlert
+                      type="error"
+                      content={
+                        <>
+                          <Typography className="text-lg">
+                            These fields are mandatory.
+                          </Typography>
+                        </>
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <br />
@@ -301,18 +315,11 @@ const ProjectIdentifiersFields = ({
               <Label>{tableColumns.country}</Label>
               <Field
                 widget="autocomplete"
-                options={commonSlice.countries.data}
+                options={countries}
                 value={projIdentifiers?.country}
                 onChange={(_, value) => handleChangeCountry(value)}
-                getOptionLabel={(option) =>
-                  getOptionLabel(commonSlice.countries.data, option)
-                }
-                disabled={
-                  (isV3Project && !!projIdentifiers?.country) ||
-                  !areNextSectionsDisabled ||
-                  (mode !== 'copy' && !!project?.country_id) ||
-                  !canEditField(editableFields, 'country')
-                }
+                getOptionLabel={(option) => getOptionLabel(countries, option)}
+                disabled={!isAddOrCopy || !areNextSectionsDisabled}
                 Input={{
                   error: getIsInputDisabled('country'),
                 }}
@@ -320,26 +327,24 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          {canViewField(viewableFields, 'meeting') && (
-            <div className="w-32">
-              <Label>{tableColumns.meeting}</Label>
-              <PopoverInput
-                label={getMeetingNr(
-                  projIdentifiers?.meeting ?? undefined,
-                )?.toString()}
-                options={getMeetingOptions()}
-                onChange={handleChangeMeeting}
-                onClear={() => handleChangeMeeting()}
-                disabled={!canEditMeeting}
-                className={cx('!m-0 h-10 !py-1', {
-                  'border-red-500': getIsInputDisabled('meeting'),
-                  [disabledClassName]: !canEditMeeting,
-                })}
-                clearBtnClassName="right-1"
-                withClear={canEditMeeting}
-              />
-            </div>
-          )}
+          <div className="w-32">
+            <Label>{tableColumns.meeting}</Label>
+            <PopoverInput
+              label={getMeetingNr(
+                projIdentifiers?.meeting ?? undefined,
+              )?.toString()}
+              options={useMeetingOptions()}
+              onChange={handleChangeMeeting}
+              onClear={() => handleChangeMeeting()}
+              disabled={!canEditMeeting}
+              className={cx('!m-0 h-10 !py-1', {
+                'border-red-500': getIsInputDisabled('meeting'),
+                [disabledClassName]: !canEditMeeting,
+              })}
+              clearBtnClassName="right-1"
+              withClear={canEditMeeting}
+            />
+          </div>
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
@@ -359,7 +364,6 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
-                  (isV3Project && !!projIdentifiers?.agency) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -373,7 +377,7 @@ const ProjectIdentifiersFields = ({
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'cluster') && (
-            <div>
+            <div className="w-full max-w-[20rem] flex-shrink">
               <Label>{tableColumns.cluster}</Label>
               <Field
                 widget="autocomplete"
@@ -382,7 +386,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
-                  (isV3Project && !!projIdentifiers?.cluster) ||
+                  (isV3Project && !!project?.cluster_id) ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -392,7 +396,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 {...defaultProps}
                 FieldProps={{
-                  className: defaultProps.FieldProps.className + ' w-[20rem]',
+                  className: defaultProps.FieldProps.className + ' w-full',
                 }}
               />
             </div>
@@ -405,7 +409,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
-                    (isV3Project && !!projIdentifiers?.cluster) ||
+                    (isV3Project && !!project?.cluster_id) ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
@@ -424,34 +428,34 @@ const ProjectIdentifiersFields = ({
             />
           )}
         </div>
-        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') &&
-          canUpdateLeadAgency && (
-            <FormControlLabel
-              className="w-fit"
-              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-              control={
-                <Checkbox
-                  checked={projIdentifiers?.lead_agency_submitting_on_behalf}
-                  disabled={
-                    !areNextSectionsDisabled ||
-                    !canEditField(
-                      editableFields,
-                      'lead_agency_submitting_on_behalf',
-                    )
-                  }
-                  onChange={handleChangeSubmitOnBehalf}
-                  size="small"
-                  sx={{
-                    color: 'black',
-                  }}
-                />
-              }
-              componentsProps={{
-                typography: { fontSize: '1.05rem' },
-              }}
-            />
-          )}
-        {canViewField(viewableFields, 'lead_agency') && canUpdateLeadAgency && (
+        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
+          <FormControlLabel
+            className="w-fit"
+            label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+            control={
+              <Checkbox
+                checked={projIdentifiers?.lead_agency_submitting_on_behalf}
+                disabled={
+                  !areNextSectionsDisabled ||
+                  (isV3Project && project && !getAgencyErrorType(project)) ||
+                  !canEditField(
+                    editableFields,
+                    'lead_agency_submitting_on_behalf',
+                  )
+                }
+                onChange={handleChangeSubmitOnBehalf}
+                size="small"
+                sx={{
+                  color: 'black',
+                }}
+              />
+            }
+            componentsProps={{
+              typography: { fontSize: '1.05rem' },
+            }}
+          />
+        )}
+        {canViewField(viewableFields, 'lead_agency') && (
           <>
             <Label>{tableColumns.lead_agency}</Label>
             <Field
@@ -468,6 +472,7 @@ const ProjectIdentifiersFields = ({
               getOptionLabel={(option) => getOptionLabel(agencies, option)}
               disabled={
                 !areNextSectionsDisabled ||
+                !canUpdateLeadAgency ||
                 !canEditField(editableFields, 'lead_agency')
               }
               Input={{
@@ -480,7 +485,7 @@ const ProjectIdentifiersFields = ({
                 type="info"
                 alertClassName="mt-2 px-2 py-0"
                 content={
-                  <Typography className="pt-0.5 text-lg leading-none">
+                  <Typography className="text-lg leading-5">
                     Unless submitting on behalf of a cooperating agency,
                     selecting either the agency or the lead agency will
                     automatically update the other.
@@ -494,8 +499,8 @@ const ProjectIdentifiersFields = ({
           (isV3Project && areNextSectionsDisabled) ||
           !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
-            <NextButton
-              nextStep={2}
+            <NavigationButton
+              nextStep={project_type && sector ? 5 : 2}
               setCurrentStep={setCurrentStep}
               isBtnDisabled={!areNextStepsAvailable}
             />

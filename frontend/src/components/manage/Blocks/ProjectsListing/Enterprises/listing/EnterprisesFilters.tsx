@@ -1,21 +1,24 @@
 'use client'
 
+import { useContext } from 'react'
+
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
+import { filter, union } from 'lodash'
 import { useParams } from 'wouter'
-import { union } from 'lodash'
 
 const EnterprisesFilters = ({
   enterpriseStatuses,
-  commonSlice,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
+  const { countries } = useContext(ProjectsDataContext)
 
   const defaultProps = {
     multiple: true,
@@ -32,16 +35,16 @@ const EnterprisesFilters = ({
     },
   }
 
+  const statusOptions = project_id
+    ? filter(enterpriseStatuses, (status) => status.name !== 'Obsolete')
+    : enterpriseStatuses
+
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
       {!project_id && (
         <Field
           Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(
-            filters,
-            commonSlice.countries.data,
-            'country_id',
-          )}
+          options={getFilterOptions(filters, countries, 'country_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const country = filters.country_id || []
@@ -58,7 +61,7 @@ const EnterprisesFilters = ({
       )}
       <Field
         Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, enterpriseStatuses, 'status')}
+        options={getFilterOptions(filters, statusOptions, 'status')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const status = filters.status || []

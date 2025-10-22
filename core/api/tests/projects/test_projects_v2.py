@@ -1,5 +1,6 @@
 import pytest
 from django.urls import reverse
+from decimal import Decimal
 from rest_framework.test import APIClient
 
 from core.api.serializers.project_metadata import ProjectSubSectorSerializer
@@ -48,7 +49,6 @@ def setup_project_create(
 ):
     statuses_dict = [
         {"name": "N/A", "code": "NA"},
-        {"name": "New submission", "code": "NEWSUB"},
     ]
 
     submission_statuses_dict = [
@@ -77,9 +77,14 @@ def setup_project_create(
         composition=f"{substA.name}= 0.5",
         sort_order=1,
     )
+    blend.components.create(substance=substA, percentage=0.2)
     return {
         "ad_hoc_pcr": True,
+        "aggregated_consumption": Decimal(943),
         "agency": agency.id,
+        "baseline": Decimal(43),
+        "cost_effectiveness": Decimal(43),
+        "cost_effectiveness_co2": Decimal(54),
         "bp_activity": bp_activity.id,
         "cluster": project_cluster_kip.id,
         "country": country_ro.id,
@@ -96,19 +101,29 @@ def setup_project_create(
         "lead_agency": new_agency.id,
         "meeting": meeting.id,
         "pcr_waived": False,
+        "mya_start_date": "2023-10-01",
+        "mya_end_date": "2026-09-30",
+        "mya_project_funding": Decimal(123000),
+        "mya_support_cost": Decimal(23000),
+        "mya_phase_out_co2_eq_t": Decimal(948),
+        "mya_phase_out_odp_t": Decimal(23),
+        "mya_phase_out_mt": Decimal(12),
         "total_number_of_technicians_trained": 32,
         "number_of_female_technicians_trained": 12,
         "total_number_of_trainers_trained": 2,
         "number_of_female_trainers_trained": 4,
+        "number_of_enterprises_assisted": 8,
+        "number_of_enterprises": 16,
         "total_number_of_technicians_certified": 3,
         "number_of_female_technicians_certified": 65,
+        "number_of_production_lines_assisted": 12,
+        "starting_point": Decimal(543),
         "number_of_training_institutions_newly_assisted": 34,
         "number_of_tools_sets_distributed": 4,
         "total_number_of_customs_officers_trained": 23,
         "number_of_female_customs_officers_trained": 2,
         "total_number_of_nou_personnel_supported": 2,
         "number_of_female_nou_personnel_supported": 43,
-        "number_of_enterprises_assisted": 43,
         "certification_system_for_technicians": True,
         "operation_of_recovery_and_recycling_scheme": False,
         "operation_of_reclamation_scheme": True,
@@ -140,6 +155,7 @@ def setup_project_create(
         "sector": subsector.sectors.first().id,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
+        "targets": Decimal(543),
         "tranche": 2,
         "title": "test title",
         "total_fund": 2340000,
@@ -539,7 +555,11 @@ class TestCreateProjects(BaseTest):
     def _test_response_data(self, response, data):
         fields = [
             "ad_hoc_pcr",
+            "aggregated_consumption",
+            "baseline",
             "bp_activity",
+            "cost_effectiveness",
+            "cost_effectiveness_co2",
             "description",
             "date_completion",
             "destruction_technology",
@@ -548,6 +568,13 @@ class TestCreateProjects(BaseTest):
             "individual_consideration",
             "is_lvc",
             "pcr_waived",
+            "mya_start_date",
+            "mya_end_date",
+            "mya_project_funding",
+            "mya_support_cost",
+            "mya_phase_out_co2_eq_t",
+            "mya_phase_out_odp_t",
+            "mya_phase_out_mt",
             "total_number_of_technicians_trained",
             "number_of_female_technicians_trained",
             "total_number_of_trainers_trained",
@@ -561,6 +588,9 @@ class TestCreateProjects(BaseTest):
             "total_number_of_nou_personnel_supported",
             "number_of_female_nou_personnel_supported",
             "number_of_enterprises_assisted",
+            "number_of_enterprises",
+            "number_of_production_lines_assisted",
+            "starting_point",
             "certification_system_for_technicians",
             "operation_of_recovery_and_recycling_scheme",
             "operation_of_reclamation_scheme",
@@ -586,6 +616,7 @@ class TestCreateProjects(BaseTest):
             "project_end_date",
             "project_start_date",
             "support_cost_psc",
+            "targets",
             "tranche",
             "title",
             "total_fund",
@@ -593,6 +624,8 @@ class TestCreateProjects(BaseTest):
         for field in fields:
             if field == "bp_activity":
                 assert response.data[field]["id"] == data[field]
+            elif isinstance(data[field], Decimal):
+                assert Decimal(response.data[field]) == (data[field])
             else:
                 assert response.data[field] == data[field]
 
@@ -688,7 +721,7 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][1]["sort_order"]
             == data["ods_odp"][1]["sort_order"]
         )
-        assert response.data["status"] == "New submission"
+        assert response.data["status"] == "N/A"
         assert response.data["submission_status"] == "Draft"
 
         assert (
@@ -980,6 +1013,7 @@ class TestProjectsV2Update:
         blend = BlendFactory.create(
             name="test blend", sort_order=1, composition=f"{substance_hcfc.name}=100"
         )
+        blend.components.create(substance=substance_hcfc, percentage=0.2)
         self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
@@ -1060,7 +1094,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
         }
 
@@ -1095,7 +1129,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
             "excom_provision": "test excom_provision",
             "date_completion": "2023-10-01",
@@ -1246,7 +1280,7 @@ class TestProjectFiles:
         }
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
     def test_file_validation_endpoint(
         self, agency_inputter_user, test_file1, test_file2, wrong_format_file3
@@ -1260,7 +1294,7 @@ class TestProjectFiles:
         }
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-validation")

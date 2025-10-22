@@ -36,7 +36,7 @@ export interface CrossCuttingFields {
   project_end_date: string | null
   total_fund: string | null
   support_cost_psc: string | null
-  individual_consideration: boolean
+  individual_consideration: boolean | null
 }
 
 export interface SpecificFields {
@@ -91,13 +91,13 @@ export interface SpecificFields {
   number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
   meeting: number | null
-  meeting_approved: number | null
-  decision: string | null
+  decision: number | null
   decision_id: string | null
+  date_completion: string | null
 }
 
 export type OdsOdpFields = {
-  ods_display_name: string
+  ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -176,6 +176,7 @@ export type ProjectTypeApi = ProjIdentifiers &
   SpecificFields &
   ProjectType & {
     meeting_id: number | null
+    component: { id: number; original_project_id: number }
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
@@ -198,6 +199,7 @@ export type ViewModesHandler = (
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
   fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {

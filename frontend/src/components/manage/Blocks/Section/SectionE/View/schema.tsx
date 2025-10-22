@@ -4,9 +4,16 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { sectionColDefById, sectionColGroupDefById } from '../sectionColumnsDef'
+import {
+  sectionColDefByIdFunc,
+  sectionColGroupDefByIdFunc,
+} from '../sectionColumnsDef'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
-function useGridOptions() {
+function useGridOptions(props: { model: string }) {
+  const { model } = props
+  const sectionColDefById = sectionColDefByIdFunc(model)
+  const sectionColGroupDefById = sectionColGroupDefByIdFunc(model)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -27,17 +34,23 @@ function useGridOptions() {
       {
         dataType: 'number',
         field: 'total',
-        headerName: 'Total amount generated (tonnes)',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Total amount generated (tonnes)'
+          : 'Total amount generated',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['total_amount_generated'],
       },
-      {
-        dataType: 'number',
-        field: 'stored_at_start_of_year',
-        headerName: 'Amount stored at the beginning of the year (tonnes)',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['stored_at_end_of_year'],
-      },
+      ...(shouldEnableNewCPDataFormatting(model)
+        ? [
+            {
+              dataType: 'number',
+              field: 'stored_at_start_of_year',
+              headerName: 'Amount stored at the beginning of the year (tonnes)',
+              orsAggFunc: 'sumTotal',
+              ...sectionColDefById['stored_at_start_of_year'],
+            },
+          ]
+        : []),
       {
         children: [
           {
@@ -50,7 +63,9 @@ function useGridOptions() {
           {
             dataType: 'number',
             field: 'feedstock_gc',
-            headerName: 'For feedstock use in your country',
+            headerName: shouldEnableNewCPDataFormatting(model)
+              ? 'For feedstock use in your country'
+              : 'For all uses',
             orsAggFunc: 'sumTotal',
             ...sectionColDefById['feedstock_gc'],
           },
@@ -64,41 +79,52 @@ function useGridOptions() {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName: 'Amount generated and captured (tonnes)',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount generated and captured (tonnes)'
+          : 'Amount generated and captured',
         marryChildren: true,
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
       {
         dataType: 'number',
         field: 'feedstock_wpc',
-        headerName: 'Amount used for feedstock without prior capture (tonnes)',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount used for feedstock without prior capture (tonnes)'
+          : 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['feedstock_wpc'],
       },
       {
         dataType: 'number',
         field: 'destruction_wpc',
-        headerName:
-          'Amount destroyed in the facility without prior capture (tonnes)',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount destroyed in the facility without prior capture (tonnes)'
+          : 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['destruction_wpc'],
       },
       {
         dataType: 'number',
         field: 'generated_emissions',
-        headerName: 'Amount of generated emissions (tonnes)',
+        headerName: shouldEnableNewCPDataFormatting(model)
+          ? 'Amount of generated emissions (tonnes)'
+          : 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['generated_emissions'],
       },
-      {
-        cellDataType: 'number',
-        cellEditor: 'agNumberCellEditor',
-        dataType: 'number',
-        field: 'stored_at_end_of_year',
-        headerName: 'Amount stored at the end of the year (tonnes)',
-        orsAggFunc: 'sumTotal',
-        ...sectionColDefById['stored_at_end_of_year'],
-      },
+      ...(shouldEnableNewCPDataFormatting(model)
+        ? [
+            {
+              cellDataType: 'number',
+              cellEditor: 'agNumberCellEditor',
+              dataType: 'number',
+              field: 'stored_at_end_of_year',
+              headerName: 'Amount stored at the end of the year (tonnes)',
+              orsAggFunc: 'sumTotal',
+              ...sectionColDefById['stored_at_end_of_year'],
+            },
+          ]
+        : []),
       {
         field: 'remarks',
         headerName: 'Remarks',

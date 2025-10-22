@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 from django_filters.rest_framework import DjangoFilterBackend
@@ -90,7 +91,32 @@ class ProjectFilter(filters.FilterSet):
         queryset=ProjectCluster.objects.all(),
         widget=CSVWidget,
     )
+    individual_consideration = filters.MultipleChoiceFilter(
+        field_name="individual_consideration",
+        choices=[
+            ("Individual consideration", True),
+            ("Blanket", False),
+            ("N/A", None),
+        ],
+        widget=CSVWidget,
+        method="filter_individual_consideration",
+    )
     date_received = filters.DateFromToRangeFilter(field_name="date_received")
+
+    def filter_individual_consideration(self, queryset, name, value):
+        if not value:
+            return queryset
+        query_filters = Q()
+        for option in value:
+            if option.lower() == "individual consideration":
+                query_filters |= Q(**{name: True})
+            elif option.lower() == "blanket":
+                query_filters |= Q(**{name: False})
+            elif option.lower() == "n/a":
+                query_filters |= Q(**{f"{name}__isnull": True})
+        if not query_filters:
+            return queryset
+        return queryset.filter(query_filters)
 
     class Meta:
         model = Project

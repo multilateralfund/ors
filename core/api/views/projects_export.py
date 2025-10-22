@@ -25,7 +25,9 @@ from core.models.project_metadata import ProjectStatus
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
+from core.api.export.projects_v2 import ProjectV2Writer
 from core.api.serializers.project import ProjectExportSerializer
+from core.api.serializers.project_v2 import ProjectExportV2Serializer
 from core.api.utils import workbook_response, workbook_pdf_response
 
 from core.api.export.business_plan import ModelNameCodeWriter
@@ -133,8 +135,8 @@ class ProjectsV2Export(ProjectsExport):
 
     def get_wb(self, method):
         queryset = self.view.filter_queryset(self.view.get_queryset())
-        data = ProjectExportSerializer(queryset, many=True).data
-        ProjectWriter(self.sheet).write(data)
+        data = ProjectExportV2Serializer(queryset, many=True).data
+        ProjectV2Writer(self.sheet).write(data)
 
         data_sheets = [
             SheetDefinition(

@@ -1,7 +1,7 @@
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import {
   getMeetingNr,
-  getMeetingOptions,
+  useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
@@ -49,7 +49,7 @@ const BPImportFilters = ({
             <PopoverInput
               className="!m-0 h-10 !py-1"
               clearBtnClassName="right-1"
-              options={getMeetingOptions()}
+              options={useMeetingOptions()}
               withClear={true}
               onChange={handleChangeMeeting}
               onClear={() => handleChangeMeeting('')}

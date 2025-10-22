@@ -17,13 +17,28 @@ export const VersionsDropdown = ({
   setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
 }) => {
   const formattedVersions = versions.map((crtVersion, idx) => {
-    const { id, version, submission_status, post_excom_meeting } = crtVersion
+    const {
+      id,
+      version,
+      submission_status,
+      final_version_id,
+      post_excom_meeting,
+    } = crtVersion
+
+    const formattedSubmissionStatus =
+      final_version_id === id
+        ? version.toString() === '2' && submission_status === 'Submitted'
+          ? 'Recommended (draft)'
+          : version.toString() === '3' && submission_status === 'Recommended'
+            ? 'Approval (draft)'
+            : submission_status
+        : submission_status
 
     let label
     if (version > 3) {
       label = `Version ${version}: Updated after ExCom ${post_excom_meeting}`
     } else {
-      label = `Version ${version}: ${submission_status}`
+      label = `Version ${version}: ${formattedSubmissionStatus}`
     }
 
     return {

@@ -1,5 +1,5 @@
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
-import { NextButton } from '../HelperComponents'
+import { NavigationButton } from '../HelperComponents'
 import { FilesViewer } from './FilesViewer'
 import {
   ProjectFile,
@@ -15,14 +15,19 @@ const ProjectDocumentation = ({
   mode,
   project,
   loadedFiles,
-  setCurrentStep,
   setCurrentTab,
+  nextStep,
+  hasNextStep,
+  isNextButtonDisabled,
 }: ProjectFiles &
   ProjectTabSetters & {
     projectFiles?: ProjectFile[]
     mode: string
     project?: ProjectTypeApi
     loadedFiles?: boolean
+    nextStep?: number
+    hasNextStep?: boolean
+    isNextButtonDisabled?: boolean
   }) => {
   return (
     <>
@@ -35,22 +40,28 @@ const ProjectDocumentation = ({
         {mode !== 'view' && (
           <FileInput
             {...{ files, setFiles }}
-            extensionsList="Allowed files extensions: .pdf, .doc, .docx"
+            extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
             label="Upload completed template and any supporting documentation"
             value=""
             clearable={false}
             inputValue={[]}
-            accept=".pdf,.doc,.docx"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg,.gif"
           />
         )}
       </div>
-      {setCurrentStep && setCurrentTab && (
+      {setCurrentTab && nextStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NextButton
-            nextStep={6}
-            setCurrentStep={setCurrentStep}
+          <NavigationButton
+            nextTab={nextStep - 1}
+            type="previous"
             setCurrentTab={setCurrentTab}
           />
+          {hasNextStep && (
+            <NavigationButton
+              isBtnDisabled={isNextButtonDisabled}
+              {...{ setCurrentTab }}
+            />
+          )}
         </div>
       )}
     </>

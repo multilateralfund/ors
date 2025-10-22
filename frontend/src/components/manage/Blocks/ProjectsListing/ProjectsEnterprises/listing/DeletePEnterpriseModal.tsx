@@ -12,11 +12,15 @@ const DeletePEnterpriseModal = ({
   setIdToDelete: (isOpen: number | null) => void
   onAction: () => Promise<void>
 }) => {
+  const handleCloseModal = () => {
+    setIdToDelete(null)
+  }
+
   return (
     <Modal
       aria-labelledby="delete-project-enterprise-modal-title"
       open={!!idToDelete}
-      onClose={() => setIdToDelete(null)}
+      onClose={handleCloseModal}
       keepMounted
     >
       <Box className="flex w-full max-w-lg flex-col absolute-center">
@@ -26,7 +30,7 @@ const DeletePEnterpriseModal = ({
         <Typography className="mb-4 text-lg text-primary">
           Are you sure you want to delete this project enterprise?
         </Typography>
-        <div className="ml-auto mr-6 flex flex-wrap gap-3">
+        <div className="ml-auto mr-6 flex flex-wrap">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
             onClick={onAction}
@@ -37,7 +41,7 @@ const DeletePEnterpriseModal = ({
           >
             Delete project enterprise
           </CustomLink>
-          <CancelButton onClick={() => setIdToDelete(null)} />
+          <CancelButton onClick={handleCloseModal} />
         </div>
       </Box>
     </Modal>

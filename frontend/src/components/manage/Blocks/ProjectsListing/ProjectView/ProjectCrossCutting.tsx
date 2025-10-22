@@ -11,8 +11,8 @@ import {
   tableColumns,
   viewColumnsClassName,
 } from '../constants'
+import { canViewField, formatFieldsHistory, hasFields } from '../utils'
 import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
-import { canViewField, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
@@ -43,21 +43,27 @@ const ProjectCrossCutting = ({
   const individual_consideration = find(blanketOrIndConsiderationOpts, {
     id: project.individual_consideration,
   }) as BooleanOptionsType
-
   const is_lvc = find(lvcNonLvcOpts, {
     id: project.is_lvc,
   }) as BooleanOptionsType
+
   const subsectors =
     project.subsectors.length > 0
       ? map(project.subsectors, 'name').join(', ')
       : '-'
 
   const getFieldHistory = useCallback(
-    (name: string) => {
-      return fieldHistory?.[name] ?? []
+    (name: string, dataType?: string) => {
+      const history = fieldHistory?.[name] ?? []
+      return dataType ? formatFieldsHistory(history, dataType) : history
     },
     [fieldHistory],
   )
+
+  const formattedHistoryLvc = map(getFieldHistory('is_lvc'), (history) => ({
+    ...history,
+    value: find(lvcNonLvcOpts, { id: history.value })?.name,
+  }))
 
   return (
     <>
@@ -103,7 +109,7 @@ const ProjectCrossCutting = ({
                   })}
                 {canViewField(viewableFields, 'is_lvc') &&
                   detailItem(tableColumns.is_lvc, is_lvc?.name, {
-                    fieldHistory: getFieldHistory('is_lvc'),
+                    fieldHistory: formattedHistoryLvc,
                   })}
               </div>
             </div>
@@ -113,13 +119,13 @@ const ProjectCrossCutting = ({
                   numberDetailItem(
                     tableColumns.total_fund,
                     project.total_fund as string,
-                    getFieldHistory('total_fund'),
+                    getFieldHistory('total_fund', 'decimal'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
                     tableColumns.support_cost_psc,
                     project.support_cost_psc as string,
-                    getFieldHistory('support_cost_psc'),
+                    getFieldHistory('support_cost_psc', 'decimal'),
                   )}
               </div>
             </div>

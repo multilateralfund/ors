@@ -7,11 +7,7 @@ import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
-import {
-  AssociatedProjectsType,
-  ProjectTypeApi,
-  RelatedProjectsType,
-} from '../interfaces'
+import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Box } from '@mui/material'

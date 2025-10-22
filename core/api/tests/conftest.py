@@ -59,6 +59,7 @@ from core.models.country_programme_archive import CPReportArchive
 from core.utils import (
     get_meta_project_code,
     get_project_sub_code,
+    regenerate_meta_project_new_code,
 )
 
 # pylint: disable=C0302,W0613
@@ -501,6 +502,11 @@ def blend(excluded_usage, time_frames):
 
 
 @pytest.fixture
+def blend_component(blend, substance_hcfc):
+    blend.components.create(substance=substance_hcfc, percentage=0.5)
+
+
+@pytest.fixture
 def project_type():
     return ProjectTypeFactory.create(name="Project Type", code="PT", sort_order=1)
 
@@ -527,7 +533,7 @@ def project_closed_status():
 
 @pytest.fixture
 def submitted_status():
-    return ProjectStatusFactory.create(code="NEWSUB")
+    return ProjectStatusFactory.create(code="NA")
 
 
 @pytest.fixture
@@ -698,7 +704,7 @@ def _test_file2(tmp_path):
 
 @pytest.fixture(name="wrong_format_file3")
 def _wrong_format_file3(tmp_path):
-    p = tmp_path / "project_file3.csv"
+    p = tmp_path / "project_file3.zip"
     p.write_text("This is the third project test file")
     return p
 
@@ -737,7 +743,7 @@ def project(
         serial_number=1,
         code=code,
     )
-
+    regenerate_meta_project_new_code(meta_project)
     return project
 
 

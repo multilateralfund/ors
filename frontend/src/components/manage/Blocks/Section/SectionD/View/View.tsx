@@ -13,6 +13,7 @@ import { SectionDRowData, SectionDViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 function getRowData(report: CPReport): SectionDRowData[] {
   return (report.section_d || []).map((item) => ({
@@ -21,8 +22,8 @@ function getRowData(report: CPReport): SectionDRowData[] {
 }
 
 export default function SectionDView(props: SectionDViewProps) {
-  const { Comments, TableProps, report, showComments } = props
-  const gridOptions = useGridOptions()
+  const { Comments, TableProps, report, showComments, variant } = props
+  const gridOptions = useGridOptions({ model: variant.model })
   const grid = useRef<any>()
   const [rowData] = useState<SectionDRowData[]>(() => getRowData(report))
 
@@ -33,7 +34,15 @@ export default function SectionDView(props: SectionDViewProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        <Footnotes />
+        {shouldEnableNewCPDataFormatting(variant.model) ? (
+          <Footnotes />
+        ) : (
+          <Footnote id="" index="">
+            Data in Section D should be provided (if applicable) even if
+            breakdown in Section E by enterprises are not reported as reporting
+            under Section E is voluntary for the shaded column
+          </Footnote>
+        )}
       </Alert>
       <Table
         {...TableProps}
