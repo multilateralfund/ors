@@ -16,7 +16,6 @@ import React, {
 
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
-import { useStore } from '@ors/store'
 
 import ReplenishmentContext from './ReplenishmentContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -36,7 +35,6 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
     useContext(PermissionsContext)
 
   const { children } = props
-  const user = useStore((state) => state.user)
 
   const [periods, setPeriods] = useState<ApiReplenishment[]>([])
   const [asOfDate, setAsOfDate] = useState<ApiAsOfDate>({
@@ -53,11 +51,15 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
 
   useEffect(
     function () {
+      const params = new URLSearchParams({
+        values_exclusive_for: 'replenishment',
+      })
+
       Promise.all([
         fetch(formatApiUrl('/api/replenishment/replenishments?final=true'), {
           credentials: 'include',
         }),
-        fetch(formatApiUrl('/api/replenishment/countries'), {
+        fetch(`${formatApiUrl('/api/countries')}?${params.toString()}`, {
           credentials: 'include',
         }),
         fetch(formatApiUrl('/api/replenishment/countries-soa'), {
