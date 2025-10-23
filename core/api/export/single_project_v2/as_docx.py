@@ -1,0 +1,304 @@
+# pylint:disable=protected-access
+
+import datetime
+import io
+
+import docx
+from django.http import FileResponse
+from docx.oxml import CT_P
+from docx.oxml import CT_Tbl
+from docx.table import Table
+
+from core.api.export import TEMPLATE_DIR
+from core.api.export.single_project_v2.helpers import format_dollar_value
+from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
+from core.api.export.single_project_v2.xlsx_headers import get_headers_metaproject
+from core.api.export.single_project_v2.xlsx_headers import (
+    get_headers_specific_information,
+)
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
+from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
+from core.models import Project
+from core.models import ProjectSpecificFields
+from core.models import User
+
+
+def document_response(doc, filename):
+    out = io.BytesIO()
+    doc.save(out)
+    out.seek(0)
+    res = FileResponse(out, as_attachment=True, filename=filename)
+    return res
+
+
+class ProjectsV2ProjectExportDocx:
+    user = User
+    project: Project
+    doc: docx.Document
+    template_path = (
+        TEMPLATE_DIR
+        / "Word Template for data entered into the system during project submission online.docx"
+    )
+
+    def __init__(self, project, user):
+        self.user = user
+        self.project = project
+        with self.template_path.open("rb") as tpl:
+            self.doc = docx.Document(tpl)
+
+    def find_table(self, after_p_text=""):
+        found = None
+
+        if after_p_text:
+            found_p = False
+            for e in self.doc.element.body:
+                if isinstance(e, CT_P) and after_p_text in e.text.strip():
+                    found_p = True
+                elif isinstance(e, CT_Tbl) and found_p:
+                    found = Table(e, self.doc)
+                    break
+
+        return found
+
+    def build_front_page(self, data):
+        for p in self.doc.paragraphs:
+            p_style = {
+                "italic": False,
+                "bold": False,
+                "underline": False,
+            }
+
+            if p.runs:
+                for k in p_style:
+                    p_style[k] = getattr(p.runs[0], k, False)
+
+            if p.text.startswith("Generated on"):
+                now = datetime.datetime.utcnow().strftime("%d/%m/%Y")
+                user = self.user.get_full_name() or self.user.username
+                agency = self.user.agency.name if self.user.agency else ""
+                p.text = f"Generated on {now} by {user}" + (
+                    'of "{agency}"' if agency else ""
+                )
+            elif p.text.startswith("Project Title"):
+                p.text = self.project.title
+            elif p.text.startswith("Country:"):
+                p.text = f"{p.text} {data['country']}"
+            elif p.text.startswith("Agency:"):
+                p.text = f"{p.text} {data['agency']}"
+            elif p.text.startswith("Cluster:"):
+                p.text = f"{p.text} {data['cluster']['name']}"
+            elif p.text.startswith("Amount:"):
+                p.text = f"{p.text} {data['total_fund']}"
+            elif p.text.startswith("Project Description:"):
+                p.text = f"{p.text} {data['description']}"
+
+            if p.runs:
+                for k, v in p_style.items():
+                    setattr(p.runs[0], k, v)
+
+    def _write_header_to_table(self, headers, table, data):
+        for header in headers:
+            row = table.add_row()
+            for c_idx, cell in enumerate(row.cells):
+                is_dollar_value = header.get("type") == "number" and header.get(
+                    "cell_format"
+                )
+                if c_idx == 0:
+                    cell.text = header["headerName"]
+                elif c_idx == 1 and header.get("method"):
+                    cell.text = header["method"](data, header)
+                elif c_idx == 1:
+                    cell.text = str(data[header["id"]] or "")
+                if c_idx == 1 and is_dollar_value:
+                    cell.text = format_dollar_value(cell.text)
+
+    def _write_substance_table(self, _, table, data):
+        for d in data:
+            row = table.add_row()
+            row_data = [
+                "ods_display_name",
+                "???",
+                "ods_replacement",
+                "phase_out_mt",
+                "co2_mt",
+                "odp",
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(d.get(row_data[c_idx], "") or "")
+
+    def _write_impact_target_actual(self, project, headers, table, data):
+        planned_headers = {}
+        actual_headers = {}
+        for header in headers:
+            if header["id"].endswith("_actual"):
+                planned_name = header["id"].split("_actual")[0]
+                actual_headers[planned_name] = header
+            else:
+                planned_headers[header["id"]] = header
+
+        for field_id, header in planned_headers.items():
+            row = table.add_row()
+            row_data = [
+                project.code,
+                header["headerName"],
+                data[field_id],
+                data[actual_headers[field_id]["id"]],
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(row_data[c_idx] or "")
+
+    def build_related_tranches(self):
+        table = self.find_table(
+            "Related tranches (metacode and linked projects) Only MYA"
+        )
+        if table:
+            related_projects = Project.objects.filter(
+                meta_project__id=self.project.meta_project.id,
+            )
+            row = table.add_row()
+            for project in related_projects:
+                row_data = [
+                    project.meta_project.new_code,
+                    project.code,
+                    project.status.name,
+                ]
+                for c_idx, cell in enumerate(row.cells):
+                    cell.text = str(row_data[c_idx] or "")
+
+    def build_cross_cutting(self, data):
+        table = self.find_table("Cross-cutting fields")
+        self._write_header_to_table(get_headers_cross_cutting(), table, data)
+
+    def _get_fields_for_section(
+        self,
+        fields_obj: ProjectSpecificFields,
+        section_name: str,
+        **filters,
+    ):
+        return fields_obj.fields.filter(section__in=[section_name], **filters)
+
+    def _write_project_specific_fields(
+        self,
+        table=None,
+        fields=None,
+        data=None,
+        writer=None,
+    ):
+        writer = self._write_header_to_table if not writer else writer
+        if data and table and fields:
+            headers = get_headers_specific_information(fields)
+            writer(headers, table, data)
+
+    def _write_metaproject_fields(
+        self,
+        table=None,
+        data=None,
+    ):
+        writer = self._write_header_to_table
+        if data and table:
+            headers = get_headers_metaproject()
+            writer(headers, table, data)
+
+    def build_specific_information(self, data):
+        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+            cluster=self.project.cluster,
+            type=self.project.project_type,
+            sector=self.project.sector,
+        ).first()
+
+        if project_specific_fields_obj:
+            self._write_project_specific_fields(
+                table=self.find_table("Project specific fields header"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Header"
+                ),
+                data=data,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Substance details Page and tables"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Substance Details"
+                ),
+                data=data.get("ods_odp", []),
+                writer=self._write_substance_table,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Impact (tabular)"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                    is_actual=False,
+                ),
+                data=data,
+            )
+
+    def build_impact_previous_tranches(self):
+        table = self.find_table("Impact (previous MYA tranches) If applicable")
+        if table and self.project.tranche:
+            related_projects = Project.objects.filter(
+                meta_project__id=self.project.meta_project.id,
+                # tranche__lt=self.project.tranche,
+            )
+            for project in related_projects:
+                project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+                    cluster=project.cluster,
+                    type=project.project_type,
+                    sector=project.sector,
+                ).first()
+
+                fields = self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                )
+                data = ProjectDetailsV2Serializer(project).data
+
+                headers = get_headers_specific_information(fields)
+                self._write_impact_target_actual(project, headers, table, data)
+
+    def build_mya(self):
+        metaproject = self.project.meta_project
+        metaproject_data = {}
+
+        if metaproject:
+            metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+
+        self._write_metaproject_fields(
+            table=self.find_table("MYA (if applicable only new MYA)"),
+            data=metaproject_data,
+        )
+
+    def remove_page_breaks(self):
+        # Iterate through all paragraphs
+        for paragraph in self.doc.paragraphs:
+            # Check each run in the paragraph
+            for run in paragraph.runs:
+                # Access the XML element
+                for elem in run._element:
+                    # Check if it's a page break (w:br with w:type="page")
+                    if elem.tag.endswith("br"):
+                        if (
+                            elem.get(
+                                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type"
+                            )
+                            == "page"
+                        ):
+                            # Remove the page break element
+                            elem.getparent().remove(elem)
+
+    def build_document(self):
+        serializer = ProjectDetailsV2Serializer(self.project)
+        data = serializer.data
+
+        self.build_front_page(data)
+        self.build_related_tranches()
+        self.build_cross_cutting(data)
+        self.build_specific_information(data)
+        self.build_impact_previous_tranches()
+        self.build_mya()
+
+        self.remove_page_breaks()
+
+    def export_docx(self):
+        self.build_document()
+        filename = self.project.code.replace("/", "_")
+        return document_response(self.doc, filename=f"{filename}.docx")
