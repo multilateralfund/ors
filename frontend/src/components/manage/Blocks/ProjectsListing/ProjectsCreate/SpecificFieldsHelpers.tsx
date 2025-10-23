@@ -475,6 +475,7 @@ const DecimalWidget = <T,>(
         id={fieldName}
         disabled={!canEditField(editableFields, fieldName)}
         value={value ?? ''}
+        withoutDefaultValue={true}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,

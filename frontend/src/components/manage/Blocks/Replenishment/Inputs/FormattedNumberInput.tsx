@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -21,11 +21,17 @@ export default function FormattedNumberInput(
     onlyNumber,
     value,
     withoutInitialValue = false,
+    withoutDefaultValue = false,
     prefix,
     ...rest
   } = props
 
   const [inputMode, setInputMode] = useState(false)
+
+  const formattedValue = formatDecimalValue(getFloat(value), {
+    maximumFractionDigits: decimalDigits,
+    minimumFractionDigits: decimalDigits,
+  })
 
   const realInput = useRef<HTMLInputElement>(null)
   const maskInput = useRef<HTMLInputElement>(null)
@@ -48,7 +54,7 @@ export default function FormattedNumberInput(
   return (
     <div className="relative">
       {prefix && (
-        <span className={'absolute left-0 flex h-10 items-center px-4 py-2'}>
+        <span className="absolute left-0 flex h-10 items-center px-4 py-2 leading-none">
           {prefix}
         </span>
       )}
@@ -77,10 +83,11 @@ export default function FormattedNumberInput(
         style={STYLE}
         type="text"
         {...((!withoutInitialValue || value) && {
-          value: formatDecimalValue(getFloat(value), {
-            maximumFractionDigits: decimalDigits,
-            minimumFractionDigits: decimalDigits,
-          }),
+          value: withoutDefaultValue
+            ? !!value
+              ? formattedValue
+              : ''
+            : formattedValue,
         })}
         onChange={() => false}
         onFocus={() => setInputMode(true)}

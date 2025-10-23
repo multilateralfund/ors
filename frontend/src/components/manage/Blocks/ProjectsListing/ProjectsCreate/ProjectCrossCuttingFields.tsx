@@ -4,7 +4,10 @@ import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
@@ -373,14 +376,15 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'total_fund') && (
                 <div>
                   <Label>{tableColumns.total_fund}</Label>
-                  <SimpleInput
+                  <FormattedNumberInput
                     id={total_fund as string}
                     value={total_fund ?? ''}
+                    prefix="$"
+                    withoutDefaultValue={true}
                     onChange={(event) =>
                       handleChangeNumericValues(event, 'total_fund')
                     }
                     disabled={!canEditField(editableFields, 'total_fund')}
-                    type="text"
                     {...getFieldDefaultProps('total_fund')}
                   />
                 </div>
@@ -388,14 +392,15 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'support_cost_psc') && (
                 <div>
                   <Label>{tableColumns.support_cost_psc}</Label>
-                  <SimpleInput
+                  <FormattedNumberInput
                     id={support_cost_psc as string}
                     value={support_cost_psc ?? ''}
+                    prefix="$"
+                    withoutDefaultValue={true}
                     onChange={(event) =>
                       handleChangeNumericValues(event, 'support_cost_psc')
                     }
                     disabled={!canEditField(editableFields, 'support_cost_psc')}
-                    type="text"
                     {...getFieldDefaultProps('support_cost_psc')}
                   />
                 </div>
