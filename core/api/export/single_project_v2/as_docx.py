@@ -40,25 +40,55 @@ class ProjectsV2ProjectExportDocx:
         / "Word Template for data entered into the system during project submission online.docx"
     )
 
+    _known_tables: list[tuple[CT_P, Table]]
+
     def __init__(self, project, user):
         self.user = user
         self.project = project
+        self._known_tables = []
         with self.template_path.open("rb") as tpl:
             self.doc = docx.Document(tpl)
 
     def find_table(self, after_p_text=""):
         found = None
+        found_p = None
 
         if after_p_text:
-            found_p = False
             for e in self.doc.element.body:
                 if isinstance(e, CT_P) and after_p_text in e.text.strip():
-                    found_p = True
+                    found_p = e
                 elif isinstance(e, CT_Tbl) and found_p:
                     found = Table(e, self.doc)
                     break
 
+        if found and found_p:
+            self._known_tables.append((found_p, found))
+
         return found
+
+    @staticmethod
+    def remove_empty_table(table: Table, paragraph: CT_P):
+        table._element.getparent().remove(table._element)
+        paragraph.getparent().remove(paragraph)
+
+    def remove_empty_tables(self):
+        for p, table in self._known_tables:
+            if len(table.rows) == 1:
+                self.remove_empty_table(table, p)
+
+    def clean_paragraphs(self, keep=3):
+        consecutive_empty = 0
+        to_remove = []
+        for p in self.doc.paragraphs:
+            if not p.text.strip():
+                consecutive_empty += 1
+                if consecutive_empty > keep:
+                    to_remove.append(p)
+            else:
+                consecutive_empty = 0
+
+        for p in to_remove:
+            p._element.getparent().remove(p._element)
 
     def build_front_page(self, data):
         for p in self.doc.paragraphs:
@@ -297,6 +327,8 @@ class ProjectsV2ProjectExportDocx:
         self.build_mya()
 
         self.remove_page_breaks()
+        self.remove_empty_tables()
+        self.clean_paragraphs(keep=3)
 
     def export_docx(self):
         self.build_document()
