@@ -70,6 +70,7 @@ export default function FormattedNumberInput(
         value={value}
         onBlur={() => setInputMode(false)}
         onChange={onChange}
+        allow0Values={withoutDefaultValue}
         {...rest}
       />
       <input
@@ -84,7 +85,7 @@ export default function FormattedNumberInput(
         type="text"
         {...((!withoutInitialValue || value) && {
           value: withoutDefaultValue
-            ? !!value
+            ? value !== ''
               ? formattedValue
               : ''
             : formattedValue,

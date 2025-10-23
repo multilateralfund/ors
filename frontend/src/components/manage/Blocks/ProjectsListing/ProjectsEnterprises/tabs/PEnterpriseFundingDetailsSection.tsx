@@ -1,8 +1,8 @@
 import { useContext } from 'react'
 
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { FormattedNumberInput } from '../../../Replenishment/Inputs'
 import { getFieldDefaultProps, handleChangeNumericValues } from '../utils'
 import { tableColumns } from '../../constants'
 import {
@@ -30,10 +30,16 @@ const PEnterpriseFundingDetailsSection = ({
       {map(keys(sectionData), (field) => (
         <div>
           <Label>{tableColumns[field]} (US $)</Label>
-          <SimpleInput
+          <FormattedNumberInput
             id={field}
             disabled={isDisabled}
-            value={sectionData[field as keyof EnterpriseFundingDetails] ?? ''}
+            withoutDefaultValue={true}
+            prefix={'$'}
+            value={
+              (sectionData[
+                field as keyof EnterpriseFundingDetails
+              ] as string) ?? ''
+            }
             onChange={(event) =>
               handleChangeNumericValues<PEnterpriseData>(
                 field,
@@ -42,7 +48,6 @@ const PEnterpriseFundingDetailsSection = ({
                 sectionId,
               )
             }
-            type="text"
             {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
           />
         </div>

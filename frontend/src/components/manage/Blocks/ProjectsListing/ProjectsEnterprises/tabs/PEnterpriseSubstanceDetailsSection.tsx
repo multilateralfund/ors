@@ -1,11 +1,11 @@
 import { ChangeEvent, useContext } from 'react'
 
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
+import { FormattedNumberInput } from '../../../Replenishment/Inputs'
 import { SubmitButton } from '../../HelperComponents'
 import {
   EnterpriseSubstanceDetails,
@@ -211,19 +211,20 @@ const PEnterpriseSubstanceDetailsSection = ({
                 {map(fields, (field) => (
                   <div>
                     <Label>{tableColumns[field]}</Label>
-                    <SimpleInput
+                    <FormattedNumberInput
                       id={field}
                       disabled={isDisabled}
+                      withoutDefaultValue={true}
                       value={
-                        substance[field as keyof EnterpriseSubstanceDetails] ??
-                        ''
+                        (substance[
+                          field as keyof EnterpriseSubstanceDetails
+                        ] as string) ?? ''
                       }
                       onChange={(event) =>
                         field === 'ods_replacement'
                           ? handleChangeTextValues(event, field, index)
                           : handleChangeNumericValues(event, field, index)
                       }
-                      type="text"
                       {...getFieldDefaultProps(field, index, isDisabled)}
                     />
                   </div>

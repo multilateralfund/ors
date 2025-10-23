@@ -34,10 +34,12 @@ const PEnterpriseFundingDetailsSection = ({
           {numberDetailItem(
             tableColumns.capital_cost_approved + ' (US $)',
             enterprise.capital_cost_approved as string,
+            'decimal',
           )}
           {numberDetailItem(
             tableColumns.operating_cost_approved + ' (US $)',
             enterprise.operating_cost_approved as string,
+            'decimal',
           )}
         </div>
       </div>
@@ -46,10 +48,12 @@ const PEnterpriseFundingDetailsSection = ({
           {numberDetailItem(
             tableColumns.funds_approved + ' (US $)',
             funds_approved?.toString() as string,
+            'decimal',
           )}
           {numberDetailItem(
             tableColumns.cost_effectiveness_approved + ' (US $/kg)',
             formattedCostEffectivenessApproved?.toString() as string,
+            'decimal',
           )}
         </div>
       </div>
@@ -57,6 +61,7 @@ const PEnterpriseFundingDetailsSection = ({
       {numberDetailItem(
         tableColumns.funds_disbursed + ' (US $)',
         enterprise.funds_disbursed as string,
+        'decimal',
       )}
     </>
   )

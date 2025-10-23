@@ -197,7 +197,7 @@ const ProjectCrossCuttingFields = ({
               <div>
                 <Label>{tableColumns.title}</Label>
                 <SimpleInput
-                  id={title}
+                  id="title"
                   value={title}
                   onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                     changeHandler['text']<ProjectData, CrossCuttingFields>(
@@ -340,7 +340,7 @@ const ProjectCrossCuttingFields = ({
                     Input={{
                       error: getIsInputDisabled('subsector_ids'),
                     }}
-                    FieldProps={{ className: 'mb-0 w-full BPListUpload' }}
+                    FieldProps={{ className: 'w-full BPListUpload' }}
                   />
                 </div>
               )}
@@ -377,7 +377,7 @@ const ProjectCrossCuttingFields = ({
                 <div>
                   <Label>{tableColumns.total_fund}</Label>
                   <FormattedNumberInput
-                    id={total_fund as string}
+                    id="total_fund"
                     value={total_fund ?? ''}
                     prefix="$"
                     withoutDefaultValue={true}
@@ -393,7 +393,7 @@ const ProjectCrossCuttingFields = ({
                 <div>
                   <Label>{tableColumns.support_cost_psc}</Label>
                   <FormattedNumberInput
-                    id={support_cost_psc as string}
+                    id="support_cost_psc"
                     value={support_cost_psc ?? ''}
                     prefix="$"
                     withoutDefaultValue={true}

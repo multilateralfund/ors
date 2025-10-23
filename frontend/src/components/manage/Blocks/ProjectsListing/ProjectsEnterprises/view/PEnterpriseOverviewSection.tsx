@@ -52,10 +52,12 @@ const PEnterpriseOverviewSection = ({
           {numberDetailItem(
             tableColumns.local_ownership + ' (%)',
             enterprise.local_ownership as string,
+            'decimal',
           )}
           {numberDetailItem(
             tableColumns.export_to_non_a5 + ' (%)',
             enterprise.export_to_non_a5 as string,
+            'decimal',
           )}
         </div>
       </div>
