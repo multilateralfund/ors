@@ -350,7 +350,7 @@ export const TextAreaWidget = <T,>(
 
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
-      <Label>{field.label}</Label>
+      <Label>{field.label} (max 500 characters)</Label>
       <TextareaAutosize
         value={value as string}
         disabled={!canEditField(editableFields, fieldName)}
@@ -374,6 +374,7 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
+        maxLength={500}
         style={STYLE}
         minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}

@@ -219,7 +219,7 @@ const ProjectCrossCuttingFields = ({
             )}
             {canViewField(viewableFields, 'description') && (
               <div>
-                <Label>{tableColumns.description}</Label>
+                <Label>{tableColumns.description} (max 1000 characters)</Label>
                 <TextareaAutosize
                   value={description}
                   onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
@@ -234,6 +234,7 @@ const ProjectCrossCuttingFields = ({
                   className={cx(textAreaClassname + ' max-w-[64rem]', {
                     'border-red-500': getIsInputDisabled('description'),
                   })}
+                  maxLength={1000}
                   style={STYLE}
                   minRows={7}
                   tabIndex={-1}

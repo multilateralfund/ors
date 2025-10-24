@@ -164,7 +164,7 @@ export const EnterpriseTextAreaField = <T,>({
   errors,
 }: PEnterpriseFieldsProps<T>) => (
   <div>
-    <Label>{tableColumns[field]}</Label>
+    <Label>{tableColumns[field]} (max 500 characters)</Label>
     <TextareaAutosize
       disabled={isDisabled}
       value={enterpriseData[field as keyof EnterpriseOverview] as string}
@@ -179,6 +179,7 @@ export const EnterpriseTextAreaField = <T,>({
       className={cx(textAreaClassname + ' max-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
       })}
+      maxLength={500}
       style={STYLE}
       minRows={5}
       tabIndex={-1}
