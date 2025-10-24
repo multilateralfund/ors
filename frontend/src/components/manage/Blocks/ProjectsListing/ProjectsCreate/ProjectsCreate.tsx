@@ -236,7 +236,7 @@ const ProjectsCreate = ({
     project?.submission_status === 'Draft' ? ' for submission' : ''
 
   const odsOpdDataErrors =
-    mode === 'edit'
+    mode === 'edit' && odsOdpFields.length > 0
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) =>
             checkInvalidValue(odsOdp[field])
@@ -386,7 +386,9 @@ const ProjectsCreate = ({
                 hasSectionErrors(substanceDetailsErrors) ||
                 formattedOdsOdpErrors.length > 0 ||
                 errorText ||
-                (mode === 'edit' && odsOdpData.length === 0)) &&
+                (mode === 'edit' &&
+                  odsOdpFields.length > 0 &&
+                  odsOdpData.length === 0)) &&
               (isSpecificInfoTabDisabled ? (
                 DisabledAlert
               ) : (
@@ -419,7 +421,9 @@ const ProjectsCreate = ({
           ...overviewErrors,
           ...substanceDetailsErrors,
         }),
-        ...(mode === 'edit' && odsOdpData.length === 0
+        ...(mode === 'edit' &&
+        odsOdpFields.length > 0 &&
+        odsOdpData.length === 0
           ? [
               {
                 message: `At least a substance must be provided${errorMessageExtension}.`,
