@@ -54,7 +54,7 @@ export default function FormattedNumberInput(
   return (
     <div className="relative">
       {prefix && (
-        <span className="absolute left-0 flex h-10 items-center px-4 py-2 leading-none">
+        <span className="absolute left-0 flex h-10 items-center px-4 py-2">
           {prefix}
         </span>
       )}
