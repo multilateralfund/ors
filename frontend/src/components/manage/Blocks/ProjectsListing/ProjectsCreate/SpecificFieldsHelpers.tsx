@@ -261,7 +261,7 @@ export const AutocompleteWidget = <T,>(
         }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
-        {...(field.section === 'Impact' || field.section === 'MYA'
+        {...(field.section === 'Impact'
           ? {
               FieldProps: {
                 className: defaultProps.FieldProps.className + ' !w-40',

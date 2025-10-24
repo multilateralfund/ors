@@ -22,8 +22,6 @@ from core.models import BPActivity
 from core.models.project import MetaProject, Project, ProjectFile
 from core.utils import (
     get_project_sub_code,
-    get_meta_project_code,
-    get_meta_project_new_code,
 )
 
 
@@ -973,17 +971,16 @@ class TestCreateProjects(BaseTest):
         )
         project.meta_project = meta_project
         project.save()
-        meta_project.new_code = get_meta_project_new_code([project])
-        meta_project.code = get_meta_project_code(country_ro, project_cluster_kip)
-        meta_project.save()
 
         # create project and expect a new meta project to be created
         # as the meta project does not have a project with a different status from closed
         self.client.force_authenticate(user=admin_user)
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201, response.data
-        created_meta_project_id = response.data["meta_project"]["id"]
+
         # created a new meta project
+        created_meta_project_id = response.data["meta_project"]["id"]
+        assert response.data["meta_project"]["new_code"] is None
         assert MetaProject.objects.count() == 2
 
         # remove created meta project
@@ -999,40 +996,13 @@ class TestCreateProjects(BaseTest):
         )
         project2.meta_project = meta_project
         project2.save()
-        meta_project.new_code = get_meta_project_new_code([project, project2])
-        meta_project.save()
 
+        # test that a new meta project is still created
         response = self.client.post(self.url, data, format="json")
 
         assert response.status_code == 201, response.data
-        assert MetaProject.objects.count() == 1  # no new meta project created
-        assert (
-            response.data["meta_project"]["id"] == meta_project.id
-        )  # meta project is used now
-
-        # test warning message
-        project3 = ProjectFactory.create(
-            title="Project test 3",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_ongoing_status,
-        )
-        meta_project2 = MetaProjectFactory.create(
-            lead_agency=agency,
-        )
-        project3.meta_project = meta_project2
-        project3.save()
-        meta_project2.new_code = get_meta_project_new_code([project3])
-        meta_project2.code = get_meta_project_code(
-            new_country, project_cluster_kip, new_agency
-        )
-        meta_project2.save()
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201, response.data
-        assert response.data["warnings"] == [
-            "Multiple meta projects found for the same country and cluster. Using the first one found."
-        ]
+        assert MetaProject.objects.count() == 2  # new meta project created
+        assert response.data["meta_project"]["id"] != meta_project.id
 
 
 class TestProjectsV2Update:
