@@ -1,33 +1,25 @@
-import { Box, Button } from '@mui/material'
+import { Box, Button, Divider } from '@mui/material'
 import Field from '@ors/components/manage/Form/Field'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi.ts'
 import cx from 'classnames'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { IoChevronDown } from 'react-icons/io5'
-import IntrinsicElements = React.JSX.IntrinsicElements
 import Link from '@ors/components/ui/Link/Link.tsx'
-
-type ApiSummaryOfProjects = {
-  projects_count: number
-  countries_count: number
-  amounts_in_principle: number
-  amounts_recommended: number
-}
-
-type ApiSummaryOfProjectsFilters = {
-  country: ApiFilterOption[]
-  cluster: ApiFilterOption[]
-  project_type: ApiFilterOption[]
-  sector: ApiFilterOption[]
-  agency: ApiFilterOption[]
-  tranche: ApiFilterOption[]
-}
-
-type ApiFilterOption = {
-  name: string
-  id: number
-}
+import SummaryOfProjectsFilters from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/SummaryOfProjectsFilters.tsx'
+import {
+  ApiFilterOption,
+  ApiSummaryOfProjects,
+  ApiSummaryOfProjectsFilters,
+  GlobalRequestParams,
+  RequestParams,
+  RowData,
+} from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/types.ts'
+import {
+  initialGlobalRequestParams,
+  initialRowData,
+} from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/initialData.ts'
+import IntrinsicElements = React.JSX.IntrinsicElements
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -40,27 +32,6 @@ const defaultProps = {
       },
     },
   },
-}
-
-const initialRequestParams = () => ({
-  cluster_id: '',
-  country_id: '',
-  project_type_id: '',
-  sector_id: '',
-  agency_id: '',
-  tranche: '',
-})
-
-const initialRowData = () => {
-  return {
-    params: initialRequestParams(),
-    apiData: null,
-    text: '',
-  }
-}
-type RequestParams = ReturnType<typeof initialRequestParams>
-type RowData = Omit<ReturnType<typeof initialRowData>, 'apiData'> & {
-  apiData: ApiSummaryOfProjects | null
 }
 
 const TableCell = ({ className, children }: IntrinsicElements['div']) => {
@@ -100,20 +71,25 @@ const SummaryOfProjectsRow = (props: {
   rowData: RowData
   setRowData: (updater: RowData | ((prevRowData: RowData) => RowData)) => void
   rowFilters: ApiSummaryOfProjectsFilters
+  globalRequestParams: GlobalRequestParams
 }) => {
-  const { rowFilters, rowData, setRowData } = props
+  const { rowFilters, rowData, setRowData, globalRequestParams } = props
 
   const summaryOfProjectsApi = useApi<ApiSummaryOfProjects>({
     path: 'api/summary-of-projects',
     options: {
       // triggerIf: false,
-      params: rowData.params,
+      params: { ...globalRequestParams, ...rowData.params },
       withStoreCache: false,
     },
     onSuccess: (data: ApiSummaryOfProjects) => {
       setRowData((prevRowData) => ({ ...prevRowData, apiData: data }))
     },
   })
+
+  useEffect(() => {
+    summaryOfProjectsApi.setParams(globalRequestParams)
+  }, [globalRequestParams])
 
   const handleFilterChanged = useCallback(
     (paramName: keyof RequestParams) => {
@@ -199,8 +175,9 @@ const SummaryOfProjectsTable = (props: {
   rows: RowData[]
   setRows: React.Dispatch<React.SetStateAction<RowData[]>>
   rowFilters: ApiSummaryOfProjectsFilters
+  globalRequestParams: GlobalRequestParams
 }) => {
-  const { rows, rowFilters, setRows } = props
+  const { rows, rowFilters, setRows, globalRequestParams } = props
 
   const setRow = useCallback(
     (idx: number) => (updater: RowData | ((prevRowData: RowData) => RowData)) =>
@@ -215,8 +192,6 @@ const SummaryOfProjectsTable = (props: {
       }),
     [setRows],
   )
-
-  console.log(rows)
 
   return (
     <div className="table w-full border-collapse">
@@ -242,6 +217,7 @@ const SummaryOfProjectsTable = (props: {
           rowFilters={rowFilters}
           rowData={row}
           setRowData={setRow(i)}
+          globalRequestParams={globalRequestParams}
         />
       ))}
       {rows.length ? (
@@ -269,6 +245,8 @@ const SummaryOfProjectsTable = (props: {
 }
 
 const SummaryOfProjects = () => {
+  const [globalRequestParams, setGlobalRequestParams] =
+    useState<GlobalRequestParams>(initialGlobalRequestParams())
   const [rows, setRows] = useState<RowData[]>([initialRowData()])
   const addRow = () => {
     setRows((prevState) => [...prevState, initialRowData()])
@@ -278,9 +256,15 @@ const SummaryOfProjects = () => {
   }
 
   const rowFiltersApi = useApi<ApiSummaryOfProjectsFilters>({
-    options: {},
+    options: {
+      params: globalRequestParams,
+    },
     path: 'api/summary-of-projects/filters',
   })
+
+  useEffect(() => {
+    rowFiltersApi.setParams(globalRequestParams)
+  }, [globalRequestParams])
 
   const rowFilters = useMemo(() => {
     if (rowFiltersApi.loaded && rowFiltersApi.data) {
@@ -309,8 +293,14 @@ const SummaryOfProjects = () => {
       <Box className="shadow-none">
         {rowFilters && (
           <>
+            <SummaryOfProjectsFilters
+              requestParams={globalRequestParams}
+              setRequestParams={setGlobalRequestParams}
+            />
+            <Divider className="my-2 border-0" />
             <SummaryOfProjectsTable
               rowFilters={rowFilters}
+              globalRequestParams={globalRequestParams}
               rows={rows}
               setRows={setRows}
             />
