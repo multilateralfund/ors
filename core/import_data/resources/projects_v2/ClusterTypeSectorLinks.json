@@ -1,5 +1,239 @@
 [
     {
+        "cluster": "Agency Programme",
+        "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Compliance Assistance Programme"
+                ]
+            },
+            {
+                "type": "Project support",
+                "sectors": [
+                    "Core Unit"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Disposal",
+        "types": [
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Disposal"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Disposal",
+                    "Project monitoring and coordination"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Disposal"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Disposal"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Emission Control",
+        "types": [
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Production"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Emissions"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Government Support",
+        "types": [
+            {
+                "type": "Institutional strengthening",
+                "sectors": [
+                    "National Ozone Unit"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "HCFC Individual",
+        "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent",
+                    "Verification"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Firefighting",
+                    "Foam",
+                    "Production",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "HFC Individual",
+        "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Enabling activities",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent",
+                    "Verification"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Firefighting",
+                    "Foam",
+                    "Production",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "HCFC phase-out management plan stage 1",
+        "types": [
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "SERVCEE-89/6",
+                    "Servicing",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
         "cluster": "Kigali Implementation Plan Stage 1",
         "types": [
             {
@@ -60,6 +294,137 @@
                 ]
             },
             {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Kigali Implementation Plan Stage 3",
+        "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "Servicing",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "HCFC phase-out management plan stage 2",
+        "types": [
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "SERVCEE-89/6",
+                    "Servicing",
+                    "Solvent"
+                ]
+            },
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Refrigeration",
+                    "Solvent"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "HCFC phase-out management plan stage 3",
+        "types": [
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Aerosol",
+                    "Air-Conditioning",
+                    "Electronics manufacturing",
+                    "Firefighting",
+                    "Foam",
+                    "Project monitoring and coordination",
+                    "Refrigeration",
+                    "SERVCEE-89/6",
+                    "Servicing",
+                    "Solvent"
+                ]
+            },
+            {
                 "type": "Investment",
                 "sectors": [
                     "Aerosol",
@@ -86,7 +451,7 @@
         ]
     },
     {
-        "cluster": "Kigali Implementation Plan Stage 3",
+        "cluster": "HCFC phase-out management plan stage 4",
         "types": [
             {
                 "type": "Technical assistance",
@@ -98,6 +463,7 @@
                     "Foam",
                     "Project monitoring and coordination",
                     "Refrigeration",
+                    "SERVCEE-89/6",
                     "Servicing",
                     "Solvent"
                 ]
@@ -180,217 +546,7 @@
         ]
     },
     {
-        "cluster": "HCFC phase-out management plan stage 1",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Project monitoring and coordination",
-                    "Refrigeration",
-                    "SERVCEE-89/6",
-                    "Servicing",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "HCFC phase-out management plan stage 2",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Project monitoring and coordination",
-                    "Refrigeration",
-                    "SERVCEE-89/6",
-                    "Servicing",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "HCFC phase-out management plan stage 3",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Project monitoring and coordination",
-                    "Refrigeration",
-                    "SERVCEE-89/6",
-                    "Servicing",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "HCFC phase-out management plan stage 4",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Project monitoring and coordination",
-                    "Refrigeration",
-                    "SERVCEE-89/6",
-                    "Servicing",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "Emission Control",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Production"
-                ]
-            },
-            {
-                "type": "Preparation",
-                "sectors": [
-                    "Emissions"
-                ]
-            }
-        ]
-    },
-    {
         "cluster": "HCFC production phase-out management plan stage 1",
-        "types": [
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Production"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Project monitoring and coordination"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "HCFC production phase-out management plan stage 2",
         "types": [
             {
                 "type": "Investment",
@@ -424,84 +580,18 @@
         ]
     },
     {
-        "cluster": "HFC Individual",
+        "cluster": "HCFC production phase-out management plan stage 2",
         "types": [
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Enabling activities",
-                    "Project monitoring and coordination",
-                    "Verification"
-                ]
-            },
-            {
-                "type": "Preparation",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Firefighting",
-                    "Foam",
-                    "Production",
-                    "Refrigeration",
-                    "Servicing",
-                    "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "HCFC Individual",
-        "types": [
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Project monitoring and coordination",
-                    "Refrigeration",
-                    "Servicing",
-                    "Solvent",
-                    "Verification"
-                ]
-            },
             {
                 "type": "Investment",
                 "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Electronics manufacturing",
-                    "Firefighting",
-                    "Foam",
-                    "Refrigeration",
-                    "Solvent"
+                    "Production"
                 ]
             },
             {
-                "type": "Preparation",
+                "type": "Technical assistance",
                 "sectors": [
-                    "Aerosol",
-                    "Air-Conditioning",
-                    "Firefighting",
-                    "Foam",
-                    "Production",
-                    "Refrigeration",
-                    "Servicing",
-                    "Solvent"
+                    "Project monitoring and coordination"
                 ]
             }
         ]
@@ -558,64 +648,6 @@
                     "Refrigeration",
                     "Servicing",
                     "Solvent"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "Disposal",
-        "types": [
-            {
-                "type": "Demonstration",
-                "sectors": [
-                    "Disposal"
-                ]
-            },
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Disposal",
-                    "Project monitoring and coordination"
-                ]
-            },
-            {
-                "type": "Investment",
-                "sectors": [
-                    "Disposal"
-                ]
-            },
-            {
-                "type": "Preparation",
-                "sectors": [
-                    "Disposal"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "Government Support",
-        "types": [
-            {
-                "type": "Institutional strengthening",
-                "sectors": [
-                    "National Ozone Unit"
-                ]
-            }
-        ]
-    },
-    {
-        "cluster": "Agency Programme",
-        "types": [
-            {
-                "type": "Technical assistance",
-                "sectors": [
-                    "Compliance Assistance Programme"
-                ]
-            },
-            {
-                "type": "Project support",
-                "sectors": [
-                    "Core Unit"
                 ]
             }
         ]

@@ -25,7 +25,6 @@ from core.models.project import (
     ProjectFile,
     ProjectOdsOdp,
 )
-from core.utils import get_meta_project_code, get_meta_project_new_code
 from core.models import (
     Blend,
     Substance,
@@ -238,7 +237,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "aggregated_consumption",
             "ban_of_equipment",
             "ban_of_substances",
-            "baseline",
             "bp_activity",
             "capacity_building_programmes",
             "certification_system_for_technicians",
@@ -293,13 +291,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "post_excom_decision",
             "post_excom_decision_id",
             "mya_code",
-            "mya_end_date",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
-            "mya_project_funding",
-            "mya_start_date",
-            "mya_support_cost",
             "number_of_enterprises",
             "number_of_enterprises_assisted",
             "number_of_female_customs_officers_trained",
@@ -338,7 +329,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "serial_number",
             "status",
             "status_id",
-            "starting_point",
             "submission_amounts",
             "substance_name",
             "submission_status",
@@ -349,7 +339,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "subsectors",
             "subsector_legacy",
             "support_cost_psc",
-            "targets",
             "title",
             "tranche",
             "total_fund_transferred",
@@ -828,7 +817,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "ban_of_equipment_actual",
             "ban_of_substances",
             "ban_of_substances_actual",
-            "baseline",
             "bp_activity",
             "cluster",
             "capacity_building_programmes",
@@ -870,13 +858,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac",
             "meps_developed_commercial_ac_actual",
-            "mya_end_date",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
-            "mya_project_funding",
-            "mya_start_date",
-            "mya_support_cost",
             "number_of_enterprises",
             "number_of_enterprises_assisted",
             "number_of_female_nou_personnel_supported",
@@ -921,12 +902,10 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "quantity_hfc_23_by_product_emitted_actual",
             "quantity_controlled_substances_destroyed_mt_actual",
             "quantity_controlled_substances_destroyed_co2_eq_t_actual",
-            "starting_point",
             "sector",
             "subsectors",
             "subsector_ids",
             "support_cost_psc",
-            "targets",
             "tranche",
             "title",
             "total_fund",
@@ -1010,46 +989,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         If no meta project exists, create a new one.
         If multiple meta projects exist, return the first one and a warning.
         """
-        status_codes = ProjectStatus.objects.exclude(code="CLO").values_list(
-            "code", flat=True
-        )
-        meta_projects = MetaProject.objects.filter(
-            lead_agency=lead_agency,
-            projects__status__code__in=status_codes,
-            projects__latest_project__isnull=True,
-        ).distinct()
-        warnings = []
-        country_code = (
-            project.country.iso3 or project.country.abbr if project.country else "-"
-        )
-        cluster_code = project.cluster.code if project.cluster else "-"
-        meta_project_obj = None
-        for meta_project in meta_projects:
-            countries = meta_project.new_code.split("/")[:1]
-            clusters = meta_project.new_code.split("/")[1:-1]
-
-            if country_code in countries and cluster_code in clusters:
-                if meta_project_obj and len(warnings) == 0:
-                    warnings.append(
-                        "Multiple meta projects found for the same country and cluster. "
-                        "Using the first one found."
-                    )
-                else:
-                    meta_project_obj = meta_project
-        if meta_project_obj:
-            return (meta_project_obj, warnings)
-        return (
-            MetaProject.objects.create(
-                lead_agency_id=lead_agency,
-                code=get_meta_project_code(
-                    project.country,
-                    project.cluster,
-                    project.serial_number_legacy,
-                ),
-                new_code=get_meta_project_new_code([project]),
-            ),
-            [],
-        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -1100,12 +1039,13 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.component = component
                 associate_project.save()
         else:
-            meta_project, warnings = self.get_meta_project(project, lead_agency)
+            meta_project = MetaProject.objects.create(
+                lead_agency_id=lead_agency,
+            )
             project.meta_project = meta_project
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
-
-        return (project, warnings)
+        return project, warnings
 
     @transaction.atomic
     def update(self, instance, validated_data):
@@ -1314,7 +1254,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
 
         if project_specific_fields_obj:
             for field in project_specific_fields_obj.fields.filter(
-                section__in=["Header", "Substance Details", "Impact", "MYA"],
+                section__in=["Header", "Substance Details", "Impact"],
                 is_actual=False,
             ):
                 if field.table == "ods_odp":
