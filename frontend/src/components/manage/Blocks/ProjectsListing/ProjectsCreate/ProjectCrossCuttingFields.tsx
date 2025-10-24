@@ -376,7 +376,7 @@ const ProjectCrossCuttingFields = ({
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'total_fund') && (
                 <div>
-                  <Label>{tableColumns.total_fund}</Label>
+                  <Label>{tableColumns.total_fund} (US $)</Label>
                   <FormattedNumberInput
                     id="total_fund"
                     value={total_fund ?? ''}
@@ -392,7 +392,7 @@ const ProjectCrossCuttingFields = ({
               )}
               {canViewField(viewableFields, 'support_cost_psc') && (
                 <div>
-                  <Label>{tableColumns.support_cost_psc}</Label>
+                  <Label>{tableColumns.support_cost_psc} (US $)</Label>
                   <FormattedNumberInput
                     id="support_cost_psc"
                     value={support_cost_psc ?? ''}
