@@ -56,6 +56,7 @@ import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
+import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
@@ -77,7 +78,6 @@ import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
-import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)

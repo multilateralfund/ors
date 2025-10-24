@@ -5,9 +5,12 @@ import { useContext, useEffect, useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import SubmitProjectModal from '../ProjectSubmission/SubmitProjectModal'
+import SubmitTranchesWarningModal from '../ProjectSubmission/SubmitTranchesWarningModal'
+import ChangeStatusModal from '../ProjectSubmission/ChangeStatusModal'
 import ProjectView from './ProjectView'
 import {
   PageTitle,
@@ -23,16 +26,13 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields, RelatedProjectsType } from '../interfaces'
 import { dropDownClassName, dropdownItemClassname } from '../constants'
+import { api } from '@ors/helpers'
 
+import { filter, find, groupBy, isNull, replace } from 'lodash'
 import { Redirect, useLocation, useParams } from 'wouter'
 import { CircularProgress, Divider } from '@mui/material'
-import { filter, find, groupBy, isNull, replace } from 'lodash'
-import cx from 'classnames'
-import SubmitProjectModal from '../ProjectSubmission/SubmitProjectModal'
-import SubmitTranchesWarningModal from '../ProjectSubmission/SubmitTranchesWarningModal'
-import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
-import ChangeStatusModal from '../ProjectSubmission/ChangeStatusModal'
+import cx from 'classnames'
 
 const EditLink = (props: any) => {
   const { children, className, ...rest } = props
@@ -55,14 +55,14 @@ const EditLink = (props: any) => {
 const ProjectViewWrapper = () => {
   const { project_id, version: paramsVersion } =
     useParams<Record<string, string>>()
-  const [location, setLocation] = useLocation()
+  const [location] = useLocation()
 
   const {
     canEditProjects,
-    canUpdatePostExcom,
     canSubmitProjects,
     canRecommendProjects,
     canApproveProjects,
+    canUpdatePostExcom,
   } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
@@ -94,12 +94,11 @@ const ProjectViewWrapper = () => {
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
-
-  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     setSpecificFieldsLoaded(false)
@@ -122,7 +121,7 @@ const ProjectViewWrapper = () => {
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
 
-  const getTrancheErrors = async () => {
+  const getTrancheWarnings = async () => {
     try {
       const result = await api(
         `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
@@ -164,9 +163,9 @@ const ProjectViewWrapper = () => {
   const onSubmitProject = async () => {
     if (tranche > 1) {
       setIsLoading(true)
-      const hasTranchesWarning = await getTrancheErrors()
+      const tranchesWarnings = await getTrancheWarnings()
 
-      if (hasTranchesWarning) {
+      if (tranchesWarnings) {
         setIsTrancheWarningOpen(true)
       } else {
         setIsSubmitModalOpen(true)
@@ -300,75 +299,89 @@ const ProjectViewWrapper = () => {
                   )}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {canEditProjects && editable && isNull(latest_project) && (
-                  <EditLink href={`/projects-listing/${project_id}/edit`}>
-                    Edit
-                  </EditLink>
-                )}
-                {canSubmitProjects && isDraft && (
-                  <IncreaseVersionButton
-                    title="Submit project"
-                    onSubmit={onSubmitProject}
-                    className="mt-auto h-10"
-                  />
-                )}
-                {canRecommendProjects && isSubmitted && (
-                  <Dropdown
-                    className={cx(dropDownClassName, 'mt-auto h-10')}
-                    ButtonProps={DropDownButtonProps}
-                    MenuProps={DropDownMenuProps}
-                    label={<>Approval</>}
-                  >
-                    <Dropdown.Item
-                      className={cx(dropdownItemClassname, 'text-primary')}
-                      onClick={recommendProject}
+              {isNull(latest_project) && (
+                <div className="flex flex-wrap gap-3">
+                  {editable && (
+                    <>
+                      {canEditProjects && (
+                        <EditLink href={`/projects-listing/${project_id}/edit`}>
+                          Edit
+                        </EditLink>
+                      )}
+                      {canSubmitProjects && isDraft && (
+                        <IncreaseVersionButton
+                          title="Submit project"
+                          onSubmit={onSubmitProject}
+                          className="mt-auto h-10"
+                        />
+                      )}
+                      {canRecommendProjects && isSubmitted && (
+                        <Dropdown
+                          className={cx(dropDownClassName, 'mt-auto h-10')}
+                          ButtonProps={DropDownButtonProps}
+                          MenuProps={DropDownMenuProps}
+                          label={<>Approval</>}
+                        >
+                          <Dropdown.Item
+                            className={cx(
+                              dropdownItemClassname,
+                              'text-primary',
+                            )}
+                            onClick={recommendProject}
+                          >
+                            Recommend project
+                          </Dropdown.Item>
+                          <Divider className="m-0" />
+                          <Dropdown.Item
+                            className={cx(
+                              dropdownItemClassname,
+                              'text-red-900',
+                            )}
+                            onClick={onSendBackToDraftProject}
+                          >
+                            Send project back to draft
+                          </Dropdown.Item>
+                          <Divider className="m-0" />
+                          <Dropdown.Item
+                            className={cx(
+                              dropdownItemClassname,
+                              'text-red-900',
+                            )}
+                            onClick={onWithdrawProject}
+                          >
+                            Withdraw project
+                          </Dropdown.Item>
+                        </Dropdown>
+                      )}
+                      {canApproveProjects && isRecommended && (
+                        <EditLink
+                          className="bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
+                          href={`/projects-listing/${project_id}/approval`}
+                        >
+                          Approval
+                        </EditLink>
+                      )}
+                    </>
+                  )}
+                  {canUpdatePostExcom &&
+                  submission_status === 'Approved' &&
+                  project_status !== 'Closed' &&
+                  project_status !== 'Transferred' ? (
+                    <EditLink
+                      href={`/projects-listing/${project_id}/post-excom-update`}
                     >
-                      Recommend project
-                    </Dropdown.Item>
-                    <Divider className="m-0" />
-                    <Dropdown.Item
-                      className={cx(dropdownItemClassname, 'text-red-900')}
-                      onClick={onSendBackToDraftProject}
-                    >
-                      Send project back to draft
-                    </Dropdown.Item>
-                    <Divider className="m-0" />
-                    <Dropdown.Item
-                      className={cx(dropdownItemClassname, 'text-red-900')}
-                      onClick={onWithdrawProject}
-                    >
-                      Withdraw project
-                    </Dropdown.Item>
-                  </Dropdown>
-                )}
-                {canApproveProjects && isRecommended && (
-                  <EditLink
-                    className="bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
-                    href={`/projects-listing/${project_id}/approval`}
-                  >
-                    Approval
-                  </EditLink>
-                )}
-                {canUpdatePostExcom &&
-                isNull(latest_project) &&
-                submission_status === 'Approved' &&
-                project_status !== 'Closed' &&
-                project_status !== 'Transferred' ? (
-                  <EditLink
-                    href={`/projects-listing/${project_id}/post-excom-update`}
-                  >
-                    Update post ExCom
-                  </EditLink>
-                ) : null}
-                {isLoading && (
-                  <CircularProgress
-                    color="inherit"
-                    size="30px"
-                    className="text-align mb-1 ml-1.5 mt-auto"
-                  />
-                )}
-              </div>
+                      Update post ExCom
+                    </EditLink>
+                  ) : null}
+                  {isLoading && (
+                    <CircularProgress
+                      color="inherit"
+                      size="30px"
+                      className="text-align mb-1 ml-1.5 mt-auto"
+                    />
+                  )}
+                </div>
+              )}
               {isSubmitModalOpen && (
                 <SubmitProjectModal
                   id={id}
@@ -392,7 +405,6 @@ const ProjectViewWrapper = () => {
                   onAction={sendProjectBackToDraft}
                 />
               )}
-
               {isTrancheWarningOpen && (
                 <SubmitTranchesWarningModal
                   {...{

@@ -15,6 +15,7 @@ const ProjectsApprovalWrapper = () => {
     project?.error ||
     (data &&
       (!isNull(data.latest_project) ||
+        !data.editable ||
         data.submission_status !== 'Recommended'))
   ) {
     return <Redirect to="/projects-listing/listing" />
