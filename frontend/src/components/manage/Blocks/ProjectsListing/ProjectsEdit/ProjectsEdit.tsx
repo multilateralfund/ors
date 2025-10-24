@@ -12,6 +12,7 @@ import {
   getDefaultValues,
   getFieldData,
   getFileFromMetadata,
+  getFormattedDecimalValue,
   getNonFieldErrors,
   hasSpecificField,
 } from '../utils'
@@ -250,8 +251,10 @@ const ProjectsEdit = ({
               description: project.description,
               project_start_date: project.project_start_date,
               project_end_date: project.project_end_date,
-              total_fund: project.total_fund,
-              support_cost_psc: project.support_cost_psc,
+              total_fund: getFormattedDecimalValue(project.total_fund),
+              support_cost_psc: getFormattedDecimalValue(
+                project.support_cost_psc,
+              ),
               individual_consideration:
                 isEditMode &&
                 (project.submission_status !== 'Draft' || project.version === 2)

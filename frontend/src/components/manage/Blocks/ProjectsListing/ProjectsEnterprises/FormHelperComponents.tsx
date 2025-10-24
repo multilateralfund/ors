@@ -4,6 +4,7 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { EnterpriseOverview, EnterprisesCommonProps } from '../interfaces'
 import {
@@ -76,10 +77,13 @@ export const EnterpriseNumberField = <T,>({
 }: PEnterpriseFieldsProps<T>) => (
   <div>
     <Label>{tableColumns[field]} (%)</Label>
-    <SimpleInput
+    <FormattedNumberInput
       id={field}
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview] ?? ''}
+      withoutDefaultValue={true}
+      value={
+        (enterpriseData[field as keyof EnterpriseOverview] as string) ?? ''
+      }
       onChange={(event) =>
         handleChangeNumericValues<T>(
           field,
@@ -88,7 +92,6 @@ export const EnterpriseNumberField = <T,>({
           sectionIdentifier,
         )
       }
-      type="text"
       {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
     />
   </div>
@@ -161,7 +164,7 @@ export const EnterpriseTextAreaField = <T,>({
   errors,
 }: PEnterpriseFieldsProps<T>) => (
   <div>
-    <Label>{tableColumns[field]}</Label>
+    <Label>{tableColumns[field]} (max 500 characters)</Label>
     <TextareaAutosize
       disabled={isDisabled}
       value={enterpriseData[field as keyof EnterpriseOverview] as string}
@@ -176,6 +179,7 @@ export const EnterpriseTextAreaField = <T,>({
       className={cx(textAreaClassname + ' max-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
       })}
+      maxLength={500}
       style={STYLE}
       minRows={5}
       tabIndex={-1}

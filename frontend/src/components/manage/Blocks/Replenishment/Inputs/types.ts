@@ -52,7 +52,9 @@ export interface INumberInputProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     'inputMode' | 'type'
-  > {}
+  > {
+  allow0Values?: boolean
+}
 
 export interface IFormattedNumberInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
@@ -60,6 +62,7 @@ export interface IFormattedNumberInputProps
   onlyNumber?: boolean
   value?: number | string
   withoutInitialValue?: boolean
+  withoutDefaultValue?: boolean
   prefix?: string
 }
 

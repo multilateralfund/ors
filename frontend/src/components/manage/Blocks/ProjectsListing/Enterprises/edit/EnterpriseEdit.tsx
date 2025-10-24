@@ -7,6 +7,7 @@ import EnterpriseCreate from '../create/EnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
 import { EnterpriseOverview, EnterpriseType } from '../../interfaces'
 import { initialOverviewFields } from '../../constants'
+import { getFormattedDecimalValue } from '../../utils'
 
 const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>(
@@ -27,8 +28,8 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
       country: enterprise.country,
       location: enterprise.location,
       application: enterprise.application,
-      local_ownership: enterprise.local_ownership,
-      export_to_non_a5: enterprise.export_to_non_a5,
+      local_ownership: getFormattedDecimalValue(enterprise.local_ownership),
+      export_to_non_a5: getFormattedDecimalValue(enterprise.export_to_non_a5),
       remarks: enterprise.remarks,
     }))
   }, [])

@@ -69,8 +69,9 @@ const PEnterpriseSubstanceDetailsSection = ({
   const columnDefs = [
     {
       headerName: tableColumns.ods_substance,
-      valueGetter: (params: ValueGetterParams) => getFieldValue(params),
-      tooltipValueGetter: (params: ITooltipParams) => getFieldValue(params),
+      valueGetter: (params: ValueGetterParams) => getFieldValue(params) || '-',
+      tooltipValueGetter: (params: ITooltipParams) =>
+        getFieldValue(params) || '-',
       cellClassRules: {
         'font-bold': (params: CellClassParams) => !!params.node?.rowPinned,
       },
