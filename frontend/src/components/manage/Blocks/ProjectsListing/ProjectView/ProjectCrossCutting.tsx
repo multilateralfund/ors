@@ -117,7 +117,7 @@ const ProjectCrossCutting = ({
               <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'total_fund') &&
                   numberDetailItem(
-                    tableColumns.total_fund + ' ($)',
+                    tableColumns.total_fund + ' (US $)',
                     project.total_fund as string,
                     'decimal',
 
@@ -125,7 +125,7 @@ const ProjectCrossCutting = ({
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
-                    tableColumns.support_cost_psc + ' ($)',
+                    tableColumns.support_cost_psc + ' (US $)',
                     project.support_cost_psc as string,
                     'decimal',
                     getFieldHistory('support_cost_psc', 'decimal'),
