@@ -50,7 +50,7 @@ const ProjectApprovalFields = ({
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
-  const meetinNumber = find(
+  const meetingNumber = find(
     meetings,
     (option) => option.id === project?.meeting,
   )?.number
@@ -109,7 +109,7 @@ const ProjectApprovalFields = ({
           <div className="w-32">
             <Label>{tableColumns.meeting}</Label>
             <PopoverInput
-              label={meetinNumber?.toString()}
+              label={meetingNumber?.toString()}
               options={[]}
               disabled={true}
               className={cx('!m-0 h-10 !py-1', disabledClassName, {
