@@ -152,6 +152,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
+            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
             withoutDefaultValue={true}
             value={fieldValue}
             decimalDigits={0}
