@@ -93,9 +93,10 @@ export const IncreaseVersionButton = ({
   title,
   onSubmit,
   isDisabled = false,
+  className,
 }: CustomButtonProps) => (
   <Button
-    className={cx('px-4 py-2', {
+    className={cx('px-4 py-2', className, {
       'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
         !isDisabled,
     })}

@@ -77,6 +77,7 @@ import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
+import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -374,6 +375,11 @@ export default function App() {
         <Route path="/projects-listing/:project_id/edit">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="edit" />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/approval">
+          <ProjectsDataProvider>
+            <ProjectsApprovalUpdatePage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/post-excom-update">

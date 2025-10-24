@@ -52,10 +52,12 @@ const ProjectsEdit = ({
   project,
   mode,
   postExComUpdate = false,
+  approval = false,
 }: {
   project: ProjectTypeApi
   mode: string
   postExComUpdate?: boolean
+  approval?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -119,8 +121,6 @@ const ProjectsEdit = ({
     setViewableFields,
     setEditableFields,
   } = useStore((state) => state.projectFields)
-  const projectSlice = useStore((state) => state.projects)
-  const meetings = projectSlice.meetings.data
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -477,6 +477,7 @@ const ProjectsEdit = ({
             setProjectData,
             mode,
             postExComUpdate,
+            approval,
             specificFields,
             project,
             files,
