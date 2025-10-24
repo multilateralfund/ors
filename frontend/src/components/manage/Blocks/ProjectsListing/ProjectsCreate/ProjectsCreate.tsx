@@ -109,11 +109,10 @@ const ProjectsCreate = ({
   const areProjectSpecificTabsDisabled =
     areNextSectionsDisabled || !project_type || !sector
 
-  const [overviewFields, substanceDetailsFields, impactFields, myaFields] = [
+  const [overviewFields, substanceDetailsFields, impactFields] = [
     getSectionFields(specificFields, 'Header'),
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
-    getSectionFields(specificFields, 'MYA'),
   ]
   const groupedFields = groupBy(substanceDetailsFields, 'table')
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
@@ -141,10 +140,8 @@ const ProjectsCreate = ({
   const isImpactTabDisabled =
     !specificFieldsLoaded ||
     areProjectSpecificTabsDisabled ||
-    ((impactFields.length < 1 ||
-      !hasFields(projectFields, viewableFields, 'Impact')) &&
-      (myaFields.length < 1 ||
-        !hasFields(projectFields, viewableFields, 'MYA')))
+    impactFields.length < 1 ||
+    !hasFields(projectFields, viewableFields, 'Impact')
 
   const isApprovalTabDisabled =
     areNextSectionsDisabled ||
@@ -217,7 +214,6 @@ const ProjectsCreate = ({
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
-  const myaErrors = specificFieldsErrors['MYA'] || {}
 
   const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
     key.includes('(actual)') && value?.[0]?.includes('not completed')
@@ -443,8 +439,8 @@ const ProjectsCreate = ({
           <div className="leading-tight">Impact</div>
           {!specificFieldsLoaded
             ? LoadingTab
-            : ((impactFields.length >= 1 && hasSectionErrors(impactErrors)) ||
-                (myaFields.length >= 1 && hasSectionErrors(myaErrors))) &&
+            : impactFields.length >= 1 &&
+              hasSectionErrors(impactErrors) &&
               (isImpactTabDisabled ? (
                 DisabledAlert
               ) : (
@@ -456,12 +452,11 @@ const ProjectsCreate = ({
       component: (
         <ProjectImpact
           sectionFields={impactFields}
-          errors={{ ...impactErrors, ...myaErrors }}
+          errors={impactErrors}
           {...{
             projectData,
             setProjectData,
             project,
-            myaFields,
             hasSubmitted,
             setCurrentTab,
             postExComUpdate,
@@ -470,7 +465,7 @@ const ProjectsCreate = ({
           nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
         />
       ),
-      errors: formatErrors({ ...impactPlannedErrors, ...myaErrors }),
+      errors: formatErrors(impactPlannedErrors),
       actualFieldsErrors: formatErrors(impactActualErrors),
     },
     {

@@ -37,6 +37,8 @@ class ProjectFieldAdmin(admin.ModelAdmin):
         "name",
     ]
 
+    list_filter = ["table", "data_type", "section"]
+
     def get_list_display(self, request):
         exclude = [
             "project_specific_fields",

@@ -26,7 +26,7 @@ export const fetchSpecificFields = async (
       )
 
     const specificFields = formattedFields.filter((field) =>
-      ['Header', 'Substance Details', 'Impact', 'MYA'].includes(field.section),
+      ['Header', 'Substance Details', 'Impact'].includes(field.section),
     )
 
     setFields(specificFields)

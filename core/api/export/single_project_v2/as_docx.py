@@ -12,7 +12,7 @@ from docx.table import Table
 from core.api.export import TEMPLATE_DIR
 from core.api.export.single_project_v2.helpers import format_dollar_value
 from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
-from core.api.export.single_project_v2.xlsx_headers import get_headers_metaproject
+from core.api.export.single_project_v2.docx_headers import get_headers_metaproject
 from core.api.export.single_project_v2.xlsx_headers import (
     get_headers_specific_information,
 )

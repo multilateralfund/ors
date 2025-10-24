@@ -1,7 +1,9 @@
 import datetime
 import logging
+import typing
 from decimal import Decimal
 from decimal import InvalidOperation
+from functools import partial
 from typing import Union
 
 from rest_framework import serializers
@@ -16,7 +18,10 @@ logger = logging.getLogger(__name__)
 def format_iso_date(isodate=None):
     if isodate:
         if isinstance(isodate, str):
-            date = datetime.datetime.fromisoformat(isodate)
+            try:
+                date = datetime.datetime.fromisoformat(isodate)
+            except ValueError:
+                return ""
         elif isinstance(isodate, (datetime.date, datetime.datetime)):
             date = isodate
         else:
@@ -51,36 +56,48 @@ def get_blanket_consideration_value(row: dict, header: HeaderType):
 def field_value(data, header):
     name = header["id"]
     field_data = data["field_data"]
-    value = field_data.get(name, {}).get("value")
-    return f"{value}" if value else "-"
+    return field_data.get(name, {}).get("value")
 
 
-def field_value_or_computed(data, header, is_date=False, formatter=None):
-    name = header["id"]
+def value_or_empty_value(value, empty_value=None):
+    return {value} if value else empty_value
 
-    field_data = data["field_data"]
-    computed_field_data = data["computed_field_data"]
 
-    value = field_data.get(name, {}).get("value")
+value_or_dash = partial(value_or_empty_value, empty_value="-")
 
-    is_computed = False
 
-    if value is None:
-        value = computed_field_data.get(name, None)
-        is_computed = True
+def get_formatted_field_value(
+    data: dict,
+    header: HeaderType,
+    formatters: list[typing.Callable],
+):
+    """
+    Retrieve value and apply formatter functions in order.
 
-    if value and is_date:
-        value = format_iso_date(value)
-
-    if value and formatter:
-        value = formatter(value)
-    elif not value:
-        value = "-"
-
-    if is_computed:
-        value = f"{value} (computed)"
-
+    :param data: the row/data
+    :param header: the header definition
+    :param formatters: provide formatters as separate arguments, each called with the output value of the previous.
+    """
+    value = field_value(data, header)
+    for fmt in formatters:
+        value = fmt(value)
     return value
+
+
+get_value_or_dash = partial(
+    get_formatted_field_value,
+    formatters=[value_or_dash],
+)
+
+get_dollar_value = partial(
+    get_formatted_field_value,
+    formatters=[format_dollar_value, value_or_dash],
+)
+
+get_date_value = partial(
+    get_formatted_field_value,
+    formatters=[format_iso_date, value_or_dash],
+)
 
 
 def dict_as_obj(d):
