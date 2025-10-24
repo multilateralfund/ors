@@ -103,7 +103,7 @@ const ProjectsCreate = ({
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
-  const [currentTab, setCurrentTab] = useState<number>(approval ? 0 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
@@ -549,6 +549,7 @@ const ProjectsCreate = ({
                 {...{
                   projectData,
                   setProjectData,
+                  project,
                   hasSubmitted,
                   setCurrentTab,
                 }}

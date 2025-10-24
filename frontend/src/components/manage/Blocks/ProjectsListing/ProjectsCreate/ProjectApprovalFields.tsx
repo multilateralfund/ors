@@ -4,13 +4,13 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
-import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canEditField, canViewField } from '../utils'
 import {
   ProjectData,
   ProjectTabSetters,
+  ProjectTypeApi,
   SpecificFieldsSectionProps,
 } from '../interfaces'
 import {
@@ -23,7 +23,7 @@ import useApi from '@ors/hooks/useApi.ts'
 import { useStore } from '@ors/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
 
-import { map } from 'lodash'
+import { find, map } from 'lodash'
 import cx from 'classnames'
 
 type DecisionOption = {
@@ -34,11 +34,13 @@ type DecisionOption = {
 const ProjectApprovalFields = ({
   projectData,
   setProjectData,
+  project,
   errors = {},
   hasSubmitted,
   sectionFields,
   setCurrentTab,
-}: SpecificFieldsSectionProps & ProjectTabSetters) => {
+}: SpecificFieldsSectionProps &
+  ProjectTabSetters & { project?: ProjectTypeApi }) => {
   const sectionIdentifier = 'approvalFields'
   const crtSectionData = projectData[sectionIdentifier]
 
@@ -46,12 +48,19 @@ const ProjectApprovalFields = ({
     (state) => state.projectFields,
   )
 
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const meetinNumber = find(
+    meetings,
+    (option) => option.id === project?.meeting,
+  )?.number
+
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
     options: {
-      triggerIf: !!crtSectionData?.meeting,
+      triggerIf: !!project?.meeting,
       params: {
-        meeting_id: crtSectionData?.meeting,
+        meeting_id: project?.meeting,
       },
     },
   })
@@ -100,9 +109,7 @@ const ProjectApprovalFields = ({
           <div className="w-32">
             <Label>{tableColumns.meeting}</Label>
             <PopoverInput
-              label={getMeetingNr(
-                crtSectionData?.meeting ?? undefined,
-              )?.toString()}
+              label={meetinNumber?.toString()}
               options={[]}
               disabled={true}
               className={cx('!m-0 h-10 !py-1', disabledClassName, {
