@@ -8,6 +8,7 @@ import { AssociatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
 import { Modal, Typography, Box } from '@mui/material'
+import { useLocation } from 'wouter'
 import { debounce } from 'lodash'
 
 const SubmitProjectModal = ({
@@ -19,8 +20,10 @@ const SubmitProjectModal = ({
   id: number
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
-  editProject: (withNavigation: boolean) => void
+  editProject?: (withNavigation: boolean) => void
 }) => {
+  const [_, setLocation] = useLocation()
+
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
     loaded: false,
@@ -38,7 +41,11 @@ const SubmitProjectModal = ({
   }, [])
 
   const onEditProject = () => {
-    editProject(true)
+    if (editProject) {
+      editProject(true)
+    } else {
+      setLocation(`/projects-listing/${id}/submit`)
+    }
     setIsModalOpen(false)
   }
 
