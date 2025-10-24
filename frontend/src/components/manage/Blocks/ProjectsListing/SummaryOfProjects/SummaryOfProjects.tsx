@@ -20,6 +20,7 @@ import {
   initialRowData,
 } from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/initialData.ts'
 import IntrinsicElements = React.JSX.IntrinsicElements
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -54,16 +55,22 @@ const FilterField = (props: {
 }) => {
   const { options, label, onChange } = props
   return (
-    <Field
-      Input={{ placeholder: label }}
-      options={options}
-      widget="autocomplete"
-      onChange={(_: any, value: any) => {
-        const castValue = value as ApiFilterOption | null
-        onChange(castValue?.id.toString() ?? '')
-      }}
-      {...defaultProps}
-    />
+    <div className="flex gap-x-2">
+      <Label htmlFor={`#filter${label}`} className="w-32">
+        {label}
+      </Label>
+      <Field
+        id={`#filter${label}`}
+        Input={{ placeholder: `Click to select` }}
+        options={options}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const castValue = value as ApiFilterOption | null
+          onChange(castValue?.id.toString() ?? '')
+        }}
+        {...defaultProps}
+      />
+    </div>
   )
 }
 
@@ -124,14 +131,14 @@ const SummaryOfProjectsRow = (props: {
       <TableCell>
         <div className="flex w-[20rem] flex-col gap-2">
           <FilterField
-            label="Cluster"
-            options={rowFilters.cluster}
-            onChange={handleFilterChanged('cluster_id')}
-          />
-          <FilterField
             label="Country"
             options={rowFilters.country}
             onChange={handleFilterChanged('country_id')}
+          />
+          <FilterField
+            label="Cluster"
+            options={rowFilters.cluster}
+            onChange={handleFilterChanged('cluster_id')}
           />
           <FilterField
             label="Type"
