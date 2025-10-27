@@ -449,7 +449,6 @@ class MetaProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetaProject
 
-    code = factory.Faker("pystr", max_chars=10)
     type = MetaProject.MetaProjectType.IND
 
 
