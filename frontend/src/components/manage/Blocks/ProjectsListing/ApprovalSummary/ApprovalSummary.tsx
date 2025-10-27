@@ -380,7 +380,7 @@ const ApprovalSummaryFilters = (props: {
           />
         </div>
         <div className="flex-col">
-          <Label htmlFor="blanketConsideration">Blanket consideration</Label>
+          <Label htmlFor="blanketConsideration">Blanket Approval/Individual consideration</Label>
           <Checkbox
             id="blanketConsideration"
             className="p-0"

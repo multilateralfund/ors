@@ -6,7 +6,7 @@ from rangefilter.filters import (
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.utils.html import format_html_join
-
+from django.utils.translation import gettext_lazy as _
 
 from core.admin.utils import get_final_display_list
 from core.models.meeting import Decision, Meeting
@@ -119,6 +119,35 @@ class ProjectHistoryAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+
+    class BlanketOrIndividualFilter(admin.SimpleListFilter):
+        title = _("Blanket or Individual Consideration")
+
+        # Parameter for the filter that will be used in the URL query.
+        parameter_name = "blanket_or_individual_consideration"
+
+        def lookups(self, request, model_admin):
+            return [
+                ("blanket", _("Blanket Consideration")),
+                ("individual", _("Individual Consideration")),
+                ("n/a", _("Empty")),
+            ]
+
+        def queryset(self, request, queryset):
+            if self.value() == "blanket":
+                return queryset.filter(
+                    blanket_or_individual_consideration=Project.BlanketOrIndividualConsideration.BLANKET,
+                )
+            if self.value() == "individual":
+                return queryset.filter(
+                    blanket_or_individual_consideration=Project.BlanketOrIndividualConsideration.INDIVIDUAL,
+                )
+            if self.value() == "n/a":
+                return queryset.filter(
+                    blanket_or_individual_consideration__isnull=True,
+                )
+            return queryset
+
     inlines = [ProjectFileInline]
     search_fields = [
         "title",
@@ -137,7 +166,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "meta_project__type",
         "status",
         "submission_status",
-        "individual_consideration",
+        BlanketOrIndividualFilter,
         (
             "date_created",
             DateTimeRangeFilterBuilder(),

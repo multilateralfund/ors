@@ -171,6 +171,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
     is_sme = serializers.SerializerMethodField()
+    blanket_or_individual_consideration = serializers.SerializerMethodField()
     destruction_technology = serializers.SerializerMethodField()
     production_control_type = serializers.SerializerMethodField()
     checklist_regulations = serializers.SerializerMethodField()
@@ -200,6 +201,9 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     def get_destruction_technology(self, obj):
         return obj.get_destruction_technology_display()
+
+    def get_blanket_or_individual_consideration(self, obj):
+        return obj.get_blanket_or_individual_consideration_display()
 
     def get_production_control_type(self, obj):
         return obj.get_production_control_type_display()
@@ -238,6 +242,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "ban_of_equipment",
             "ban_of_substances",
             "bp_activity",
+            "blanket_or_individual_consideration",
             "capacity_building_programmes",
             "certification_system_for_technicians",
             "checklist_regulations",
@@ -269,7 +274,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "funding_window",
             "group",
             "group_id",
-            "individual_consideration",
             "is_lvc",
             "is_sme",
             "kwh_year_saved",
@@ -842,7 +846,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "excom_provision",
             "funding_window",
             "group",
-            "individual_consideration",
+            "blanket_or_individual_consideration",
             "is_lvc",
             "is_sme",
             "kwh_year_saved",
@@ -1389,6 +1393,10 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
         if self.instance.submission_status.name != "Submitted":
             errors["submission_status"] = (
                 "Project can only be recommended if its status is Submitted."
+            )
+        if not self.instance.blanket_or_individual_consideration:
+            errors["blanket_or_individual_consideration"] = (
+                "Blanket Approval/Individual consideration is required for recommendation."
             )
 
         self.validate_required_fields(errors)
