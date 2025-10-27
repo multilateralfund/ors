@@ -18,8 +18,9 @@ class ProjectApprovalSummaryFilter(filters.FilterSet):
         lookup_expr="iexact",
     )
 
-    blanket_or_individual_consideration = filters.BooleanFilter(
+    blanket_or_individual_consideration = filters.CharFilter(
         field_name="blanket_or_individual_consideration",
+        lookup_expr="iexact",
     )
 
     class Meta:
