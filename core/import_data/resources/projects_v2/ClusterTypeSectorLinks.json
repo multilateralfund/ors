@@ -9,7 +9,7 @@
                 ]
             },
             {
-                "type": "Project support",
+                "type": "Project Support",
                 "sectors": [
                     "Core Unit"
                 ]
@@ -47,7 +47,41 @@
         ]
     },
     {
-        "cluster": "Emission Control",
+        "cluster": "Emission Control Individual",
+        "types": [
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Production"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Emissions"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Emission Control 1",
+        "types": [
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Production"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Emissions"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Emission Control 2",
         "types": [
             {
                 "type": "Investment",
@@ -675,7 +709,7 @@
             {
                 "type": "Demonstration",
                 "sectors": [
-                    "Control Substance Monitoring"
+                    "Control Submstance Monitoring"
                 ]
             },
             {
