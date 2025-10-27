@@ -66,7 +66,7 @@ const ProjectOverview = ({
                 <CustomAlert
                   type="error"
                   content={
-                    <Typography className="text-lg leading-none">
+                    <Typography className="text-lg">
                       Please complete the previous tranche's impact indicators
                       before submitting this project.
                     </Typography>

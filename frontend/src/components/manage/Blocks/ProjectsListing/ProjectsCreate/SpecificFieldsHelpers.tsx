@@ -29,6 +29,7 @@ import { find, get, isObject, isBoolean, isNil, isArray, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import { FieldErrorIndicator } from '../HelperComponents'
 
 export const getIsInputDisabled = (
   hasSubmitted: boolean,
@@ -221,54 +222,57 @@ export const AutocompleteWidget = <T,>(
       <Label className={cx({ italic: isDisabledImpactField })}>
         {field.label} {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <Field
-        widget="autocomplete"
-        options={options}
-        disabled={!canEditField(editableFields, fieldName)}
-        value={normalizedValue}
-        onChange={(_: React.SyntheticEvent, value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        getOptionLabel={(option) => {
-          const field =
-            fieldName === 'group'
-              ? 'name_alt'
-              : fieldName === 'ods_display_name'
-                ? 'label'
-                : 'name'
+      <div className="flex items-center gap-x-2">
+        <Field
+          widget="autocomplete"
+          options={options}
+          disabled={!canEditField(editableFields, fieldName)}
+          value={normalizedValue}
+          onChange={(_: React.SyntheticEvent, value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          getOptionLabel={(option) => {
+            const field =
+              fieldName === 'group'
+                ? 'name_alt'
+                : fieldName === 'ods_display_name'
+                  ? 'label'
+                  : 'name'
 
-          return (
-            (isObject(option)
-              ? get(option, field)
-              : (find(options, { id: option }) as OptionsType)?.[field]) || ''
-          )
-        }}
-        Input={{
-          error: getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-        }}
-        {...defaultProps}
-        {...(additionalProperties[fieldName] ?? {})}
-        {...(field.section === 'Impact'
-          ? {
-              FieldProps: {
-                className: defaultProps.FieldProps.className + ' !w-40',
-              },
-            }
-          : {})}
-      />
+            return (
+              (isObject(option)
+                ? get(option, field)
+                : (find(options, { id: option }) as OptionsType)?.[field]) || ''
+            )
+          }}
+          Input={{
+            error: getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+          }}
+          {...defaultProps}
+          {...(additionalProperties[fieldName] ?? {})}
+          {...(field.section === 'Impact'
+            ? {
+                FieldProps: {
+                  className: defaultProps.FieldProps.className + ' !w-40',
+                },
+              }
+            : {})}
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }
@@ -295,39 +299,42 @@ export const TextWidget = <T,>(
       })}
     >
       <Label>{field.label}</Label>
-      <SimpleInput
-        id={fieldName}
-        value={value}
-        type="text"
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            event,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-        containerClassName={
-          defaultPropsSimpleField.containerClassName +
-          (fieldName === 'programme_officer'
-            ? textFieldClassName + ' max-w-[370px]'
-            : '')
-        }
-      />
+      <div className="flex items-center gap-x-2">
+        <SimpleInput
+          id={fieldName}
+          value={value}
+          type="text"
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              event,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          {...getFieldDefaultProps(
+            getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+            editableFields,
+            field,
+          )}
+          containerClassName={
+            defaultPropsSimpleField.containerClassName +
+            (fieldName === 'programme_officer'
+              ? textFieldClassName + ' max-w-[370px]'
+              : '')
+          }
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }
@@ -351,34 +358,37 @@ export const TextAreaWidget = <T,>(
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
       <Label>{field.label} (max 500 characters)</Label>
-      <TextareaAutosize
-        value={value as string}
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            event,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        className={cx(textAreaClassname, 'max-w-[415px]', {
-          '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
-          'border-red-500': getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-        })}
-        maxLength={500}
-        style={STYLE}
-        minRows={isOdsReplacement ? 1 : 2}
-        tabIndex={-1}
-      />
+      <div className="flex items-center gap-x-2">
+        <TextareaAutosize
+          value={value as string}
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              event,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          className={cx(textAreaClassname, 'max-w-[415px]', {
+            '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
+            'border-red-500': getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+          })}
+          maxLength={500}
+          style={STYLE}
+          minRows={isOdsReplacement ? 1 : 2}
+          tabIndex={-1}
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }
@@ -411,34 +421,37 @@ const NumberWidget = <T,>(
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <FormattedNumberInput
-        id={fieldName}
-        value={value ?? ''}
-        withoutDefaultValue={true}
-        decimalDigits={field.data_type === 'number' ? 0 : 2}
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-      />
+      <div className="flex items-center gap-x-2">
+        <FormattedNumberInput
+          id={fieldName}
+          value={value ?? ''}
+          withoutDefaultValue={true}
+          decimalDigits={field.data_type === 'number' ? 0 : 2}
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          {...getFieldDefaultProps(
+            getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+            editableFields,
+            field,
+          )}
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }
@@ -467,32 +480,35 @@ const BooleanWidget = <T,>(
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <Checkbox
-        className="pb-1 pl-2 pt-0"
-        checked={Boolean(value)}
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(_: React.SyntheticEvent, value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        sx={{
-          color: getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          )
-            ? 'red'
-            : 'black',
-        }}
-      />
+      <div className="flex items-center gap-x-2">
+        <Checkbox
+          className="pb-1 pl-2 pt-0"
+          checked={Boolean(value)}
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(_: React.SyntheticEvent, value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          sx={{
+            color: getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            )
+              ? 'red'
+              : 'black',
+          }}
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }
@@ -515,36 +531,39 @@ const DateWidget = <T,>(
   return (
     <div className="w-40">
       <Label>{field.label}</Label>
-      <DateInput
-        id={fieldName}
-        value={value}
-        disabled={!canEditField(editableFields, fieldName)}
-        formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-        onChange={(value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...omit(
-          getFieldDefaultProps(
-            getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
+      <div className="flex items-center gap-x-2">
+        <DateInput
+          id={fieldName}
+          value={value}
+          disabled={!canEditField(editableFields, fieldName)}
+          formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+          onChange={(value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
               index,
+            )
+          }
+          {...omit(
+            getFieldDefaultProps(
+              getIsInputDisabled(
+                hasSubmitted,
+                errors,
+                hasTrancheErrors,
+                field.label,
+                index,
+              ),
+              editableFields,
+              field,
             ),
-            editableFields,
-            field,
-          ),
-          ['containerClassName'],
-        )}
-      />
+            ['containerClassName'],
+          )}
+        />
+        <FieldErrorIndicator errors={errors} field={field.label} />
+      </div>
     </div>
   )
 }

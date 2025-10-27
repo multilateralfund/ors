@@ -17,8 +17,8 @@ import {
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { NavigationButton } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
@@ -313,169 +313,201 @@ const ProjectIdentifiersFields = ({
           {canViewField(viewableFields, 'country') && (
             <div>
               <Label>{tableColumns.country}</Label>
-              <Field
-                widget="autocomplete"
-                options={countries}
-                value={projIdentifiers?.country}
-                onChange={(_, value) => handleChangeCountry(value)}
-                getOptionLabel={(option) => getOptionLabel(countries, option)}
-                disabled={!isAddOrCopy || !areNextSectionsDisabled}
-                Input={{
-                  error: getIsInputDisabled('country'),
-                }}
-                {...sectionDefaultProps}
-              />
+              <div className="flex items-center gap-x-2">
+                <Field
+                  widget="autocomplete"
+                  options={countries}
+                  value={projIdentifiers?.country}
+                  onChange={(_, value) => handleChangeCountry(value)}
+                  getOptionLabel={(option) => getOptionLabel(countries, option)}
+                  disabled={!isAddOrCopy || !areNextSectionsDisabled}
+                  Input={{
+                    error: getIsInputDisabled('country'),
+                  }}
+                  {...sectionDefaultProps}
+                />
+                <FieldErrorIndicator errors={errors} field="country" />
+              </div>
             </div>
           )}
-          <div className="w-32">
+          <div>
             <Label>{tableColumns.meeting}</Label>
-            <PopoverInput
-              label={getMeetingNr(
-                projIdentifiers?.meeting ?? undefined,
-              )?.toString()}
-              options={useMeetingOptions()}
-              onChange={handleChangeMeeting}
-              onClear={() => handleChangeMeeting()}
-              disabled={!canEditMeeting}
-              className={cx('!m-0 h-10 !py-1', {
-                'border-red-500': getIsInputDisabled('meeting'),
-                [disabledClassName]: !canEditMeeting,
-              })}
-              clearBtnClassName="right-1"
-              withClear={canEditMeeting}
-            />
+            <div className="flex items-center gap-x-2">
+              <div className="w-32">
+                <PopoverInput
+                  label={getMeetingNr(
+                    projIdentifiers?.meeting ?? undefined,
+                  )?.toString()}
+                  options={useMeetingOptions()}
+                  onChange={handleChangeMeeting}
+                  onClear={() => handleChangeMeeting()}
+                  disabled={!canEditMeeting}
+                  className={cx('!m-0 h-10 !py-1', {
+                    'border-red-500': getIsInputDisabled('meeting'),
+                    [disabledClassName]: !canEditMeeting,
+                  })}
+                  clearBtnClassName="right-1"
+                  withClear={canEditMeeting}
+                />
+              </div>
+              <FieldErrorIndicator errors={errors} field="meeting" />
+            </div>
           </div>
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
-              <Field
-                widget="autocomplete"
-                options={agencies}
-                value={projIdentifiers?.agency}
-                onChange={(_, value) => {
-                  handleChangeAgency(value)
+              <div className="flex items-center gap-x-2">
+                <Field
+                  widget="autocomplete"
+                  options={agencies}
+                  value={projIdentifiers?.agency}
+                  onChange={(_, value) => {
+                    handleChangeAgency(value)
 
-                  if (
-                    canUpdateLeadAgency &&
-                    !projIdentifiers.lead_agency_submitting_on_behalf
-                  ) {
-                    handleChangeLeadAgency(value)
+                    if (
+                      canUpdateLeadAgency &&
+                      !projIdentifiers.lead_agency_submitting_on_behalf
+                    ) {
+                      handleChangeLeadAgency(value)
+                    }
+                  }}
+                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    !canEditField(editableFields, 'agency')
                   }
-                }}
-                getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                disabled={
-                  !areNextSectionsDisabled ||
-                  !canEditField(editableFields, 'agency')
-                }
-                Input={{
-                  error: getIsInputDisabled('agency'),
-                }}
-                {...sectionDefaultProps}
-              />
+                  Input={{
+                    error: getIsInputDisabled('agency'),
+                  }}
+                  {...sectionDefaultProps}
+                />
+                <FieldErrorIndicator errors={errors} field="agency" />
+              </div>
             </div>
           )}
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'cluster') && (
-            <div className="w-full max-w-[20rem] flex-shrink">
+            <div>
               <Label>{tableColumns.cluster}</Label>
-              <Field
-                widget="autocomplete"
-                options={crtClusters}
-                value={projIdentifiers?.cluster}
-                onChange={(_, value) => handleChangeCluster(value)}
-                getOptionLabel={(option) => getOptionLabel(clusters, option)}
-                disabled={
-                  (isV3Project && !!project?.cluster_id) ||
-                  !areNextSectionsDisabled ||
-                  !specificFieldsLoaded ||
-                  !canEditField(editableFields, 'cluster')
-                }
-                Input={{
-                  error: getIsInputDisabled('cluster'),
-                }}
-                {...defaultProps}
-                FieldProps={{
-                  className: defaultProps.FieldProps.className + ' w-full',
-                }}
-              />
+              <div className="flex items-center gap-x-2">
+                <div className="w-[20rem] flex-shrink">
+                  <Field
+                    widget="autocomplete"
+                    options={crtClusters}
+                    value={projIdentifiers?.cluster}
+                    onChange={(_, value) => handleChangeCluster(value)}
+                    getOptionLabel={(option) =>
+                      getOptionLabel(clusters, option)
+                    }
+                    disabled={
+                      (isV3Project && !!project?.cluster_id) ||
+                      !areNextSectionsDisabled ||
+                      !specificFieldsLoaded ||
+                      !canEditField(editableFields, 'cluster')
+                    }
+                    Input={{
+                      error: getIsInputDisabled('cluster'),
+                    }}
+                    {...defaultProps}
+                    FieldProps={{
+                      className: defaultProps.FieldProps.className + ' w-full',
+                    }}
+                  />
+                </div>
+                <FieldErrorIndicator errors={errors} field="cluster" />
+              </div>
             </div>
           )}
           {canViewField(viewableFields, 'production') && (
-            <FormControlLabel
-              className="w-fit self-end"
-              label="Production"
-              control={
-                <Checkbox
-                  checked={!!projIdentifiers?.production}
-                  disabled={
-                    (isV3Project && !!project?.cluster_id) ||
-                    !areNextSectionsDisabled ||
-                    !canViewProductionProjects ||
-                    !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
-                    !canEditField(editableFields, 'production')
-                  }
-                  onChange={handleChangeProduction}
-                  size="small"
-                  sx={{
-                    color: 'black',
-                  }}
-                />
-              }
-              componentsProps={{
-                typography: { fontSize: '1rem', marginTop: '2px' },
-              }}
-            />
+            <div className="flex items-center gap-x-2 self-end">
+              <FormControlLabel
+                className="w-fit"
+                label="Production"
+                control={
+                  <Checkbox
+                    checked={!!projIdentifiers?.production}
+                    disabled={
+                      (isV3Project && !!project?.cluster_id) ||
+                      !areNextSectionsDisabled ||
+                      !canViewProductionProjects ||
+                      !isNull(
+                        getProduction(clusters, projIdentifiers.cluster),
+                      ) ||
+                      !canEditField(editableFields, 'production')
+                    }
+                    onChange={handleChangeProduction}
+                    size="small"
+                    sx={{
+                      color: 'black',
+                    }}
+                  />
+                }
+                componentsProps={{
+                  typography: { fontSize: '1rem', marginTop: '2px' },
+                }}
+              />
+              <FieldErrorIndicator errors={errors} field="production" />
+            </div>
           )}
         </div>
         {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
-          <FormControlLabel
-            className="w-fit"
-            label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-            control={
-              <Checkbox
-                checked={projIdentifiers?.lead_agency_submitting_on_behalf}
-                disabled={
-                  !areNextSectionsDisabled ||
-                  (isV3Project && project && !getAgencyErrorType(project)) ||
-                  !canEditField(
-                    editableFields,
-                    'lead_agency_submitting_on_behalf',
-                  )
-                }
-                onChange={handleChangeSubmitOnBehalf}
-                size="small"
-                sx={{ color: 'black' }}
-              />
-            }
-            componentsProps={{ typography: { fontSize: '1rem' } }}
-          />
+          <div className="flex items-center gap-x-2">
+            <FormControlLabel
+              className="w-fit"
+              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              control={
+                <Checkbox
+                  checked={projIdentifiers?.lead_agency_submitting_on_behalf}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    (isV3Project && project && !getAgencyErrorType(project)) ||
+                    !canEditField(
+                      editableFields,
+                      'lead_agency_submitting_on_behalf',
+                    )
+                  }
+                  onChange={handleChangeSubmitOnBehalf}
+                  size="small"
+                  sx={{ color: 'black' }}
+                />
+              }
+              componentsProps={{ typography: { fontSize: '1rem' } }}
+            />
+            <FieldErrorIndicator
+              errors={errors}
+              field="lead_agency_submitting_on_behalf"
+            />
+          </div>
         )}
         {canViewField(viewableFields, 'lead_agency') && (
           <>
             <Label>{tableColumns.lead_agency}</Label>
-            <Field
-              widget="autocomplete"
-              options={agencies}
-              value={projIdentifiers?.lead_agency}
-              onChange={(_, value) => {
-                handleChangeLeadAgency(value)
+            <div className="flex items-center gap-x-2">
+              <Field
+                widget="autocomplete"
+                options={agencies}
+                value={projIdentifiers?.lead_agency}
+                onChange={(_, value) => {
+                  handleChangeLeadAgency(value)
 
-                if (!projIdentifiers.lead_agency_submitting_on_behalf) {
-                  handleChangeAgency(value)
+                  if (!projIdentifiers.lead_agency_submitting_on_behalf) {
+                    handleChangeAgency(value)
+                  }
+                }}
+                getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                disabled={
+                  !areNextSectionsDisabled ||
+                  !canUpdateLeadAgency ||
+                  !canEditField(editableFields, 'lead_agency')
                 }
-              }}
-              getOptionLabel={(option) => getOptionLabel(agencies, option)}
-              disabled={
-                !areNextSectionsDisabled ||
-                !canUpdateLeadAgency ||
-                !canEditField(editableFields, 'lead_agency')
-              }
-              Input={{
-                error: getIsInputDisabled('lead_agency'),
-              }}
-              {...sectionDefaultProps}
-            />
+                Input={{
+                  error: getIsInputDisabled('lead_agency'),
+                }}
+                {...sectionDefaultProps}
+              />
+              <FieldErrorIndicator errors={errors} field="lead_agency" />
+            </div>
             {canUpdateLeadAgency && (
               <CustomAlert
                 type="info"
