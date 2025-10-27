@@ -395,7 +395,7 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
             </div>
-            <div className="flex flex-wrap gap-x-20 gap-y-3">
+            <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
               {canViewField(viewableFields, 'total_fund') && (
                 <div>
                   <Label>{tableColumns.total_fund} (US $)</Label>
@@ -439,8 +439,7 @@ const ProjectCrossCuttingFields = ({
                   </div>
                 </div>
               )}
-            </div>
-            <div className="flex flex-wrap gap-x-20 gap-y-3">
+
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>
                   <Label>{tableColumns.project_start_date}</Label>

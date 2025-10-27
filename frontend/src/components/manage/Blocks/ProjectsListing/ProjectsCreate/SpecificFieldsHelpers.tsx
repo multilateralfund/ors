@@ -564,39 +564,41 @@ const DateWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div className="w-40">
+    <div>
       <Label>{field.label}</Label>
       <div className="flex items-center gap-x-2">
-        <DateInput
-          id={fieldName}
-          value={value}
-          disabled={!canEditField(editableFields, fieldName)}
-          formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-          onChange={(value) =>
-            changeHandler[field.data_type]<T, SpecificFields>(
-              value,
-              fieldName,
-              setFields,
-              sectionIdentifier,
-              subField,
-              index,
-            )
-          }
-          {...omit(
-            getFieldDefaultProps(
-              getIsInputDisabled(
-                hasSubmitted,
-                errors,
-                hasTrancheErrors,
-                field.label,
+        <div className="w-40">
+          <DateInput
+            id={fieldName}
+            value={value}
+            disabled={!canEditField(editableFields, fieldName)}
+            formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+            onChange={(value) =>
+              changeHandler[field.data_type]<T, SpecificFields>(
+                value,
+                fieldName,
+                setFields,
+                sectionIdentifier,
+                subField,
                 index,
+              )
+            }
+            {...omit(
+              getFieldDefaultProps(
+                getIsInputDisabled(
+                  hasSubmitted,
+                  errors,
+                  hasTrancheErrors,
+                  field.label,
+                  index,
+                ),
+                editableFields,
+                field,
               ),
-              editableFields,
-              field,
-            ),
-            ['containerClassName'],
-          )}
-        />
+              ['containerClassName'],
+            )}
+          />
+        </div>
         <FieldErrorIndicator
           errors={
             !isNil(index)
