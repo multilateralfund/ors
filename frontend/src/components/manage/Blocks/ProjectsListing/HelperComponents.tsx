@@ -507,7 +507,7 @@ export const FieldErrorIndicator = ({
         errors={formattedErrors}
         withExplanatoryText={false}
         className="!cursor-default"
-        iconClassName="align-center h-5 w-5 !mb-0"
+        iconClassName="align-center h-5 w-5 ml-2 !mb-0"
       />
     )
   )

@@ -118,11 +118,11 @@ const ProjectCrossCuttingFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[17.5rem]',
+      className: defaultProps.FieldProps.className + ' w-[17rem]',
     },
   }
   const defaultPropsDateInput = {
-    className: 'BPListUpload !ml-0 h-10 w-40',
+    className: 'BPListUpload !ml-0 h-10 w-40 !flex-grow-0',
   }
 
   const areInvalidFields = !(
@@ -196,7 +196,7 @@ const ProjectCrossCuttingFields = ({
             {canViewField(viewableFields, 'title') && (
               <div>
                 <Label>{tableColumns.title}</Label>
-                <div className="flex items-center gap-x-2">
+                <div className="flex items-center">
                   <SimpleInput
                     id="title"
                     value={title}
@@ -223,7 +223,7 @@ const ProjectCrossCuttingFields = ({
             {canViewField(viewableFields, 'description') && (
               <div>
                 <Label>{tableColumns.description} (max 1000 characters)</Label>
-                <div className="flex items-center gap-x-2">
+                <div className="flex items-center">
                   <TextareaAutosize
                     value={description}
                     onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
@@ -263,7 +263,7 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'project_type') && (
                 <div>
                   <Label>{tableColumns.type}</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <Field
                       widget="autocomplete"
                       options={crtProjectTypesOpts}
@@ -296,14 +296,19 @@ const ProjectCrossCuttingFields = ({
                       }}
                       {...sectionDefaultProps}
                     />
-                    <FieldErrorIndicator errors={errors} field="project_type" />
+                    <div className="w-5">
+                      <FieldErrorIndicator
+                        errors={errors}
+                        field="project_type"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
               {canViewField(viewableFields, 'sector') && (
                 <div>
                   <Label>{tableColumns.sector}</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <Field
                       widget="autocomplete"
                       options={crtSectorsOpts}
@@ -336,8 +341,8 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'subsectors') && (
                 <div>
                   <Label>{tableColumns.subsectors}</Label>
-                  <div className="flex items-center gap-x-2">
-                    <div className="w-[40rem] flex-shrink">
+                  <div className="flex items-center">
+                    <div className="w-[40.25rem] flex-shrink">
                       <Field
                         widget="autocomplete"
                         multiple={true}
@@ -357,7 +362,7 @@ const ProjectCrossCuttingFields = ({
                         Input={{
                           error: getIsInputDisabled('subsector_ids'),
                         }}
-                        FieldProps={{ className: 'w-full BPListUpload' }}
+                        FieldProps={{ className: 'w-full BPListUpload mb-0' }}
                       />
                     </div>
                     <FieldErrorIndicator errors={errors} field="subsector" />
@@ -367,7 +372,7 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'is_lvc') && (
                 <div>
                   <Label>{tableColumns.is_lvc}</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <Field
                       widget="autocomplete"
                       options={lvcNonLvcOpts}
@@ -399,7 +404,7 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'total_fund') && (
                 <div>
                   <Label>{tableColumns.total_fund} (US $)</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <FormattedNumberInput
                       id="total_fund"
                       value={total_fund ?? ''}
@@ -418,7 +423,7 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'support_cost_psc') && (
                 <div>
                   <Label>{tableColumns.support_cost_psc} (US $)</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <FormattedNumberInput
                       id="support_cost_psc"
                       value={support_cost_psc ?? ''}
@@ -439,11 +444,10 @@ const ProjectCrossCuttingFields = ({
                   </div>
                 </div>
               )}
-
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>
                   <Label>{tableColumns.project_start_date}</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <DateInput
                       id="project_start_date"
                       value={project_start_date as string}
@@ -482,7 +486,7 @@ const ProjectCrossCuttingFields = ({
               {canViewField(viewableFields, 'project_end_date') && (
                 <div>
                   <Label>{tableColumns.project_end_date}</Label>
-                  <div className="flex items-center gap-x-2">
+                  <div className="flex items-center">
                     <DateInput
                       id="project_end_date"
                       value={project_end_date as string}
@@ -518,7 +522,7 @@ const ProjectCrossCuttingFields = ({
             {canViewField(viewableFields, 'individual_consideration') && (
               <div className="flex">
                 <Label className="mt-0.5">Blanket consideration</Label>
-                <div className="flex items-center gap-x-2">
+                <div className="flex items-center">
                   <Checkbox
                     checked={!individual_consideration}
                     onChange={(_, value) =>

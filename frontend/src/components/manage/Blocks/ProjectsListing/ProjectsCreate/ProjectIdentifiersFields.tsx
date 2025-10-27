@@ -313,7 +313,7 @@ const ProjectIdentifiersFields = ({
           {canViewField(viewableFields, 'country') && (
             <div>
               <Label>{tableColumns.country}</Label>
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center">
                 <Field
                   widget="autocomplete"
                   options={countries}
@@ -332,7 +332,7 @@ const ProjectIdentifiersFields = ({
           )}
           <div>
             <Label>{tableColumns.meeting}</Label>
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center">
               <div className="w-32">
                 <PopoverInput
                   label={getMeetingNr(
@@ -356,7 +356,7 @@ const ProjectIdentifiersFields = ({
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center">
                 <Field
                   widget="autocomplete"
                   options={agencies}
@@ -390,7 +390,7 @@ const ProjectIdentifiersFields = ({
           {canViewField(viewableFields, 'cluster') && (
             <div>
               <Label>{tableColumns.cluster}</Label>
-              <div className="flex items-center gap-x-2">
+              <div className="flex items-center">
                 <div className="w-[20rem] flex-shrink">
                   <Field
                     widget="autocomplete"
@@ -420,7 +420,7 @@ const ProjectIdentifiersFields = ({
             </div>
           )}
           {canViewField(viewableFields, 'production') && (
-            <div className="flex items-center gap-x-2 self-end">
+            <div className="flex items-center self-end">
               <FormControlLabel
                 className="w-fit"
                 label="Production"
@@ -452,7 +452,7 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
         {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
-          <div className="flex items-center gap-x-2">
+          <div className="flex items-center">
             <FormControlLabel
               className="w-fit"
               label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
@@ -483,7 +483,7 @@ const ProjectIdentifiersFields = ({
         {canViewField(viewableFields, 'lead_agency') && (
           <>
             <Label>{tableColumns.lead_agency}</Label>
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center">
               <Field
                 widget="autocomplete"
                 options={agencies}

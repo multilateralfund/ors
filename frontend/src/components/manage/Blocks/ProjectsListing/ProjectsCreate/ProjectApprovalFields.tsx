@@ -121,7 +121,7 @@ const ProjectApprovalFields = ({
         {canViewField(viewableFields, 'decision') && (
           <div>
             <Label>{tableColumns.decision}</Label>
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center">
               <div className="w-[16rem]">
                 <Field<any>
                   widget="autocomplete"

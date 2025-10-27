@@ -64,6 +64,7 @@ const getFieldDefaultProps = (
         'w-[125px]': isOdp,
         'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
+        '!flex-grow-0': field.data_type === 'date',
       }),
       containerClassName: cx(defaultPropsSimpleField.containerClassName, {
         'w-[125px]': isOdp,
@@ -222,7 +223,7 @@ export const AutocompleteWidget = <T,>(
       <Label className={cx({ italic: isDisabledImpactField })}>
         {field.label} {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <Field
           widget="autocomplete"
           options={options}
@@ -306,7 +307,7 @@ export const TextWidget = <T,>(
       })}
     >
       <Label>{field.label}</Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <SimpleInput
           id={fieldName}
           value={value}
@@ -372,7 +373,7 @@ export const TextAreaWidget = <T,>(
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
       <Label>{field.label} (max 500 characters)</Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
           disabled={!canEditField(editableFields, fieldName)}
@@ -442,7 +443,7 @@ const NumberWidget = <T,>(
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <FormattedNumberInput
           id={fieldName}
           value={value ?? ''}
@@ -508,7 +509,7 @@ const BooleanWidget = <T,>(
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <Checkbox
           className="pb-1 pl-2 pt-0"
           checked={Boolean(value)}
@@ -566,7 +567,7 @@ const DateWidget = <T,>(
   return (
     <div>
       <Label>{field.label}</Label>
-      <div className="flex items-center gap-x-2">
+      <div className="flex items-center">
         <div className="w-40">
           <DateInput
             id={fieldName}
