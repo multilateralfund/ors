@@ -1,6 +1,7 @@
 # pylint: disable=W0621,R0913, R0914
 import pytest
 import unicodedata
+from datetime import date
 
 from django.urls import reverse
 from django.contrib.auth.models import Group
@@ -48,6 +49,9 @@ from core.api.tests.factories import (
     CPPricesFactory,
     CPRecordFactory,
     CPUsageFactory,
+    AnnualProgressReportFactory,
+    AnnualAgencyProjectReportFactory,
+    AnnualProjectReportFactory,
 )
 from core.models import BPActivity
 from core.models import CPEmission
@@ -231,6 +235,14 @@ def agency_inputter_user(agency):
     user = UserFactory(username="AgencyInputterUser", agency=agency)
     user.groups.add(group)
     user.groups.add(business_plan_viewer_group)
+    return user
+
+
+@pytest.fixture
+def agency_viewer_user(agency):
+    group = Group.objects.get(name="Projects - Agency viewer")
+    user = UserFactory(username="AgencyViewerUser", agency=agency)
+    user.groups.add(group)
     return user
 
 
@@ -524,6 +536,11 @@ def project_status():
 @pytest.fixture
 def project_ongoing_status():
     return ProjectStatusFactory.create(name="Ongoing", code="ONG")
+
+
+@pytest.fixture
+def project_completed_status():
+    return ProjectStatusFactory.create(name="Completed", code="COM")
 
 
 @pytest.fixture
@@ -1390,3 +1407,61 @@ def setup_project_list(
     )
 
     return projects
+
+
+@pytest.fixture
+def apr_year():
+    return 2024
+
+
+@pytest.fixture
+def annual_progress_report(apr_year):
+    return AnnualProgressReportFactory(year=apr_year)
+
+
+@pytest.fixture
+def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
+    return AnnualAgencyProjectReportFactory(
+        progress_report=annual_progress_report,
+        agency=agency,
+        created_by=agency_viewer_user,
+    )
+
+
+@pytest.fixture
+def annual_project_report(annual_agency_report, project):
+    return AnnualProjectReportFactory(
+        report=annual_agency_report,
+        project=project,
+    )
+
+
+@pytest.fixture
+def multiple_projects_for_apr(
+    agency, country_ro, sector, project_ongoing_status, project_completed_status
+):
+    ongoing_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2022, 1, 1),
+            code=f"TEST/ONG/{i}/INV/01",
+        )
+        for i in range(1, 4)
+    ]
+
+    completed_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code=f"TEST/COM/{i}/INV/01",
+        )
+        for i in range(1, 3)
+    ]
+
+    return ongoing_projects + completed_projects

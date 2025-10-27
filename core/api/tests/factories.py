@@ -16,6 +16,7 @@ from core.models import (
     AnnualProjectReport,
     AnnualProgressReport,
     AnnualAgencyProjectReport,
+    AnnualProjectReportFile,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -496,9 +497,9 @@ class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
 
     progress_report = factory.SubFactory(AnnualProgressReportFactory)
     agency = factory.SubFactory(AgencyFactory)
-    status = factory.fuzzy.FuzzyChoice(
-        AnnualAgencyProjectReport.SubmissionStatus.choices
-    )
+    status = AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+    created_by = factory.SubFactory(UserFactory)
+    submitted_by = None
 
 
 class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
@@ -529,6 +530,18 @@ class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
     last_year_remarks = factory.Faker("pystr")
     current_year_remarks = factory.Faker("pystr")
     gender_policy = factory.Faker("pybool")
+
+
+class AnnualProjectReportFileFactory(factory.django.DjangoModelFactory):
+    """Factory for AnnualProjectReportFile."""
+
+    class Meta:
+        model = AnnualProjectReportFile
+
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+    file = factory.django.FileField(filename="test_report.pdf")
+    file_name = "Test Report"
+    file_type = AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
 
 
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):

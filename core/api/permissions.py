@@ -209,8 +209,24 @@ class HasAPRViewAccess(permissions.BasePermission):
         """
         Check if the user has permission to view Annual Project Reports.
         """
-
         return request.user.has_perm("core.has_apr_view_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can access the agency report.
+        Agency users can only access their own agency's reports.
+        """
+
+        if hasattr(obj, "agency_id"):
+            if request.user.has_perm("core.can_view_all_agencies"):
+                return True
+
+            # Agency users can only access their own agency
+            if request.user.has_perm("core.can_view_only_own_agency"):
+                if request.user.agency_id == obj.agency_id:
+                    return True
+
+        return False
 
 
 class HasAPREditAccess(permissions.BasePermission):
@@ -221,6 +237,23 @@ class HasAPREditAccess(permissions.BasePermission):
 
         return request.user.has_perm("core.has_apr_edit_access")
 
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can edit the agency report.
+        Agency users can only edit their own agency's reports
+        """
+
+        if hasattr(obj, "agency_id"):
+            if request.user.has_perm("core.can_view_all_agencies"):
+                return True
+
+            # Agency users can only edit their own agency
+            if request.user.has_perm("core.can_view_only_own_agency"):
+                if request.user.agency_id == obj.agency_id:
+                    return True
+
+        return False
+
 
 class HasAPRSubmitAccess(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -229,6 +262,23 @@ class HasAPRSubmitAccess(permissions.BasePermission):
         """
 
         return request.user.has_perm("core.has_apr_submit_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can submit the agency report.
+        Agency users can only submit their own agency's reports
+        """
+
+        if hasattr(obj, "agency_id") and hasattr(obj, "status"):
+            if request.user.has_perm("core.can_view_all_agencies"):
+                return True
+
+            # Agency users can only submit their own agency
+            if request.user.has_perm("core.can_view_only_own_agency"):
+                if request.user.agency_id == obj.agency_id:
+                    return True
+
+        return False
 
 
 class HasProjectV2SubmitAccess(permissions.BasePermission):

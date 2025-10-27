@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from core.models.utils import get_protected_storage
@@ -35,7 +36,7 @@ class AnnualProgressReport(models.Model):
 
     def __str__(self):
         endorsed = "Endorsed" if self.endorsed else "Not Endorsed"
-        return f"Progress Report {self.year} ({endorsed})"
+        return f"Annual Progress Report for {self.year} ({endorsed})"
 
 
 class AnnualAgencyProjectReport(models.Model):
@@ -61,6 +62,25 @@ class AnnualAgencyProjectReport(models.Model):
         verbose_name="Submission status",
     )
 
+    # Audit fields
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_agency_reports",
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="submitted_agency_reports",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -73,18 +93,17 @@ class AnnualAgencyProjectReport(models.Model):
         return f"{self.agency.name} Project Report {self.progress_report.year} ({self.get_status_display()})"
 
 
-class FileType(models.TextChoices):
-    ANNUAL_PROGRESS_FINANCIAL_REPORT = (
-        "annual_progress_financial_report",
-        "Annual Progress & Financial Report",
-    )
-    OTHER_SUPPORTING_DOCUMENT = (
-        "other_supporting_document",
-        "Other supporting document",
-    )
-
-
 class AnnualProjectReportFile(models.Model):
+    class FileType(models.TextChoices):
+        ANNUAL_PROGRESS_FINANCIAL_REPORT = (
+            "annual_progress_financial_report",
+            "Annual Progress & Financial Report",
+        )
+        OTHER_SUPPORTING_DOCUMENT = (
+            "other_supporting_document",
+            "Other supporting document",
+        )
+
     file = models.FileField(
         storage=get_protected_storage, upload_to="project_report_files/"
     )
@@ -98,16 +117,19 @@ class AnnualProjectReportFile(models.Model):
     file_type = models.CharField(
         max_length=64, choices=FileType.choices, verbose_name="File type"
     )
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["report"],
-                condition=models.Q(file_type=FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT),
+                condition=models.Q(file_type="annual_progress_financial_report"),
                 name="unique_annual_progress_file_per_report",
             )
         ]
+
+    def __str__(self):
+        return f"File {self.file_name} for {str(self.report)}"
 
 
 class AnnualProjectReport(models.Model):
@@ -188,6 +210,10 @@ class AnnualProjectReport(models.Model):
         verbose_name="Gender Policy for All Projects Approved from 85th Mtg",
     )
 
+    # Audit fields
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -195,3 +221,9 @@ class AnnualProjectReport(models.Model):
                 name="unique_together_project_report",
             )
         ]
+
+    def __str__(self):
+        return (
+            f"Annual Project report for {str(self.project)} "
+            f"({self.report.agency} - {self.report.progress_report.year})"
+        )
