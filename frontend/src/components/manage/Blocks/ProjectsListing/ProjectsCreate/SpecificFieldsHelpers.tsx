@@ -8,6 +8,7 @@ import {
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
+import { FieldErrorIndicator } from '../HelperComponents'
 import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
@@ -29,7 +30,6 @@ import { find, get, isObject, isBoolean, isNil, isArray, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-import { FieldErrorIndicator } from '../HelperComponents'
 
 export const getIsInputDisabled = (
   hasSubmitted: boolean,
@@ -271,7 +271,14 @@ export const AutocompleteWidget = <T,>(
               }
             : {})}
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
@@ -333,7 +340,14 @@ export const TextWidget = <T,>(
               : '')
           }
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
@@ -387,7 +401,14 @@ export const TextAreaWidget = <T,>(
           minRows={isOdsReplacement ? 1 : 2}
           tabIndex={-1}
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
@@ -450,7 +471,14 @@ const NumberWidget = <T,>(
             field,
           )}
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
@@ -507,7 +535,14 @@ const BooleanWidget = <T,>(
               : 'black',
           }}
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
@@ -562,7 +597,14 @@ const DateWidget = <T,>(
             ['containerClassName'],
           )}
         />
-        <FieldErrorIndicator errors={errors} field={field.label} />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
       </div>
     </div>
   )
