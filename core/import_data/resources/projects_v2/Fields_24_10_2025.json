@@ -63,7 +63,7 @@
     },
     {
         "IMPORT_NAME": "Lead Agency",
-        "LABEL": "Lead Agency",
+        "LABEL": "Lead agency",
         "WRITE_FIELD_NAME": "lead_agency",
         "READ_FIELD_NAME": "lead_agency",
         "TABLE": "project",
@@ -123,7 +123,7 @@
     },
     {
         "IMPORT_NAME": "Meeting Number",
-        "LABEL": "Meeting Number",
+        "LABEL": "Meeting number",
         "WRITE_FIELD_NAME": "meeting",
         "READ_FIELD_NAME": "meeting",
         "TABLE": "project",
@@ -159,7 +159,7 @@
     },
     {
         "IMPORT_NAME": "Project Funding",
-        "LABEL": "Project Funding",
+        "LABEL": "Project funding",
         "WRITE_FIELD_NAME": "total_fund",
         "READ_FIELD_NAME": "total_fund",
         "TABLE": "project",
@@ -207,7 +207,7 @@
     },
     {
         "IMPORT_NAME": "Programme Officer Name",
-        "LABEL": "Programme Officer Name",
+        "LABEL": "Programme officer name",
         "WRITE_FIELD_NAME": "programme_officer",
         "READ_FIELD_NAME": "programme_officer",
         "TABLE": "project",
@@ -219,7 +219,7 @@
     },
     {
         "IMPORT_NAME": "Excom Provision",
-        "LABEL":"Excom Provision",
+        "LABEL":"Excom provision",
         "WRITE_FIELD_NAME": "excom_provision",
         "READ_FIELD_NAME": "excom_provision",
         "TABLE": "project",
@@ -279,7 +279,7 @@
     },
     {
         "IMPORT_NAME": "Project Support Cost",
-        "LABEL": "Project Support Cost",
+        "LABEL": "Project support cost",
         "WRITE_FIELD_NAME": "support_cost_psc",
         "READ_FIELD_NAME": "support_cost_psc",
         "TABLE": "project",
@@ -303,9 +303,9 @@
     },
     {
         "IMPORT_NAME": "Blanket or Individual consideration (MLFS Users only)",
-        "LABEL": "Blanket or Individual consideration",
-        "WRITE_FIELD_NAME": "individual_consideration",
-        "READ_FIELD_NAME": "individual_consideration",
+        "LABEL": "Blanket or individual consideration",
+        "WRITE_FIELD_NAME": "blanket_or_individual_consideration",
+        "READ_FIELD_NAME": "blanket_or_individual_consideration",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Cross-Cutting",
@@ -447,7 +447,7 @@
     },
     {
         "IMPORT_NAME": "Phase out (Mt)",
-        "LABEL": "Phase out (Mt)",
+        "LABEL": "Phase out (M t)",
         "WRITE_FIELD_NAME": "phase_out_mt",
         "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "ods_odp",
@@ -1381,8 +1381,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-ep)",
-        "LABEL": "Cost effectiveness (US$/ CO2-ep)",
+        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
+        "LABEL": "Cost effectiveness (US$/ CO2-eq)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2",
         "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "project",
@@ -1538,7 +1538,7 @@
     },
     {
         "IMPORT_NAME": "Phase out (Mt) (MYA)",
-        "LABEL": "Phase out (Mt) (MYA)",
+        "LABEL": "Phase out (M t) (MYA)",
         "WRITE_FIELD_NAME": "mya_phase_out_mt",
         "READ_FIELD_NAME": "mya_phase_out_mt",
         "TABLE": "meta_project",
@@ -1573,8 +1573,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-ep) (MYA)",
-        "LABEL": "Cost effectiveness (US$/ CO2-ep) (MYA)",
+        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+        "LABEL": "Cost effectiveness (US$/ CO2-eq) (MYA)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2",
         "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "meta_project",
