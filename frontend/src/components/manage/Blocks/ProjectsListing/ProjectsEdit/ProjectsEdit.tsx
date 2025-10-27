@@ -52,10 +52,12 @@ const ProjectsEdit = ({
   project,
   mode,
   postExComUpdate = false,
+  approval = false,
 }: {
   project: ProjectTypeApi
   mode: string
   postExComUpdate?: boolean
+  approval?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -119,8 +121,6 @@ const ProjectsEdit = ({
     setViewableFields,
     setEditableFields,
   } = useStore((state) => state.projectFields)
-  const projectSlice = useStore((state) => state.projects)
-  const meetings = projectSlice.meetings.data
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -224,8 +224,10 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
-        post_excom_meeting: project.post_excom_meeting_id,
-        post_excom_decision: project.post_excom_decision_id,
+        post_excom_meeting:
+          mode === 'edit' ? project.post_excom_meeting_id : null,
+        post_excom_decision:
+          mode === 'edit' ? project.post_excom_decision_id : null,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -477,6 +479,7 @@ const ProjectsEdit = ({
             setProjectData,
             mode,
             postExComUpdate,
+            approval,
             specificFields,
             project,
             files,
