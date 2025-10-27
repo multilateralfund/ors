@@ -423,7 +423,7 @@ const ProjectIdentifiersFields = ({
                 />
               }
               componentsProps={{
-                typography: { fontSize: '1.05rem', marginTop: '2px' },
+                typography: { fontSize: '1rem', marginTop: '2px' },
               }}
             />
           )}
@@ -445,14 +445,10 @@ const ProjectIdentifiersFields = ({
                 }
                 onChange={handleChangeSubmitOnBehalf}
                 size="small"
-                sx={{
-                  color: 'black',
-                }}
+                sx={{ color: 'black' }}
               />
             }
-            componentsProps={{
-              typography: { fontSize: '1.05rem' },
-            }}
+            componentsProps={{ typography: { fontSize: '1rem' } }}
           />
         )}
         {canViewField(viewableFields, 'lead_agency') && (

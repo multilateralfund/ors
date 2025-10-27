@@ -4,7 +4,11 @@ import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
 import { NavigationButton } from '../HelperComponents'
@@ -193,7 +197,7 @@ const ProjectCrossCuttingFields = ({
               <div>
                 <Label>{tableColumns.title}</Label>
                 <SimpleInput
-                  id={title}
+                  id="title"
                   value={title}
                   onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                     changeHandler['text']<ProjectData, CrossCuttingFields>(
@@ -215,7 +219,7 @@ const ProjectCrossCuttingFields = ({
             )}
             {canViewField(viewableFields, 'description') && (
               <div>
-                <Label>{tableColumns.description}</Label>
+                <Label>{tableColumns.description} (max 1000 characters)</Label>
                 <TextareaAutosize
                   value={description}
                   onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
@@ -230,6 +234,8 @@ const ProjectCrossCuttingFields = ({
                   className={cx(textAreaClassname + ' max-w-[64rem]', {
                     'border-red-500': getIsInputDisabled('description'),
                   })}
+                  maxLength={1000}
+                  style={STYLE}
                   minRows={7}
                   tabIndex={-1}
                 />
@@ -335,7 +341,7 @@ const ProjectCrossCuttingFields = ({
                     Input={{
                       error: getIsInputDisabled('subsector_ids'),
                     }}
-                    FieldProps={{ className: 'mb-0 w-full BPListUpload' }}
+                    FieldProps={{ className: 'w-full BPListUpload' }}
                   />
                 </div>
               )}
@@ -370,30 +376,32 @@ const ProjectCrossCuttingFields = ({
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'total_fund') && (
                 <div>
-                  <Label>{tableColumns.total_fund}</Label>
-                  <SimpleInput
-                    id={total_fund as string}
+                  <Label>{tableColumns.total_fund} (US $)</Label>
+                  <FormattedNumberInput
+                    id="total_fund"
                     value={total_fund ?? ''}
+                    prefix="$"
+                    withoutDefaultValue={true}
                     onChange={(event) =>
                       handleChangeNumericValues(event, 'total_fund')
                     }
                     disabled={!canEditField(editableFields, 'total_fund')}
-                    type="text"
                     {...getFieldDefaultProps('total_fund')}
                   />
                 </div>
               )}
               {canViewField(viewableFields, 'support_cost_psc') && (
                 <div>
-                  <Label>{tableColumns.support_cost_psc}</Label>
-                  <SimpleInput
-                    id={support_cost_psc as string}
+                  <Label>{tableColumns.support_cost_psc} (US $)</Label>
+                  <FormattedNumberInput
+                    id="support_cost_psc"
                     value={support_cost_psc ?? ''}
+                    prefix="$"
+                    withoutDefaultValue={true}
                     onChange={(event) =>
                       handleChangeNumericValues(event, 'support_cost_psc')
                     }
                     disabled={!canEditField(editableFields, 'support_cost_psc')}
-                    type="text"
                     {...getFieldDefaultProps('support_cost_psc')}
                   />
                 </div>
@@ -473,9 +481,7 @@ const ProjectCrossCuttingFields = ({
                     isV3Project ||
                     !canEditField(editableFields, 'individual_consideration')
                   }
-                  sx={{
-                    color: 'black',
-                  }}
+                  sx={{ color: 'black' }}
                 />
               </div>
             )}

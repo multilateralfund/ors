@@ -7,6 +7,7 @@ import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
@@ -58,9 +59,7 @@ const getFieldDefaultProps = (
   return {
     ...{
       ...defaultPropsSimpleField,
-      className: cx(defaultPropsSimpleField.className, {
-        '!ml-0 h-10':
-          field.data_type === 'date' || field.data_type === 'decimal',
+      className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
         'w-[125px]': isOdp,
         'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
@@ -262,7 +261,7 @@ export const AutocompleteWidget = <T,>(
         }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
-        {...(field.section === 'Impact' || field.section === 'MYA'
+        {...(field.section === 'Impact'
           ? {
               FieldProps: {
                 className: defaultProps.FieldProps.className + ' !w-40',
@@ -351,7 +350,7 @@ export const TextAreaWidget = <T,>(
 
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
-      <Label>{field.label}</Label>
+      <Label>{field.label} (max 500 characters)</Label>
       <TextareaAutosize
         value={value as string}
         disabled={!canEditField(editableFields, fieldName)}
@@ -375,6 +374,8 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
+        maxLength={500}
+        style={STYLE}
         minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}
       />
@@ -410,69 +411,12 @@ const NumberWidget = <T,>(
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
-      <SimpleInput
-        id={fieldName}
-        value={value ?? ''}
-        disabled={!canEditField(editableFields, fieldName)}
-        type="text"
-        onChange={(value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-      />
-    </div>
-  )
-}
-
-const DecimalWidget = <T,>(
-  fields: T,
-  setFields: Dispatch<SetStateAction<T>>,
-  field: ProjectSpecificFields,
-  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
-  editableFields: string[],
-  sectionIdentifier: keyof T = identifier as keyof T,
-  subField?: string,
-  index?: number,
-) => {
-  const fieldName = field.write_field_name
-  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-
-  const isDisabledImpactField =
-    field.section === 'Impact' && !canEditField(editableFields, fieldName)
-
-  return (
-    <div
-      className={cx('flex h-full flex-col', {
-        'justify-between': field.table !== 'ods_odp',
-      })}
-    >
-      <Label className={cx({ italic: isDisabledImpactField })}>
-        {field.label}
-        {isDisabledImpactField ? ' (planned)' : ''}
-      </Label>
       <FormattedNumberInput
         id={fieldName}
-        disabled={!canEditField(editableFields, fieldName)}
         value={value ?? ''}
+        withoutDefaultValue={true}
+        decimalDigits={field.data_type === 'number' ? 0 : 2}
+        disabled={!canEditField(editableFields, fieldName)}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -610,7 +554,7 @@ export const widgets = {
   text: TextAreaWidget,
   simpleText: TextWidget,
   number: NumberWidget,
-  decimal: DecimalWidget,
+  decimal: NumberWidget,
   boolean: BooleanWidget,
   date: DateWidget,
 }

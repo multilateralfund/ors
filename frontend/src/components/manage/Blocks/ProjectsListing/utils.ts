@@ -55,6 +55,9 @@ const getFieldId = <T>(
   })?.id
 }
 
+export const getFormattedDecimalValue = (value: string | null) =>
+  !isNil(value) ? Number(value).toString() : value
+
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
@@ -70,9 +73,11 @@ export const getDefaultValues = <T>(
         acc[fieldName] =
           dataType === 'drop_down'
             ? getFieldId<T>(field, data, projectData)
-            : dataType === 'boolean'
-              ? (data[fieldName] ?? false)
-              : data[fieldName]
+            : dataType === 'decimal'
+              ? getFormattedDecimalValue(data[fieldName])
+              : dataType === 'boolean'
+                ? (data[fieldName] ?? false)
+                : data[fieldName]
       } else {
         acc[fieldName] =
           dataType === 'text' ? '' : dataType === 'boolean' ? false : null
@@ -578,8 +583,9 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, editable_in_versions, data_type }) =>
+      ({ table, section, editable_in_versions, data_type }) =>
         table === 'project' &&
+        section !== 'MYA' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
           (isEditMode && project.version > 3) ||

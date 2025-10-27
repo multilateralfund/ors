@@ -62,6 +62,7 @@ export const detailItem = (
 export const numberDetailItem = (
   fieldName: string,
   fieldValue: string,
+  dataType: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
   isDisabledImpactField?: boolean,
 ) =>
@@ -79,8 +80,8 @@ export const numberDetailItem = (
       <h4 className="m-0">
         {!isNil(fieldValue)
           ? formatDecimalValue(parseFloat(fieldValue), {
-              maximumFractionDigits: 10,
-              minimumFractionDigits: 2,
+              maximumFractionDigits: dataType === 'decimal' ? 2 : 0,
+              minimumFractionDigits: dataType === 'decimal' ? 2 : 0,
             })
           : '-'}
       </h4>
@@ -138,10 +139,13 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       hasActualFields,
     )
 
-    return detailItem(field.label, data[field.read_field_name], {
+    return numberDetailItem(
+      field.label,
+      data[field.read_field_name],
+      field.data_type,
       fieldHistory,
       isDisabledImpactField,
-    })
+    )
   },
   decimal: (data, field, _, fieldHistory, hasActualFields) => {
     const isDisabledImpactField = getIsDisabledImpactField(
@@ -152,6 +156,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
     return numberDetailItem(
       field.label,
       data[field.read_field_name],
+      field.data_type,
       fieldHistory,
       isDisabledImpactField,
     )

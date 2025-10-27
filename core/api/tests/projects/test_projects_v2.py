@@ -21,8 +21,6 @@ from core.models import BPActivity
 from core.models.project import MetaProject, Project, ProjectFile
 from core.utils import (
     get_project_sub_code,
-    get_meta_project_code,
-    get_meta_project_new_code,
 )
 
 
@@ -82,7 +80,6 @@ def setup_project_create(
         "ad_hoc_pcr": True,
         "aggregated_consumption": Decimal(943),
         "agency": agency.id,
-        "baseline": Decimal(43),
         "cost_effectiveness": Decimal(43),
         "cost_effectiveness_co2": Decimal(54),
         "bp_activity": bp_activity.id,
@@ -101,13 +98,6 @@ def setup_project_create(
         "lead_agency": new_agency.id,
         "meeting": meeting.id,
         "pcr_waived": False,
-        "mya_start_date": "2023-10-01",
-        "mya_end_date": "2026-09-30",
-        "mya_project_funding": Decimal(123000),
-        "mya_support_cost": Decimal(23000),
-        "mya_phase_out_co2_eq_t": Decimal(948),
-        "mya_phase_out_odp_t": Decimal(23),
-        "mya_phase_out_mt": Decimal(12),
         "total_number_of_technicians_trained": 32,
         "number_of_female_technicians_trained": 12,
         "total_number_of_trainers_trained": 2,
@@ -117,7 +107,6 @@ def setup_project_create(
         "total_number_of_technicians_certified": 3,
         "number_of_female_technicians_certified": 65,
         "number_of_production_lines_assisted": 12,
-        "starting_point": Decimal(543),
         "number_of_training_institutions_newly_assisted": 34,
         "number_of_tools_sets_distributed": 4,
         "total_number_of_customs_officers_trained": 23,
@@ -155,7 +144,6 @@ def setup_project_create(
         "sector": subsector.sectors.first().id,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
-        "targets": Decimal(543),
         "tranche": 2,
         "title": "test title",
         "total_fund": 2340000,
@@ -556,7 +544,6 @@ class TestCreateProjects(BaseTest):
         fields = [
             "ad_hoc_pcr",
             "aggregated_consumption",
-            "baseline",
             "bp_activity",
             "cost_effectiveness",
             "cost_effectiveness_co2",
@@ -568,13 +555,6 @@ class TestCreateProjects(BaseTest):
             "individual_consideration",
             "is_lvc",
             "pcr_waived",
-            "mya_start_date",
-            "mya_end_date",
-            "mya_project_funding",
-            "mya_support_cost",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
             "total_number_of_technicians_trained",
             "number_of_female_technicians_trained",
             "total_number_of_trainers_trained",
@@ -590,7 +570,6 @@ class TestCreateProjects(BaseTest):
             "number_of_enterprises_assisted",
             "number_of_enterprises",
             "number_of_production_lines_assisted",
-            "starting_point",
             "certification_system_for_technicians",
             "operation_of_recovery_and_recycling_scheme",
             "operation_of_reclamation_scheme",
@@ -616,7 +595,6 @@ class TestCreateProjects(BaseTest):
             "project_end_date",
             "project_start_date",
             "support_cost_psc",
-            "targets",
             "tranche",
             "title",
             "total_fund",
@@ -826,17 +804,16 @@ class TestCreateProjects(BaseTest):
         )
         project.meta_project = meta_project
         project.save()
-        meta_project.new_code = get_meta_project_new_code([project])
-        meta_project.code = get_meta_project_code(country_ro, project_cluster_kip)
-        meta_project.save()
 
         # create project and expect a new meta project to be created
         # as the meta project does not have a project with a different status from closed
         self.client.force_authenticate(user=admin_user)
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201, response.data
-        created_meta_project_id = response.data["meta_project"]["id"]
+
         # created a new meta project
+        created_meta_project_id = response.data["meta_project"]["id"]
+        assert response.data["meta_project"]["new_code"] is None
         assert MetaProject.objects.count() == 2
 
         # remove created meta project
@@ -852,40 +829,13 @@ class TestCreateProjects(BaseTest):
         )
         project2.meta_project = meta_project
         project2.save()
-        meta_project.new_code = get_meta_project_new_code([project, project2])
-        meta_project.save()
 
+        # test that a new meta project is still created
         response = self.client.post(self.url, data, format="json")
 
         assert response.status_code == 201, response.data
-        assert MetaProject.objects.count() == 1  # no new meta project created
-        assert (
-            response.data["meta_project"]["id"] == meta_project.id
-        )  # meta project is used now
-
-        # test warning message
-        project3 = ProjectFactory.create(
-            title="Project test 3",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_ongoing_status,
-        )
-        meta_project2 = MetaProjectFactory.create(
-            lead_agency=agency,
-        )
-        project3.meta_project = meta_project2
-        project3.save()
-        meta_project2.new_code = get_meta_project_new_code([project3])
-        meta_project2.code = get_meta_project_code(
-            new_country, project_cluster_kip, new_agency
-        )
-        meta_project2.save()
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201, response.data
-        assert response.data["warnings"] == [
-            "Multiple meta projects found for the same country and cluster. Using the first one found."
-        ]
+        assert MetaProject.objects.count() == 2  # new meta project created
+        assert response.data["meta_project"]["id"] != meta_project.id
 
 
 class TestProjectsV2Update:

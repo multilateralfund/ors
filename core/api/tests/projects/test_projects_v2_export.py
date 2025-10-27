@@ -11,8 +11,8 @@ from rest_framework.response import Response
 
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
-from core.api.views.project_v2_export import get_activity_data_from_instance
-from core.api.views.project_v2_export import get_activity_data_from_json
+from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
+from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp

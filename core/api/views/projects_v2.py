@@ -71,8 +71,9 @@ from core.tasks import (
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
-from core.api.views.project_v2_export import ProjectsV2ProjectExport
-from core.api.views.project_v2_export import ProjectsV2ProjectExportDocx
+from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
+from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
+
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
