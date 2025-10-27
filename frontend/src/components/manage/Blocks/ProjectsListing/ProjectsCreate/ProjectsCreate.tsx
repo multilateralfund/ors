@@ -297,6 +297,11 @@ const ProjectsCreate = ({
           <div className="leading-tight">Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
             !!agencyErrorType ||
+            (postExComUpdate &&
+              !(
+                projIdentifiers.post_excom_meeting &&
+                projIdentifiers.post_excom_decision
+              )) ||
             hasSectionErrors(bpErrors)) && (
             <SectionErrorIndicator errors={[]} />
           )}
