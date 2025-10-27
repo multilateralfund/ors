@@ -380,39 +380,39 @@ const ProjectViewWrapper = () => {
                       className="text-align mb-1 ml-1.5 mt-auto"
                     />
                   )}
+                  {isSubmitModalOpen && (
+                    <SubmitProjectModal
+                      id={id}
+                      isModalOpen={isSubmitModalOpen}
+                      setIsModalOpen={setIsSubmitModalOpen}
+                    />
+                  )}
+                  {isWithdrawModalOpen && (
+                    <ChangeStatusModal
+                      mode="withdraw"
+                      isModalOpen={isWithdrawModalOpen}
+                      setIsModalOpen={setIsWithdrawModalOpen}
+                      onAction={withdrawProject}
+                    />
+                  )}
+                  {isSendToDraftModalOpen && (
+                    <ChangeStatusModal
+                      mode="sendToDraft"
+                      isModalOpen={isSendToDraftModalOpen}
+                      setIsModalOpen={setIsSendToDraftModalOpen}
+                      onAction={sendProjectBackToDraft}
+                    />
+                  )}
+                  {isTrancheWarningOpen && (
+                    <SubmitTranchesWarningModal
+                      {...{
+                        isTrancheWarningOpen,
+                        setIsTrancheWarningOpen,
+                        setIsSubmitModalOpen,
+                      }}
+                    />
+                  )}
                 </div>
-              )}
-              {isSubmitModalOpen && (
-                <SubmitProjectModal
-                  id={id}
-                  isModalOpen={isSubmitModalOpen}
-                  setIsModalOpen={setIsSubmitModalOpen}
-                />
-              )}
-              {isWithdrawModalOpen && (
-                <ChangeStatusModal
-                  mode="withdraw"
-                  isModalOpen={isWithdrawModalOpen}
-                  setIsModalOpen={setIsWithdrawModalOpen}
-                  onAction={withdrawProject}
-                />
-              )}
-              {isSendToDraftModalOpen && (
-                <ChangeStatusModal
-                  mode="sendToDraft"
-                  isModalOpen={isSendToDraftModalOpen}
-                  setIsModalOpen={setIsSendToDraftModalOpen}
-                  onAction={sendProjectBackToDraft}
-                />
-              )}
-              {isTrancheWarningOpen && (
-                <SubmitTranchesWarningModal
-                  {...{
-                    isTrancheWarningOpen,
-                    setIsTrancheWarningOpen,
-                    setIsSubmitModalOpen,
-                  }}
-                />
               )}
             </div>
             <ProjectStatusInfo project={data} />

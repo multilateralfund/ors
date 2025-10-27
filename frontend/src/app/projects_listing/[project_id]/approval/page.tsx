@@ -8,7 +8,7 @@ import usePageTitle from '@ors/hooks/usePageTitle'
 import { Redirect, useParams } from 'wouter'
 
 export default function ProjectsApprovalUpdatePage() {
-  usePageTitle('Approval project')
+  usePageTitle('Project approval')
 
   const { project_id } = useParams<Record<string, string>>()
   const { canApproveProjects } = useContext(PermissionsContext)
