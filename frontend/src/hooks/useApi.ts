@@ -1,7 +1,14 @@
 import type { IApi } from '@ors/helpers/Api/types'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
-import { Dispatch, SetStateAction, useEffect, useId, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useId,
+  useState,
+} from 'react'
 
 import { produce } from 'immer'
 import { isFunction } from 'lodash'
@@ -65,16 +72,19 @@ export default function useApi<DT = DataType>(
     setLoaded(true)
   }
 
-  function setParams(params: Record<string, any>) {
-    setApiSettings(
-      produce((apiSettings) => {
-        apiSettings.options.params = {
-          ...apiSettings.options.params,
-          ...params,
-        }
-      }),
-    )
-  }
+  const setParams = useCallback(
+    (params: Record<string, any>) => {
+      setApiSettings(
+        produce((apiSettings) => {
+          apiSettings.options.params = {
+            ...apiSettings.options.params,
+            ...params,
+          }
+        }),
+      )
+    },
+    [setApiSettings],
+  )
 
   useEffect(() => {
     debounce(

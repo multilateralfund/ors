@@ -28,8 +28,8 @@ const SummaryOfProjectsFilters = (props: {
   const meetings = useMeetingOptions()
 
   const submissionStatusOptions = [
-    { name: 'Recommended', value: 'recommended' },
-    { name: 'Approved', value: 'approved' },
+    { label: 'Recommended', value: 'recommended' },
+    { label: 'Approved', value: 'approved' },
   ]
 
   return (
@@ -45,10 +45,17 @@ const SummaryOfProjectsFilters = (props: {
                 ?.label ?? ''
             }
             options={meetings}
+            withClear={true}
             onChange={(value: string) => {
               setRequestParams((prev) => ({
                 ...prev,
                 meeting_id: value ?? '',
+              }))
+            }}
+            onClear={() => {
+              setRequestParams((prev) => ({
+                ...prev,
+                meeting_id: '',
               }))
             }}
           />
@@ -61,10 +68,18 @@ const SummaryOfProjectsFilters = (props: {
             value={
               submissionStatusOptions.filter(
                 (o) => o.value === requestParams.submission_status,
-              )[0] ?? ''
+              )[0] ?? null
             }
             widget="autocomplete"
-            getOptionLabel={(option) => option?.name ?? ''}
+            isOptionEqualToValue={(
+              option: (typeof submissionStatusOptions)[0],
+              value: (typeof submissionStatusOptions)[0] | string,
+            ) => {
+              if (typeof value === 'string') {
+                return option.value == value
+              }
+              return option.value === value.value
+            }}
             onChange={(_: any, option: any) => {
               setRequestParams((prev) => ({
                 ...prev,
@@ -76,9 +91,9 @@ const SummaryOfProjectsFilters = (props: {
           />
         </div>
         <div className="flex-col">
-          <Label htmlFor="blanketConsideration">Blanket consideration</Label>
+          <Label htmlFor="blanketApproval">Blanket approval</Label>
           <Checkbox
-            id="blanketConsideration"
+            id="blanketApproval"
             className="p-0"
             checked={requestParams.blanket_consideration}
             onChange={(_, value) =>

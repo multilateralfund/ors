@@ -8,10 +8,7 @@ class SummaryOfProjectsFilter(filters.FilterSet):
     Filter for projects
     """
 
-    meeting_id = filters.BaseInFilter(
-        field_name="meeting",
-        lookup_expr="in",
-    )
+    meeting_id = filters.NumberFilter(field_name="meeting")
 
     submission_status = filters.CharFilter(
         field_name="submission_status__name",
