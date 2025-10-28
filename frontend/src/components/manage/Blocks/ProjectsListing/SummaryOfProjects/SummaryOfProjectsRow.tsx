@@ -4,9 +4,11 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react'
 import {
   ApiFilterOption,
+  ApiSummaryOfProjectsFilters,
   GlobalRequestParams,
   RequestParams,
   RowData,
@@ -50,6 +52,7 @@ const FilterField = (props: {
           options.filter((option) => option.id === parseInt(value, 10))[0] ??
           null
         }
+        withDisabledOptions={true}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const castValue = value as ApiFilterOption | null
@@ -69,8 +72,12 @@ type SummaryOfProjectsRowProps = {
 
 const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
   const { rowData, setRowData, globalRequestParams } = props
-
+  const initialRowFiltersRef = useRef<ApiSummaryOfProjectsFilters | null>(null)
   const { rowFilters, setRowFiltersParams } = useRowFilters(globalRequestParams)
+
+  if (initialRowFiltersRef.current === null && rowFilters) {
+    initialRowFiltersRef.current = rowFilters
+  }
 
   const { params: rowApiParams } = rowData
 
@@ -117,6 +124,25 @@ const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
     [summaryOfProjectsSetParams, summaryOfProjectsSetApiSettings, setRowData],
   )
 
+  const getRowFilterOptions = useCallback(
+    (name: keyof ApiSummaryOfProjectsFilters) => {
+      const initial = initialRowFiltersRef.current?.[name] ?? []
+      const currentIds = (rowFilters?.[name] ?? []).map((v) => v.id)
+      return initial
+        .map((o) => ({ ...o, disabled: !currentIds.includes(o.id) }))
+        .sort((a, b) => {
+          if (a.disabled && b.disabled) {
+            return 0
+          } else if (a.disabled) {
+            return 1
+          } else {
+            return -1
+          }
+        })
+    },
+    [rowFilters],
+  )
+
   const updateText: ChangeEventHandler<HTMLTextAreaElement> = (evt) => {
     setRowData((prevRowData) => ({
       ...prevRowData,
@@ -139,37 +165,37 @@ const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
           <div className="flex w-[20rem] flex-col gap-2">
             <FilterField
               label="Country"
-              options={rowFilters.country}
+              options={getRowFilterOptions('country')}
               onChange={handleFilterChanged('country_id')}
               value={rowData.params.country_id}
             />
             <FilterField
               label="Cluster"
-              options={rowFilters.cluster}
+              options={getRowFilterOptions('cluster')}
               onChange={handleFilterChanged('cluster_id')}
               value={rowData.params.cluster_id}
             />
             <FilterField
               label="Type"
-              options={rowFilters.project_type}
+              options={getRowFilterOptions('project_type')}
               onChange={handleFilterChanged('project_type_id')}
               value={rowData.params.project_type_id}
             />
             <FilterField
               label="Sector"
-              options={rowFilters.sector}
+              options={getRowFilterOptions('sector')}
               onChange={handleFilterChanged('sector_id')}
               value={rowData.params.sector_id}
             />
             <FilterField
               label="Agency"
-              options={rowFilters.agency}
+              options={getRowFilterOptions('agency')}
               onChange={handleFilterChanged('agency_id')}
               value={rowData.params.agency_id}
             />
             <FilterField
               label="Tranche"
-              options={rowFilters.tranche}
+              options={getRowFilterOptions('tranche')}
               onChange={handleFilterChanged('tranche')}
               value={rowData.params.tranche}
             />
