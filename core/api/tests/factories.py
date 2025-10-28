@@ -498,6 +498,7 @@ class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
     agency = factory.SubFactory(AgencyFactory)
     status = AnnualAgencyProjectReport.SubmissionStatus.DRAFT
     created_by = factory.SubFactory(UserFactory)
+    is_unlocked = factory.Faker("pybool")
     submitted_by = None
 
 

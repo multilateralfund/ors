@@ -1416,7 +1416,7 @@ def apr_year():
 
 @pytest.fixture
 def annual_progress_report(apr_year):
-    return AnnualProgressReportFactory(year=apr_year)
+    return AnnualProgressReportFactory(year=apr_year, endorsed=False)
 
 
 @pytest.fixture
@@ -1424,6 +1424,7 @@ def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
     return AnnualAgencyProjectReportFactory(
         progress_report=annual_progress_report,
         agency=agency,
+        is_unlocked=False,
         created_by=agency_viewer_user,
     )
 

@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from core.models import Project, Agency
+from core.models import Project, Agency, Country, AnnualAgencyProjectReport
 
 
 class APRProjectFilter(filters.FilterSet):
@@ -29,3 +29,37 @@ class APRProjectFilter(filters.FilterSet):
         status_codes = list(set(status_codes) | mandatory_statuses)
 
         return queryset.filter(status__code__in=status_codes)
+
+
+class APRGlobalFilter(filters.FilterSet):
+    """
+    Filters for the MLFS "global" list view.
+    """
+
+    agency = filters.ModelMultipleChoiceFilter(
+        queryset=Agency.objects.all(),
+        field_name="agency",
+    )
+
+    region = filters.ModelMultipleChoiceFilter(
+        queryset=Country.objects.filter(location_type=Country.LocationType.REGION),
+        field_name="project_reports__project__country__parent",
+        distinct=True,
+    )
+
+    country = filters.ModelMultipleChoiceFilter(
+        queryset=Country.objects.filter(location_type=Country.LocationType.COUNTRY),
+        field_name="project_reports__project__country",
+        distinct=True,
+    )
+
+    status = filters.MultipleChoiceFilter(
+        choices=AnnualAgencyProjectReport.SubmissionStatus.choices,
+        field_name="status",
+    )
+
+    class Meta:
+        model = AnnualAgencyProjectReport
+        fields = ["agency", "region", "country", "status"]
+
+    # TODO: should probably implement a similar filter_by_status here as well

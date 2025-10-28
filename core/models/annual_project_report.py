@@ -61,6 +61,10 @@ class AnnualAgencyProjectReport(models.Model):
         choices=SubmissionStatus.choices,
         verbose_name="Submission status",
     )
+    is_unlocked = models.BooleanField(
+        default=False,
+        help_text="When True, agency can edit even when status is SUBMITTED",
+    )
 
     # Audit fields
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -90,7 +94,16 @@ class AnnualAgencyProjectReport(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.agency.name} Project Report {self.progress_report.year} ({self.get_status_display()})"
+        return (
+            f"{self.agency.name} Project Report {self.progress_report.year} "
+            f"({self.get_status_display()})"
+        )
+
+    def is_editable_by_agency(self):
+        return self.status == self.SubmissionStatus.DRAFT or self.is_unlocked
+
+    def is_endorsed(self):
+        return self.progress_report.endorsed
 
 
 class AnnualProjectReportFile(models.Model):

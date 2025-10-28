@@ -1,9 +1,12 @@
+from datetime import datetime, timezone
+
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView, DestroyAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import (
@@ -13,8 +16,13 @@ from core.models import (
     AnnualProjectReportFile,
     Project,
 )
-from core.api.filters.annual_project_reports import APRProjectFilter
-from core.api.permissions import HasAPRViewAccess, HasAPREditAccess, HasAPRSubmitAccess
+from core.api.filters.annual_project_reports import APRProjectFilter, APRGlobalFilter
+from core.api.permissions import (
+    HasAPRViewAccess,
+    HasAPREditAccess,
+    HasAPRSubmitAccess,
+    HasMLFSFullAccess,
+)
 from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
     AnnualAgencyProjectReportReadSerializer,
@@ -443,4 +451,126 @@ class APRSummaryTablesView(APIView):
                 "year": year,
             },
             status=status.HTTP_501_NOT_IMPLEMENTED,
+        )
+
+
+class APRGlobalListView(ListAPIView):
+    """
+    List all agency reports for MLFS users.
+    Only showing them submitted reports for now.
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
+    serializer_class = AnnualAgencyProjectReportReadSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = APRGlobalFilter
+
+    def get_queryset(self):
+        year = self.kwargs["year"]
+
+        queryset = (
+            AnnualAgencyProjectReport.objects.filter(
+                progress_report__year=year,
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            )
+            .select_related(
+                "progress_report",
+                "agency",
+                "created_by",
+                "submitted_by",
+            )
+            .prefetch_related(
+                "project_reports",
+                "project_reports__project",
+                "project_reports__project__country",
+                "project_reports__project__sector",
+                "files",
+            )
+            .order_by("agency__name")
+        )
+        return queryset
+
+
+class APRToggleLockView(APIView):
+    """
+    Toggle lock/unlock for a submitted agency report.
+    Request body should contain: {"is_unlocked": true} or {"is_unlocked": false}
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+
+    def post(self, request, year, agency_id):
+        agency_report = get_object_or_404(
+            AnnualAgencyProjectReport.objects.select_related("progress_report"),
+            progress_report__year=year,
+            agency_id=agency_id,
+        )
+
+        # Only submitted and not endorsed reports can be locked or unlocked
+        if agency_report.is_endorsed():
+            raise ValidationError("Cannot modify locked status of endorsed reports.")
+        if agency_report.status != AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED:
+            raise ValidationError("Can only lock/unlock SUBMITTED reports.")
+
+        is_unlocked = request.data.get("is_unlocked")
+        if is_unlocked is None:
+            raise ValidationError("Field 'is_unlocked' is required (true or false).")
+
+        agency_report.is_unlocked = bool(is_unlocked)
+        agency_report.save(update_fields=["is_unlocked", "updated_at"])
+
+        action = "unlocked" if is_unlocked else "locked"
+        return Response(
+            {
+                "message": f"Report {action} successfully.",
+                "is_unlocked": agency_report.is_unlocked,
+                "status": agency_report.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class APREndorseView(APIView):
+    """
+    Endorse the Annual Progress Report for a specific year.
+    This marks *all* agency reports for that year as final and locked.
+    As a prerequisites, all agency reports must be SUBMITTED.
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+
+    def post(self, request, year):
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
+
+        # Check if already endorsed
+        if progress_report.endorsed:
+            raise ValidationError(f"APR for year {year} is already endorsed.")
+
+        # Check that all agency reports are SUBMITTED
+        agency_reports = progress_report.agency_reports.all()
+        draft_reports = agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        )
+        if draft_reports.exists():
+            draft_agencies = [ar.agency.name for ar in draft_reports]
+            raise ValidationError(
+                "Cannot endorse APR. The following agencies have DRAFT reports: "
+                f"draft_agencies: {draft_agencies}"
+            )
+
+        # Endorse the progress report
+        progress_report.endorsed = True
+        progress_report.endorsed_at = datetime.now(timezone.utc)
+        progress_report.endorsed_by = request.user
+        progress_report.save(update_fields=["endorsed", "endorsed_at", "endorsed_by"])
+
+        return Response(
+            {
+                "message": f"APR for year {year} has been endorsed successfully.",
+                "year": year,
+                "endorsed_at": progress_report.endorsed_at,
+                "endorsed_by": request.user.username,
+                "total_agencies": agency_reports.count(),
+            },
+            status=status.HTTP_200_OK,
         )

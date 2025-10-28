@@ -293,6 +293,12 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
         source="submitted_by.username", read_only=True, allow_null=True
     )
 
+    is_unlocked = serializers.BooleanField(read_only=True)
+    is_endorsed = serializers.SerializerMethodField(read_only=True)
+    endorsed_at = serializers.DateTimeField(
+        source="progress_report.endorsed_at", read_only=True
+    )
+
     class Meta:
         model = AnnualAgencyProjectReport
         fields = [
@@ -302,6 +308,9 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
             "agency",
             "agency_id",
             "status",
+            "is_unlocked",
+            "is_endorsed",
+            "endorsed_at",
             "project_reports",
             "files",
             # Statistics
@@ -334,6 +343,9 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
     def get_total_projects(self, obj):
         """Total number of projects in this agency report."""
         return obj.project_reports.count()
+
+    def get_is_endorsed(self, obj):
+        return obj.is_endorsed()
 
 
 class AnnualProgressReportSerializer(serializers.ModelSerializer):
