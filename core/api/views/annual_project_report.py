@@ -344,9 +344,11 @@ class APRStatusView(APIView):
                     "message": "Report submitted successfully.",
                     "status": agency_report.status,
                     "submitted_at": agency_report.submitted_at,
-                    "submitted_by": agency_report.submitted_by.username
-                    if agency_report.submitted_by
-                    else None,
+                    "submitted_by": (
+                        agency_report.submitted_by.username
+                        if agency_report.submitted_by
+                        else None
+                    ),
                 },
                 status=status.HTTP_200_OK,
             )
