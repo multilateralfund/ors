@@ -4,7 +4,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
-import { NavigationButton } from '../HelperComponents'
+import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canEditField, canViewField } from '../utils'
 import {
@@ -119,26 +119,32 @@ const ProjectApprovalFields = ({
           </div>
         )}
         {canViewField(viewableFields, 'decision') && (
-          <div className="w-[16rem]">
+          <div>
             <Label>{tableColumns.decision}</Label>
-            <Field<any>
-              widget="autocomplete"
-              options={decisionOptions}
-              disabled={!canEditField(editableFields, 'decision')}
-              value={crtSectionData.decision ?? null}
-              onChange={(_, value) =>
-                handleChangeDecision(value as DecisionOption)
-              }
-              getOptionLabel={(option) => {
-                return getOptionLabel(decisionOptions, option, 'value')
-              }}
-              {...{
-                ...defaultProps,
-                FieldProps: {
-                  className: defaultProps.FieldProps.className + ' w-[16rem]',
-                },
-              }}
-            />
+            <div className="flex items-center">
+              <div className="w-[16rem]">
+                <Field<any>
+                  widget="autocomplete"
+                  options={decisionOptions}
+                  disabled={!canEditField(editableFields, 'decision')}
+                  value={crtSectionData.decision ?? null}
+                  onChange={(_, value) =>
+                    handleChangeDecision(value as DecisionOption)
+                  }
+                  getOptionLabel={(option) => {
+                    return getOptionLabel(decisionOptions, option, 'value')
+                  }}
+                  {...{
+                    ...defaultProps,
+                    FieldProps: {
+                      className:
+                        defaultProps.FieldProps.className + ' w-[16rem]',
+                    },
+                  }}
+                />
+              </div>
+              <FieldErrorIndicator errors={errors} field="Decision" />
+            </div>
           </div>
         )}
         {sectionFields
