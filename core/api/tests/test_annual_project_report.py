@@ -301,10 +301,47 @@ class TestAPRBulkUpdateView(BaseTest):
     def test_bulk_update_submitted_reports(
         self,
         agency_inputter_user,
+        mlfs_admin_user,
         annual_agency_report,
         annual_project_report,
     ):
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
+        annual_agency_report.save()
+
+        update_data = {
+            "project_reports": [
+                {
+                    "project_code": annual_project_report.project.code,
+                    "funds_disbursed": 50000.0,
+                }
+            ]
+        }
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+
+        # Agency users should not be able to update, but mlfs ones should
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(url, update_data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.post(url, update_data, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 1
+
+    def test_bulk_update_unlocked_reports(
+        self,
+        agency_inputter_user,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
+        annual_agency_report.is_unlocked = True
         annual_agency_report.save()
 
         self.client.force_authenticate(user=agency_inputter_user)
@@ -326,6 +363,41 @@ class TestAPRBulkUpdateView(BaseTest):
         )
         response = self.client.post(url, update_data, format="json")
 
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 1
+
+    def test_bulk_update_endorsed_reports(
+        self,
+        agency_inputter_user,
+        mlfs_admin_user,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        annual_agency_report.progress_report.endorsed = True
+        annual_agency_report.progress_report.save()
+
+        update_data = {
+            "project_reports": [
+                {
+                    "project_code": annual_project_report.project.code,
+                    "funds_disbursed": 50000.0,
+                }
+            ]
+        }
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(url, update_data, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.post(url, update_data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_bulk_update_duplicate_codes(
@@ -505,7 +577,7 @@ class TestAPRFileUploadView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_upload_submitted_report(self, agency_inputter_user, annual_agency_report):
-        # TODO: hummmmm?
+        # TODO: we need to understand whether the same rule applies as for data
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
         annual_agency_report.save()
 
@@ -529,8 +601,7 @@ class TestAPRFileUploadView(BaseTest):
     def test_upload_file_replaces_existing_annual_report(
         self, agency_inputter_user, annual_agency_report
     ):
-        # TODO: I may have misunderstood this requirement here?!
-        # Add "existing" file to the annual agency report
+        # First add "existing" file to the annual agency report
         old_file = AnnualProjectReportFileFactory(
             report=annual_agency_report,
             file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
@@ -567,3 +638,30 @@ class TestAPRFileUploadView(BaseTest):
             == 1
         )
         assert not AnnualProjectReportFile.objects.filter(id=old_file.id).exists()
+
+    def test_upload_unlocked_report(self, agency_inputter_user, annual_agency_report):
+        annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
+        annual_agency_report.is_unlocked = True
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=agency_inputter_user)
+
+        test_file = SimpleUploadedFile(
+            "test.pdf", b"content", content_type="application/pdf"
+        )
+        data = {
+            "file": test_file,
+            "file_name": "Test Report",
+            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+        }
+        url = reverse(
+            "apr-upload",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["message"] == "File uploaded successfully."

@@ -261,9 +261,6 @@ class HasAPREditAccess(permissions.BasePermission):
         else:
             agency_report = obj
 
-        if agency_report.is_endorsed():
-            return False
-
         if request.user.has_perm("core.can_view_all_agencies"):
             return True
 
@@ -299,9 +296,6 @@ class HasAPRSubmitAccess(permissions.BasePermission):
             agency_report = obj.report
         else:
             agency_report = obj
-
-        if agency_report.is_endorsed():
-            return False
 
         # TODO: we should let MLFS users submit, right?
         if request.user.has_perm("core.can_view_all_agencies"):
