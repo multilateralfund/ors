@@ -971,13 +971,3 @@ export const formatFieldsHistory = (
             : 'No'
           : historyItem.value,
   }))
-
-export const getIndividualConsiderationOpts = () => {
-  const options = ['Blanket consideration', 'Individual consideration', 'N/A']
-
-  return map(options, (option, index) => ({
-    id: index === 0 ? 'Blanket' : option,
-    value: option,
-    name: option,
-  }))
-}
