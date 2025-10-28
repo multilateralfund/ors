@@ -34,7 +34,7 @@ const defaultProps = {
 }
 const FilterField = (props: {
   label: string
-  options: ApiFilterOption[]
+  options: ({ disabled?: boolean } & ApiFilterOption)[]
   onChange: (value: string) => void
   value: any
 }) => {

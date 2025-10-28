@@ -2,6 +2,7 @@
 
 import datetime
 import io
+from itertools import chain
 
 import docx
 from django.http import FileResponse
@@ -10,9 +11,9 @@ from docx.oxml import CT_Tbl
 from docx.table import Table
 
 from core.api.export import TEMPLATE_DIR
+from core.api.export.single_project_v2.docx_headers import get_headers_metaproject
 from core.api.export.single_project_v2.helpers import format_dollar_value
 from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
-from core.api.export.single_project_v2.docx_headers import get_headers_metaproject
 from core.api.export.single_project_v2.xlsx_headers import (
     get_headers_specific_information,
 )
@@ -49,19 +50,21 @@ class ProjectsV2ProjectExportDocx:
         with self.template_path.open("rb") as tpl:
             self.doc = docx.Document(tpl)
 
-    def find_table(self, after_p_text=""):
+    def find_table(self, after_p_text="", exclude_from_cleanup=False):
         found = None
         found_p = None
 
+        after_p_text = after_p_text.strip().lower()
+
         if after_p_text:
             for e in self.doc.element.body:
-                if isinstance(e, CT_P) and after_p_text in e.text.strip():
+                if isinstance(e, CT_P) and after_p_text == e.text.strip().lower():
                     found_p = e
                 elif isinstance(e, CT_Tbl) and found_p:
                     found = Table(e, self.doc)
                     break
 
-        if found and found_p:
+        if found and found_p and not exclude_from_cleanup:
             self._known_tables.append((found_p, found))
 
         return found
@@ -91,6 +94,25 @@ class ProjectsV2ProjectExportDocx:
             p._element.getparent().remove(p._element)
 
     def build_front_page(self, data):
+
+        # check footers
+        for section in self.doc.sections:
+            footer_paragraphs = chain(
+                section.first_page_footer.paragraphs,
+                section.even_page_footer.paragraphs,
+                section.footer.paragraphs,
+            )
+            for p in footer_paragraphs:
+                if p.text.startswith("Generated on"):
+                    now = datetime.datetime.now(datetime.UTC).strftime("%d/%m/%Y")
+                    user = self.user.get_full_name() or self.user.username
+                    agency = self.user.agency.name if self.user.agency else ""
+                    p.text = f"Generated on {now} by {user}" + (
+                        'of "{agency}"' if agency else ""
+                    )
+                    p.runs[0].italic = True
+
+        # check paragraphs
         for p in self.doc.paragraphs:
             p_style = {
                 "italic": False,
@@ -102,29 +124,34 @@ class ProjectsV2ProjectExportDocx:
                 for k in p_style:
                     p_style[k] = getattr(p.runs[0], k, False)
 
-            if p.text.startswith("Generated on"):
-                now = datetime.datetime.utcnow().strftime("%d/%m/%Y")
-                user = self.user.get_full_name() or self.user.username
-                agency = self.user.agency.name if self.user.agency else ""
-                p.text = f"Generated on {now} by {user}" + (
-                    'of "{agency}"' if agency else ""
-                )
-            elif p.text.startswith("Project Title"):
+            if p.text.startswith("Project Title"):
                 p.text = self.project.title
             elif p.text.startswith("Country:"):
-                p.text = f"{p.text} {data['country']}"
+                p.add_run(data.get("country", ""), None)
             elif p.text.startswith("Agency:"):
-                p.text = f"{p.text} {data['agency']}"
+                p.add_run(data.get("agency", ""), None)
             elif p.text.startswith("Cluster:"):
-                p.text = f"{p.text} {data['cluster']['name']}"
+                p.add_run(data.get("cluster", {}).get("name", ""), None)
             elif p.text.startswith("Amount:"):
-                p.text = f"{p.text} {data['total_fund']}"
-            elif p.text.startswith("Project Description:"):
-                p.text = f"{p.text} {data['description']}"
+                p.add_run(format_dollar_value(data.get("total_fund", "")), None)
+            elif p.text.startswith("Code:"):
+                p.add_run(data.get("code", ""), None)
+            elif p.text.startswith("Metacode:"):
+                metacode_from_meta_project = data.get("meta_project", {}).get(
+                    "new_code", ""
+                )
+                metacode = data.get("metacode", "")
+                p.add_run(metacode if metacode else metacode_from_meta_project, None)
 
             if p.runs:
                 for k, v in p_style.items():
                     setattr(p.runs[0], k, v)
+
+        description_table = self.find_table(
+            "Project Description:", exclude_from_cleanup=True
+        )
+        if description_table:
+            description_table.cell(0, 0).text = data.get("description", "")
 
     def _write_header_to_table(self, headers, table, data):
         for header in headers:
@@ -167,20 +194,19 @@ class ProjectsV2ProjectExportDocx:
                 planned_headers[header["id"]] = header
 
         for field_id, header in planned_headers.items():
+            actual_id = actual_headers.get(field_id, {}).get("id")
             row = table.add_row()
             row_data = [
                 project.code,
                 header["headerName"],
-                data[field_id],
-                data[actual_headers[field_id]["id"]],
+                data.get(field_id, ""),
+                data.get(actual_id) if actual_id else "",
             ]
             for c_idx, cell in enumerate(row.cells):
                 cell.text = str(row_data[c_idx] or "")
 
     def build_related_tranches(self):
-        table = self.find_table(
-            "Related tranches (metacode and linked projects) Only MYA"
-        )
+        table = self.find_table("Related tranches (metacode and linked projects)")
         if table:
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
@@ -293,7 +319,7 @@ class ProjectsV2ProjectExportDocx:
             metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
 
         self._write_metaproject_fields(
-            table=self.find_table("MYA (if applicable only new MYA)"),
+            table=self.find_table("MYA"),
             data=metaproject_data,
         )
 
