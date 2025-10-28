@@ -10,9 +10,13 @@ import { IoAlertCircle } from 'react-icons/io5'
 export default function SectionErrorIndicator({
   className,
   errors,
+  withExplanatoryText = true,
+  iconClassName,
 }: {
   className?: string
   errors: IGlobalValidationResult[]
+  withExplanatoryText?: boolean
+  iconClassName?: string
 }) {
   const [showTooltip, setShowTooltip] = useState(false)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
@@ -31,7 +35,7 @@ export default function SectionErrorIndicator({
         }}
       >
         <IoAlertCircle
-          className="mb-0.5 rounded-full bg-[#002A3C]"
+          className={cx('mb-0.5 rounded-full bg-[#002A3C]', iconClassName)}
           color="#EBFF00"
         />
       </div>
@@ -57,9 +61,11 @@ export default function SectionErrorIndicator({
         disableRestoreFocus
       >
         <div className="bg-mlfs-bannerColor">
-          <div className="border-0 border-b border-solid border-gray-300 px-2 py-2">
-            This section contains incomplete or invalid data.
-          </div>
+          {withExplanatoryText && (
+            <div className="border-0 border-b border-solid border-gray-300 px-2 py-2">
+              This section contains incomplete or invalid data.
+            </div>
+          )}
           {errors.map((err, idx) => {
             return (
               <div key={idx} className="px-2 py-2">

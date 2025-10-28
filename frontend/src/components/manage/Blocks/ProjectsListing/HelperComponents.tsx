@@ -1,5 +1,6 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
 import {
@@ -487,3 +488,27 @@ export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
 export const LoadingTab = (
   <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
 )
+
+export const FieldErrorIndicator = ({
+  errors,
+  field,
+}: {
+  errors: any
+  field: string
+}) => {
+  const formattedErrors = map(errors?.[field], (error, index) => ({
+    id: index,
+    message: error,
+  }))
+
+  return (
+    formattedErrors.length > 0 && (
+      <SectionErrorIndicator
+        errors={formattedErrors}
+        withExplanatoryText={false}
+        className="!cursor-default"
+        iconClassName="align-center h-5 w-5 ml-2 !mb-0"
+      />
+    )
+  )
+}
