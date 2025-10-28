@@ -12,6 +12,8 @@ from core.models import (
 )
 from core.api.serializers.agency import AgencySerializer
 
+# pylint: disable=W0223
+
 
 class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     """
@@ -215,7 +217,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         if not obj.project or not obj.project.ods_odp.exists():
             return None
 
-        total = sum([odp.odp or Decimal("0") for odp in obj.project.ods_odp.all()])
+        total = sum(odp.odp or Decimal("0") for odp in obj.project.ods_odp.all())
 
         return float(total) if total > 0 else None
 
@@ -225,7 +227,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             return None
 
         total = sum(
-            [odp.phase_out_mt or Decimal("0") for odp in obj.project.ods_odp.all()]
+            odp.phase_out_mt or Decimal("0") for odp in obj.project.ods_odp.all()
         )
 
         return float(total) if total > 0 else None
@@ -506,7 +508,7 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
                 try:
                     project_report.save()
                     updated_reports.append(project_report)
-                except Exception as e:
+                except Exception as e:  # pylint: disable=broad-exception-caught
                     errors.append({"project_code": project_code, "error": str(e)})
 
         return updated_reports, errors

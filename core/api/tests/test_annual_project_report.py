@@ -18,13 +18,14 @@ from core.api.tests.factories import (
 
 # pylint: disable=W0221,W0613
 
+
 @pytest.mark.django_db
 class TestAPRWorkspaceView(BaseTest):
     def test_without_login(self, apr_year):
         self.client.force_authenticate(user=None)
         url = reverse("apr-workspace", kwargs={"year": apr_year})
         response = self.client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_workspace_creates_agency_report(
         self, agency_viewer_user, apr_year, agency
@@ -490,9 +491,7 @@ class TestAPRFileUploadView(BaseTest):
             report=annual_agency_report
         ).exists()
 
-    def test_upload_file_permissions(
-        self, agency_viewer_user, annual_agency_report
-    ):
+    def test_upload_file_permissions(self, agency_viewer_user, annual_agency_report):
         self.client.force_authenticate(user=agency_viewer_user)
 
         url = reverse(
@@ -506,9 +505,7 @@ class TestAPRFileUploadView(BaseTest):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_upload_submitted_report(
-        self, agency_inputter_user, annual_agency_report
-    ):
+    def test_upload_submitted_report(self, agency_inputter_user, annual_agency_report):
         # TODO: hummmmm?
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
         annual_agency_report.save()
