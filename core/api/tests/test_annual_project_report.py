@@ -16,6 +16,7 @@ from core.api.tests.factories import (
     AnnualProjectReportFileFactory,
 )
 
+# pylint: disable=W0221,W0613
 
 @pytest.mark.django_db
 class TestAPRWorkspaceView(BaseTest):

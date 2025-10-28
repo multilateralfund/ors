@@ -470,28 +470,11 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
 
         return value
 
-    def validate(self, data):
-        """
-        Additional validation at the serializer level.
-        Ensure that all project codes belong to the agency report being updated.
-        This will be checked in the view as well.
-        """
-        return data
-
     def update(self, instance, validated_data):
         """
         Update multiple AnnualProjectReport records.
-
-        Args:
-            instance: AnnualAgencyProjectReport instance
-            validated_data: Dictionary with 'project_reports' list
-
-        Returns:
-            Tuple of (updated_count, errors)
         """
         project_reports_data = validated_data["project_reports"]
-
-        # Build a mapping of project_code -> AnnualProjectReport
         project_reports_map = {}
         for pr in instance.project_reports.select_related("project").all():
             project_reports_map[pr.project.code] = pr
@@ -503,7 +486,6 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
             for pr_data in project_reports_data:
                 project_code = pr_data.pop("project_code")
 
-                # Find the corresponding AnnualProjectReport
                 if project_code not in project_reports_map:
                     errors.append(
                         {
@@ -518,7 +500,6 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
 
                 project_report = project_reports_map[project_code]
 
-                # Update the fields
                 for field, value in pr_data.items():
                     setattr(project_report, field, value)
 
@@ -533,28 +514,27 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
 
 class AnnualProjectReportFileUploadSerializer(serializers.ModelSerializer):
     """
-    Serializer for uploading files to an agency report.
-    Validates file type and size.
+    Serializer for uploading files to an agency report; validates file type
     """
 
     class Meta:
         model = AnnualProjectReportFile
         fields = ["file", "file_name", "file_type"]
 
-    def validate(self, data):
+    def validate(self, attrs):
         """
         Validate file type matches the file extension.
         For ANNUAL_PROGRESS_FINANCIAL_REPORT, only allow PDF/Word.
         """
-        file_type = data.get("file_type")
-        file = data.get("file")
+        file_type = attrs.get("file_type")
+        file = attrs.get("file")
 
         # TODO: I think I need an extra check here
         if (
             file_type
             == AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
         ):
-            # Only allow PDF and Word documents
+            # Only allowing PDF and Word documents
             allowed_extensions = ["pdf", "doc", "docx"]
             file_extension = file.name.lower().split(".")[-1]
 
@@ -569,7 +549,7 @@ class AnnualProjectReportFileUploadSerializer(serializers.ModelSerializer):
                     }
                 )
 
-        return data
+        return attrs
 
     def create(self, validated_data):
         """
@@ -603,10 +583,6 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
     )
 
     def validate_status(self, value):
-        """
-        Validate status transition.
-        Can only transition from DRAFT to SUBMITTED.
-        """
         instance = self.instance
 
         if not instance:
@@ -630,9 +606,6 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
         return value
 
     def update(self, instance, validated_data):
-        """
-        Update the status and set submission metadata.
-        """
         new_status = validated_data["status"]
         instance.status = new_status
 
@@ -643,11 +616,3 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
 
         instance.save()
         return instance
-
-    def validate(self, data):
-        """
-        Additional validation before submission.
-        Could check for required fields, minimum completion, etc.
-        For now, we trust the user.
-        """
-        return data

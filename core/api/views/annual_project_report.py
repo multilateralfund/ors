@@ -75,7 +75,7 @@ class APRWorkspaceView(RetrieveAPIView):
         user = self.request.user
         agency = user.agency
         if not hasattr(user, "agency") or not user.agency:
-            raise ValidationError({"detail": "User is not associated with any agency."})
+            raise ValidationError("User is not associated with any agency.")
 
         year = self.kwargs["year"]
 
@@ -259,14 +259,9 @@ class APRFileUploadView(APIView):
         # Only save if report is in DRAFT status
         # TODO: maybe not OK, need to ask
         if agency_report.status != AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
-            return Response(
-                {
-                    "detail": (
-                        f"Cannot upload files to report with status `{agency_report.status}`. "
-                        "Only DRAFT reports can be edited."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ValidationError(
+                f"Cannot upload files to report with status `{agency_report.status}`. "
+                "Only DRAFT reports can be edited."
             )
 
         serializer = AnnualProjectReportFileUploadSerializer(
@@ -299,21 +294,16 @@ class APRFileDeleteView(DestroyAPIView):
         ).select_related("report")
 
     def perform_destroy(self, instance):
-        # Check object permissions on the report
         # TODO: maybe DELETE - esp. for MLFS - should also work in FINAL state
         self.check_object_permissions(self.request, instance.report)
 
         # Check if report is in DRAFT status
         if instance.report.status != AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
-            return Response(
-                {
-                    "detail": f"Cannot delete files from report with status '{instance.report.status}'. "
-                    "Only DRAFT reports can be edited."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ValidationError(
+                f"Cannot delete files from report with status {instance.report.status}. "
+                "Only DRAFT reports can be edited."
             )
 
-        # Delete the file
         instance.delete()
 
 
