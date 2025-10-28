@@ -469,7 +469,7 @@ export const getCrossCuttingErrors = (
     'project_end_date',
   ]
   const requiredFieldsAfterSubmission =
-    (project?.version ?? 0) > 1
+    project?.submission_status !== 'Draft'
       ? [...requiredFields, 'blanket_or_individual_consideration']
       : requiredFields
 
