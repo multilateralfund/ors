@@ -89,7 +89,6 @@ class TestAPRWorkspaceView(BaseTest):
         response = self.client.get(url, {"status": "COM"})
 
         assert response.status_code == status.HTTP_200_OK
-        # TODO: really should check this requirement
         # Response should also include ONG projects, even if not selected
         assert response.data["total_projects"] == 5
 
@@ -578,7 +577,6 @@ class TestAPRFileUploadView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_upload_submitted_report(self, agency_inputter_user, annual_agency_report):
-        # TODO: we need to understand whether the same rule applies as for data
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
         annual_agency_report.save()
 

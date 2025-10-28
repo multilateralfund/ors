@@ -379,9 +379,6 @@ class APRExportView(APIView):
     def get(self, request, year, agency_id):
         """
         Export APR data to Excel.
-
-        TODO: Implement Excel generation using openpyxl.
-        For now, return placeholder response.
         """
         # Get the agency report
         agency_report = get_object_or_404(
