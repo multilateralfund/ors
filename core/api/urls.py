@@ -137,6 +137,16 @@ from core.api.views.settings import ProjectSettingsView, SettingsView
 from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
+from core.api.views.annual_project_report import (
+    APRWorkspaceView,
+    APRAgencyReportDetailView,
+    APRBulkUpdateView,
+    APRFileUploadView,
+    APRFileDeleteView,
+    APRStatusView,
+    APRExportView,
+    APRSummaryTablesView,
+)
 
 router = routers.SimpleRouter()
 router.register(
@@ -692,6 +702,48 @@ urlpatterns = [
         ConsolidatedInputDataExportView.as_view(),
         name="replenishment-input-data-export",
     ),
+    # Annual Project Reports
+    path(
+        "annual-probject-report/workspace/<int:year>",
+        APRWorkspaceView.as_view(),
+        name="apr-workspace",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/",
+        APRAgencyReportDetailView.as_view(),
+        name="apr-detail",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/export/",
+        APRExportView.as_view(),
+        name="apr-export",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/update/",
+        APRBulkUpdateView.as_view(),
+        name="apr-update",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/upload/",
+        APRFileUploadView.as_view(),
+        name="apr-upload",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",
+        APRFileDeleteView.as_view(),
+        name="apr-file-delete",
+    ),
+    path(
+        "annual-probject-report/<int:year>/agency/<int:agency_id>/status/",
+        APRStatusView.as_view(),
+        name="apr-status",
+    ),
+    path(
+        "annual-probject-report/<int:year>/summary/",
+        APRSummaryTablesView.as_view(),
+        name="apr-summary",
+    ),
+    # User permissions
     path(
         "user/permissions/",
         UserPermissionsView.as_view(),
