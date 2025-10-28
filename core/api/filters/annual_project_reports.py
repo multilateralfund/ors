@@ -12,10 +12,10 @@ class APRProjectFilter(filters.FilterSet):
         model = Project
         fields = ["year", "agency", "status"]
 
-    def filter_by_year(self, queryset, name, value):
+    def filter_by_year(self, queryset, _name, value):
         return queryset.filter(date_approved__year__lt=value)
 
-    def filter_by_status(self, queryset, name, value):
+    def filter_by_status(self, queryset, _name, value):
         """
         Accepts a comma-separated list, defaults to ongoing & completed,
         which are always included.
