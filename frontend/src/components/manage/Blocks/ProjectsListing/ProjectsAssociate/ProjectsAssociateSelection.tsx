@@ -2,6 +2,7 @@
 
 import { useContext, useMemo, useRef } from 'react'
 
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -14,10 +15,11 @@ import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
+import { Typography } from '@mui/material'
 import { flatMap } from 'lodash'
 
 const ProjectsAssociateSelection = ({
-  crtProjects,
+  crtProjects = [],
   projectsAssociation,
   associationIds,
   setAssociationIds,
@@ -114,8 +116,22 @@ const ProjectsAssociateSelection = ({
           )}
         </div>
       </div>
-      <p className="my-0 text-[22px]">Selected project</p>
-      {selectedProjectData}
+      <p className="my-0 text-[22px]">Selected project(s)</p>
+      <div>
+        {selectedProjectData}
+        {crtProjects.length > 1 && (
+          <CustomAlert
+            type="info"
+            alertClassName=" mt-4 px-2 py-0"
+            content={
+              <Typography className="text-lg leading-5">
+                Already associated projects or components will be associated as
+                well.
+              </Typography>
+            }
+          />
+        )}
+      </div>
       <p className="my-0 text-[22px]">Associate with</p>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">

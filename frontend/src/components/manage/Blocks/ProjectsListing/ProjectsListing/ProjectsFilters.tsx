@@ -210,29 +210,31 @@ const ProjectsFilters = ({
       </div>
       {canViewMetainfoProjects && (
         <>
-          <Field
-            Input={{ placeholder: tableColumns.submission_status }}
-            options={getFilterOptions(
-              filters,
-              projectSlice.submission_statuses.data,
-              'submission_status_id',
-            )}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              const submissionStatus = filters.submission_status_id || []
-              const newValue = union(submissionStatus, value)
+          {mode === 'listing' && (
+            <Field
+              Input={{ placeholder: tableColumns.submission_status }}
+              options={getFilterOptions(
+                filters,
+                projectSlice.submission_statuses.data,
+                'submission_status_id',
+              )}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const submissionStatus = filters.submission_status_id || []
+                const newValue = union(submissionStatus, value)
 
-              handleFilterChange({ submission_status_id: newValue })
-              handleParamsChange({
-                submission_status_id: newValue
-                  .map((item: any) => item.id)
-                  .join(','),
-                offset: 0,
-              })
-            }}
-            {...defaultProps}
-            FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
-          />
+                handleFilterChange({ submission_status_id: newValue })
+                handleParamsChange({
+                  submission_status_id: newValue
+                    .map((item: any) => item.id)
+                    .join(','),
+                  offset: 0,
+                })
+              }}
+              {...defaultProps}
+              FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
+            />
+          )}
           <Field
             Input={{ placeholder: tableColumns.project_status }}
             options={getFilterOptions(

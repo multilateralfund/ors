@@ -17,7 +17,6 @@ export const initialParams = {
   project_type_id: [],
   sector_id: [],
   meeting_id: [],
-  submission_status_id: [],
   status_id: [],
   blanket_or_individual_consideration: [],
   search: '',
@@ -77,7 +76,7 @@ const ProjectsFiltersSelectedOpts = ({
     {
       entities: formatEntity(submission_statuses.data),
       entityIdentifier: 'submission_status_id',
-      hasPermissions: canViewMetainfoProjects,
+      hasPermissions: canViewMetainfoProjects && mode === 'listing',
     },
     {
       entities: formatEntity(statuses.data),
@@ -91,6 +90,11 @@ const ProjectsFiltersSelectedOpts = ({
       field: 'name',
     },
   ]
+
+  const currentInitialParams =
+    mode === 'listing'
+      ? { ...initialParams, submission_status_id: [] }
+      : initialParams
 
   const displaySearchTerm = () =>
     !!filters.search && (
@@ -137,8 +141,8 @@ const ProjectsFiltersSelectedOpts = ({
           component="span"
           onClick={() => {
             form.current.search.value = ''
-            handleParamsChange({ offset: 0, ...initialParams })
-            handleFilterChange({ ...initialFilters, ...initialParams })
+            handleParamsChange({ offset: 0, ...currentInitialParams })
+            handleFilterChange({ ...initialFilters, ...currentInitialParams })
           }}
         >
           Clear All
