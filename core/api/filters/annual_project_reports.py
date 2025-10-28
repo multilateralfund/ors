@@ -53,13 +53,27 @@ class APRGlobalFilter(filters.FilterSet):
         distinct=True,
     )
 
-    status = filters.MultipleChoiceFilter(
-        choices=AnnualAgencyProjectReport.SubmissionStatus.choices,
-        field_name="status",
-    )
+    status = filters.CharFilter(method="filter_by_status")
 
     class Meta:
         model = AnnualAgencyProjectReport
         fields = ["agency", "region", "country", "status"]
 
-    # TODO: should probably implement a similar filter_by_status here as well
+    def filter_by_status(self, queryset, _name, value):
+        """
+        Accepts a comma-separated list, defaults to ongoing & completed,
+        which are always included.
+        """
+        if not value:
+            return queryset
+
+        status_codes = [s.strip() for s in value.split(",") if s.strip()]
+        valid_statuses = [
+            choice[0] for choice in AnnualAgencyProjectReport.SubmissionStatus.choices
+        ]
+        status_codes = [s for s in status_codes if s in valid_statuses]
+
+        if not status_codes:
+            return queryset
+
+        return queryset.filter(status__in=status_codes)

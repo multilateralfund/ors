@@ -496,7 +496,9 @@ class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
 
     progress_report = factory.SubFactory(AnnualProgressReportFactory)
     agency = factory.SubFactory(AgencyFactory)
-    status = AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+    status = factory.LazyAttribute(
+        lambda o: AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+    )
     created_by = factory.SubFactory(UserFactory)
     is_unlocked = factory.Faker("pybool")
     submitted_by = None

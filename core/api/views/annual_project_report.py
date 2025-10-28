@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -21,6 +19,7 @@ from core.api.permissions import (
     HasAPRViewAccess,
     HasAPREditAccess,
     HasAPRSubmitAccess,
+    HasMLFSViewAccess,
     HasMLFSFullAccess,
 )
 from core.api.serializers.annual_project_report import (
@@ -466,7 +465,7 @@ class APRGlobalListView(ListAPIView):
     Only showing them submitted reports for now.
     """
 
-    permission_classes = [IsAuthenticated, HasAPRViewAccess]
+    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
     serializer_class = AnnualAgencyProjectReportReadSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = APRGlobalFilter
@@ -477,7 +476,6 @@ class APRGlobalListView(ListAPIView):
         queryset = (
             AnnualAgencyProjectReport.objects.filter(
                 progress_report__year=year,
-                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
             )
             .select_related(
                 "progress_report",
@@ -494,6 +492,14 @@ class APRGlobalListView(ListAPIView):
             )
             .order_by("agency__name")
         )
+
+        # TODO: did I understand correctly, or should all users only see sumibtted?
+        user = self.request.user
+        if not user.has_perm("core.has_apr_edit_access"):
+            queryset = queryset.filter(
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            )
+
         return queryset
 
 
@@ -553,7 +559,7 @@ class APREndorseView(APIView):
             raise ValidationError(f"APR for year {year} is already endorsed.")
 
         # Check that all agency reports are SUBMITTED
-        agency_reports = progress_report.agency_reports.all()
+        agency_reports = progress_report.agency_project_reports.all()
         draft_reports = agency_reports.filter(
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
         )
@@ -566,16 +572,12 @@ class APREndorseView(APIView):
 
         # Endorse the progress report
         progress_report.endorsed = True
-        progress_report.endorsed_at = datetime.now(timezone.utc)
-        progress_report.endorsed_by = request.user
-        progress_report.save(update_fields=["endorsed", "endorsed_at", "endorsed_by"])
+        progress_report.save(update_fields=["endorsed"])
 
         return Response(
             {
                 "message": f"APR for year {year} has been endorsed successfully.",
                 "year": year,
-                "endorsed_at": progress_report.endorsed_at,
-                "endorsed_by": request.user.username,
                 "total_agencies": agency_reports.count(),
             },
             status=status.HTTP_200_OK,
