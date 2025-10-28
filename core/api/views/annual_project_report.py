@@ -218,18 +218,16 @@ class APRBulkUpdateView(APIView):
         )
         self.check_object_permissions(request, agency_report)
 
-        # Check if report is in DRAFT status
-        # TODO: MLFS should also be able to do this on FINAL reports
-        # TODO: also need to understand what UNLOCKED means - is it a special state
-        if agency_report.status != AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
-            return Response(
-                {
-                    "detail": (
-                        f"Cannot update report with status '{agency_report.status}'. "
-                        "Only DRAFT reports can be edited."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+        # Check if report is editable in its current state by this user
+        if agency_report.is_endorsed():
+            raise ValidationError("Cannot edit endorsed reports.")
+
+        user = request.user
+        is_mlfs = user.has_perm("core.can_view_all_agencies")
+        if not is_mlfs and not agency_report.is_editable_by_agency():
+            raise ValidationError(
+                f"Cannot update report with status '{agency_report.status}'. "
+                "Only DRAFT or unlocked reports can be edited."
             )
 
         serializer = AnnualProjectReportBulkUpdateSerializer(
@@ -264,12 +262,16 @@ class APRFileUploadView(APIView):
         )
         self.check_object_permissions(request, agency_report)
 
-        # Only save if report is in DRAFT status
-        # TODO: maybe not OK, need to ask
-        if agency_report.status != AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
+        user = request.user
+        is_mlfs = user.has_perm("core.can_view_all_agencies")
+
+        if agency_report.is_endorsed():
+            raise ValidationError("Cannot upload files to endorsed reports.")
+
+        if not is_mlfs and not agency_report.is_editable_by_agency():
             raise ValidationError(
                 f"Cannot upload files to report with status `{agency_report.status}`. "
-                "Only DRAFT reports can be edited."
+                "Only DRAFT or unlocked reports can be edited."
             )
 
         serializer = AnnualProjectReportFileUploadSerializer(
@@ -302,11 +304,15 @@ class APRFileDeleteView(DestroyAPIView):
         ).select_related("report")
 
     def perform_destroy(self, instance):
-        # TODO: maybe DELETE - esp. for MLFS - should also work in FINAL state
         self.check_object_permissions(self.request, instance.report)
 
-        # Check if report is in DRAFT status
-        if instance.report.status != AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
+        user = self.request.user
+        is_mlfs = user.has_perm("core.can_view_all_agencies")
+
+        if instance.report.is_endorsed():
+            raise ValidationError("Cannot delete files from endorsed reports.")
+
+        if not is_mlfs and not instance.report.is_editable_by_agency():
             raise ValidationError(
                 f"Cannot delete files from report with status {instance.report.status}. "
                 "Only DRAFT reports can be edited."

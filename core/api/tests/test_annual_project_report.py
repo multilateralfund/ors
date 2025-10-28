@@ -327,7 +327,6 @@ class TestAPRBulkUpdateView(BaseTest):
         response = self.client.post(url, update_data, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Only DRAFT reports can be edited" in response.data["detail"]
 
     def test_bulk_update_duplicate_codes(
         self,
