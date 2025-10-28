@@ -496,13 +496,13 @@ export const FieldErrorIndicator = ({
   errors: any
   field: string
 }) => {
-  const formattedErrors = map(errors[field], (error, index) => ({
+  const formattedErrors = map(errors?.[field], (error, index) => ({
     id: index,
     message: error,
   }))
 
   return (
-    errors[field]?.length > 0 && (
+    formattedErrors.length > 0 && (
       <SectionErrorIndicator
         errors={formattedErrors}
         withExplanatoryText={false}
