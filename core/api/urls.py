@@ -146,6 +146,9 @@ from core.api.views.annual_project_report import (
     APRStatusView,
     APRExportView,
     APRSummaryTablesView,
+    APRGlobalListView,
+    APRToggleLockView,
+    APREndorseView,
 )
 
 router = routers.SimpleRouter()
@@ -704,7 +707,7 @@ urlpatterns = [
     ),
     # Annual Project Reports
     path(
-        "annual-probject-report/workspace/<int:year>",
+        "annual-probject-report/<int:year>/workspace",
         APRWorkspaceView.as_view(),
         name="apr-workspace",
     ),
@@ -742,6 +745,21 @@ urlpatterns = [
         "annual-probject-report/<int:year>/summary/",
         APRSummaryTablesView.as_view(),
         name="apr-summary",
+    ),
+    path(
+        "annual-project-report/<int:year>/mlfs/",
+        APRGlobalListView.as_view(),
+        name="apr-mlfs-list",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",
+        APRToggleLockView.as_view(),
+        name="apr-toggle-lock",
+    ),
+    path(
+        "annual-project-report/<int:year>/endorse/",
+        APREndorseView.as_view(),
+        name="apr-endorse",
     ),
     # User permissions
     path(

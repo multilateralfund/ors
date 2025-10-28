@@ -298,6 +298,9 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
     endorsed_at = serializers.DateTimeField(
         source="progress_report.endorsed_at", read_only=True
     )
+    endorsed_by_username = serializers.CharField(
+        source="progress_report.endorsed_by.username", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = AnnualAgencyProjectReport
@@ -311,6 +314,7 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
             "is_unlocked",
             "is_endorsed",
             "endorsed_at",
+            "endorsed_by_username",
             "project_reports",
             "files",
             # Statistics
