@@ -117,8 +117,8 @@ export const lvcNonLvcOpts = [
 ]
 
 export const considerationOpts = [
-  { name: 'Blanket approval', value: 'blanket', id: 'Blanket' },
-  { name: 'Individual consideration', value: 'individual', id: 'Individual' },
+  { name: 'Blanket approval', id: 'blanket', value: 'Blanket' },
+  { name: 'Individual consideration', id: 'individual', value: 'Individual' },
 ]
 
 export const validationFieldsPairs: [

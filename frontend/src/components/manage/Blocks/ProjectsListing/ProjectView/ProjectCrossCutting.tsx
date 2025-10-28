@@ -41,7 +41,7 @@ const ProjectCrossCutting = ({
   )
 
   const consideration = considerationOpts.find(
-    (opt) => opt.id === project.blanket_or_individual_consideration,
+    (opt) => opt.value === project.blanket_or_individual_consideration,
   )
   const is_lvc = find(lvcNonLvcOpts, {
     id: project.is_lvc,

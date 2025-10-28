@@ -85,9 +85,10 @@ const ProjectsFiltersSelectedOpts = ({
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(considerationOpts),
+      entities: formatEntity(considerationOpts, 'name'),
       entityIdentifier: 'blanket_or_individual_consideration',
       hasPermissions: true,
+      field: 'name',
     },
   ]
 

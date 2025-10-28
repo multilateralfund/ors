@@ -276,7 +276,7 @@ const ProjectsFilters = ({
           handleFilterChange({ blanket_or_individual_consideration: newValue })
           handleParamsChange({
             blanket_or_individual_consideration: newValue
-              .map((item: any) => item.id)
+              .map((item: any) => item.name)
               .join(','),
             offset: 0,
           })

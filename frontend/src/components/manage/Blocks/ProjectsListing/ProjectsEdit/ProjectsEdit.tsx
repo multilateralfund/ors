@@ -254,8 +254,9 @@ const ProjectsEdit = ({
                 (project.submission_status !== 'Draft' || project.version === 2)
                   ? (considerationOpts.find(
                       (opt) =>
-                        opt.id === project.blanket_or_individual_consideration,
-                    )?.value ?? null)
+                        opt.value ===
+                        project.blanket_or_individual_consideration,
+                    )?.id ?? null)
                   : null,
             },
           }

@@ -518,40 +518,54 @@ const ProjectCrossCuttingFields = ({
                 <Label>
                   {tableColumns.blanket_or_individual_consideration}
                 </Label>
-                <Field
-                  widget="autocomplete"
-                  options={considerationOpts}
-                  value={
-                    considerationOpts.find(
-                      (opt) =>
-                        opt.value === blanket_or_individual_consideration,
-                    )?.value ?? null
-                  }
-                  onChange={(_, value) =>
-                    changeHandler['drop_down']<ProjectData, CrossCuttingFields>(
-                      value,
-                      'blanket_or_individual_consideration',
-                      setProjectData,
-                      sectionIdentifier,
-                    )
-                  }
-                  getOptionLabel={(option: any) =>
-                    getOptionLabel(considerationOpts, option)
-                  }
-                  disabled={
-                    isV3Project ||
-                    !canEditField(
-                      editableFields,
-                      'blanket_or_individual_consideration',
-                    )
-                  }
-                  Input={{
-                    error: getIsInputDisabled(
-                      'blanket_or_individual_consideration',
-                    ),
-                  }}
-                  {...defaultProps}
-                />
+                <div className="flex items-center">
+                  <Field
+                    widget="autocomplete"
+                    options={considerationOpts}
+                    value={
+                      considerationOpts.find(
+                        (opt) => opt.id === blanket_or_individual_consideration,
+                      ) ?? null
+                    }
+                    onChange={(_, value) =>
+                      changeHandler['drop_down']<
+                        ProjectData,
+                        CrossCuttingFields
+                      >(
+                        value,
+                        'blanket_or_individual_consideration',
+                        setProjectData,
+                        sectionIdentifier,
+                      )
+                    }
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(considerationOpts, option, 'value')
+                    }
+                    disabled={
+                      isV3Project ||
+                      !canEditField(
+                        editableFields,
+                        'blanket_or_individual_consideration',
+                      )
+                    }
+                    Input={{
+                      error: getIsInputDisabled(
+                        'blanket_or_individual_consideration',
+                      ),
+                    }}
+                    {...{
+                      ...defaultProps,
+                      FieldProps: {
+                        className:
+                          defaultProps.FieldProps.className + ' w-[13.5rem]',
+                      },
+                    }}
+                  />
+                  <FieldErrorIndicator
+                    errors={errors}
+                    field="blanket_or_individual_consideration"
+                  />
+                </div>
               </div>
             )}
           </div>

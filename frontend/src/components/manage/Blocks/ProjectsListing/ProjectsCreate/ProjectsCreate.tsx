@@ -185,10 +185,6 @@ const ProjectsCreate = ({
   )
 
   const { canEditApprovedProjects } = useContext(PermissionsContext)
-  const canEditSubstances =
-    postExComUpdate ||
-    mode === 'copy' ||
-    project?.submission_status !== 'Approved'
   const hasV3EditPermissions =
     !!project && mode === 'edit' && canEditApprovedProjects
   const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
@@ -414,7 +410,6 @@ const ProjectsCreate = ({
             trancheErrors,
             getTrancheErrors,
             setCurrentTab,
-            canEditSubstances,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
