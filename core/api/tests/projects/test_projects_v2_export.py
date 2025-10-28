@@ -1,5 +1,6 @@
 import io
 from http import HTTPStatus
+from itertools import chain
 
 import openpyxl
 import pytest
@@ -44,13 +45,29 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
             project.agency.name,
             project.cluster.name,
             project.total_fund,
-            project.description,
         ]
         if x
     ]
     result = [False for v in to_find]
 
-    for p in doc.paragraphs:
+    paragraphs_to_check = chain(
+        doc.sections[0].first_page_footer.paragraphs,
+        doc.sections[0].even_page_footer.paragraphs,
+        doc.sections[0].footer.paragraphs,
+        doc.paragraphs,
+    )
+
+    found_description = False
+    for t in doc.tables:
+        if len(t.rows) and len(t.columns) == 1:
+            if t.cell(0, 0).text == project.description:
+                found_description = True
+
+    assert (
+        found_description
+    ), f"Could not locate description ({project.description}) in output."
+
+    for p in paragraphs_to_check:
         for i, v in enumerate(to_find):
             if result[i] is False:
                 if v in p.text:
