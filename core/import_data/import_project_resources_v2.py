@@ -351,7 +351,9 @@ def import_project_specific_fields(file_path):
             row["Project type name"] = "Preparation"
         if row["Sector name"].strip() == "Control Submstance Monitoring":
             row["Sector name"] = "Control Substance Monitoring"
-        if row["Sector name"].strip() == "Other Sector":
+        if row["Sector name"].strip() == "Compliance Assistance Program":
+            row["Sector name"] = "Compliance Assistance Programme"
+        if row["Sector name"] == "Other Sector":
             continue
         try:
             cluster_sector_type = ProjectSpecificFields.objects.get(
@@ -468,6 +470,8 @@ def import_cluster_type_sector_links(file_path):
             for sector_name in type_json["sectors"]:
                 if sector_name == "Control Submstance Monitoring":
                     sector_name = "Control Substance Monitoring"
+                if sector_name == "Compliance Assistance Program":
+                    sector_name = "Compliance Assistance Programme"
                 sector = ProjectSector.objects.filter(name=sector_name).first()
                 if not sector:
                     logger.warning(
