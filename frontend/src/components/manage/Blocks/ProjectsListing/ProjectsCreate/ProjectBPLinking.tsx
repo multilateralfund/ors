@@ -53,21 +53,23 @@ const ProjectBPLinking = ({
           label="The proposal is included in a BP"
           control={
             <Checkbox
-              checked={isLinkedToBP || bpData.hasBpData}
-              // onChange={handleChangeBPLink}
+              // checked={bpData.hasBpData}
+              // checked={isLinkedToBP || bpData.hasBpData}
+              checked={isLinkedToBP}
+              onChange={handleChangeBPLink}
               size="small"
               sx={{ color: 'black' }}
             />
           }
           componentsProps={{ typography: { fontSize: '1rem' } }}
         />
-        {/* {isLinkedToBP && ( */}
-        {country && agency && cluster && (
+        {/* {country && agency && cluster && ( */}
+        {isLinkedToBP && (
           <LinkedBPTableWrapper
             {...{ projectData, setProjectData, onBpDataChange, bpData }}
           />
+          // )}
         )}
-        {/* )} */}
       </div>
       <div className="mt-7">
         <NavigationButton

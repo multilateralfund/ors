@@ -24,7 +24,7 @@ const LinkedBPTableWrapper = (
     onBpDataChange: (bpData: BpDataProps) => void
   },
 ) => {
-  const { results: yearRanges, loading } = useGetYearRanges()
+  const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
   const latestEndorsedBpPeriod = find(
@@ -45,7 +45,6 @@ const LinkedBPTableWrapper = (
         {...props}
         period={latestEndorsedBpPeriod}
         yearRanges={yearRanges}
-        loading={loading}
       />
     ) : (
       <p>There is no Endorsed BP</p>
@@ -63,7 +62,6 @@ type LinkedBPTableProps = Omit<
 const LinkedBPTable = ({
   projectData,
   period,
-  loading,
   ...rest
 }: LinkedBPTableProps) => {
   const projIdentifiers = projectData.projIdentifiers
@@ -96,18 +94,19 @@ const LinkedBPTable = ({
     return foundActivities.length > 0 ? foundActivities[0].business_plan : null
   }, [foundActivities])
 
-  useEffect(() => {
-    if (rest.onBpDataChange) {
-      rest.onBpDataChange({
-        hasBpData: bp ? rest.bpData.hasBpData : false,
-        bpDataLoading: loading || loading2,
-      })
-    }
-  }, [bp, loading2])
+  // useEffect(() => {
+  //   if (rest.onBpDataChange) {
+  //     rest.onBpDataChange({
+  //       hasBpData: bp ? rest.bpData.hasBpData : false,
+  //       bpDataLoading: bp ? rest.bpData.bpDataLoading : false,
+  //     })
+  //   }
+  // }, [bp, loading2])
 
   return (
     <>
-      {bp && rest.bpData.hasBpData ? (
+      {bp ? (
+        // {bp && rest.bpData.hasBpData ? (
         <div>
           Business plan {bp.name} {' - '}
           <span>(Meeting: {bp.meeting_number})</span>
@@ -116,18 +115,17 @@ const LinkedBPTable = ({
           ) : null}
         </div>
       ) : null}
-      {bp && (
-        <LatestEndorsedBPActivities
-          {...{
-            projectData,
-            activities,
-            filters,
-            loading,
-            loading2,
-          }}
-          {...rest}
-        />
-      )}
+      {/* {bp && ( */}
+      <LatestEndorsedBPActivities
+        {...{
+          projectData,
+          activities,
+          filters,
+          loading2,
+        }}
+        {...rest}
+      />
+      {/* )} */}
     </>
   )
 }
@@ -140,7 +138,6 @@ type LatestEndorsedBPActivitiesProps = Omit<
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
-  loading: boolean
   loading2?: boolean
 }
 
@@ -156,7 +153,6 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     setProjectData,
     bpData,
     onBpDataChange,
-    loading,
     loading2,
     ...rest
   } = props
@@ -209,27 +205,27 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     if (onBpDataChange) {
       onBpDataChange({
         hasBpData: formattedResults.length > 0,
-        bpDataLoading: loading || !!loading2,
+        bpDataLoading: !!loading2,
       })
     }
-  }, [formattedResults, onBpDataChange, projectData])
+  }, [formattedResults])
 
   const form = useRef<HTMLFormElement>(null)
 
   return (
     <div className="activities flex flex-1 flex-col justify-start gap-6 pt-3">
       <form className="flex flex-col gap-6" ref={form}>
-        {bpData.hasBpData && (
-          <BPTable
-            results={formattedResults}
-            yearRanges={yearRanges}
-            bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
-            setProjectData={setProjectData}
-            isProjectsSection
-            {...rest}
-            {...restActivities}
-          />
-        )}
+        {/* {bpData.hasBpData && ( */}
+        <BPTable
+          results={formattedResults}
+          yearRanges={yearRanges}
+          bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
+          setProjectData={setProjectData}
+          isProjectsSection
+          {...rest}
+          {...restActivities}
+        />
+        {/* )} */}
       </form>
     </div>
   )

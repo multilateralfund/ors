@@ -915,7 +915,7 @@ export const getHistoryItemValue = (value: any, fieldName: string): any => {
   } else if (typeof value === 'boolean') {
     return value ? 'Yes' : 'No'
   } else if (Array.isArray(value)) {
-    return value.map((v) => getHistoryItemValue(v, fieldName)).join(', ')
+    return value.map((v) => getHistoryItemValue(v, fieldName)).join(', ') || '-'
   }
   return value
 }
