@@ -354,5 +354,8 @@ class ProjectsV2ProjectExportDocx:
 
     def export_docx(self):
         self.build_document()
-        filename = self.project.code.replace("/", "_")
+        try:
+            filename = self.project.code.replace("/", "_")
+        except Exception:
+            filename = f"project_{self.project.id}"
         return document_response(self.doc, filename=f"{filename}.docx")

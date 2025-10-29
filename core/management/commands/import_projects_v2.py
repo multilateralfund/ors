@@ -11,6 +11,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
+from core.utils import get_umbrella_code
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,26 @@ def populate_existing_projects_lead_agency():
         project.lead_agency = project.meta_project.lead_agency
     Project.objects.bulk_update(projects_with_meta_project_lead_agency, ["lead_agency"])
     logger.info("✅ Successfully populated lead agency for existing projects.")
+
+
+def populate_existing_meta_projects_umbrella_code():
+    """
+    Populate the umbrella_code field in MetaProject model using the umbrella_code field.
+    This will only be used in development, as all associations should be removed after the association
+    feature is implemented.
+    """
+    logger.info("⏳ Populating umbrella_code for existing meta projects...")
+    meta_projects = MetaProject.objects.filter(
+        umbrella_code__isnull=True
+    ).prefetch_related("projects__country")
+
+    for meta_project in meta_projects:
+        project = meta_project.projects.first()
+        if not project:
+            continue
+        meta_project.umbrella_code = get_umbrella_code(project.country)
+        meta_project.save()
+    logger.info("✅ Successfully populated umbrella_code for existing meta projects.")
 
 
 def populate_existing_projects_production():
@@ -241,6 +262,7 @@ class Command(BaseCommand):
             default="all",
             choices=[
                 "populate_existing_projects_metacode",
+                "populate_existing_meta_projects_umbrella_code",
                 "populate_existing_projects_lead_agency",
                 "populate_existing_projects_category",
                 "populate_existing_projects_production",
@@ -255,6 +277,8 @@ class Command(BaseCommand):
 
         if imp_type == "populate_existing_projects_metacode":
             populate_existing_projects_metacode()
+        if imp_type == "populate_existing_meta_projects_umbrella_code":
+            populate_existing_meta_projects_umbrella_code()
         elif imp_type == "populate_existing_projects_lead_agency":
             populate_existing_projects_lead_agency()
         elif imp_type == "populate_existing_projects_category":

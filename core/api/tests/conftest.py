@@ -752,6 +752,21 @@ def project(
     )
     return project
 
+@pytest.fixture
+def approved_project(project, project_approved_status,):
+    project.submission_status = project_approved_status
+    project.version = 3
+    project.code = get_project_sub_code(
+        project.country,
+        project.cluster,
+        project.agency,
+        project.project_type,
+        project.sector,
+        project.meeting,
+        None,
+    )
+    project.save()
+    return project
 
 @pytest.fixture
 def project2(
@@ -1419,10 +1434,10 @@ def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
 
 
 @pytest.fixture
-def annual_project_report(annual_agency_report, project):
+def annual_project_report(annual_agency_report, approved_project):
     return AnnualProjectReportFactory(
         report=annual_agency_report,
-        project=project,
+        project=approved_project,
     )
 
 

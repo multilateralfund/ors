@@ -25,8 +25,11 @@ pytestmark = pytest.mark.django_db
 
 def validate_docx_export(project: Project, user: User, response: FileResponse):
     assert response.status_code == HTTPStatus.OK
-    project_code = project.code.replace("/", "_")
-    assert response.filename == f"{project_code}.docx"
+    try:
+        file_name = project.code.replace("/", "_")
+    except Exception:
+        file_name = f"project_{project.id}"
+    assert response.filename == f"{file_name}.docx"
     assert (
         response.headers["Content-Type"]
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

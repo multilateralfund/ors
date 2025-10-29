@@ -1183,15 +1183,15 @@ class ProjectV2ViewSet(
         This endpoint can be used to get all projects associated with the meta project.
         """
         project = self.get_object()
-        filters = Q()
+        project_filters = Q()
         if project.meta_project:
-            filters &= Q(meta_project=project.meta_project)
+            project_filters &= Q(meta_project=project.meta_project)
         elif project.component is not None:
-            filters &= Q(component=project.component)
+            project_filters &= Q(component=project.component)
         else:
-            filters &= Q(id=project.id)
+            project_filters &= Q(id=project.id)
 
-        associated_projects = Project.objects.filter(filters)
+        associated_projects = Project.objects.filter(project_filters)
         if (
             request.query_params.get("filter_by_project_status", "false").lower()
             == "true"

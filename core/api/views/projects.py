@@ -46,7 +46,7 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
-from core.api.serializers.meta_project import MetaProjecMyaSerializer
+from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.meta_project import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
@@ -165,7 +165,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     """
 
     permission_classes = [HasProjectV2MyaAccess]
-    serializer_class = MetaProjecMyaSerializer
+    serializer_class = MetaProjectMyaSerializer
     filterset_class = MetaProjectMyaFilter
 
     def get_queryset(self):

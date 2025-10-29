@@ -10,18 +10,13 @@ from core.api.tests.factories import (
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
-    ProjectFactory,
-    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
     SubstanceFactory,
 )
 from core.models import BPActivity
-from core.models.project import MetaProject, Project, ProjectFile
-from core.utils import (
-    get_project_sub_code,
-)
+from core.models.project import Project, ProjectFile
 
 
 pytestmark = pytest.mark.django_db
@@ -858,7 +853,7 @@ class TestProjectsV2Update:
         assert project.title == "Into the Spell"
         assert project.production is True
         # project code is only set on approval
-        assert project.code == None
+        assert project.code is None
 
     # TODO: test ods_odp create/delete
 

@@ -14,12 +14,10 @@ from core.api.serializers.project import (
 from core.api.serializers.project_history import ProjectHistorySerializer
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 
-from core.models.agency import Agency
 from core.models.country import Country
 from core.models.group import Group
 from core.models.meeting import Meeting, Decision
 from core.models.project import (
-    MetaProject,
     Project,
     ProjectComponents,
     ProjectFile,
