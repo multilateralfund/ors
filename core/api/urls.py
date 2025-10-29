@@ -707,42 +707,42 @@ urlpatterns = [
     ),
     # Annual Project Reports
     path(
-        "annual-probject-report/<int:year>/workspace",
+        "annual-project-report/<int:year>/workspace",
         APRWorkspaceView.as_view(),
         name="apr-workspace",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/",
         APRAgencyReportDetailView.as_view(),
         name="apr-detail",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/export/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/export/",
         APRExportView.as_view(),
         name="apr-export",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/update/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
         APRBulkUpdateView.as_view(),
         name="apr-update",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/upload/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/upload/",
         APRFileUploadView.as_view(),
         name="apr-upload",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",
         APRFileDeleteView.as_view(),
         name="apr-file-delete",
     ),
     path(
-        "annual-probject-report/<int:year>/agency/<int:agency_id>/status/",
+        "annual-project-report/<int:year>/agency/<int:agency_id>/status/",
         APRStatusView.as_view(),
         name="apr-status",
     ),
     path(
-        "annual-probject-report/<int:year>/summary/",
+        "annual-project-report/<int:year>/summary/",
         APRSummaryTablesView.as_view(),
         name="apr-summary",
     ),
