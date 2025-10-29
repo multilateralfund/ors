@@ -307,7 +307,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
 const initialRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
-  blanket_or_individual_consideration: null,
+  blanket_or_individual_consideration: '',
 })
 
 const ApprovalSummaryFilters = (props: {
@@ -394,7 +394,7 @@ const ApprovalSummaryFilters = (props: {
             onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_or_individual_consideration: value?.id ?? null,
+                blanket_or_individual_consideration: value?.id ?? '',
               }))
             }
             getOptionLabel={(option: any) => option?.name ?? ''}
