@@ -261,9 +261,6 @@ class HasAPREditAccess(permissions.BasePermission):
         else:
             agency_report = obj
 
-        if agency_report.is_endorsed():
-            return False
-
         if request.user.has_perm("core.can_view_all_agencies"):
             return True
 
@@ -284,24 +281,17 @@ class HasAPREditAccess(permissions.BasePermission):
 
 class HasAPRSubmitAccess(permissions.BasePermission):
     def has_permission(self, request, view):
-        """
-        Check if the user has permission to submit Annual Project Reports.
-        """
-
         return request.user.has_perm("core.has_apr_submit_access")
 
     def has_object_permission(self, request, view, obj):
         """
-        Check if user can submit the agency report.
+        Check if user can submit specific agency report.
         Agency users can only submit their own agency's reports
         """
         if hasattr(obj, "report"):
             agency_report = obj.report
         else:
             agency_report = obj
-
-        if agency_report.is_endorsed():
-            return False
 
         # TODO: we should let MLFS users submit, right?
         if request.user.has_perm("core.can_view_all_agencies"):
@@ -318,6 +308,13 @@ class HasAPRSubmitAccess(permissions.BasePermission):
                 return True
 
         return False
+
+
+class HasMLFSViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "core.has_apr_view_access"
+        ) and request.user.has_perm("core.can_view_all_agencies")
 
 
 class HasMLFSFullAccess(permissions.BasePermission):

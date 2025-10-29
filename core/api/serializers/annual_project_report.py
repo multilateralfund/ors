@@ -295,9 +295,6 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
 
     is_unlocked = serializers.BooleanField(read_only=True)
     is_endorsed = serializers.SerializerMethodField(read_only=True)
-    endorsed_at = serializers.DateTimeField(
-        source="progress_report.endorsed_at", read_only=True
-    )
 
     class Meta:
         model = AnnualAgencyProjectReport
@@ -310,7 +307,6 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
             "status",
             "is_unlocked",
             "is_endorsed",
-            "endorsed_at",
             "project_reports",
             "files",
             # Statistics
@@ -543,7 +539,6 @@ class AnnualProjectReportFileUploadSerializer(serializers.ModelSerializer):
         file_type = attrs.get("file_type")
         file = attrs.get("file")
 
-        # TODO: I think I need an extra check here
         if (
             file_type
             == AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
@@ -604,7 +599,6 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
 
         current_status = instance.status
 
-        # TODO: allow transition back to draft, but only by MLFS
         allowed_transitions = {
             AnnualAgencyProjectReport.SubmissionStatus.DRAFT: [
                 AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
