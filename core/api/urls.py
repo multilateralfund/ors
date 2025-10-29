@@ -137,6 +137,19 @@ from core.api.views.settings import ProjectSettingsView, SettingsView
 from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
+from core.api.views.annual_project_report import (
+    APRWorkspaceView,
+    APRAgencyReportDetailView,
+    APRBulkUpdateView,
+    APRFileUploadView,
+    APRFileDeleteView,
+    APRStatusView,
+    APRExportView,
+    APRSummaryTablesView,
+    APRGlobalListView,
+    APRToggleLockView,
+    APREndorseView,
+)
 
 router = routers.SimpleRouter()
 router.register(
@@ -692,6 +705,63 @@ urlpatterns = [
         ConsolidatedInputDataExportView.as_view(),
         name="replenishment-input-data-export",
     ),
+    # Annual Project Reports
+    path(
+        "annual-project-report/<int:year>/workspace",
+        APRWorkspaceView.as_view(),
+        name="apr-workspace",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/",
+        APRAgencyReportDetailView.as_view(),
+        name="apr-detail",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/export/",
+        APRExportView.as_view(),
+        name="apr-export",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
+        APRBulkUpdateView.as_view(),
+        name="apr-update",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/upload/",
+        APRFileUploadView.as_view(),
+        name="apr-upload",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",
+        APRFileDeleteView.as_view(),
+        name="apr-file-delete",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/status/",
+        APRStatusView.as_view(),
+        name="apr-status",
+    ),
+    path(
+        "annual-project-report/<int:year>/summary/",
+        APRSummaryTablesView.as_view(),
+        name="apr-summary",
+    ),
+    path(
+        "annual-project-report/<int:year>/mlfs/",
+        APRGlobalListView.as_view(),
+        name="apr-mlfs-list",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",
+        APRToggleLockView.as_view(),
+        name="apr-toggle-lock",
+    ),
+    path(
+        "annual-project-report/<int:year>/endorse/",
+        APREndorseView.as_view(),
+        name="apr-endorse",
+    ),
+    # User permissions
     path(
         "user/permissions/",
         UserPermissionsView.as_view(),

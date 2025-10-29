@@ -312,12 +312,36 @@ def import_project_specific_fields(file_path):
     @param file_path = str (file path for import file)
     """
 
-    def _clean_up_field_name(field_name):
+    def _clean_up_field_name(field_name, mya=False):
         """
         Clean up field name
         """
-        if field_name == "Phase out (M t)":
-            return "Phase out (Mt)"
+        mya_clean_up = {
+            "Cost effectiveness (US$/ CO2-ep) (MYA)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Cost effectiveness (US$/ CO2-ep)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Aggregated consumption": "Aggregated consumption (MYA)",
+            "Cost effectiveness (US$/ Kg)": "Cost effectiveness (US$/ Kg) (MYA)",
+            "Number of enterprises assisted": "Number of enterprises assisted (MYA)",
+            "Number of enterprises": "Number of enterprises (MYA)",
+            "Number of Production Lines assisted": "Number of Production Lines assisted (MYA)",
+        }
+
+        individual_field_clean_up = {
+            "Cost effectiveness (US$/ CO2-ep)": "Cost effectiveness (US$/ CO2-eq)",
+            "Cost effectiveness (US$/ CO2-ep) (MYA)": "Cost effectiveness (US$/ CO2-eq)",
+            "Phase out (Mt) (MYA)": "Phase out (Mt)",
+            "Phase out (M t)": "Phase out (Mt)",
+            "Phase out (CO2-eq t) (MYA)": "Phase out (CO2-eq t)",
+            "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq)",
+            "Phase out (ODP t) (MYA)": "Phase out (ODP t)",
+        }
+        if mya:
+            if field_name in mya_clean_up:
+                return mya_clean_up[field_name]
+        else:
+            if field_name in individual_field_clean_up:
+                return individual_field_clean_up[field_name]
         return field_name.strip().replace("  ", " ")
 
     df = pd.read_excel(file_path).fillna("")
@@ -325,7 +349,11 @@ def import_project_specific_fields(file_path):
     for _, row in df.iterrows():
         if row["Project type name"].strip() == "Project preparation":
             row["Project type name"] = "Preparation"
-        if row["Sector name"].strip() == "Other Sector":
+        if row["Sector name"].strip() == "Control Submstance Monitoring":
+            row["Sector name"] = "Control Substance Monitoring"
+        if row["Sector name"].strip() == "Compliance Assistance Program":
+            row["Sector name"] = "Compliance Assistance Programme"
+        if row["Sector name"] == "Other Sector":
             continue
         try:
             cluster_sector_type = ProjectSpecificFields.objects.get(
@@ -374,7 +402,7 @@ def import_project_specific_fields(file_path):
         cluster_sector_type.fields.add(*project_fields)
 
         mya_field_names = [
-            _clean_up_field_name(row[field_index].strip())
+            _clean_up_field_name(row[field_index].strip(), mya=True)
             for field_index in range(49, len(row) - 1)
             if row[field_index] != ""
         ]
@@ -430,13 +458,20 @@ def import_cluster_type_sector_links(file_path):
             )
             continue
         for type_json in cluster_json["types"]:
-            type_obj = ProjectType.objects.filter(name=type_json["type"]).first()
+            type_name = type_json["type"]
+            if type_name == "Project Support":
+                type_name = "Project support"
+            type_obj = ProjectType.objects.filter(name=type_name).first()
             if not type_obj:
                 logger.warning(
-                    f"⚠️ {type_json['type']} type not found => {cluster_json['cluster']} not imported"
+                    f"⚠️ {type_name} type not found => {cluster_json['cluster']} not imported"
                 )
                 continue
             for sector_name in type_json["sectors"]:
+                if sector_name == "Control Submstance Monitoring":
+                    sector_name = "Control Substance Monitoring"
+                if sector_name == "Compliance Assistance Program":
+                    sector_name = "Compliance Assistance Programme"
                 sector = ProjectSector.objects.filter(name=sector_name).first()
                 if not sector:
                     logger.warning(
@@ -583,7 +618,7 @@ def import_project_resources_v2(option):
         file_path = (
             IMPORT_RESOURCES_DIR
             / "projects_v2"
-            / "project_specific_fields_24_10_2025.xlsx"
+            / "project_specific_fields_27_10_2025.xlsx"
         )
         import_project_specific_fields(file_path)
         logger.info("✔ cluster type sector fields imported")
@@ -593,7 +628,7 @@ def import_project_resources_v2(option):
         file_path = (
             IMPORT_RESOURCES_DIR
             / "projects_v2"
-            / "project_specific_fields_24_10_2025.xlsx"
+            / "project_specific_fields_27_10_2025.xlsx"
         )
         generate_new_cluster_type_sector_file(file_path)
         logger.info("✔ new cluster type sector file generated")

@@ -34,7 +34,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
       (mode !== 'copy' && !data.editable) ||
       (mode !== 'edit' && !canUpdateProjects))
   ) {
-    return <Redirect to={`/projects-listing/${project_id}`} />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

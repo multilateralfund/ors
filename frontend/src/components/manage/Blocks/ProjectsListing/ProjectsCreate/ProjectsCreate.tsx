@@ -57,6 +57,7 @@ const ProjectsCreate = ({
   specificFields,
   mode,
   postExComUpdate = false,
+  approval = false,
   files,
   projectFiles,
   errors,
@@ -76,6 +77,7 @@ const ProjectsCreate = ({
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
+    approval?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -101,7 +103,7 @@ const ProjectsCreate = ({
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
-  const [currentTab, setCurrentTab] = useState<number>(0)
+  const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
@@ -295,6 +297,11 @@ const ProjectsCreate = ({
           <div className="leading-tight">Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
             !!agencyErrorType ||
+            (postExComUpdate &&
+              !(
+                projIdentifiers.post_excom_meeting &&
+                projIdentifiers.post_excom_decision
+              )) ||
             hasSectionErrors(bpErrors)) && (
             <SectionErrorIndicator errors={[]} />
           )}
@@ -542,6 +549,7 @@ const ProjectsCreate = ({
                 {...{
                   projectData,
                   setProjectData,
+                  project,
                   hasSubmitted,
                   setCurrentTab,
                 }}

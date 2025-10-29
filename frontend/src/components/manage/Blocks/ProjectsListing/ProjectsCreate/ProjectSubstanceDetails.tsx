@@ -174,15 +174,13 @@ const ProjectSubstanceDetails = ({
                               </span>
                             ),
                         )}
-                        {canEditSubstances && (
-                          <IoTrash
-                            className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                            size={16}
-                            onClick={() => {
-                              onRemoveOdsOdp(index)
-                            }}
-                          />
-                        )}
+                        <IoTrash
+                          className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                          size={16}
+                          onClick={() => {
+                            onRemoveOdsOdp(index)
+                          }}
+                        />
                       </div>
                       {index !== odsOdpData.length - 1 && (
                         <Divider className="my-5" />
@@ -191,7 +189,7 @@ const ProjectSubstanceDetails = ({
                   ))}
             </div>
           </div>
-          {canEditSubstances && odsOdpFields.length > 0 && (
+          {odsOdpFields.length > 0 && (
             <SubmitButton
               title="Add substance"
               onSubmit={onAddSubstance}

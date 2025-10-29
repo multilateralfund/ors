@@ -1,7 +1,9 @@
-from core.api.export.base import WriteOnlyBase
+from core.api.export.base import BaseWriter
 
 
-class SummaryOfProjectsWriter(WriteOnlyBase):
+class SummaryOfProjectsWriter(BaseWriter):
+    ROW_HEIGHT = 35
+    COLUMN_WIDTH = 20
     header_row_start_idx = 1
 
     def __init__(self, sheet):
@@ -21,10 +23,16 @@ class SummaryOfProjectsWriter(WriteOnlyBase):
             {
                 "id": "amounts_recommended",
                 "headerName": "Amounts recommended (US $)",
+                "type": "number",
+                "align": "right",
+                "cell_format": "$###,###,##0.00#############",
             },
             {
                 "id": "amounts_in_principle",
                 "headerName": "Amounts in principle (US $)",
+                "type": "number",
+                "align": "right",
+                "cell_format": "$###,###,##0.00#############",
             },
         ]
 
