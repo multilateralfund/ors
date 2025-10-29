@@ -177,19 +177,6 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   }, [areActivitiesLoaded])
 
   useEffect(() => {
-    if (formattedResults.length === 1 && !bpId) {
-      setProjectData((prevData) => {
-        const { bpLinking } = prevData
-
-        return {
-          ...prevData,
-          bpLinking: {
-            ...bpLinking,
-            bpId: formattedResults[0].id,
-          },
-        }
-      })
-    }
     if (onBpDataChange) {
       if (formattedResults.length > 0) {
         setProjectData((prevData) => ({
@@ -206,7 +193,23 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
         bpDataLoading: !!loading2,
       })
     }
-  }, [formattedResults])
+  }, [areActivitiesLoaded])
+
+  useEffect(() => {
+    if (formattedResults.length === 1) {
+      setProjectData((prevData) => {
+        const { bpLinking } = prevData
+
+        return {
+          ...prevData,
+          bpLinking: {
+            ...bpLinking,
+            bpId: formattedResults[0].id,
+          },
+        }
+      })
+    }
+  }, [areActivitiesLoaded, isLinkedToBP])
 
   const form = useRef<HTMLFormElement>(null)
 
