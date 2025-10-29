@@ -21,6 +21,7 @@ export interface ProjIdentifiers {
   lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
+  category: string | null
   post_excom_meeting: number | null
   post_excom_decision: number | null
 }

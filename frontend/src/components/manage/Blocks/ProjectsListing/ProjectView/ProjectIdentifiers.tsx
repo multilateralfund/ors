@@ -27,8 +27,7 @@ const ProjectIdentifiers = ({
 
   const { agencies } = useContext(ProjectsDataContext)
   const leadAgency =
-    find(agencies, (agency) => agency.id === project.lead_agency)
-      ?.name ?? '-'
+    find(agencies, (agency) => agency.id === project.lead_agency)?.name ?? '-'
 
   const bpActivity = {
     ...project.bp_activity,
@@ -86,6 +85,7 @@ const ProjectIdentifiers = ({
               project.production,
               getFieldHistory('production'),
             )}
+          {detailItem(tableColumns.category, project.cluster?.category)}
           {detailItem(
             tableColumns.submission_status,
             project.submission_status,

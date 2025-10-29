@@ -37,6 +37,7 @@ export const tableColumns: { [key: string]: string } = {
   project_type: 'Project type',
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
+  category: 'Category',
   decision: 'Decision',
   name: 'Name',
   location: 'Location',
@@ -93,6 +94,7 @@ export const initialProjectIdentifiers = {
   lead_agency: null,
   cluster: null,
   production: false,
+  category: null,
   post_excom_meeting: null,
   post_excom_decision: null,
 }
