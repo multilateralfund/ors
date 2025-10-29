@@ -3,7 +3,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
@@ -115,20 +115,19 @@ const ColsFundsRecommended = (props: {
   cellClass?: string
 }) => {
   const { data, cellClass } = props
+
+  const dollarValueOrNull = useCallback(
+    (value: number | string) => (value ? `$${value}` : null),
+    [],
+  )
+
   return (
     <>
+      <td className={cellClass}>{dollarValueOrNull(data.project_funding)}</td>
       <td className={cellClass}>
-        {'$'}
-        {data.project_funding}
+        {dollarValueOrNull(data.project_support_cost)}
       </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.project_support_cost}
-      </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.total}
-      </td>
+      <td className={cellClass}>{dollarValueOrNull(data.total)}</td>
     </>
   )
 }
@@ -147,8 +146,8 @@ const TrAllCells = (props: {
   return (
     <tr className="leading-7">
       <td className={cellClass}>{sector}</td>
-      <td className={cellClass}>{data.hcfc}</td>
-      <td className={cellClass}>{data.hfc}</td>
+      <td className={cellClass}>{data.hcfc || null}</td>
+      <td className={cellClass}>{data.hfc || null}</td>
       <ColsFundsRecommended cellClass={cellClass} data={data} />
     </tr>
   )
