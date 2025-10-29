@@ -356,6 +356,6 @@ class ProjectsV2ProjectExportDocx:
         self.build_document()
         try:
             filename = self.project.code.replace("/", "_")
-        except Exception:
+        except AttributeError:
             filename = f"project_{self.project.id}"
         return document_response(self.doc, filename=f"{filename}.docx")

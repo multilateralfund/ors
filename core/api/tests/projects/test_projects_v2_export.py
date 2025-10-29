@@ -27,7 +27,7 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
     assert response.status_code == HTTPStatus.OK
     try:
         file_name = project.code.replace("/", "_")
-    except Exception:
+    except AttributeError:
         file_name = f"project_{project.id}"
     assert response.filename == f"{file_name}.docx"
     assert (

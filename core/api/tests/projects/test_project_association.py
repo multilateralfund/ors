@@ -18,6 +18,7 @@ def setup_project_list():
     )
     return project
 
+
 @pytest.mark.skip(reason="Skipping project association tests")
 class TestProjectAssociationListing(BaseTest):
     url = reverse("project-association-list")

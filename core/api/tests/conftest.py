@@ -752,8 +752,12 @@ def project(
     )
     return project
 
+
 @pytest.fixture
-def approved_project(project, project_approved_status,):
+def approved_project(
+    project,
+    project_approved_status,
+):
     project.submission_status = project_approved_status
     project.version = 3
     project.code = get_project_sub_code(
@@ -767,6 +771,7 @@ def approved_project(project, project_approved_status,):
     )
     project.save()
     return project
+
 
 @pytest.fixture
 def project2(

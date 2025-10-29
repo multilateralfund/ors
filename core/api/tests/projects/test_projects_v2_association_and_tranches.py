@@ -13,6 +13,7 @@ pytestmark = pytest.mark.django_db
 
 # pylint: disable=R0913,W0613
 
+
 @pytest.mark.skip(reason="Skipping project association tests")
 class TestProjectListPreviousTranches:
     client = APIClient()
@@ -214,6 +215,7 @@ class TestProjectListPreviousTranches:
         assert response.data[0]["id"] == project2.id
         assert len(response.data[0]["errors"]) == 0
         assert len(response.data[0]["warnings"]) == 1
+
 
 @pytest.mark.skip(reason="Skipping project association tests")
 class TestAssociateProject:
