@@ -750,7 +750,7 @@ export const getMenus = (
     {
       title: 'Reporting',
       menuItems: [
-        { title: 'Create Annual Progress Report', url: null, disabled: true },
+        { title: 'Create Annual Progress Report', url: '/apr' },
         { title: 'Raise a PCR', url: null, disabled: true },
       ],
     },

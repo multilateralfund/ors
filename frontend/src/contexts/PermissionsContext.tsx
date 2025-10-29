@@ -35,6 +35,9 @@ interface PermissionsContextProps {
   canCommentCPSecretariat: boolean
   isCPCountryUserType: boolean
   isBpAdmin: boolean
+  canViewAPR: boolean
+  canEditAPR: boolean
+  canSubmitAPR: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(
