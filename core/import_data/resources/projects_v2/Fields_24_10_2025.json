@@ -304,8 +304,8 @@
     {
         "IMPORT_NAME": "Blanket or Individual consideration (MLFS Users only)",
         "LABEL": "Blanket or individual consideration",
-        "WRITE_FIELD_NAME": "individual_consideration",
-        "READ_FIELD_NAME": "individual_consideration",
+        "WRITE_FIELD_NAME": "blanket_or_individual_consideration",
+        "READ_FIELD_NAME": "blanket_or_individual_consideration",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Cross-Cutting",
