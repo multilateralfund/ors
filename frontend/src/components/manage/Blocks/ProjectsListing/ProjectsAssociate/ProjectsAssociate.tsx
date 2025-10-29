@@ -9,10 +9,11 @@ import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
+import { useStore } from '@ors/store'
 
+import { debounce, find } from 'lodash'
 import { Box } from '@mui/material'
 import { useParams } from 'wouter'
-import { debounce } from 'lodash'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   const initialProjectsAssociation = useRef<ReturnType<
@@ -24,8 +25,20 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   const [filters, setFilters] = useState({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
+  const projectSlice = useStore((state) => state.projects)
+  const submissionStatuses = projectSlice.submission_statuses.data
+
+  const approvedStatus = find(
+    submissionStatuses,
+    (status) => status.name === 'Approved',
+  )
+
   const projectsAssociation = useGetProjectsAssociation(
-    { ...initialFilters, limit: 50 },
+    {
+      ...initialFilters,
+      limit: 50,
+      submission_status_id: approvedStatus?.id ?? null,
+    },
     project_id,
   )
   const { loading, loaded } = projectsAssociation
@@ -46,7 +59,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
       'all',
       false,
       false,
-      false,
+      true,
     )
   }, 0)
 

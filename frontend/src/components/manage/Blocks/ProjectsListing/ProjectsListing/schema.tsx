@@ -105,7 +105,8 @@ const getColumnDefs = (
                   mode !== 'association-listing' &&
                   canEditProjects && <div className="w-4 min-w-4" />
                 )}
-                {projectId !== undefined &&
+                {mode === 'listing' &&
+                  projectId !== undefined &&
                   setProjectData &&
                   (canAssociateProjects ||
                     canUpdateProjects ||

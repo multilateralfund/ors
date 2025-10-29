@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Divider, Typography } from '@mui/material'
+import { Box, Button, Divider, Typography } from '@mui/material'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
@@ -10,11 +10,12 @@ import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import { GridOptions, ICellRendererParams } from 'ag-grid-community'
 import Link from '@ors/components/ui/Link/Link.tsx'
+import { considerationOpts } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 import cx from 'classnames'
 
 const defaultProps = {
-  FieldProps: { className: 'mb-0 w-full' },
+  FieldProps: { className: 'mb-0 w-full BPListUpload' },
   popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
   componentsProps: {
     popupIndicator: {
@@ -307,8 +308,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
 const initialRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
-  blanket_consideration: false,
-  individual_consideration: true,
+  blanket_or_individual_consideration: null,
 })
 
 const ApprovalSummaryFilters = (props: {
@@ -379,24 +379,35 @@ const ApprovalSummaryFilters = (props: {
             {...defaultProps}
           />
         </div>
-        <div className="flex-col">
-          <Label htmlFor="blanketConsideration">Blanket Approval/Individual consideration</Label>
-          <Checkbox
-            id="blanketConsideration"
-            className="p-0"
-            checked={requestParams.blanket_consideration}
-            onChange={(_, value) =>
+        <div>
+          <Label htmlFor="blanketConsideration">
+            Blanket approval/Individual consideration
+          </Label>
+          <Field
+            widget="autocomplete"
+            options={considerationOpts}
+            value={
+              considerationOpts.find(
+                (opt) =>
+                  opt.id === requestParams.blanket_or_individual_consideration,
+              ) ?? null
+            }
+            onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_consideration: value,
-                individual_consideration: !value,
+                blanket_or_individual_consideration: value?.id ?? null,
               }))
             }
-            sx={{
-              color: 'black',
+            getOptionLabel={(option: any) => option?.name ?? ''}
+            {...{
+              ...defaultProps,
+              FieldProps: {
+                className: defaultProps.FieldProps.className + ' w-[13.5rem]',
+              },
             }}
           />
         </div>
+
         <div className="flex grow flex-row-reverse items-center">
           <div className="flex gap-4">
             <Button size="large" variant="contained" onClick={onFetchPreview}>
