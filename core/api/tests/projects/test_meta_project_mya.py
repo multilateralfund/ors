@@ -15,10 +15,10 @@ pytestmark = pytest.mark.django_db
 def setup_metaprojects_list(_setup_project_list):
     project: Project = _setup_project_list[0]
     meta_project: MetaProject = MetaProjectFactory.create(
-        lead_agency=project.agency,
         type=MetaProject.MetaProjectType.MYA,
     )
     for project in _setup_project_list:
+        project.lead_agency = project.agency
         project.meta_project = meta_project
         project.save()
 

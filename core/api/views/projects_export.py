@@ -12,7 +12,6 @@ from rest_framework.viewsets import GenericViewSet
 from core.models.country import Country
 from core.models.agency import Agency
 from core.models.project import Project
-from core.models.project import MetaProject
 from core.models.utils import SubstancesType
 from core.models.substance import Substance
 from core.models.blend import Blend
@@ -156,10 +155,10 @@ class ProjectsV2Export(ProjectsExport):
                 enforce_validation=False,
             ),
             SheetDefinition(
-                MetaProject,
-                self.get_codes,
+                Project,
+                partial(self.get_by_prop_name, prop_name="metacode"),
                 ModelNameWriter,
-                "Metaproject codes",
+                "Metacodes",
                 "C",
                 enforce_validation=False,
             ),
@@ -171,10 +170,10 @@ class ProjectsV2Export(ProjectsExport):
                 "D",
             ),
             SheetDefinition(
-                MetaProject.MetaProjectType,
+                Project.Category,
                 self.get_enum_labels,
                 ModelNameWriter,
-                "Metaproject categories",
+                "Project categories",
                 "E",
             ),
             SheetDefinition(

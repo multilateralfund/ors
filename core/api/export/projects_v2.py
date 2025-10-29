@@ -18,7 +18,7 @@ class ProjectV2Writer(WriteOnlyBase):
             },
             {
                 "id": "metacode",
-                "headerName": "Meta code",
+                "headerName": "Metacode",
             },
             {
                 "id": "cluster",

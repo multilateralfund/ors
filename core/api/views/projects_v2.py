@@ -201,14 +201,14 @@ class ProjectV2ViewSet(
         "submission_status__name",
         "status__name",
         "date_created",
-        "meta_project__code",
+        "metacode",
         "filtered_code",  # Code or empty string if project is not approved
         "cluster__code",
         "tranche",
         "total_fund",
     ]
 
-    search_fields = ["code", "legacy_code", "meta_project__code", "title"]
+    search_fields = ["code", "legacy_code", "metacode", "title"]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -1352,10 +1352,7 @@ class ProjectV2FileView(
         ):
             return queryset.filter(
                 Q(agency=user.agency)
-                | (
-                    Q(meta_project__lead_agency=user.agency)
-                    & Q(meta_project__lead_agency__isnull=False)
-                )
+                | (Q(lead_agency=user.agency) & Q(lead_agency__isnull=False))
             )
         return queryset.none()
 
@@ -1529,10 +1526,7 @@ class ProjectV2FileIncludePreviousVersionsView(
         ):
             return queryset.filter(
                 Q(agency=user.agency)
-                | (
-                    Q(meta_project__lead_agency=user.agency)
-                    & Q(meta_project__lead_agency__isnull=False)
-                )
+                | (Q(lead_agency=user.agency) & Q(lead_agency__isnull=False))
             )
         return queryset.none()
 
@@ -1622,10 +1616,7 @@ class ProjectFilesDownloadView(generics.RetrieveAPIView):
         ):
             return queryset.filter(
                 Q(agency=user.agency)
-                | (
-                    Q(meta_project__lead_agency=user.agency)
-                    & Q(meta_project__lead_agency__isnull=False)
-                )
+                | (Q(lead_agency=user.agency) & Q(lead_agency__isnull=False))
             )
 
         return queryset.none()
