@@ -202,10 +202,6 @@ class ProjectsV2ProjectExportDocx:
                 data.get(field_id, ""),
                 data.get(actual_id) if actual_id else "",
             ]
-            if field_id in actual_headers:
-                row_data.append(data[actual_headers[field_id]["id"]])
-            else:
-                row_data.append("")
             for c_idx, cell in enumerate(row.cells):
                 cell.text = str(row_data[c_idx] or "")
 
