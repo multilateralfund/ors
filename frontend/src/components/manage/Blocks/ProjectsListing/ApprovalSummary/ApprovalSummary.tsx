@@ -13,6 +13,7 @@ import Link from '@ors/components/ui/Link/Link.tsx'
 import { considerationOpts } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 import cx from 'classnames'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full BPListUpload' },
@@ -117,7 +118,7 @@ const ColsFundsRecommended = (props: {
   const { data, cellClass } = props
 
   const dollarValueOrNull = useCallback(
-    (value: number | string) => (value ? `$${value}` : null),
+    (value: number | string) => (value ? `$${formatNumberValue(value)}` : null),
     [],
   )
 
@@ -146,8 +147,12 @@ const TrAllCells = (props: {
   return (
     <tr className="leading-7">
       <td className={cellClass}>{sector}</td>
-      <td className={cellClass}>{data.hcfc || null}</td>
-      <td className={cellClass}>{data.hfc || null}</td>
+      <td className={cellClass}>
+        {data.hcfc ? formatNumberValue(data.hcfc) : null}
+      </td>
+      <td className={cellClass}>
+        {data.hfc ? formatNumberValue(data.hfc) : null}
+      </td>
       <ColsFundsRecommended cellClass={cellClass} data={data} />
     </tr>
   )
