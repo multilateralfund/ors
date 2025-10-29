@@ -1,7 +1,6 @@
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
-import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 export type ListingProjectData = {
   projectId: number | null
@@ -36,7 +35,7 @@ export interface CrossCuttingFields {
   project_end_date: string | null
   total_fund: string | null
   support_cost_psc: string | null
-  individual_consideration: boolean | null
+  blanket_or_individual_consideration: string | null
 }
 
 export interface SpecificFields {

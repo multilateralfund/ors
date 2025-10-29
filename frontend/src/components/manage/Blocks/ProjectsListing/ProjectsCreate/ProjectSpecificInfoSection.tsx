@@ -23,12 +23,10 @@ const ProjectSpecificInfoSection = ({
   getTrancheErrors,
   nextStep,
   setCurrentTab,
-  canEditSubstances,
   ...rest
 }: ProjectDataProps &
   ProjectTabSetters &
   TrancheErrors & {
-    canEditSubstances: boolean
     overviewFields: ProjectSpecificFields[]
     substanceDetailsFields: ProjectSpecificFields[]
     overviewErrors?: { [key: string]: string[] }
@@ -72,7 +70,7 @@ const ProjectSpecificInfoSection = ({
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
-            {...{ odsOdpErrors, canEditSubstances, overviewFields }}
+            {...{ odsOdpErrors, overviewFields }}
             {...rest}
           />
         </>

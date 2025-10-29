@@ -5,14 +5,13 @@ import {
 import { useSnackbar } from 'notistack'
 import { api, getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects.ts'
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import dayjs from 'dayjs'
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput.tsx'
 import {
   Button,
   Dialog,
@@ -22,8 +21,7 @@ import {
   Typography,
 } from '@mui/material'
 import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable.tsx'
-import { entries, find, indexOf, isEmpty, values } from 'lodash'
-import { tableColumns } from '@ors/components/manage/Blocks/BusinessPlans/constants.ts'
+import { values } from 'lodash'
 
 import cx from 'classnames'
 
@@ -144,18 +142,20 @@ export const MetaProjectEdit = (props: {
           <FormattedNumberInput
             id={fd.name}
             className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            withoutDefaultValue={true}
+            prefix={'$'}
             value={fieldValue}
             onChange={changeSimpleInput(fd.name, { numeric: true })}
-            prefix={'$'}
           />
         )
       default:
         return (
-          <SimpleInput
+          <FormattedNumberInput
             id={fd.name}
-            label=""
-            type="text"
+            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            withoutDefaultValue={true}
             value={fieldValue}
+            decimalDigits={0}
             onChange={changeSimpleInput(fd.name, {
               numeric: ['IntegerField'].includes(fd.type),
             })}

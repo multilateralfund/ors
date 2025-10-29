@@ -63,9 +63,9 @@ class ProjectsExport:
 
 @dataclass
 class SheetDefinition:
-    model: Model
+    model: typing.Any | None
     data_getter: typing.Callable
-    writer: ModelNameWriter | ModelNameCodeWriter
+    writer: type[ModelNameWriter | ModelNameCodeWriter]
     sheet_name: str
     validate_column: str
     enforce_validation: bool = True
@@ -73,7 +73,7 @@ class SheetDefinition:
     def get_data(self):
         return self.data_getter(self.model)
 
-    def write_data(self, exporter):
+    def write_data(self, exporter: "ProjectsV2Export"):
         data = self.get_data()
         self.writer(exporter.wb, self.sheet_name).write(data)
         exporter.add_data_validation(
@@ -86,7 +86,7 @@ class SheetDefinition:
 
 @dataclass
 class MultiModelSheetDefinition(SheetDefinition):
-    models: typing.List[Model] = field(kw_only=True, default_factory=list)
+    models: typing.List[type[Model]] = field(kw_only=True, default_factory=list)
 
     def get_data(self):
         return list(chain(*(self.data_getter(model) for model in self.models)))
@@ -278,21 +278,12 @@ class ProjectsV2Export(ProjectsExport):
 
     def add_data_validation(
         self,
-        column,
-        validation_sheet,
-        validation_range,
-        allow_blank=False,
-        show_error=False,
+        column: str,
+        validation_sheet: str,
+        validation_range: int,
+        allow_blank: bool = False,
+        show_error: bool = False,
     ):
-        """
-        Add data validation to a column in the Activities sheet
-        @param wb: openpyxl.Workbook
-        @param column: str
-        @param validation_sheet: str
-        @param validation_range: number
-        @param allow_blank: bool
-
-        """
         validation_formula = f"'{validation_sheet}'!$A$2:$A${validation_range + 1}"
         data_validation = openpyxl.worksheet.datavalidation.DataValidation(
             type="list",

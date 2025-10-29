@@ -29,7 +29,8 @@ export const tableColumns: { [key: string]: string } = {
   project_end_date: 'Project end date',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support cost',
-  individual_consideration: 'Blanket or individual consideration',
+  blanket_or_individual_consideration:
+    'Blanket approval/Individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
   bp_activity: 'BP activity',
@@ -44,9 +45,9 @@ export const tableColumns: { [key: string]: string } = {
   export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
   ods_substance: 'Substance baseline technology',
   ods_blend: 'Substance baseline technology',
-  phase_out_mt: 'Substance phase out (mt)',
+  phase_out_mt: 'Substance phase out (Mt)',
   ods_replacement: 'Replacement technology(ies)',
-  ods_replacement_phase_in: 'Replacement technology phased in (mt)',
+  ods_replacement_phase_in: 'Replacement technology phased in (Mt)',
   capital_cost_approved: 'Capital cost approved',
   operating_cost_approved: 'Operating cost approved',
   funds_disbursed: 'Funds disbursed',
@@ -70,7 +71,8 @@ export const defaultPropsSimpleField = {
 export const textFieldClassName = ' min-h-[20px] w-full'
 
 export const textAreaClassname =
-  'rounded-lg border bg-white p-2 pb-10 shadow-none' + textFieldClassName
+  'rounded-lg border bg-white p-2 pb-10 shadow-none text-base' +
+  textFieldClassName
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {
@@ -106,17 +108,17 @@ export const initialCrossCuttingFields = {
   project_end_date: null,
   total_fund: null,
   support_cost_psc: null,
-  individual_consideration: null,
+  blanket_or_individual_consideration: null,
 }
-
-export const blanketOrIndConsiderationOpts = [
-  { name: 'Individual', id: true },
-  { name: 'Blanket', id: false },
-]
 
 export const lvcNonLvcOpts = [
   { name: 'LVC', id: true },
   { name: 'Non-LVC', id: false },
+]
+
+export const considerationOpts = [
+  { name: 'Blanket approval', id: 'blanket', value: 'Blanket' },
+  { name: 'Individual consideration', id: 'individual', value: 'Individual' },
 ]
 
 export const validationFieldsPairs: [

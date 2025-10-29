@@ -207,10 +207,40 @@ class HasProjectEditAccess(permissions.BasePermission):
 class HasAPRViewAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
-        Check if the user has permission to view Annual Project Reports.
+        Check if the user has permission to view APR data.
+        Works on all APR-related objects.
         """
-
         return request.user.has_perm("core.has_apr_view_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can access the agency report.
+        Agency users can only access their own agency's reports.
+        """
+        # Get the agency report (handle both direct and nested objects)
+        if hasattr(obj, "report"):
+            # Checking for an AnnualProjectReport or File
+            agency_report = obj.report
+        else:
+            # AnnualAgencyProjectReport
+            agency_report = obj
+
+        # TODO: is this permission enough to say "this is an MLFS user"?
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        # Agency users can only access their own agency's data
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            if (
+                hasattr(agency_report, "agency_id")
+                and request.user.agency_id == agency_report.agency_id
+            ):
+                return True
+
+        return False
 
 
 class HasAPREditAccess(permissions.BasePermission):
@@ -221,14 +251,81 @@ class HasAPREditAccess(permissions.BasePermission):
 
         return request.user.has_perm("core.has_apr_edit_access")
 
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can edit the agency report.
+        Agency users can only edit their own agency's reports
+        """
+        if hasattr(obj, "report"):
+            agency_report = obj.report
+        else:
+            agency_report = obj
+
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        # Agency users can only edit their own agency's editable reports
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            # Check user has agency and it matches
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            if (
+                hasattr(agency_report, "agency_id")
+                and request.user.agency_id == agency_report.agency_id
+            ):
+                return True
+
+        return False
+
 
 class HasAPRSubmitAccess(permissions.BasePermission):
     def has_permission(self, request, view):
-        """
-        Check if the user has permission to submit Annual Project Reports.
-        """
-
         return request.user.has_perm("core.has_apr_submit_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can submit specific agency report.
+        Agency users can only submit their own agency's reports
+        """
+        if hasattr(obj, "report"):
+            agency_report = obj.report
+        else:
+            agency_report = obj
+
+        # TODO: we should let MLFS users submit, right?
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            if (
+                hasattr(agency_report, "agency_id")
+                and request.user.agency_id == agency_report.agency_id
+            ):
+                return True
+
+        return False
+
+
+class HasMLFSViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "core.has_apr_view_access"
+        ) and request.user.has_perm("core.can_view_all_agencies")
+
+
+class HasMLFSFullAccess(permissions.BasePermission):
+    """
+    Permission for MLFS Full Access users (unlock, endorse, edit all).
+    """
+
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "core.has_apr_edit_access"
+        ) and request.user.has_perm("core.can_view_all_agencies")
 
 
 class HasProjectV2SubmitAccess(permissions.BasePermission):

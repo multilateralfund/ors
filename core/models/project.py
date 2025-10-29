@@ -282,6 +282,10 @@ class Project(models.Model):
             "Other doc: CPG, policy paper, business plan",
         )
 
+    class BlanketOrIndividualConsideration(models.TextChoices):
+        BLANKET = "blanket", "Blanket"
+        INDIVIDUAL = "individual", "Individual"
+
     class ProjectCompliance(models.TextChoices):
         EE = "Energy Efficieny", "Energy Efficieny"
         NONEE = "Non-Energey Efficiency", "Non-Energey Efficiency"
@@ -779,14 +783,16 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
-    individual_consideration = models.BooleanField(
-        null=True,
-        blank=True,
+    blanket_or_individual_consideration = models.CharField(
+        max_length=256,
+        choices=BlanketOrIndividualConsideration.choices,
         help_text="""
             Blanket or Individual consideration.
             This field is needed for analyses at the recommendation stage for QA unit.
             And it is for MLFS users to select at the review stage.
         """,
+        blank=False,
+        null=True,
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)
@@ -809,29 +815,10 @@ class Project(models.Model):
         blank=True,
     )
     is_sme = models.BooleanField(null=True, blank=True)
-
-    mya_start_date = models.DateField(
-        null=True, blank=True, help_text="Start date (MYA)"
-    )
-    mya_end_date = models.DateField(null=True, blank=True, help_text="End date (MYA)")
-    mya_project_funding = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Project Funding (MYA)",
-    )
-    mya_support_cost = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Support Cost (MYA)",
-    )
     number_of_enterprises = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises (MYA)",
+        help_text="Number of enterprises",
     )
     number_of_enterprises_assisted = models.IntegerField(
         null=True,
@@ -845,62 +832,24 @@ class Project(models.Model):
         blank=True,
         help_text="Aggregated consumption",
     )
-    targets = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Targets",
-    )
-    starting_point = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Starting point",
-    )
-    baseline = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
-    )
-    mya_phase_out_co2_eq_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase out (CO2-eq t) (MYA)",
-    )
-    mya_phase_out_odp_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase out (ODP t) (MYA)",
-    )
-    mya_phase_out_mt = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase out (Mt) (MYA)",
-    )
     cost_effectiveness = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg) (MYA)",
+        help_text="Cost effectiveness (US$/ Kg)",
     )
     cost_effectiveness_co2 = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-eq) (MYA)",
+        help_text="Cost effectiveness (US$/ CO2-eq)",
     )
     number_of_production_lines_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of production lines assisted (MYA)",
+        help_text="Number of production lines assisted",
     )
 
     # new approval fields

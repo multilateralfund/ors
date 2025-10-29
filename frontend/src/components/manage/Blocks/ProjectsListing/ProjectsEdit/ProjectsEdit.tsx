@@ -12,6 +12,7 @@ import {
   getDefaultValues,
   getFieldData,
   getFileFromMetadata,
+  getFormattedDecimalValue,
   getNonFieldErrors,
   hasSpecificField,
 } from '../utils'
@@ -28,6 +29,7 @@ import {
   BpDataProps,
 } from '../interfaces'
 import {
+  considerationOpts,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
@@ -36,26 +38,19 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
+import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
-import {
-  debounce,
-  groupBy,
-  map,
-  filter,
-  find,
-  replace,
-  isArray,
-  isNull,
-} from 'lodash'
 
 const ProjectsEdit = ({
   project,
   mode,
   postExComUpdate = false,
+  approval = false,
 }: {
   project: ProjectTypeApi
   mode: string
   postExComUpdate?: boolean
+  approval?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -119,8 +114,6 @@ const ProjectsEdit = ({
     setViewableFields,
     setEditableFields,
   } = useStore((state) => state.projectFields)
-  const projectSlice = useStore((state) => state.projects)
-  const meetings = projectSlice.meetings.data
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -229,8 +222,10 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
-        post_excom_meeting: project.post_excom_meeting_id,
-        post_excom_decision: project.post_excom_decision_id,
+        post_excom_meeting:
+          mode === 'edit' ? project.post_excom_meeting_id : null,
+        post_excom_decision:
+          mode === 'edit' ? project.post_excom_decision_id : null,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -256,14 +251,18 @@ const ProjectsEdit = ({
               description: project.description,
               project_start_date: project.project_start_date,
               project_end_date: project.project_end_date,
-              total_fund: project.total_fund,
-              support_cost_psc: project.support_cost_psc,
-              individual_consideration:
+              total_fund: getFormattedDecimalValue(project.total_fund),
+              support_cost_psc: getFormattedDecimalValue(
+                project.support_cost_psc,
+              ),
+              blanket_or_individual_consideration:
                 isEditMode &&
                 (project.submission_status !== 'Draft' || project.version === 2)
-                  ? isNull(project.individual_consideration)
-                    ? true
-                    : project.individual_consideration
+                  ? (considerationOpts.find(
+                      (opt) =>
+                        opt.value ===
+                        project.blanket_or_individual_consideration,
+                    )?.id ?? null)
                   : null,
             },
           }
@@ -496,6 +495,7 @@ const ProjectsEdit = ({
             setProjectData,
             mode,
             postExComUpdate,
+            approval,
             specificFields,
             project,
             files,

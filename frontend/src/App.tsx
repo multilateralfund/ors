@@ -52,9 +52,11 @@ import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
 import ProjectsExportPage from '@ors/app/projects_listing/export/page'
 import ProjectsApprovalSummaryPage from '@ors/app/projects_listing/approval-summary/page'
+import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects/page'
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
+import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
@@ -305,6 +307,11 @@ export default function App() {
             <ProjectsApprovalSummaryPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/summary-of-projects">
+          <ProjectsDataProvider>
+            <SummaryOfProjectsPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/settings">
           <ProjectsDataProvider>
             <ProjectsSettingsPage />
@@ -368,6 +375,11 @@ export default function App() {
         <Route path="/projects-listing/:project_id/edit">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="edit" />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/approval">
+          <ProjectsDataProvider>
+            <ProjectsApprovalUpdatePage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/post-excom-update">

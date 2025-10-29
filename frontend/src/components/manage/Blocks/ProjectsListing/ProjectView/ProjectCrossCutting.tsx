@@ -5,14 +5,14 @@ import {
   detailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
+import { canViewField, formatFieldsHistory, hasFields } from '../utils'
+import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
 import {
-  blanketOrIndConsiderationOpts,
+  considerationOpts,
   lvcNonLvcOpts,
   tableColumns,
   viewColumnsClassName,
 } from '../constants'
-import { canViewField, formatFieldsHistory, hasFields } from '../utils'
-import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
@@ -40,9 +40,9 @@ const ProjectCrossCutting = ({
     ['title', 'description'],
   )
 
-  const individual_consideration = find(blanketOrIndConsiderationOpts, {
-    id: project.individual_consideration,
-  }) as BooleanOptionsType
+  const consideration = considerationOpts.find(
+    (opt) => opt.value === project.blanket_or_individual_consideration,
+  )
   const is_lvc = find(lvcNonLvcOpts, {
     id: project.is_lvc,
   }) as BooleanOptionsType
@@ -117,14 +117,17 @@ const ProjectCrossCutting = ({
               <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'total_fund') &&
                   numberDetailItem(
-                    tableColumns.total_fund,
+                    tableColumns.total_fund + ' (US $)',
                     project.total_fund as string,
+                    'decimal',
+
                     getFieldHistory('total_fund', 'decimal'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
-                    tableColumns.support_cost_psc,
+                    tableColumns.support_cost_psc + ' (US $)',
                     project.support_cost_psc as string,
+                    'decimal',
                     getFieldHistory('support_cost_psc', 'decimal'),
                   )}
               </div>
@@ -145,12 +148,17 @@ const ProjectCrossCutting = ({
                   )}
               </div>
             </div>
-            {canViewField(viewableFields, 'individual_consideration') &&
+            {canViewField(
+              viewableFields,
+              'blanket_or_individual_consideration',
+            ) &&
               detailItem(
-                tableColumns.individual_consideration,
-                individual_consideration?.name,
+                tableColumns.blanket_or_individual_consideration,
+                consideration?.name ?? '-',
                 {
-                  fieldHistory: getFieldHistory('individual_consideration'),
+                  fieldHistory: getFieldHistory(
+                    'blanket_or_individual_consideration',
+                  ),
                 },
               )}
           </div>

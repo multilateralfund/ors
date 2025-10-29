@@ -55,6 +55,9 @@ const getFieldId = <T>(
   })?.id
 }
 
+export const getFormattedDecimalValue = (value: string | null) =>
+  !isNil(value) ? Number(value).toString() : value
+
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
@@ -70,9 +73,11 @@ export const getDefaultValues = <T>(
         acc[fieldName] =
           dataType === 'drop_down'
             ? getFieldId<T>(field, data, projectData)
-            : dataType === 'boolean'
-              ? (data[fieldName] ?? false)
-              : data[fieldName]
+            : dataType === 'decimal'
+              ? getFormattedDecimalValue(data[fieldName])
+              : dataType === 'boolean'
+                ? (data[fieldName] ?? false)
+                : data[fieldName]
       } else {
         acc[fieldName] =
           dataType === 'text' ? '' : dataType === 'boolean' ? false : null
@@ -463,6 +468,10 @@ export const getCrossCuttingErrors = (
     'project_start_date',
     'project_end_date',
   ]
+  const requiredFieldsAfterSubmission =
+    project?.submission_status !== 'Draft'
+      ? [...requiredFields, 'blanket_or_individual_consideration']
+      : requiredFields
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
@@ -472,7 +481,7 @@ export const getCrossCuttingErrors = (
     crossCuttingFields
 
   const fieldsToCheck =
-    mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
+    mode === 'edit' ? requiredFieldsAfterSubmission : requiredFields.slice(0, 3)
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
@@ -578,8 +587,9 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, editable_in_versions, data_type }) =>
+      ({ table, section, editable_in_versions, data_type }) =>
         table === 'project' &&
+        section !== 'MYA' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
           (isEditMode && project.version > 3) ||
@@ -965,13 +975,3 @@ export const formatFieldsHistory = (
             : 'No'
           : historyItem.value,
   }))
-
-export const getIndividualConsiderationOpts = () => {
-  const options = ['Blanket consideration', 'Individual consideration', 'N/A']
-
-  return map(options, (option, index) => ({
-    id: index === 0 ? 'Blanket' : option,
-    value: option,
-    name: option,
-  }))
-}

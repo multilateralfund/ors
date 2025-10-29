@@ -234,6 +234,14 @@ export const BPTable = ({
         rowBuffer={120}
         rowsVisible={90}
         tooltipShowDelay={200}
+        {...(isProjectsSection
+          ? {
+              noRowsOverlayComponentParams: {
+                label:
+                  'There is no corresponding activity in the current agency BP, please check your agency, country and cluster combination.',
+              },
+            }
+          : {})}
         context={{ disableValidation: true }}
         components={{
           agColumnHeader: undefined,

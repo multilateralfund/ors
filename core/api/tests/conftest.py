@@ -1,6 +1,7 @@
 # pylint: disable=W0621,R0913, R0914
 import pytest
 import unicodedata
+from datetime import date
 
 from django.urls import reverse
 from django.contrib.auth.models import Group
@@ -48,6 +49,9 @@ from core.api.tests.factories import (
     CPPricesFactory,
     CPRecordFactory,
     CPUsageFactory,
+    AnnualProgressReportFactory,
+    AnnualAgencyProjectReportFactory,
+    AnnualProjectReportFactory,
 )
 from core.models import BPActivity
 from core.models import CPEmission
@@ -231,6 +235,14 @@ def agency_inputter_user(agency):
     user = UserFactory(username="AgencyInputterUser", agency=agency)
     user.groups.add(group)
     user.groups.add(business_plan_viewer_group)
+    return user
+
+
+@pytest.fixture
+def agency_viewer_user(agency):
+    group = Group.objects.get(name="Projects - Agency viewer")
+    user = UserFactory(username="AgencyViewerUser", agency=agency)
+    user.groups.add(group)
     return user
 
 
@@ -524,6 +536,11 @@ def project_status():
 @pytest.fixture
 def project_ongoing_status():
     return ProjectStatusFactory.create(name="Ongoing", code="ONG")
+
+
+@pytest.fixture
+def project_completed_status():
+    return ProjectStatusFactory.create(name="Completed", code="COM")
 
 
 @pytest.fixture
@@ -1244,3 +1261,208 @@ def setup_bp_activity_create(
             },
         ],
     }
+
+
+@pytest.fixture(name="_setup_project_list")
+def setup_project_list(
+    country_ro,
+    agency,
+    new_agency,
+    new_country,
+    project_type,
+    new_project_type,
+    project_status,
+    submitted_status,
+    project_draft_status,
+    project_submitted_status,
+    project_approved_status,
+    subsector,
+    meeting,
+    new_meeting,
+    sector,
+    new_sector,
+    project_cluster_kpp,
+    project_cluster_kip,
+):
+    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
+    projects = []
+    projects_data = [
+        {
+            "country": country_ro,
+            "agency": agency,
+            "project_type": project_type,
+            "status": project_status,
+            "submission_status": project_draft_status,
+            "sector": sector,
+            "subsectors": [subsector],
+            "substance_type": "HCFC",
+            "meeting": meeting,
+            "cluster": project_cluster_kpp,
+        },
+        {
+            "country": new_country,
+            "agency": new_agency,
+            "project_type": new_project_type,
+            "status": submitted_status,
+            "submission_status": project_submitted_status,
+            "sector": new_sector,
+            "subsectors": [new_subsector],
+            "substance_type": "CFC",
+            "meeting": new_meeting,
+            "cluster": project_cluster_kip,
+        },
+    ]
+
+    for i in range(4):
+        for project_data in projects_data:
+            project_data["code"] = get_project_sub_code(
+                project_data["country"],
+                project_data["cluster"],
+                project_data["agency"],
+                project_data["project_type"],
+                project_data["sector"],
+                project_data["meeting"],
+                project_data["meeting"],
+                i + 1,
+            )
+
+            ProjectFactory.create(
+                title=f"Project {i}",
+                serial_number=i + 1,
+                **project_data,
+            )
+
+    # project_without cluster
+    proj_data = projects_data[0].copy()
+    proj_data.pop("cluster")
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        None,
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        25,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 25",
+            **proj_data,
+        )
+    )
+
+    # project_without sector and subsector
+    proj_data = projects_data[0].copy()
+    proj_data["sector"] = None
+    proj_data["subsectors"] = None
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        proj_data["cluster"],
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        26,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 26",
+            serial_number=26,
+            **proj_data,
+        )
+    )
+
+    proj_data = projects_data[0].copy()
+    proj_data["production"] = True
+
+    projects.append(
+        ProjectFactory.create(
+            title="Project 27",
+            serial_number=27,
+            **proj_data,
+        )
+    )
+
+    proj_data["production"] = False
+    proj_data["version"] = 2
+    proj_data["submission_status"] = project_submitted_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 28",
+            serial_number=28,
+            **proj_data,
+        )
+    )
+
+    proj_data["version"] = 3
+    proj_data["submission_status"] = project_approved_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 29",
+            serial_number=29,
+            **proj_data,
+        )
+    )
+
+    return projects
+
+
+@pytest.fixture
+def apr_year():
+    return 2024
+
+
+@pytest.fixture
+def annual_progress_report(apr_year):
+    return AnnualProgressReportFactory(year=apr_year, endorsed=False)
+
+
+@pytest.fixture
+def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
+    return AnnualAgencyProjectReportFactory(
+        progress_report=annual_progress_report,
+        agency=agency,
+        is_unlocked=False,
+        created_by=agency_viewer_user,
+    )
+
+
+@pytest.fixture
+def annual_project_report(annual_agency_report, project):
+    return AnnualProjectReportFactory(
+        report=annual_agency_report,
+        project=project,
+    )
+
+
+@pytest.fixture
+def multiple_projects_for_apr(
+    agency, country_ro, sector, project_ongoing_status, project_completed_status
+):
+    ongoing_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2022, 1, 1),
+            code=f"TEST/ONG/{i}/INV/01",
+        )
+        for i in range(1, 4)
+    ]
+
+    completed_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code=f"TEST/COM/{i}/INV/01",
+        )
+        for i in range(1, 3)
+    ]
+
+    return ongoing_projects + completed_projects

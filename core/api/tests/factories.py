@@ -13,6 +13,10 @@ from core.models import (
     Invoice,
     Payment,
     ScaleOfAssessmentVersion,
+    AnnualProjectReport,
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
+    AnnualProjectReportFile,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -449,7 +453,6 @@ class MetaProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetaProject
 
-    code = factory.Faker("pystr", max_chars=10)
     type = MetaProject.MetaProjectType.IND
 
 
@@ -474,6 +477,73 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     def subsectors(obj, _, extracted, **kwargs):
         if extracted:
             obj.subsectors.set(extracted)
+
+
+class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProgressReport
+
+    year = factory.Sequence(lambda n: n + 2025)
+    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    date_endorsed = factory.Faker("date")
+    remarks_endorsed = factory.Faker("pystr")
+    endorsed = factory.Faker("pybool")
+
+
+class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualAgencyProjectReport
+
+    progress_report = factory.SubFactory(AnnualProgressReportFactory)
+    agency = factory.SubFactory(AgencyFactory)
+    status = factory.LazyAttribute(
+        lambda o: AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+    )
+    created_by = factory.SubFactory(UserFactory)
+    is_unlocked = factory.Faker("pybool")
+    submitted_by = None
+
+
+class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProjectReport
+
+    project = factory.SubFactory(ProjectFactory)
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+
+    date_first_disbursement = factory.Faker("date")
+    date_planned_completion = factory.Faker("date")
+    date_actual_completion = factory.Faker("date")
+    date_financial_completion = factory.Faker("date")
+
+    consumption_phased_out_odp = factory.Faker("random_int")
+    consumption_phased_out_co2 = factory.Faker("random_int")
+    production_phased_out_odp = factory.Faker("random_int")
+    production_phased_out_co2 = factory.Faker("random_int")
+
+    funds_disbursed = factory.Faker("random_int")
+    funds_committed = factory.Faker("random_int")
+    estimated_disbursement_current_year = factory.Faker("random_int")
+    support_cost_disbursed = factory.Faker("random_int")
+    support_cost_committed = factory.Faker("random_int")
+    disbursements_made_to_final_beneficiaries = factory.Faker("random_int")
+    funds_advanced = factory.Faker("random_int")
+
+    last_year_remarks = factory.Faker("pystr")
+    current_year_remarks = factory.Faker("pystr")
+    gender_policy = factory.Faker("pybool")
+
+
+class AnnualProjectReportFileFactory(factory.django.DjangoModelFactory):
+    """Factory for AnnualProjectReportFile."""
+
+    class Meta:
+        model = AnnualProjectReportFile
+
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+    file = factory.django.FileField(filename="test_report.pdf")
+    file_name = "Test Report"
+    file_type = AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
 
 
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):

@@ -56,14 +56,10 @@ const ProjectBPLinking = ({
               checked={isLinkedToBP || bpData.hasBpData}
               // onChange={handleChangeBPLink}
               size="small"
-              sx={{
-                color: 'black',
-              }}
+              sx={{ color: 'black' }}
             />
           }
-          componentsProps={{
-            typography: { fontSize: '1.05rem' },
-          }}
+          componentsProps={{ typography: { fontSize: '1rem' } }}
         />
         {/* {isLinkedToBP && ( */}
         {country && agency && cluster && (
@@ -73,7 +69,7 @@ const ProjectBPLinking = ({
         )}
         {/* )} */}
       </div>
-      <div className="mt-5">
+      <div className="mt-7">
         <NavigationButton
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextButtonDisabled}

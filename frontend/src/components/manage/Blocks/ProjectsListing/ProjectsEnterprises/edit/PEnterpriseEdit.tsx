@@ -7,6 +7,7 @@ import PEnterpriseCreate from '../create/PEnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
 import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { PEnterpriseData, PEnterpriseType } from '../../interfaces'
+import { getFormattedDecimalValue } from '../../utils'
 import {
   initialOverviewFields,
   initialFundingDetailsFields,
@@ -51,15 +52,23 @@ const PEnterpriseEdit = ({
         country: enterpriseObj.country,
         location: enterpriseObj.location,
         application: enterpriseObj.application,
-        local_ownership: enterpriseObj.local_ownership,
-        export_to_non_a5: enterpriseObj.export_to_non_a5,
+        local_ownership: getFormattedDecimalValue(
+          enterpriseObj.local_ownership,
+        ),
+        export_to_non_a5: getFormattedDecimalValue(
+          enterpriseObj.export_to_non_a5,
+        ),
         remarks: enterpriseObj.remarks,
       },
       substance_details: enterprise.ods_odp,
       funding_details: {
-        capital_cost_approved: enterprise.capital_cost_approved,
-        operating_cost_approved: enterprise.operating_cost_approved,
-        funds_disbursed: enterprise.funds_disbursed,
+        capital_cost_approved: getFormattedDecimalValue(
+          enterprise.capital_cost_approved,
+        ),
+        operating_cost_approved: getFormattedDecimalValue(
+          enterprise.operating_cost_approved,
+        ),
+        funds_disbursed: getFormattedDecimalValue(enterprise.funds_disbursed),
       },
     }))
   }, [])
