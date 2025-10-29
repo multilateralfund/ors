@@ -311,6 +311,8 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             "checklist_regulations_actual",
         ]:
             return Project.Regulations.choices
+        if obj.read_field_name == "blanket_or_individual_consideration":
+            return Project.BlanketOrIndividualConsideration.choices
         return None
 
 

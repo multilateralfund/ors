@@ -11,6 +11,7 @@ from rest_framework import serializers
 from core.api.export.base import HeaderType
 from core.api.serializers.business_plan import BPActivityExportSerializer
 from core.models import BPActivity
+from core.models import Project
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +44,12 @@ def get_blanket_consideration_value(row: dict, header: HeaderType):
     value: Union[bool, None] = row[header["id"]]
     if value is None:
         return ""
-
-    if not value:
-        return "Yes"
-
-    if value:
-        return "No"
-
-    return ""
+    if isinstance(value, str):
+        try:
+            return Project.BlanketOrIndividualConsideration(value).label
+        except ValueError:
+            return value
+    return value
 
 
 def field_value(data, header):

@@ -31,15 +31,15 @@ class MetaProjectMyaFilter(filters.FilterSet):
         widget=CSVWidget,
     )
 
-    individual_consideration = filters.MultipleChoiceFilter(
-        field_name="projects__individual_consideration",
+    blanket_or_individual_consideration = filters.MultipleChoiceFilter(
+        field_name="projects__blanket_or_individual_consideration",
         choices=[
             ("Individual consideration", True),
-            ("Blanket", False),
+            ("Blanket approval", False),
             ("N/A", None),
         ],
         widget=CSVWidget,
-        method="filter_individual_consideration",
+        method="filter_blanket_or_individual_consideration",
     )
 
     class Meta:
@@ -69,15 +69,15 @@ class MetaProjectMyaFilter(filters.FilterSet):
         },
     )
 
-    def filter_individual_consideration(self, queryset, name, value):
+    def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
             return queryset
         query_filters = Q()
         for option in value:
             if option.lower() == "individual consideration":
-                query_filters |= Q(**{name: True})
-            elif option.lower() == "blanket":
-                query_filters |= Q(**{name: False})
+                query_filters |= Q(**{name: "individual"})
+            elif option.lower() == "blanket approval":
+                query_filters |= Q(**{name: "blanket"})
             elif option.lower() == "n/a":
                 query_filters |= Q(**{f"{name}__isnull": True})
         if not query_filters:

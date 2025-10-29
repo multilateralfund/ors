@@ -307,7 +307,7 @@
         "WRITE_FIELD_NAME": "individual_consideration",
         "READ_FIELD_NAME": "individual_consideration",
         "TABLE": "project",
-        "DATA_TYPE": "boolean",
+        "DATA_TYPE": "drop_down",
         "SECTION": "Cross-Cutting",
         "SORT_ORDER": 22,
         "EDITABLE_IN_VERSIONS": [2],
