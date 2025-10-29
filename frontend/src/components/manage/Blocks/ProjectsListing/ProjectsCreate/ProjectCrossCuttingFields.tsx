@@ -407,7 +407,9 @@ const ProjectCrossCuttingFields = ({
                       disabled={!canEditField(editableFields, 'total_fund')}
                       {...getFieldDefaultProps('total_fund')}
                     />
-                    <FieldErrorIndicator errors={errors} field="total_fund" />
+                    <div className="w-8">
+                      <FieldErrorIndicator errors={errors} field="total_fund" />
+                    </div>
                   </div>
                 </div>
               )}
@@ -467,10 +469,12 @@ const ProjectCrossCuttingFields = ({
                           !canEditField(editableFields, 'project_start_date'),
                       })}
                     />
-                    <FieldErrorIndicator
-                      errors={errors}
-                      field="project_start_date"
-                    />
+                    <div className="w-8">
+                      <FieldErrorIndicator
+                        errors={errors}
+                        field="project_start_date"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
