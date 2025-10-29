@@ -1,8 +1,12 @@
+from io import BytesIO
+from openpyxl import load_workbook
+
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 
+from core.api.export.annual_project_report import APRExportWriter
 from core.api.tests.base import BaseTest
 from core.models import (
     AnnualAgencyProjectReport,
@@ -129,7 +133,6 @@ class TestAPRAgencyReportDetailView(BaseTest):
             },
         )
         response = self.client.get(url)
-        print(response.data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_agency_report_detail(
@@ -1073,5 +1076,177 @@ class TestAPREndorseView(BaseTest):
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-endorse", kwargs={"year": 9999})
         response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+class TestAPRExportView(BaseTest):
+    def test_without_login(self, apr_year, agency):
+        self.client.force_authenticate(user=None)
+        url = reverse(
+            "apr-export",
+            kwargs={"year": apr_year, "agency_id": agency.id},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_user_can_export_own_report(
+        self, agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Type"]
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        assert "attachment" in response["Content-Disposition"]
+        assert (
+            f"APR_{annual_agency_report.progress_report.year}"
+            in response["Content-Disposition"]
+        )
+        assert (
+            annual_agency_report.agency.name[:10] in response["Content-Disposition"]
+        )  # Partial name match
+
+        assert len(response.content) > 0
+
+    def test_agency_user_cannot_export_other_agency_report(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        other_agency = AgencyFactory()
+        other_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_agency_report.progress_report,
+            agency=other_agency,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": other_report.progress_report.year,
+                "agency_id": other_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_user_can_export_any_agency_report(
+        self, secretariat_viewer_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Type"]
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        assert len(response.content) > 0
+
+    def test_export_with_multiple_projects(
+        self, agency_viewer_user, annual_agency_report, multiple_projects_for_apr
+    ):
+        for project in multiple_projects_for_apr[:3]:
+            AnnualProjectReportFactory(
+                report=annual_agency_report,
+                project=project,
+                funds_disbursed=10000.0,
+            )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.content) > 0
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        # Ensure that all 3 rows are exported, as there are no filters
+        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        assert data_rows == 3
+
+    def test_export_with_status_filter(
+        self, agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        annual_project_report.project.status.code = "ONG"
+        annual_project_report.project.status.save()
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url, {"status": "ONG"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.content) > 0
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        assert data_rows == 1
+
+    def test_export_empty_report(self, agency_viewer_user, annual_agency_report):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.content) > 0
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        # For empty reports, we still export one empty data row
+        assert data_rows == 1
+
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
+        row_values = [
+            worksheet.cell(first_data_row, col).value
+            for col in range(1, len(columns) + 1)
+        ]
+        assert all(value is None or value == "" for value in row_values)
+
+    def test_export_nonexistent_report(self, agency_viewer_user):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={"year": 9999, "agency_id": 9999},
+        )
+        response = self.client.get(url)
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
