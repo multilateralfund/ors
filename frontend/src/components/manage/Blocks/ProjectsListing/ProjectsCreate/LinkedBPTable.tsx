@@ -65,7 +65,6 @@ const LinkedBPTable = ({
   ...rest
 }: LinkedBPTableProps) => {
   const projIdentifiers = projectData.projIdentifiers
-  const { country, agency, cluster } = projIdentifiers
 
   const agencies = useStore((state) => state?.common.agencies_with_all.data)
   const countries = useStore((state) => state?.common.countries.data)
@@ -86,27 +85,16 @@ const LinkedBPTable = ({
     offset: 0,
   }
 
-  const shouldFetch = !!country && !!agency && !!cluster
-  const activities = useGetActivities(filters, shouldFetch)
+  const activities = useGetActivities(filters)
   const { loading: loading2, results: foundActivities } = activities
 
   const bp = useMemo(() => {
     return foundActivities.length > 0 ? foundActivities[0].business_plan : null
   }, [foundActivities])
 
-  // useEffect(() => {
-  //   if (rest.onBpDataChange) {
-  //     rest.onBpDataChange({
-  //       hasBpData: bp ? rest.bpData.hasBpData : false,
-  //       bpDataLoading: bp ? rest.bpData.bpDataLoading : false,
-  //     })
-  //   }
-  // }, [bp, loading2])
-
   return (
     <>
-      {bp ? (
-        // {bp && rest.bpData.hasBpData ? (
+      {bp && projectData.bpLinking.isLinkedToBP ? (
         <div>
           Business plan {bp.name} {' - '}
           <span>(Meeting: {bp.meeting_number})</span>
@@ -157,7 +145,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     ...rest
   } = props
   const { results, ...restActivities } = activities
-  const { bpId } = projectData.bpLinking
+  const { bpId, isLinkedToBP } = projectData.bpLinking
 
   const formattedResults = useMemo(
     () =>
@@ -189,7 +177,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   }, [areActivitiesLoaded])
 
   useEffect(() => {
-    if (formattedResults.length === 1 && !projectData.bpLinking.bpId) {
+    if (formattedResults.length === 1 && !bpId) {
       setProjectData((prevData) => {
         const { bpLinking } = prevData
 
@@ -203,6 +191,16 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
       })
     }
     if (onBpDataChange) {
+      if (formattedResults.length > 0) {
+        setProjectData((prevData) => ({
+          ...prevData,
+          bpLinking: {
+            isLinkedToBP: true,
+            bpId: prevData.bpLinking.bpId,
+          },
+        }))
+      }
+
       onBpDataChange({
         hasBpData: formattedResults.length > 0,
         bpDataLoading: !!loading2,
@@ -215,17 +213,17 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   return (
     <div className="activities flex flex-1 flex-col justify-start gap-6 pt-3">
       <form className="flex flex-col gap-6" ref={form}>
-        {/* {bpData.hasBpData && ( */}
-        <BPTable
-          results={formattedResults}
-          yearRanges={yearRanges}
-          bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
-          setProjectData={setProjectData}
-          isProjectsSection
-          {...rest}
-          {...restActivities}
-        />
-        {/* )} */}
+        {isLinkedToBP && (
+          <BPTable
+            results={formattedResults}
+            yearRanges={yearRanges}
+            bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
+            setProjectData={setProjectData}
+            isProjectsSection
+            {...rest}
+            {...restActivities}
+          />
+        )}
       </form>
     </div>
   )
