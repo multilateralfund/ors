@@ -27,7 +27,6 @@ from core.api.permissions import (
     HasProjectV2TransferAccess,
     HasProjectV2EditPlusV3Access,
 )
-from core.utils import regenerate_meta_project_new_code
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
     ProjectV2TransferSerializer,
@@ -73,7 +72,7 @@ from core.api.views.utils import log_project_history
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
 from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
-
+from core.utils import post_approval_changes
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
@@ -347,10 +346,7 @@ class ProjectV2ViewSet(
         if user.has_perm("core.can_view_only_own_agency"):
             return queryset.filter(
                 Q(agency=user.agency)
-                | (
-                    Q(meta_project__lead_agency=user.agency)
-                    & Q(meta_project__lead_agency__isnull=False)
-                )
+                | (Q(lead_agency=user.agency) & Q(lead_agency__isnull=False))
             )
 
         return queryset.none()
@@ -751,9 +747,10 @@ class ProjectV2ViewSet(
         project.status = ProjectStatus.objects.get(code="ONG")
         log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
         project.save()
-        regenerate_meta_project_new_code(project.meta_project)
+        post_approval_changes(project)
+        data = ProjectDetailsV2Serializer(project).data
         return Response(
-            ProjectDetailsV2Serializer(project).data,
+            data,
             status=status.HTTP_200_OK,
         )
 
@@ -1003,12 +1000,9 @@ class ProjectV2ViewSet(
 
         # Associate all projects with the meta project
         project_objs.update(meta_project=meta_project)
-        meta_project.lead_agency = lead_agency
-        meta_project.save()
-
-        # Regenerate the meta project code for all involved meta projects
-        for meta_project in set(all_meta_projects + [meta_project]):
-            regenerate_meta_project_new_code(meta_project)
+        for project in project_objs:
+            project.lead_agency = lead_agency
+            project.save()
 
         # Clean up any meta projects that have no projects associated with them
         count = MetaProject.objects.filter(projects__isnull=True).count()
@@ -1189,11 +1183,15 @@ class ProjectV2ViewSet(
         This endpoint can be used to get all projects associated with the meta project.
         """
         project = self.get_object()
-        if not project.meta_project:
-            return Project.objects.none()
-        associated_projects = Project.objects.filter(
-            meta_project=project.meta_project,
-        )
+        filters = Q()
+        if project.meta_project:
+            filters &= Q(meta_project=project.meta_project)
+        elif project.component is not None:
+            filters &= Q(component=project.component)
+        else:
+            filters &= Q(id=project.id)
+
+        associated_projects = Project.objects.filter(filters)
         if (
             request.query_params.get("filter_by_project_status", "false").lower()
             == "true"
@@ -1204,17 +1202,16 @@ class ProjectV2ViewSet(
         included_entries = request.query_params.get("included_entries", "all").lower()
         if included_entries == "only_components":
             if not project.component:
-                # If the project is not a component, return an empty queryset
+                # If the project is not a component, return only itself
                 associated_projects = Project.objects.filter(id=project.id)
             else:
                 associated_projects = associated_projects.filter(
                     component=project.component
                 )
-        elif included_entries == "exclude_components":
-            if project.component:
-                associated_projects = associated_projects.exclude(
-                    component=project.component
-                )
+        elif included_entries == "exclude_components" and project.component:
+            associated_projects = associated_projects.exclude(
+                component=project.component
+            )
 
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(

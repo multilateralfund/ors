@@ -288,8 +288,8 @@ class TestAssociateProject:
 
         project.refresh_from_db()
         project2.refresh_from_db()
-        assert project.meta_project == project2.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project == project2.meta_project
+        assert project.lead_agency == agency
 
         project.meta_project = None
         project.save()
@@ -309,7 +309,7 @@ class TestAssociateProject:
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project.lead_agency == agency
 
 
 class TestProjectListAssocitatedProjects:

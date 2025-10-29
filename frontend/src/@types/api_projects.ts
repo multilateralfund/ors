@@ -102,7 +102,7 @@ export type ProjectType = {
   meeting_transf_id: any
   metaproject_category: string
   metaproject_code: string
-  metaproject_new_code: string
+  metacode: string
   mya_code: string
   mya_subsector: string
   national_agency: any
@@ -194,7 +194,7 @@ export type ProjectCluster = {
 
 export type MetaProjectType = {
   id: number
-  new_code: string
+  umbrella_code: string
   lead_agency: ApiAgency
   country: Country
   clusters: ProjectCluster[]

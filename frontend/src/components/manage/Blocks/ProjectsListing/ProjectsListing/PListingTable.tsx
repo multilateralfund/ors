@@ -99,7 +99,7 @@ const PListingTable = ({
                 ? colId
                 : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
-                  : colId === 'metaproject_new_code'
+                  : colId === 'metacode'
                     ? 'meta_project__code'
                     : colId.split('.')[0] + '__name'
 

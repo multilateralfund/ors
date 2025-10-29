@@ -182,8 +182,8 @@ const getColumnDefs = (
       },
       {
         headerName: tableColumns.metacode,
-        field: 'metaproject_new_code',
-        tooltipField: 'metaproject_new_code',
+        field: 'metacode',
+        tooltipField: 'metacode',
       },
       {
         headerName: tableColumns.code,

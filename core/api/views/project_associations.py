@@ -30,7 +30,7 @@ class ProjectAssociationViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "lead_agency__name",
+        "projects__lead_agency__name",
         "type",
         "projects__title",
         "projects__country__name",
@@ -65,7 +65,7 @@ class ProjectAssociationViewSet(
 
         if user.has_perm("core.can_view_only_own_agency"):
             return queryset.filter(
-                Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
+                Q(agency=user.agency) | Q(lead_agency=user.agency)
             ).distinct()
         return queryset.none()
 

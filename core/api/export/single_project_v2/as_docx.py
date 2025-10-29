@@ -137,11 +137,7 @@ class ProjectsV2ProjectExportDocx:
             elif p.text.startswith("Code:"):
                 p.add_run(data.get("code", ""), None)
             elif p.text.startswith("Metacode:"):
-                metacode_from_meta_project = data.get("meta_project", {}).get(
-                    "new_code", ""
-                )
-                metacode = data.get("metacode", "")
-                p.add_run(metacode if metacode else metacode_from_meta_project, None)
+                p.add_run(data.get("metacode", ""), None)
 
             if p.runs:
                 for k, v in p_style.items():
@@ -214,7 +210,7 @@ class ProjectsV2ProjectExportDocx:
             row = table.add_row()
             for project in related_projects:
                 row_data = [
-                    project.meta_project.new_code,
+                    project.metacode,
                     project.code,
                     project.status.name,
                 ]

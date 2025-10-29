@@ -5,8 +5,6 @@ from core.api.tests.base import BaseTest
 from core.api.tests.factories import MetaProjectFactory
 from core.models.project import MetaProject
 from core.models.project import Project
-from core.utils import get_meta_project_code
-from core.utils import get_meta_project_new_code
 
 pytestmark = pytest.mark.django_db
 
@@ -24,8 +22,6 @@ def setup_metaprojects_list(_setup_project_list):
         project.meta_project = meta_project
         project.save()
 
-    meta_project.new_code = get_meta_project_new_code([project])
-    meta_project.code = get_meta_project_code(project.country, project.cluster)
     meta_project.save()
 
     return [meta_project]

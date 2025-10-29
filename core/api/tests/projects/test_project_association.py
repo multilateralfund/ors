@@ -43,32 +43,26 @@ class TestProjectAssociationListing(BaseTest):
 
         def _set_project_user_same_agency(user):
             project.agency = agency
-            project.meta_project = meta_project
+            project.lead_agency = None
             project.save()
             user.agency = agency
             user.save()
-            meta_project.lead_agency = None
-            meta_project.save()
 
         def _set_project_user_different_agency(
             user,
         ):
             project.agency = agency2
-            project.meta_project = meta_project
+            project.lead_agency = None
             project.save()
             user.agency = agency
             user.save()
-            meta_project.lead_agency = None
-            meta_project.save()
 
         def _set_project_user_same_lead_agency(user):
             project.agency = agency2
-            project.meta_project = meta_project
+            project.lead_agency = agency
             project.save()
             user.agency = agency
             user.save()
-            meta_project.lead_agency = agency
-            meta_project.save()
 
         def _test_user_permissions(user, expected_response_status, expected_count=None):
             self.client.force_authenticate(user=user)
@@ -177,7 +171,7 @@ class TestProjectAssociationListing(BaseTest):
             agency=project1.agency,
             meta_project=meta_project_mya,
         )
-        project1.meta_project = meta_project
+        project1.lead_agency = meta_project.lead_agency
         project1.save()
 
         self.client.force_authenticate(user=secretariat_viewer_user)

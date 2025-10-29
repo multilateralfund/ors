@@ -96,7 +96,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
-            "new_code",
+            "umbrella_code",
             "projects",
             "field_data",
             "computed_field_data",
@@ -139,7 +139,7 @@ class MetaProjecMyaSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
-            "new_code",
+            "umbrella_code",
             "country",
             "clusters",
         ]

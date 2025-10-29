@@ -57,14 +57,14 @@ class MetaProjectMyaFilter(filters.FilterSet):
             ("projects__country__name", "country__name"),
             ("projects__cluster__code", "cluster__code"),
             "lead_agency__name",
-            "new_code",
+            "umbrella_code",
             "type",
         ),
         field_labels={
             "country__name": "Country",
             "cluster__code": "Cluster code",
             "lead_agency__name": "Lead agency",
-            "new_code": "Code",
+            "umbrella_code": "Code",
             "type": "Type",
         },
     )

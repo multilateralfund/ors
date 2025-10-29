@@ -27,7 +27,7 @@ const ProjectIdentifiers = ({
 
   const { agencies } = useContext(ProjectsDataContext)
   const leadAgency =
-    find(agencies, (agency) => agency.id === project.meta_project?.lead_agency)
+    find(agencies, (agency) => agency.id === project.lead_agency)
       ?.name ?? '-'
 
   const bpActivity = {

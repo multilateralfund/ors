@@ -78,7 +78,7 @@ const ProjectIdentifiersFields = ({
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
   const isAddOrCopy = mode === 'add' || mode === 'copy'
-  const hasNoLeadAgency = !project?.meta_project?.lead_agency
+  const hasNoLeadAgency = !project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
     (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||

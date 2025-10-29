@@ -51,7 +51,7 @@ class MetaProjectSerializer(serializers.ModelSerializer):
             "type",
             "lead_agency",
             "code",
-            "new_code",
+            "umbrella_code",
             "pcr_project_id",
         ]
 

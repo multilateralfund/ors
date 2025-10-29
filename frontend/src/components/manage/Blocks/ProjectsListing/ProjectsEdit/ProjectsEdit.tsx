@@ -211,7 +211,7 @@ const ProjectsEdit = ({
         country: project.country_id,
         meeting: project.meeting_id,
         agency: project.agency_id,
-        lead_agency: project.meta_project?.lead_agency,
+        lead_agency: project.lead_agency,
         lead_agency_submitting_on_behalf:
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,

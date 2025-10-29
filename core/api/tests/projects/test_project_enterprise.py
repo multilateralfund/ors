@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="_setup_enterprises")
 def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc):
     project2.country = new_country
-    project2.meta_project.lead_agency = new_agency
+    project2.lead_agency = new_agency
     project2.save()
     enterprise1 = EnterpriseFactory(name="Enterprise 1")
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
@@ -82,7 +82,7 @@ class TestListProjectEnterprise(BaseTest):
         assert response.status_code == 403
         project2.agency = new_agency
         project2.country = new_country
-        project2.meta_project.lead_agency = new_agency
+        project2.lead_agency = new_agency
         project2.save()
         enterprise1, _, _ = _setup_enterprises
         enterprise1.status = EnterpriseStatus.APPROVED
@@ -200,7 +200,7 @@ class TestProjectRetrieveProjectEnterprise:
         enterprise1.save()
         project2.agency = new_agency
         project2.country = new_country
-        project2.meta_project.lead_agency = new_agency
+        project2.lead_agency = new_agency
         project2.save()
         project_enterprise1, project_enterprise2, _ = _setup_enterprises
 

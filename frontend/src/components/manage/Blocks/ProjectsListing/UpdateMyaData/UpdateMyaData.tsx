@@ -90,8 +90,8 @@ export default function UpdateMyaData() {
   const columnDefs: GridOptions<MetaProjectType>['columnDefs'] = [
     {
       headerName: 'Code',
-      field: 'new_code',
-      tooltipField: 'new_code',
+      field: 'umbrella_code',
+      tooltipField: 'umbrella_code',
     },
     {
       headerName: 'Type',
