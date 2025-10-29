@@ -1028,6 +1028,15 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         meeting_changed = instance.meeting != validated_data.get(
             "meeting", instance.meeting
         )
+        cluster_changed = instance.cluster != validated_data.get(
+            "cluster", instance.cluster
+        )
+        if cluster_changed:
+            if validated_data["cluster"].category == "MYA":
+                validated_data["category"] = Project.Category.MYA
+            else:
+                validated_data["category"] = Project.Category.IND
+
         super().update(instance, validated_data)
         if instance.component:
             original_project = instance.component.original_project
