@@ -101,10 +101,11 @@ class APRExportWriter:
                     return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
                 except (ValueError, AttributeError):
                     return value
+            return value
 
-            # Format numbers (convert to float for Excel)
-            if isinstance(value, (int, float, Decimal)):
-                return float(value)
+        # Format numbers (convert to float for Excel)
+        if isinstance(value, (int, float, Decimal)):
+            return float(value)
 
             return str(value) if value else None
 
