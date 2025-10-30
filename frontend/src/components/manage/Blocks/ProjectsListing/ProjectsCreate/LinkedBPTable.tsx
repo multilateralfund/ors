@@ -1,15 +1,15 @@
+import { useEffect, useMemo, useRef } from 'react'
+
 import type { ApiAgency } from '@ors/@types/api_agencies'
 import type { Country } from '@ors/@types/store'
-
-import { useEffect, useMemo, useRef } from 'react'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import {
-  BpDataProps,
   ProjectDataProps,
+  BpDataProps,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { ApiBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
@@ -31,6 +31,13 @@ const LinkedBPTableWrapper = (
     periodOptions,
     ({ status = [] }) => status.length > 0 && status.includes('Endorsed'),
   )
+
+  if (yearRanges && yearRanges.length > 0 && !latestEndorsedBpPeriod) {
+    props.onBpDataChange({
+      hasBpData: false,
+      bpDataLoading: false,
+    })
+  }
 
   return (
     yearRanges &&
@@ -60,6 +67,7 @@ const LinkedBPTable = ({
   ...rest
 }: LinkedBPTableProps) => {
   const projIdentifiers = projectData.projIdentifiers
+  const bpLinking = projectData.bpLinking
 
   const agencies = useStore((state) => state?.common.agencies_with_all.data)
   const countries = useStore((state) => state?.common.countries.data)
@@ -89,7 +97,7 @@ const LinkedBPTable = ({
 
   return (
     <>
-      {bp && projectData.bpLinking.isLinkedToBP ? (
+      {bp && bpLinking.isLinkedToBP ? (
         <div>
           Business plan {bp.name} {' - '}
           <span>(Meeting: {bp.meeting_number})</span>
@@ -98,7 +106,6 @@ const LinkedBPTable = ({
           ) : null}
         </div>
       ) : null}
-      {/* {bp && ( */}
       <LatestEndorsedBPActivities
         {...{
           projectData,
@@ -108,7 +115,6 @@ const LinkedBPTable = ({
         }}
         {...rest}
       />
-      {/* )} */}
     </>
   )
 }
@@ -172,22 +178,22 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   }, [areActivitiesLoaded])
 
   useEffect(() => {
-    if (onBpDataChange) {
-      if (formattedResults.length > 0) {
-        setProjectData((prevData) => ({
-          ...prevData,
-          bpLinking: {
-            isLinkedToBP: true,
-            bpId: prevData.bpLinking.bpId,
-          },
-        }))
-      }
+    const hasResults = formattedResults.length > 0
 
-      onBpDataChange({
-        hasBpData: formattedResults.length > 0,
-        bpDataLoading: !!loading,
-      })
+    if (hasResults) {
+      setProjectData((prevData) => ({
+        ...prevData,
+        bpLinking: {
+          ...prevData.bpLinking,
+          isLinkedToBP: true,
+        },
+      }))
     }
+
+    onBpDataChange({
+      hasBpData: hasResults,
+      bpDataLoading: !!loading,
+    })
   }, [areActivitiesLoaded])
 
   useEffect(() => {

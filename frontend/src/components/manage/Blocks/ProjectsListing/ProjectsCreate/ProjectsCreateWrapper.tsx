@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
@@ -26,6 +27,8 @@ import { debounce, groupBy } from 'lodash'
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+
+  const { canViewBp } = useContext(PermissionsContext)
 
   const {
     fetchProjectFields,
@@ -99,7 +102,7 @@ const ProjectsCreateWrapper = () => {
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
-    if (country && agency && cluster) {
+    if (canViewBp && country && agency && cluster) {
       setBpData({
         hasBpData: false,
         bpDataLoading: true,

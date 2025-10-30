@@ -3,7 +3,7 @@ import { ChangeEvent } from 'react'
 import LinkedBPTableWrapper from './LinkedBPTable'
 import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { BpDataProps, ProjectDataProps, ProjectTabSetters } from '../interfaces'
+import { ProjectDataProps, ProjectTabSetters, BpDataProps } from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
@@ -23,6 +23,7 @@ const ProjectBPLinking = ({
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
   }) => {
+  const { country, agency, cluster } = projectData.projIdentifiers
   const { isLinkedToBP } = projectData.bpLinking
 
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,8 +41,6 @@ const ProjectBPLinking = ({
       }
     })
   }
-
-  const { country, agency, cluster } = projectData.projIdentifiers
 
   return (
     <>
@@ -63,7 +62,7 @@ const ProjectBPLinking = ({
         />
         {country && agency && cluster && (
           <LinkedBPTableWrapper
-            {...{ projectData, setProjectData, onBpDataChange, bpData }}
+            {...{ projectData, setProjectData, bpData, onBpDataChange }}
           />
         )}
       </div>

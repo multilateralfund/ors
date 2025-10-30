@@ -191,7 +191,7 @@ const ProjectsCreate = ({
     [approvalData, approvalFields, errors],
   )
 
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
   const hasV3EditPermissions =
     !!project && mode === 'edit' && canEditApprovedProjects
   const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
@@ -202,6 +202,7 @@ const ProjectsCreate = ({
     (editableByAdmin || project.submission_status === 'Recommended')
 
   const hasBpDefaultErrors =
+    canViewBp &&
     mode === 'edit' &&
     canEditField(editableFields, 'bp_activity') &&
     bpData.hasBpData &&

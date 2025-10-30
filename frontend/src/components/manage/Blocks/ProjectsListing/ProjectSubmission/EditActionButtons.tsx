@@ -92,6 +92,7 @@ const EditActionButtons = ({
     canRecommendProjects,
     canApproveProjects,
     canEditApprovedProjects,
+    canViewBp,
   } = useContext(PermissionsContext)
 
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
@@ -209,7 +210,8 @@ const EditActionButtons = ({
     !specificFieldsLoaded ||
     isSubmitDisabled ||
     hasErrors ||
-    (canEditField(editableFields, 'bp_activity') &&
+    (canViewBp &&
+      canEditField(editableFields, 'bp_activity') &&
       bpData.hasBpData &&
       !bpLinking.bpId)
   const disableUpdate =
