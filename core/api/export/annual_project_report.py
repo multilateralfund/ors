@@ -103,11 +103,10 @@ class APRExportWriter:
                     return value
             return value
 
-        # Format numbers (convert to float for Excel)
         if isinstance(value, (int, float, Decimal)):
-            return float(value)
+            return value
 
-            return str(value) if value else None
+        return str(value) if value else None
 
     def _create_response(self):
         safe_agency_name = "".join(
