@@ -3,7 +3,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
@@ -13,6 +13,7 @@ import Link from '@ors/components/ui/Link/Link.tsx'
 import { considerationOpts } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 import cx from 'classnames'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full BPListUpload' },
@@ -115,20 +116,19 @@ const ColsFundsRecommended = (props: {
   cellClass?: string
 }) => {
   const { data, cellClass } = props
+
+  const dollarValueOrNull = useCallback(
+    (value: number | string) => (value ? `$${formatNumberValue(value)}` : null),
+    [],
+  )
+
   return (
     <>
+      <td className={cellClass}>{dollarValueOrNull(data.project_funding)}</td>
       <td className={cellClass}>
-        {'$'}
-        {data.project_funding}
+        {dollarValueOrNull(data.project_support_cost)}
       </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.project_support_cost}
-      </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.total}
-      </td>
+      <td className={cellClass}>{dollarValueOrNull(data.total)}</td>
     </>
   )
 }
@@ -147,8 +147,12 @@ const TrAllCells = (props: {
   return (
     <tr className="leading-7">
       <td className={cellClass}>{sector}</td>
-      <td className={cellClass}>{data.hcfc}</td>
-      <td className={cellClass}>{data.hfc}</td>
+      <td className={cellClass}>
+        {data.hcfc ? formatNumberValue(data.hcfc) : null}
+      </td>
+      <td className={cellClass}>
+        {data.hfc ? formatNumberValue(data.hfc) : null}
+      </td>
       <ColsFundsRecommended cellClass={cellClass} data={data} />
     </tr>
   )
@@ -308,7 +312,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
 const initialRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
-  blanket_or_individual_consideration: null,
+  blanket_or_individual_consideration: '',
 })
 
 const ApprovalSummaryFilters = (props: {
@@ -395,7 +399,7 @@ const ApprovalSummaryFilters = (props: {
             onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_or_individual_consideration: value?.id ?? null,
+                blanket_or_individual_consideration: value?.id ?? '',
               }))
             }
             getOptionLabel={(option: any) => option?.name ?? ''}

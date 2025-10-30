@@ -15,6 +15,7 @@ from core.models import (
     Project,
 )
 from core.api.filters.annual_project_reports import APRProjectFilter, APRGlobalFilter
+from core.api.export.annual_project_report import APRExportWriter
 from core.api.permissions import (
     HasAPRViewAccess,
     HasAPREditAccess,
@@ -378,61 +379,47 @@ class APRExportView(APIView):
 
     def get(self, request, year, agency_id):
         """
-        Export APR data to Excel.
+        Exports APR data to Excel according to filters.
         """
-        # Get the agency report
         agency_report = get_object_or_404(
             AnnualAgencyProjectReport.objects.prefetch_related(
                 "project_reports",
                 "project_reports__project",
+                "project_reports__project__meta_project",
                 "project_reports__project__agency",
                 "project_reports__project__country",
+                "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__subsectors",
-                "project_reports__project__meeting",
-                "project_reports__project__decision",
+                "project_reports__project__project_type",
+                "project_reports__project__status",
                 "project_reports__project__ods_odp",
+                "project_reports__project__ods_odp__ods_substance",
+                "project_reports__project__ods_odp__ods_blend",
             ),
             progress_report__year=year,
             agency_id=agency_id,
         )
 
-        # Check object permissions
         self.check_object_permissions(request, agency_report)
 
-        # Get status filter from query params
+        # TODO: do we need to ensure ONG & COM are always selected here as well?
         status_codes = request.query_params.get("status", "ONG,COM")
         status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
 
-        # Filter project reports by status
-        project_reports = (
-            agency_report.project_reports.filter(project__status__code__in=status_codes)
-            .select_related(
-                "project",
-                "project__agency",
-                "project__country",
-                "project__sector",
-            )
-            .prefetch_related(
-                "project__subsectors",
-                "project__ods_odp",
-            )
+        project_reports = agency_report.project_reports.filter(
+            project__status__code__in=status_codes
         )
 
-        # TODO: Generate Excel file; returning JSON data for now
         serializer = AnnualProjectReportReadSerializer(
             project_reports, many=True, context={"request": request}
         )
-        return Response(
-            {
-                "message": "Excel export not yet implemented. Returning JSON data.",
-                "year": year,
-                "agency": agency_report.agency.name,
-                "total_projects": project_reports.count(),
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        writer = APRExportWriter(
+            year=year,
+            agency_name=agency_report.agency.name,
+            project_reports_data=serializer.data,
         )
+        return writer.generate()
 
 
 class APRSummaryTablesView(APIView):
