@@ -13,11 +13,7 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/initialData.ts'
 import SummaryOfProjectsRow from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/SummaryOfProjectsRow.tsx'
 import { default as TableCell } from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/SummaryOfProjectsTableCell.tsx'
-
-// Filter out parameters with falsy values to reduce encoded size.
-const filterByValue = (obj: Record<string, any>) => {
-  return Object.fromEntries(Object.entries(obj).filter(([_, value]) => value))
-}
+import { filterByValue } from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/utils.ts'
 
 const SummaryOfProjectsTable = (props: {
   rows: RowData[]
