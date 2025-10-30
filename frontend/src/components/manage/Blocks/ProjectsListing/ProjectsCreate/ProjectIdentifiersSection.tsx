@@ -16,9 +16,6 @@ const ProjectIdentifiersSection = ({
   projectData,
   setProjectData,
   areNextSectionsDisabled,
-  postExComUpdate,
-  isV3ProjectEditable,
-  setCurrentStep,
   setCurrentTab,
   bpData,
   onBpDataChange,
@@ -55,9 +52,6 @@ const ProjectIdentifiersSection = ({
             projectData,
             setProjectData,
             areNextSectionsDisabled,
-            postExComUpdate,
-            isV3ProjectEditable,
-            setCurrentStep,
             setCurrentTab,
           }}
           {...rest}
@@ -75,8 +69,6 @@ const ProjectIdentifiersSection = ({
             bpData,
           }}
           isSectionDisabled={
-            postExComUpdate ||
-            isV3ProjectEditable ||
             areNextSectionsDisabled ||
             !canEditField(editableFields, 'bp_activity')
           }

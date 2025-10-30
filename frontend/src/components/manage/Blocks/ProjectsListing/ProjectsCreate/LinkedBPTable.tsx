@@ -32,14 +32,9 @@ const LinkedBPTableWrapper = (
     ({ status = [] }) => status.length > 0 && status.includes('Endorsed'),
   )
 
-  const { cluster, country, agency } = props.projectData.projIdentifiers
-
   return (
     yearRanges &&
     yearRanges.length > 0 &&
-    cluster &&
-    country &&
-    agency &&
     (latestEndorsedBpPeriod ? (
       <LinkedBPTable
         {...props}
@@ -86,7 +81,7 @@ const LinkedBPTable = ({
   }
 
   const activities = useGetActivities(filters)
-  const { loading: loading2, results: foundActivities } = activities
+  const { loading, results: foundActivities } = activities
 
   const bp = useMemo(() => {
     return foundActivities.length > 0 ? foundActivities[0].business_plan : null
@@ -109,7 +104,7 @@ const LinkedBPTable = ({
           projectData,
           activities,
           filters,
-          loading2,
+          loading,
         }}
         {...rest}
       />
@@ -126,7 +121,7 @@ type LatestEndorsedBPActivitiesProps = Omit<
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
-  loading2?: boolean
+  loading?: boolean
 }
 
 export type LinkableActivity = ApiBPActivity & {
@@ -141,7 +136,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     setProjectData,
     bpData,
     onBpDataChange,
-    loading2,
+    loading,
     ...rest
   } = props
   const { results, ...restActivities } = activities
@@ -190,13 +185,13 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
 
       onBpDataChange({
         hasBpData: formattedResults.length > 0,
-        bpDataLoading: !!loading2,
+        bpDataLoading: !!loading,
       })
     }
   }, [areActivitiesLoaded])
 
   useEffect(() => {
-    if (formattedResults.length === 1) {
+    if (formattedResults.length === 1 && isLinkedToBP) {
       setProjectData((prevData) => {
         const { bpLinking } = prevData
 

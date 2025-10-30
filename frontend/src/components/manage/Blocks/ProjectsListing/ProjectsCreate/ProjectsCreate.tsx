@@ -202,11 +202,7 @@ const ProjectsCreate = ({
     (editableByAdmin || project.submission_status === 'Recommended')
 
   const hasBpDefaultErrors =
-    !(
-      postExComUpdate ||
-      isV3ProjectEditable ||
-      !canEditField(editableFields, 'bp_activity')
-    ) &&
+    canEditField(editableFields, 'bp_activity') &&
     bpData.hasBpData &&
     !bpLinking.bpId
 

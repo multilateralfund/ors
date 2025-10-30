@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -26,7 +26,6 @@ import {
 
 import { CircularProgress } from '@mui/material'
 import { useStore } from '@ors/store'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectsHeader = ({
   projectData,
@@ -68,26 +67,12 @@ const ProjectsHeader = ({
     crossCuttingFields,
   )
   const { editableFields } = useStore((state) => state.projectFields)
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
-
-  const hasV3EditPermissions =
-    !!project && mode === 'edit' && canEditApprovedProjects
-  const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
-    project?.submission_status ?? '',
-  )
-  const isV3ProjectEditable =
-    hasV3EditPermissions &&
-    (editableByAdmin || project.submission_status === 'Recommended')
 
   const isSaveDisabled =
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    (!(
-      postExComUpdate ||
-      isV3ProjectEditable ||
-      !canEditField(editableFields, 'bp_activity')
-    ) &&
+    (canEditField(editableFields, 'bp_activity') &&
       bpData.hasBpData &&
       !bpLinking.bpId)
 
