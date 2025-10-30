@@ -119,6 +119,13 @@ const ProjectIdentifiersFields = ({
     },
   }
 
+  const firstColFieldsProps = {
+    ...defaultProps,
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-full',
+    },
+  }
+
   const handleChangeCountry = (country: Country) => {
     changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
       country,
@@ -324,19 +331,25 @@ const ProjectIdentifiersFields = ({
             <div>
               <Label>{tableColumns.country}</Label>
               <div className="flex items-center">
-                <Field
-                  widget="autocomplete"
-                  options={countries}
-                  value={projIdentifiers?.country}
-                  onChange={(_, value) => handleChangeCountry(value)}
-                  getOptionLabel={(option) => getOptionLabel(countries, option)}
-                  disabled={!isAddOrCopy || !areNextSectionsDisabled}
-                  Input={{
-                    error: getIsInputDisabled('country'),
-                  }}
-                  {...sectionDefaultProps}
-                />
-                <FieldErrorIndicator errors={errors} field="country" />
+                <div className="w-[23rem] flex-shrink">
+                  <Field
+                    widget="autocomplete"
+                    options={countries}
+                    value={projIdentifiers?.country}
+                    onChange={(_, value) => handleChangeCountry(value)}
+                    getOptionLabel={(option) =>
+                      getOptionLabel(countries, option)
+                    }
+                    disabled={!isAddOrCopy || !areNextSectionsDisabled}
+                    Input={{
+                      error: getIsInputDisabled('country'),
+                    }}
+                    {...firstColFieldsProps}
+                  />
+                </div>
+                <div className="w-8">
+                  <FieldErrorIndicator errors={errors} field="country" />
+                </div>
               </div>
             </div>
           )}
@@ -360,7 +373,9 @@ const ProjectIdentifiersFields = ({
                   withClear={canEditMeeting}
                 />
               </div>
-              <FieldErrorIndicator errors={errors} field="meeting" />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="meeting" />
+              </div>
             </div>
           </div>
           {canViewField(viewableFields, 'agency') && (
@@ -401,7 +416,7 @@ const ProjectIdentifiersFields = ({
             <div>
               <Label>{tableColumns.cluster}</Label>
               <div className="flex items-center">
-                <div className="w-[20rem] flex-shrink">
+                <div className="w-[23rem] flex-shrink">
                   <Field
                     widget="autocomplete"
                     options={crtClusters}
@@ -419,20 +434,19 @@ const ProjectIdentifiersFields = ({
                     Input={{
                       error: getIsInputDisabled('cluster'),
                     }}
-                    {...defaultProps}
-                    FieldProps={{
-                      className: defaultProps.FieldProps.className + ' w-full',
-                    }}
+                    {...firstColFieldsProps}
                   />
                 </div>
-                <FieldErrorIndicator errors={errors} field="cluster" />
+                <div className="w-8">
+                  <FieldErrorIndicator errors={errors} field="cluster" />
+                </div>
               </div>
             </div>
           )}
           {canViewField(viewableFields, 'production') && (
-            <div className="flex items-center self-end">
+            <div className="ml-1 flex items-center self-end">
               <FormControlLabel
-                className="w-fit"
+                className="w-[7.6rem]"
                 label="Production"
                 control={
                   <Checkbox
@@ -461,7 +475,9 @@ const ProjectIdentifiersFields = ({
                   typography: { fontSize: '1rem', marginTop: '2px' },
                 }}
               />
-              <FieldErrorIndicator errors={errors} field="production" />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="production" />
+              </div>
             </div>
           )}
           <div>
@@ -511,28 +527,30 @@ const ProjectIdentifiersFields = ({
           <>
             <Label>{tableColumns.lead_agency}</Label>
             <div className="flex items-center">
-              <Field
-                widget="autocomplete"
-                options={agencies}
-                value={projIdentifiers?.lead_agency}
-                onChange={(_, value) => {
-                  handleChangeLeadAgency(value)
+              <div className="w-[23rem] flex-shrink">
+                <Field
+                  widget="autocomplete"
+                  options={agencies}
+                  value={projIdentifiers?.lead_agency}
+                  onChange={(_, value) => {
+                    handleChangeLeadAgency(value)
 
-                  if (!projIdentifiers.lead_agency_submitting_on_behalf) {
-                    handleChangeAgency(value)
+                    if (!projIdentifiers.lead_agency_submitting_on_behalf) {
+                      handleChangeAgency(value)
+                    }
+                  }}
+                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    !canUpdateLeadAgency ||
+                    !canEditField(editableFields, 'lead_agency')
                   }
-                }}
-                getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                disabled={
-                  !areNextSectionsDisabled ||
-                  !canUpdateLeadAgency ||
-                  !canEditField(editableFields, 'lead_agency')
-                }
-                Input={{
-                  error: getIsInputDisabled('lead_agency'),
-                }}
-                {...sectionDefaultProps}
-              />
+                  Input={{
+                    error: getIsInputDisabled('lead_agency'),
+                  }}
+                  {...firstColFieldsProps}
+                />
+              </div>
               <FieldErrorIndicator errors={errors} field="lead_agency" />
             </div>
             {canUpdateLeadAgency && (
