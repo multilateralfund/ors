@@ -13,6 +13,26 @@ IMPORT_DB_OLDEST_MAX_YEAR = 2004
 VALIDATION_MIN_YEAR = 2023
 
 
+def get_umbrella_code(country):
+    country_code = country.iso3 or country.abbr
+    prefix = f"meta/{country_code}/"
+    serials = []
+
+    umbrellas = MetaProject.objects.filter(
+        umbrella_code__startswith=prefix
+    ).values_list("umbrella_code", flat=True)
+    for umb in umbrellas:
+        try:
+            serial = int(umb.split("/")[-1])
+            serials.append(serial)
+        except (IndexError, ValueError):
+            continue
+    serial_number = 1
+    if serials:
+        serial_number = max(serials) + 1
+    return f"meta/{country_code}/{serial_number:08d}"
+
+
 def get_meta_project_code(country, cluster, serial_number=None):
     """
     Get a new meta project code for a country and a cluster
@@ -20,70 +40,23 @@ def get_meta_project_code(country, cluster, serial_number=None):
     country_code = country.iso3 or country.abbr if country else "-"
     cluster_code = cluster.code if cluster else "-"
     if not serial_number:
-        serial_number = (
-            Project.objects.filter(country=country)
-            .values("meta_project_id")
-            .distinct()
-            .count()
-            + 1
+        prefix = f"{country_code}/{cluster_code}/"
+        serials = []
+
+        metacodes = Project.objects.filter(metacode__startswith=prefix).values_list(
+            "metacode", flat=True
         )
+        for metacode in metacodes:
+            try:
+                serial = int(metacode.split("/")[2])
+                serials.append(serial)
+            except (IndexError, ValueError):
+                continue
+        serial_number = 1
+        if serials:
+            serial_number = max(serials) + 1
+
     return f"{country_code}/{cluster_code}/{serial_number}"
-
-
-def get_meta_project_new_code(projects, meta_project=None):
-    """
-    Get a new meta project code based on the existing projects
-
-    @param projects: QuerySet of Project objects
-
-    @return: str
-    """
-    country = projects[0].country if projects else None
-    country_code = country.iso3 or country.abbr if country else "-"
-    clusters_codes = sorted(
-        list({getattr(project.cluster, "code", "-") for project in projects})
-    )
-    # If meta_project is provided and has a new_code, preserve existing clusters and update with current ones
-    if meta_project and getattr(meta_project, "new_code", None):
-        # Extract clusters from existing new_code
-        parts = meta_project.new_code.split("/")
-        if len(parts) >= 2:
-            existing_clusters = parts[1].split("-")
-            # Add new clusters and remove missing ones
-            updated_clusters = [
-                code for code in existing_clusters if code in clusters_codes
-            ]
-            # Add any new clusters not present before
-            for code in clusters_codes:
-                if code not in updated_clusters:
-                    updated_clusters.append(code)
-            clusters_codes = updated_clusters
-    new_code_clusters = "-".join(clusters_codes)
-    code_prefix = f"{country_code}/{new_code_clusters}"
-
-    # Count existing MetaProjects with new_code starting with this prefix
-    count = MetaProject.objects.filter(new_code__startswith=code_prefix).count()
-    serial_number = count + 1
-    return f"{code_prefix}/{serial_number}"
-
-
-def regenerate_meta_project_new_code(meta_project):
-    """
-    Regenerate the new_code for a MetaProject based on its projects
-
-    @param meta_project: MetaProject instance
-
-    @return: str
-    """
-    projects = Project.objects.filter(
-        meta_project=meta_project, submission_status__name="Approved"
-    )
-    if not projects:
-        # if there are no approved projects, consider all projects
-        projects = Project.objects.filter(meta_project=meta_project)
-    new_code = get_meta_project_new_code(projects, meta_project)
-    meta_project.new_code = new_code
-    meta_project.save()
 
 
 def get_project_sub_code(
@@ -126,3 +99,62 @@ def get_project_sub_code(
         f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
         f"{sector_code}/{meetings_code}"
     )
+
+
+def generate_project_metacode(project):
+    """
+    Get the metacode for a project.
+    Still TBD, but right now the metacode is the same only for components.
+    The project category will most likely also play a role in defining the metacode.
+    """
+    component = getattr(project, "component", None)
+    if component:
+        existing_metacode = (
+            Project.objects.filter(component=component, metacode__isnull=False)
+            .values_list("metacode", flat=True)
+            .first()
+        )
+        if existing_metacode:
+            return existing_metacode
+    metacode = get_meta_project_code(
+        project.country,
+        project.cluster,
+    )
+    return metacode
+
+
+def post_approval_changes(project):
+    """
+    Generate project code and meta code when a project is approved.
+    Create an umbrella project (meta project) only if the project has components
+    (even if the components are not approved yet).
+    """
+    # generate project code
+    project.code = get_project_sub_code(
+        project.country,
+        project.cluster,
+        project.agency,
+        project.project_type,
+        project.sector,
+        project.meeting,
+        project.transfer_meeting,
+        project.serial_number,
+    )
+
+    # generate or retrieve meta code
+    project.metacode = generate_project_metacode(project)
+    project.save()
+
+    # create meta project (if required)
+    if not project.component:
+        return
+
+    meta_project = MetaProject.objects.filter(
+        projects__component=project.component
+    ).first()
+    if not meta_project:
+        meta_project = MetaProject.objects.create(
+            umbrella_code=get_umbrella_code(project.country), type=project.project_type
+        )
+    project.meta_project = meta_project
+    project.save()

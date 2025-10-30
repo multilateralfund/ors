@@ -14,7 +14,7 @@ class MetaProjectMyaFilter(filters.FilterSet):
     """
 
     lead_agency_id = filters.ModelMultipleChoiceFilter(
-        field_name="lead_agency",
+        field_name="projects__lead_agency",
         queryset=Agency.objects.all(),
         widget=CSVWidget,
     )
@@ -56,15 +56,15 @@ class MetaProjectMyaFilter(filters.FilterSet):
         fields=(
             ("projects__country__name", "country__name"),
             ("projects__cluster__code", "cluster__code"),
-            "lead_agency__name",
-            "new_code",
+            ("projects__lead_agency__name", "lead_agency__name"),
+            "umbrella_code",
             "type",
         ),
         field_labels={
             "country__name": "Country",
             "cluster__code": "Cluster code",
             "lead_agency__name": "Lead agency",
-            "new_code": "Code",
+            "umbrella_code": "Code",
             "type": "Type",
         },
     )

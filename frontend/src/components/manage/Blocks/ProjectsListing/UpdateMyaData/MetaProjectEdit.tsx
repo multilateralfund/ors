@@ -200,7 +200,7 @@ export const MetaProjectEdit = (props: {
   return (
     <Dialog open={!!mp?.id} onClose={onCancel} fullWidth={true} maxWidth={'xl'}>
       <DialogTitle>
-        MYA: {mp?.new_code}, Lead agency: {mp?.lead_agency?.name || '-'}
+        MYA: {mp?.umbrella_code}, Lead agency: {mp?.lead_agency?.name || '-'}
       </DialogTitle>
       <DialogContent>
         <Typography variant="h6">Projects under this MYA</Typography>

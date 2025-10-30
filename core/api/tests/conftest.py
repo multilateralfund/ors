@@ -61,9 +61,7 @@ from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import (
-    get_meta_project_code,
     get_project_sub_code,
-    regenerate_meta_project_new_code,
 )
 
 # pylint: disable=C0302,W0613
@@ -652,16 +650,12 @@ def project_cluster_kip():
 
 @pytest.fixture
 def meta_project(country_ro, project_cluster_kpp):
-    code = get_meta_project_code(country_ro, project_cluster_kpp)
-
-    return MetaProjectFactory.create(code=code)
+    return MetaProjectFactory.create()
 
 
 @pytest.fixture
 def meta_project_mya(country_ro, project_cluster_kip):
-    code = get_meta_project_code(country_ro, project_cluster_kip)
-
-    return MetaProjectFactory.create(code=code, type="Multi-year agreement")
+    return MetaProjectFactory.create(type="Multi-year agreement")
 
 
 @pytest.fixture(name="project_url")
@@ -739,9 +733,6 @@ def project(
     project_cluster_kpp,
     meta_project,
 ):
-    code = get_project_sub_code(
-        country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
-    )
     project = ProjectFactory.create(
         meta_project=meta_project,
         title="Karma to Burn",
@@ -758,9 +749,27 @@ def project(
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
         serial_number=1,
-        code=code,
     )
-    regenerate_meta_project_new_code(meta_project)
+    return project
+
+
+@pytest.fixture
+def approved_project(
+    project,
+    project_approved_status,
+):
+    project.submission_status = project_approved_status
+    project.version = 3
+    project.code = get_project_sub_code(
+        project.country,
+        project.cluster,
+        project.agency,
+        project.project_type,
+        project.sector,
+        project.meeting,
+        None,
+    )
+    project.save()
     return project
 
 
@@ -1430,10 +1439,10 @@ def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
 
 
 @pytest.fixture
-def annual_project_report(annual_agency_report, project):
+def annual_project_report(annual_agency_report, approved_project):
     return AnnualProjectReportFactory(
         report=annual_agency_report,
-        project=project,
+        project=approved_project,
     )
 
 

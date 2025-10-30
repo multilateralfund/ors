@@ -54,7 +54,7 @@ const ProjectsAssociateConfirmation = ({
     agencies,
     ({ id }) =>
       metaProjectsLeadAgenciesIds.includes(id) ||
-      id === crtProjects[0]?.meta_project?.lead_agency,
+      id === crtProjects[0].lead_agency,
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(

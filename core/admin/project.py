@@ -48,7 +48,7 @@ class MetaProjectAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("lead_agency")
+        return queryset
 
 
 @admin.register(ProjectComponents)
@@ -175,7 +175,6 @@ class ProjectAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = [
         "component",
-        "meta_project",
         "meeting",
         "transfer_meeting",
         "transfer_decision",
@@ -189,6 +188,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "latest_project",
     ]
     raw_id_fields = [
+        "meta_project",
         "bp_activity",
     ]
 

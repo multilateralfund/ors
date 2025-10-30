@@ -25,7 +25,7 @@ import {
   canViewField,
   filterClusterOptions,
   getAgencyErrorType,
-  getProduction,
+  getClusterDetails,
 } from '../utils'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
@@ -78,7 +78,7 @@ const ProjectIdentifiersFields = ({
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
   const isAddOrCopy = mode === 'add' || mode === 'copy'
-  const hasNoLeadAgency = !project?.meta_project?.lead_agency
+  const hasNoLeadAgency = !project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
     (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
@@ -162,13 +162,23 @@ const ProjectIdentifiersFields = ({
       sectionIdentifier,
     )
 
-    const isProduction = getProduction(crtClusters, cluster?.id)
+    const isProduction = getClusterDetails(
+      crtClusters,
+      cluster?.id,
+      'production',
+    ) as boolean
+    const category = getClusterDetails(
+      crtClusters,
+      cluster?.id,
+      'category',
+    ) as string
 
     setProjectData((prevData) => ({
       ...prevData,
       [sectionIdentifier]: {
         ...prevData[sectionIdentifier],
         production: !isNil(isProduction) ? isProduction : false,
+        category: category ?? null,
       },
     }))
   }
@@ -432,7 +442,11 @@ const ProjectIdentifiersFields = ({
                       !areNextSectionsDisabled ||
                       !canViewProductionProjects ||
                       !isNull(
-                        getProduction(clusters, projIdentifiers.cluster),
+                        getClusterDetails(
+                          clusters,
+                          projIdentifiers.cluster,
+                          'production',
+                        ),
                       ) ||
                       !canEditField(editableFields, 'production')
                     }
@@ -450,6 +464,19 @@ const ProjectIdentifiersFields = ({
               <FieldErrorIndicator errors={errors} field="production" />
             </div>
           )}
+          <div>
+            <Label>{tableColumns.category}</Label>
+            <Field
+              widget="autocomplete"
+              value={projIdentifiers?.category}
+              options={[]}
+              disabled={true}
+              {...defaultProps}
+              FieldProps={{
+                className: defaultProps.FieldProps.className + ' w-[7rem]',
+              }}
+            />
+          </div>
         </div>
         {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
           <div className="flex items-center">

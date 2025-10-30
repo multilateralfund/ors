@@ -230,8 +230,8 @@ class ProjectEnterpriseViewSet(
             return queryset.filter(
                 Q(project__agency=user.agency)
                 | (
-                    Q(project__meta_project__lead_agency=user.agency)
-                    & Q(project__meta_project__lead_agency__isnull=False)
+                    Q(project__lead_agency=user.agency)
+                    & Q(project__lead_agency__isnull=False)
                 )
             )
 

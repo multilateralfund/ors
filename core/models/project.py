@@ -48,16 +48,16 @@ class MetaProject(models.Model):
         max_length=255,
         null=True,
         blank=True,
-        help_text="Obsolete. Replaced by the new 'new_code' field.",
+        help_text="Obsolete. Replaced by the metacode in Project model.",
     )
-    new_code = models.CharField(
+    umbrella_code = models.CharField(
         max_length=255,
         null=True,
         blank=True,
         help_text="""
-        New code generated for the metaproject. The code will include all clusters,
-        unlike the old code which allows only one.
-        Format: country_code/cluster_code1/cluster_code2/.../serial_number
+            Code of the umbrella project (MetaProject model).
+            It is used to associate projects under the same umbrella.
+            Format: meta-/<country-3-letter-code>/<8-digit-unique-number>
         """,
     )
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
@@ -232,12 +232,17 @@ class MetaProject(models.Model):
     # END: Task #32217 fields.
 
     def __str__(self):
-        return f"{self.new_code}"
+        return f"{self.umbrella_code}"
 
 
 class ProjectManager(models.Manager):
     def get_next_serial_number(self, country_id):
-        return self.select_for_update().filter(country_id=country_id).count() + 1
+        return (
+            self.select_for_update()
+            .filter(country_id=country_id, submission_status__name="Approved")
+            .count()
+            + 1
+        )
 
     def get_queryset(self):
         # by default, get projects that don't have latest_project set
@@ -311,8 +316,32 @@ class Project(models.Model):
         PR2 = "pr2", "PR2"
         PR3 = "pr3", "PR3"
 
+    class Category(models.TextChoices):
+        MYA = "Multi-year agreement", "Multi-year agreement"
+        IND = "Individual", "Individual"
+
     meta_project = models.ForeignKey(
-        MetaProject, on_delete=models.CASCADE, related_name="projects", null=True
+        MetaProject,
+        on_delete=models.CASCADE,
+        related_name="projects",
+        null=True,
+        blank=True,
+    )
+    lead_agency = models.ForeignKey(
+        Agency,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="lead_projects",
+    )
+    metacode = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="The metacode that is particular to each project. Initially filled from the MetaProject code.",
+    )
+    category = models.CharField(
+        max_length=255, choices=Category.choices, null=True, blank=True
     )
     component = models.ForeignKey(
         ProjectComponents,
@@ -791,7 +820,7 @@ class Project(models.Model):
             This field is needed for analyses at the recommendation stage for QA unit.
             And it is for MLFS users to select at the review stage.
         """,
-        blank=False,
+        blank=True,
         null=True,
     )
     project_start_date = models.DateField(null=True, blank=True)

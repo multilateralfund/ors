@@ -761,8 +761,11 @@ export const getMenus = (
   ]
 }
 
-export const getProduction = (clusters: Cluster[], clusterId: number | null) =>
-  find(clusters, (cluster) => cluster.id === clusterId)?.production
+export const getClusterDetails = (
+  clusters: Cluster[],
+  clusterId: number | null,
+  field: keyof Cluster,
+) => find(clusters, (cluster) => cluster.id === clusterId)?.[field]
 
 export const formatFiles = (
   files: ProjectAllVersionsFiles[] = [],

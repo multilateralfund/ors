@@ -10,18 +10,13 @@ from core.api.tests.factories import (
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
-    ProjectFactory,
-    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
     SubstanceFactory,
 )
 from core.models import BPActivity
-from core.models.project import MetaProject, Project, ProjectFile
-from core.utils import (
-    get_project_sub_code,
-)
+from core.models.project import Project, ProjectFile
 
 
 pytestmark = pytest.mark.django_db
@@ -708,7 +703,6 @@ class TestCreateProjects(BaseTest):
 
         project = Project.objects.get(id=response.data["id"])
         project2.refresh_from_db()
-        assert project.meta_project == project2.meta_project
         assert project.component
         assert project.component == project2.component
 
@@ -761,82 +755,6 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def test_meta_project_creation(
-        self,
-        agency,
-        new_agency,
-        new_country,
-        meeting,
-        country_ro,
-        project_cluster_kpp,
-        project_cluster_kip,
-        project_closed_status,
-        project_ongoing_status,
-        project_type,
-        sector,
-        subsector,
-        admin_user,
-        _setup_project_create,
-    ):
-        data = {
-            "cluster": project_cluster_kip.id,
-            "country": country_ro.id,
-            "meeting": meeting.id,
-            "agency": agency.id,
-            "lead_agency": agency.id,
-            "sector": sector.id,
-            "subsector_ids": [],
-            "project_type": project_type.id,
-            "title": "Meta Project Test",
-            "description": "This is a test meta project",
-        }
-
-        # setup objects
-        meta_project = MetaProjectFactory.create(
-            lead_agency=agency,
-        )
-        project = ProjectFactory.create(
-            title="Project test 1",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_closed_status,
-        )
-        project.meta_project = meta_project
-        project.save()
-
-        # create project and expect a new meta project to be created
-        # as the meta project does not have a project with a different status from closed
-        self.client.force_authenticate(user=admin_user)
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201, response.data
-
-        # created a new meta project
-        created_meta_project_id = response.data["meta_project"]["id"]
-        assert response.data["meta_project"]["new_code"] is None
-        assert MetaProject.objects.count() == 2
-
-        # remove created meta project
-        MetaProject.objects.filter(id=created_meta_project_id).delete()
-
-        # add an ongoing project to the existing meta project
-        project2 = ProjectFactory.create(
-            title="Project test 2",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_ongoing_status,
-        )
-        project2.meta_project = meta_project
-        project2.save()
-
-        # test that a new meta project is still created
-        response = self.client.post(self.url, data, format="json")
-
-        assert response.status_code == 201, response.data
-        assert MetaProject.objects.count() == 2  # new meta project created
-        assert response.data["meta_project"]["id"] != meta_project.id
-
 
 class TestProjectsV2Update:
     client = APIClient()
@@ -877,11 +795,11 @@ class TestProjectsV2Update:
             _test_user_permissions(user, own_agency_response_status)
             project.agency = new_agency
             project.save()
-            project.meta_project.lead_agency = None
-            project.meta_project.save()
+            project.lead_agency = None
+            project.save()
             _test_user_permissions(user, different_agency_response_status)
-            project.meta_project.lead_agency = user.agency
-            project.meta_project.save()
+            project.lead_agency = user.agency
+            project.save()
             _test_user_permissions(user, lead_agency_response_status)
 
         _test_user_permissions(user, 403)
@@ -934,16 +852,8 @@ class TestProjectsV2Update:
         project.refresh_from_db()
         assert project.title == "Into the Spell"
         assert project.production is True
-        assert project.code == get_project_sub_code(
-            project.country,
-            project.cluster,
-            new_agency,
-            project.project_type,
-            project.sector,
-            project.meeting,
-            None,
-            project.serial_number,
-        )
+        # project code is only set on approval
+        assert project.code is None
 
     # TODO: test ods_odp create/delete
 

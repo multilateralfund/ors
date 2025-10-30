@@ -11,60 +11,94 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-from core.utils import get_meta_project_new_code, get_meta_project_code
+from core.utils import get_umbrella_code
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def set_new_code_meta_projects():
+def populate_existing_projects_metacode():
     """
-    Set new codes for MetaProjects based on the existing projects.
-    This function will update the MetaProject codes to a new format.
+    Populate the metacode field in Project model using the MetaProject code.
+    This function will update the metacode field for all Approved projects that have a code defined
+    in their meta_project.
     """
-    logger.info("⏳ Setting new codes for MetaProjects...")
+    logger.info("⏳ Populating metacode for existing projects...")
+    Project.objects.update(metacode=None)  # Reset existing metacode values
+    projects_with_meta_project_code = Project.objects.really_all().filter(
+        meta_project__code__isnull=False, submission_status__name="Approved"
+    )
+    for project in projects_with_meta_project_code:
+        project.metacode = project.meta_project.code
 
-    # Get all MetaProjects
-    meta_projects = MetaProject.objects.all()
-
-    for meta_project in meta_projects:
-        new_code = get_meta_project_new_code(meta_project.projects.all())
-        logger.info(f"Setting MetaProject {meta_project.code} to new code {new_code}")
-        meta_project.new_code = new_code
-        meta_project.save()
+    Project.objects.bulk_update(projects_with_meta_project_code, ["metacode"])
+    logger.info("✅ Successfully populated metacode for existing projects.")
 
 
 @transaction.atomic
-def set_meta_project_for_existing_projects():
-    """Set a MetaProject for existing projects that do not have one."""
+def populate_existing_projects_lead_agency():
+    """
+    Populate the lead agency field in Project model using the MetaProject lead agency.
+    This function will update the lead agency field for all projects that have a lead agency defined
+    in their meta_project.
+    """
+    logger.info("⏳ Populating lead agency for existing projects...")
+    projects_with_meta_project_lead_agency = Project.objects.really_all().filter(
+        meta_project__lead_agency__isnull=False
+    )
+    for project in projects_with_meta_project_lead_agency:
+        project.lead_agency = project.meta_project.lead_agency
+    Project.objects.bulk_update(projects_with_meta_project_lead_agency, ["lead_agency"])
+    logger.info("✅ Successfully populated lead agency for existing projects.")
 
-    logger.info("⏳ Setting MetaProject for existing projects...")
-    # Set MetaProject FK for all existing projects
-    projects_without_meta_projects = Project.objects.filter(meta_project__isnull=True)
-    for project in projects_without_meta_projects:
 
-        logger.info(
-            f"Project {project.code} ({project.title}) does not have a MetaProject."
-        )
+def populate_existing_meta_projects_umbrella_code():
+    """
+    Populate the umbrella_code field in MetaProject model using the umbrella_code field.
+    This will only be used in development, as all associations should be removed after the association
+    feature is implemented.
+    """
+    logger.info("⏳ Populating umbrella_code for existing meta projects...")
+    meta_projects = MetaProject.objects.filter(
+        umbrella_code__isnull=True
+    ).prefetch_related("projects__country")
 
-        # Create a new MetaProject for the project
-        code = get_meta_project_code(
-            project.country, project.cluster, project.serial_number_legacy
-        )
-        new_code = get_meta_project_new_code(projects_without_meta_projects)
-        logger.info(
-            f"Creating new MetaProject with code {new_code} for project {project.code}"
-        )
-        meta_project = MetaProject.objects.create(
-            code=code,
-            new_code=new_code,
-            lead_agency=project.agency,
-            type=MetaProject.MetaProjectType.IND,
-        )
-        project.meta_project = meta_project
+    for meta_project in meta_projects:
+        project = meta_project.projects.first()
+        if not project:
+            continue
+        meta_project.umbrella_code = get_umbrella_code(project.country)
+        meta_project.save()
+    logger.info("✅ Successfully populated umbrella_code for existing meta projects.")
 
-    Project.objects.bulk_update(projects_without_meta_projects, ["meta_project"])
-    logger.info("✅ Successfully set MetaProject for existing projects.")
+
+def populate_existing_projects_production():
+    """
+    The production attribute was added to the Project model after the initial data import.
+    This function sets the production attribute for existing projects based on the production
+    field of the project's cluster.
+    """
+    logger.info("⏳ Setting production attribute for existing projects...")
+    production_clusters = ProjectCluster.objects.filter(production=True)
+    projects_in_production_clusters = Project.objects.filter(
+        cluster__in=production_clusters, production=False
+    )
+    projects_in_production_clusters.update(production=True)
+
+
+def populate_existing_projects_category():
+    """
+    Populate the category field in Project model using the ProjectCluster category field.
+    """
+    logger.info("⏳ Populating category for existing projects...")
+    projects = Project.objects.really_all().prefetch_related("cluster")
+    for project in projects:
+        if project.cluster and project.cluster.category == "MYA":
+            project.category = "Multi-year agreement"
+        else:
+            project.category = "Individual"
+    Project.objects.bulk_update(projects, ["category"])
+    logger.info("✅ Successfully populated category for existing projects.")
 
 
 def mark_obsolete_values():
@@ -211,20 +245,6 @@ def migrate_subsectors_sector_data():
     logger.info("✅ Successfully migrated subsectors sector data.")
 
 
-def set_production_attribute():
-    """
-    The production attribute was added to the Project model after the initial data import.
-    This function sets the production attribute for existing projects based on the production
-    field of the project's cluster.
-    """
-    logger.info("⏳ Setting production attribute for existing projects...")
-    production_clusters = ProjectCluster.objects.filter(production=True)
-    projects_in_production_clusters = Project.objects.filter(
-        cluster__in=production_clusters, production=False
-    )
-    projects_in_production_clusters.update(production=True)
-
-
 class Command(BaseCommand):
     help = """
         Import projects v2.
@@ -241,8 +261,11 @@ class Command(BaseCommand):
             help="Import type",
             default="all",
             choices=[
-                "set-new-code-meta-projects",
-                "set-meta-project-for-existing-projects",
+                "populate_existing_projects_metacode",
+                "populate_existing_meta_projects_umbrella_code",
+                "populate_existing_projects_lead_agency",
+                "populate_existing_projects_category",
+                "populate_existing_projects_production",
                 "mark_obsolete_values",
                 "migrate-subsectors-sector-data",
                 "set-production-attribute",
@@ -252,15 +275,19 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         imp_type = kwargs["type"]
 
-        if imp_type in ["set-new-code-meta-projects"]:
-            set_new_code_meta_projects()
-        elif imp_type in ["set-meta-project-for-existing-projects"]:
-            set_meta_project_for_existing_projects()
+        if imp_type == "populate_existing_projects_metacode":
+            populate_existing_projects_metacode()
+        if imp_type == "populate_existing_meta_projects_umbrella_code":
+            populate_existing_meta_projects_umbrella_code()
+        elif imp_type == "populate_existing_projects_lead_agency":
+            populate_existing_projects_lead_agency()
+        elif imp_type == "populate_existing_projects_category":
+            populate_existing_projects_category()
+        elif imp_type == "populate_existing_projects_production":
+            populate_existing_projects_production()
         elif imp_type == "mark_obsolete_values":
             mark_obsolete_values()
         elif imp_type == "migrate-subsectors-sector-data":
             migrate_subsectors_sector_data()
-        elif imp_type == "set-production-attribute":
-            set_production_attribute()
         else:
             logger.error(f"Unknown import type: {imp_type}")

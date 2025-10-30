@@ -89,6 +89,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
     computed_field_data = serializers.SerializerMethodField()
     field_data = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
+    lead_agency = serializers.SerializerMethodField()
 
     class Meta:
         model = MetaProject
@@ -96,7 +97,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
-            "new_code",
+            "umbrella_code",
             "projects",
             "field_data",
             "computed_field_data",
@@ -126,10 +127,13 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
     def get_computed_field_data(self, obj):
         return MetaProjectComputedFieldsSerializer(obj).data
 
+    def get_lead_agency(self, obj):
+        lead_agency = obj.projects.first().lead_agency
+        return AgencySerializer(lead_agency).data
 
-class MetaProjecMyaSerializer(serializers.ModelSerializer):
 
-    lead_agency = AgencySerializer(read_only=True)
+class MetaProjectMyaSerializer(serializers.ModelSerializer):
+    lead_agency = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     clusters = serializers.SerializerMethodField()
 
@@ -139,10 +143,14 @@ class MetaProjecMyaSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
-            "new_code",
+            "umbrella_code",
             "country",
             "clusters",
         ]
+
+    def get_lead_agency(self, obj):
+        lead_agency = obj.projects.first().lead_agency
+        return AgencySerializer(lead_agency).data
 
     def get_country(self, obj):
         country = obj.projects.first().country

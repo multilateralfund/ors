@@ -14,12 +14,10 @@ from core.api.serializers.project import (
 from core.api.serializers.project_history import ProjectHistorySerializer
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 
-from core.models.agency import Agency
 from core.models.country import Country
 from core.models.group import Group
 from core.models.meeting import Meeting, Decision
 from core.models.project import (
-    MetaProject,
     Project,
     ProjectComponents,
     ProjectFile,
@@ -176,9 +174,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
     production_control_type = serializers.SerializerMethodField()
     checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
-
-    metaproject_new_code = serializers.SerializerMethodField()
-
     post_excom_meeting = serializers.SerializerMethodField()
     post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
@@ -283,8 +278,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meps_developed_commercial_refrigeration",
             "meps_developed_residential_ac",
             "meps_developed_commercial_ac",
-            "metaproject_code",
-            "metaproject_new_code",
+            "metacode",
             "metaproject_category",
             "meeting",
             "meeting_id",
@@ -367,10 +361,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
-            if "metaproject_new_code" in data:
-                data["metaproject_new_code"] = None
-            if "metaproject_code" in data:
-                data["metaproject_code"] = None
         return data
 
     def get_bp_activity(self, obj: Project):
@@ -383,14 +373,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             result = obj.bp_activity_json
 
         return result
-
-    def get_metaproject_new_code(self, obj):
-        """
-        Get the new code for the metaproject.
-        """
-        if obj.meta_project:
-            return obj.meta_project.new_code
-        return None
 
 
 class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
@@ -539,7 +521,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "country_id",
             "meeting_id",
             "meeting_transf_id",
+            "category",
             "cluster_id",
+            "lead_agency",
             "latest_file",
             "latest_project",
             "meta_project",
@@ -774,11 +758,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         write_only=True,
         queryset=ProjectSubSector.objects.all(),
     )
-    lead_agency = serializers.PrimaryKeyRelatedField(
-        required=False,
-        allow_null=True,
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
     cluster = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
@@ -987,42 +966,30 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
 
         return attrs
 
-    def get_meta_project(self, project, lead_agency):
-        """
-        Get the meta project for the project.
-        If no meta project exists, create a new one.
-        If multiple meta projects exist, return the first one and a warning.
-        """
-
     @transaction.atomic
     def create(self, validated_data):
+        user = self.context["request"].user
         warnings = []
         _ = validated_data.pop("request", None)
-        lead_agency = validated_data.pop("lead_agency", None)
-        user = self.context["request"].user
+        ods_odp_data = validated_data.pop("ods_odp", [])
+        subsectors_data = validated_data.pop("subsector_ids", [])
+        associate_project_id = validated_data.pop("associate_project_id", None)
+
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
-        ods_odp_data = validated_data.pop("ods_odp", [])
-        subsectors_data = validated_data.pop("subsector_ids", [])
-        associate_project_id = validated_data.pop("associate_project_id", None)
+        if validated_data["cluster"].category == "MYA":
+            validated_data["category"] = Project.Category.MYA
+        else:
+            validated_data["category"] = Project.Category.IND
         bp_activity = validated_data.get("bp_activity", None)
+
         if bp_activity:
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
+
         project = Project.objects.create(**validated_data, version_created_by=user)
-        # set subcode
-        project.code = get_project_sub_code(
-            project.country,
-            project.cluster,
-            project.agency,
-            project.project_type,
-            project.sector,
-            project.meeting,
-            project.meeting_transf,
-            project.serial_number,
-        )
         project.save()
 
         # create ods_odp
@@ -1031,10 +998,10 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
 
         project.subsectors.set(subsectors_data)
 
-        # create MetaProject
+        # If associate_project_id is provided, the new project and the associated
+        # project are components
         if associate_project_id:
             associate_project = Project.objects.get(id=associate_project_id)
-            project.meta_project = associate_project.meta_project
             if associate_project.component:
                 project.component = associate_project.component
             else:
@@ -1042,11 +1009,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 project.component = component
                 associate_project.component = component
                 associate_project.save()
-        else:
-            meta_project = MetaProject.objects.create(
-                lead_agency_id=lead_agency,
-            )
-            project.meta_project = meta_project
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
         return project, warnings
@@ -1066,6 +1028,15 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         meeting_changed = instance.meeting != validated_data.get(
             "meeting", instance.meeting
         )
+        cluster_changed = instance.cluster != validated_data.get(
+            "cluster", instance.cluster
+        )
+        if cluster_changed:
+            if validated_data["cluster"].category == "MYA":
+                validated_data["category"] = Project.Category.MYA
+            else:
+                validated_data["category"] = Project.Category.IND
+
         super().update(instance, validated_data)
         if instance.component:
             original_project = instance.component.original_project
@@ -1081,17 +1052,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         if ods_odp_data is not None:
             self._update_or_create_ods_odp(instance, ods_odp_data)
 
-        # set new subcode
-        instance.code = get_project_sub_code(
-            instance.country,
-            instance.cluster,
-            instance.agency,
-            instance.project_type,
-            instance.sector,
-            instance.meeting,
-            instance.meeting_transf,
-            instance.serial_number,
-        )
         instance.save()
 
         if subsectors_data is not None:

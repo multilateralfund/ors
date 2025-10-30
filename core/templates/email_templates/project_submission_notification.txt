@@ -11,7 +11,7 @@ The following projects have been submitted for MLFS review:
     Cluster: {{ project.cluster }}
     Project type: {{ project.project_type }}
     Sector: {{ project.sector }}
-    Lead agency: {{ project.meta_project.lead_agency }}
+    Lead agency: {{ project.lead_agency }}
     Agency: {{ project.agency }}
     Link: {% frontend_host %}/projects-listing/{{ project.id }}/
 

@@ -115,7 +115,7 @@ class TestCPReportList(BaseTest):
         self.client.force_authenticate(user=country_user)
 
         # get cp reports list
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, {"ordering": "created_at"})
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Romania2010"
