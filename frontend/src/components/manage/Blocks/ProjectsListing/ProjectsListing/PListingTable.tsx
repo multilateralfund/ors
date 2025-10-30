@@ -98,7 +98,8 @@ const PListingTable = ({
               )
                 ? colId
                 : colId === 'cluster.code'
-
+                  ? colId.split('.')[0] + '__code'
+                : colId.split('.')[0] + '__name'
 
               if (colId === 'code') {
                 // Ordering by code needs to be sent as 'filtered_code'
