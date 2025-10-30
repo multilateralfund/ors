@@ -202,6 +202,7 @@ const ProjectsCreate = ({
     (editableByAdmin || project.submission_status === 'Recommended')
 
   const hasBpDefaultErrors =
+    mode === 'edit' &&
     canEditField(editableFields, 'bp_activity') &&
     bpData.hasBpData &&
     !bpLinking.bpId
@@ -307,12 +308,12 @@ const ProjectsCreate = ({
             ? LoadingTab
             : (hasSectionErrors(projIdentifiersErrors) ||
                 !!agencyErrorType ||
-                hasBpDefaultErrors ||
                 (postExComUpdate &&
                   !(
                     projIdentifiers.post_excom_meeting &&
                     projIdentifiers.post_excom_decision
                   )) ||
+                hasBpDefaultErrors ||
                 hasSectionErrors(bpErrors)) && (
                 <SectionErrorIndicator errors={[]} />
               )}

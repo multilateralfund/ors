@@ -10,11 +10,7 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import {
-  canEditField,
-  getDefaultImpactErrors,
-  getIsSaveDisabled,
-} from '../utils'
+import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -25,7 +21,6 @@ import {
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
-import { useStore } from '@ors/store'
 
 const ProjectsHeader = ({
   projectData,
@@ -48,12 +43,8 @@ const ProjectsHeader = ({
   approvalFields?: ProjectSpecificFields[]
   bpData: BpDataProps
 }) => {
-  const {
-    projIdentifiers,
-    crossCuttingFields,
-    projectSpecificFields,
-    bpLinking,
-  } = projectData
+  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+    projectData
 
   const defaultImpactErrors = getDefaultImpactErrors(
     projectSpecificFields,
@@ -66,15 +57,9 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
   )
-  const { editableFields } = useStore((state) => state.projectFields)
 
   const isSaveDisabled =
-    hasMissingRequiredFields ||
-    hasValidationErrors ||
-    bpData.bpDataLoading ||
-    (canEditField(editableFields, 'bp_activity') &&
-      bpData.hasBpData &&
-      !bpLinking.bpId)
+    hasMissingRequiredFields || hasValidationErrors || bpData.bpDataLoading
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
@@ -145,6 +130,7 @@ const ProjectsHeader = ({
                 specificFields,
                 approvalFields,
                 postExComUpdate,
+                bpData,
               }}
               {...rest}
             />

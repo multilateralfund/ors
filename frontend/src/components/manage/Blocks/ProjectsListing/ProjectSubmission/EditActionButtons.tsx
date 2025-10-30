@@ -17,6 +17,7 @@ import {
   enabledButtonClassname,
 } from '../constants'
 import {
+  canEditField,
   checkInvalidValue,
   formatApprovalData,
   formatFiles,
@@ -36,6 +37,7 @@ import {
   RelatedProjectsType,
   TrancheErrorType,
   ProjectSpecificFields,
+  BpDataProps,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
@@ -69,6 +71,7 @@ const EditActionButtons = ({
   approvalFields = [],
   specificFieldsLoaded,
   postExComUpdate,
+  bpData,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -78,6 +81,7 @@ const EditActionButtons = ({
   trancheErrors?: TrancheErrorType
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
+  bpData: BpDataProps
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -94,7 +98,9 @@ const EditActionButtons = ({
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
   )
 
-  const { projectFields } = useStore((state) => state.projectFields)
+  const { projectFields, editableFields } = useStore(
+    (state) => state.projectFields,
+  )
 
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
@@ -105,6 +111,7 @@ const EditActionButtons = ({
   const { id, submission_status, version, component } = project
   const {
     projIdentifiers,
+    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -198,7 +205,13 @@ const EditActionButtons = ({
     (isRecommended &&
       dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
-  const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
+  const disableSubmit =
+    !specificFieldsLoaded ||
+    isSubmitDisabled ||
+    hasErrors ||
+    (canEditField(editableFields, 'bp_activity') &&
+      bpData.hasBpData &&
+      !bpLinking.bpId)
   const disableUpdate =
     !specificFieldsLoaded ||
     (project.version >= 3 || isWithdrawn ? disableSubmit : isSaveDisabled) ||

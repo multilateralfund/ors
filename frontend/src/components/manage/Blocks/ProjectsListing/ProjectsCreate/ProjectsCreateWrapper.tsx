@@ -77,7 +77,7 @@ const ProjectsCreateWrapper = () => {
   })
 
   const { projIdentifiers, crossCuttingFields } = projectData
-  const { cluster } = projIdentifiers
+  const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
   const [projectId, setProjectId] = useState<number | null>(null)
@@ -97,6 +97,15 @@ const ProjectsCreateWrapper = () => {
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  useEffect(() => {
+    if (country && agency && cluster) {
+      setBpData({
+        hasBpData: false,
+        bpDataLoading: true,
+      })
+    }
+  }, [country, agency, cluster])
 
   useEffect(() => {
     setSpecificFieldsLoaded(false)
