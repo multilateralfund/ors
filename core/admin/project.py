@@ -29,7 +29,8 @@ from core.models.rbm_measures import RBMMeasure
 @admin.register(MetaProject)
 class MetaProjectAdmin(admin.ModelAdmin):
     search_fields = [
-        "project__title",
+        "projects__title",
+        "code",
     ]
     list_filter = [
         "type",
@@ -42,7 +43,6 @@ class MetaProjectAdmin(admin.ModelAdmin):
             "pcrlearnedlessons",
             "pcrdelayexplanation",
             "projects",
-            "code",
         ]
         return get_final_display_list(MetaProject, exclude)
 
