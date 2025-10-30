@@ -17,9 +17,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core.api.export.summary_of_projects import SummaryOfProjectsWriter
-from core.api.filters.summary_of_projects import SummaryOfProjectsFilter
-from core.api.permissions import HasProjectV2ApproveAccess
+from core.api.filters.blanket_approval_details import BlanketApprovalDetailsFilter
+from core.api.permissions import HasProjectV2ViewAccess
 from core.api.utils import workbook_response
 from core.models import Project
 
@@ -34,15 +33,15 @@ def get_available_values(queryset: QuerySet[Project], field_name: str):
     return [{"name": name, "id": pk} for pk, name in values if pk is not None]
 
 
-class SummaryOfProjectsViewSet(
+class BlanketApprovalDetailsViewset(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
 ):
-    """ViewSet for summary of projects."""
+    """ViewSet for blanket approval details."""
 
-    filterset_class = SummaryOfProjectsFilter
+    filterset_class = BlanketApprovalDetailsFilter
     queryset = Project.objects.all()
-    permission_classes = (HasProjectV2ApproveAccess,)
+    permission_classes = (HasProjectV2ViewAccess,)
 
     def _extract_data(self, projects: QuerySet[Project]):
         meta_project_funding_expression = Coalesce(
@@ -80,15 +79,6 @@ class SummaryOfProjectsViewSet(
             "country": get_available_values(queryset, "country"),
             "cluster": get_available_values(queryset, "cluster"),
             "project_type": get_available_values(queryset, "project_type"),
-            "sector": get_available_values(queryset, "sector"),
-            "agency": get_available_values(queryset, "agency"),
-            "tranche": [
-                {"name": str(t), "id": t}
-                for t in queryset.order_by("tranche")
-                .values_list("tranche", flat=True)
-                .distinct()
-                if t is not None
-            ],
         }
 
         return Response(result)
@@ -115,32 +105,8 @@ class SummaryOfProjectsViewSet(
         queryset: QuerySet[Project] = self.get_queryset()
         wb = openpyxl.Workbook()
         sheet = wb.active
-        sheet.title = "Summary of projects"
-
-        total = {
-            "text": "Total",
-            "projects_count": 0,
-            "amounts_recommended": 0,
-        }
-
-        row_data = []
-
-        for query in params:
-            project_filter = self.filterset_class(query["params"], queryset)
-            filtered_projects = project_filter.qs
-            data = self._extract_data(filtered_projects)
-            data["text"] = query["text"]
-
-            for key in (k for k in total if k != "text"):
-                total[key] += data.get(key, 0)
-
-            row_data.append(data)
-
-        row_data.append(total)
-
-        SummaryOfProjectsWriter(sheet).write(row_data)
-
-        return workbook_response("Summary of projects", wb)
+        sheet.title = "Blanket app. details"
+        return workbook_response("Blanket approval details", wb)
 
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):

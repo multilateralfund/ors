@@ -34,7 +34,9 @@ const BlanketApprovalDetailsTable = (props: {
           <th>Agency</th>
           <th>HCFC</th>
           <th>HFC</th>
-          <th colSpan={3}>Funds [recommended OR approved] (US $)</th>
+          <th colSpan={3}>
+            Funds {globalRequestParams.submission_status} (US $)
+          </th>
         </tr>
         <tr>
           <th></th>

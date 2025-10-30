@@ -46,7 +46,7 @@ const BlanketApprovalDetails = () => {
   return (
     <>
       <Box className="shadow-none">
-        <div className="flex justify-between">
+        <div className="justify-between sm:flex-wrap md:flex">
           <SummaryOfProjectsFilters
             requestParams={globalRequestParams}
             setRequestParams={setGlobalRequestParams}
