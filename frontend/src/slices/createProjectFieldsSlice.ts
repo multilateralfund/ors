@@ -43,41 +43,49 @@ export const createProjectFieldsSlice = ({
       )
 
       const editableFields = fields
-        .filter(({ editable_in_versions, is_actual, section }) => {
-          if (
-            !isPostExcom &&
-            mode === 'edit' &&
-            submissionStatus === 'Approved'
-          ) {
-            return canEditAll
-              ? section !== 'Approval' && (section !== 'Impact' || is_actual)
-              : is_actual
-          }
+        .filter(
+          ({ editable_in_versions, is_actual, section, write_field_name }) => {
+            const isFieldNotEditableByAdmin = ['bp_activity'].includes(
+              write_field_name,
+            )
 
-          if (
-            isPostExcom ||
-            (canEditAll &&
+            if (
+              !isFieldNotEditableByAdmin &&
+              !isPostExcom &&
               mode === 'edit' &&
-              submissionStatus === 'Not approved')
-          ) {
-            return section !== 'Approval'
-          }
+              submissionStatus === 'Approved'
+            ) {
+              return canEditAll
+                ? section !== 'Approval' && (section !== 'Impact' || is_actual)
+                : is_actual
+            }
 
-          const isEditableInVersion = editable_in_versions?.includes(version)
-          const isFieldEditable =
-            section !== 'Impact' || !isAfterApproval || is_actual
-          const isDraftEditable =
-            submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
-          const isEditableByStatus = submissionStatus !== 'Withdrawn'
+            if (
+              !isFieldNotEditableByAdmin &&
+              (isPostExcom ||
+                (canEditAll &&
+                  mode === 'edit' &&
+                  submissionStatus === 'Not approved'))
+            ) {
+              return section !== 'Approval'
+            }
 
-          return (
-            canEditAll ||
-            (isEditableInVersion &&
-              isFieldEditable &&
-              isDraftEditable &&
-              isEditableByStatus)
-          )
-        })
+            const isEditableInVersion = editable_in_versions?.includes(version)
+            const isFieldEditable =
+              section !== 'Impact' || !isAfterApproval || is_actual
+            const isDraftEditable =
+              submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
+            const isEditableByStatus = submissionStatus !== 'Withdrawn'
+
+            return (
+              (canEditAll && !isFieldNotEditableByAdmin) ||
+              (isEditableInVersion &&
+                isFieldEditable &&
+                isDraftEditable &&
+                isEditableByStatus)
+            )
+          },
+        )
         .map((field) => field.write_field_name)
 
       set(

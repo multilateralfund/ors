@@ -27,19 +27,21 @@ const ProjectBPLinking = ({
   const { isLinkedToBP } = projectData.bpLinking
 
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjectData((prevData) => {
-      const { bpLinking } = prevData
-      const isChecked = event.target.checked
+    if (!bpData.hasBpData) {
+      setProjectData((prevData) => {
+        const { bpLinking } = prevData
+        const isChecked = event.target.checked
 
-      return {
-        ...prevData,
-        bpLinking: {
-          ...bpLinking,
-          isLinkedToBP: isChecked,
-          bpId: isChecked ? bpLinking.bpId : null,
-        },
-      }
-    })
+        return {
+          ...prevData,
+          bpLinking: {
+            ...bpLinking,
+            isLinkedToBP: isChecked,
+            bpId: isChecked ? bpLinking.bpId : null,
+          },
+        }
+      })
+    }
   }
 
   return (
