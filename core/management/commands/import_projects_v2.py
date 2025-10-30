@@ -72,6 +72,22 @@ def populate_existing_meta_projects_umbrella_code():
     logger.info("✅ Successfully populated umbrella_code for existing meta projects.")
 
 
+def remove_all_meta_project_associations():
+    """
+    Remove all associations between MetaProject and Project.
+    The MetaProjects will only be used as an umbrella for associated projects, now that
+    the metacode field was moved to the Project model.
+    """
+    logger.info("⏳ Removing all meta project associations...")
+    projects = Project.objects.really_all().filter(meta_project__isnull=False)
+    for project in projects:
+        project.meta_project = None
+    Project.objects.bulk_update(projects, ["meta_project"])
+
+    MetaProject.objects.all().delete()
+    logger.info("✅ Successfully removed all meta project associations.")
+
+
 def populate_existing_projects_production():
     """
     The production attribute was added to the Project model after the initial data import.
@@ -269,6 +285,7 @@ class Command(BaseCommand):
                 "mark_obsolete_values",
                 "migrate-subsectors-sector-data",
                 "set-production-attribute",
+                "remove-all-meta-project-associations",
             ],
         )
 
@@ -277,7 +294,7 @@ class Command(BaseCommand):
 
         if imp_type == "populate_existing_projects_metacode":
             populate_existing_projects_metacode()
-        if imp_type == "populate_existing_meta_projects_umbrella_code":
+        elif imp_type == "populate_existing_meta_projects_umbrella_code":
             populate_existing_meta_projects_umbrella_code()
         elif imp_type == "populate_existing_projects_lead_agency":
             populate_existing_projects_lead_agency()
@@ -289,5 +306,7 @@ class Command(BaseCommand):
             mark_obsolete_values()
         elif imp_type == "migrate-subsectors-sector-data":
             migrate_subsectors_sector_data()
+        elif imp_type == "remove-all-meta-project-associations":
+            remove_all_meta_project_associations()
         else:
             logger.error(f"Unknown import type: {imp_type}")
