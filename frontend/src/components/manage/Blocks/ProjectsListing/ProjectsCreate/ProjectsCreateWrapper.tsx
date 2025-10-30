@@ -1,23 +1,25 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
+import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import {
+  initialCrossCuttingFields,
+  initialProjectIdentifiers,
+} from '../constants.ts'
+import {
+  BpDataProps,
   ProjectData,
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
 } from '../interfaces.ts'
-import {
-  initialCrossCuttingFields,
-  initialProjectIdentifiers,
-} from '../constants.ts'
-import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
 import { debounce, groupBy } from 'lodash'
@@ -25,6 +27,8 @@ import { debounce, groupBy } from 'lodash'
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+
+  const { canViewBp } = useContext(PermissionsContext)
 
   const {
     fetchProjectFields,
@@ -76,13 +80,18 @@ const ProjectsCreateWrapper = () => {
   })
 
   const { projIdentifiers, crossCuttingFields } = projectData
-  const { cluster } = projIdentifiers
+  const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
   const [projectId, setProjectId] = useState<number | null>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
+  })
+
+  const [bpData, setBpData] = useState({
+    hasBpData: false,
+    bpDataLoading: false,
   })
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
@@ -91,6 +100,15 @@ const ProjectsCreateWrapper = () => {
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  useEffect(() => {
+    if (canViewBp && country && agency && cluster) {
+      setBpData({
+        hasBpData: false,
+        bpDataLoading: true,
+      })
+    }
+  }, [country, agency, cluster])
 
   useEffect(() => {
     setSpecificFieldsLoaded(false)
@@ -110,6 +128,10 @@ const ProjectsCreateWrapper = () => {
     }
   }, [cluster, project_type, sector])
 
+  const onBpDataChange = (bpData: BpDataProps) => {
+    setBpData(bpData)
+  }
+
   return (
     <>
       <ProjectsHeader
@@ -125,6 +147,7 @@ const ProjectsCreateWrapper = () => {
           specificFields,
           specificFieldsLoaded,
           setProjectData,
+          bpData,
         }}
       />
       <ProjectsCreate
@@ -139,6 +162,8 @@ const ProjectsCreateWrapper = () => {
           hasSubmitted,
           fileErrors,
           specificFieldsLoaded,
+          bpData,
+          onBpDataChange,
         }}
       />
       <ProjectFormFooter

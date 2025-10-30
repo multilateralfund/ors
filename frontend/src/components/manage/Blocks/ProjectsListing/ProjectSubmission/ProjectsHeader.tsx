@@ -17,6 +17,7 @@ import {
   ProjectTypeApi,
   ProjectHeader,
   TrancheErrorType,
+  BpDataProps,
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
@@ -31,6 +32,7 @@ const ProjectsHeader = ({
   trancheErrors,
   specificFields,
   approvalFields,
+  bpData,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -39,6 +41,7 @@ const ProjectsHeader = ({
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
+  bpData: BpDataProps
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
@@ -54,7 +57,9 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
   )
-  const isSaveDisabled = hasMissingRequiredFields || hasValidationErrors
+
+  const isSaveDisabled =
+    hasMissingRequiredFields || hasValidationErrors || bpData.bpDataLoading
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
@@ -125,6 +130,7 @@ const ProjectsHeader = ({
                 specificFields,
                 approvalFields,
                 postExComUpdate,
+                bpData,
               }}
               {...rest}
             />

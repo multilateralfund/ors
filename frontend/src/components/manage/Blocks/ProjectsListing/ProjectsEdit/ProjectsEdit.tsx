@@ -26,6 +26,7 @@ import {
   SpecificFields,
   RelatedProjectsType,
   TrancheErrorType,
+  BpDataProps,
 } from '../interfaces'
 import {
   considerationOpts,
@@ -55,7 +56,7 @@ const ProjectsEdit = ({
   const isEditMode = mode === 'edit'
   const isVersion3 = isEditMode && project.version >= 3
 
-  const { canViewProjects, canEditApprovedProjects } =
+  const { canViewProjects, canEditApprovedProjects, canViewBp } =
     useContext(PermissionsContext)
   const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
@@ -89,7 +90,7 @@ const ProjectsEdit = ({
   const [canViewTabs, setCanViewTabs] = useState<boolean>(false)
 
   const { projIdentifiers, crossCuttingFields } = projectData
-  const { cluster } = projIdentifiers
+  const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
   const groupedFields = groupBy(specificFields, 'table')
@@ -192,6 +193,10 @@ const ProjectsEdit = ({
     loaded: false,
   }
 
+  const [bpData, setBpData] = useState({
+    hasBpData: false,
+    bpDataLoading: false,
+  })
   const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
@@ -271,6 +276,19 @@ const ProjectsEdit = ({
           }),
     }))
   }, [])
+
+  useEffect(() => {
+    if (canViewBp && country && agency && cluster) {
+      setBpData({
+        hasBpData: false,
+        bpDataLoading: true,
+      })
+    }
+  }, [country, agency, cluster])
+
+  const onBpDataChange = (bpData: BpDataProps) => {
+    setBpData(bpData)
+  }
 
   useEffect(() => {
     setSpecificFieldsLoaded(false)
@@ -466,6 +484,7 @@ const ProjectsEdit = ({
             approvalFields,
             specificFieldsLoaded,
             setProjectData,
+            bpData,
           }}
         />
         <ProjectsCreate
@@ -487,6 +506,8 @@ const ProjectsEdit = ({
             getTrancheErrors,
             relatedProjects,
             approvalFields,
+            bpData,
+            onBpDataChange,
           }}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
