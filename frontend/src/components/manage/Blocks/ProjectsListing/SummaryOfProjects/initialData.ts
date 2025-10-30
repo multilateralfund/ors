@@ -1,8 +1,7 @@
 export const initialGlobalRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
-  blanket_consideration: false,
-  individual_consideration: true,
+  blanket_or_individual_consideration: null,
 })
 
 export const initialRequestParams = () => ({

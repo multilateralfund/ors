@@ -12,7 +12,7 @@ from core.models import (
 )
 from core.api.serializers.agency import AgencySerializer
 
-# pylint: disable=W0223
+# pylint: disable=W0223, W0613
 
 
 class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
@@ -21,68 +21,94 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     Returns a flat structure with both derived (from Project) and editable fields.
     """
 
-    # === DERIVED FIELDS (from Project, read-only) ===
-    # Project identification
+    # TODO: some fields might need SerializerMethodFields instead to avoid null FKs
+
+    # Project identification - derived fields
+    meta_code = serializers.CharField(
+        source="project.meta_project.new_code", read_only=True
+    )
     project_code = serializers.CharField(source="project.code", read_only=True)
-    project_title = serializers.CharField(source="project.title", read_only=True)
+    legacy_code = serializers.CharField(source="project.legacy_code", read_only=True)
     agency_name = serializers.CharField(
         source="project.agency.name", read_only=True, allow_null=True
+    )
+    # TODO: is it ok to use cluster.name below? or should it be cluster.code?
+    cluster_name = serializers.CharField(source="project.cluster.name", read_only=True)
+    region_name = serializers.CharField(
+        source="project.country.parent.name", read_only=True
     )
     country_name = serializers.CharField(
         source="project.country.name", read_only=True, allow_null=True
     )
-    sector_name = serializers.CharField(
-        source="project.sector.name", read_only=True, allow_null=True
+    type_code = serializers.CharField(
+        source="project.project_type.code", read_only=True, allow_null=True
     )
-    subsector_names = serializers.SerializerMethodField(read_only=True)
+    sector_code = serializers.CharField(source="project.sector.code", read_only=True)
+    project_title = serializers.CharField(source="project.title", read_only=True)
 
-    # Approval data
-    meeting_number = serializers.IntegerField(
-        source="project.meeting.number", read_only=True, allow_null=True
-    )
-    decision_number = serializers.CharField(
-        source="project.decision.number", read_only=True, allow_null=True
-    )
+    # Project date data fields - derived
     date_approved = serializers.DateField(
         source="project.date_approved", read_only=True, allow_null=True
     )
-
-    # Financial data (derived)
-    project_funding = serializers.DecimalField(
-        source="project.total_fund",
-        max_digits=20,
-        decimal_places=2,
-        read_only=True,
-        allow_null=True,
+    date_completion_proposal = serializers.DateField(
+        source="project.date_completion", read_only=True, allow_null=True
     )
-    support_cost = serializers.DecimalField(
+
+    # Project date data fields - input
+    status = serializers.CharField(required=False)
+    date_first_disbursement = serializers.DateField(allow_null=True, required=False)
+    date_planned_completion = serializers.DateField(allow_null=True, required=False)
+    date_actual_completion = serializers.DateField(allow_null=True, required=False)
+    date_financial_completion = serializers.DateField(allow_null=True, required=False)
+
+    # Phaseout data fields - derived
+    consumption_phased_out_odp_proposal = serializers.SerializerMethodField(
+        read_only=True
+    )
+    consumption_phased_out_co2_proposal = serializers.SerializerMethodField(
+        read_only=True
+    )
+    production_phased_out_odp_proposal = serializers.SerializerMethodField(
+        read_only=True
+    )
+    production_phased_out_co2_proposal = serializers.SerializerMethodField(
+        read_only=True
+    )
+
+    # Phaseout data fields - input
+    consumption_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
+    consumption_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
+    production_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
+    production_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
+
+    # Financial data fields - derived
+    approved_funding = serializers.FloatField(
+        source="project.total_fund", read_only=True, allow_null=True
+    )
+    adjustment = serializers.SerializerMethodField(read_only=True)
+
+    # Financial data fields - calculated
+    approved_funding_plus_adjustment = serializers.SerializerMethodField(read_only=True)
+    per_cent_funds_disbursed = serializers.SerializerMethodField(read_only=True)
+    balance = serializers.SerializerMethodField(read_only=True)
+
+    # Financial data fields - derived (2)
+    support_cost_approved = serializers.DecimalField(
         source="project.support_cost_psc",
         max_digits=20,
         decimal_places=2,
         read_only=True,
         allow_null=True,
     )
+    support_cost_adjustment = serializers.SerializerMethodField(read_only=True)
 
-    # Substance data (derived)
-    baseline_technology = serializers.SerializerMethodField(read_only=True)
-    replacement_technology = serializers.SerializerMethodField(read_only=True)
-    phase_out_odp_tonnes = serializers.SerializerMethodField(read_only=True)
-    phase_out_mt = serializers.SerializerMethodField(read_only=True)
+    # Financial data fields - calculated (2)
+    support_cost_approved_plus_adjustment = serializers.SerializerMethodField(
+        read_only=True
+    )
+    support_cost_balance = serializers.SerializerMethodField(read_only=True)
 
-    # === EDITABLE FIELDS (from AnnualProjectReport) ===
-    # Date fields
-    date_first_disbursement = serializers.DateField(allow_null=True, required=False)
-    date_planned_completion = serializers.DateField(allow_null=True, required=False)
-    date_actual_completion = serializers.DateField(allow_null=True, required=False)
-    date_financial_completion = serializers.DateField(allow_null=True, required=False)
-
-    # Phaseout fields
-    consumption_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
-    consumption_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
-    production_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
-    production_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
-
-    # Financial fields
+    # Financial data fields - input
     funds_disbursed = serializers.FloatField(allow_null=True, required=False)
     funds_committed = serializers.FloatField(allow_null=True, required=False)
     estimated_disbursement_current_year = serializers.FloatField(
@@ -95,7 +121,15 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     )
     funds_advanced = serializers.FloatField(allow_null=True, required=False)
 
-    # Narrative/indicator fields
+    # Project financial data fields - derived (3)
+    implementation_delays_status_report_decisions = serializers.SerializerMethodField(
+        read_only=True
+    )
+    date_of_completion_per_agreement_or_decisions = serializers.SerializerMethodField(
+        read_only=True
+    )
+
+    # Narrative and indicator data fields - input
     last_year_remarks = serializers.CharField(
         allow_null=True, allow_blank=True, required=False
     )
@@ -104,40 +138,57 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     )
     gender_policy = serializers.BooleanField(allow_null=True, required=False)
 
-    # Audit fields
+    # Audit fields - extra (not in document)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = AnnualProjectReport
-        fields = [
-            "id",
-            "project_id",
-            # Derived fields (read-only, from Project)
+        excel_fields = [
+            # Project identification - derived fields
+            "meta_code",
             "project_code",
-            "project_title",
+            "legacy_code",
             "agency_name",
+            "cluster_name",
+            "region_name",
             "country_name",
-            "sector_name",
-            "subsector_names",
-            "meeting_number",
-            "decision_number",
+            "type_code",
+            "sector_code",
+            "project_title",
+            # Project date data fields - derived
             "date_approved",
-            "project_funding",
-            "support_cost",
-            "baseline_technology",
-            "replacement_technology",
-            "phase_out_odp_tonnes",
-            "phase_out_mt",
-            # Editable fields (read-write, from AnnualProjectReport)
+            "date_completion_proposal",
+            # Project date data fields - input
+            "status",
             "date_first_disbursement",
             "date_planned_completion",
             "date_actual_completion",
             "date_financial_completion",
+            # Project phaseout data fields - derived
+            "consumption_phased_out_odp_proposal",
+            "consumption_phased_out_co2_proposal",
+            "production_phased_out_odp_proposal",
+            "production_phased_out_co2_proposal",
+            # Project phaseout data fields - input
             "consumption_phased_out_odp",
             "consumption_phased_out_co2",
             "production_phased_out_odp",
             "production_phased_out_co2",
+            # Project financial data fields - derived
+            "approved_funding",
+            "adjustment",
+            # Project financial data fields - calculated
+            "approved_funding_plus_adjustment",
+            "per_cent_funds_disbursed",
+            "balance",
+            # Project financial data fields - derived (2)
+            "support_cost_approved",
+            "support_cost_adjustment",
+            # Project financial data fields - calculated (2)
+            "support_cost_approved_plus_adjustment",
+            "support_cost_balance",
+            # Project financial data fields - input
             "funds_disbursed",
             "funds_committed",
             "estimated_disbursement_current_year",
@@ -145,92 +196,140 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "support_cost_committed",
             "disbursements_made_to_final_beneficiaries",
             "funds_advanced",
+            # Project financial data fields - derived (3)
+            "implementation_delays_status_report_decisions",
+            "date_of_completion_per_agreement_or_decisions",
+            # Narrative and indicators data fields - input
             "last_year_remarks",
             "current_year_remarks",
             "gender_policy",
+        ]
+
+        api_only_fields = [
+            "id",
+            "project_id",
             # Audit
             "created_at",
             "updated_at",
         ]
+
+        fields = excel_fields + api_only_fields
+
         read_only_fields = [
             "id",
             "project_id",
-            # All derived fields
+            # All derived *and* calculated fields
+            "meta_code",
             "project_code",
-            "project_title",
+            "legacy_code",
             "agency_name",
+            "cluster_name",
+            "region_name",
             "country_name",
-            "sector_name",
-            "subsector_names",
-            "meeting_number",
-            "decision_number",
+            "type_code",
+            "sector_code",
+            "project_title",
             "date_approved",
-            "project_funding",
-            "support_cost",
-            "baseline_technology",
-            "replacement_technology",
-            "phase_out_odp_tonnes",
-            "phase_out_mt",
-            # Audit fields
+            "date_completion_proposal",
+            "consumption_phased_out_odp_proposal",
+            "consumption_phased_out_co2_proposal",
+            "production_phased_out_odp_proposal",
+            "production_phased_out_co2_proposal",
+            "approved_funding",
+            "adjustment",
+            "approved_funding_plus_adjustment",
+            "per_cent_funds_disbursed",
+            "balance",
+            "support_cost_approved",
+            "support_cost_adjustment",
+            "support_cost_approved_plus_adjustment",
+            "support_cost_balance",
+            "implementation_delays_status_report_decisions",
+            "date_of_completion_per_agreement_or_decisions",
+            # And the audit fields
             "created_at",
             "updated_at",
         ]
 
-    def get_subsector_names(self, obj):
-        """Get comma-separated list of subsector names."""
-        if obj.project and obj.project.subsectors.exists():
-            return ", ".join([s.name for s in obj.project.subsectors.all()])
-        return None
-
-    def get_baseline_technology(self, obj):
-        """
-        Get baseline technology from project ODS/ODP entries.
-        Concatenate all baseline substances/blends.
-        """
+    def get_consumption_phased_out_odp_proposal(self, obj):
+        # TODO; how do we use version 3?
+        # I think I just need to check that obj.project version is >= 3
         if not obj.project or not obj.project.ods_odp.exists():
             return None
 
-        technologies = []
-        for odp in obj.project.ods_odp.all():
-            if odp.ods_substance:
-                technologies.append(odp.ods_substance.name)
-            elif odp.ods_blend:
-                technologies.append(odp.ods_blend.name)
-
-        return ", ".join(technologies) if technologies else None
-
-    def get_replacement_technology(self, obj):
-        """Get replacement technology from project ODS/ODP entries."""
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        replacements = [
-            odp.ods_replacement
-            for odp in obj.project.ods_odp.all()
-            if odp.ods_replacement
-        ]
-
-        return ", ".join(replacements) if replacements else None
-
-    def get_phase_out_odp_tonnes(self, obj):
-        """Sum of ODP tonnes from all ODS/ODP entries."""
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        total = sum(odp.odp or Decimal("0") for odp in obj.project.ods_odp.all())
-
-        return float(total) if total > 0 else None
-
-    def get_phase_out_mt(self, obj):
-        """Sum of metric tonnes from all ODS/ODP entries."""
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        total = sum(
-            odp.phase_out_mt or Decimal("0") for odp in obj.project.ods_odp.all()
+        return sum(
+            ods_odp.odp or Decimal("0")
+            for ods_odp in obj.project.ods_odp.all()
+            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
         )
 
-        return float(total) if total > 0 else None
+    def get_consumption_phased_out_co2_proposal(self, obj):
+        if not obj.project or not obj.project.ods_odp.exists():
+            return None
+
+        return sum(
+            ods_odp.co2_mt or Decimal("0")
+            for ods_odp in obj.project.ods_odp.all()
+            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
+        )
+
+    def get_production_phased_out_odp_proposal(self, obj):
+        if not obj.project or not obj.project.ods_odp.exists():
+            return None
+
+        return sum(
+            ods_odp.odp or Decimal("0")
+            for ods_odp in obj.project.ods_odp.all()
+            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
+        )
+
+    def get_production_phased_out_co2_proposal(self, obj):
+        if not obj.project or not obj.project.ods_odp.exists():
+            return None
+
+        return sum(
+            ods_odp.co2_mt or Decimal("0")
+            for ods_odp in obj.project.ods_odp.all()
+            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
+        )
+
+    def get_adjustment(self, obj):
+        # TODO - flesh it out as:
+        # Approved Funding in the last version - Approved Funding in Version 3
+        return Decimal("0")
+
+    def get_approved_funding_plus_adjustment(self, obj):
+        # TODO - flesh it out based on a model method
+        return Decimal("0")
+
+    def get_per_cent_funds_disbursed(self, obj):
+        # TODO - flesh it out based on a model method
+        return Decimal("0")
+
+    def get_balance(self, obj):
+        # TODO - flesh it out based on a model method
+        return Decimal("0")
+
+    def get_support_cost_adjustment(self, obj):
+        # TODO: Support cost in the latest version - Support cost in version 3
+        return Decimal("0")
+
+    def get_support_cost_approved_plus_adjustment(self, obj):
+        # TODO: Support Cost Approved + Support Cost Adjustment
+        # This would much better be a model method!
+        return Decimal("0")
+
+    def get_support_cost_balance(self, obj):
+        # TODO: Support Costs Approved Funding plus Adjustments (US$) - Support Cost Disbursed (US$)
+        # This would much better be a model method!
+        return Decimal("0")
+
+    def get_implementation_delays_status_report_decisions(self, obj):
+        # TODO: need to ask MLFS bout this field
+        return ""
+
+    def get_date_of_completion_per_agreement_or_decisions(self, obj):
+        return obj.project.date_completion
 
 
 class AnnualProjectReportFileSerializer(serializers.ModelSerializer):
@@ -382,19 +481,20 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     project_code = serializers.CharField(write_only=True, required=True)
 
     # All editable fields are optional, as this endpoint supports partial updates
-    # Date fields
+    # Project date data fields - input
+    status = serializers.CharField(required=False)
     date_first_disbursement = serializers.DateField(allow_null=True, required=False)
     date_planned_completion = serializers.DateField(allow_null=True, required=False)
     date_actual_completion = serializers.DateField(allow_null=True, required=False)
     date_financial_completion = serializers.DateField(allow_null=True, required=False)
 
-    # Phaseout fields
+    # Phaseout data fields - input
     consumption_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
     consumption_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
     production_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
     production_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
 
-    # Financial fields
+    # Financial data fields - input
     funds_disbursed = serializers.FloatField(allow_null=True, required=False)
     funds_committed = serializers.FloatField(allow_null=True, required=False)
     estimated_disbursement_current_year = serializers.FloatField(
@@ -407,7 +507,7 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     )
     funds_advanced = serializers.FloatField(allow_null=True, required=False)
 
-    # Narrative/indicator fields
+    # Narrative and indicator data fields - input
     last_year_remarks = serializers.CharField(
         allow_null=True, allow_blank=True, required=False
     )
@@ -422,14 +522,18 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
             # Project code is needed for matching rows
             "project_code",
             # Only editable fields should be here; derived fields absent
+            # Project date data fields - input
+            "status",
             "date_first_disbursement",
             "date_planned_completion",
             "date_actual_completion",
             "date_financial_completion",
+            # Project phaseout data fields - input
             "consumption_phased_out_odp",
             "consumption_phased_out_co2",
             "production_phased_out_odp",
             "production_phased_out_co2",
+            # Project financial data fields - input
             "funds_disbursed",
             "funds_committed",
             "estimated_disbursement_current_year",
@@ -437,6 +541,7 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
             "support_cost_committed",
             "disbursements_made_to_final_beneficiaries",
             "funds_advanced",
+            # Narrative and indicators data fields - input
             "last_year_remarks",
             "current_year_remarks",
             "gender_policy",

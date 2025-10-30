@@ -7,8 +7,7 @@ import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import { getIndividualConsiderationOpts } from '../utils'
-import { tableColumns } from '../constants'
+import { tableColumns, considerationOpts } from '../constants'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
@@ -211,29 +210,31 @@ const ProjectsFilters = ({
       </div>
       {canViewMetainfoProjects && (
         <>
-          <Field
-            Input={{ placeholder: tableColumns.submission_status }}
-            options={getFilterOptions(
-              filters,
-              projectSlice.submission_statuses.data,
-              'submission_status_id',
-            )}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              const submissionStatus = filters.submission_status_id || []
-              const newValue = union(submissionStatus, value)
+          {mode === 'listing' && (
+            <Field
+              Input={{ placeholder: tableColumns.submission_status }}
+              options={getFilterOptions(
+                filters,
+                projectSlice.submission_statuses.data,
+                'submission_status_id',
+              )}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const submissionStatus = filters.submission_status_id || []
+                const newValue = union(submissionStatus, value)
 
-              handleFilterChange({ submission_status_id: newValue })
-              handleParamsChange({
-                submission_status_id: newValue
-                  .map((item: any) => item.id)
-                  .join(','),
-                offset: 0,
-              })
-            }}
-            {...defaultProps}
-            FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
-          />
+                handleFilterChange({ submission_status_id: newValue })
+                handleParamsChange({
+                  submission_status_id: newValue
+                    .map((item: any) => item.id)
+                    .join(','),
+                  offset: 0,
+                })
+              }}
+              {...defaultProps}
+              FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
+            />
+          )}
           <Field
             Input={{ placeholder: tableColumns.project_status }}
             options={getFilterOptions(
@@ -260,28 +261,31 @@ const ProjectsFilters = ({
         </>
       )}
       <Field
-        Input={{ placeholder: 'Blanket/individual consideration' }}
+        Input={{
+          placeholder: tableColumns.blanket_or_individual_consideration,
+        }}
         options={getFilterOptions(
           filters,
-          getIndividualConsiderationOpts(),
-          'individual_consideration',
+          considerationOpts,
+          'blanket_or_individual_consideration',
         )}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
-          const consideration = filters.individual_consideration || []
+          const consideration =
+            filters.blanket_or_individual_consideration || []
           const newValue = union(consideration, value)
 
-          handleFilterChange({ individual_consideration: newValue })
+          handleFilterChange({ blanket_or_individual_consideration: newValue })
           handleParamsChange({
-            individual_consideration: newValue
-              .map((item: any) => item.id)
+            blanket_or_individual_consideration: newValue
+              .map((item: any) => item.name)
               .join(','),
             offset: 0,
           })
         }}
         {...defaultProps}
         FieldProps={{
-          className: defaultProps.FieldProps.className + ' md:!w-[15.5rem]',
+          className: defaultProps.FieldProps.className + ' md:!w-[19rem]',
         }}
       />
     </div>

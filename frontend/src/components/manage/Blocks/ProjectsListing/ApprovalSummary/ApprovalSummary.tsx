@@ -1,20 +1,22 @@
-import { Box, Button, Checkbox, Divider, Typography } from '@mui/material'
+import { Box, Button, Divider, Typography } from '@mui/material'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiApprovalSummary } from '@ors/types/api_approval_summary.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import { GridOptions, ICellRendererParams } from 'ag-grid-community'
 import Link from '@ors/components/ui/Link/Link.tsx'
+import { considerationOpts } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 import cx from 'classnames'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
 const defaultProps = {
-  FieldProps: { className: 'mb-0 w-full' },
+  FieldProps: { className: 'mb-0 w-full BPListUpload' },
   popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
   componentsProps: {
     popupIndicator: {
@@ -114,20 +116,19 @@ const ColsFundsRecommended = (props: {
   cellClass?: string
 }) => {
   const { data, cellClass } = props
+
+  const dollarValueOrNull = useCallback(
+    (value: number | string) => (value ? `$${formatNumberValue(value)}` : null),
+    [],
+  )
+
   return (
     <>
+      <td className={cellClass}>{dollarValueOrNull(data.project_funding)}</td>
       <td className={cellClass}>
-        {'$'}
-        {data.project_funding}
+        {dollarValueOrNull(data.project_support_cost)}
       </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.project_support_cost}
-      </td>
-      <td className={cellClass}>
-        {'$'}
-        {data.total}
-      </td>
+      <td className={cellClass}>{dollarValueOrNull(data.total)}</td>
     </>
   )
 }
@@ -146,8 +147,12 @@ const TrAllCells = (props: {
   return (
     <tr className="leading-7">
       <td className={cellClass}>{sector}</td>
-      <td className={cellClass}>{data.hcfc}</td>
-      <td className={cellClass}>{data.hfc}</td>
+      <td className={cellClass}>
+        {data.hcfc ? formatNumberValue(data.hcfc) : null}
+      </td>
+      <td className={cellClass}>
+        {data.hfc ? formatNumberValue(data.hfc) : null}
+      </td>
       <ColsFundsRecommended cellClass={cellClass} data={data} />
     </tr>
   )
@@ -307,8 +312,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
 const initialRequestParams = () => ({
   meeting_id: '',
   submission_status: '',
-  blanket_consideration: false,
-  individual_consideration: true,
+  blanket_or_individual_consideration: '',
 })
 
 const ApprovalSummaryFilters = (props: {
@@ -379,24 +383,35 @@ const ApprovalSummaryFilters = (props: {
             {...defaultProps}
           />
         </div>
-        <div className="flex-col">
-          <Label htmlFor="blanketConsideration">Blanket consideration</Label>
-          <Checkbox
-            id="blanketConsideration"
-            className="p-0"
-            checked={requestParams.blanket_consideration}
-            onChange={(_, value) =>
+        <div>
+          <Label htmlFor="blanketConsideration">
+            Blanket approval/Individual consideration
+          </Label>
+          <Field
+            widget="autocomplete"
+            options={considerationOpts}
+            value={
+              considerationOpts.find(
+                (opt) =>
+                  opt.id === requestParams.blanket_or_individual_consideration,
+              ) ?? null
+            }
+            onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_consideration: value,
-                individual_consideration: !value,
+                blanket_or_individual_consideration: value?.id ?? '',
               }))
             }
-            sx={{
-              color: 'black',
+            getOptionLabel={(option: any) => option?.name ?? ''}
+            {...{
+              ...defaultProps,
+              FieldProps: {
+                className: defaultProps.FieldProps.className + ' w-[13.5rem]',
+              },
             }}
           />
         </div>
+
         <div className="flex grow flex-row-reverse items-center">
           <div className="flex gap-4">
             <Button size="large" variant="contained" onClick={onFetchPreview}>

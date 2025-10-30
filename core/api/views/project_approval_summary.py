@@ -71,7 +71,7 @@ class ProjectApprovalSummaryViewSet(
                 data_from = data[options["data_key"]]
                 for w_idx, c in enumerate(options["columns"], start=writing_offset):
                     if c is not None:
-                        sheet[idx][w_idx].value = data_from.get(c)
+                        sheet[idx][w_idx].value = data_from.get(c) or None
 
     def _write_full_row(self, sheet, row_idx, name, data, col_offset=1):
         columns = self._make_row()

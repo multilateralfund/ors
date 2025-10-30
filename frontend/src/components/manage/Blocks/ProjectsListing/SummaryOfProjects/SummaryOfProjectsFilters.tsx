@@ -6,9 +6,10 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
 import { GlobalRequestParams } from '@ors/components/manage/Blocks/ProjectsListing/SummaryOfProjects/types.ts'
+import { considerationOpts } from '../constants'
 
 const defaultProps = {
-  FieldProps: { className: 'mb-0 w-full' },
+  FieldProps: { className: 'mb-0 w-full BPListUpload' },
   popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
   componentsProps: {
     popupIndicator: {
@@ -90,21 +91,31 @@ const SummaryOfProjectsFilters = (props: {
             {...defaultProps}
           />
         </div>
-        <div className="flex-col">
-          <Label htmlFor="blanketApproval">Blanket approval</Label>
-          <Checkbox
-            id="blanketApproval"
-            className="p-0"
-            checked={requestParams.blanket_consideration}
-            onChange={(_, value) =>
+        <div>
+          <Label htmlFor="blanketConsideration">
+            Blanket approval/Individual consideration
+          </Label>
+          <Field
+            widget="autocomplete"
+            options={considerationOpts}
+            value={
+              considerationOpts.find(
+                (opt) =>
+                  opt.id === requestParams.blanket_or_individual_consideration,
+              ) ?? null
+            }
+            onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_consideration: value,
-                individual_consideration: !value,
+                blanket_or_individual_consideration: value?.id ?? null,
               }))
             }
-            sx={{
-              color: 'black',
+            getOptionLabel={(option: any) => option?.name ?? ''}
+            {...{
+              ...defaultProps,
+              FieldProps: {
+                className: defaultProps.FieldProps.className + ' w-[13.5rem]',
+              },
             }}
           />
         </div>

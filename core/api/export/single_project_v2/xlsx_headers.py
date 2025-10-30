@@ -92,8 +92,8 @@ def get_headers_cross_cutting() -> List[HeaderType]:
             "method": lambda r, h: format_iso_date(r[h["id"]]),
         },
         {
-            "id": "individual_consideration",
-            "headerName": "Blanket consideration",
+            "id": "blanket_or_individual_consideration",
+            "headerName": "Blanket approval/Individual consideration",
             "method": get_blanket_consideration_value,
         },
     ]

@@ -29,7 +29,11 @@ const ProjectsAssociateWrapper = () => {
   const project = useGetProject(project_id)
   const { data, loading } = project
 
-  if (project?.error || (data && !isNull(data.latest_project))) {
+  if (
+    project?.error ||
+    (data &&
+      (!isNull(data.latest_project) || data.submission_status !== 'Approved'))
+  ) {
     return <Redirect to="/projects-listing/listing" />
   }
 

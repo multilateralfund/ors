@@ -21,6 +21,7 @@ import {
 import {
   tableColumns,
   lvcNonLvcOpts,
+  considerationOpts,
   defaultProps,
   defaultPropsSimpleField,
   textAreaClassname,
@@ -39,7 +40,7 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { useStore } from '@ors/store'
 
-import { TextareaAutosize, Divider, Checkbox } from '@mui/material'
+import { TextareaAutosize, Divider } from '@mui/material'
 import { filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -96,7 +97,7 @@ const ProjectCrossCuttingFields = ({
     support_cost_psc,
     project_start_date,
     project_end_date,
-    individual_consideration,
+    blanket_or_individual_consideration,
   } = crossCuttingFields
 
   const { projectFields, viewableFields, editableFields } = useStore(
@@ -160,16 +161,6 @@ const ProjectCrossCuttingFields = ({
     } else {
       event.preventDefault()
     }
-  }
-
-  const handleChangeBlanketConsideration = (consideration: boolean) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        individual_consideration: !consideration,
-      },
-    }))
   }
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
@@ -416,7 +407,9 @@ const ProjectCrossCuttingFields = ({
                       disabled={!canEditField(editableFields, 'total_fund')}
                       {...getFieldDefaultProps('total_fund')}
                     />
-                    <FieldErrorIndicator errors={errors} field="total_fund" />
+                    <div className="w-8">
+                      <FieldErrorIndicator errors={errors} field="total_fund" />
+                    </div>
                   </div>
                 </div>
               )}
@@ -476,10 +469,12 @@ const ProjectCrossCuttingFields = ({
                           !canEditField(editableFields, 'project_start_date'),
                       })}
                     />
-                    <FieldErrorIndicator
-                      errors={errors}
-                      field="project_start_date"
-                    />
+                    <div className="w-8">
+                      <FieldErrorIndicator
+                        errors={errors}
+                        field="project_start_date"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -519,24 +514,60 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
             </div>
-            {canViewField(viewableFields, 'individual_consideration') && (
-              <div className="flex">
-                <Label className="mt-0.5">Blanket consideration</Label>
+            {canViewField(
+              viewableFields,
+              'blanket_or_individual_consideration',
+            ) && (
+              <div>
+                <Label>
+                  {tableColumns.blanket_or_individual_consideration}
+                </Label>
                 <div className="flex items-center">
-                  <Checkbox
-                    checked={!individual_consideration}
+                  <Field
+                    widget="autocomplete"
+                    options={considerationOpts}
+                    value={
+                      considerationOpts.find(
+                        (opt) => opt.id === blanket_or_individual_consideration,
+                      ) ?? null
+                    }
                     onChange={(_, value) =>
-                      handleChangeBlanketConsideration(value)
+                      changeHandler['drop_down']<
+                        ProjectData,
+                        CrossCuttingFields
+                      >(
+                        value,
+                        'blanket_or_individual_consideration',
+                        setProjectData,
+                        sectionIdentifier,
+                      )
+                    }
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(considerationOpts, option, 'value')
                     }
                     disabled={
                       isV3Project ||
-                      !canEditField(editableFields, 'individual_consideration')
+                      !canEditField(
+                        editableFields,
+                        'blanket_or_individual_consideration',
+                      )
                     }
-                    sx={{ color: 'black' }}
+                    Input={{
+                      error: getIsInputDisabled(
+                        'blanket_or_individual_consideration',
+                      ),
+                    }}
+                    {...{
+                      ...defaultProps,
+                      FieldProps: {
+                        className:
+                          defaultProps.FieldProps.className + ' w-[13.5rem]',
+                      },
+                    }}
                   />
                   <FieldErrorIndicator
                     errors={errors}
-                    field="individual_consideration"
+                    field="blanket_or_individual_consideration"
                   />
                 </div>
               </div>

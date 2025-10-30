@@ -29,7 +29,8 @@ export const tableColumns: { [key: string]: string } = {
   project_end_date: 'Project end date',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support cost',
-  individual_consideration: 'Blanket or individual consideration',
+  blanket_or_individual_consideration:
+    'Blanket approval/Individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
   bp_activity: 'BP activity',
@@ -107,17 +108,17 @@ export const initialCrossCuttingFields = {
   project_end_date: null,
   total_fund: null,
   support_cost_psc: null,
-  individual_consideration: null,
+  blanket_or_individual_consideration: null,
 }
-
-export const blanketOrIndConsiderationOpts = [
-  { name: 'Individual', id: true },
-  { name: 'Blanket', id: false },
-]
 
 export const lvcNonLvcOpts = [
   { name: 'LVC', id: true },
   { name: 'Non-LVC', id: false },
+]
+
+export const considerationOpts = [
+  { name: 'Blanket approval', id: 'blanket', value: 'Blanket' },
+  { name: 'Individual consideration', id: 'individual', value: 'Individual' },
 ]
 
 export const validationFieldsPairs: [

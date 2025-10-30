@@ -282,6 +282,10 @@ class Project(models.Model):
             "Other doc: CPG, policy paper, business plan",
         )
 
+    class BlanketOrIndividualConsideration(models.TextChoices):
+        BLANKET = "blanket", "Blanket"
+        INDIVIDUAL = "individual", "Individual"
+
     class ProjectCompliance(models.TextChoices):
         EE = "Energy Efficieny", "Energy Efficieny"
         NONEE = "Non-Energey Efficiency", "Non-Energey Efficiency"
@@ -779,14 +783,16 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
-    individual_consideration = models.BooleanField(
-        null=True,
-        blank=True,
+    blanket_or_individual_consideration = models.CharField(
+        max_length=256,
+        choices=BlanketOrIndividualConsideration.choices,
         help_text="""
             Blanket or Individual consideration.
             This field is needed for analyses at the recommendation stage for QA unit.
             And it is for MLFS users to select at the review stage.
         """,
+        blank=False,
+        null=True,
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)

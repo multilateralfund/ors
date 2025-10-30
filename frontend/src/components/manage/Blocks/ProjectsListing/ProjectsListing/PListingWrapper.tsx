@@ -38,36 +38,46 @@ export default function PListingWrapper() {
     projectSubmissionStatus: '',
     projectStatus: '',
   })
-  const { projectId, projectTitle } = projectData
+  const { projectId, projectTitle, projectSubmissionStatus } = projectData
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
 
   const projectActions = (
     <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-4">
-      {canUpdateProjects && (
-        <div
-          className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            '!cursor-default text-gray-400 opacity-60': !projectId,
-          })}
-          onClick={() => {
-            if (projectId) {
-              setIsCopyModalOpen(true)
-            }
-          }}
-        >
-          <LuCopy className="mb-1" size={18} />
-          Copy project
-        </div>
-      )}
-      {canAssociateProjects && (
-        <CustomLink
-          href={projectId ? `/projects-listing/${projectId}/associate` : null}
-          className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            '!cursor-default text-gray-400 opacity-60': !projectId,
-          })}
-        >
-          <IoIosLink className="mb-1" size={18} />
-          Associate project
-        </CustomLink>
+      {view === 'list' && (
+        <>
+          {canUpdateProjects && (
+            <div
+              className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
+                '!cursor-default text-gray-400 opacity-60': !projectId,
+              })}
+              onClick={() => {
+                if (projectId) {
+                  setIsCopyModalOpen(true)
+                }
+              }}
+            >
+              <LuCopy className="mb-1" size={18} />
+              Copy project
+            </div>
+          )}
+          {canAssociateProjects && (
+            <CustomLink
+              href={
+                projectId && projectSubmissionStatus === 'Approved'
+                  ? `/projects-listing/${projectId}/associate`
+                  : null
+              }
+              className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
+                '!cursor-default text-gray-400 opacity-60': !(
+                  projectId && projectSubmissionStatus === 'Approved'
+                ),
+              })}
+            >
+              <IoIosLink className="mb-1" size={18} />
+              Associate project
+            </CustomLink>
+          )}
+        </>
       )}
       <GenerateDBMenu />
     </div>
@@ -156,13 +166,7 @@ export default function PListingWrapper() {
             }}
           />
         ) : (
-          <PListingAssociation
-            {...{
-              projectId,
-              setProjectData,
-              tableToolbar,
-            }}
-          />
+          <PListingAssociation {...{ tableToolbar }} />
         )}
         {isCopyModalOpen && copyProjectModal}
       </Box>

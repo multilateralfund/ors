@@ -256,6 +256,7 @@ class TestProjectVersioning:
         project.project_end_date = "2024-09-30"
         project.total_fund = 2340000
         project.support_cost_psc = 23
+        project.blanket_or_individual_consideration = "individual"
         project.save()
 
         url = reverse("project-v2-recommend", args=(project.id,))
@@ -317,6 +318,7 @@ class TestProjectVersioning:
         project.project_end_date = "2024-09-30"
         project.total_fund = 2340000
         project.support_cost_psc = 23
+        project.blanket_or_individual_consideration = "individual"
         project.save()
 
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)

@@ -29,11 +29,9 @@ const ProjectSubstanceDetails = ({
   errors = {},
   hasSubmitted,
   odsOdpErrors,
-  canEditSubstances,
 }: SpecificFieldsSectionProps & {
   overviewFields: ProjectSpecificFields[]
   odsOdpErrors: { [key: string]: [] }[]
-  canEditSubstances: boolean
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
