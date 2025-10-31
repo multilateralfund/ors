@@ -34,8 +34,11 @@ const getColumnDefs = (
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
-    const projectTypeClass =
-      data.isOnly !== false ? 'single-project' : 'multiple-projects'
+    const projectTypeClass = data.isMetaproject
+      ? 'metaproject'
+      : data.isOnly !== false
+        ? 'single-project'
+        : 'multiple-projects'
 
     return cx('!pl-0 ag-text-center', projectTypeClass, {
       'first-project': data.isFirst,
@@ -143,7 +146,7 @@ const getColumnDefs = (
               className={cx(
                 'ml-2 overflow-hidden truncate whitespace-nowrap',
                 {
-                  'no-underline': !canViewProjects,
+                  'no-underline': !(canViewProjects && props.data.id),
                 },
                 {
                   '!ml-12':
@@ -153,7 +156,9 @@ const getColumnDefs = (
                 },
               )}
               href={
-                canViewProjects ? `/projects-listing/${props.data.id}` : null
+                canViewProjects && props.data.id
+                  ? `/projects-listing/${props.data.id}`
+                  : null
               }
             >
               <span>{props.value}</span>

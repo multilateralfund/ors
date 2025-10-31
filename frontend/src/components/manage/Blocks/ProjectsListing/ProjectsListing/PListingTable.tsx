@@ -93,13 +93,17 @@ const PListingTable = ({
             .getColumnState()
             .filter((column) => !!column.sort)
             .map(({ sort, colId }) => {
-              const field = ['code', 'tranche', 'title', 'total_fund', 'metacode'].includes(
-                colId,
-              )
+              const field = [
+                'code',
+                'tranche',
+                'title',
+                'total_fund',
+                'metacode',
+              ].includes(colId)
                 ? colId
                 : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
-                : colId.split('.')[0] + '__name'
+                  : colId.split('.')[0] + '__name'
 
               if (colId === 'code') {
                 // Ordering by code needs to be sent as 'filtered_code'
