@@ -83,7 +83,7 @@ export const createProjectFieldsSlice = ({
               isDraftEditable &&
               isEditableByStatus
 
-            return isFieldNotV3Editable
+            return !isFieldNotV3Editable
               ? canEditAll || canEditField
               : canEditField
           },
