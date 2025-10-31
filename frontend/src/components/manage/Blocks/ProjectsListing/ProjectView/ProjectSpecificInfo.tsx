@@ -14,7 +14,7 @@ const ProjectSpecificInfo = ({
   project,
   specificFields,
   fieldHistory,
-}: { fieldHistory: any } & ProjectViewProps) => {
+}: { fieldHistory?: any } & ProjectViewProps) => {
   const headerFields = getSectionFields(specificFields, 'Header')
   const substanceFields = getSectionFields(specificFields, 'Substance Details')
 

@@ -23,7 +23,7 @@ const ProjectCrossCutting = ({
   fieldHistory,
 }: {
   project: ProjectTypeApi
-  fieldHistory: any
+  fieldHistory?: any
 }) => {
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,

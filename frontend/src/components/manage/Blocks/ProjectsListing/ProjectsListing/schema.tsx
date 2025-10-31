@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectCard from './ProjectCard'
 import { tableColumns } from '../constants'
 import { ListingProjectData } from '../interfaces'
 import { formatNumberColumns } from '../utils'
@@ -23,6 +24,7 @@ const getColumnDefs = (
   setProjectData?: (data: ListingProjectData) => void,
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
+  setParams?: any,
 ) => {
   const {
     canViewProjects,
@@ -142,27 +144,31 @@ const getColumnDefs = (
                   )}
               </>
             )}
-            <Link
-              className={cx(
-                'ml-2 overflow-hidden truncate whitespace-nowrap',
-                {
-                  'no-underline': !(canViewProjects && props.data.id),
-                },
-                {
-                  '!ml-12':
-                    mode === 'association' &&
-                    !associationIds &&
-                    !setAssociationIds,
-                },
-              )}
-              href={
-                canViewProjects && props.data.id
-                  ? `/projects-listing/${props.data.id}`
-                  : null
-              }
-            >
-              <span>{props.value}</span>
-            </Link>
+            {mode === 'listing' && setProjectData ? (
+              <ProjectCard project={props.data} setParams={setParams} />
+            ) : (
+              <Link
+                className={cx(
+                  'ml-2 overflow-hidden truncate whitespace-nowrap',
+                  {
+                    'no-underline': !(canViewProjects && props.data.id),
+                  },
+                  {
+                    '!ml-12':
+                      mode === 'association' &&
+                      !associationIds &&
+                      !setAssociationIds,
+                  },
+                )}
+                href={
+                  canViewProjects && props.data.id
+                    ? `/projects-listing/${props.data.id}`
+                    : null
+                }
+              >
+                <span>{props.value}</span>
+              </Link>
+            )}
           </div>
         ),
       },
