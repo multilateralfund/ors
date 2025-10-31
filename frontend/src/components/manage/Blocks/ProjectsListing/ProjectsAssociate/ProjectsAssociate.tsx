@@ -59,7 +59,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
       'all',
       false,
       false,
-      true,
+      false,
     )
   }, 0)
 

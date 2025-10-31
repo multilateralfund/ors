@@ -45,29 +45,30 @@ export const createProjectFieldsSlice = ({
       const editableFields = fields
         .filter(
           ({ editable_in_versions, is_actual, section, write_field_name }) => {
-            const isFieldNotEditableByAdmin = ['bp_activity'].includes(
+            const isFieldNotV3Editable = ['bp_activity'].includes(
               write_field_name,
             )
 
-            if (
-              !isFieldNotEditableByAdmin &&
-              !isPostExcom &&
-              mode === 'edit' &&
-              submissionStatus === 'Approved'
-            ) {
-              return canEditAll
-                ? section !== 'Approval' && (section !== 'Impact' || is_actual)
-                : is_actual
-            }
+            if (!isFieldNotV3Editable) {
+              if (
+                !isPostExcom &&
+                mode === 'edit' &&
+                submissionStatus === 'Approved'
+              ) {
+                return canEditAll
+                  ? section !== 'Approval' &&
+                      (section !== 'Impact' || is_actual)
+                  : is_actual
+              }
 
-            if (
-              !isFieldNotEditableByAdmin &&
-              (isPostExcom ||
+              if (
+                isPostExcom ||
                 (canEditAll &&
                   mode === 'edit' &&
-                  submissionStatus === 'Not approved'))
-            ) {
-              return section !== 'Approval'
+                  submissionStatus === 'Not approved')
+              ) {
+                return section !== 'Approval'
+              }
             }
 
             const isEditableInVersion = editable_in_versions?.includes(version)
@@ -76,14 +77,15 @@ export const createProjectFieldsSlice = ({
             const isDraftEditable =
               submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
             const isEditableByStatus = submissionStatus !== 'Withdrawn'
+            const canEditField =
+              isEditableInVersion &&
+              isFieldEditable &&
+              isDraftEditable &&
+              isEditableByStatus
 
-            return (
-              (canEditAll && !isFieldNotEditableByAdmin) ||
-              (isEditableInVersion &&
-                isFieldEditable &&
-                isDraftEditable &&
-                isEditableByStatus)
-            )
+            return isFieldNotV3Editable
+              ? canEditAll || canEditField
+              : canEditField
           },
         )
         .map((field) => field.write_field_name)
