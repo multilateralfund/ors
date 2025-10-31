@@ -107,7 +107,7 @@ const SummaryOfProjectsFilters = (props: {
             onChange={(_, value: any) =>
               setRequestParams((prev) => ({
                 ...prev,
-                blanket_or_individual_consideration: value?.id ?? null,
+                blanket_or_individual_consideration: value?.id ?? '',
               }))
             }
             getOptionLabel={(option: any) => option?.name ?? ''}

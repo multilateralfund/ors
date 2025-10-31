@@ -39,6 +39,7 @@ from core.api.views import (
     UserPermissionsView,
 )
 from core.api.views.agency import AgencyListView, BusinessPlanAgencyListView
+from core.api.views.blanket_approval_details import BlanketApprovalDetailsViewset
 from core.api.views.bp_export import BPActivityExportView
 from core.api.views.business_plan import (
     BPChemicalTypeListView,
@@ -161,6 +162,11 @@ router.register(
     "summary-of-projects",
     SummaryOfProjectsViewSet,
     basename="summary-of-projects",
+)
+router.register(
+    "blanket-approval-details",
+    BlanketApprovalDetailsViewset,
+    basename="blanket-approval-details",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")

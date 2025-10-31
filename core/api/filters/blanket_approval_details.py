@@ -1,0 +1,47 @@
+from django_filters import rest_framework as filters
+
+from core.models import Project
+
+
+class BlanketApprovalDetailsFilter(filters.FilterSet):
+    """
+    Filter for projects
+    """
+
+    meeting_id = filters.NumberFilter(field_name="meeting")
+
+    submission_status = filters.CharFilter(
+        field_name="submission_status__name",
+        lookup_expr="iexact",
+    )
+
+    blanket_or_individual_consideration = filters.CharFilter(
+        field_name="blanket_or_individual_consideration",
+        lookup_expr="iexact",
+    )
+
+    cluster_id = filters.BaseInFilter(
+        field_name="cluster",
+        lookup_expr="in",
+    )
+
+    project_type_id = filters.BaseInFilter(
+        field_name="project_type",
+        lookup_expr="in",
+    )
+
+    country_id = filters.BaseInFilter(
+        field_name="country",
+        lookup_expr="in",
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            "meeting_id",
+            "submission_status",
+            "blanket_or_individual_consideration",
+            "cluster_id",
+            "project_type_id",
+            "country_id",
+        ]
