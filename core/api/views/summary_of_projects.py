@@ -22,16 +22,7 @@ from core.api.filters.summary_of_projects import SummaryOfProjectsFilter
 from core.api.permissions import HasProjectV2ApproveAccess
 from core.api.utils import workbook_response
 from core.models import Project
-
-
-def get_available_values(queryset: QuerySet[Project], field_name: str):
-    rel_name = f"{field_name}__name"
-
-    values = (
-        queryset.order_by(rel_name).values_list(f"{field_name}_id", rel_name).distinct()
-    )
-
-    return [{"name": name, "id": pk} for pk, name in values if pk is not None]
+from core.api.views.utils import get_available_values
 
 
 class SummaryOfProjectsViewSet(

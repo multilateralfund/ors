@@ -3,7 +3,8 @@
 from datetime import datetime
 
 from django.db import models
-from django.db.models import Q, F
+
+from django.db.models import Q, F, QuerySet
 from openpyxl.utils import get_column_letter
 from rest_framework.exceptions import ValidationError
 
@@ -68,6 +69,16 @@ def log_project_history(project, request_user, description):
         description=description,
         user=request_user,
     )
+
+
+def get_available_values(queryset: QuerySet, field_name: str):
+    rel_name = f"{field_name}__name"
+
+    values = (
+        queryset.order_by(rel_name).values_list(f"{field_name}_id", rel_name).distinct()
+    )
+
+    return [{"name": name, "id": pk} for pk, name in values if pk is not None]
 
 
 def get_country_region_dict():
