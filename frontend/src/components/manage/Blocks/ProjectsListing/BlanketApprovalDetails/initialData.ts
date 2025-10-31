@@ -14,7 +14,5 @@ export const initialRowData = () => {
   return {
     params: initialRequestParams(),
     apiData: null,
-    text: '',
-    country_name: '',
   }
 }

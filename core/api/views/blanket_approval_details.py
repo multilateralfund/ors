@@ -68,8 +68,86 @@ class BlanketApprovalDetailsViewset(
         return result
 
     def list(self, request, *args, **kwargs):
-        projects: QuerySet[Project] = self.filter_queryset(self.get_queryset())
-        return Response(self._extract_data(projects))
+        params: dict | None = self._get_params(request)
+        queryset: QuerySet[Project] = self.get_queryset()
+
+        per_country = {}
+        total_projects = 0
+
+        for query in params:
+            project_filter = self.filterset_class(query, queryset)
+            filtered_projects: QuerySet[Project] = project_filter.qs
+            total_projects += filtered_projects.count()
+
+            country_id = query["country_id"]
+            project_type_id = query["project_type_id"]
+            cluster_id = query["cluster_id"]
+            key = f"{project_type_id}, {cluster_id}"
+
+            if country_id not in per_country:
+                per_country[country_id] = {"country_name": ""}
+
+            if key not in per_country[country_id]:
+                per_country[country_id][key] = {
+                    "cluster_name": None,
+                    "project_type_name": None,
+                    "projects": [],
+                }
+
+            result = per_country[country_id][key]
+            result["projects"].extend(
+                filtered_projects.values(
+                    project_id=F("id"),
+                    project_title=F("title"),
+                    project_description=F("description"),
+                    agency_name=F("agency__name"),
+                    country_name=F("country__name"),
+                    cluster_name=F("cluster__name"),
+                    project_type_name=F("project_type__name"),
+                    hcfc=Coalesce(F("ods_odp__odp"), 0.0),
+                    hfc=Coalesce(F("ods_odp__co2_mt"), 0.0),
+                    project_funding=Coalesce(F("total_fund"), 0.0),
+                    project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
+                    total=Coalesce(Sum(F("total_fund") + F("support_cost_psc")), 0.0),
+                )
+            )
+
+            if not per_country[country_id]["country_name"] and result["projects"]:
+                per_country[country_id]["country_name"] = result["projects"][0][
+                    "country_name"
+                ]
+
+            for name in ("project_type_name", "cluster_name"):
+                if not result[name] and result["projects"]:
+                    result[name] = result["projects"][0][name]
+
+        result = []
+
+        for country_data in per_country.values():
+            country_name = country_data.get("country_name")
+            country_data = [v for k, v in country_data.items() if k != "country_name"]
+            country_total = {
+                "hcfc": 0.0,
+                "hfc": 0.0,
+                "project_funding": 0.0,
+                "project_support_cost": 0.0,
+                "total": 0.0,
+            }
+
+            for clusters in country_data:
+                for project in clusters["projects"]:
+                    for key in country_total:
+                        country_total[key] += project[key]
+
+            result.append(
+                {
+                    "country_name": country_name,
+                    "country_data": country_data,
+                    "country_total": country_total,
+                }
+            )
+
+        return JsonResponse({"total_projects": total_projects, "result": result})
 
     @action(methods=["GET"], detail=False)
     def filters(self, request, *args, **kwargs):
@@ -108,15 +186,19 @@ class BlanketApprovalDetailsViewset(
         sheet.title = "Blanket app. details"
         return workbook_response("Blanket approval details", wb)
 
+    def _get_params(self, request):
+        params: str = request.query_params.get("row_data")
+        if params:
+            return json.loads(base64.b64decode(params).decode())
+        return None
+
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
 
-        params: str = request.query_params.get("row_data")
+        params: dict | None = self._get_params(request)
         is_debug_request = settings.DEBUG and request.query_params.get("debug")
 
         if params:
-            params: dict = json.loads(base64.b64decode(params).decode())
-
             if is_debug_request:
                 return self._export_debug(params)
 

@@ -18,7 +18,7 @@ import { AddEntryForm } from '@ors/components/manage/Blocks/ProjectsListing/Blan
 const BlanketApprovalDetails = () => {
   const [globalRequestParams, setGlobalRequestParams] =
     useState<GlobalRequestParams>(initialGlobalRequestParams())
-  const [rows, setRows] = useState<RowData[]>([initialRowData()])
+  const [rows, setRows] = useState<RowData[]>([])
   const addRow = (params: RowData['params']) => {
     setRows((prevState) => [
       ...prevState,
@@ -29,19 +29,20 @@ const BlanketApprovalDetails = () => {
     setRows((prevState) => prevState.slice(0, prevState.length - 1))
   }
 
+  const encodedRowData = useMemo(() => {
+    const validRowData = rows.map((row) =>
+      filterByValue({ ...globalRequestParams, ...row.params }),
+    )
+    console.log('downloadUrl', validRowData)
+    return btoa(JSON.stringify(validRowData))
+  }, [rows, globalRequestParams])
+
   const downloadUrl = useMemo(() => {
-    const validRowData = rows.map((row) => {
-      return {
-        ...row,
-        params: filterByValue({ ...globalRequestParams, ...row.params }),
-      }
-    })
-    const b64rowData = btoa(JSON.stringify(validRowData))
     const encodedParams = new URLSearchParams({
-      row_data: b64rowData,
+      row_data: encodedRowData,
     }).toString()
     return formatApiUrl(`api/blanket-approval-details/export?${encodedParams}`)
-  }, [rows, globalRequestParams])
+  }, [encodedRowData])
 
   return (
     <>
@@ -62,6 +63,7 @@ const BlanketApprovalDetails = () => {
         <Divider className="my-2 border-0" />
         <BlanketApprovalDetailsTable
           globalRequestParams={globalRequestParams}
+          encodedRowData={encodedRowData}
           rows={rows}
           setRows={setRows}
         />
@@ -76,7 +78,7 @@ const BlanketApprovalDetails = () => {
           </Button>
           <Link
             button
-            disabled={!rows.filter((row) => row.text).length}
+            disabled={!rows.length}
             size="large"
             href={downloadUrl}
             variant="contained"
