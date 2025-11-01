@@ -278,7 +278,7 @@ const ProjectsEdit = ({
   }, [])
 
   useEffect(() => {
-    if (canViewBp && country && agency && cluster) {
+    if (!approval && canViewBp && country && agency && cluster) {
       setBpData({
         hasBpData: false,
         bpDataLoading: true,

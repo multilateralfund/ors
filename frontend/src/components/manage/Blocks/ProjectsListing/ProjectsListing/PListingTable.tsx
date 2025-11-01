@@ -39,6 +39,7 @@ const PListingTable = ({
     setProjectData,
     associationIds,
     setAssociationIds,
+    setParams,
   )
 
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
