@@ -546,7 +546,7 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(considerationOpts, option, 'value')
                     }
                     disabled={
-                      isV3Project ||
+                      (mode === 'edit' && (project?.version ?? 0) >= 3) ||
                       !canEditField(
                         editableFields,
                         'blanket_or_individual_consideration',

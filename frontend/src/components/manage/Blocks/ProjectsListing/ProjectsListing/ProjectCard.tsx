@@ -41,7 +41,9 @@ const ProjectData = ({
   )
 
   useEffect(() => {
-    debouncedFetchProjectFields()
+    if (data) {
+      debouncedFetchProjectFields()
+    }
   }, [data])
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const ProjectData = ({
   }, [cluster_id, project_type_id, sector_id])
 
   return (
-    <>
+    <div className="m-1.5">
       <div className="flex flex-wrap justify-between gap-x-20 gap-y-3">
         <PageHeading>
           <Link className="cursor-pointer" href={`/projects-listing/${id}`}>
@@ -98,7 +100,7 @@ const ProjectData = ({
           <ProjectSpecificInfo project={data} {...{ specificFields }} />
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -158,7 +160,7 @@ export default function ProjectCard({
               width: 'auto',
               minWidth: '15rem',
               maxHeight: '50vh',
-              maxWidth: '90%',
+              maxWidth: '85%',
             },
           },
         }}
