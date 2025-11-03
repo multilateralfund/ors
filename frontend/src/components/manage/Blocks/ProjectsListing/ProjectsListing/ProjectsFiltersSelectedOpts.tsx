@@ -1,10 +1,8 @@
 import { useContext } from 'react'
 
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { displaySelectedOption } from '../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../utils'
-import { considerationOpts } from '../constants'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
@@ -24,8 +22,7 @@ export const initialParams = {
 
 const ProjectsFiltersSelectedOpts = ({
   mode,
-  projectSlice,
-  meetings,
+  filterOptions = {},
   form,
   initialFilters,
   filters,
@@ -34,57 +31,56 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { countries, agencies, clusters, project_types, sectors } =
-    useContext(ProjectsDataContext)
-
-  const { submission_statuses, statuses } = projectSlice
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(countries),
+      entities: formatEntity(filterOptions.country),
       entityIdentifier: 'country_id',
       hasPermissions: mode === 'listing',
     },
     {
-      entities: formatEntity(agencies),
+      entities: formatEntity(filterOptions.agency),
       entityIdentifier: 'agency_id',
       hasPermissions: true,
     },
     {
-      entities: formatEntity(clusters),
+      entities: formatEntity(filterOptions.cluster),
       entityIdentifier: 'cluster_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(project_types),
+      entities: formatEntity(filterOptions.project_type),
       entityIdentifier: 'project_type_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(sectors),
+      entities: formatEntity(filterOptions.sector),
       entityIdentifier: 'sector_id',
       hasPermissions: canViewSectorsSubsectors,
     },
     {
-      entities: formatEntity(meetings, 'value'),
+      entities: formatEntity(filterOptions.meeting, 'value'),
       entityIdentifier: 'meeting_id',
       hasPermissions: true,
       field: 'value',
     },
     {
-      entities: formatEntity(submission_statuses.data),
+      entities: formatEntity(filterOptions.submission_status),
       entityIdentifier: 'submission_status_id',
       hasPermissions: canViewMetainfoProjects && mode === 'listing',
     },
     {
-      entities: formatEntity(statuses.data),
+      entities: formatEntity(filterOptions.status),
       entityIdentifier: 'status_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(considerationOpts, 'name'),
+      entities: formatEntity(
+        filterOptions.blanket_approval_individual_consideration,
+        'name',
+      ),
       entityIdentifier: 'blanket_or_individual_consideration',
       hasPermissions: true,
       field: 'name',
