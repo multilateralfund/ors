@@ -25,6 +25,7 @@ const ProjectsAssociateSelection = ({
   setAssociationIds,
   filters,
   setFilters,
+  projectFilters,
   setMode,
 }: {
   crtProjects: ProjectTypeApi[]
@@ -33,6 +34,7 @@ const ProjectsAssociateSelection = ({
   setAssociationIds: (ids: number[]) => void
   filters: any
   setFilters: (filters: any) => void
+  projectFilters: any
   setMode: (mode: string) => void
 }) => {
   const form = useRef<any>()
@@ -137,7 +139,14 @@ const ProjectsAssociateSelection = ({
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PListingFilters
             mode="association"
-            {...{ form, filters, initialFilters, setFilters, setParams }}
+            {...{
+              form,
+              filters,
+              initialFilters,
+              setFilters,
+              setParams,
+              projectFilters,
+            }}
           />
         </div>
         <PListingTable

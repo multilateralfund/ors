@@ -7,6 +7,7 @@ import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
@@ -33,6 +34,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     (status) => status.name === 'Approved',
   )
 
+  const projectFilters = useGetProjectFilters(filters)
   const projectsAssociation = useGetProjectsAssociation(
     {
       ...initialFilters,
@@ -103,6 +105,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
               setAssociationIds,
               filters,
               setFilters,
+              projectFilters,
               setMode,
             }}
           />

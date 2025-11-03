@@ -112,8 +112,7 @@ const ProjectsCreate = ({
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
   const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
 
-  const areNextSectionsDisabled =
-    !canLinkToBp || currentStep < 1 || bpData.bpDataLoading
+  const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
     areNextSectionsDisabled || !project_type || !sector
 
@@ -134,12 +133,14 @@ const ProjectsCreate = ({
 
   const isCrossCuttingTabDisabled =
     areNextSectionsDisabled ||
+    bpData.bpDataLoading ||
     !hasFields(projectFields, viewableFields, 'Cross-Cutting')
 
   const hasNoSpecificInfoFields =
     overviewFields.length < 1 && substanceDetailsFields.length < 1
   const isSpecificInfoTabDisabled =
     !specificFieldsLoaded ||
+    bpData.bpDataLoading ||
     areProjectSpecificTabsDisabled ||
     hasNoSpecificInfoFields ||
     (!hasFields(projectFields, viewableFields, 'Header') &&
@@ -147,6 +148,7 @@ const ProjectsCreate = ({
 
   const isImpactTabDisabled =
     !specificFieldsLoaded ||
+    bpData.bpDataLoading ||
     areProjectSpecificTabsDisabled ||
     impactFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Impact')
@@ -501,7 +503,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Attachments</div>
           {fileErrors || (loadedFiles && hasNoFiles) ? (
-            areNextSectionsDisabled ? (
+            areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
               <SectionErrorIndicator errors={[]} />
@@ -557,7 +559,7 @@ const ProjectsCreate = ({
                 {approvalFields.length === 0
                   ? LoadingTab
                   : hasSectionErrors(approvalErrors) &&
-                    (isApprovalTabDisabled ? (
+                    (isApprovalTabDisabled || bpData.bpDataLoading ? (
                       DisabledAlert
                     ) : (
                       <SectionErrorIndicator errors={[]} />

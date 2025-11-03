@@ -6,6 +6,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { PListingProps, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
@@ -21,6 +22,7 @@ export default function PListingAssociation({
   const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
+  const projectFilters = useGetProjectFilters(filters)
   const projectsAssociation = useGetProjectsAssociation(updatedInitialFilters)
   const { loading, setParams, results = [] } = projectsAssociation
 
@@ -60,7 +62,14 @@ export default function PListingAssociation({
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PListingFilters
             mode="listing"
-            {...{ form, filters, setFilters, setParams, initialFilters }}
+            {...{
+              form,
+              filters,
+              setFilters,
+              setParams,
+              initialFilters,
+              projectFilters,
+            }}
           />
           {tableToolbar}
         </div>

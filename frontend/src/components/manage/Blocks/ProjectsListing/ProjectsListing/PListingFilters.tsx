@@ -6,12 +6,21 @@ import ProjectsFiltersSelectedOpts from './ProjectsFiltersSelectedOpts'
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { useStore } from '@ors/store'
 
-const PListingFilters = ({ mode, setFilters, setParams, ...rest }: any) => {
+const PListingFilters = ({
+  mode,
+  setFilters,
+  setParams,
+  projectFilters,
+  ...rest
+}: any) => {
+  const { data: filterOptions, setParams: setParamsFilters } = projectFilters
+
   const projectSlice = useStore((state) => state.projects)
   const meetings = useMeetingOptions()
 
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
+    setParamsFilters(params)
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {

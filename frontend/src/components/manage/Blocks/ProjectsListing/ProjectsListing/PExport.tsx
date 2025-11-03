@@ -6,6 +6,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { formatApiUrl } from '@ors/helpers'
 import { initialFilters } from '../constants'
@@ -18,13 +19,14 @@ export default function PExport() {
 
   const downloadUrlBase = '/api/projects/v2/export'
 
-  const projects = useGetProjects(initialFilters)
-  const { loading, params, setParams } = projects
-
   const [filters, setFilters] = useState<Record<string, any>>({
     ...initialFilters,
   })
   const key = useMemo(() => JSON.stringify(filters), [filters])
+
+  const projectFilters = useGetProjectFilters(filters)
+  const projects = useGetProjects(initialFilters)
+  const { loading, params, setParams } = projects
 
   const downloadUrl = useMemo(() => {
     const encodedParams = new URLSearchParams(params).toString()
@@ -42,7 +44,14 @@ export default function PExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <PListingFilters
             mode="listing"
-            {...{ form, filters, initialFilters, setFilters, setParams }}
+            {...{
+              form,
+              filters,
+              initialFilters,
+              setFilters,
+              setParams,
+              projectFilters,
+            }}
           />
           {canViewProjects && (
             <Link
