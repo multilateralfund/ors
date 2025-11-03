@@ -102,6 +102,10 @@ class ProjectFilter(filters.FilterSet):
         method="filter_blanket_or_individual_consideration",
     )
     date_received = filters.DateFromToRangeFilter(field_name="date_received")
+    meta_project__isnull = filters.BooleanFilter(
+        field_name="meta_project",
+        lookup_expr="isnull",
+    )
 
     def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
