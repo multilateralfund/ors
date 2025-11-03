@@ -63,18 +63,12 @@ const ProjectIdentifiersFields = ({
   const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
-  const { countries, agencies } = useContext(ProjectsDataContext)
-
-  const projectSlice = useStore((state) => state.projects)
-  const crtClusters = filterClusterOptions(
-    projectSlice.clusters.data,
-    canViewProductionProjects,
-  )
-  const { clusters: allClusters } = useContext(ProjectsDataContext)
-  const clusters =
-    mode === 'edit'
-      ? filterClusterOptions(allClusters, canViewProductionProjects)
-      : crtClusters
+  const {
+    countries,
+    agencies,
+    clusters: allClusters,
+  } = useContext(ProjectsDataContext)
+  const clusters = filterClusterOptions(allClusters, canViewProductionProjects)
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
   const isAddOrCopy = mode === 'add' || mode === 'copy'
@@ -170,12 +164,12 @@ const ProjectIdentifiersFields = ({
     )
 
     const isProduction = getClusterDetails(
-      crtClusters,
+      clusters,
       cluster?.id,
       'production',
     ) as boolean
     const category = getClusterDetails(
-      crtClusters,
+      clusters,
       cluster?.id,
       'category',
     ) as string
@@ -419,7 +413,7 @@ const ProjectIdentifiersFields = ({
                 <div className="w-[23rem] flex-shrink">
                   <Field
                     widget="autocomplete"
-                    options={crtClusters}
+                    options={clusters}
                     value={projIdentifiers?.cluster}
                     onChange={(_, value) => handleChangeCluster(value)}
                     getOptionLabel={(option) =>

@@ -32,7 +32,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { data: clusters } = useApi({
     options: {
       params: {
-        include_obsoletes: true,
+        included_in_type_sector_combinations: true,
       },
       withStoreCache: true,
     },
