@@ -1417,6 +1417,24 @@ class Project(models.Model):
         files.sort(key=lambda f: f.date_created, reverse=True)
         return files[0]
 
+    @property
+    def final_version(self):
+        return self.latest_project if self.latest_project else self
+
+    def get_version(self, version_number):
+        """Get a specific version of this project."""
+        final = self.final_version
+
+        if final.version == version_number:
+            return final
+
+        # Return the requested version_number or None if not found
+        return (
+            Project.objects.really_all()
+            .filter(latest_project_id=final.id, version=version_number)
+            .first()
+        )
+
 
 class ProjectFile(models.Model):
     file = models.FileField(
