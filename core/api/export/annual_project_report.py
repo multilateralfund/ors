@@ -18,8 +18,8 @@ class APRExportWriter:
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRAnnexI.xlsx"
     )
     SHEET_NAME = "Annex I APR report "
-    HEADER_ROW = 1
-    FIRST_DATA_ROW = 2
+    HEADER_ROW = 3
+    FIRST_DATA_ROW = 4
 
     @classmethod
     def build_column_mapping(cls):
@@ -52,7 +52,7 @@ class APRExportWriter:
         template_row = self.FIRST_DATA_ROW
 
         # Delete any extra template rows (if present)
-        # We'll keep just the first template row and duplicate it...
+        # We'll keep just the first template data row and duplicate it...
         if self.worksheet.max_row > template_row:
             self.worksheet.delete_rows(
                 template_row + 1, self.worksheet.max_row - template_row
@@ -61,13 +61,13 @@ class APRExportWriter:
         for idx, report_data in enumerate(self.project_reports_data):
             current_row = self.FIRST_DATA_ROW + idx
             if idx > 0:
+                # Insert row and copy style if we're not on the first data row
+                self.worksheet.insert_rows(current_row, 1)
                 self._copy_row_style(template_row, current_row)
 
             self._write_row_data(current_row, report_data)
 
     def _copy_row_style(self, source_row, target_row):
-        self.worksheet.insert_rows(target_row)
-
         for col_idx in range(1, len(self.column_mapping) + 1):
             source_cell = self.worksheet.cell(source_row, col_idx)
             target_cell = self.worksheet.cell(target_row, col_idx)
@@ -105,6 +105,8 @@ class APRExportWriter:
 
         if isinstance(value, (int, float, Decimal)):
             return value
+
+        # TODO: should probably add handling for booleans! - 0/1 instead of true/false
 
         return str(value) if value else None
 
