@@ -1,6 +1,8 @@
 import base64
 import json
 from decimal import Decimal
+from typing import Iterable
+from typing import TypedDict
 
 import openpyxl
 from django.conf import settings
@@ -31,6 +33,24 @@ def get_available_values(queryset: QuerySet[Project], field_name: str):
     )
 
     return [{"name": name, "id": pk} for pk, name in values if pk is not None]
+
+
+class ProjectData(TypedDict):
+    project_id: int
+    project_title: str
+    project_description: str
+    agency_name: str
+    country_pk: int
+    country_name: str
+    cluster_pk: int
+    cluster_name: str
+    project_type_pk: int
+    project_type_name: str
+    hcfc: float
+    hfc: float
+    project_funding: float
+    project_support_cost: float
+    total: float
 
 
 class BlanketApprovalDetailsViewset(
@@ -74,58 +94,60 @@ class BlanketApprovalDetailsViewset(
         per_country = {}
         total_projects = 0
 
+        qs_projects: QuerySet[Project] = queryset.none()
+
         for query in params:
             project_filter = self.filterset_class(query, queryset)
-            filtered_projects: QuerySet[Project] = project_filter.qs
-            total_projects += filtered_projects.count()
+            qs_projects |= project_filter.qs
 
-            country_id = query["country_id"]
-            project_type_id = query["project_type_id"]
-            cluster_id = query["cluster_id"]
-            key = f"{project_type_id}, {cluster_id}"
+        filtered_projects: Iterable[ProjectData] = qs_projects.values(  # type: ignore[assignment]
+            project_id=F("id"),
+            project_title=F("title"),
+            project_description=F("description"),
+            agency_name=F("agency__name"),
+            country_pk=F("country"),
+            country_name=F("country__name"),
+            cluster_pk=F("cluster"),
+            cluster_name=F("cluster__name"),
+            project_type_pk=F("project_type"),
+            project_type_name=F("project_type__name"),
+            hcfc=Coalesce(F("ods_odp__odp"), 0.0),
+            hfc=Coalesce(F("ods_odp__co2_mt"), 0.0),
+            project_funding=Coalesce(F("total_fund"), 0.0),
+            project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
+            total=Coalesce(F("total_fund") + F("support_cost_psc"), 0.0),
+        )
 
-            if country_id not in per_country:
-                per_country[country_id] = {"country_name": ""}
+        for project in filtered_projects:
+            key = f"{project["project_type_pk"]}, {project["cluster_pk"]}"
 
-            if key not in per_country[country_id]:
-                per_country[country_id][key] = {
-                    "cluster_name": None,
-                    "project_type_name": None,
+            per_country.setdefault(
+                project["country_pk"],
+                {
+                    "country_name": project["country_name"],
+                    "country_id": project["country_pk"],
+                },
+            )
+            per_country[project["country_pk"]].setdefault(
+                key,
+                {
+                    "cluster_id": project["cluster_pk"],
+                    "cluster_name": project["cluster_name"],
+                    "project_type_id": project["project_type_pk"],
+                    "project_type_name": project["project_type_name"],
                     "projects": [],
-                }
-
-            result = per_country[country_id][key]
-            result["projects"].extend(
-                filtered_projects.values(
-                    project_id=F("id"),
-                    project_title=F("title"),
-                    project_description=F("description"),
-                    agency_name=F("agency__name"),
-                    country_name=F("country__name"),
-                    cluster_name=F("cluster__name"),
-                    project_type_name=F("project_type__name"),
-                    hcfc=Coalesce(F("ods_odp__odp"), 0.0),
-                    hfc=Coalesce(F("ods_odp__co2_mt"), 0.0),
-                    project_funding=Coalesce(F("total_fund"), 0.0),
-                    project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
-                    total=Coalesce(Sum(F("total_fund") + F("support_cost_psc")), 0.0),
-                )
+                },
             )
 
-            if not per_country[country_id]["country_name"] and result["projects"]:
-                per_country[country_id]["country_name"] = result["projects"][0][
-                    "country_name"
-                ]
-
-            for name in ("project_type_name", "cluster_name"):
-                if not result[name] and result["projects"]:
-                    result[name] = result["projects"][0][name]
+            result = per_country[project["country_pk"]][key]
+            result["projects"].append(project)
+            total_projects += 1
 
         result = []
 
         for country_data in per_country.values():
-            country_name = country_data.get("country_name")
-            country_data = [v for k, v in country_data.items() if k != "country_name"]
+            country_id = country_data.pop("country_id")
+            country_name = country_data.pop("country_name")
             country_total = {
                 "hcfc": 0.0,
                 "hfc": 0.0,
@@ -134,6 +156,7 @@ class BlanketApprovalDetailsViewset(
                 "total": 0.0,
             }
 
+            country_data = [_ for _ in country_data.values()]
             for clusters in country_data:
                 for project in clusters["projects"]:
                     for key in country_total:
@@ -141,6 +164,7 @@ class BlanketApprovalDetailsViewset(
 
             result.append(
                 {
+                    "country_id": country_id,
                     "country_name": country_name,
                     "country_data": country_data,
                     "country_total": country_total,
