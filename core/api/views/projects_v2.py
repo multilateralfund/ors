@@ -15,7 +15,6 @@ from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
-from core.api.serializers.meeting import MeetingSerializer
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
     DenyAll,
