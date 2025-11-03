@@ -6,8 +6,8 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { PListingProps, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
-import { PListingProps } from '../interfaces'
 
 import { flatMap } from 'lodash'
 
@@ -41,7 +41,13 @@ export default function PListingAssociation({
   })
   const projects = {
     ...projectsAssociation,
-    results: flatMap(formattedResults, (entry) => entry.projects || []),
+    results: flatMap(formattedResults, (entry) => [
+      {
+        title: 'Metaproject: ' + (entry.code ?? 'N/A'),
+        isMetaproject: true,
+      } as any as ProjectTypeApi,
+      ...(entry.projects || []),
+    ]),
   }
 
   return (

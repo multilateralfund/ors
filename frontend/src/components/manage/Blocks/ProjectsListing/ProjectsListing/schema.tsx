@@ -36,8 +36,11 @@ const getColumnDefs = (
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
-    const projectTypeClass =
-      data.isOnly !== false ? 'single-project' : 'multiple-projects'
+    const projectTypeClass = data.isMetaproject
+      ? 'metaproject'
+      : data.isOnly !== false
+        ? 'single-project'
+        : 'multiple-projects'
 
     return cx('!pl-0 ag-text-center', projectTypeClass, {
       'first-project': data.isFirst,

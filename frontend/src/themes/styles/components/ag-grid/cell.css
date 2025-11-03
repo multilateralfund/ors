@@ -267,6 +267,22 @@
       border-top: 1px solid #d8dade;
     }
   }
+
+  .ag-row:has(.metaproject) {
+    .ag-cell {
+      background-color: #faecd199;
+
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .ag-row:not(.ag-row-first):has(.metaproject) {
+    .ag-cell {
+      border-top: 2px solid #000;
+    }
+  }
 }
 
 .ag-table .ag-cell.ag-cell-no-border-r {
