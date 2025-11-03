@@ -294,6 +294,18 @@ class ProjectClusterListView(generics.ListAPIView):
         )
         if not include_obsoletes:
             queryset = queryset.filter(obsolete=False)
+
+        if (
+            self.request.query_params.get(
+                "included_in_type_sector_combinations", "false"
+            ).lower()
+            == "true"
+        ):
+            queryset = queryset.filter(
+                id__in=ProjectSpecificFields.objects.values_list(
+                    "cluster_id", flat=True
+                ).distinct()
+            )
         return queryset.order_by("sort_order")
 
     @swagger_auto_schema(
@@ -302,6 +314,12 @@ class ProjectClusterListView(generics.ListAPIView):
                 "include_obsoletes",
                 openapi.IN_QUERY,
                 description="Include obsolete clusters. By default, only non-obsolete clusters are returned.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "included_in_type_sector_combinations",
+                openapi.IN_QUERY,
+                description="Return only clusters that have at least one type-sector combination defined.",
                 type=openapi.TYPE_BOOLEAN,
             ),
         ]

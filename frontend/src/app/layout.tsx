@@ -91,7 +91,11 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/project-types/', {}, false),
           api('api/meetings/', {}, false),
           api('api/decisions/', {}, false),
-          api('api/project-clusters/', {}, false),
+          api(
+            'api/project-clusters/',
+            { params: { included_in_type_sector_combinations: true } },
+            false,
+          ),
           api('api/groups/', {}, false),
           api(
             'api/blends/',
