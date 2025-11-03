@@ -86,9 +86,9 @@ def get_blanket_approval_individual_consideration(queryset: QuerySet[Project]):
     )
     list_values = []
     if "blanket" in values:
-        list_values.append({"label": "Blanket Approval", "value": "blanket"})
+        list_values.append({"id": "blanket", "name": "Blanket Approval"})
     if "individual" in values:
-        list_values.append({"label": "Individual Consideration", "value": "individual"})
+        list_values.append({"id": "individual", "name": "Individual Consideration"})
     return list_values
 
 
@@ -109,16 +109,13 @@ def get_meeting_number(queryset: QuerySet[Project]):
     )
     meetings = [
         {
-            "id": value["meeting_id"],
-            "number": value["meeting__number"],
-            "title": value["meeting__title"],
-            "status": value["meeting__status"],
-            "date": value["meeting__date"],
-            "end_date": value["meeting__end_date"],
+            "label": value["meeting__number"],
+            "value": value["meeting_id"],
+            "year": getattr(value["meeting__date"], "year", None),
         }
         for value in values
     ]
-    return MeetingSerializer(meetings, many=True).data
+    return meetings
 
 
 class ProjectDestructionTechnologyView(APIView):
