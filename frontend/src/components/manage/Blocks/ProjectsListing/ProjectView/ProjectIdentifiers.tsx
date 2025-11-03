@@ -16,9 +16,11 @@ import { find } from 'lodash'
 const ProjectIdentifiers = ({
   project,
   fieldHistory,
+  isListingView = false,
 }: {
   project: ProjectTypeApi
-  fieldHistory: any
+  fieldHistory?: any
+  isListingView?: boolean
 }) => {
   const { canViewBp } = useContext(PermissionsContext)
 
@@ -92,7 +94,7 @@ const ProjectIdentifiers = ({
           )}
         </div>
       </div>
-      {project.version > 3 ? (
+      {project.version > 3 && !isListingView ? (
         <div>
           <Divider className="my-6" />
           <SectionTitle>Post ExCom updates</SectionTitle>
