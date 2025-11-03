@@ -34,8 +34,8 @@ class MetaProjectMyaFilter(filters.FilterSet):
     blanket_or_individual_consideration = filters.MultipleChoiceFilter(
         field_name="projects__blanket_or_individual_consideration",
         choices=[
-            ("Individual consideration", True),
-            ("Blanket approval", False),
+            ("individual", True),
+            ("blanket", False),
             ("N/A", None),
         ],
         widget=CSVWidget,
@@ -74,9 +74,9 @@ class MetaProjectMyaFilter(filters.FilterSet):
             return queryset
         query_filters = Q()
         for option in value:
-            if option.lower() == "individual consideration":
+            if option.lower() == "individual":
                 query_filters |= Q(**{name: "individual"})
-            elif option.lower() == "blanket approval":
+            elif option.lower() == "blanket":
                 query_filters |= Q(**{name: "blanket"})
             elif option.lower() == "n/a":
                 query_filters |= Q(**{f"{name}__isnull": True})

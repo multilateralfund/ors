@@ -94,23 +94,27 @@ class ProjectFilter(filters.FilterSet):
     blanket_or_individual_consideration = filters.MultipleChoiceFilter(
         field_name="blanket_or_individual_consideration",
         choices=[
-            ("Individual consideration", True),
-            ("Blanket approval", False),
+            ("individual", True),
+            ("blanket", False),
             ("N/A", None),
         ],
         widget=CSVWidget,
         method="filter_blanket_or_individual_consideration",
     )
     date_received = filters.DateFromToRangeFilter(field_name="date_received")
+    meta_project__isnull = filters.BooleanFilter(
+        field_name="meta_project",
+        lookup_expr="isnull",
+    )
 
     def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
             return queryset
         query_filters = Q()
         for option in value:
-            if option.lower() == "individual consideration":
+            if option.lower() == "individual":
                 query_filters |= Q(**{name: "individual"})
-            elif option.lower() == "blanket approval":
+            elif option.lower() == "blanket":
                 query_filters |= Q(**{name: "blanket"})
             elif option.lower() == "n/a":
                 query_filters |= Q(**{f"{name}__isnull": True})

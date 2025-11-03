@@ -4,10 +4,9 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import { tableColumns, considerationOpts } from '../constants'
+import { tableColumns } from '../constants'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
@@ -17,8 +16,7 @@ import { union } from 'lodash'
 
 const ProjectsFilters = ({
   mode,
-  projectSlice,
-  meetings,
+  filterOptions = {},
   form,
   filters,
   handleFilterChange,
@@ -26,9 +24,10 @@ const ProjectsFilters = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { countries, agencies, clusters, project_types, sectors } =
-    useContext(ProjectsDataContext)
 
+  const meetingsOptions = filterOptions?.meeting
+    ? [...filterOptions.meeting].reverse()
+    : []
   const searchRef = useFocusOnCtrlF()
 
   const defaultProps = {
@@ -99,7 +98,11 @@ const ProjectsFilters = ({
       {mode === 'listing' && (
         <Field
           Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(filters, countries, 'country_id')}
+          options={getFilterOptions(
+            filters,
+            filterOptions?.country,
+            'country_id',
+          )}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const country = filters.country_id || []
@@ -116,7 +119,7 @@ const ProjectsFilters = ({
       )}
       <Field
         Input={{ placeholder: tableColumns.agency }}
-        options={getFilterOptions(filters, agencies, 'agency_id')}
+        options={getFilterOptions(filters, filterOptions?.agency, 'agency_id')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const agency = filters.agency_id || []
@@ -134,7 +137,11 @@ const ProjectsFilters = ({
         <>
           <Field
             Input={{ placeholder: tableColumns.cluster }}
-            options={getFilterOptions(filters, clusters, 'cluster_id')}
+            options={getFilterOptions(
+              filters,
+              filterOptions?.cluster,
+              'cluster_id',
+            )}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
               const projectCluster = filters.cluster_id || []
@@ -152,7 +159,7 @@ const ProjectsFilters = ({
             Input={{ placeholder: tableColumns.type }}
             options={getFilterOptions(
               filters,
-              project_types,
+              filterOptions?.project_type,
               'project_type_id',
             )}
             widget="autocomplete"
@@ -173,7 +180,11 @@ const ProjectsFilters = ({
       {canViewSectorsSubsectors && (
         <Field
           Input={{ placeholder: tableColumns.sector }}
-          options={getFilterOptions(filters, sectors, 'sector_id')}
+          options={getFilterOptions(
+            filters,
+            filterOptions?.sector,
+            'sector_id',
+          )}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const sector = filters.sector_id || []
@@ -192,10 +203,10 @@ const ProjectsFilters = ({
         <PopoverInput
           className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[16px] md:w-[7.76rem]"
           label="Meeting"
-          options={meetings}
+          options={meetingsOptions}
           onChange={(value: any) => {
             const meetingId = filters.meeting_id || []
-            const meetingValue = meetings.filter(
+            const meetingValue = meetingsOptions.filter(
               (meeting: any) => meeting.value === value,
             )
             const newValue = union(meetingId, meetingValue)
@@ -215,7 +226,7 @@ const ProjectsFilters = ({
               Input={{ placeholder: tableColumns.submission_status }}
               options={getFilterOptions(
                 filters,
-                projectSlice.submission_statuses.data,
+                filterOptions?.submission_status,
                 'submission_status_id',
               )}
               widget="autocomplete"
@@ -239,7 +250,7 @@ const ProjectsFilters = ({
             Input={{ placeholder: tableColumns.project_status }}
             options={getFilterOptions(
               filters,
-              projectSlice.statuses.data,
+              filterOptions?.status,
               'status_id',
             )}
             widget="autocomplete"
@@ -266,7 +277,7 @@ const ProjectsFilters = ({
         }}
         options={getFilterOptions(
           filters,
-          considerationOpts,
+          filterOptions?.blanket_approval_individual_consideration,
           'blanket_or_individual_consideration',
         )}
         widget="autocomplete"
@@ -278,7 +289,7 @@ const ProjectsFilters = ({
           handleFilterChange({ blanket_or_individual_consideration: newValue })
           handleParamsChange({
             blanket_or_individual_consideration: newValue
-              .map((item: any) => item.name)
+              .map((item: any) => item.id)
               .join(','),
             offset: 0,
           })

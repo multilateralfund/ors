@@ -5,7 +5,7 @@ from constance import config
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
-from django.db.models import Case, CharField, F, Q, Value, When
+from django.db.models import Case, CharField, F, Q, QuerySet, Value, When
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -67,7 +67,7 @@ from core.tasks import (
     send_project_recomended_notification,
     send_project_submission_notification,
 )
-from core.api.views.utils import log_project_history
+from core.api.views.utils import log_project_history, get_available_values
 
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
@@ -75,6 +75,46 @@ from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDoc
 from core.utils import post_approval_changes
 
 # pylint: disable=C0302,R0911,R0904,R1702
+
+
+def get_blanket_approval_individual_consideration(queryset: QuerySet[Project]):
+    values = (
+        queryset.order_by("blanket_or_individual_consideration")
+        .values_list("blanket_or_individual_consideration", flat=True)
+        .distinct()
+    )
+    list_values = []
+    if "blanket" in values:
+        list_values.append({"id": "blanket", "name": "Blanket Approval"})
+    if "individual" in values:
+        list_values.append({"id": "individual", "name": "Individual Consideration"})
+    return list_values
+
+
+def get_meeting_number(queryset: QuerySet[Project]):
+
+    values = (
+        queryset.exclude(meeting__isnull=True)
+        .order_by("meeting__number")
+        .values(
+            "meeting_id",
+            "meeting__number",
+            "meeting__title",
+            "meeting__status",
+            "meeting__date",
+            "meeting__end_date",
+        )
+        .distinct()
+    )
+    meetings = [
+        {
+            "label": value["meeting__number"],
+            "value": value["meeting_id"],
+            "year": getattr(value["meeting__date"], "year", None),
+        }
+        for value in values
+    ]
+    return meetings
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -230,6 +270,7 @@ class ProjectV2ViewSet(
             "list_previous_tranches",
             "list_associated_projects",
             "field_history",
+            "list_filters",
         ]:
             return [HasProjectV2ViewAccess]
         if self.action in [
@@ -431,6 +472,29 @@ class ProjectV2ViewSet(
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @action(methods=["GET"], detail=False)
+    def list_filters(self, request, *args, **kwargs):
+        """
+        List available filter values for projects, based on current queryset.
+        The same filters as in the main list endpoint should be used here as well for the
+        same results.
+        """
+        queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
+        result = {
+            "country": get_available_values(queryset, "country"),
+            "agency": get_available_values(queryset, "agency"),
+            "cluster": get_available_values(queryset, "cluster"),
+            "project_type": get_available_values(queryset, "project_type"),
+            "sector": get_available_values(queryset, "sector"),
+            "meeting": get_meeting_number(queryset),
+            "submission_status": get_available_values(queryset, "submission_status"),
+            "status": get_available_values(queryset, "status"),
+            "blanket_approval_individual_consideration": get_blanket_approval_individual_consideration(
+                queryset
+            ),
+        }
+        return Response(result)
 
     @swagger_auto_schema(
         operation_description="V2 retrieve endpoint that allows retrieving a project.",
