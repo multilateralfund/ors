@@ -34,7 +34,11 @@ const BlanketApprovalDetails = () => {
               <Button
                 size="large"
                 variant="contained"
-                disabled={!globalRequestParams.meeting_id}
+                disabled={
+                  !globalRequestParams.meeting_id ||
+                  Object.values(globalRequestParams).join() ===
+                    Object.values(previewParams ?? []).join()
+                }
                 onClick={handlePreview}
               >
                 Preview report

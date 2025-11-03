@@ -121,7 +121,7 @@ const BlanketApprovalDetailsTable = (props: {
     <table className="table w-full border-collapse">
       <thead className="border-2 border-x-0 border-solid border-primary">
         <tr>
-          <th className="text-left">Project title</th>
+          <th className="w-80 text-left">Project title</th>
           <th>Agency</th>
           <th>HCFC</th>
           <th>HFC</th>

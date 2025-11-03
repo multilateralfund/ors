@@ -1,20 +1,14 @@
-import base64
-import json
-from decimal import Decimal
+import pathlib
 from typing import Iterable
 from typing import TypedDict
 
 import openpyxl
 from django.conf import settings
-from django.db.models import Count
-from django.db.models import DecimalField
 from django.db.models import F
 from django.db.models import QuerySet
-from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from rest_framework import mixins
-from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -53,6 +47,29 @@ class ProjectData(TypedDict):
     total: float
 
 
+class CountryData(TypedDict):
+    cluster_id: int
+    cluster_name: str
+    project_type_id: int
+    project_type_name: str
+    projects: list[ProjectData]
+
+
+class CountryTotal(TypedDict):
+    hcfc: float
+    hfc: float
+    project_funding: float
+    project_support_cost: float
+    total: float
+
+
+class CountryEntry(TypedDict):
+    country_id: int
+    country_name: str
+    country_data: CountryData
+    country_total: CountryTotal
+
+
 class BlanketApprovalDetailsViewset(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
@@ -63,31 +80,14 @@ class BlanketApprovalDetailsViewset(
     queryset = Project.objects.all()
     permission_classes = (HasProjectV2ViewAccess,)
 
-    def _extract_data(self, projects: QuerySet[Project]):
-        meta_project_funding_expression = Coalesce(
-            F("meta_project__project_funding"), Decimal(0.0)
-        ) + Coalesce(F("meta_project__support_cost"), Decimal(0.0))
+    _template_path = (
+        pathlib.Path(__file__).parent.parent
+        / "export"
+        / "templates"
+        / "blanket_approval_details_template.xlsx"
+    )
 
-        result = projects.aggregate(
-            projects_count=Coalesce(Count("id"), 0),
-            countries_count=Coalesce(
-                Count("country", distinct=True),
-                0,
-            ),
-            amounts_in_principle=Coalesce(
-                Sum(meta_project_funding_expression, distinct=True),
-                Decimal("0.0"),
-                output_field=DecimalField(max_digits=10, decimal_places=2),
-            ),
-            amounts_recommended=Coalesce(
-                Sum(F("total_fund") + F("support_cost_psc")),
-                0.0,
-            ),
-        )
-
-        return result
-
-    def list(self, request, *args, **kwargs):
+    def _extract_data(self):
         queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
 
         per_country = {}
@@ -164,6 +164,10 @@ class BlanketApprovalDetailsViewset(
                 }
             )
 
+        return total_projects, result
+
+    def list(self, request, *args, **kwargs):
+        total_projects, result = self._extract_data()
         return JsonResponse({"total_projects": total_projects, "result": result})
 
     @action(methods=["GET"], detail=False)
@@ -192,10 +196,49 @@ class BlanketApprovalDetailsViewset(
         return JsonResponse({"DEBUG": result})
 
     def _export_wb(self):
-        queryset: QuerySet[Project] = self.get_queryset()
-        wb = openpyxl.Workbook()
+        wb = openpyxl.open(self._template_path)
         sheet = wb.active
-        sheet.title = "Blanket app. details"
+        _, data = self._extract_data()
+        data: list[CountryEntry] = data
+
+        row_country_title = sheet[3]
+        row_country_cluster = sheet[4]
+        row_country_type = sheet[5]
+        row_project_title = sheet[6]
+        row_project_description = sheet[7]
+        row_country_total = sheet[8]
+
+        for country in data:
+            sheet.append([country["country_name"]])
+            for country_data in country["country_data"]:
+                sheet.append([country_data["cluster_name"]])
+                sheet.append([country_data["project_type_name"]])
+                for project in country_data["projects"]:
+                    sheet.append(
+                        [
+                            project["project_title"],
+                            project["agency_name"],
+                            project["hcfc"],
+                            project["hfc"],
+                            project["project_funding"],
+                            project["project_support_cost"],
+                            project["total"],
+                        ]
+                    )
+                    sheet.append([project["project_description"]])
+            country_total: CountryTotal = country["country_total"]
+            sheet.append(
+                [
+                    None,
+                    f"Total for {country["country_name"]}",
+                    country_total["hcfc"],
+                    country_total["hfc"],
+                    country_total["project_funding"],
+                    country_total["project_support_cost"],
+                    country_total["total"],
+                ]
+            )
+
         return workbook_response("Blanket approval details", wb)
 
     @action(methods=["GET"], detail=False)
