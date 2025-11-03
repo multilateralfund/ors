@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -34,6 +34,10 @@ const getColumnDefs = (
     canEditApprovedProjects,
     canEditProjectEnterprise,
   } = useContext(PermissionsContext)
+
+  const [projectCardModalId, setProjectCardModalId] = useState<number | null>(
+    null,
+  )
 
   const getCellClass = (data: any) => {
     const projectTypeClass = data.isMetaproject
@@ -145,7 +149,30 @@ const getColumnDefs = (
               </>
             )}
             {mode === 'listing' && setProjectData ? (
-              <ProjectCard project={props.data} setParams={setParams} />
+              <>
+                <div
+                  className={cx(
+                    'ml-2 cursor-pointer overflow-hidden truncate whitespace-nowrap text-inherit underline',
+                    {
+                      'no-underline': !canViewProjects,
+                    },
+                  )}
+                  onClick={() => {
+                    if (canViewProjects) {
+                      setProjectCardModalId(props.data.id)
+                    }
+                  }}
+                >
+                  {props.value}
+                </div>
+                {props.data.id === projectCardModalId && (
+                  <ProjectCard
+                    isModalOpen={props.data.id === projectCardModalId}
+                    setIsModalOpen={setProjectCardModalId}
+                    project={props.data}
+                  />
+                )}
+              </>
             ) : (
               <Link
                 className={cx(

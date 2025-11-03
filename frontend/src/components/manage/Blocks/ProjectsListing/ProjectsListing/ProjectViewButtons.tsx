@@ -26,7 +26,7 @@ import { CircularProgress, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import cx from 'classnames'
 
-const EditLink = (props: any) => {
+export const EditLink = (props: any) => {
   const { children, className, ...rest } = props
   return (
     <CustomLink
