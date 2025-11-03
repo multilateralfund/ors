@@ -36,49 +36,49 @@ const ProjectsFiltersSelectedOpts = ({
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(filterOptions.country),
+      entities: formatEntity(filterOptions?.country),
       entityIdentifier: 'country_id',
       hasPermissions: mode === 'listing',
     },
     {
-      entities: formatEntity(filterOptions.agency),
+      entities: formatEntity(filterOptions?.agency),
       entityIdentifier: 'agency_id',
       hasPermissions: true,
     },
     {
-      entities: formatEntity(filterOptions.cluster),
+      entities: formatEntity(filterOptions?.cluster),
       entityIdentifier: 'cluster_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(filterOptions.project_type),
+      entities: formatEntity(filterOptions?.project_type),
       entityIdentifier: 'project_type_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(filterOptions.sector),
+      entities: formatEntity(filterOptions?.sector),
       entityIdentifier: 'sector_id',
       hasPermissions: canViewSectorsSubsectors,
     },
     {
-      entities: formatEntity(filterOptions.meeting, 'value'),
+      entities: formatEntity(filterOptions?.meeting, 'value'),
       entityIdentifier: 'meeting_id',
       hasPermissions: true,
       field: 'value',
     },
     {
-      entities: formatEntity(filterOptions.submission_status),
+      entities: formatEntity(filterOptions?.submission_status),
       entityIdentifier: 'submission_status_id',
       hasPermissions: canViewMetainfoProjects && mode === 'listing',
     },
     {
-      entities: formatEntity(filterOptions.status),
+      entities: formatEntity(filterOptions?.status),
       entityIdentifier: 'status_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
       entities: formatEntity(
-        filterOptions.blanket_approval_individual_consideration,
+        filterOptions?.blanket_approval_individual_consideration,
         'name',
       ),
       entityIdentifier: 'blanket_or_individual_consideration',
