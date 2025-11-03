@@ -3,10 +3,8 @@ import {
   ApiBlanketApprovalDetailsCountryEntry,
   ApiBlanketApprovalDetailsProject,
   GlobalRequestParams,
-  RowData,
 } from '@ors/components/manage/Blocks/ProjectsListing/BlanketApprovalDetails/types.ts'
-import React, { useCallback, useMemo } from 'react'
-import BlanketApprovalDetailsRow from '@ors/components/manage/Blocks/ProjectsListing/BlanketApprovalDetails/BlanketApprovalDetailsRow.tsx'
+import React from 'react'
 import useBlanketApprovalDetails from '@ors/components/manage/Blocks/ProjectsListing/BlanketApprovalDetails/useBlanketApprovalDetails.ts'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
@@ -113,21 +111,11 @@ const BlanketApprovalDetailsCountryEntry = (
 }
 
 const BlanketApprovalDetailsTable = (props: {
-  rows: RowData[]
-  setRows: React.Dispatch<React.SetStateAction<RowData[]>>
   globalRequestParams: GlobalRequestParams
-  encodedRowData: string
 }) => {
-  const { rows, setRows, globalRequestParams, encodedRowData } = props
+  const { globalRequestParams } = props
 
-  const apiParams = useMemo(
-    () => ({ row_data: encodedRowData }),
-    [encodedRowData],
-  )
-
-  const { response: apiData } = useBlanketApprovalDetails(apiParams)
-
-  console.log(apiData)
+  const { response: apiData } = useBlanketApprovalDetails(globalRequestParams)
 
   return (
     <table className="table w-full border-collapse">

@@ -9,8 +9,11 @@ export type ApiBlanketApprovalDetailsProject = {
   project_title: string
   project_description: string
   agency_name: string
+  country_pk: number
   country_name: string
+  cluster_pk: number
   cluster_name: string
+  project_type_pk: number
   project_type_name: string
   hcfc: number
   hfc: number
@@ -20,12 +23,15 @@ export type ApiBlanketApprovalDetailsProject = {
 }
 
 export type ApiBlanketApprovalDetailsCountryData = {
+  cluster_id: number
   cluster_name: string
+  project_type_id: number
   project_type_name: string
   projects: ApiBlanketApprovalDetailsProject[]
 }
 
 export type ApiBlanketApprovalDetailsCountryEntry = {
+  country_id: number
   country_name: string
   country_data: ApiBlanketApprovalDetailsCountryData[]
   country_total: Pick<

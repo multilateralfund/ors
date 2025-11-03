@@ -88,19 +88,12 @@ class BlanketApprovalDetailsViewset(
         return result
 
     def list(self, request, *args, **kwargs):
-        params: dict | None = self._get_params(request)
-        queryset: QuerySet[Project] = self.get_queryset()
+        queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
 
         per_country = {}
         total_projects = 0
 
-        qs_projects: QuerySet[Project] = queryset.none()
-
-        for query in params:
-            project_filter = self.filterset_class(query, queryset)
-            qs_projects |= project_filter.qs
-
-        filtered_projects: Iterable[ProjectData] = qs_projects.values(  # type: ignore[assignment]
+        filtered_projects: Iterable[ProjectData] = queryset.values(  # type: ignore[assignment]
             project_id=F("id"),
             project_title=F("title"),
             project_description=F("description"),
@@ -185,49 +178,31 @@ class BlanketApprovalDetailsViewset(
 
         return Response(result)
 
-    def _export_debug(self, params: dict):
+    def _export_debug(self):
         queryset: QuerySet[Project] = self.get_queryset()
         result = []
 
-        for query in params:
-            project_filter = self.filterset_class(query["params"], queryset)
-            filtered_projects = project_filter.qs
-            data = self._extract_data(filtered_projects)
-            data["text"] = query["text"]
-            result.append(
-                {
-                    "params": query["params"],
-                    "result": data,
-                }
-            )
+        data = self._extract_data(queryset)
+        result.append(
+            {
+                "result": data,
+            }
+        )
 
         return JsonResponse({"DEBUG": result})
 
-    def _export_wb(self, params: dict):
+    def _export_wb(self):
         queryset: QuerySet[Project] = self.get_queryset()
         wb = openpyxl.Workbook()
         sheet = wb.active
         sheet.title = "Blanket app. details"
         return workbook_response("Blanket approval details", wb)
 
-    def _get_params(self, request):
-        params: str = request.query_params.get("row_data")
-        if params:
-            return json.loads(base64.b64decode(params).decode())
-        return None
-
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
-
-        params: dict | None = self._get_params(request)
         is_debug_request = settings.DEBUG and request.query_params.get("debug")
 
-        if params:
-            if is_debug_request:
-                return self._export_debug(params)
+        if is_debug_request:
+            return self._export_debug()
 
-            return self._export_wb(params)
-
-        return Response(
-            {"error": "row_data is required"}, status=status.HTTP_400_BAD_REQUEST
-        )
+        return self._export_wb()
