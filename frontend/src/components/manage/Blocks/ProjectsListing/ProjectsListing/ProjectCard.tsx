@@ -134,7 +134,7 @@ export default function ProjectCard({
         keepMounted
         disableScrollLock
       >
-        <Box className="flex h-[60%] w-full max-w-[60%] flex-col overflow-y-auto absolute-center">
+        <Box className="flex max-h-[60%] min-h-[50%] w-full max-w-[60%] flex-col overflow-y-auto absolute-center">
           <ProjectData {...{ project, setIsModalOpen }} />
         </Box>
       </Modal>
