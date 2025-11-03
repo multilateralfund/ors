@@ -22,7 +22,10 @@ export default function PListingAssociation({
   const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const projectFilters = useGetProjectFilters(filters)
+  const projectFilters = useGetProjectFilters({
+    ...filters,
+    meta_project__isnull: false,
+  })
   const projectsAssociation = useGetProjectsAssociation(updatedInitialFilters)
   const { loading, setParams, results = [] } = projectsAssociation
 

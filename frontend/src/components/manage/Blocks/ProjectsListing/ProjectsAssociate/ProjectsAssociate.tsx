@@ -34,7 +34,10 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     (status) => status.name === 'Approved',
   )
 
-  const projectFilters = useGetProjectFilters(filters)
+  const projectFilters = useGetProjectFilters({
+    ...filters,
+    meta_project__isnull: false,
+  })
   const projectsAssociation = useGetProjectsAssociation(
     {
       ...initialFilters,

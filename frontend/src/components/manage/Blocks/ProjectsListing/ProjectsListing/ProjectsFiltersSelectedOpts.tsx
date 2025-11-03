@@ -79,11 +79,9 @@ const ProjectsFiltersSelectedOpts = ({
     {
       entities: formatEntity(
         filterOptions?.blanket_approval_individual_consideration,
-        'name',
       ),
       entityIdentifier: 'blanket_or_individual_consideration',
       hasPermissions: true,
-      field: 'name',
     },
   ]
 
