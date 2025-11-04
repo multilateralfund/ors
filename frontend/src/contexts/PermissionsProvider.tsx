@@ -125,6 +125,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
     'has_replenishment_edit_access',
   )
 
+  const canViewAPR = user_permissions.includes('has_apr_view_access')
+  const canEditAPR = user_permissions.includes('has_apr_edit_access')
+  const canSubmitAPR = user_permissions.includes('has_apr_submit_access')
+
   return (
     <PermissionsContext.Provider
       value={{
@@ -162,6 +166,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canCommentCPSecretariat,
         isCPCountryUserType,
         isBpAdmin,
+        canViewAPR,
+        canEditAPR,
+        canSubmitAPR,
       }}
     >
       {children}

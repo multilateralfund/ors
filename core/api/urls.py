@@ -707,7 +707,7 @@ urlpatterns = [
     ),
     # Annual Project Reports
     path(
-        "annual-project-report/<int:year>/workspace",
+        "annual-project-report/<int:year>/workspace/",
         APRWorkspaceView.as_view(),
         name="apr-workspace",
     ),

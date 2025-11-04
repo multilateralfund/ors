@@ -78,6 +78,7 @@ import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
+import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -112,6 +113,8 @@ function RedirectToSection() {
 }
 
 export default function App() {
+  const currentYear = new Date().getFullYear()
+
   return (
     <RootLayout>
       <Switch>
@@ -406,6 +409,13 @@ export default function App() {
           <ProjectsDataProvider>
             <ProjectsEditPage mode="partial-link" />
           </ProjectsDataProvider>
+        </Route>
+        {/* APR routes */}
+        <Route path="/apr">
+          <Redirect to={`/apr/${currentYear}/workspace`} replace />
+        </Route>
+        <Route path="/apr/:year/workspace">
+          <APRWorkspace />
         </Route>
         <Route>
           <NotFoundPage />
