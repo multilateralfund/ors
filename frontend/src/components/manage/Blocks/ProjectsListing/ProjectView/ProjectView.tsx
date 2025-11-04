@@ -152,9 +152,7 @@ const ProjectView = ({
       id: 'project-identifiers',
       label: 'Identifiers',
       component: (
-        <ProjectIdentifiers
-          {...{ project, specificFields, fieldHistory: fieldHistory.data }}
-        />
+        <ProjectIdentifiers {...{ project, fieldHistory: fieldHistory.data }} />
       ),
     },
     {
