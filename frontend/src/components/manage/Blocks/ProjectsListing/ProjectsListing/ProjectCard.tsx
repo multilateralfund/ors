@@ -9,7 +9,6 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from '../ProjectView/ProjectIdentifiers'
 import ProjectCrossCutting from '../ProjectView/ProjectCrossCutting'
 import ProjectSpecificInfo from '../ProjectView/ProjectSpecificInfo'
-import { EditLink } from './ProjectViewButtons'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
 import { ProjectSpecificFields, ProjectTypeApi } from '../interfaces'
@@ -17,6 +16,9 @@ import { getSectionFields, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Box, Modal, Tabs, Tab } from '@mui/material'
+import { TfiClose } from 'react-icons/tfi'
+import { FiEdit } from 'react-icons/fi'
+import { FiEye } from 'react-icons/fi'
 import { debounce } from 'lodash'
 
 const ProjectData = ({ project }: { project: ProjectTypeApi }) => {
@@ -131,7 +133,7 @@ const ProjectData = ({ project }: { project: ProjectTypeApi }) => {
           />
         ))}
       </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+      <div className="relative bg-white p-6">
         {tabs
           .filter((_, index) => index === activeTab)
           .map(({ id, component }) => (
@@ -163,27 +165,37 @@ export default function ProjectCard({
       disableScrollLock
       keepMounted
     >
-      <Box className="flex max-h-[60%] min-h-[50%] w-full max-w-[60%] flex-col overflow-y-auto absolute-center">
-        <div className="m-1.5">
-          <div className="flex flex-wrap justify-between gap-x-20 gap-y-3">
-            <PageHeading>
+      <Box className="flex min-h-[400px] w-full max-w-[65%] flex-col overflow-y-auto bg-primary p-0 absolute-center">
+        <div>
+          <div className="mx-6 mt-3 flex flex-wrap justify-between gap-x-10 gap-y-3">
+            <PageHeading className="max-w-[85%] !text-[28px] text-white">
               {title}
               {submission_status === 'Approved'
                 ? `, ${code ?? code_legacy}`
                 : ''}
             </PageHeading>
             <div className="flex flex-wrap gap-3">
-              <EditLink
-                className="border border-solid border-primary bg-white text-primary"
-                href={null}
-                onClick={() => setIsModalOpen(null)}
+              <Link
+                className="flex h-6 w-6 justify-center"
+                href={`/projects-listing/${id}`}
               >
-                Cancel
-              </EditLink>
-              <EditLink href={`/projects-listing/${id}`}>View</EditLink>
+                <FiEye size={24} color="white" />
+              </Link>
               {editable && canEditProjects && (
-                <EditLink href={`/projects-listing/${id}/edit`}>Edit</EditLink>
+                <Link
+                  className="flex h-6 w-6 justify-center"
+                  href={`/projects-listing/${id}/edit`}
+                >
+                  <FiEdit size={24} color="white" />
+                </Link>
               )}
+              <Link className="flex h-6 w-6 justify-center" href={null}>
+                <TfiClose
+                  size={24}
+                  color="white"
+                  onClick={() => setIsModalOpen(null)}
+                />
+              </Link>
             </div>
           </div>
           <Loading
