@@ -1,40 +1,38 @@
 'use client'
 
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from '../ProjectView/ProjectIdentifiers'
 import ProjectCrossCutting from '../ProjectView/ProjectCrossCutting'
 import ProjectSpecificInfo from '../ProjectView/ProjectSpecificInfo'
-import { EditLink } from './ProjectViewButtons'
+import { ProjectStatusInfo } from '../HelperComponents'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
 import { ProjectSpecificFields, ProjectTypeApi } from '../interfaces'
+import { getSectionFields, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
-import { Divider, Box, Modal } from '@mui/material'
+import { Box, Modal, Tabs, Tab } from '@mui/material'
+import { TfiClose } from 'react-icons/tfi'
+import { FiEdit } from 'react-icons/fi'
+import { FiEye } from 'react-icons/fi'
 import { debounce } from 'lodash'
 
-const ProjectData = ({
-  project,
-  setIsModalOpen,
-}: {
-  project: ProjectTypeApi
-  setIsModalOpen: (id: number | null) => void
-}) => {
-  const { canEditProjects } = useContext(PermissionsContext)
+const ProjectData = ({ project }: { project: ProjectTypeApi }) => {
+  const hasFetchedSpecificFields = useRef(false)
 
-  const { id, title, submission_status, code, code_legacy, editable } = project
+  const { id, cluster_id, project_type_id, sector_id } = project
 
-  const { data, loading } = useGetProject(id.toString())
-  const { cluster_id, project_type_id, sector_id } = data || {}
-
-  const { fetchProjectFields, projectFields, setViewableFields } = useStore(
-    (state) => state.projectFields,
-  )
+  const {
+    fetchProjectFields,
+    projectFields,
+    viewableFields,
+    setViewableFields,
+  } = useStore((state) => state.projectFields)
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -42,23 +40,26 @@ const ProjectData = ({
   )
 
   useEffect(() => {
-    if (data) {
-      debouncedFetchProjectFields()
-    }
-  }, [data])
+    debouncedFetchProjectFields()
+  }, [])
 
   useEffect(() => {
-    if (data && projectFields && projectFields.loaded && projectFields.data) {
-      setViewableFields?.(data.version, data.submissionStatus)
+    if (projectFields.loaded && projectFields.data) {
+      setViewableFields?.(project.version, project.submission_status)
     }
-  }, [projectFields, setViewableFields, data])
+  }, [projectFields, setViewableFields])
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
 
   useEffect(() => {
-    if (cluster_id && project_type_id && sector_id) {
+    if (
+      !hasFetchedSpecificFields.current &&
+      cluster_id &&
+      project_type_id &&
+      sector_id
+    ) {
       fetchSpecificFields(
         cluster_id,
         project_type_id,
@@ -70,49 +71,77 @@ const ProjectData = ({
     } else {
       setSpecificFields([])
     }
-  }, [cluster_id, project_type_id, sector_id])
+    hasFetchedSpecificFields.current = true
+  }, [])
+
+  const [activeTab, setActiveTab] = useState(0)
+
+  const [overviewFields, substanceDetailsFields] = [
+    getSectionFields(specificFields, 'Header'),
+    getSectionFields(specificFields, 'Substance Details'),
+  ]
+
+  const tabs = [
+    {
+      id: 'project-identifiers',
+      label: 'Identifiers',
+      component: <ProjectIdentifiers isListingView={true} {...{ project }} />,
+    },
+    {
+      id: 'project-cross-cutting',
+      label: 'Cross-Cutting',
+      disabled: !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
+      component: <ProjectCrossCutting {...{ project }} />,
+    },
+    {
+      id: 'project-specific-info',
+      label: 'Specific Information',
+      disabled:
+        (!substanceDetailsFields.length && !overviewFields.length) ||
+        (!hasFields(projectFields, viewableFields, 'Header') &&
+          !hasFields(projectFields, viewableFields, 'Substance Details')),
+      component: <ProjectSpecificInfo {...{ project, specificFields }} />,
+    },
+  ]
 
   return (
-    <div className="m-1.5">
-      <div className="flex flex-wrap justify-between gap-x-20 gap-y-3">
-        <PageHeading>
-          <Link className="cursor-pointer" href={`/projects-listing/${id}`}>
-            <span>
-              {title}
-              {submission_status === 'Approved'
-                ? `, ${code ?? code_legacy}`
-                : ''}
-            </span>
-          </Link>
-        </PageHeading>
-        <div className="flex flex-wrap gap-3">
-          <EditLink
-            className="border border-solid border-primary bg-white text-primary"
-            href={null}
-            onClick={() => setIsModalOpen(null)}
-          >
-            Cancel
-          </EditLink>
-          <EditLink href={`/projects-listing/${id}`}>View</EditLink>
-          {editable && canEditProjects && (
-            <EditLink href={`/projects-listing/${id}/edit`}>Edit</EditLink>
-          )}
-        </div>
+    <>
+      <Tabs
+        aria-label="view-project-card"
+        value={activeTab}
+        className="sectionsTabs projectCardView"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, newValue) => {
+          setActiveTab(newValue)
+        }}
+      >
+        {tabs.map(({ id, label, disabled }) => (
+          <Tab
+            key={id}
+            id={id}
+            aria-controls={id}
+            label={label}
+            disabled={disabled}
+            classes={{
+              disabled: 'text-gray-600',
+            }}
+          />
+        ))}
+      </Tabs>
+      <div className="relative bg-white p-6">
+        {tabs
+          .filter((_, index) => index === activeTab)
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
       </div>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading}
-      />
-      {data && !loading && (
-        <div className="mt-6">
-          <ProjectIdentifiers project={data} isListingView={true} />
-          <Divider className="my-6" />
-          <ProjectCrossCutting project={data} />
-          <Divider className="my-6" />
-          <ProjectSpecificInfo project={data} {...{ specificFields }} />
-        </div>
-      )}
-    </div>
+    </>
   )
 }
 
@@ -125,19 +154,68 @@ export default function ProjectCard({
   setIsModalOpen: (id: number | null) => void
   project: ProjectTypeApi
 }) {
+  const { canEditProjects } = useContext(PermissionsContext)
+  const { id, title, submission_status, code, code_legacy, editable } = project
+  const { data, loading } = useGetProject(id.toString())
+
   return (
-    <>
-      <Modal
-        aria-labelledby="change-status-modal-title"
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(null)}
-        keepMounted
-        disableScrollLock
-      >
-        <Box className="flex max-h-[60%] min-h-[50%] w-full max-w-[60%] flex-col overflow-y-auto absolute-center">
-          <ProjectData {...{ project, setIsModalOpen }} />
-        </Box>
-      </Modal>
-    </>
+    <Modal
+      aria-labelledby="change-status-modal-title"
+      open={isModalOpen}
+      onClose={() => setIsModalOpen(null)}
+      disableScrollLock
+      keepMounted
+    >
+      <Box className="flex min-h-[400px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
+        <div>
+          <div className="mx-6 mt-4 flex flex-wrap justify-between gap-x-10 gap-y-3">
+            <PageHeading className="max-w-[85%] !text-[28px] text-white">
+              {title}
+              {submission_status === 'Approved'
+                ? `, ${code ?? code_legacy}`
+                : ''}
+            </PageHeading>
+            <div className="flex gap-6">
+              <Link
+                className="flex h-6 w-6 justify-center"
+                href={`/projects-listing/${id}`}
+              >
+                <FiEye size={24} color="white" />
+              </Link>
+              {editable && canEditProjects && (
+                <Link
+                  className="flex h-6 w-6 justify-center"
+                  href={`/projects-listing/${id}/edit`}
+                >
+                  <FiEdit size={24} color="white" />
+                </Link>
+              )}
+              <Link
+                className="flex h-6 w-6 cursor-pointer justify-center"
+                href={null}
+              >
+                <TfiClose
+                  size={24}
+                  color="white"
+                  onClick={() => setIsModalOpen(null)}
+                />
+              </Link>
+            </div>
+          </div>
+          <div className="mx-6 my-5">
+            <ProjectStatusInfo
+              {...{ project }}
+              textClassName="text-white"
+              chipClassName="text-white border-white"
+            />
+          </div>
+          <Loading
+            className="!fixed bg-action-disabledBackground"
+            active={loading}
+          />
+          {data && !loading && <ProjectData project={data} />}
+        </div>
+      </Box>
+    </Modal>
   )
 }
