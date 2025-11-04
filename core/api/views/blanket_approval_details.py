@@ -1,4 +1,5 @@
 import pathlib
+from copy import copy
 from typing import Iterable
 from typing import TypedDict
 
@@ -201,20 +202,34 @@ class BlanketApprovalDetailsViewset(
         _, data = self._extract_data()
         data: list[CountryEntry] = data
 
-        row_country_title = sheet[3]
-        row_country_cluster = sheet[4]
-        row_country_type = sheet[5]
-        row_project_title = sheet[6]
-        row_project_description = sheet[7]
-        row_country_total = sheet[8]
+        i = 3
+        row_country_name = sheet[i + 1]
+        row_country_cluster = sheet[i + 2]
+        row_country_type = sheet[i + 3]
+        row_project_title = sheet[i + 4]
+        row_project_description = sheet[i + 5]
+        row_country_total = sheet[i + 7]
+
+        def add_row(row, styles_from):
+            cells = []
+
+            for idx, val in enumerate(row):
+                src_cell = styles_from[idx]
+                cell = copy(src_cell)
+                for attr in ["font", "number_format", "alignment"]:
+                    setattr(cell, attr, copy(getattr(src_cell, attr)))
+                cell.value = val
+                cells.append(cell)
+
+            sheet.append(cells)
 
         for country in data:
-            sheet.append([country["country_name"]])
+            add_row([country["country_name"]], row_country_name)
             for country_data in country["country_data"]:
-                sheet.append([country_data["cluster_name"]])
-                sheet.append([country_data["project_type_name"]])
+                add_row([country_data["cluster_name"]], row_country_cluster)
+                add_row([country_data["project_type_name"]], row_country_type)
                 for project in country_data["projects"]:
-                    sheet.append(
+                    add_row(
                         [
                             project["project_title"],
                             project["agency_name"],
@@ -223,11 +238,12 @@ class BlanketApprovalDetailsViewset(
                             project["project_funding"],
                             project["project_support_cost"],
                             project["total"],
-                        ]
+                        ],
+                        row_project_title,
                     )
-                    sheet.append([project["project_description"]])
+                    add_row([project["project_description"]], row_project_description)
             country_total: CountryTotal = country["country_total"]
-            sheet.append(
+            add_row(
                 [
                     None,
                     f"Total for {country["country_name"]}",
@@ -236,8 +252,11 @@ class BlanketApprovalDetailsViewset(
                     country_total["project_funding"],
                     country_total["project_support_cost"],
                     country_total["total"],
-                ]
+                ],
+                row_country_total,
             )
+
+        sheet.delete_rows(4, 7)
 
         return workbook_response("Blanket approval details", wb)
 
