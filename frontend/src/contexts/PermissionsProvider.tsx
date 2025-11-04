@@ -103,6 +103,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
     'has_project_settings_access',
   )
 
+  const isMlfsUser = user_permissions.includes('is_mlfs_user')
+
   const canCommentCPCountry = user_permissions.includes(
     'can_cp_country_type_comment',
   )
@@ -162,6 +164,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditProjectEnterprise,
         canApproveProjectEnterprise,
         canSetProjectSettings,
+        isMlfsUser,
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,
