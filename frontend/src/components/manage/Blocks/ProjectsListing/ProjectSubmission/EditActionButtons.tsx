@@ -194,6 +194,7 @@ const EditActionButtons = ({
     hasSectionErrors(substanceErrors) ||
     hasOdsOdpErrors ||
     (getHasNoFiles(id, files, projectFiles) &&
+      (submission_status !== 'Draft' || version === 1) &&
       (version ?? 0) < 3 &&
       !isWithdrawn &&
       (!component || id === component.original_project_id))

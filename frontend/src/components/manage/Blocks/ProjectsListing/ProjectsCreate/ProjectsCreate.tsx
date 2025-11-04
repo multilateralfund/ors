@@ -298,6 +298,7 @@ const ProjectsCreate = ({
   const hasNoFiles =
     mode === 'edit' &&
     project?.submission_status !== 'Withdrawn' &&
+    (project?.submission_status !== 'Draft' || project?.version === 1) &&
     (project?.version ?? 0) < 3 &&
     (!project?.component ||
       project?.id === project?.component.original_project_id) &&
