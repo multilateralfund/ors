@@ -65,6 +65,7 @@ class APRExportWriter:
                 self.worksheet.insert_rows(current_row, 1)
                 self._copy_row_style(template_row, current_row)
 
+            print("One row")
             self._write_row_data(current_row, report_data)
 
     def _copy_row_style(self, source_row, target_row):
@@ -89,7 +90,6 @@ class APRExportWriter:
 
     def _format_field_value(self, field_name, report_data):
         value = report_data.get(field_name)
-
         if value is None:
             return None
 
@@ -106,9 +106,10 @@ class APRExportWriter:
         if isinstance(value, (int, float, Decimal)):
             return value
 
-        # TODO: should probably add handling for booleans! - 0/1 instead of true/false
+        if isinstance(value, bool):
+            return 1 if value else 0
 
-        return str(value) if value else None
+        return str(value)
 
     def _create_response(self):
         safe_agency_name = "".join(

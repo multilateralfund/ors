@@ -1319,3 +1319,47 @@ class TestAPRExportView(BaseTest):
 
         country_col = columns["country_name"]
         assert worksheet.cell(first_data_row, country_col).value == project.country.name
+
+    def test_export_null_values(self, agency_viewer_user, annual_agency_report):
+        project = ProjectFactory(
+            code="TEST/CODE/2024/001",
+            title="Test Project Title",
+            agency=annual_agency_report.agency,
+        )
+        project.status.code = "ONG"
+        project.status.save()
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            funds_disbursed=None,
+            consumption_phased_out_odp=45.67,
+            last_year_remarks="",
+            date_first_disbursement=None,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        funds_col = columns["funds_disbursed"]
+        assert worksheet.cell(first_data_row, funds_col).value is None
+
+        date_col = columns["date_first_disbursement"]
+        assert worksheet.cell(first_data_row, date_col).value is None
+
+        remarks_col = columns["last_year_remarks"]
+        cell_value = worksheet.cell(first_data_row, remarks_col).value
+        assert cell_value is None
