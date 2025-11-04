@@ -31,6 +31,7 @@ interface PermissionsContextProps {
   canEditProjectEnterprise: boolean
   canApproveProjectEnterprise: boolean
   canSetProjectSettings: boolean
+  isMlfsUser: boolean
   canCommentCPCountry: boolean
   canCommentCPSecretariat: boolean
   isCPCountryUserType: boolean

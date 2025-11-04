@@ -45,7 +45,8 @@
             "can_view_all_agencies",
             "has_project_v2_view_access",
             "has_sectors_and_subsectors_view_access",
-            "has_apr_view_access"
+            "has_apr_view_access",
+            "is_mlfs_user"
         ]
     },
     {
@@ -61,7 +62,8 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "is_mlfs_user"
         ]
     },
     {
@@ -79,7 +81,8 @@
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
-            "has_apr_edit_access"
+            "has_apr_edit_access",
+            "is_mlfs_user"
         ]
 
     },
@@ -97,7 +100,8 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "is_mlfs_user"
         ]
     },
     {
@@ -116,7 +120,8 @@
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
-            "has_apr_edit_access"
+            "has_apr_edit_access",
+            "is_mlfs_user"
         ]
     },
     {
@@ -255,7 +260,8 @@
             "has_enterprise_approval_access",
             "has_apr_view_access",
             "has_apr_edit_access",
-            "has_apr_submit_access"
+            "has_apr_submit_access",
+            "is_mlfs_user"
         ]
     }
 ]

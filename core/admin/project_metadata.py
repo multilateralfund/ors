@@ -37,7 +37,7 @@ class ProjectFieldAdmin(admin.ModelAdmin):
         "name",
     ]
 
-    list_filter = ["table", "data_type", "section"]
+    list_filter = ["table", "data_type", "section", "mlfs_only"]
 
     def get_list_display(self, request):
         exclude = [
