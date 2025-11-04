@@ -266,50 +266,34 @@ class AnnualProjectReport(models.Model):
         # TODO: we may want some additional filters on `get_version` and `latest_version`
         # so that we only take into account changes for the *previous* year.
         version3 = self.project.get_version(3)
-        if not version3 or not version3.ods_odp.exists():
+        if not version3:
             return None
 
-        return sum(
-            ods_odp.odp or 0
-            for ods_odp in version3.ods_odp.all()
-            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
+        return version3.consumption_phased_out_odp
 
     @property
     def consumption_phased_out_co2_proposal(self):
         version3 = self.project.get_version(3)
-        if not version3 or not version3.ods_odp.exists():
+        if not version3:
             return None
 
-        return sum(
-            ods_odp.co2_mt or 0
-            for ods_odp in version3.ods_odp.all()
-            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
+        return version3.consumption_phased_out_co2
 
     @property
     def production_phased_out_odp_proposal(self):
         version3 = self.project.get_version(3)
-        if not version3 or not version3.ods_odp.exists():
+        if not version3:
             return None
 
-        return sum(
-            ods_odp.odp or 0
-            for ods_odp in version3.ods_odp.all()
-            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
+        return version3.production_phased_out_odp
 
     @property
     def production_phased_out_co2_proposal(self):
         version3 = self.project.get_version(3)
-        if not version3 or not version3.ods_odp.exists():
+        if not version3:
             return None
 
-        return sum(
-            ods_odp.co2_mt or 0
-            for ods_odp in version3.ods_odp.all()
-            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
+        return version3.production_phased_out_co2
 
     @property
     def approved_funding(self):
