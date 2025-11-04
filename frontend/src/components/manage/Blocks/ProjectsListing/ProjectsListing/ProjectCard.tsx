@@ -166,7 +166,7 @@ export default function ProjectCard({
       disableScrollLock
       keepMounted
     >
-      <Box className="flex min-h-[400px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
+      <Box className="flex min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
         <div>
           <div className="mx-6 mt-4 flex flex-wrap justify-between gap-x-10 gap-y-3">
             <PageHeading className="max-w-[85%] !text-[28px] text-white">
@@ -211,6 +211,7 @@ export default function ProjectCard({
           </div>
           <Loading
             className="!fixed bg-action-disabledBackground"
+            ProgressStyle={{ color: 'white' }}
             active={loading}
           />
           {data && !loading && <ProjectData project={data} />}
