@@ -12,7 +12,7 @@ const GenerateDBMenu = () => {
 
   const menuItems = [
     {
-      title: 'Project warehouse',
+      title: 'Project (MYA) warehouse',
       url: '/projects-listing/export',
       permissions: [canViewProjects],
     },
@@ -31,10 +31,8 @@ const GenerateDBMenu = () => {
       url: '/projects-listing/blanket-approval-details',
       permissions: [canViewProjects],
     },
-    { title: 'MYA warehouse', url: null },
     { title: 'ExCom provisions', url: null },
     { title: 'Enterprise warehouse', url: null },
-    { title: 'Projects for blanket and individual consideration', url: null },
     { title: 'Report on associated projects', url: null },
   ]
 
