@@ -208,20 +208,38 @@ export const PageTitle = ({
   )
 }
 
-export const ProjectStatusInfo = ({ project }: { project: ProjectTypeApi }) => (
+export const ProjectStatusInfo = ({
+  project,
+  textClassName,
+  chipClassName,
+}: {
+  project: ProjectTypeApi
+  textClassName?: string
+  chipClassName?: string
+}) => (
   <div className="mt-4 flex flex-wrap gap-3">
-    <div className="flex items-center gap-3">
+    <div className={cx('flex items-center gap-3', textClassName)}>
       <span>Submission status:</span>
-      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      <span
+        className={cx(
+          'rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]',
+          chipClassName,
+        )}
+      >
         {project.submission_status}
       </span>
     </div>
 
-    <span>|</span>
+    <span className={textClassName}>|</span>
 
-    <div className="flex items-center gap-3">
+    <div className={cx('flex items-center gap-3', textClassName)}>
       <span>Project status:</span>
-      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      <span
+        className={cx(
+          'rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]',
+          chipClassName,
+        )}
+      >
         {project.status}
       </span>
     </div>

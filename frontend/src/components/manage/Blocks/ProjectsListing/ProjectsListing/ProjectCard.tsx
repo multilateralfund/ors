@@ -9,6 +9,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from '../ProjectView/ProjectIdentifiers'
 import ProjectCrossCutting from '../ProjectView/ProjectCrossCutting'
 import ProjectSpecificInfo from '../ProjectView/ProjectSpecificInfo'
+import { ProjectStatusInfo } from '../HelperComponents'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
 import { ProjectSpecificFields, ProjectTypeApi } from '../interfaces'
@@ -108,7 +109,7 @@ const ProjectData = ({ project }: { project: ProjectTypeApi }) => {
       <Tabs
         aria-label="view-project-card"
         value={activeTab}
-        className="sectionsTabs"
+        className="sectionsTabs projectCardView"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -128,7 +129,7 @@ const ProjectData = ({ project }: { project: ProjectTypeApi }) => {
             label={label}
             disabled={disabled}
             classes={{
-              disabled: 'text-gray-300',
+              disabled: 'text-gray-600',
             }}
           />
         ))}
@@ -165,16 +166,16 @@ export default function ProjectCard({
       disableScrollLock
       keepMounted
     >
-      <Box className="flex min-h-[400px] w-full max-w-[65%] flex-col overflow-y-auto bg-primary p-0 absolute-center">
+      <Box className="flex min-h-[400px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
         <div>
-          <div className="mx-6 mt-3 flex flex-wrap justify-between gap-x-10 gap-y-3">
+          <div className="mx-6 mt-4 flex flex-wrap justify-between gap-x-10 gap-y-3">
             <PageHeading className="max-w-[85%] !text-[28px] text-white">
               {title}
               {submission_status === 'Approved'
                 ? `, ${code ?? code_legacy}`
                 : ''}
             </PageHeading>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex gap-6">
               <Link
                 className="flex h-6 w-6 justify-center"
                 href={`/projects-listing/${id}`}
@@ -189,7 +190,10 @@ export default function ProjectCard({
                   <FiEdit size={24} color="white" />
                 </Link>
               )}
-              <Link className="flex h-6 w-6 justify-center" href={null}>
+              <Link
+                className="flex h-6 w-6 cursor-pointer justify-center"
+                href={null}
+              >
                 <TfiClose
                   size={24}
                   color="white"
@@ -197,6 +201,13 @@ export default function ProjectCard({
                 />
               </Link>
             </div>
+          </div>
+          <div className="mx-6 my-5">
+            <ProjectStatusInfo
+              {...{ project }}
+              textClassName="text-white"
+              chipClassName="text-white border-white"
+            />
           </div>
           <Loading
             className="!fixed bg-action-disabledBackground"
