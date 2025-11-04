@@ -20,7 +20,7 @@ from core.api.export.single_project_v2.xlsx_headers import (
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.models import Project
-from core.models import ProjectSpecificFields
+from core.models import ProjectSpecificFields, ProjectField
 from core.models import User
 
 
@@ -217,17 +217,38 @@ class ProjectsV2ProjectExportDocx:
                 for c_idx, cell in enumerate(row.cells):
                     cell.text = str(row_data[c_idx] or "")
 
+    def _write_project_cross_cutting_fields(
+        self,
+        table=None,
+        fields=None,
+        data=None,
+        writer=None,
+    ):
+        writer = self._write_header_to_table if not writer else writer
+        if data and table and fields:
+            headers = get_headers_cross_cutting(fields)
+            writer(headers, table, data)
+
     def build_cross_cutting(self, data):
-        table = self.find_table("Cross-cutting fields")
-        self._write_header_to_table(get_headers_cross_cutting(), table, data)
+        self._write_project_cross_cutting_fields(
+            table=self.find_table("Cross-cutting fields"),
+            fields=self._get_fields_for_section(section_name="Cross-Cutting"),
+            data=data,
+        )
 
     def _get_fields_for_section(
         self,
-        fields_obj: ProjectSpecificFields,
         section_name: str,
+        fields_obj: ProjectSpecificFields | None = None,
         **filters,
     ):
-        return fields_obj.fields.filter(section__in=[section_name], **filters)
+        if not fields_obj:
+            return ProjectField.objects.get_visible_fields_for_user(self.user).filter(
+                section__in=[section_name], **filters
+            )
+        return fields_obj.fields.get_visible_fields_for_user(self.user).filter(
+            section__in=[section_name], **filters
+        )
 
     def _write_project_specific_fields(
         self,
@@ -262,14 +283,14 @@ class ProjectsV2ProjectExportDocx:
             self._write_project_specific_fields(
                 table=self.find_table("Project specific fields header"),
                 fields=self._get_fields_for_section(
-                    project_specific_fields_obj, "Header"
+                    "Header", project_specific_fields_obj
                 ),
                 data=data,
             )
             self._write_project_specific_fields(
                 table=self.find_table("Substance details Page and tables"),
                 fields=self._get_fields_for_section(
-                    project_specific_fields_obj, "Substance Details"
+                    "Substance Details", project_specific_fields_obj
                 ),
                 data=data.get("ods_odp", []),
                 writer=self._write_substance_table,
@@ -277,8 +298,8 @@ class ProjectsV2ProjectExportDocx:
             self._write_project_specific_fields(
                 table=self.find_table("Impact (tabular)"),
                 fields=self._get_fields_for_section(
-                    project_specific_fields_obj,
                     "Impact",
+                    project_specific_fields_obj,
                     is_actual=False,
                 ),
                 data=data,
@@ -299,8 +320,8 @@ class ProjectsV2ProjectExportDocx:
                 ).first()
 
                 fields = self._get_fields_for_section(
-                    project_specific_fields_obj,
                     "Impact",
+                    project_specific_fields_obj,
                 )
                 data = ProjectDetailsV2Serializer(project).data
 

@@ -274,5 +274,11 @@
         "permission_name": "Has APR submit access",
         "app_label": "core",
         "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "is_mlfs_user",
+        "permission_name": "Is MLFS user",
+        "app_label": "core",
+        "model_name": "user"
     }
 ]

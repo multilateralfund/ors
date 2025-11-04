@@ -13,8 +13,9 @@ from core.api.export.single_project_v2.xlsx_headers import (
 from core.api.export.single_project_v2.helpers import get_activity_data
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.utils import workbook_response
-from core.models import Project
+from core.models import Project, ProjectField
 from core.models import ProjectSpecificFields
+from core.models import User
 
 
 class ProjectWriter(BaseWriter):
@@ -23,10 +24,12 @@ class ProjectWriter(BaseWriter):
 
 
 class ProjectsV2ProjectExport:
+    user = User
     wb: openpyxl.Workbook
     project: Project
 
-    def __init__(self, project):
+    def __init__(self, project, user):
+        self.user = user
         self.project = project
         self.setup_workbook()
 
@@ -50,9 +53,35 @@ class ProjectsV2ProjectExport:
             writer.sheet = sheet
             writer.write([activity_data])
 
+    def _write_cross_cutting_fields(
+        self,
+        fields_section: str,
+        sheet_name: Annotated[str, "max_length=31"],
+        data,
+    ):
+        """
+        Writes a new sheet.
+
+        :param sheet_name: The sheet name should not exceed 31 characters, this is as Excel constraint.
+        """
+        fields = (
+            ProjectField.objects.get_visible_fields_for_user(self.user)
+            .filter(section__in=[fields_section])
+            .exclude(read_field_name="sort_order")
+        )
+        if fields:
+            sheet = self.add_sheet(sheet_name)
+            ProjectWriter(
+                sheet,
+                get_headers_cross_cutting(fields),
+            ).write(data)
+
     def build_cross_cutting(self, data):
-        sheet = self.add_sheet("Cross-cutting")
-        ProjectWriter(sheet, get_headers_cross_cutting()).write([data])
+        self._write_cross_cutting_fields(
+            "Cross-Cutting",
+            "Cross-cutting",
+            [data],
+        )
 
     def _write_project_specific_fields(
         self,
@@ -66,8 +95,10 @@ class ProjectsV2ProjectExport:
 
         :param sheet_name: The sheet name should not exceed 31 characters, this is as Excel constraint.
         """
-        fields = fields_obj.fields.filter(section__in=[fields_section]).exclude(
-            read_field_name="sort_order"
+        fields = (
+            fields_obj.fields.get_visible_fields_for_user(self.user)
+            .filter(section__in=[fields_section])
+            .exclude(read_field_name="sort_order")
         )
         if fields:
             sheet = self.add_sheet(sheet_name)

@@ -550,6 +550,7 @@ def import_fields(file_path):
             "write_field_name": field_json["WRITE_FIELD_NAME"],
             "table": field_json["TABLE"],
             "data_type": field_json["DATA_TYPE"],
+            "mlfs_only": field_json.get("MLFS_ONLY", False),
             "section": field_json["SECTION"],
             "is_actual": field_json.get("IS_ACTUAL", False),
             "sort_order": field_json["SORT_ORDER"],

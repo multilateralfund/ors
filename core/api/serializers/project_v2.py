@@ -1270,10 +1270,11 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             # other component projects are not required to have files attached
             # projects that are not components also need to have files attached
             return errors
-        if ProjectFile.objects.filter(project=self.instance).count() < 1:
-            errors["files"] = (
-                "At least one file must be attached to the project for submission."
-            )
+        if self.instance.version == 1:
+            if ProjectFile.objects.filter(project=self.instance).count() < 1:
+                errors["files"] = (
+                    "At least one file must be attached to the project for submission."
+                )
         return errors
 
     def validate_bp(self, errors):
@@ -1379,6 +1380,16 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
         fields = [
             "version",
         ]
+
+    def validate_required_fields(self, errors):
+        errors = super().validate_required_fields(errors)
+
+        # Check that at least one file is attached for recommendation
+        if ProjectFile.objects.filter(project=self.instance).count() < 1:
+            errors["files"] = (
+                "At least one file must be attached to the project for submission."
+            )
+        return errors
 
     def validate(self, attrs):
         """
