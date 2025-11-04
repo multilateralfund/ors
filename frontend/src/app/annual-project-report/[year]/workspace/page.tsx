@@ -22,6 +22,7 @@ import {
   INITIAL_PARAMS,
   MANDATORY_STATUSES,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
+import Link from '@ors/components/ui/Link/Link.tsx'
 
 interface Filter {
   id: string
@@ -158,9 +159,14 @@ export default function APRWorkspace() {
               >
                 Export APR
               </Button>
-              <Button variant="text" startIcon={<FiEdit size={18} />} disabled>
+              <Link
+                button
+                variant="text"
+                startIcon={<FiEdit size={18} />}
+                href={`/apr/${year}/edit`}
+              >
                 Update APR
-              </Button>
+              </Link>
               <Button variant="text" startIcon={<FiTable size={18} />} disabled>
                 Generate summary tables
               </Button>
