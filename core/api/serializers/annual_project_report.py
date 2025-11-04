@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -21,12 +19,8 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     Returns a flat structure with both derived (from Project) and editable fields.
     """
 
-    # TODO: some fields might need SerializerMethodFields instead to avoid null FKs
-
     # Project identification - derived fields
-    meta_code = serializers.CharField(
-        source="project.meta_project.new_code", read_only=True
-    )
+    meta_code = serializers.CharField(source="meta_project_code", read_only=True)
     project_code = serializers.CharField(source="project.code", read_only=True)
     legacy_code = serializers.CharField(source="project.legacy_code", read_only=True)
     agency_name = serializers.CharField(
@@ -35,15 +29,11 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     # TODO: is it ok to use cluster.name below? or should it be cluster.code?
     cluster_name = serializers.CharField(source="project.cluster.name", read_only=True)
     region_name = serializers.CharField(
-        source="project.country.parent.name", read_only=True
+        source="project.country.parent.name", read_only=True, allow_null=True
     )
-    country_name = serializers.CharField(
-        source="project.country.name", read_only=True, allow_null=True
-    )
-    type_code = serializers.CharField(
-        source="project.project_type.code", read_only=True, allow_null=True
-    )
-    sector_code = serializers.CharField(source="project.sector.code", read_only=True)
+    country_name = serializers.CharField(source="project.country.name", read_only=True)
+    type_code = serializers.CharField(source="project_type", read_only=True)
+    sector_code = serializers.CharField(source="project_sector", read_only=True)
     project_title = serializers.CharField(source="project.title", read_only=True)
 
     # Project date data fields - derived
@@ -55,88 +45,80 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     )
 
     # Project date data fields - input
-    status = serializers.CharField(required=False)
-    date_first_disbursement = serializers.DateField(allow_null=True, required=False)
-    date_planned_completion = serializers.DateField(allow_null=True, required=False)
-    date_actual_completion = serializers.DateField(allow_null=True, required=False)
-    date_financial_completion = serializers.DateField(allow_null=True, required=False)
+    status = serializers.CharField(source="project.status.name", read_only=True)
+    date_first_disbursement = serializers.DateField(allow_null=True)
+    date_planned_completion = serializers.DateField(allow_null=True)
+    date_actual_completion = serializers.DateField(allow_null=True)
+    date_financial_completion = serializers.DateField(allow_null=True)
 
     # Phaseout data fields - derived
-    consumption_phased_out_odp_proposal = serializers.SerializerMethodField(
-        read_only=True
+    consumption_phased_out_odp_proposal = serializers.FloatField(
+        read_only=True, allow_null=True
     )
-    consumption_phased_out_co2_proposal = serializers.SerializerMethodField(
-        read_only=True
+    consumption_phased_out_co2_proposal = serializers.FloatField(
+        read_only=True, allow_null=True
     )
-    production_phased_out_odp_proposal = serializers.SerializerMethodField(
-        read_only=True
+    production_phased_out_odp_proposal = serializers.FloatField(
+        read_only=True, allow_null=True
     )
-    production_phased_out_co2_proposal = serializers.SerializerMethodField(
-        read_only=True
+    production_phased_out_co2_proposal = serializers.FloatField(
+        read_only=True, allow_null=True
     )
 
     # Phaseout data fields - input
-    consumption_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
-    consumption_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
-    production_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
-    production_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
+    consumption_phased_out_odp = serializers.FloatField(allow_null=True)
+    consumption_phased_out_co2 = serializers.FloatField(allow_null=True)
+    production_phased_out_odp = serializers.FloatField(allow_null=True)
+    production_phased_out_co2 = serializers.FloatField(allow_null=True)
 
     # Financial data fields - derived
-    approved_funding = serializers.FloatField(
-        source="project.total_fund", read_only=True, allow_null=True
-    )
-    adjustment = serializers.SerializerMethodField(read_only=True)
+    approved_funding = serializers.FloatField(read_only=True, allow_null=True)
+    adjustment = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - calculated
-    approved_funding_plus_adjustment = serializers.SerializerMethodField(read_only=True)
-    per_cent_funds_disbursed = serializers.SerializerMethodField(read_only=True)
-    balance = serializers.SerializerMethodField(read_only=True)
+    approved_funding_plus_adjustment = serializers.FloatField(
+        read_only=True, allow_null=True
+    )
+    per_cent_funds_disbursed = serializers.FloatField(read_only=True, allow_null=True)
+    balance = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - derived (2)
-    support_cost_approved = serializers.DecimalField(
+    support_cost_approved = serializers.FloatField(
         source="project.support_cost_psc",
-        max_digits=20,
-        decimal_places=2,
         read_only=True,
         allow_null=True,
     )
-    support_cost_adjustment = serializers.SerializerMethodField(read_only=True)
+    support_cost_adjustment = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - calculated (2)
-    support_cost_approved_plus_adjustment = serializers.SerializerMethodField(
-        read_only=True
+    support_cost_approved_plus_adjustment = serializers.FloatField(
+        read_only=True, allow_null=True
     )
-    support_cost_balance = serializers.SerializerMethodField(read_only=True)
+    support_cost_balance = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - input
-    funds_disbursed = serializers.FloatField(allow_null=True, required=False)
-    funds_committed = serializers.FloatField(allow_null=True, required=False)
+    funds_disbursed = serializers.FloatField(allow_null=True)
+    funds_committed = serializers.FloatField(allow_null=True)
     estimated_disbursement_current_year = serializers.FloatField(
         allow_null=True, required=False
     )
-    support_cost_disbursed = serializers.FloatField(allow_null=True, required=False)
-    support_cost_committed = serializers.FloatField(allow_null=True, required=False)
-    disbursements_made_to_final_beneficiaries = serializers.FloatField(
-        allow_null=True, required=False
-    )
-    funds_advanced = serializers.FloatField(allow_null=True, required=False)
+    support_cost_disbursed = serializers.FloatField(allow_null=True)
+    support_cost_committed = serializers.FloatField(allow_null=True)
+    disbursements_made_to_final_beneficiaries = serializers.FloatField(allow_null=True)
+    funds_advanced = serializers.FloatField(allow_null=True)
 
     # Project financial data fields - derived (3)
-    implementation_delays_status_report_decisions = serializers.SerializerMethodField(
-        read_only=True
+    implementation_delays_status_report_decisions = serializers.CharField(
+        allow_null=True, allow_blank=True, read_only=True
     )
-    date_of_completion_per_agreement_or_decisions = serializers.SerializerMethodField(
-        read_only=True
+    date_of_completion_per_agreement_or_decisions = serializers.DateField(
+        source="project.date_completion", read_only=True, allow_null=True
     )
 
     # Narrative and indicator data fields - input
-    last_year_remarks = serializers.CharField(
-        allow_null=True, allow_blank=True, required=False
-    )
-    current_year_remarks = serializers.CharField(
-        allow_null=True, allow_blank=True, required=False
-    )
-    gender_policy = serializers.BooleanField(allow_null=True, required=False)
+    last_year_remarks = serializers.CharField(allow_null=True, allow_blank=True)
+    current_year_remarks = serializers.CharField(allow_null=True, allow_blank=True)
+    gender_policy = serializers.BooleanField(allow_null=True)
 
     # Audit fields - extra (not in document)
     created_at = serializers.DateTimeField(read_only=True)
@@ -250,86 +232,6 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-
-    def get_consumption_phased_out_odp_proposal(self, obj):
-        # TODO; how do we use version 3?
-        # I think I just need to check that obj.project version is >= 3
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        return sum(
-            ods_odp.odp or Decimal("0")
-            for ods_odp in obj.project.ods_odp.all()
-            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
-
-    def get_consumption_phased_out_co2_proposal(self, obj):
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        return sum(
-            ods_odp.co2_mt or Decimal("0")
-            for ods_odp in obj.project.ods_odp.all()
-            if ods_odp.ods_type != ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
-
-    def get_production_phased_out_odp_proposal(self, obj):
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        return sum(
-            ods_odp.odp or Decimal("0")
-            for ods_odp in obj.project.ods_odp.all()
-            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
-
-    def get_production_phased_out_co2_proposal(self, obj):
-        if not obj.project or not obj.project.ods_odp.exists():
-            return None
-
-        return sum(
-            ods_odp.co2_mt or Decimal("0")
-            for ods_odp in obj.project.ods_odp.all()
-            if ods_odp.ods_type == ods_odp.ProjectOdsOdpType.PRODUCTION
-        )
-
-    def get_adjustment(self, obj):
-        # TODO - flesh it out as:
-        # Approved Funding in the last version - Approved Funding in Version 3
-        return Decimal("0")
-
-    def get_approved_funding_plus_adjustment(self, obj):
-        # TODO - flesh it out based on a model method
-        return Decimal("0")
-
-    def get_per_cent_funds_disbursed(self, obj):
-        # TODO - flesh it out based on a model method
-        return Decimal("0")
-
-    def get_balance(self, obj):
-        # TODO - flesh it out based on a model method
-        return Decimal("0")
-
-    def get_support_cost_adjustment(self, obj):
-        # TODO: Support cost in the latest version - Support cost in version 3
-        return Decimal("0")
-
-    def get_support_cost_approved_plus_adjustment(self, obj):
-        # TODO: Support Cost Approved + Support Cost Adjustment
-        # This would much better be a model method!
-        return Decimal("0")
-
-    def get_support_cost_balance(self, obj):
-        # TODO: Support Costs Approved Funding plus Adjustments (US$) - Support Cost Disbursed (US$)
-        # This would much better be a model method!
-        return Decimal("0")
-
-    def get_implementation_delays_status_report_decisions(self, obj):
-        # TODO: need to ask MLFS bout this field
-        return ""
-
-    def get_date_of_completion_per_agreement_or_decisions(self, obj):
-        return obj.project.date_completion
 
 
 class AnnualProjectReportFileSerializer(serializers.ModelSerializer):

@@ -1280,39 +1280,52 @@ class Project(models.Model):
 
     @cached_property
     def phase_out_data(self):
+        # Make sure that we return None (not 0) if no data is available
         data = {
-            "consumption_odp": 0,
-            "consumption_co2": 0,
-            "production_odp": 0,
-            "production_co2": 0,
+            "consumption_odp": None,
+            "consumption_co2": None,
+            "production_odp": None,
+            "production_co2": None,
         }
 
         for substance in self.ods_odp.all():
-            substance_odp = substance.odp or 0
-            substance_co2_mt = substance.co2_mt or 0
+            substance_odp = substance.odp
+            substance_co2_mt = substance.co2_mt
             if substance.ods_type == ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION:
-                data["production_odp"] += substance_odp
-                data["production_co2"] += substance_co2_mt
+                if substance_odp:
+                    data["production_odp"] = (
+                        data["production_odp"] or 0
+                    ) + substance_odp
+                if substance_co2_mt:
+                    data["production_co2"] = (
+                        data["production_co2"] or 0
+                    ) + substance_co2_mt
             else:
-                data["consumption_odp"] += substance_odp
-                data["consumption_co2"] += substance_co2_mt
+                if substance_odp:
+                    data["consumption_odp"] = (
+                        data["consumption_odp"] or 0
+                    ) + substance_odp
+                if substance_co2_mt:
+                    data["consumption_co2"] = (
+                        data["consumption_co2"] or 0
+                    ) + substance_co2_mt
 
         return data
 
     @property
-    def consumption_odp(self):
+    def consumption_phase_out_odp(self):
         return self.phase_out_data["consumption_odp"]
 
     @property
-    def consumption_co2(self):
+    def consumption_phase_out_co2(self):
         return self.phase_out_data["consumption_co2"]
 
     @property
-    def production_odp(self):
+    def production_phase_out_odp(self):
         return self.phase_out_data["production_odp"]
 
     @property
-    def production_co2(self):
+    def production_phase_out_co2(self):
         return self.phase_out_data["production_co2"]
 
     def copy_project(self, duplicate_files=False, remove_legacy_data=False):
@@ -1416,6 +1429,24 @@ class Project(models.Model):
             return None
         files.sort(key=lambda f: f.date_created, reverse=True)
         return files[0]
+
+    @property
+    def final_version(self):
+        return self.latest_project if self.latest_project else self
+
+    def get_version(self, version_number):
+        """Get a specific version of this project."""
+        final = self.final_version
+
+        if final.version == version_number:
+            return final
+
+        # Return the requested version_number or None if not found
+        return (
+            Project.objects.really_all()
+            .filter(latest_project_id=final.id, version=version_number)
+            .first()
+        )
 
 
 class ProjectFile(models.Model):

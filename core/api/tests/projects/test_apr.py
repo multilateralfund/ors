@@ -37,7 +37,7 @@ class TestProjectPhaseOutData:
             ods_type=ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
         )
 
-        assert project.consumption_odp == pytest.approx(0.1)
-        assert project.consumption_co2 == pytest.approx(0.16)
-        assert project.production_odp == pytest.approx(0.34)
-        assert project.production_co2 == pytest.approx(0.4)
+        assert project.consumption_phase_out_odp == pytest.approx(0.1)
+        assert project.consumption_phase_out_co2 == pytest.approx(0.16)
+        assert project.production_phase_out_odp == pytest.approx(0.34)
+        assert project.production_phase_out_co2 == pytest.approx(0.4)
