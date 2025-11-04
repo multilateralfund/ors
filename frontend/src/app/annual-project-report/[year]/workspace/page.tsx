@@ -54,7 +54,8 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
   })
 
-  if (!canViewAPR) {
+  // TODO: change later for mlfs
+  if (!canViewAPR || !user.agency_id) {
     return <NotFoundPage />
   }
 
