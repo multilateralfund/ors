@@ -22,6 +22,7 @@ import {
   INITIAL_PARAMS,
   MANDATORY_STATUSES,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
+import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 
 interface Filter {
   id: string
@@ -43,6 +44,7 @@ export default function APRWorkspace() {
     useState<Record<string, Filter[]>>(INITIAL_PARAMS)
   const {
     data: apr,
+    loading,
     loaded,
     setParams,
   } = useApi({
@@ -167,6 +169,7 @@ export default function APRWorkspace() {
             </div>
           </div>
         </div>
+        <Loader active={loading} />
         {loaded && <APRTable projectReports={apr.project_reports} />}
       </Box>
       {isUploadDocumentsModalOpen && (
