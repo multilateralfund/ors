@@ -113,7 +113,7 @@ class BlanketApprovalDetailsViewset(
         )
 
         for project in filtered_projects:
-            key = f"{project["project_type_pk"]}, {project["cluster_pk"]}"
+            key = f"{project['project_type_pk']}, {project['cluster_pk']}"
 
             per_country.setdefault(
                 project["country_pk"],
@@ -150,7 +150,7 @@ class BlanketApprovalDetailsViewset(
                 "total": 0.0,
             }
 
-            country_data = [_ for _ in country_data.values()]
+            country_data = list(country_data.values())
             for clusters in country_data:
                 for project in clusters["projects"]:
                     for key in country_total:
@@ -184,10 +184,9 @@ class BlanketApprovalDetailsViewset(
         return Response(result)
 
     def _export_debug(self):
-        queryset: QuerySet[Project] = self.get_queryset()
         result = []
 
-        data = self._extract_data(queryset)
+        data = self._extract_data()
         result.append(
             {
                 "result": data,
@@ -246,7 +245,7 @@ class BlanketApprovalDetailsViewset(
             add_row(
                 [
                     None,
-                    f"Total for {country["country_name"]}",
+                    f"Total for {country['country_name']}",
                     country_total["hcfc"],
                     country_total["hfc"],
                     country_total["project_funding"],
