@@ -46,25 +46,28 @@ class APRWorkspaceView(RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # TODO: I should probably also exclude projects with version < 3
-        queryset = (
-            Project.objects.filter(latest_project__isnull=True)
-            .select_related(
-                "country",
-                "agency",
-                "sector",
-                "project_type",
-                "status",
-                "meeting",
-                "decision",
-            )
-            .prefetch_related(
-                "subsectors",
-                "ods_odp",
-                "ods_odp__ods_substance",
-                "ods_odp__ods_blend",
-            )
-            .order_by("code")
+        queryset = AnnualAgencyProjectReport.objects.select_related(
+            "progress_report",
+            "agency",
+            "created_by",
+            "submitted_by",
+        ).prefetch_related(
+            "project_reports",
+            "project_reports__project",
+            "project_reports__project__meta_project",
+            "project_reports__project__agency",
+            "project_reports__project__country",
+            "project_reports__project__cluster",
+            "project_reports__project__sector",
+            "project_reports__project__subsectors",
+            "project_reports__project__project_type",
+            "project_reports__project__status",
+            "project_reports__project__meeting",
+            "project_reports__project__decision",
+            "project_reports__project__ods_odp",
+            "project_reports__project__ods_odp__ods_substance",
+            "project_reports__project__ods_odp__ods_blend",
+            "files",
         )
 
         user = self.request.user
@@ -108,13 +111,32 @@ class APRWorkspaceView(RetrieveAPIView):
         # When creating for the first time, populate individual project reports
         if created or agency_report.project_reports.count() == 0:
             # Get projects for this agency and create AnnualProjectReport for each
+            projects_queryset = (
+                Project.objects.filter(latest_project__isnull=True)
+                .select_related(
+                    "country",
+                    "agency",
+                    "sector",
+                    "project_type",
+                    "status",
+                    "meeting",
+                    "decision",
+                )
+                .prefetch_related(
+                    "subsectors",
+                    "ods_odp",
+                    "ods_odp__ods_substance",
+                    "ods_odp__ods_blend",
+                )
+                .order_by("code")
+            )
             filterset = APRProjectFilter(
                 data={
                     "year": year,
                     "agency": agency.id,
                     "status": status_codes,
                 },
-                queryset=self.get_queryset(),
+                queryset=projects_queryset,
             )
             if filterset.is_valid():
                 projects = filterset.qs
