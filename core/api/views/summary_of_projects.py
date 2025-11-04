@@ -32,7 +32,7 @@ class SummaryOfProjectsViewSet(
     """ViewSet for summary of projects."""
 
     filterset_class = SummaryOfProjectsFilter
-    queryset = Project.objects.really_all()
+    queryset = Project.objects.all()
     permission_classes = (HasProjectV2ApproveAccess,)
 
     def _extract_data(self, projects: QuerySet[Project]):

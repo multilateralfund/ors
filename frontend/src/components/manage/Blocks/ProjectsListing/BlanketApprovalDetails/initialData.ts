@@ -8,15 +8,11 @@ export const initialRequestParams = () => ({
   cluster_id: '',
   country_id: '',
   project_type_id: '',
-  sector_id: '',
-  agency_id: '',
-  tranche: '',
 })
 
 export const initialRowData = () => {
   return {
     params: initialRequestParams(),
     apiData: null,
-    text: '',
   }
 }
