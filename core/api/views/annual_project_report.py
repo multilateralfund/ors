@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView, ListAPIView, DestroyAPIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import (
@@ -46,25 +47,28 @@ class APRWorkspaceView(RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # TODO: I should probably also exclude projects with version < 3
-        queryset = (
-            Project.objects.filter(latest_project__isnull=True)
-            .select_related(
-                "country",
-                "agency",
-                "sector",
-                "project_type",
-                "status",
-                "meeting",
-                "decision",
-            )
-            .prefetch_related(
-                "subsectors",
-                "ods_odp",
-                "ods_odp__ods_substance",
-                "ods_odp__ods_blend",
-            )
-            .order_by("code")
+        queryset = AnnualAgencyProjectReport.objects.select_related(
+            "progress_report",
+            "agency",
+            "created_by",
+            "submitted_by",
+        ).prefetch_related(
+            "project_reports",
+            "project_reports__project",
+            "project_reports__project__meta_project",
+            "project_reports__project__agency",
+            "project_reports__project__country",
+            "project_reports__project__cluster",
+            "project_reports__project__sector",
+            "project_reports__project__subsectors",
+            "project_reports__project__project_type",
+            "project_reports__project__status",
+            "project_reports__project__meeting",
+            "project_reports__project__decision",
+            "project_reports__project__ods_odp",
+            "project_reports__project__ods_odp__ods_substance",
+            "project_reports__project__ods_odp__ods_blend",
+            "files",
         )
 
         user = self.request.user
@@ -108,13 +112,32 @@ class APRWorkspaceView(RetrieveAPIView):
         # When creating for the first time, populate individual project reports
         if created or agency_report.project_reports.count() == 0:
             # Get projects for this agency and create AnnualProjectReport for each
+            projects_queryset = (
+                Project.objects.filter(latest_project__isnull=True)
+                .select_related(
+                    "country",
+                    "agency",
+                    "sector",
+                    "project_type",
+                    "status",
+                    "meeting",
+                    "decision",
+                )
+                .prefetch_related(
+                    "subsectors",
+                    "ods_odp",
+                    "ods_odp__ods_substance",
+                    "ods_odp__ods_blend",
+                )
+                .order_by("code")
+            )
             filterset = APRProjectFilter(
                 data={
                     "year": year,
                     "agency": agency.id,
                     "status": status_codes,
                 },
-                queryset=self.get_queryset(),
+                queryset=projects_queryset,
             )
             if filterset.is_valid():
                 projects = filterset.qs
@@ -125,64 +148,6 @@ class APRWorkspaceView(RetrieveAPIView):
                     )
 
         return agency_report
-
-
-class APRAgencyReportDetailView(RetrieveAPIView):
-    """
-    Retrieve detailed information about an agency's APR for a specific year.
-    Includes all project reports and files.
-    """
-
-    permission_classes = [IsAuthenticated, HasAPRViewAccess]
-    serializer_class = AnnualAgencyProjectReportReadSerializer
-
-    def get_queryset(self):
-        """
-        Filter to only allow users to access their own agency's reports.
-        Superusers or MLFS can access all reports.
-        """
-        user = self.request.user
-        queryset = AnnualAgencyProjectReport.objects.select_related(
-            "progress_report",
-            "agency",
-            "created_by",
-            "submitted_by",
-        ).prefetch_related(
-            "project_reports",
-            "project_reports__project",
-            "project_reports__project__agency",
-            "project_reports__project__country",
-            "project_reports__project__sector",
-            "project_reports__project__subsectors",
-            "project_reports__project__meeting",
-            "project_reports__project__decision",
-            "project_reports__project__ods_odp",
-            "project_reports__project__ods_odp__ods_substance",
-            "project_reports__project__ods_odp__ods_blend",
-            "files",
-        )
-
-        # If not superuser, filter to own agency
-        if not user.is_superuser and not user.has_perm("core.can_view_all_agencies"):
-            if hasattr(user, "agency") and user.agency:
-                queryset = queryset.filter(agency=user.agency)
-            else:
-                queryset = queryset.none()
-
-        return queryset
-
-    def get_object(self):
-        """Get the agency report by year and agency_id."""
-        year = self.kwargs.get("year")
-        agency_id = self.kwargs.get("agency_id")
-
-        queryset = self.get_queryset()
-        obj = get_object_or_404(
-            queryset, progress_report__year=year, agency_id=agency_id
-        )
-        self.check_object_permissions(self.request, obj)
-
-        return obj
 
 
 class APRBulkUpdateView(APIView):
@@ -443,21 +408,39 @@ class APRSummaryTablesView(APIView):
         )
 
 
-class APRGlobalListView(ListAPIView):
+class APRGlobalViewSet(ReadOnlyModelViewSet):
     """
-    List all agency reports for MLFS users.
+    List/retrieve all agency reports for MLFS users.
     Only showing them submitted reports for now.
+    On retrieve, we prefetch all related info necessary for full data display.
     """
 
     permission_classes = [IsAuthenticated, HasMLFSViewAccess]
     serializer_class = AnnualAgencyProjectReportReadSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = APRGlobalFilter
+    lookup_field = "agency_id"
+    lookup_url_kwarg = "agency_id"
 
     def get_queryset(self):
         year = self.kwargs["year"]
 
-        queryset = (
+        if self.action == "list":
+            queryset = self.get_list_queryset(year)
+        else:
+            queryset = self.get_detail_queryset(year)
+
+        # TODO: did I understand correctly, or should all users only see sumibtted?
+        user = self.request.user
+        if not user.has_perm("core.has_apr_edit_access"):
+            queryset = queryset.filter(
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            )
+
+        return queryset
+
+    def get_list_queryset(self, year):
+        return (
             AnnualAgencyProjectReport.objects.filter(
                 progress_report__year=year,
             )
@@ -477,14 +460,37 @@ class APRGlobalListView(ListAPIView):
             .order_by("agency__name")
         )
 
-        # TODO: did I understand correctly, or should all users only see sumibtted?
-        user = self.request.user
-        if not user.has_perm("core.has_apr_edit_access"):
-            queryset = queryset.filter(
-                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+    def get_detail_queryset(self, year):
+        return (
+            AnnualAgencyProjectReport.objects.filter(
+                progress_report__year=year,
             )
-
-        return queryset
+            .select_related(
+                "progress_report",
+                "agency",
+                "created_by",
+                "submitted_by",
+            )
+            .prefetch_related(
+                "project_reports",
+                "project_reports__project",
+                "project_reports__project__meta_project",
+                "project_reports__project__agency",
+                "project_reports__project__country",
+                "project_reports__project__cluster",
+                "project_reports__project__sector",
+                "project_reports__project__subsectors",
+                "project_reports__project__project_type",
+                "project_reports__project__status",
+                "project_reports__project__meeting",
+                "project_reports__project__decision",
+                "project_reports__project__ods_odp",
+                "project_reports__project__ods_odp__ods_substance",
+                "project_reports__project__ods_odp__ods_blend",
+                "files",
+            )
+            .order_by("agency__name")
+        )
 
 
 class APRToggleLockView(APIView):
