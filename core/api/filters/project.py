@@ -136,7 +136,7 @@ class ProjectFilter(filters.FilterSet):
         queryset = queryset.exclude(id__in=[proj.id for proj in value])
         # exclude the meta projects associated with the given projects
         meta_project_ids = Project.objects.filter(
-            id__in=[proj.id for proj in value]
+            id__in=[proj.id for proj in value], meta_project__isnull=False
         ).values_list("meta_project__id", flat=True)
         if meta_project_ids:
             queryset = queryset.exclude(meta_project__id__in=meta_project_ids)
