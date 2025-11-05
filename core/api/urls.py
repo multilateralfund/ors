@@ -289,7 +289,7 @@ urlpatterns = [
         name="project-settings",
     ),
     path(
-        "general-settings/",
+        "frontend-settings/",
         FrontendSettingsView.as_view(),
         name="frontend-settings",
     ),

@@ -36,7 +36,7 @@ const baseConfig: BaseConfig = {
 
 export async function loadRuntimeConfig() {
   try {
-    const response = await fetch(`${apiPath}/api/config/`)
+    const response = await fetch(`${apiPath}/api/frontend-settings/`)
     if (response.ok) {
       const runtimeConfig = await response.json()
 
