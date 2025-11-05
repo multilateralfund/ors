@@ -106,7 +106,7 @@ class ProjectFilter(filters.FilterSet):
         field_name="meta_project",
         lookup_expr="isnull",
     )
-    exclude_project = filters.ModelMultipleChoiceFilter(
+    exclude_projects = filters.ModelMultipleChoiceFilter(
         field_name="id",
         queryset=Project.objects.all(),
         widget=CSVWidget,
