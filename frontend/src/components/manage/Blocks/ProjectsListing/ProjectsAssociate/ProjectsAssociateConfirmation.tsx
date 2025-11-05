@@ -19,7 +19,6 @@ import { api } from '@ors/helpers'
 import { filter, find, flatMap, map } from 'lodash'
 import { Button, Typography } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
-import { useLocation } from 'wouter'
 
 const ProjectsAssociateConfirmation = ({
   crtProjects,
@@ -27,6 +26,7 @@ const ProjectsAssociateConfirmation = ({
   associationIds,
   setAssociationIds,
   setFilters,
+  projectFilters,
   setMode,
 }: {
   crtProjects: ProjectTypeApi[]
@@ -34,15 +34,16 @@ const ProjectsAssociateConfirmation = ({
   associationIds: number[]
   setAssociationIds: (ids: number[]) => void
   setFilters: (filters: any) => void
+  projectFilters: any
   setMode: (mode: string) => void
 }) => {
   const form = useRef<any>()
-  const [_, setLocation] = useLocation()
   const { agencies } = useContext(ProjectsDataContext)
 
   const [errors, setErrors] = useState(null)
 
   const { setParams, results = [] } = projectsAssociation
+  const { setParams: setFilterParams } = projectFilters
 
   const metaProjects = results.filter(({ projects }) =>
     find(projects, ({ id }) => associationIds.includes(id)),
@@ -83,8 +84,6 @@ const ProjectsAssociateConfirmation = ({
         },
         method: 'POST',
       })
-
-      setLocation(`/projects-listing/listing`)
     } catch (error) {
       const errors = await error.json()
 
@@ -103,52 +102,51 @@ const ProjectsAssociateConfirmation = ({
     setAssociationIds([])
     setFilters({ offset: 0, ...initialParams })
     setParams({ ...initialFilters, ...initialParams })
+    setFilterParams({ ...initialFilters, ...initialParams })
   }
 
   return (
     <>
-      <div className="mt-2 flex flex-col gap-2">
-        <PageHeading className="min-w-fit">
-          Associate projects - confirm details
-        </PageHeading>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-1">
+          <PageHeading className="min-w-fit">
+            Associate projects - confirm details
+          </PageHeading>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              className="h-9 border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none"
+              color="primary"
+              size="large"
+              variant="contained"
+              onClick={cancelAssociation}
+            >
+              Cancel
+            </Button>
+            <SubmitButton
+              title="Submit"
+              isDisabled={!leadAgencyId}
+              onSubmit={associateProjects}
+              className="h-9"
+            />
+          </div>
+        </div>
         <p className="my-0">
           The following projects will be grouped together. Please select a lead
           agency or verify that it has been correctly selected.
         </p>
       </div>
-      <div className="flex flex-wrap items-center justify-between">
-        <div>
-          <Label>Lead agency</Label>
-          <Field
-            widget="autocomplete"
-            options={leadAgencyOptions}
-            value={leadAgencyId}
-            onChange={(_, value: any) => {
-              setLeadAgencyId(value?.id ?? null)
-            }}
-            getOptionLabel={(option) =>
-              getOptionLabel(leadAgencyOptions, option)
-            }
-            {...fieldProps}
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            className="h-9 border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none"
-            color="primary"
-            size="large"
-            variant="contained"
-            onClick={cancelAssociation}
-          >
-            Cancel
-          </Button>
-          <SubmitButton
-            title="Submit"
-            isDisabled={!leadAgencyId}
-            onSubmit={associateProjects}
-            className="h-9"
-          />
-        </div>
+      <div>
+        <Label>Lead agency</Label>
+        <Field
+          widget="autocomplete"
+          options={leadAgencyOptions}
+          value={leadAgencyId}
+          onChange={(_, value: any) => {
+            setLeadAgencyId(value?.id ?? null)
+          }}
+          getOptionLabel={(option) => getOptionLabel(leadAgencyOptions, option)}
+          {...fieldProps}
+        />
       </div>
       <form className="flex flex-col gap-6" ref={form}>
         <PListingTable

@@ -9,7 +9,6 @@ import { isNull } from 'lodash'
 
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
-
   const project = useGetProject(project_id)
   const { data, loading } = project
 

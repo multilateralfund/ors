@@ -68,7 +68,7 @@ const ProjectsAssociateSelection = ({
 
   return (
     <>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-1">
         <PageHeading className="min-w-fit">Associate projects</PageHeading>
         <SubmitButton
           title="Associate"

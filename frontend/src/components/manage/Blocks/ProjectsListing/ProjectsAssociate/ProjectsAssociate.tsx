@@ -13,7 +13,6 @@ import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
 
 import { debounce, find } from 'lodash'
-import { Box } from '@mui/material'
 import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
@@ -96,7 +95,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
         className="!fixed bg-action-disabledBackground"
         active={loading || !loadedAssociatedProjects}
       />
-      <Box className="my-2 flex flex-col gap-6 shadow-none">
+      <div className="flex flex-col gap-6">
         {mode === 'selection' ? (
           <ProjectsAssociateSelection
             crtProjects={crtProjectsSelection}
@@ -122,11 +121,12 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
               associationIds,
               setAssociationIds,
               setFilters,
+              projectFilters,
               setMode,
             }}
           />
         )}
-      </Box>
+      </div>
     </>
   )
 }
