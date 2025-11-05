@@ -106,6 +106,12 @@ class ProjectFilter(filters.FilterSet):
         field_name="meta_project",
         lookup_expr="isnull",
     )
+    exclude_project = filters.ModelMultipleChoiceFilter(
+        field_name="id",
+        queryset=Project.objects.all(),
+        widget=CSVWidget,
+        method="filter_exclude_project",
+    ) # exludes given project and the projects with the same meta project
 
     def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
@@ -121,6 +127,18 @@ class ProjectFilter(filters.FilterSet):
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)
+
+    def filter_exclude_project(self, queryset, name, value):
+        if not value:
+            return queryset
+        queryset = queryset.exclude(id__in=[proj.id for proj in value])
+        # exclude the meta projects associated with the given projects
+        meta_project_ids = Project.objects.filter(
+            id__in=[proj.id for proj in value]
+        ).values_list("meta_project__id", flat=True)
+        if meta_project_ids:
+            queryset = queryset.exclude(meta_project__id__in=meta_project_ids)
+        return queryset
 
     class Meta:
         model = Project
