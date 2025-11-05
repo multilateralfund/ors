@@ -29,7 +29,7 @@ const ProjectsFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+  const { canViewMetainfoProjects, canViewSectorsSubsectors, isMlfsUser } =
     useContext(PermissionsContext)
 
   const areFiltersApplied = getAreFiltersApplied(filters)
@@ -81,7 +81,7 @@ const ProjectsFiltersSelectedOpts = ({
         filterOptions?.blanket_approval_individual_consideration,
       ),
       entityIdentifier: 'blanket_or_individual_consideration',
-      hasPermissions: true,
+      hasPermissions: isMlfsUser,
     },
   ]
 

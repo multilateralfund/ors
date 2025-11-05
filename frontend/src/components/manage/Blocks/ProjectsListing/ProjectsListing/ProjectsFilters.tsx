@@ -22,7 +22,7 @@ const ProjectsFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+  const { canViewMetainfoProjects, canViewSectorsSubsectors, isMlfsUser } =
     useContext(PermissionsContext)
 
   const meetingsOptions = filterOptions?.meeting
@@ -271,34 +271,38 @@ const ProjectsFilters = ({
           />
         </>
       )}
-      <Field
-        Input={{
-          placeholder: tableColumns.blanket_or_individual_consideration,
-        }}
-        options={getFilterOptions(
-          filters,
-          filterOptions?.blanket_approval_individual_consideration,
-          'blanket_or_individual_consideration',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const consideration =
-            filters.blanket_or_individual_consideration || []
-          const newValue = union(consideration, value)
+      {isMlfsUser && (
+        <Field
+          Input={{
+            placeholder: tableColumns.blanket_or_individual_consideration,
+          }}
+          options={getFilterOptions(
+            filters,
+            filterOptions?.blanket_approval_individual_consideration,
+            'blanket_or_individual_consideration',
+          )}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const consideration =
+              filters.blanket_or_individual_consideration || []
+            const newValue = union(consideration, value)
 
-          handleFilterChange({ blanket_or_individual_consideration: newValue })
-          handleParamsChange({
-            blanket_or_individual_consideration: newValue
-              .map((item: any) => item.id)
-              .join(','),
-            offset: 0,
-          })
-        }}
-        {...defaultProps}
-        FieldProps={{
-          className: defaultProps.FieldProps.className + ' md:!w-[19rem]',
-        }}
-      />
+            handleFilterChange({
+              blanket_or_individual_consideration: newValue,
+            })
+            handleParamsChange({
+              blanket_or_individual_consideration: newValue
+                .map((item: any) => item.id)
+                .join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+          FieldProps={{
+            className: defaultProps.FieldProps.className + ' md:!w-[19rem]',
+          }}
+        />
+      )}
     </div>
   )
 }

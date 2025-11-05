@@ -240,3 +240,145 @@ class AnnualProjectReport(models.Model):
             f"Annual Project report for {str(self.project)} "
             f"({self.report.agency} - {self.report.progress_report.year})"
         )
+
+    @property
+    def meta_project_code(self):
+        if self.project.meta_project:
+            if hasattr(self.project.meta_project, "new_code"):
+                return self.project.meta_project.new_code
+            return self.project.meta_project.code
+        return ""
+
+    @property
+    def project_type(self):
+        if self.project.project_type:
+            return self.project.project_type.code
+        return ""
+
+    @property
+    def project_sector(self):
+        if self.project.sector:
+            return self.project.sector.code
+        return ""
+
+    @property
+    def consumption_phased_out_odp_proposal(self):
+        # TODO: we may want some additional filters on `get_version` and `latest_version`
+        # so that we only take into account changes for the *previous* year.
+        version3 = self.project.get_version(3)
+        if not version3:
+            return None
+
+        return version3.consumption_phased_out_odp
+
+    @property
+    def consumption_phased_out_co2_proposal(self):
+        version3 = self.project.get_version(3)
+        if not version3:
+            return None
+
+        return version3.consumption_phased_out_co2
+
+    @property
+    def production_phased_out_odp_proposal(self):
+        version3 = self.project.get_version(3)
+        if not version3:
+            return None
+
+        return version3.production_phased_out_odp
+
+    @property
+    def production_phased_out_co2_proposal(self):
+        version3 = self.project.get_version(3)
+        if not version3:
+            return None
+
+        return version3.production_phased_out_co2
+
+    @property
+    def approved_funding(self):
+        # TODO: are we sure it's .total_fund and not .total_fund_approved?
+        version3 = self.project.get_version(3)
+        if not version3 or not version3.ods_odp.exists():
+            return None
+
+        return version3.total_fund
+
+    @property
+    def adjustment(self):
+        if not self.project.final_version or self.project.final_version.version < 3:
+            return None
+
+        latest_funding = self.project.final_version.total_fund
+        if latest_funding is None:
+            return None
+
+        if self.approved_funding is None:
+            if latest_funding is not None:
+                return latest_funding
+            return None
+
+        return latest_funding - self.approved_funding
+
+    @property
+    def approved_funding_plus_adjustment(self):
+        # Returning `total_fund` directly, that's what it should add up to
+        if not self.project.final_version:
+            return None
+
+        return self.project.final_version.total_fund
+
+    @property
+    def per_cent_funds_disbursed(self):
+        if (
+            self.funds_disbursed is None
+            or self.approved_funding_plus_adjustment is None
+        ):
+            return None
+
+        return self.funds_disbursed / self.approved_funding_plus_adjustment
+
+    @property
+    def balance(self):
+        if self.approved_funding is None:
+            return None
+
+        return self.approved_funding - (self.funds_disbursed or 0)
+
+    @property
+    def support_cost_adjustment(self):
+        # Support cost in the latest version - Support cost in version 3
+        version3 = self.project.get_version(3)
+        if not version3 or not version3.support_cost_psc:
+            return None
+
+        if not self.project.final_version.support_cost_psc:
+            return None
+
+        return self.project.final_version.support_cost_psc - version3.support_cost_psc
+
+    @property
+    def support_cost_approved_plus_adjustment(self):
+        # Using final_version.support_cost_psc directly, as that's what it should be
+        if (
+            not self.project.final_version
+            or not self.project.final_version.support_cost_psc
+        ):
+            return None
+
+        return self.project.final_version.support_cost_psc
+
+    @property
+    def support_cost_balance(self):
+        # Support Costs Approved Funding plus Adjustments - Support Cost Disbursed
+        if self.support_cost_approved_plus_adjustment is None:
+            return None
+
+        return self.support_cost_approved_plus_adjustment - (
+            self.support_cost_disbursed or 0
+        )
+
+    @property
+    def implementation_delays_status_report_decisions(self):
+        # TODO: need to ask MLFS about this field
+        return ""

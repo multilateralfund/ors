@@ -790,6 +790,7 @@ def project2(
         country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
     )
     project = ProjectFactory.create(
+        version=1,
         meta_project=meta_project_mya,
         title="Karma to Burn",
         country=country_ro,

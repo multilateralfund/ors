@@ -372,6 +372,7 @@ class TestProjectFields(BaseTest):
             write_field_name="test_field_1",
             table="project",
             data_type="text",
+            mlfs_only=False,
             section="section1",
             sort_order=1,
             editable_in_versions="1,2",

@@ -36,7 +36,6 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
-    ProjectField,
     ProjectSpecificFieldsSerializer,
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
@@ -65,6 +64,7 @@ from core.models.project import (
 )
 from core.models.project_metadata import (
     ProjectCluster,
+    ProjectField,
     ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
@@ -349,6 +349,14 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
             context["project_submission_status_name"] = project.submission_status.name
         return context
 
+    def get_project_fields_queryset(self, include_actuals):
+        project_fields = ProjectField.objects.get_visible_fields_for_user(
+            self.request.user
+        )
+        if not include_actuals:
+            project_fields = project_fields.filter(is_actual=False)
+        return project_fields.order_by("sort_order")
+
     def get_object(self):
         project_id = self.request.query_params.get("project_id", None)
         include_actuals = (
@@ -364,26 +372,15 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
                 include_actuals = False
             else:
                 include_actuals = True
-        if not include_actuals:
-            queryset = ProjectSpecificFields.objects.select_related(
-                "cluster", "type", "sector"
-            ).prefetch_related(
-                models.Prefetch(
-                    "fields",
-                    queryset=ProjectField.objects.filter(is_actual=False).order_by(
-                        "sort_order"
-                    ),
-                )
+
+        queryset = ProjectSpecificFields.objects.select_related(
+            "cluster", "type", "sector"
+        ).prefetch_related(
+            models.Prefetch(
+                "fields",
+                queryset=self.get_project_fields_queryset(include_actuals),
             )
-        else:
-            queryset = ProjectSpecificFields.objects.select_related(
-                "cluster", "type", "sector"
-            ).prefetch_related(
-                models.Prefetch(
-                    "fields",
-                    queryset=ProjectField.objects.order_by("sort_order"),
-                )
-            )
+        )
         return get_object_or_404(
             queryset,
             cluster_id=self.kwargs["cluster_id"],

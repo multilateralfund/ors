@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import BytesIO
 from openpyxl import load_workbook
 
@@ -1250,3 +1251,71 @@ class TestAPRExportView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_export_data_correctness(
+        self, agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        project = ProjectFactory(
+            code="TEST/CODE/2024/001",
+            title="Test Project Title",
+            agency=annual_agency_report.agency,
+        )
+        project.status.code = "ONG"
+        project.status.save()
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            funds_disbursed=123456.78,
+            last_year_remarks="Test remarkss",
+            consumption_phased_out_odp=45.67,
+            date_first_disbursement="2024-03-15",
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        # All project data gets written to first data row; check it matches
+        project_code_col = columns["project_code"]
+        assert (
+            worksheet.cell(first_data_row, project_code_col).value
+            == "TEST/CODE/2024/001"
+        )
+
+        project_title_col = columns["project_title"]
+        assert (
+            worksheet.cell(first_data_row, project_title_col).value
+            == "Test Project Title"
+        )
+
+        funds_disbursed_col = columns["funds_disbursed"]
+        assert worksheet.cell(first_data_row, funds_disbursed_col).value == 123456.78
+
+        odp_col = columns["consumption_phased_out_odp"]
+        assert worksheet.cell(first_data_row, odp_col).value == 45.67
+
+        date_col = columns["date_first_disbursement"]
+        cell_value = worksheet.cell(first_data_row, date_col).value
+        assert cell_value == datetime(2024, 3, 15, 0, 0)
+
+        remarks_col = columns["last_year_remarks"]
+        assert worksheet.cell(first_data_row, remarks_col).value == "Test remarkss"
+
+        agency_col = columns["agency_name"]
+        assert worksheet.cell(first_data_row, agency_col).value == project.agency.name
+
+        country_col = columns["country_name"]
+        assert worksheet.cell(first_data_row, country_col).value == project.country.name

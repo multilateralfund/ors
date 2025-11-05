@@ -1,6 +1,7 @@
 import { useContext, useCallback } from 'react'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
@@ -10,6 +11,7 @@ import { ProjectTypeApi } from '../interfaces'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
+import { FaExternalLinkAlt } from 'react-icons/fa'
 import { Divider } from '@mui/material'
 import { find } from 'lodash'
 
@@ -49,6 +51,17 @@ const ProjectIdentifiers = ({
         status: bp.status,
       }
     : {}
+
+  const BpDetails = () =>
+    bp && (
+      <div>
+        Business plan {bp.name} {' - '}
+        <span>(Meeting: {bp.meeting_number})</span>
+        {bp.decision_id ? (
+          <span>{`(Decision: ${bp.decision_number})`}</span>
+        ) : null}
+      </div>
+    )
 
   const getFieldHistory = useCallback(
     (name: string) => {
@@ -114,25 +127,44 @@ const ProjectIdentifiers = ({
           <SectionTitle>Business Plan</SectionTitle>
           {bp ? (
             <>
-              <div>
-                Business plan {bp.name} {' - '}
-                <span>(Meeting: {bp.meeting_number})</span>
-                {bp.decision_id ? (
-                  <span>{`(Decision: ${bp.decision_number})`}</span>
-                ) : null}
-              </div>
-              <BPTable
-                yearRanges={[bpYearRange]}
-                results={[bpActivity]}
-                count={1}
-                isProjectsSection={true}
-                loaded={true}
-                loading={false}
-                filters={{
-                  year_start: bp.year_start,
-                  year_end: bp.year_end,
-                }}
-              />
+              {isListingView ? (
+                <>
+                  <Link
+                    component="a"
+                    className="mb-4 flex items-center gap-2 text-lg normal-case leading-tight text-inherit no-underline"
+                    href={`/business-plans/list/activities/${bp.year_start}-${bp.year_end}`}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
+                  >
+                    <FaExternalLinkAlt
+                      size={14}
+                      className="mb-0.5 min-h-[14px] min-w-[14px]"
+                    />
+                    <BpDetails />
+                  </Link>
+                  <span className="flex gap-2">
+                    <span>Activity ID</span>
+                    <h4 className="m-0">{bpActivity?.display_internal_id}</h4>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <BpDetails />
+                  <BPTable
+                    yearRanges={[bpYearRange]}
+                    results={[bpActivity]}
+                    count={1}
+                    isProjectsSection={true}
+                    loaded={true}
+                    loading={false}
+                    filters={{
+                      year_start: bp.year_start,
+                      year_end: bp.year_end,
+                    }}
+                  />
+                </>
+              )}
             </>
           ) : (
             '-'

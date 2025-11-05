@@ -35,8 +35,8 @@ def get_headers_identifiers() -> List[HeaderType]:
     ]
 
 
-def get_headers_cross_cutting() -> List[HeaderType]:
-    return [
+def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType]:
+    default_headers = [
         {
             "id": "title",
             "headerName": "Title",
@@ -97,6 +97,12 @@ def get_headers_cross_cutting() -> List[HeaderType]:
             "method": get_blanket_consideration_value,
         },
     ]
+    result = []
+    for header in default_headers:
+
+        if header["id"] in fields.values_list("read_field_name", flat=True):
+            result.append(header)
+    return result
 
 
 def get_headers_specific_information(fields: Iterable[ProjectField]):

@@ -543,7 +543,7 @@ class ProjectV2ViewSet(
         if project_id:
             project = self.get_object()
             if output_format == "xlsx":
-                return ProjectsV2ProjectExport(project).export_xls()
+                return ProjectsV2ProjectExport(project, request.user).export_xls()
             if output_format == "docx":
                 return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
         return ProjectsV2Export(self).export_xls()

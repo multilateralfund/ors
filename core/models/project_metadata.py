@@ -33,6 +33,16 @@ PROJECT_SECTOR_TO_TYPE_MAPPINGS = {
 }
 
 
+class ProjectFieldManager(models.Manager):
+    def get_visible_fields_for_user(self, user):
+        """
+        Filters out MLFS-only fields for users without MLFS access.
+        """
+        if not user.has_perm("core.is_mlfs_user"):
+            return self.exclude(mlfs_only=True)
+        return self
+
+
 class ProjectField(models.Model):
     import_name = models.CharField(max_length=255)
     label = models.CharField(max_length=255)
@@ -59,6 +69,12 @@ class ProjectField(models.Model):
         blank=True,
         help_text="Comma-separated list of project versions where the field is visible. Values: 1,2,3",
     )
+    mlfs_only = models.BooleanField(
+        default=False,
+        help_text="If True, the field is only visible to MLFS users",
+    )
+
+    objects = ProjectFieldManager()
 
     def __str__(self):
         return f"{self.table} - {self.label}"
