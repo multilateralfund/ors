@@ -15,6 +15,7 @@ from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
+from core.api.serializers.project_association import AssociateProjectSerializer
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
     DenyAll,
@@ -51,7 +52,6 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_TRANSFER,
 )
 from core.api.swagger import FileUploadAutoSchema
-from core.models.agency import Agency
 from core.models.project import (
     MetaProject,
     Project,
@@ -72,7 +72,7 @@ from core.api.views.utils import log_project_history, get_available_values
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
 from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
-from core.utils import post_approval_changes
+from core.utils import post_approval_changes, get_umbrella_code
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
@@ -1018,13 +1018,32 @@ class ProjectV2ViewSet(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "project_ids": openapi.Schema(
+                "projects_to_associate": openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Items(type=openapi.TYPE_INTEGER),
+                    description="""
+                        List of project IDs to associate under the same meta project.
+                        If any of the projects have a meta project, it will be used for the association.
+                        If none of the projects have a meta project, a new meta project will be created.
+                        If multiple projects have different meta projects, the value given in the
+                        meta_project_id field will be used to associate all projects to that meta project.
+                    """,
+                ),
+                "meta_project_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="""
+                        ID of the meta project to associate the projects to.
+                        If not provided, and none of the projects have a meta project,
+                        a new meta project will be created.
+                    """,
                 ),
                 "lead_agency_id": openapi.Schema(
                     type=openapi.TYPE_INTEGER,
-                    description="ID of the lead agency for the meta project.",
+                    description="""
+                        ID of the lead agency to be used in the projects.
+                        TBD: should this be updated in the lead agency of the metaproject as well?
+                        Right now the field is not used anymore.
+                    """,
                 ),
             },
             required=["project_ids", "lead_agency_id"],
@@ -1035,37 +1054,23 @@ class ProjectV2ViewSet(
         },
     )
     def associate_projects(self, request, *args, **kwargs):
-        projects = self.filter_permissions_queryset(Project.objects.all())
-        project_objs = projects.filter(id__in=request.data.get("project_ids", []))
+        data = AssociateProjectSerializer(data=request.data)
+        if not data.is_valid():
+            return Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if len(project_objs) != len(request.data.get("project_ids", [])):
-            return Response(
-                {"error": "Some project IDs do not exist."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        lead_agency_id = request.data.get("lead_agency_id", None)
-        if not lead_agency_id:
-            return Response(
-                {"error": "Lead agency is required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        lead_agency = get_object_or_404(Agency, pk=lead_agency_id)
-
-        # Get first meta project that can be found in the project_objs
-        all_meta_projects = [x.meta_project for x in project_objs if x.meta_project]
-
-        meta_project = all_meta_projects[0] if all_meta_projects else None
-
+        validated_data = data.validated_data
+        meta_project = validated_data.get("meta_project", None)
         if not meta_project:
-            # Create a new meta project if none exists
-            meta_project = MetaProject.objects.create()
+            project_type = validated_data["projects"].first().project_type
+            country = validated_data["projects"].first().country
+            meta_project = MetaProject.objects.create(
+                umbrella_code=get_umbrella_code(country),
+                type=project_type,
+            )
 
-        # Associate all projects with the meta project
-        project_objs.update(meta_project=meta_project)
-        for project in project_objs:
-            project.lead_agency = lead_agency
+        for project in validated_data["projects"]:
+            project.meta_project = meta_project
+            project.lead_agency = validated_data["lead_agency"]
             project.save()
 
         # Clean up any meta projects that have no projects associated with them
@@ -1074,7 +1079,7 @@ class ProjectV2ViewSet(
         return Response(
             {
                 "message": f"""
-                    Projects associated with meta project {meta_project.code}.
+                    Projects associated with meta project {meta_project.umbrella_code}.
                     Cleaned up {count} empty meta projects.
                 """,
             },

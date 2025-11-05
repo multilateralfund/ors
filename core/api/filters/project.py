@@ -21,6 +21,8 @@ from core.models.project_metadata import (
 )
 from core.models.utils import SubstancesType, EnterpriseStatus
 
+# pylint: disable=W0613
+
 
 class ProjectFilterBackend(DjangoFilterBackend):
     def get_filterset_class(self, view, queryset=None):
@@ -111,7 +113,7 @@ class ProjectFilter(filters.FilterSet):
         queryset=Project.objects.all(),
         widget=CSVWidget,
         method="filter_exclude_project",
-    ) # exludes given project and the projects with the same meta project
+    )  # exludes given project and the projects with the same meta project
 
     def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
