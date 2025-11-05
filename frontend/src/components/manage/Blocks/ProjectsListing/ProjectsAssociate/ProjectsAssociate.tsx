@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
@@ -23,7 +24,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   > | null>(null)
 
   const [associationIds, setAssociationIds] = useState<number[]>([])
-  const [filters, setFilters] = useState({ ...initialFilters })
+  const [filters, setFilters] = useState<any>({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
   // const projectSlice = useStore((state) => state.projects)
@@ -43,7 +44,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
 
   const projectFilters = useGetProjectFilters(updatedFilters)
   const projectsForAssociation = useGetProjects(updatedFilters)
-  const { loading, loaded } = projectsForAssociation
+  const { loading, loaded, setParams } = projectsForAssociation
 
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
@@ -89,6 +90,14 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     }
   }, [projectsForAssociation])
 
+  const cancelAssociation = () => {
+    setMode('selection')
+    setAssociationIds([])
+    setFilters({ offset: 0, ...initialParams })
+    setParams({ ...initialFilters, ...initialParams })
+    projectFilters.setParams({ ...initialFilters, ...initialParams })
+  }
+
   return (
     <>
       <Loading
@@ -119,10 +128,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
             crtProjects={crtProjectsConfirmation}
             {...{
               associationIds,
-              setAssociationIds,
-              setFilters,
-              projectFilters,
-              setMode,
+              cancelAssociation,
             }}
           />
         )}

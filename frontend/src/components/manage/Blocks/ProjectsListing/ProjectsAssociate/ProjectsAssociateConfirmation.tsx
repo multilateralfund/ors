@@ -7,43 +7,67 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
+import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { defaultProps, initialFilters } from '../constants'
+import useApi from '@ors/hooks/useApi'
 import { api } from '@ors/helpers'
 
 import { Button, Typography } from '@mui/material'
 import { debounce, filter, map } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
+const MetaProjectSelection = ({
+  crtProjects,
+  associatedProjects,
+}: {
+  crtProjects: ProjectTypeApi[]
+  associatedProjects: ProjectTypeApi[]
+}) => {
+  const { data: firstMetaproject, loading: firstMetaprojectLoading } = useApi({
+    options: {},
+    path: `api/meta-projects/${crtProjects[0].meta_project_id}`,
+  })
+
+  const { data: secondMetaproject, loading: secondMetaprojectLoading } = useApi(
+    {
+      options: {},
+      path: `api/meta-projects/${associatedProjects[0].meta_project_id}`,
+    },
+  )
+
+  const loading = firstMetaprojectLoading || secondMetaprojectLoading
+
+  return (
+    <>
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={loading}
+      />
+      {!loading && <div></div>}
+    </>
+  )
+}
+
 const ProjectsAssociateConfirmation = ({
   crtProjects = [],
   projectsAssociation,
   associationIds,
-  setAssociationIds,
-  setFilters,
-  projectFilters,
-  setMode,
+  cancelAssociation,
 }: {
   crtProjects: ProjectTypeApi[]
   projectsAssociation: ReturnType<typeof useGetProjects>
   associationIds: number[]
-  setAssociationIds: (ids: number[]) => void
-  setFilters: (filters: any) => void
-  projectFilters: any
-  setMode: (mode: string) => void
+  cancelAssociation: () => void
 }) => {
   const form = useRef<any>()
   const { agencies } = useContext(ProjectsDataContext)
-
-  const { setParams, results = [] } = projectsAssociation
-  const { setParams: setFilterParams } = projectFilters
 
   const [errors, setErrors] = useState(null)
   const [finalMetaCode, setFinalMetaCode] = useState(null)
@@ -77,13 +101,15 @@ const ProjectsAssociateConfirmation = ({
 
   const isOriginalProjIndiv = crtProjects.length === 1
   const isAssociatedProjIndiv = associatedProjects.length === 1
+  const onlyIndivProjects = isOriginalProjIndiv && isOriginalProjIndiv
 
   const originalProjLeadAgencyId = crtProjects[0].lead_agency
-  const associatedProjLeadAgencyId =
-    associatedProjects.length > 0 ? associatedProjects[0].lead_agency : null
+  const associatedProjLeadAgencyId = loadedAssociatedProjects
+    ? associatedProjects[0].lead_agency
+    : null
 
   const leadAgencyIds: (number | null)[] = [
-    ...(isOriginalProjIndiv && isAssociatedProjIndiv
+    ...(onlyIndivProjects
       ? [originalProjLeadAgencyId, associatedProjLeadAgencyId]
       : isOriginalProjIndiv
         ? [associatedProjLeadAgencyId]
@@ -102,7 +128,7 @@ const ProjectsAssociateConfirmation = ({
   const [leadAgencyId, setLeadAgencyId] = useState<number | null>(null)
 
   useEffect(() => {
-    if (formattedLeadAgencyOpts.length === 1) {
+    if (loadedAssociatedProjects && formattedLeadAgencyOpts.length === 1) {
       setLeadAgencyId(formattedLeadAgencyOpts[0].id)
     }
   }, [leadAgencyOpts])
@@ -142,14 +168,6 @@ const ProjectsAssociateConfirmation = ({
     }
   }
 
-  const cancelAssociation = () => {
-    setMode('selection')
-    setAssociationIds([])
-    setFilters({ offset: 0, ...initialParams })
-    setParams({ ...initialFilters, ...initialParams })
-    setFilterParams({ ...initialFilters, ...initialParams })
-  }
-
   return (
     <>
       <div className="flex flex-col gap-2">
@@ -184,7 +202,7 @@ const ProjectsAssociateConfirmation = ({
       </div>
       <div>
         {isOriginalProjIndiv &&
-          associatedProjects.length > 0 &&
+          loadedAssociatedProjects &&
           !isAssociatedProjIndiv && (
             <CustomAlert
               type="info"
@@ -202,6 +220,20 @@ const ProjectsAssociateConfirmation = ({
               }
             />
           )}
+        {loadedAssociatedProjects && !onlyIndivProjects && (
+          <CustomAlert
+            type="info"
+            alertClassName="mb-2 px-2 py-0"
+            content={
+              <Typography className="text-lg leading-5">
+                The project you are trying to associate and the one to be
+                associated with are part of different meta-projects. If you
+                would like to continue, please choose the meta-project that
+                these projects will belong to:
+              </Typography>
+            }
+          />
+        )}
         <Label>Lead agency</Label>
         <Field
           widget="autocomplete"
@@ -213,6 +245,9 @@ const ProjectsAssociateConfirmation = ({
           getOptionLabel={(option) => getOptionLabel(leadAgencyOpts, option)}
           {...fieldProps}
         />
+        {loadedAssociatedProjects && !onlyIndivProjects && (
+          <MetaProjectSelection {...{ crtProjects, associatedProjects }} />
+        )}
       </div>
       <form className="flex flex-col gap-6" ref={form}>
         <PListingTable

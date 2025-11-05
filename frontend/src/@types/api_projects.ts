@@ -102,6 +102,7 @@ export type ProjectType = {
   meeting_transf_id: any
   metaproject_category: string
   metaproject_code: string
+  meta_project_id: number
   metacode: string
   mya_code: string
   mya_subsector: string
