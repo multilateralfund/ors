@@ -1,27 +1,29 @@
 'use client'
 
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
+import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
 import { useGetProjects } from '../hooks/useGetProjects'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
+import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { defaultProps, initialFilters } from '../constants'
-import { ProjectTypeApi } from '../interfaces'
 import { api } from '@ors/helpers'
 
-import { filter, find, flatMap, map } from 'lodash'
 import { Button, Typography } from '@mui/material'
+import { debounce, filter, map } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsAssociateConfirmation = ({
-  crtProjects,
+  crtProjects = [],
   projectsAssociation,
   associationIds,
   setAssociationIds,
@@ -40,31 +42,70 @@ const ProjectsAssociateConfirmation = ({
   const form = useRef<any>()
   const { agencies } = useContext(ProjectsDataContext)
 
-  const [errors, setErrors] = useState(null)
-
   const { setParams, results = [] } = projectsAssociation
   const { setParams: setFilterParams } = projectFilters
 
-  const metaProjects = results.filter(({ projects }) =>
-    find(projects, ({ id }) => associationIds.includes(id)),
-  )
-  const metaProjectsLeadAgenciesIds = map(metaProjects, 'lead_agency_id')
-  const leadAgencyOptions = filter(
-    agencies,
-    ({ id }) =>
-      metaProjectsLeadAgenciesIds.includes(id) ||
-      id === crtProjects[0].lead_agency,
-  )
+  const [errors, setErrors] = useState(null)
+  const [finalMetaCode, setFinalMetaCode] = useState(null)
+  const [association, setAssociation] = useState<AssociatedProjectsType>({
+    projects: [],
+    loaded: false,
+  })
+  const { projects: associationProjects, loaded: loadedAssociatedProjects } =
+    association
+  const associatedProjects = associationProjects || []
 
-  const [leadAgencyId, setLeadAgencyId] = useState(
-    leadAgencyOptions.length === 1 ? leadAgencyOptions[0].id : null,
-  )
+  const debouncedGetAssociatedProjects = debounce(() => {
+    useGetAssociatedProjects(
+      associationIds[0],
+      setAssociation,
+      'all',
+      false,
+      true,
+      false,
+    )
+  }, 0)
 
-  const selectedProjects = [
-    ...crtProjects,
-    ...flatMap(metaProjects, (metaProject) => metaProject.projects),
+  useEffect(() => {
+    debouncedGetAssociatedProjects()
+  }, [])
+
+  const projects = {
+    ...projectsAssociation,
+    results: [...crtProjects, ...associatedProjects],
+  }
+
+  const isOriginalProjIndiv = crtProjects.length === 1
+  const isAssociatedProjIndiv = associatedProjects.length === 1
+
+  const originalProjLeadAgencyId = crtProjects[0].lead_agency
+  const associatedProjLeadAgencyId =
+    associatedProjects.length > 0 ? associatedProjects[0].lead_agency : null
+
+  const leadAgencyIds: (number | null)[] = [
+    ...(isOriginalProjIndiv && isAssociatedProjIndiv
+      ? [originalProjLeadAgencyId, associatedProjLeadAgencyId]
+      : isOriginalProjIndiv
+        ? [associatedProjLeadAgencyId]
+        : isAssociatedProjIndiv
+          ? [originalProjLeadAgencyId]
+          : []),
   ]
-  const projects = { ...projectsAssociation, results: selectedProjects }
+
+  const leadAgencyOpts = filter(agencies, ({ id }) =>
+    leadAgencyIds.includes(id),
+  )
+
+  const formattedLeadAgencyOpts =
+    leadAgencyOpts.length === 0 ? agencies : leadAgencyOpts
+
+  const [leadAgencyId, setLeadAgencyId] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (formattedLeadAgencyOpts.length === 1) {
+      setLeadAgencyId(formattedLeadAgencyOpts[0].id)
+    }
+  }, [leadAgencyOpts])
 
   const fieldProps = {
     ...defaultProps,
@@ -77,14 +118,18 @@ const ProjectsAssociateConfirmation = ({
     setErrors(null)
 
     try {
-      await api(`api/projects/v2/associate_projects/`, {
+      const response = await api(`api/projects/v2/associate_projects/`, {
         data: {
-          project_ids: map(projects.results, 'id'),
+          projects_to_associate: map(projects.results, 'id'),
           lead_agency_id: leadAgencyId,
         },
         method: 'POST',
       })
+
+      setFinalMetaCode(response.umbrella_code)
     } catch (error) {
+      setFinalMetaCode(null)
+
       const errors = await error.json()
 
       if (error.status === 400) {
@@ -124,7 +169,9 @@ const ProjectsAssociateConfirmation = ({
             </Button>
             <SubmitButton
               title="Submit"
-              isDisabled={!leadAgencyId}
+              isDisabled={
+                !(leadAgencyId && loadedAssociatedProjects) || !!finalMetaCode
+              }
               onSubmit={associateProjects}
               className="h-9"
             />
@@ -136,15 +183,34 @@ const ProjectsAssociateConfirmation = ({
         </p>
       </div>
       <div>
+        {isOriginalProjIndiv &&
+          associatedProjects.length > 0 &&
+          !isAssociatedProjIndiv && (
+            <CustomAlert
+              type="info"
+              alertClassName="mb-2 px-2 py-0"
+              content={
+                <Typography className="text-lg leading-5">
+                  The project{' '}
+                  {associatedProjects[0].code ??
+                    associatedProjects[0].code_legacy}{' '}
+                  is already associated with the meta-project{' '}
+                  {associatedProjects[0].umbrella_code}, therefore the project{' '}
+                  {crtProjects[0].code ?? crtProjects[0].code_legacy} will be
+                  part of this umbrella.
+                </Typography>
+              }
+            />
+          )}
         <Label>Lead agency</Label>
         <Field
           widget="autocomplete"
-          options={leadAgencyOptions}
+          options={leadAgencyOpts}
           value={leadAgencyId}
           onChange={(_, value: any) => {
             setLeadAgencyId(value?.id ?? null)
           }}
-          getOptionLabel={(option) => getOptionLabel(leadAgencyOptions, option)}
+          getOptionLabel={(option) => getOptionLabel(leadAgencyOpts, option)}
           {...fieldProps}
         />
       </div>
@@ -161,6 +227,23 @@ const ProjectsAssociateConfirmation = ({
           type="error"
           alertClassName="mb-5"
           content={<Typography className="text-lg">{errors}</Typography>}
+        />
+      )}
+      {finalMetaCode && (
+        <CustomAlert
+          type="success"
+          alertClassName="BPAlert mt-4"
+          content={
+            <Link
+              className="text-xl text-inherit no-underline"
+              href="/projects-listing/listing"
+            >
+              <p className="m-0 mt-0.5 text-lg">
+                Projects were associated in meta-project {finalMetaCode}.{' '}
+                <span className="underline">View projects.</span>
+              </p>
+            </Link>
+          }
         />
       )}
     </>

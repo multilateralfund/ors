@@ -83,7 +83,7 @@ const ProjectsAssociateSelection = ({
         {crtProjects.length > 1 && (
           <CustomAlert
             type="info"
-            alertClassName=" mt-4 px-2 py-0"
+            alertClassName="mt-4 px-2 py-0"
             content={
               <Typography className="text-lg leading-5">
                 Already associated projects or components will be associated as
