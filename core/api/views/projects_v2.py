@@ -1013,7 +1013,6 @@ class ProjectV2ViewSet(
     @swagger_auto_schema(
         operation_description="""
         Receives a list of project ids and associates them under the same meta project.
-        Performs a clean-up of meta projects that have no projects associated with them.
         """,
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -1073,15 +1072,10 @@ class ProjectV2ViewSet(
             project.lead_agency = validated_data["lead_agency"]
             project.save()
 
-        # Clean up any meta projects that have no projects associated with them
-        count = MetaProject.objects.filter(projects__isnull=True).count()
-        MetaProject.objects.filter(projects__isnull=True).delete()
         return Response(
             {
-                "message": f"""
-                    Projects associated with meta project {meta_project.umbrella_code}.
-                    Cleaned up {count} empty meta projects.
-                """,
+                "id": meta_project.id,
+                "umbrella_code": meta_project.umbrella_code,
             },
             status=status.HTTP_200_OK,
         )
