@@ -8,7 +8,7 @@ export function initializeSentry() {
   if (sentry?.dsn) {
     Sentry.init({
       dsn: sentry.dsn,
-      environment: sentry.environment || 'production',
+      environment: sentry.environment || 'staging',
       integrations: [
         Sentry.replayIntegration({
           blockAllMedia: true,
@@ -29,7 +29,7 @@ export function initializeSentry() {
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
     })
-    console.log('Sentry initialized:', sentry.environment)
+    console.log('Sentry initialized:', sentry.dsn, sentry.environment)
   } else {
     console.log('Sentry not initialized: no DSN was provided')
   }
