@@ -152,6 +152,7 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = [
         "title",
         "code",
+        "meta_project__umbrella_code",
     ]
     list_filter = [
         LatestProjectVersionsFilter,

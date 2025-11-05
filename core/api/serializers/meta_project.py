@@ -129,6 +129,8 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
     def get_lead_agency(self, obj):
         lead_agency = obj.projects.first().lead_agency
+        if not lead_agency:
+            return None
         return AgencySerializer(lead_agency).data
 
 

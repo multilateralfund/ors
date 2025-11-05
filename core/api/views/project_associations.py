@@ -80,12 +80,13 @@ class ProjectAssociationViewSet(
         if project_id:
             project = Project.objects.filter(id=project_id).first()
         if project:
-            # Exclude the meta project associated with the given project_id
-            filtered_projects_qs = filtered_projects_qs.exclude(
-                meta_project__id=project.meta_project.id
-            ).filter(
-                country=project.country,
-            )
+            if project.meta_project:
+                # Exclude the meta project associated with the given project_id
+                filtered_projects_qs = filtered_projects_qs.exclude(
+                    meta_project__id=project.meta_project.id
+                )
+            filtered_projects_qs = filtered_projects_qs.filter(country=project.country)
+
         search_filter = filters.SearchFilter()
         # SearchFilter expects a view instance, so pass self
         filtered_projects_qs = search_filter.filter_queryset(
