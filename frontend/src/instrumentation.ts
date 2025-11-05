@@ -2,8 +2,10 @@ import * as Sentry from '@sentry/react'
 
 if (import.meta.env.PROD) {
   const sentryDsn = import.meta.env.VITE_PUBLIC_SENTRY_DSN
+  console.log('sentryDsn: ', sentryDsn)
 
   if (sentryDsn) {
+    console.log("initializing sentry");
     Sentry.init({
       dsn: sentryDsn,
       integrations: [
@@ -29,4 +31,5 @@ if (import.meta.env.PROD) {
       replaysOnErrorSampleRate: 1.0,
     })
   }
+  Sentry.captureMessage("Test message from frontend");
 }
