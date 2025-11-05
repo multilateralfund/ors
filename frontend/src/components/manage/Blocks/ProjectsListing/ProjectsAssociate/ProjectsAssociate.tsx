@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
-import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
+import { useGetProjects } from '../hooks/useGetProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
@@ -17,36 +17,34 @@ import { Box } from '@mui/material'
 import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
-  const initialProjectsAssociation = useRef<ReturnType<
-    typeof useGetProjectsAssociation
-  > | null>(null)
   const { project_id } = useParams<Record<string, string>>()
+
+  const initialProjectsAssociation = useRef<ReturnType<
+    typeof useGetProjects
+  > | null>(null)
 
   const [associationIds, setAssociationIds] = useState<number[]>([])
   const [filters, setFilters] = useState({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
-  const projectSlice = useStore((state) => state.projects)
-  const submissionStatuses = projectSlice.submission_statuses.data
+  // const projectSlice = useStore((state) => state.projects)
+  // const submissionStatuses = projectSlice.submission_statuses.data
 
-  const approvedStatus = find(
-    submissionStatuses,
-    (status) => status.name === 'Approved',
-  )
+  // const approvedStatus = find(
+  //   submissionStatuses,
+  //   (status) => status.name === 'Approved',
+  // )
 
-  const projectFilters = useGetProjectFilters({
+  const updatedFilters = {
     ...filters,
-    meta_project__isnull: false,
-  })
-  const projectsAssociation = useGetProjectsAssociation(
-    {
-      ...initialFilters,
-      limit: 50,
-      submission_status_id: approvedStatus?.id ?? null,
-    },
-    project_id,
-  )
-  const { loading, loaded } = projectsAssociation
+    submission_status_id: project.submission_status_id,
+    country_id: project.country_id,
+    exclude_projects: project_id,
+  }
+
+  const projectFilters = useGetProjectFilters(updatedFilters)
+  const projectsForAssociation = useGetProjects(updatedFilters)
+  const { loading, loaded } = projectsForAssociation
 
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
@@ -88,9 +86,9 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
 
   useEffect(() => {
     if (!initialProjectsAssociation.current && loaded) {
-      initialProjectsAssociation.current = projectsAssociation
+      initialProjectsAssociation.current = projectsForAssociation
     }
-  }, [projectsAssociation])
+  }, [projectsForAssociation])
 
   return (
     <>
@@ -103,7 +101,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
           <ProjectsAssociateSelection
             crtProjects={crtProjectsSelection}
             {...{
-              projectsAssociation,
+              projectsForAssociation,
               associationIds,
               setAssociationIds,
               filters,
@@ -116,7 +114,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
           <ProjectsAssociateConfirmation
             projectsAssociation={
               initialProjectsAssociation.current as ReturnType<
-                typeof useGetProjectsAssociation
+                typeof useGetProjects
               >
             }
             crtProjects={crtProjectsConfirmation}

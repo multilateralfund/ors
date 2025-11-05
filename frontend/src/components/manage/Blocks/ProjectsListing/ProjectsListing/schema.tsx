@@ -9,7 +9,7 @@ import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { FiEdit } from 'react-icons/fi'
-import { filter, isNil } from 'lodash'
+import { isNil } from 'lodash'
 import {
   CellClassParams,
   ICellRendererParams,
@@ -24,7 +24,6 @@ const getColumnDefs = (
   setProjectData?: (data: ListingProjectData) => void,
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
-  setParams?: any,
 ) => {
   const {
     canViewProjects,
@@ -60,31 +59,25 @@ const getColumnDefs = (
               maxWidth: 40,
               cellClass: (props: CellClassParams) =>
                 `!pl-0 ag-text-center ${getCellClass(props.data)}`,
-              cellRenderer: (props: ICellRendererParams) =>
-                props.data.isFirst !== false && (
-                  <Checkbox
-                    checked={
-                      setAssociationIds
-                        ? associationIds.includes(props.data.id)
-                        : true
+              cellRenderer: (props: ICellRendererParams) => (
+                <Checkbox
+                  checked={
+                    setAssociationIds
+                      ? associationIds.includes(props.data.id)
+                      : true
+                  }
+                  onChange={(event) => {
+                    if (setAssociationIds) {
+                      setAssociationIds(
+                        event.target.checked ? [props.data.id] : [],
+                      )
                     }
-                    onChange={(event) => {
-                      if (setAssociationIds) {
-                        setAssociationIds(
-                          event.target.checked
-                            ? [...associationIds, props.data.id]
-                            : filter(
-                                associationIds,
-                                (id) => id !== props.data.id,
-                              ),
-                        )
-                      }
-                    }}
-                    sx={{
-                      color: 'black',
-                    }}
-                  />
-                ),
+                  }}
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              ),
             },
           ]
         : []),

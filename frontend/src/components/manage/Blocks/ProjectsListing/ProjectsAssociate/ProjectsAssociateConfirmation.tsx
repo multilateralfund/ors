@@ -8,11 +8,10 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
-import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { useGetProjects } from '../hooks/useGetProjects'
 import { defaultProps, initialFilters } from '../constants'
 import { ProjectTypeApi } from '../interfaces'
 import { api } from '@ors/helpers'
@@ -31,7 +30,7 @@ const ProjectsAssociateConfirmation = ({
   setMode,
 }: {
   crtProjects: ProjectTypeApi[]
-  projectsAssociation: ReturnType<typeof useGetProjectsAssociation>
+  projectsAssociation: ReturnType<typeof useGetProjects>
   associationIds: number[]
   setAssociationIds: (ids: number[]) => void
   setFilters: (filters: any) => void
@@ -39,7 +38,6 @@ const ProjectsAssociateConfirmation = ({
 }) => {
   const form = useRef<any>()
   const [_, setLocation] = useLocation()
-  const { canAssociateProjects } = useContext(PermissionsContext)
   const { agencies } = useContext(ProjectsDataContext)
 
   const [errors, setErrors] = useState(null)
@@ -144,14 +142,12 @@ const ProjectsAssociateConfirmation = ({
           >
             Cancel
           </Button>
-          {canAssociateProjects && (
-            <SubmitButton
-              title="Submit"
-              isDisabled={!leadAgencyId}
-              onSubmit={associateProjects}
-              className="h-9"
-            />
-          )}
+          <SubmitButton
+            title="Submit"
+            isDisabled={!leadAgencyId}
+            onSubmit={associateProjects}
+            className="h-9"
+          />
         </div>
       </div>
       <form className="flex flex-col gap-6" ref={form}>
