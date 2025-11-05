@@ -139,14 +139,13 @@ from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 from core.api.views.annual_project_report import (
     APRWorkspaceView,
-    APRAgencyReportDetailView,
     APRBulkUpdateView,
     APRFileUploadView,
     APRFileDeleteView,
     APRStatusView,
     APRExportView,
     APRSummaryTablesView,
-    APRGlobalListView,
+    APRGlobalViewSet,
     APRToggleLockView,
     APREndorseView,
 )
@@ -245,7 +244,9 @@ router.register(
     StatusOfTheFundFileViewSet,
     basename="replenishment-status-files",
 )
-
+router.register(
+    r"apr/mlfs/(?P<year>\d+)/agencies", APRGlobalViewSet, basename="apr-mlfs"
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -712,11 +713,6 @@ urlpatterns = [
         name="apr-workspace",
     ),
     path(
-        "annual-project-report/<int:year>/agency/<int:agency_id>/",
-        APRAgencyReportDetailView.as_view(),
-        name="apr-detail",
-    ),
-    path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/export/",
         APRExportView.as_view(),
         name="apr-export",
@@ -745,11 +741,6 @@ urlpatterns = [
         "annual-project-report/<int:year>/summary/",
         APRSummaryTablesView.as_view(),
         name="apr-summary",
-    ),
-    path(
-        "annual-project-report/<int:year>/mlfs/",
-        APRGlobalListView.as_view(),
-        name="apr-mlfs-list",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",

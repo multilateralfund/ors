@@ -65,7 +65,6 @@ class APRExportWriter:
                 self.worksheet.insert_rows(current_row, 1)
                 self._copy_row_style(template_row, current_row)
 
-            print("One row")
             self._write_row_data(current_row, report_data)
 
     def _copy_row_style(self, source_row, target_row):
@@ -93,6 +92,12 @@ class APRExportWriter:
         if value is None:
             return None
 
+        if isinstance(value, (int, float, Decimal)):
+            return value
+
+        if isinstance(value, bool):
+            return 1 if value else 0
+
         if field_name.startswith("date_"):
             # Format dates
             if isinstance(value, str):
@@ -100,16 +105,9 @@ class APRExportWriter:
                     # Parse ISO date string
                     return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
                 except (ValueError, AttributeError):
-                    return value
-            return value
+                    pass
 
-        if isinstance(value, (int, float, Decimal)):
-            return value
-
-        if isinstance(value, bool):
-            return 1 if value else 0
-
-        return str(value)
+        return value if not isinstance(value, str) else str(value)
 
     def _create_response(self):
         safe_agency_name = "".join(
