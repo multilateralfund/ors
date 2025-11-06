@@ -185,6 +185,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
+    umbrella_code = serializers.SerializerMethodField()
 
     def get_editable(self, obj):
         """
@@ -275,12 +276,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "is_sme",
             "kwh_year_saved",
             "latest_file",
+            "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meps_developed_domestic_refrigeration",
             "meps_developed_commercial_refrigeration",
             "meps_developed_residential_ac",
             "meps_developed_commercial_ac",
             "metacode",
+            "meta_project_id",
             "metaproject_category",
             "meeting",
             "meeting_id",
@@ -352,6 +355,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "total_psc_transferred",
             "version_created_by",
             "version",
+            "umbrella_code",
         ]
 
     def to_representation(self, instance):
@@ -364,6 +368,11 @@ class ProjectListV2Serializer(ProjectListSerializer):
             if "code" in data:
                 data["code"] = None
         return data
+
+    def get_umbrella_code(self, obj: Project):
+        if obj.meta_project:
+            return obj.meta_project.umbrella_code
+        return ""
 
     def get_bp_activity(self, obj: Project):
         result = None

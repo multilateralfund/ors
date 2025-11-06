@@ -1,26 +1,23 @@
 'use client'
 
-import { useContext, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PListingFilters from '../ProjectsListing/PListingFilters'
 import PListingTable from '../ProjectsListing/PListingTable'
 import getColumnDefs from '../ProjectsListing/schema'
 import { SubmitButton } from '../HelperComponents'
-import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { useGetProjects } from '../hooks/useGetProjects'
 import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Typography } from '@mui/material'
-import { flatMap } from 'lodash'
 
 const ProjectsAssociateSelection = ({
   crtProjects = [],
-  projectsAssociation,
+  projectsForAssociation,
   associationIds,
   setAssociationIds,
   filters,
@@ -29,7 +26,7 @@ const ProjectsAssociateSelection = ({
   setMode,
 }: {
   crtProjects: ProjectTypeApi[]
-  projectsAssociation: ReturnType<typeof useGetProjectsAssociation>
+  projectsForAssociation: ReturnType<typeof useGetProjects>
   associationIds: number[]
   setAssociationIds: (ids: number[]) => void
   filters: any
@@ -38,33 +35,9 @@ const ProjectsAssociateSelection = ({
   setMode: (mode: string) => void
 }) => {
   const form = useRef<any>()
-
-  const { canAssociateProjects } = useContext(PermissionsContext)
-
-  const { results = [], setParams } = projectsAssociation
-
-  const formattedResults = results.map((result) => {
-    const formattedProjects = (result.projects || []).map(
-      (project, index, arr) => ({
-        ...project,
-        isFirst: index === 0,
-        isLast: index === arr.length - 1,
-        isOnly: arr.length === 1,
-      }),
-    )
-
-    return {
-      ...result,
-      projects: formattedProjects,
-    }
-  })
-
-  const projects = {
-    ...projectsAssociation,
-    results: flatMap(formattedResults, (entry) => entry.projects || []),
-  }
-
   const key = useMemo(() => JSON.stringify(filters), [filters])
+
+  const { setParams } = projectsForAssociation
 
   const { columnDefs, defaultColDef } = getColumnDefs('association')
 
@@ -95,28 +68,14 @@ const ProjectsAssociateSelection = ({
 
   return (
     <>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-1">
         <PageHeading className="min-w-fit">Associate projects</PageHeading>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <CustomLink
-            className="h-9 border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none"
-            color="primary"
-            href="/projects-listing/listing"
-            size="large"
-            variant="contained"
-            button
-          >
-            Cancel
-          </CustomLink>
-          {canAssociateProjects && (
-            <SubmitButton
-              title="Associate"
-              isDisabled={associationIds.length === 0}
-              onSubmit={associateProject}
-              className="h-9"
-            />
-          )}
-        </div>
+        <SubmitButton
+          title="Associate"
+          isDisabled={associationIds.length === 0}
+          onSubmit={associateProject}
+          className="h-9"
+        />
       </div>
       <p className="my-0 text-[22px]">Selected project(s)</p>
       <div>
@@ -124,7 +83,7 @@ const ProjectsAssociateSelection = ({
         {crtProjects.length > 1 && (
           <CustomAlert
             type="info"
-            alertClassName=" mt-4 px-2 py-0"
+            alertClassName="mt-4 px-2 py-0"
             content={
               <Typography className="text-lg leading-5">
                 Already associated projects or components will be associated as
@@ -151,7 +110,8 @@ const ProjectsAssociateSelection = ({
         </div>
         <PListingTable
           mode="association"
-          {...{ projects, filters, associationIds, setAssociationIds }}
+          projects={projectsForAssociation}
+          {...{ filters, associationIds, setAssociationIds }}
         />
       </form>
     </>

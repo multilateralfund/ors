@@ -48,7 +48,7 @@ export default function PListingAssociation({
     ...projectsAssociation,
     results: flatMap(formattedResults, (entry) => [
       {
-        title: 'Metaproject: ' + (entry.code ?? 'N/A'),
+        title: 'Metaproject: ' + (entry.umbrella_code ?? 'N/A'),
         isMetaproject: true,
       } as any as ProjectTypeApi,
       ...(entry.projects || []),

@@ -9,7 +9,6 @@ import { IoClose } from 'react-icons/io5'
 import { map } from 'lodash'
 
 export const initialParams = {
-  country_id: [],
   agency_id: [],
   cluster_id: [],
   project_type_id: [],
@@ -87,7 +86,7 @@ const ProjectsFiltersSelectedOpts = ({
 
   const currentInitialParams =
     mode === 'listing'
-      ? { ...initialParams, submission_status_id: [] }
+      ? { ...initialParams, submission_status_id: [], country_id: [] }
       : initialParams
 
   const displaySearchTerm = () =>

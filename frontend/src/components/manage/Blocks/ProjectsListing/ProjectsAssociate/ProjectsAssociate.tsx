@@ -3,50 +3,48 @@
 import { useEffect, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
-import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
+import { useGetProjects } from '../hooks/useGetProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
 
 import { debounce, find } from 'lodash'
-import { Box } from '@mui/material'
 import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
-  const initialProjectsAssociation = useRef<ReturnType<
-    typeof useGetProjectsAssociation
-  > | null>(null)
   const { project_id } = useParams<Record<string, string>>()
 
+  const initialProjectsAssociation = useRef<ReturnType<
+    typeof useGetProjects
+  > | null>(null)
+
   const [associationIds, setAssociationIds] = useState<number[]>([])
-  const [filters, setFilters] = useState({ ...initialFilters })
+  const [filters, setFilters] = useState<any>({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
-  const projectSlice = useStore((state) => state.projects)
-  const submissionStatuses = projectSlice.submission_statuses.data
+  // const projectSlice = useStore((state) => state.projects)
+  // const submissionStatuses = projectSlice.submission_statuses.data
 
-  const approvedStatus = find(
-    submissionStatuses,
-    (status) => status.name === 'Approved',
-  )
+  // const approvedStatus = find(
+  //   submissionStatuses,
+  //   (status) => status.name === 'Approved',
+  // )
 
-  const projectFilters = useGetProjectFilters({
+  const updatedFilters = {
     ...filters,
-    meta_project__isnull: false,
-  })
-  const projectsAssociation = useGetProjectsAssociation(
-    {
-      ...initialFilters,
-      limit: 50,
-      submission_status_id: approvedStatus?.id ?? null,
-    },
-    project_id,
-  )
-  const { loading, loaded } = projectsAssociation
+    submission_status_id: project.submission_status_id,
+    country_id: project.country_id,
+    exclude_projects: project_id,
+  }
+
+  const projectFilters = useGetProjectFilters(updatedFilters)
+  const projectsForAssociation = useGetProjects(updatedFilters)
+  const { loading, loaded, setParams } = projectsForAssociation
 
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
@@ -88,9 +86,17 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
 
   useEffect(() => {
     if (!initialProjectsAssociation.current && loaded) {
-      initialProjectsAssociation.current = projectsAssociation
+      initialProjectsAssociation.current = projectsForAssociation
     }
-  }, [projectsAssociation])
+  }, [projectsForAssociation])
+
+  const cancelAssociation = () => {
+    setMode('selection')
+    setAssociationIds([])
+    setFilters({ offset: 0, ...initialParams })
+    setParams({ ...initialFilters, ...initialParams })
+    projectFilters.setParams({ ...initialFilters, ...initialParams })
+  }
 
   return (
     <>
@@ -98,12 +104,12 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
         className="!fixed bg-action-disabledBackground"
         active={loading || !loadedAssociatedProjects}
       />
-      <Box className="my-2 flex flex-col gap-6 shadow-none">
+      <div className="flex flex-col gap-6">
         {mode === 'selection' ? (
           <ProjectsAssociateSelection
             crtProjects={crtProjectsSelection}
             {...{
-              projectsAssociation,
+              projectsForAssociation,
               associationIds,
               setAssociationIds,
               filters,
@@ -116,19 +122,17 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
           <ProjectsAssociateConfirmation
             projectsAssociation={
               initialProjectsAssociation.current as ReturnType<
-                typeof useGetProjectsAssociation
+                typeof useGetProjects
               >
             }
             crtProjects={crtProjectsConfirmation}
             {...{
               associationIds,
-              setAssociationIds,
-              setFilters,
-              setMode,
+              cancelAssociation,
             }}
           />
         )}
-      </Box>
+      </div>
     </>
   )
 }
