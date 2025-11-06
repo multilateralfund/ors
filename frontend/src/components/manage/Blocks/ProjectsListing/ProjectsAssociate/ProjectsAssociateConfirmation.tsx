@@ -3,6 +3,7 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import ViewTable from '@ors/components/manage/Form/ViewTable'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -15,34 +16,132 @@ import { SubmitButton } from '../HelperComponents'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
-import { defaultProps, initialFilters } from '../constants'
+import { getFormattedDate, getFormattedNumericValue } from '../utils'
+import {
+  defaultProps,
+  initialFilters,
+  metaProjectSelectionFields,
+} from '../constants'
 import useApi from '@ors/hooks/useApi'
 import { api } from '@ors/helpers'
 
-import { Button, Typography } from '@mui/material'
+import { Button, Checkbox, Typography } from '@mui/material'
 import { debounce, filter, map } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+
+type MetaProjectType = {
+  metaproject_id: number | null
+  lead_agency_id: number | null
+}
 
 const MetaProjectSelection = ({
   crtProjects,
   associatedProjects,
+  metaProjectData,
+  setMetaProjectData,
 }: {
   crtProjects: ProjectTypeApi[]
   associatedProjects: ProjectTypeApi[]
+  metaProjectData: MetaProjectType
+  setMetaProjectData: (metaProjectData: MetaProjectType) => void
 }) => {
-  const { data: firstMetaproject, loading: firstMetaprojectLoading } = useApi({
-    options: {},
-    path: `api/meta-projects/${crtProjects[0].meta_project_id}`,
-  })
+  const { data: firstMetaproject = {}, loading: firstMetaprojectLoading } =
+    useApi({
+      options: {
+        withStoreCache: false,
+      },
+      path: `api/meta-projects/${crtProjects[0].meta_project_id}`,
+    })
 
-  const { data: secondMetaproject, loading: secondMetaprojectLoading } = useApi(
-    {
-      options: {},
+  const { data: secondMetaproject = {}, loading: secondMetaprojectLoading } =
+    useApi({
+      options: {
+        withStoreCache: false,
+      },
       path: `api/meta-projects/${associatedProjects[0].meta_project_id}`,
+    })
+
+  const loading = firstMetaprojectLoading || secondMetaprojectLoading
+
+  const metaProjects = [firstMetaproject, secondMetaproject].map(
+    (metaProject, index) => {
+      const umbrella_code = metaProject.umbrella_code ?? 'N/A'
+      const project_code =
+        index === 0
+          ? (crtProjects[0].code ?? crtProjects[0].code_legacy)
+          : (associatedProjects[0].code ?? associatedProjects[0].code_legacy)
+      const lead_agency_name = metaProject.lead_agency
+        ? metaProject.lead_agency.name
+        : '-'
+      const computedData = metaProject.computed_field_data || {}
+
+      return {
+        ...metaProject,
+        umbrella_code,
+        project_code,
+        lead_agency_name,
+        start_date: getFormattedDate(computedData.start_date),
+        end_date: getFormattedDate(computedData.end_date),
+        project_funding: getFormattedNumericValue(computedData.project_funding),
+        support_cost: getFormattedNumericValue(computedData.support_cost),
+      }
     },
   )
 
-  const loading = firstMetaprojectLoading || secondMetaprojectLoading
+  const rowData = metaProjectSelectionFields.map((field) => ({
+    label: field.label,
+    ...Object.fromEntries(
+      metaProjects.map((metaProject) => [
+        metaProject.id,
+        {
+          label: field.label,
+          value: metaProject[field.key],
+        },
+      ]),
+    ),
+  }))
+
+  const MetaProjectHeader = ({
+    metaProject: { id, project_code, lead_agency },
+  }: {
+    metaProject: {
+      id: number
+      project_code: string
+      lead_agency: { id: number | null }
+    }
+  }) => (
+    <div>
+      <Checkbox
+        checked={id === metaProjectData.metaproject_id}
+        onChange={(event) => {
+          const isChecked = event.target.checked
+
+          setMetaProjectData({
+            metaproject_id: isChecked ? id : null,
+            lead_agency_id: isChecked ? (lead_agency?.id ?? null) : null,
+          })
+        }}
+        sx={{ color: 'inherit', '&.Mui-checked': { color: 'inherit' } }}
+      />
+      {project_code}
+    </div>
+  )
+
+  const columnDefs = [
+    ...metaProjects.map((metaProject) => ({
+      headerComponent: MetaProjectHeader,
+      headerComponentParams: { metaProject },
+      field: String(metaProject.id),
+      cellRenderer: (params: any) => {
+        const { label, value } = params.value || {}
+        return (
+          <span>
+            <span className="font-bold">{label}:</span> {value}
+          </span>
+        )
+      },
+    })),
+  ]
 
   return (
     <>
@@ -50,7 +149,28 @@ const MetaProjectSelection = ({
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!loading && <div></div>}
+      {!loading && (
+        <div className="mt-5 max-w-[500px]">
+          <ViewTable
+            domLayout="normal"
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={{
+              headerClass: 'pl-0',
+              cellClass: 'ag-cell-ellipsed',
+              minWidth: 150,
+              resizable: false,
+              sortable: false,
+            }}
+            suppressScrollOnNewData={true}
+            resizeGridOnRowUpdate={true}
+            components={{
+              agColumnHeader: undefined,
+              agTextCellRenderer: undefined,
+            }}
+          />
+        </div>
+      )}
     </>
   )
 }
@@ -69,6 +189,10 @@ const ProjectsAssociateConfirmation = ({
   const form = useRef<any>()
   const { agencies } = useContext(ProjectsDataContext)
 
+  const [metaProjectData, setMetaProjectData] = useState<MetaProjectType>({
+    metaproject_id: null,
+    lead_agency_id: null,
+  })
   const [errors, setErrors] = useState(null)
   const [finalMetaCode, setFinalMetaCode] = useState(null)
   const [association, setAssociation] = useState<AssociatedProjectsType>({
@@ -115,7 +239,7 @@ const ProjectsAssociateConfirmation = ({
         ? [associatedProjLeadAgencyId]
         : isAssociatedProjIndiv
           ? [originalProjLeadAgencyId]
-          : []),
+          : [metaProjectData.lead_agency_id]),
   ]
 
   const leadAgencyOpts = filter(agencies, ({ id }) =>
@@ -148,6 +272,7 @@ const ProjectsAssociateConfirmation = ({
         data: {
           projects_to_associate: map(projects.results, 'id'),
           lead_agency_id: leadAgencyId,
+          meta_project_id: metaProjectData.metaproject_id,
         },
         method: 'POST',
       })
@@ -239,6 +364,7 @@ const ProjectsAssociateConfirmation = ({
           widget="autocomplete"
           options={leadAgencyOpts}
           value={leadAgencyId}
+          disableClearable={leadAgencyOpts.length === 1}
           onChange={(_, value: any) => {
             setLeadAgencyId(value?.id ?? null)
           }}
@@ -246,9 +372,17 @@ const ProjectsAssociateConfirmation = ({
           {...fieldProps}
         />
         {loadedAssociatedProjects && !onlyIndivProjects && (
-          <MetaProjectSelection {...{ crtProjects, associatedProjects }} />
+          <MetaProjectSelection
+            {...{
+              crtProjects,
+              associatedProjects,
+              metaProjectData,
+              setMetaProjectData,
+            }}
+          />
         )}
       </div>
+      <p className="my-0 text-[22px]">Projects for association:</p>
       <form className="flex flex-col gap-6" ref={form}>
         <PListingTable
           mode="association"

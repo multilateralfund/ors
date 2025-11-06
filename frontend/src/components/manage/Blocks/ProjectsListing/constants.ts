@@ -207,3 +207,12 @@ export const enabledButtonClassname =
 export const dropDownClassName =
   'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
 export const dropdownItemClassname = 'bg-transparent font-medium normal-case'
+
+export const metaProjectSelectionFields = [
+  { label: 'Umbrella project', key: 'umbrella_code' },
+  { label: 'Lead agency', key: 'lead_agency_name' },
+  { label: 'Start date (MYA)', key: 'start_date' },
+  { label: 'End date (MYA)', key: 'end_date' },
+  { label: 'Project funding (MYA)', key: 'project_funding' },
+  { label: 'PSC (MYA)', key: 'support_cost' },
+]

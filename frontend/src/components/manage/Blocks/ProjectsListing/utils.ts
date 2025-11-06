@@ -978,3 +978,12 @@ export const formatFieldsHistory = (
             : 'No'
           : historyItem.value,
   }))
+
+export const getFormattedDate = (value: string) =>
+  value ? dayjs(value).format('DD/MM/YYYY') : '-'
+
+export const getFormattedNumericValue = (value: string) =>
+  formatDecimalValue(parseFloat(value), {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  })
