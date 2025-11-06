@@ -203,7 +203,7 @@ class ProjectsV2ProjectExportDocx:
 
     def build_related_tranches(self):
         table = self.find_table("Related tranches (metacode and linked projects)")
-        if table:
+        if table and self.project.meta_project:
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
             )
@@ -307,7 +307,8 @@ class ProjectsV2ProjectExportDocx:
 
     def build_impact_previous_tranches(self):
         table = self.find_table("Impact (previous MYA tranches) If applicable")
-        if table and self.project.tranche:
+        if table and self.project.tranche and self.project.meta_project:
+            #TODO: should redefine what previous tranches are
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
                 # tranche__lt=self.project.tranche,

@@ -153,6 +153,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "title",
         "code",
         "meta_project__umbrella_code",
+        "metacode",
     ]
     list_filter = [
         LatestProjectVersionsFilter,
