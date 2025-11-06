@@ -147,8 +147,8 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
     def get_region(self, obj):
         return self.context["country_region_dict"].get(obj.country_id)
 
-    def _get_values_dict(self, obj, data_type, sector_name, value):
-        if not value:
+    def _get_values_dict(self, obj, data_type, sector_name, value, skip_empty=True):
+        if not value and skip_empty:
             return []
 
         ret_data = [
@@ -209,7 +209,16 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
             "manufacturing_blends",
         ]:
             attr_value = getattr(obj, attribute)
-            metric_list.extend(self._get_values_dict(obj, attribute, "", attr_value))
+            metric_list.extend(
+                self._get_values_dict(
+                    obj,
+                    attribute,
+                    "",
+                    attr_value,
+                    # Empty values are OK here - https://helpdesk.eaudeweb.ro/issues/33217
+                    skip_empty=False,
+                )
+            )
         return metric_list
 
     def get_data(self, obj):
