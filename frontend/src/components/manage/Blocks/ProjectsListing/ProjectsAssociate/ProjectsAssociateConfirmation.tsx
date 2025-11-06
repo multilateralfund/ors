@@ -117,7 +117,7 @@ const MetaProjectSelection = ({
         checked={id === metaProjectData.metaproject_id}
         onChange={(event) => {
           const isChecked = event.target.checked
-          const leadAgencyId = isChecked ? (lead_agency?.id ?? null) : null
+          const leadAgencyId = lead_agency?.id ?? null
 
           setMetaProjectData({
             metaproject_id: isChecked ? id : null,
