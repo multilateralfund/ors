@@ -228,9 +228,12 @@ const ProjectsAssociateConfirmation = ({
     results: [...crtProjects, ...associatedProjects],
   }
 
-  const isOriginalProjIndiv = crtProjects.length === 1
-  const isAssociatedProjIndiv = associatedProjects.length === 1
+  const isOriginalProjIndiv = !crtProjects[0].meta_project_id
+  const isAssociatedProjIndiv =
+    associatedProjects.length > 0 && !associatedProjects[0].meta_project_id
   const onlyMetaProjects = !(isOriginalProjIndiv || isAssociatedProjIndiv)
+
+  const [leadAgencyId, setLeadAgencyId] = useState<number | null>(null)
 
   const originalProjLeadAgencyId = crtProjects[0].lead_agency
   const associatedProjLeadAgencyId = loadedAssociatedProjects
@@ -244,23 +247,18 @@ const ProjectsAssociateConfirmation = ({
         ? [associatedProjLeadAgencyId]
         : isAssociatedProjIndiv
           ? [originalProjLeadAgencyId]
-          : map(agencies, 'id')),
+          : []),
   ]
 
   const leadAgencyOpts = filter(agencies, ({ id }) =>
     leadAgencyIds.includes(id),
   )
 
-  const formattedLeadAgencyOpts =
-    leadAgencyOpts.length === 0 ? agencies : leadAgencyOpts
-
-  const [leadAgencyId, setLeadAgencyId] = useState<number | null>(null)
-
   useEffect(() => {
-    if (loadedAssociatedProjects && formattedLeadAgencyOpts.length === 1) {
-      setLeadAgencyId(formattedLeadAgencyOpts[0].id)
+    if (loadedAssociatedProjects && leadAgencyOpts.length === 1) {
+      setLeadAgencyId(leadAgencyOpts[0].id)
     }
-  }, [formattedLeadAgencyOpts])
+  }, [loadedAssociatedProjects, leadAgencyOpts])
 
   const fieldProps = {
     ...defaultProps,
@@ -375,15 +373,12 @@ const ProjectsAssociateConfirmation = ({
         <Label>Lead agency</Label>
         <Field
           widget="autocomplete"
-          options={formattedLeadAgencyOpts}
+          options={agencies}
           value={leadAgencyId}
-          disableClearable={formattedLeadAgencyOpts.length === 1}
           onChange={(_, value: any) => {
             setLeadAgencyId(value?.id ?? null)
           }}
-          getOptionLabel={(option) =>
-            getOptionLabel(formattedLeadAgencyOpts, option)
-          }
+          getOptionLabel={(option) => getOptionLabel(agencies, option)}
           {...fieldProps}
         />
         {loadedAssociatedProjects && onlyMetaProjects && (
