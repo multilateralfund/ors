@@ -18,6 +18,7 @@ def setup_metaprojects_list(_setup_project_list):
         type=MetaProject.MetaProjectType.MYA,
     )
     for project in _setup_project_list:
+        project.category = Project.Category.MYA
         project.lead_agency = project.agency
         project.meta_project = meta_project
         project.save()
