@@ -347,7 +347,7 @@ const ProjectsAssociateConfirmation = ({
               }
             />
           )}
-        {loadedAssociatedProjects && !onlyMetaProjects && (
+        {loadedAssociatedProjects && onlyMetaProjects && (
           <CustomAlert
             type="info"
             alertClassName="mb-2 px-2 py-0"
@@ -373,7 +373,7 @@ const ProjectsAssociateConfirmation = ({
           getOptionLabel={(option) => getOptionLabel(leadAgencyOpts, option)}
           {...fieldProps}
         />
-        {loadedAssociatedProjects && !onlyMetaProjects && (
+        {loadedAssociatedProjects && onlyMetaProjects && (
           <MetaProjectSelection
             {...{
               crtProjects,
