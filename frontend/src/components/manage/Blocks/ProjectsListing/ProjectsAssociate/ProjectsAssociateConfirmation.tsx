@@ -258,7 +258,7 @@ const ProjectsAssociateConfirmation = ({
     if (loadedAssociatedProjects && leadAgencyOpts.length === 1) {
       setLeadAgencyId(leadAgencyOpts[0].id)
     }
-  }, [loadedAssociatedProjects, leadAgencyOpts])
+  }, [loadedAssociatedProjects])
 
   const fieldProps = {
     ...defaultProps,
