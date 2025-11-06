@@ -156,6 +156,7 @@ const MetaProjectSelection = ({
       {!loading && (
         <div className="mt-5 max-w-[600px]">
           <ViewTable
+            className="metaproject-selection-table"
             domLayout="normal"
             rowData={rowData}
             columnDefs={columnDefs}
@@ -259,7 +260,7 @@ const ProjectsAssociateConfirmation = ({
     if (loadedAssociatedProjects && formattedLeadAgencyOpts.length === 1) {
       setLeadAgencyId(formattedLeadAgencyOpts[0].id)
     }
-  }, [leadAgencyOpts])
+  }, [formattedLeadAgencyOpts])
 
   const fieldProps = {
     ...defaultProps,
@@ -374,13 +375,15 @@ const ProjectsAssociateConfirmation = ({
         <Label>Lead agency</Label>
         <Field
           widget="autocomplete"
-          options={leadAgencyOpts}
+          options={formattedLeadAgencyOpts}
           value={leadAgencyId}
-          disableClearable={leadAgencyOpts.length === 1}
+          disableClearable={formattedLeadAgencyOpts.length === 1}
           onChange={(_, value: any) => {
             setLeadAgencyId(value?.id ?? null)
           }}
-          getOptionLabel={(option) => getOptionLabel(leadAgencyOpts, option)}
+          getOptionLabel={(option) =>
+            getOptionLabel(formattedLeadAgencyOpts, option)
+          }
           {...fieldProps}
         />
         {loadedAssociatedProjects && onlyMetaProjects && (
