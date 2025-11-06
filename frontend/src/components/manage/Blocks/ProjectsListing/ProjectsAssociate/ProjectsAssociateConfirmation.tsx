@@ -225,7 +225,7 @@ const ProjectsAssociateConfirmation = ({
 
   const isOriginalProjIndiv = crtProjects.length === 1
   const isAssociatedProjIndiv = associatedProjects.length === 1
-  const onlyMetaProjects = !(isOriginalProjIndiv || isOriginalProjIndiv)
+  const onlyMetaProjects = !(isOriginalProjIndiv || isAssociatedProjIndiv)
 
   const originalProjLeadAgencyId = crtProjects[0].lead_agency
   const associatedProjLeadAgencyId = loadedAssociatedProjects
@@ -233,7 +233,7 @@ const ProjectsAssociateConfirmation = ({
     : null
 
   const leadAgencyIds: (number | null)[] = [
-    ...(isOriginalProjIndiv && isOriginalProjIndiv
+    ...(isOriginalProjIndiv && isAssociatedProjIndiv
       ? [originalProjLeadAgencyId, associatedProjLeadAgencyId]
       : isOriginalProjIndiv
         ? [associatedProjLeadAgencyId]
