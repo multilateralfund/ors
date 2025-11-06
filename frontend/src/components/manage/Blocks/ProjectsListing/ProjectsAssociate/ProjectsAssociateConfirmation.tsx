@@ -321,7 +321,11 @@ const ProjectsAssociateConfirmation = ({
               isDisabled={
                 !(leadAgencyId && loadedAssociatedProjects) ||
                 !!finalMetaCode ||
-                (onlyMetaProjects && !metaProjectData.metaproject_id)
+                (onlyMetaProjects &&
+                  !(
+                    !!metaProjectData.metaproject_id &&
+                    !!metaProjectData.lead_agency_id
+                  ))
               }
               onSubmit={associateProjects}
               className="h-9"
