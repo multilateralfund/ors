@@ -5,14 +5,16 @@ import App from './App.tsx'
 import { loadRuntimeConfig } from './config/base'
 import { initializeSentry } from './instrumentation'
 
+createRoot(document.getElementById('main')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
 loadRuntimeConfig()
   .then(() => {
     initializeSentry()
   })
-  .finally(() => {
-    createRoot(document.getElementById('main')!).render(
-      <StrictMode>
-        <App />
-      </StrictMode>,
-    )
+  .catch(err => {
+    console.warn('Failed to initialize Sentry:', err)
   })
