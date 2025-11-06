@@ -225,7 +225,7 @@ const ProjectsAssociateConfirmation = ({
 
   const isOriginalProjIndiv = crtProjects.length === 1
   const isAssociatedProjIndiv = associatedProjects.length === 1
-  const onlyIndivProjects = isOriginalProjIndiv && isOriginalProjIndiv
+  const onlyMetaProjects = !(isOriginalProjIndiv || isOriginalProjIndiv)
 
   const originalProjLeadAgencyId = crtProjects[0].lead_agency
   const associatedProjLeadAgencyId = loadedAssociatedProjects
@@ -233,7 +233,7 @@ const ProjectsAssociateConfirmation = ({
     : null
 
   const leadAgencyIds: (number | null)[] = [
-    ...(onlyIndivProjects
+    ...(isOriginalProjIndiv && isOriginalProjIndiv
       ? [originalProjLeadAgencyId, associatedProjLeadAgencyId]
       : isOriginalProjIndiv
         ? [associatedProjLeadAgencyId]
@@ -347,7 +347,7 @@ const ProjectsAssociateConfirmation = ({
               }
             />
           )}
-        {loadedAssociatedProjects && !onlyIndivProjects && (
+        {loadedAssociatedProjects && !onlyMetaProjects && (
           <CustomAlert
             type="info"
             alertClassName="mb-2 px-2 py-0"
@@ -373,7 +373,7 @@ const ProjectsAssociateConfirmation = ({
           getOptionLabel={(option) => getOptionLabel(leadAgencyOpts, option)}
           {...fieldProps}
         />
-        {loadedAssociatedProjects && !onlyIndivProjects && (
+        {loadedAssociatedProjects && !onlyMetaProjects && (
           <MetaProjectSelection
             {...{
               crtProjects,
