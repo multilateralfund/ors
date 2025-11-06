@@ -157,12 +157,12 @@ const MetaProjectSelection = ({
         <div className="mt-5 max-w-[600px]">
           <ViewTable
             className="metaproject-selection-table"
-            domLayout="normal"
+            domLayout="autoHeight"
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={{
               headerClass: 'pl-0 ag-header-cell-ellipsed',
-              cellClass: 'ag-cell-ellipsed',
+              cellClass: 'ag-cell-ellipsed !pl-2',
               minWidth: 150,
               resizable: false,
               sortable: false,
