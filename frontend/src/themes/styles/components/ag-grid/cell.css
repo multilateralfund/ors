@@ -1,5 +1,12 @@
 /* stylelint-disable no-descending-specificity */
 .ag-table {
+  .ag-header-cell.ag-header-cell-ellipsed {
+    div div {
+      @apply block overflow-hidden text-ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   .ag-cell {
     @apply flex items-center justify-center;
 

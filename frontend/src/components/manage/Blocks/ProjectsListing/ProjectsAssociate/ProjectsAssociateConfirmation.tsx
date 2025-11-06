@@ -39,11 +39,13 @@ const MetaProjectSelection = ({
   associatedProjects,
   metaProjectData,
   setMetaProjectData,
+  setLeadAgencyId,
 }: {
   crtProjects: ProjectTypeApi[]
   associatedProjects: ProjectTypeApi[]
   metaProjectData: MetaProjectType
   setMetaProjectData: (metaProjectData: MetaProjectType) => void
+  setLeadAgencyId: (leadAgencyId: number | null) => void
 }) => {
   const { data: firstMetaproject = {}, loading: firstMetaprojectLoading } =
     useApi({
@@ -110,20 +112,22 @@ const MetaProjectSelection = ({
       lead_agency: { id: number | null }
     }
   }) => (
-    <div>
+    <div className="flex items-center">
       <Checkbox
         checked={id === metaProjectData.metaproject_id}
         onChange={(event) => {
           const isChecked = event.target.checked
+          const leadAgencyId = isChecked ? (lead_agency?.id ?? null) : null
 
           setMetaProjectData({
             metaproject_id: isChecked ? id : null,
-            lead_agency_id: isChecked ? (lead_agency?.id ?? null) : null,
+            lead_agency_id: leadAgencyId,
           })
+          setLeadAgencyId(leadAgencyId)
         }}
         sx={{ color: 'inherit', '&.Mui-checked': { color: 'inherit' } }}
       />
-      {project_code}
+      <div>{project_code}</div>
     </div>
   )
 
@@ -150,13 +154,13 @@ const MetaProjectSelection = ({
         active={loading}
       />
       {!loading && (
-        <div className="mt-5 max-w-[500px]">
+        <div className="mt-5 max-w-[600px]">
           <ViewTable
             domLayout="normal"
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={{
-              headerClass: 'pl-0',
+              headerClass: 'pl-0 ag-header-cell-ellipsed',
               cellClass: 'ag-cell-ellipsed',
               minWidth: 150,
               resizable: false,
@@ -239,7 +243,7 @@ const ProjectsAssociateConfirmation = ({
         ? [associatedProjLeadAgencyId]
         : isAssociatedProjIndiv
           ? [originalProjLeadAgencyId]
-          : [metaProjectData.lead_agency_id]),
+          : map(agencies, 'id')),
   ]
 
   const leadAgencyOpts = filter(agencies, ({ id }) =>
@@ -315,7 +319,9 @@ const ProjectsAssociateConfirmation = ({
             <SubmitButton
               title="Submit"
               isDisabled={
-                !(leadAgencyId && loadedAssociatedProjects) || !!finalMetaCode
+                !(leadAgencyId && loadedAssociatedProjects) ||
+                !!finalMetaCode ||
+                (onlyMetaProjects && !metaProjectData.metaproject_id)
               }
               onSubmit={associateProjects}
               className="h-9"
@@ -380,6 +386,7 @@ const ProjectsAssociateConfirmation = ({
               associatedProjects,
               metaProjectData,
               setMetaProjectData,
+              setLeadAgencyId,
             }}
           />
         )}
