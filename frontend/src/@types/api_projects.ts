@@ -182,6 +182,7 @@ export type ProjectAssociationType = {
   type: string
   code: string
   pcr_project_id: string
+  umbrella_code: string
   projects: ProjectType[]
 }
 
