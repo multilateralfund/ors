@@ -272,7 +272,9 @@ const ProjectsAssociateConfirmation = ({
         data: {
           projects_to_associate: map(projects.results, 'id'),
           lead_agency_id: leadAgencyId,
-          meta_project_id: metaProjectData.metaproject_id,
+          ...(!!metaProjectData.metaproject_id
+            ? { meta_project_id: metaProjectData.metaproject_id }
+            : {}),
         },
         method: 'POST',
       })
