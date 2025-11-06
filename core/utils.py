@@ -146,15 +146,21 @@ def post_approval_changes(project):
     project.save()
 
     # create meta project (if required)
-    if not project.component:
-        return
-
-    meta_project = MetaProject.objects.filter(
-        projects__component=project.component
-    ).first()
-    if not meta_project:
+    if project.component:
+        meta_project = MetaProject.objects.filter(
+            projects__component=project.component
+        ).first()
+        if not meta_project:
+            meta_project = MetaProject.objects.create(
+                umbrella_code=get_umbrella_code(project.country), type=project.category
+            )
+        project.meta_project = meta_project
+        project.save()
+    elif project.category == Project.Category.MYA:
+        # MYA projects must have a meta project to allow the update of the MYA fields
         meta_project = MetaProject.objects.create(
-            umbrella_code=get_umbrella_code(project.country), type=project.project_type
+            umbrella_code=get_umbrella_code(project.country), type=project.category
         )
-    project.meta_project = meta_project
-    project.save()
+        project.meta_project = meta_project
+        project.save()
+    return project
