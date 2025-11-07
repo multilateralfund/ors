@@ -79,7 +79,7 @@ const ProjectsAssociateSelection = ({
       <p className="my-0 text-[22px]">Selected project(s)</p>
       <div>
         {selectedProjectData}
-        {!!crtProjects[0].meta_project_id && (
+        {crtProjects.length > 1 && (
           <CustomAlert
             type="info"
             alertClassName="mt-4 px-2 py-0"
