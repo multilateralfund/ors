@@ -95,8 +95,8 @@ const ProjectsCreate = ({
     loadedFiles?: boolean
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
-    metaProjectId: number | null
-    setMetaProjectId: (id: number | null) => void
+    metaProjectId?: number | null
+    setMetaProjectId?: (id: number | null) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 

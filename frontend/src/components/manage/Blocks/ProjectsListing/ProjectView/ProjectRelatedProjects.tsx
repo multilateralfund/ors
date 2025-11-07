@@ -23,8 +23,8 @@ const ProjectRelatedProjects = ({
 }: ProjectTabSetters & {
   project: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
-  metaProjectId: number | null
-  setMetaProjectId: (id: number | null) => void
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
   postExcomUpdate?: boolean
 }) => {
   const { canDisassociateProjects } = useContext(PermissionsContext)

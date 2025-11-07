@@ -9,7 +9,7 @@ import { enqueueSnackbar } from 'notistack'
 import { useParams } from 'wouter'
 
 type RemoveAssociationProps = {
-  setMetaProjectId: (id: number | null) => void
+  setMetaProjectId?: (id: number | null) => void
 }
 
 const RemoveAssociationModal = ({
@@ -34,7 +34,7 @@ const RemoveAssociationModal = ({
         },
       )
 
-      setMetaProjectId(result.meta_project_id)
+      setMetaProjectId?.(result.meta_project_id)
       enqueueSnackbar(<>Project association removed successfully.</>, {
         variant: 'success',
       })
