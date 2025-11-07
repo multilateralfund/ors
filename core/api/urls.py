@@ -137,7 +137,6 @@ from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorV
 from core.api.views.settings import (
     ProjectSettingsView,
     SettingsView,
-    FrontendSettingsView,
 )
 from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
@@ -287,11 +286,6 @@ urlpatterns = [
         "project-settings/",
         ProjectSettingsView.as_view(),
         name="project-settings",
-    ),
-    path(
-        "frontend-settings/",
-        FrontendSettingsView.as_view(),
-        name="frontend-settings",
     ),
     path(
         "agencies/",

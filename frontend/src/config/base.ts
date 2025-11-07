@@ -34,23 +34,4 @@ const baseConfig: BaseConfig = {
   }
 }
 
-export async function loadRuntimeConfig() {
-  try {
-    const response = await fetch(`${apiPath}/api/frontend-settings/`)
-    if (response.ok) {
-      const runtimeConfig = await response.json()
-
-      // Merging runtime config (which takes precedence over build-time)
-      if (runtimeConfig.sentry) {
-        baseConfig.sentry = {
-          dsn: runtimeConfig.sentry.dsn || baseConfig.sentry?.dsn,
-          environment: runtimeConfig.sentry.environment || baseConfig.sentry?.environment || 'staging',
-        }
-      }
-    }
-  } catch (error) {
-    console.warn('Could not fetch runtime config, using build-time defaults')
-  }
-}
-
 export default baseConfig
