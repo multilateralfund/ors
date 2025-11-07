@@ -57,3 +57,6 @@ jobs:
           file: ${{ matrix.dockerfile }}
           tags: ${{ matrix.image }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_PUBLIC_SENTRY_DSN=${{ vars.SENTRY_DSN }}
+            VITE_PUBLIC_SENTRY_ENVIRONMENT=${{ vars.SENTRY_ENVIRONMENT }}

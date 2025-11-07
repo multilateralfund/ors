@@ -9,6 +9,13 @@ COPY frontend/package-lock.json .
 RUN npm install
 
 COPY frontend/ .
+
+ARG VITE_PUBLIC_SENTRY_DSN=""
+ARG VITE_PUBLIC_SENTRY_ENVIRONMENT="production"
+
+ENV VITE_PUBLIC_SENTRY_DSN=$VITE_PUBLIC_SENTRY_DSN
+ENV VITE_PUBLIC_SENTRY_ENVIRONMENT=$VITE_PUBLIC_SENTRY_ENVIRONMENT
+
 RUN npm run build
 
 COPY docker/entrypoint-nextjs.sh /usr/local/bin/entrypoint.sh
