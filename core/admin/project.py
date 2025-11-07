@@ -152,18 +152,18 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = [
         "title",
         "code",
-        "meta_project__umbrella_code",
         "metacode",
+        "meta_project__umbrella_code",
     ]
     list_filter = [
         LatestProjectVersionsFilter,
         AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory("sector", "sector"),
         AutocompleteFilterFactory("subsectors", "subsectors"),
-        AutocompleteFilterFactory("project_type", "project_type"),
+        AutocompleteFilterFactory("project type", "project_type"),
         AutocompleteFilterFactory("cluster", "cluster"),
         AutocompleteFilterFactory("country", "country"),
-        AutocompleteFilterFactory("latest_project", "latest_project"),
+        AutocompleteFilterFactory("latest project", "latest_project"),
         "substance_type",
         "meta_project__type",
         "status",
