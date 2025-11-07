@@ -15,6 +15,7 @@ from core.models.project_metadata import (
 
 from core.api.views.utils import log_project_history
 
+
 class ProjectSendBackToDraftMixin:
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(

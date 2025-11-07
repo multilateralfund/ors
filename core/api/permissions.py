@@ -375,12 +375,14 @@ class HasProjectV2AssociateProjectsAccess(permissions.BasePermission):
         """
         return request.user.has_perm("core.has_project_v2_associate_projects_access")
 
+
 class HasProjectV2RemoveAssociationAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
         Check if the user has permission to remove project associations in Project V2.
         """
         return request.user.has_perm("core.has_project_v2_remove_association_access")
+
 
 class HasBusinessPlanEditAccess(permissions.BasePermission):
     def has_permission(self, request, view):

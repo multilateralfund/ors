@@ -132,6 +132,7 @@ class ProjectOdsOdpTypeView(APIView):
 
 # pylint: disable=R1710
 
+
 class ProjectV2ViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
@@ -212,7 +213,7 @@ class ProjectV2ViewSet(
         if self.action == "associate_projects":
             return [HasProjectV2AssociateProjectsAccess]
         if self.action == "remove_association":
-            return [HasProjectV2RemoveAssociationAccess]    
+            return [HasProjectV2RemoveAssociationAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [HasProjectV2RecommendAccess]
         if self.action in ["approve", "reject", "edit_approval_fields"]:
@@ -538,6 +539,7 @@ class ProjectV2ViewSet(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
         )
+
 
 class ProjectV2FileView(
     ProjectFileCreateMixin,

@@ -556,10 +556,9 @@ class TestProjectListAssocitatedProjects:
 
         _test_user_permissions(user, 403)
         _test_user_permissions(viewer_user, 403)
-        _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
-        _test_user_permissions(agency)
         _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
         _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
         _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
         _test_user_permissions(secretariat_v3_edit_access_user, 200)
@@ -574,7 +573,7 @@ class TestProjectListAssocitatedProjects:
     ):
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-remove-association", args=(project.id,))
-        agency = AgencyFactory.create(code="TESTAG")
+        agency = AgencyFactory.create(code="Test agency 1")
         # associate project
         project.meta_project = project2.meta_project
         project.lead_agency = agency

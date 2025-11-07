@@ -9,6 +9,7 @@ from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import Project
 from core.models.project_metadata import ProjectSpecificFields
 
+
 class ProjectListPreviousTranchesMixin:
     @swagger_auto_schema(
         manual_parameters=[
@@ -92,31 +93,30 @@ class ProjectListPreviousTranchesMixin:
                 ).first()
                 errors = []
                 warnings = []
-                if specific_field:
-                    # at least one actual field should be filled
-                    fields = specific_field.fields.filter(is_actual=True)
-                    if fields.exists():
-                        one_field_filled = False
-                        for field in fields:
-                            if (
-                                getattr(previous_tranche, field.read_field_name)
-                                is not None
-                            ):
-                                one_field_filled = True
-                            else:
-                                warnings.append(
-                                    {
-                                        "field": field.read_field_name,
-                                        "message": f"{field.label} is not filled.",
-                                    }
-                                )
-                        if not one_field_filled:
-                            errors.append(
+                if (
+                    specific_field
+                    and (
+                        fields := specific_field.fields.filter(is_actual=True)
+                    ).exists()
+                ):
+                    one_field_filled = False
+                    for field in fields:
+                        if getattr(previous_tranche, field.read_field_name) is not None:
+                            one_field_filled = True
+                        else:
+                            warnings.append(
                                 {
-                                    "field": "fields",
-                                    "message": "At least one actual indicator should be filled.",
+                                    "field": field.read_field_name,
+                                    "message": f"{field.label} is not filled.",
                                 }
                             )
+                    if not one_field_filled:
+                        errors.append(
+                            {
+                                "field": "fields",
+                                "message": "At least one actual indicator should be filled.",
+                            }
+                        )
                 serializer_data["warnings"] = warnings
                 serializer_data["errors"] = errors
                 data.append(serializer_data)

@@ -1,4 +1,3 @@
-
 from constance import config
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -18,6 +17,7 @@ from core.models.project import Project
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.tasks import send_project_submission_notification
 from core.api.views.utils import log_project_history
+
 
 class ProjectSubmitMixin:
     @action(methods=["POST"], detail=True)

@@ -2,7 +2,6 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -99,8 +98,6 @@ class ProjectAssociationMixin:
     @swagger_auto_schema(
         operation_description="""
         Receives a project id and removes it from its meta project association.
-        If the meta project has no more associated projects after removal,
-        it will be deleted.
         """,
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
         responses={
@@ -116,13 +113,9 @@ class ProjectAssociationMixin:
                 {"error": "Project is not associated with any meta project."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-        meta_project = project.meta_project
+
         project.meta_project = None
         project.save()
-
-        if not meta_project.projects.exists():
-            meta_project.delete()
 
         return Response(
             ProjectDetailsV2Serializer(project).data,
@@ -242,4 +235,3 @@ class ProjectAssociationMixin:
             ).data,
             status=status.HTTP_200_OK,
         )
-

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from core.models.project import ProjectFile
 
+
 class ProjectFileCreateMixin:
     ACCEPTED_EXTENSIONS = [
         ".pdf",
@@ -68,4 +69,3 @@ class ProjectFileCreateMixin:
             )
         ProjectFile.objects.bulk_create(project_files)
         return Response({}, status=status.HTTP_201_CREATED)
-

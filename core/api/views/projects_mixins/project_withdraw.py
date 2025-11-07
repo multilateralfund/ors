@@ -12,6 +12,7 @@ from core.api.serializers.project_v2 import (
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.api.views.utils import log_project_history
 
+
 class ProjectWithdrawMixin:
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(

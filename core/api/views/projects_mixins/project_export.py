@@ -7,6 +7,7 @@ from core.api.views.projects_export import ProjectsV2Export
 from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
 from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
 
+
 class ProjectExportMixin:
     @swagger_auto_schema(
         operation_description="""
