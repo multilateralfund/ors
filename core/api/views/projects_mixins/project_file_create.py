@@ -1,9 +1,12 @@
+import json
 import os
 
 from rest_framework import status
 from rest_framework.response import Response
 
 from core.models.project import ProjectFile
+
+# pylint: disable=R0911
 
 
 class ProjectFileCreateMixin:
@@ -27,6 +30,14 @@ class ProjectFileCreateMixin:
         if not files:
             return Response(
                 {"file": "File not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        metadata = None
+        try:
+            metadata = json.loads(request.data.get("metadata", "/"))
+        except json.JSONDecodeError:
+            return Response(
+                {"metadata": "Invalid JSON format"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -53,6 +64,17 @@ class ProjectFileCreateMixin:
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+        for key, value in metadata.items():
+            if key not in filenames:
+                return Response(
+                    {"metadata": f"Filename {key} not in uploaded files"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if value not in ProjectFile.FileType.values:
+                return Response(
+                    {"metadata": f"Type provided for {key} is not valid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         if dry_run:
             return Response(
                 {"message": "Files are valid and ready to be uploaded."},
@@ -60,10 +82,12 @@ class ProjectFileCreateMixin:
             )
         project_files = []
         for file in files.getlist("files"):
+            file_type = metadata.get(file.name)
             project_files.append(
                 ProjectFile(
                     project_id=kwargs.get("project_id"),
                     filename=file.name,
+                    type=file_type,
                     file=file,
                 )
             )

@@ -106,6 +106,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "filename",
+            "type",
             "date_created",
             "download_url",
             "project_id",

@@ -126,9 +126,12 @@ from core.api.views.projects_v2 import (
     ProjectProductionControlTypeView,
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
+)
+from core.api.views.project_v2_files import (
+    ProjectFileV2ViewSet,
     ProjectV2FileView,
-    ProjectV2FileIncludePreviousVersionsView,
     ProjectFilesDownloadView,
+    ProjectV2FileIncludePreviousVersionsView,
     ProjectFilesValidationView,
 )
 from core.api.views.project_associations import ProjectAssociationViewSet
@@ -172,6 +175,11 @@ router.register(
     basename="blanket-approval-details",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
+router.register(
+    r"projects/v2/(?P<project_id>\d+)/project-files",
+    ProjectFileV2ViewSet,
+    basename="project-file-v2",
+)
 router.register("projects", ProjectViewSet, basename="project")
 router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"

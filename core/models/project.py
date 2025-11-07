@@ -1450,6 +1450,14 @@ class Project(models.Model):
 
 
 class ProjectFile(models.Model):
+    class FileType(models.TextChoices):
+        MAIN_SUBMISSION = "main_submission", "Main project submission"
+        VERIFICATION_REPORT = "verification_report", "Verification report"
+        ENDORSEMENT_LETTER = "endorsement_letter", "Endorsement letter from government"
+        FINAL_PROPOSAL = "final_proposal", "Final project proposal"
+        PROJECT_REVIEW_COMMENTS = "project_review_comments", "Project review comments"
+        OTHER = "other", "Other"
+
     file = models.FileField(
         storage=get_protected_storage,
         upload_to="project_files/",
@@ -1458,6 +1466,7 @@ class ProjectFile(models.Model):
         "core.Project", on_delete=models.CASCADE, related_name="files"
     )
     filename = models.CharField(max_length=100)
+    type = models.CharField(max_length=100, choices=FileType.choices)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
