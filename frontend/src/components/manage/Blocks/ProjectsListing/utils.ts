@@ -87,20 +87,24 @@ export const getDefaultValues = <T>(
     {},
   )
 
-export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
+export const canGoToSecondStep = (
+  projIdentifiers: ProjIdentifiers,
+  agency_id: number | undefined,
+) =>
   !!(
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     projIdentifiers.cluster &&
     projIdentifiers.agency &&
     projIdentifiers.lead_agency
-  ) && !getAgencyErrorType(projIdentifiers)
+  ) && !getAgencyErrorType(projIdentifiers, agency_id)
 
 export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
+  agency_id: number | undefined,
 ) => {
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
+  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
   const {
     project_type,
     sector,
@@ -415,19 +419,22 @@ export const getProjIdentifiersErrors = (
 
 export const getAgencyErrorType = (
   projIdentifiers: ProjIdentifiers | ProjectTypeApi,
+  agency_id: number | undefined,
 ) => {
   const { agency, lead_agency, lead_agency_submitting_on_behalf } =
     projIdentifiers
 
-  if (!(agency && lead_agency)) return null
+  if (!(agency && lead_agency) && !agency_id) return null
 
-  return lead_agency_submitting_on_behalf
-    ? agency === lead_agency
-      ? 'similar_agencies'
-      : null
-    : agency !== lead_agency
-      ? 'different_agencies'
-      : null
+  return agency_id && agency_id !== agency && agency_id !== lead_agency
+    ? 'no_valid_agency'
+    : lead_agency_submitting_on_behalf
+      ? agency === lead_agency
+        ? 'similar_agencies'
+        : null
+      : agency !== lead_agency
+        ? 'different_agencies'
+        : null
 }
 
 export const checkInvalidValue = (value: any) =>

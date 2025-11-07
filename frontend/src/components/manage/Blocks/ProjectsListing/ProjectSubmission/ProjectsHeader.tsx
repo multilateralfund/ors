@@ -19,6 +19,7 @@ import {
   TrancheErrorType,
   BpDataProps,
 } from '../interfaces'
+import { useStore } from '@ors/store'
 
 import { CircularProgress } from '@mui/material'
 
@@ -43,6 +44,9 @@ const ProjectsHeader = ({
   approvalFields?: ProjectSpecificFields[]
   bpData: BpDataProps
 }) => {
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
 
@@ -56,6 +60,7 @@ const ProjectsHeader = ({
   const hasMissingRequiredFields = getIsSaveDisabled(
     projIdentifiers,
     crossCuttingFields,
+    agency_id,
   )
 
   const isSaveDisabled =
