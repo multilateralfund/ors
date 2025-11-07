@@ -1,5 +1,7 @@
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
-import getColumnDefs from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
+import getColumnDefs, {
+  dataTypeDefinitions,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 
 interface AnnualProjectReport {
   // TODO
@@ -15,6 +17,7 @@ export default function APRTable({ projectReports }: APRTableProps) {
 
   return (
     <ViewTable
+      dataTypeDefinitions={dataTypeDefinitions}
       columnDefs={columnDefs}
       defaultColDef={defaultColDef}
       rowData={projectReports}

@@ -1,4 +1,40 @@
-import { AgGridReactProps } from 'ag-grid-react'
+import { AgGridReactProps, CustomCellRendererProps } from 'ag-grid-react'
+import { DataTypeDefinition } from 'ag-grid-community'
+import {
+  formatBoolean,
+  formatDate,
+  formatDecimal,
+  formatPercent,
+  formatUSD,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+
+export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
+  dateString: {
+    baseDataType: 'dateString',
+    extendsDataType: 'dateString',
+    valueFormatter: (params) => formatDate(params.value),
+  },
+  currency: {
+    baseDataType: 'number',
+    extendsDataType: 'number',
+    valueFormatter: (params) => formatUSD(params.value),
+  },
+  percent: {
+    baseDataType: 'number',
+    extendsDataType: 'number',
+    valueFormatter: (params) => formatPercent(params.value),
+  },
+  decimal: {
+    baseDataType: 'number',
+    extendsDataType: 'number',
+    valueFormatter: (params) => formatDecimal(params.value),
+  },
+  boolean: {
+    baseDataType: 'boolean',
+    extendsDataType: 'boolean',
+    valueFormatter: (params) => formatBoolean(params.value),
+  },
+}
 
 interface APRTableColumn {
   label: string
@@ -88,6 +124,9 @@ export const tableColumns: Record<string, APRTableColumn> = {
     fieldName: 'date_approved',
     group: 'Date data fields',
     input: false,
+    overrideOptions: {
+      cellDataType: 'dateString',
+    },
   },
   dateCompletionProposal: {
     label: 'Date of Completion per Proposal',
@@ -96,6 +135,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'dateString',
     },
   },
   status: {
@@ -112,6 +152,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 140,
+      cellDataType: 'dateString',
     },
   },
   plannedDateOfCompletion: {
@@ -121,6 +162,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'dateString',
     },
   },
   dateCompletedActual: {
@@ -130,6 +172,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 140,
+      cellDataType: 'dateString',
     },
   },
   dateFinancialCompletion: {
@@ -139,6 +182,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'dateString',
     },
   },
   // Phaseout data fields
@@ -149,6 +193,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'decimal',
     },
   },
   consumptionODPCO2Proposal: {
@@ -158,6 +203,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'decimal',
     },
   },
   productionODPMTProposal: {
@@ -167,6 +213,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'decimal',
     },
   },
   productionODPCO2Proposal: {
@@ -176,6 +223,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'decimal',
     },
   },
   consumptionODPMTActual: {
@@ -185,6 +233,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'decimal',
     },
   },
   consumptionODPCO2Actual: {
@@ -194,6 +243,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'decimal',
     },
   },
   productionODPMTActual: {
@@ -203,6 +253,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'decimal',
     },
   },
   productionODPCO2Actual: {
@@ -212,6 +263,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'decimal',
     },
   },
   // Financial data fields
@@ -220,12 +272,18 @@ export const tableColumns: Record<string, APRTableColumn> = {
     fieldName: 'approved_funding',
     group: 'Financial data fields',
     input: false,
+    overrideOptions: {
+      cellDataType: 'currency',
+    },
   },
   adjustment: {
     label: 'Adjustment (US$)',
     fieldName: 'adjustment',
     group: 'Financial data fields',
     input: false,
+    overrideOptions: {
+      cellDataType: 'currency',
+    },
   },
   approvedFundingPlusAdjustment: {
     label: 'Approved Funding plus Adjustments (US$)',
@@ -234,6 +292,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'currency',
     },
   },
   percentFundsDisbursed: {
@@ -243,6 +302,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'percent',
     },
   },
   balance: {
@@ -250,6 +310,9 @@ export const tableColumns: Record<string, APRTableColumn> = {
     fieldName: 'balance',
     group: 'Financial data fields',
     input: false,
+    overrideOptions: {
+      cellDataType: 'currency',
+    },
   },
   supportCostApproved: {
     label: 'Support Cost Approved (US$)',
@@ -258,6 +321,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   supportCostAdjustment: {
@@ -267,6 +331,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   supportCostProposedPlusAdjustment: {
@@ -276,6 +341,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'currency',
     },
   },
   supportCostBalance: {
@@ -283,6 +349,9 @@ export const tableColumns: Record<string, APRTableColumn> = {
     fieldName: 'support_cost_balance',
     group: 'Financial data fields',
     input: false,
+    overrideOptions: {
+      cellDataType: 'currency',
+    },
   },
   fundsDisbursed: {
     label: 'Funds Disbursed (US$)',
@@ -291,6 +360,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   fundsCommitted: {
@@ -300,6 +370,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   estimatedDisbursementCurrentYear: {
@@ -309,6 +380,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'currency',
     },
   },
   supportCostDisbursed: {
@@ -318,6 +390,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   supportCostCommitted: {
@@ -327,6 +400,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   disbursementsMadeFinalBeneficiaries: {
@@ -336,6 +410,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 200,
+      cellDataType: 'currency',
     },
   },
   fundsAdvanced: {
@@ -345,6 +420,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 120,
+      cellDataType: 'currency',
     },
   },
   implementationDelays: {
@@ -363,6 +439,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: false,
     overrideOptions: {
       minWidth: 160,
+      cellDataType: 'dateString',
     },
   },
   // Narrative & Indicators Data Fields
@@ -388,7 +465,10 @@ export const tableColumns: Record<string, APRTableColumn> = {
     input: true,
     overrideOptions: {
       minWidth: 200,
-      cellClass: 'ag-cell-centered',
+      cellDataType: 'boolean',
+      cellRenderer: (params: CustomCellRendererProps) => (
+        <>{params.valueFormatted}</>
+      ),
     },
   },
 }
@@ -398,7 +478,6 @@ export default function getColumnDefs() {
     columnDefs: Object.values(tableColumns).map((c) => ({
       headerName: c.label,
       field: c.fieldName,
-      tooltipField: c.fieldName,
       ...(c.overrideOptions ?? {}),
     })),
     defaultColDef: {
@@ -407,6 +486,11 @@ export default function getColumnDefs() {
       minWidth: 90,
       resizable: true,
       sortable: false,
+      // Use any because it could theoretically be a colgroup definition and too
+      // much narrowing is required
+      tooltipValueGetter: (params: any) => {
+        return params.colDef?.valueFormatter?.(params) ?? params.value
+      },
     },
   }
 }
