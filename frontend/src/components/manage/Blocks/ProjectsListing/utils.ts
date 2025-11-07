@@ -693,6 +693,14 @@ export const getHasNoFiles = (
   return files?.newFiles?.length === 0 && crtVersionFiles.length === 0
 }
 
+export const getIsUpdatablePostExcom = (
+  submission_status: string | undefined,
+  status: string | undefined,
+) =>
+  submission_status === 'Approved' &&
+  status !== 'Closed' &&
+  status !== 'Transferred'
+
 export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
@@ -738,9 +746,7 @@ export const getMenus = (
           disabled:
             !canUpdatePostExcom ||
             !projectId ||
-            projectSubmissionStatus !== 'Approved' ||
-            projectStatus === 'Closed' ||
-            projectStatus === 'Transferred',
+            !getIsUpdatablePostExcom(projectSubmissionStatus, projectStatus),
         },
         {
           title: 'Update project enterprises',

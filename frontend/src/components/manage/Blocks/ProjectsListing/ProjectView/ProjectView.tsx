@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from './ProjectIdentifiers'
 import ProjectCrossCutting from './ProjectCrossCutting'
 import ProjectSpecificInfo from './ProjectSpecificInfo'
@@ -12,8 +13,8 @@ import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { getIsUpdatablePostExcom, getSectionFields, hasFields } from '../utils'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
-import { getSectionFields, hasFields } from '../utils'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -100,6 +101,8 @@ const ProjectView = ({
   specificFieldsLoaded: boolean
   loadedFiles: boolean
 }) => {
+  const { canUpdatePostExcom } = useContext(PermissionsContext)
+
   const [activeTab, setActiveTab] = useState(0)
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
@@ -242,6 +245,13 @@ const ProjectView = ({
             label: 'Related projects',
             component: (
               <ProjectRelatedProjects
+                canDisassociate={
+                  canUpdatePostExcom &&
+                  getIsUpdatablePostExcom(
+                    project.submission_status,
+                    project.status,
+                  )
+                }
                 {...{
                   project,
                   relatedProjects,

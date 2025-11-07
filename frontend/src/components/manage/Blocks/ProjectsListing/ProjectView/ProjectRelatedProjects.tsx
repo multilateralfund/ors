@@ -19,13 +19,13 @@ const ProjectRelatedProjects = ({
   setCurrentTab,
   metaProjectId,
   setMetaProjectId,
-  postExcomUpdate,
+  canDisassociate,
 }: ProjectTabSetters & {
   project: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
-  postExcomUpdate?: boolean
+  canDisassociate?: boolean
 }) => {
   const { canDisassociateProjects } = useContext(PermissionsContext)
 
@@ -62,7 +62,7 @@ const ProjectRelatedProjects = ({
           )
         })}
         {canDisassociateProjects &&
-          (project.editable || postExcomUpdate) &&
+          (project.editable || canDisassociate) &&
           !!project.meta_project_id &&
           !!metaProjectId && <RemoveAssociation {...{ setMetaProjectId }} />}
       </div>

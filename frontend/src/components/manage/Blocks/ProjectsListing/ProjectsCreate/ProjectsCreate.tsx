@@ -602,12 +602,12 @@ const ProjectsCreate = ({
             label: 'Related projects',
             component: (
               <ProjectRelatedProjects
+                canDisassociate={postExComUpdate}
                 {...{
                   project,
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
-                  postExComUpdate,
                   setCurrentTab,
                 }}
               />
