@@ -57,6 +57,7 @@ const getColumnDefs = (
             {
               minWidth: 40,
               maxWidth: 40,
+              resizable: false,
               cellClass: (props: CellClassParams) =>
                 `!pl-0 ag-text-center ${getCellClass(props.data)}`,
               cellRenderer: (props: ICellRendererParams) => (

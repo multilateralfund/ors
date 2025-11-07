@@ -1,20 +1,20 @@
 'use client'
 
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import Field from '@ors/components/manage/Form/Field'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
-import { useGetProjects } from '../hooks/useGetProjects'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
+import { useGetProjects } from '../hooks/useGetProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { getFormattedDate, getFormattedNumericValue } from '../utils'
 import {
@@ -116,11 +116,10 @@ const MetaProjectSelection = ({
       <Checkbox
         checked={id === metaProjectData.metaproject_id}
         onChange={(event) => {
-          const isChecked = event.target.checked
           const leadAgencyId = lead_agency?.id ?? null
 
           setMetaProjectData({
-            metaproject_id: isChecked ? id : null,
+            metaproject_id: event.target.checked ? id : null,
             lead_agency_id: leadAgencyId,
           })
           setLeadAgencyId(leadAgencyId)
@@ -223,10 +222,13 @@ const ProjectsAssociateConfirmation = ({
     debouncedGetAssociatedProjects()
   }, [])
 
-  const projects = {
-    ...projectsAssociation,
-    results: [...crtProjects, ...associatedProjects],
-  }
+  const projects = useMemo(
+    () => ({
+      ...projectsAssociation,
+      results: [...crtProjects, ...associatedProjects],
+    }),
+    [projectsAssociation, crtProjects, associatedProjects],
+  )
 
   const isOriginalProjIndiv = !crtProjects[0].meta_project_id
   const isAssociatedProjIndiv =
@@ -318,7 +320,7 @@ const ProjectsAssociateConfirmation = ({
             <SubmitButton
               title="Submit"
               isDisabled={
-                !(leadAgencyId && loadedAssociatedProjects) ||
+                !(loadedAssociatedProjects && leadAgencyId) ||
                 !!finalMetaCode ||
                 (onlyMetaProjects && !metaProjectData.metaproject_id)
               }

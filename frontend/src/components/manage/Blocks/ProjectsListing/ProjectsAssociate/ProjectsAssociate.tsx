@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
@@ -13,7 +13,7 @@ import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
 
-import { debounce, find } from 'lodash'
+import { debounce, find, map } from 'lodash'
 import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
@@ -23,22 +23,22 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     typeof useGetProjects
   > | null>(null)
 
+  const projectSlice = useStore((state) => state.projects)
+  const statuses = projectSlice.statuses.data
+  const onGoingStatus = find(statuses, (status) => status.name === 'Ongoing')
+
   const [associationIds, setAssociationIds] = useState<number[]>([])
-  const [filters, setFilters] = useState<any>({ ...initialFilters })
   const [mode, setMode] = useState('selection')
-
-  // const projectSlice = useStore((state) => state.projects)
-  // const submissionStatuses = projectSlice.submission_statuses.data
-
-  // const approvedStatus = find(
-  //   submissionStatuses,
-  //   (status) => status.name === 'Approved',
-  // )
+  const [filters, setFilters] = useState<any>({
+    ...initialFilters,
+    status_id: [onGoingStatus],
+  })
 
   const updatedFilters = {
     ...filters,
     submission_status_id: project.submission_status_id,
     country_id: project.country_id,
+    status_id: onGoingStatus?.id,
     exclude_projects: project_id,
   }
 
@@ -54,6 +54,31 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     projects: associatedProjects = [],
     loaded: loadedAssociatedProjects,
   } = association
+
+  useEffect(() => {
+    const { data, loading } = projectFilters
+    const onGoingStatusId = onGoingStatus?.id
+
+    if (
+      !loading &&
+      data &&
+      onGoingStatusId &&
+      filters.status_id?.includes(onGoingStatus)
+    ) {
+      const hasOngoingProjs = map(data?.status, 'id').includes(onGoingStatusId)
+
+      if (!hasOngoingProjs) {
+        const newParams = {
+          ...filters,
+          status_id: null,
+        }
+
+        setFilters(newParams)
+        setParams(newParams)
+        projectFilters.setParams(newParams)
+      }
+    }
+  }, [projectFilters.loaded])
 
   const debouncedGetAssociatedProjects = debounce(() => {
     useGetAssociatedProjects(
@@ -74,15 +99,18 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     associatedProjects && associatedProjects.length > 0
       ? [project, ...associatedProjects]
       : [project]
-  const crtProjectsSelection = allCrtProjects.map((project, index) => {
-    return {
-      ...project,
-      title: (index === 0 ? '' : '[associated] ') + project.title,
-    }
-  })
-  const crtProjectsConfirmation = allCrtProjects.map((project) => {
-    return { ...project, is_current_project: true }
-  })
+  const crtProjectsSelection = useMemo(
+    () =>
+      allCrtProjects.map((project, index) => ({
+        ...project,
+        title: (index === 0 ? '' : '[associated] ') + project.title,
+      })),
+    [associatedProjects],
+  )
+  const crtProjectsConfirmation = allCrtProjects.map((project) => ({
+    ...project,
+    is_current_project: true,
+  }))
 
   useEffect(() => {
     if (!initialProjectsAssociation.current && loaded) {
@@ -91,11 +119,17 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   }, [projectsForAssociation])
 
   const cancelAssociation = () => {
+    const currentParams = {
+      ...initialFilters,
+      ...initialParams,
+      status_id: onGoingStatus?.id,
+    }
+
     setMode('selection')
     setAssociationIds([])
-    setFilters({ offset: 0, ...initialParams })
-    setParams({ ...initialFilters, ...initialParams })
-    projectFilters.setParams({ ...initialFilters, ...initialParams })
+    setFilters({ offset: 0, ...initialParams, status_id: [onGoingStatus] })
+    setParams(currentParams)
+    projectFilters.setParams(currentParams)
   }
 
   return (

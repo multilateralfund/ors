@@ -11,7 +11,6 @@ import getColumnDefs from '../ProjectsListing/schema'
 import { SubmitButton } from '../HelperComponents'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { ProjectTypeApi } from '../interfaces'
-import { initialFilters } from '../constants'
 
 import { Typography } from '@mui/material'
 
@@ -101,7 +100,6 @@ const ProjectsAssociateSelection = ({
             {...{
               form,
               filters,
-              initialFilters,
               setFilters,
               setParams,
               projectFilters,
