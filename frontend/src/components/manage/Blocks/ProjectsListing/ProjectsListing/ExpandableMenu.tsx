@@ -15,6 +15,7 @@ const ExpandableMenu = ({
       title: string
       url: string | null
       disabled?: boolean
+      onClick?: () => void
     }[]
   }
 }) => {
@@ -79,7 +80,7 @@ const ExpandableMenu = ({
           },
         }}
       >
-        {menuItems.map(({ url, title, disabled }, index) => (
+        {menuItems.map(({ url, onClick, title, disabled }, index) => (
           <div
             key={`${index}-${index}`}
             className={cx({
@@ -94,8 +95,9 @@ const ExpandableMenu = ({
             >
               <CustomLink
                 className="h-full w-full text-nowrap py-1.5 pl-3 pr-12 text-lg normal-case tracking-[0.05em] no-underline"
-                href={url}
                 variant="contained"
+                onClick={onClick}
+                href={url}
               >
                 {title}
               </CustomLink>

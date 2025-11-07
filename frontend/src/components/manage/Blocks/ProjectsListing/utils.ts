@@ -689,6 +689,7 @@ export const getHasNoFiles = (
 export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
+  onTransferProject?: () => void,
 ) => {
   const {
     canViewBp,
@@ -696,6 +697,7 @@ export const getMenus = (
     canViewEnterprises,
     canEditProjectEnterprise,
     canUpdatePostExcom,
+    canTransferProjects,
     canViewMetaProjects,
   } = permissions
   const { projectId, projectSubmissionStatus, projectStatus } =
@@ -748,7 +750,15 @@ export const getMenus = (
           url: `/projects-listing/enterprises`,
           disabled: !canViewEnterprises,
         },
-        { title: 'Transfer a project', url: null, disabled: true },
+        {
+          title: 'Transfer a project',
+          url: null,
+          onClick: onTransferProject,
+          disabled:
+            !canTransferProjects ||
+            !projectId ||
+            projectSubmissionStatus !== 'Approved',
+        },
       ],
     },
     {
