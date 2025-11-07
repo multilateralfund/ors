@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { displaySelectedOption } from '../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../utils'
+import { initialFilters } from '../constants'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
@@ -23,7 +24,6 @@ const ProjectsFiltersSelectedOpts = ({
   mode,
   filterOptions = {},
   form,
-  initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
