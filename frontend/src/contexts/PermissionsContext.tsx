@@ -20,6 +20,7 @@ interface PermissionsContextProps {
   canRecommendProjects: boolean
   canApproveProjects: boolean
   canAssociateProjects: boolean
+  canDisassociateProjects: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
   canViewProductionProjects: boolean

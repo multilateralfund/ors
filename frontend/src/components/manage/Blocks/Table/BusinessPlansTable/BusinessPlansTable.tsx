@@ -238,7 +238,7 @@ export const BPTable = ({
           ? {
               noRowsOverlayComponentParams: {
                 label:
-                  'There is no corresponding activity in the current agency BP, please check your agency, country and cluster combination.',
+                  'There is no corresponding activity in the current agency Business Plan. Please check your agency, country and cluster combination.',
               },
             }
           : {})}

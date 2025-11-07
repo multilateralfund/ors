@@ -13,12 +13,13 @@ import {
   DropDownMenuProps,
   IncreaseVersionButton,
 } from '../HelperComponents'
+import { dropDownClassName, dropdownItemClassname } from '../constants'
+import { getIsUpdatablePostExcom } from '../utils'
 import {
   ProjectSpecificFields,
   ProjectTypeApi,
   RelatedProjectsType,
 } from '../interfaces'
-import { dropDownClassName, dropdownItemClassname } from '../constants'
 import { api } from '@ors/helpers'
 
 import { filter, find, groupBy, isNull, replace } from 'lodash'
@@ -270,9 +271,7 @@ const ProjectViewButtons = ({
           </>
         )}
         {canUpdatePostExcom &&
-        submission_status === 'Approved' &&
-        project_status !== 'Closed' &&
-        project_status !== 'Transferred' ? (
+        getIsUpdatablePostExcom(submission_status, project_status) ? (
           <EditLink href={`/projects-listing/${id}/post-excom-update`}>
             Update post ExCom
           </EditLink>

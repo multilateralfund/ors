@@ -5,7 +5,11 @@ import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 
 import { debounce, isNull } from 'lodash'
 
-const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
+const useGetRelatedProjects = (
+  project: ProjectTypeApi,
+  mode: string,
+  metaProjectId: number | null,
+) => {
   const [componentAssociation, setComponentAssociation] =
     useState<AssociatedProjectsType>({
       projects: [],
@@ -54,7 +58,7 @@ const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
     ) {
       debouncedGetAssociatedProjects()
     }
-  }, [])
+  }, [metaProjectId])
 
   return relatedProjects
 }

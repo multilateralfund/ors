@@ -75,6 +75,9 @@ const ProjectCrossCuttingFields = ({
       subsectors: ProjectSubSectorType[]
     }
   }) => {
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const {
     crtProjectTypesOpts,
     projectTypes,
@@ -127,7 +130,7 @@ const ProjectCrossCuttingFields = ({
   }
 
   const areInvalidFields = !(
-    canGoToSecondStep(projIdentifiers) &&
+    canGoToSecondStep(projIdentifiers, agency_id) &&
     project_type &&
     sector
   )
