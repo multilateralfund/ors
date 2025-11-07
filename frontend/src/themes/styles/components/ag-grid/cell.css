@@ -288,3 +288,25 @@
 .ag-table .ag-cell.ag-cell-no-border-r {
   @apply border-r-0;
 }
+
+.ag-table.metaproject-selection-table {
+  .ag-header {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .ag-body-horizontal-scroll:first-of-type {
+    display: none;
+  }
+
+  .ag-root {
+    padding: 0 !important;
+  }
+
+  .ag-header-cell.ag-header-cell-ellipsed {
+    div div {
+      @apply block overflow-hidden text-ellipsis;
+      white-space: nowrap;
+    }
+  }
+}

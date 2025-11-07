@@ -152,6 +152,7 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = [
         "title",
         "code",
+        "metacode",
         "meta_project__umbrella_code",
     ]
     list_filter = [

@@ -12,6 +12,10 @@ export type BaseConfig = {
     host?: string
     protocol?: string
   }
+  sentry?: {
+    dsn?: string
+    environment?: string
+  }
 }
 
 const baseConfig: BaseConfig = {
@@ -24,6 +28,29 @@ const baseConfig: BaseConfig = {
     host,
     protocol,
   },
+  sentry: {
+    dsn: import.meta.env.VITE_PUBLIC_SENTRY_DSN,
+    environment: import.meta.env.VITE_PUBLIC_SENTRY_ENVIRONMENT,
+  }
+}
+
+export async function loadRuntimeConfig() {
+  try {
+    const response = await fetch(`${apiPath}/api/frontend-settings/`)
+    if (response.ok) {
+      const runtimeConfig = await response.json()
+
+      // Merging runtime config (which takes precedence over build-time)
+      if (runtimeConfig.sentry) {
+        baseConfig.sentry = {
+          dsn: runtimeConfig.sentry.dsn || baseConfig.sentry?.dsn,
+          environment: runtimeConfig.sentry.environment || baseConfig.sentry?.environment || 'staging',
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not fetch runtime config, using build-time defaults')
+  }
 }
 
 export default baseConfig

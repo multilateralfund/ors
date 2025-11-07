@@ -1,6 +1,6 @@
 from constance import config
-from django.db.models import Max
-from django.db.models import Min
+from django.conf import settings
+from django.db.models import Min, Max
 from rest_framework import status, views
 from rest_framework.response import Response
 
@@ -21,7 +21,7 @@ class SettingsView(views.APIView):
     """
 
     def get(self, *args, **kwargs):
-        settings = {
+        cp_settings = {
             "year_section_mapping": [
                 {
                     "max_year": 2018,
@@ -63,7 +63,7 @@ class SettingsView(views.APIView):
             "send_mail": config.SEND_MAIL,
             "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
         }
-        return Response(settings)
+        return Response(cp_settings)
 
     def post(self, request, *args, **kwargs):
         send_mail = request.data.get("send_mail")
@@ -99,13 +99,13 @@ class ProjectSettingsView(views.APIView):
     permission_classes = [HasProjectSettingsAccess]
 
     def get(self, *args, **kwargs):
-        settings = {
+        project_settings = {
             "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
             "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
             "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
             "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
         }
-        return Response(settings)
+        return Response(project_settings)
 
     def post(self, request, *args, **kwargs):
         config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
@@ -126,6 +126,23 @@ class ProjectSettingsView(views.APIView):
                 "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
                 "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
                 "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class FrontendSettingsView(views.APIView):
+    """
+    API endpoint for general frontend configuration settings.
+    """
+
+    def get(self, *args, **kwargs):
+        return Response(
+            {
+                "sentry": {
+                    "dsn": settings.SENTRY_DSN_FRONTEND,
+                    "environment": settings.SENTRY_ENVIRONMENT,
+                },
             },
             status=status.HTTP_200_OK,
         )

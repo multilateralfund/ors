@@ -89,9 +89,14 @@ class APRExportWriter:
 
     def _format_field_value(self, field_name, report_data):
         value = report_data.get(field_name)
-
         if value is None:
             return None
+
+        if isinstance(value, (int, float, Decimal)):
+            return value
+
+        if isinstance(value, bool):
+            return 1 if value else 0
 
         if field_name.startswith("date_"):
             # Format dates
@@ -100,15 +105,9 @@ class APRExportWriter:
                     # Parse ISO date string
                     return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
                 except (ValueError, AttributeError):
-                    return value
-            return value
+                    pass
 
-        if isinstance(value, (int, float, Decimal)):
-            return value
-
-        # TODO: should probably add handling for booleans! - 0/1 instead of true/false
-
-        return str(value) if value else None
+        return value if not isinstance(value, str) else str(value)
 
     def _create_response(self):
         safe_agency_name = "".join(

@@ -134,20 +134,23 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_associations import ProjectAssociationViewSet
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
-from core.api.views.settings import ProjectSettingsView, SettingsView
+from core.api.views.settings import (
+    ProjectSettingsView,
+    SettingsView,
+    FrontendSettingsView,
+)
 from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 from core.api.views.annual_project_report import (
     APRWorkspaceView,
-    APRAgencyReportDetailView,
     APRBulkUpdateView,
     APRFileUploadView,
     APRFileDeleteView,
     APRStatusView,
     APRExportView,
     APRSummaryTablesView,
-    APRGlobalListView,
+    APRGlobalViewSet,
     APRToggleLockView,
     APREndorseView,
 )
@@ -251,7 +254,9 @@ router.register(
     StatusOfTheFundFileViewSet,
     basename="replenishment-status-files",
 )
-
+router.register(
+    r"apr/mlfs/(?P<year>\d+)/agencies", APRGlobalViewSet, basename="apr-mlfs"
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -282,6 +287,11 @@ urlpatterns = [
         "project-settings/",
         ProjectSettingsView.as_view(),
         name="project-settings",
+    ),
+    path(
+        "frontend-settings/",
+        FrontendSettingsView.as_view(),
+        name="frontend-settings",
     ),
     path(
         "agencies/",
@@ -718,11 +728,6 @@ urlpatterns = [
         name="apr-workspace",
     ),
     path(
-        "annual-project-report/<int:year>/agency/<int:agency_id>/",
-        APRAgencyReportDetailView.as_view(),
-        name="apr-detail",
-    ),
-    path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/export/",
         APRExportView.as_view(),
         name="apr-export",
@@ -751,11 +756,6 @@ urlpatterns = [
         "annual-project-report/<int:year>/summary/",
         APRSummaryTablesView.as_view(),
         name="apr-summary",
-    ),
-    path(
-        "annual-project-report/<int:year>/mlfs/",
-        APRGlobalListView.as_view(),
-        name="apr-mlfs-list",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",

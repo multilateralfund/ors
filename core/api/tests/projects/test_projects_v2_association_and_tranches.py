@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 
 from core.api.tests.factories import (
     AgencyFactory,
+    MetaProjectFactory,
     ProjectFieldFactory,
     ProjectSpecificFieldsFactory,
 )
@@ -14,7 +15,6 @@ pytestmark = pytest.mark.django_db
 # pylint: disable=R0913,W0613
 
 
-@pytest.mark.skip(reason="Skipping project association tests")
 class TestProjectListPreviousTranches:
     client = APIClient()
 
@@ -217,7 +217,6 @@ class TestProjectListPreviousTranches:
         assert len(response.data[0]["warnings"]) == 1
 
 
-@pytest.mark.skip(reason="Skipping project association tests")
 class TestAssociateProject:
     client = APIClient()
 
@@ -225,6 +224,7 @@ class TestAssociateProject:
         self,
         project,
         project2,
+        meta_project,
         user,
         viewer_user,
         agency_user,
@@ -244,7 +244,8 @@ class TestAssociateProject:
             response = self.client.post(
                 url,
                 data={
-                    "project_ids": [project.id, project2.id],
+                    "projects_to_associate": [project.id, project2.id],
+                    "meta_project_id": meta_project.id,
                     "lead_agency_id": agency.id,
                 },
                 format="json",
@@ -268,12 +269,18 @@ class TestAssociateProject:
         _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
-    def test_associate_project(
+    def test_associate_project_projects_without_meta_project(
         self,
         secretariat_v1_v2_edit_access_user,
         project,
         project2,
     ):
+        # both projects are without meta projects
+        # expect a new meta project to be created and assigned to both projects
+        project.meta_project = None
+        project.save()
+        project2.meta_project = None
+        project2.save()
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
@@ -282,36 +289,85 @@ class TestAssociateProject:
             url,
             format="json",
             data={
-                "project_ids": [project.id, project2.id],
+                "projects_to_associate": [project.id, project2.id],
                 "lead_agency_id": agency.id,
             },
         )
         assert response.status_code == 200, response.data
-
-        project.refresh_from_db()
-        project2.refresh_from_db()
-        assert project == project2.meta_project
-        assert project.lead_agency == agency
-
-        project.meta_project = None
-        project.save()
-        project2.meta_project = None
-        project2.save()
-
-        response = self.client.post(
-            url,
-            format="json",
-            data={
-                "project_ids": [project.id, project2.id],
-                "lead_agency_id": agency.id,
-            },
-        )
-        assert response.status_code == 200, response.data
-
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
         assert project.lead_agency == agency
+        assert project2.lead_agency == agency
+
+    def test_associate_project_one_project_with_meta_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        meta_project,
+    ):
+        # one project has a meta project, the other does not
+        # expect the project without meta project to be assigned to the meta project of the other project
+        project.meta_project = meta_project
+        project.save()
+        project2.meta_project = None
+        project2.save()
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-associate-projects")
+        agency = AgencyFactory.create(code="TESTAG")
+        # associate project
+        response = self.client.post(
+            url,
+            format="json",
+            data={
+                "projects_to_associate": [project.id, project2.id],
+                "lead_agency_id": agency.id,
+            },
+        )
+        assert response.status_code == 200, response.data
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.meta_project == project2.meta_project
+        assert project.meta_project == meta_project
+        assert project.lead_agency == agency
+        assert project2.lead_agency == agency
+
+    def test_associate_project_both_projects_with_different_meta_projects(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        meta_project,
+    ):
+        # both projects have different meta projects
+        # expect to receive a meta_project_id which will be assigned to both projects
+        another_meta_project = MetaProjectFactory.create()
+        meta_project_to_assign = MetaProjectFactory.create()
+        project.meta_project = meta_project
+        project.save()
+        project2.meta_project = another_meta_project
+        project2.save()
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-associate-projects")
+        agency = AgencyFactory.create(code="TESTAG")
+        # associate project
+        response = self.client.post(
+            url,
+            format="json",
+            data={
+                "projects_to_associate": [project.id, project2.id],
+                "meta_project_id": meta_project_to_assign.id,
+                "lead_agency_id": agency.id,
+            },
+        )
+        assert response.status_code == 200, response.data
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.meta_project == project2.meta_project
+        assert project.meta_project == meta_project_to_assign
+        assert project.lead_agency == agency
+        assert project2.lead_agency == agency
 
 
 class TestProjectListAssocitatedProjects:

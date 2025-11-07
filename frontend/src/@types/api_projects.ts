@@ -102,9 +102,11 @@ export type ProjectType = {
   meeting_transf_id: any
   metaproject_category: string
   metaproject_code: string
+  meta_project_id: number
   metacode: string
   mya_code: string
   mya_subsector: string
+  umbrella_code: string
   national_agency: any
   ods_odp: {
     co2_mt: string
@@ -148,6 +150,7 @@ export type ProjectType = {
   submission_comments: any
   submission_number: any
   submission_status: string
+  submission_status_id: number
   subsectors: ProjectSubSectorType[]
   subsector_legacy: string
   substance_category: string
@@ -179,6 +182,7 @@ export type ProjectAssociationType = {
   type: string
   code: string
   pcr_project_id: string
+  umbrella_code: string
   projects: ProjectType[]
 }
 

@@ -368,6 +368,24 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+# Sentry
+SENTRY_DSN = env.str("SENTRY_DSN", default="")
+SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="staging")
+SENTRY_DSN_FRONTEND = env.str("SENTRY_DSN_FRONTEND", default="")
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(),
+        ],
+    )
+
+
 # URLs for automatically retrieving Decisions and Meetings
 # For now it looks like meetings_others and decisions_others are not used
 DRUPAL_MEETINGS_API = "https://admin.multilateralfund.org/jsonapi/index/meetings"

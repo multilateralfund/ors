@@ -40,6 +40,7 @@
     {
         "name": "Projects - MLFS Viewer",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
@@ -52,6 +53,7 @@
     {
         "name": "Projects - MLFS Submission V1/V2",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
@@ -70,6 +72,7 @@
     {
         "name": "Projects - MLFS Submission V3",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
@@ -91,6 +94,7 @@
     {
         "name": "Projects - MLFS Submission V1/V2 Production",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
@@ -110,6 +114,7 @@
     {
         "name": "Projects - MLFS Submission V3 Production",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
@@ -131,6 +136,7 @@
     {
         "name": "Projects - Agency viewer",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",
@@ -153,6 +159,7 @@
     {
         "name": "Projects - Agency submitter",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",
@@ -176,6 +183,7 @@
     {
         "name": "Projects - Agency inputter",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",
@@ -235,6 +243,7 @@
     {
         "name": "Projects - MLFS Admin",
         "permissions": [
+            "has_business_plan_view_access",
             "has_meta_projects_view_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",

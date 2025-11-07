@@ -19,7 +19,6 @@ def setup_project_list():
     return project
 
 
-@pytest.mark.skip(reason="Skipping project association tests")
 class TestProjectAssociationListing(BaseTest):
     url = reverse("project-association-list")
 
@@ -41,6 +40,8 @@ class TestProjectAssociationListing(BaseTest):
         agency = AgencyFactory.create(code="Agency1")
         agency2 = AgencyFactory.create(code="Agency2")
         project = _setup_project_list
+        project.meta_project = meta_project
+        project.save()
 
         def _set_project_user_same_agency(user):
             project.agency = agency
@@ -172,6 +173,7 @@ class TestProjectAssociationListing(BaseTest):
             agency=project1.agency,
             meta_project=meta_project_mya,
         )
+        project1.meta_project = meta_project
         project1.lead_agency = meta_project.lead_agency
         project1.save()
 

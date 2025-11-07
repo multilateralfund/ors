@@ -145,18 +145,24 @@ class MetaProjectClusterListView(generics.ListAPIView):
 class MetaProjectLeadAgencyListView(generics.ListAPIView):
     """
     List meta project lead agencies
+    Modified to return information from Project, as the lead agency
+    is now stored there.
     """
 
     permission_classes = [HasMetaProjectsViewAccess]
     serializer_class = AgencySerializer
 
     def get_queryset(self):
-        meta_projects = MetaProject.objects.filter(
-            type=MetaProject.MetaProjectType.MYA,
-            projects__submission_status__name="Approved",
+        projects = Project.objects.filter(
+            category=Project.Category.MYA,
+            submission_status__name="Approved",
+            meta_project__isnull=False,
         ).distinct()
 
-        return Agency.objects.filter(metaproject__in=meta_projects).distinct()
+        agencies = Agency.objects.filter(
+            lead_projects__id__in=projects.values_list("id", flat=True),
+        ).distinct()
+        return agencies
 
 
 class MetaProjectMyaListView(generics.ListAPIView):
@@ -171,7 +177,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     def get_queryset(self):
         result = (
             MetaProject.objects.filter(
-                type=MetaProject.MetaProjectType.MYA,
+                projects__category=Project.Category.MYA,
                 projects__submission_status__name="Approved",
             ).prefetch_related(
                 "projects",
