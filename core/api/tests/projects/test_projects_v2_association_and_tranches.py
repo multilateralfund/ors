@@ -523,3 +523,62 @@ class TestProjectListAssocitatedProjects:
         assert response.data[1]["errors"]["previous_tranches"][0] == (
             f"Previous tranche {project3.title}({project3.id}): At least one actual indicator should be filled."
         )
+
+    def test_remove_association_permissions(
+        self,
+        project,
+        project2,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-remove-association", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            project.meta_project = project2.meta_project
+            project.save()
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_remove_association(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-remove-association", args=(project.id,))
+        agency = AgencyFactory.create(code="Test agency 1")
+        # associate project
+        project.meta_project = project2.meta_project
+        project.lead_agency = agency
+        project.save()
+        response = self.client.post(url)
+        assert response.status_code == 200, response.data
+        project.refresh_from_db()
+        assert project.meta_project is None

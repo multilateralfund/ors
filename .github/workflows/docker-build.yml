@@ -2,6 +2,15 @@ name: Create and publish Docker Images
 
 on:
   workflow_call:
+    inputs:
+      SENTRY_DSN:
+        required: false
+        type: string
+        default: ""
+      SENTRY_ENVIRONMENT:
+        required: false
+        type: string
+        default: "production"
 
 env:
   REGISTRY: ghcr.io
@@ -57,3 +66,6 @@ jobs:
           file: ${{ matrix.dockerfile }}
           tags: ${{ matrix.image }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_PUBLIC_SENTRY_DSN=${{ inputs.SENTRY_DSN }}
+            VITE_PUBLIC_SENTRY_ENVIRONMENT=${{ inputs.SENTRY_ENVIRONMENT }}

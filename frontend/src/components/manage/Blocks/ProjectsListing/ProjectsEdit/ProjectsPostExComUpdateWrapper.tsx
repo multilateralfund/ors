@@ -1,5 +1,6 @@
 import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsEdit from './ProjectsEdit'
+import { getIsUpdatablePostExcom } from '../utils'
 import { useGetProject } from '../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
@@ -15,9 +16,7 @@ const ProjectsPostExComUpdateWrapper = () => {
     project?.error ||
     (data &&
       (!isNull(data.latest_project) ||
-        data.submission_status !== 'Approved' ||
-        data.status === 'Closed' ||
-        data.status === 'Transferred'))
+        !getIsUpdatablePostExcom(data.submission_status, data.status)))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }
