@@ -240,6 +240,16 @@ export interface ProjectData {
   }
 }
 
+export interface ProjectTransferData {
+  agency: number | null
+  transfer_meeting: number | null
+  transfer_decision: number | null
+  transfer_excom_provision: string
+  fund_transferred: string | null
+  psc_transferred: string | null
+  psc_received: string | null
+}
+
 export interface ProjectDataProps {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>

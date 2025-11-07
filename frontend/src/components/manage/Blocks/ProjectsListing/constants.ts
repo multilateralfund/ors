@@ -113,6 +113,16 @@ export const initialCrossCuttingFields = {
   blanket_or_individual_consideration: null,
 }
 
+export const initialTranferedProjectData = {
+  agency: null,
+  transfer_meeting: null,
+  transfer_decision: null,
+  transfer_excom_provision: '',
+  fund_transferred: null,
+  psc_transferred: null,
+  psc_received: null,
+}
+
 export const lvcNonLvcOpts = [
   { name: 'LVC', id: true },
   { name: 'Non-LVC', id: false },

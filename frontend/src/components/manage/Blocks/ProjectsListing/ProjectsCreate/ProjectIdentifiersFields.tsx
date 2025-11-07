@@ -38,7 +38,7 @@ import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 
-type DecisionOption = {
+export type DecisionOption = {
   name: string
   value: number
 }

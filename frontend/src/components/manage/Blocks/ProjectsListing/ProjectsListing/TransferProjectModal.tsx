@@ -1,34 +1,73 @@
+import { useEffect, useState } from 'react'
+
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
-import { ProjectTypeApi } from '../interfaces'
+import { getFormattedDecimalValue, getNonFieldErrors } from '../utils'
+import { ProjectTransferData, ProjectTypeApi } from '../interfaces'
+import { initialTranferedProjectData } from '../constants'
 
 import { Modal, Typography, Box } from '@mui/material'
 
-const ProjectTransfer = ({
+const ProjectTransferWrapper = ({
   project,
   setIsModalOpen,
 }: {
   project: ProjectTypeApi
   setIsModalOpen: (isOpen: boolean) => void
 }) => {
+  const [projectData, setProjectData] = useState<ProjectTransferData>(
+    initialTranferedProjectData,
+  )
+  const [files, setFiles] = useState([])
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+
+  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [fileErrors, setFileErrors] = useState<string>('')
+  const [otherErrors, setOtherErrors] = useState<string>('')
+
+  const nonFieldsErrors = getNonFieldErrors(errors)
+
+  useEffect(() => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      fund_transferred: getFormattedDecimalValue(project.total_fund),
+      psc_transferred: getFormattedDecimalValue(project.support_cost_psc),
+      psc_received: getFormattedDecimalValue(project.support_cost_psc),
+    }))
+  }, [])
+
   const transferProject = () => {}
 
   return (
-    <div className="ml-auto mr-6 flex flex-wrap gap-3">
-      <CustomLink
-        className="h-10 px-4 py-2 text-lg uppercase"
-        onClick={transferProject}
-        href={null}
-        color="secondary"
-        variant="contained"
-        button
-      >
-        Transfer project
-      </CustomLink>
-      <CancelButton onClick={() => setIsModalOpen(false)} />
-    </div>
+    <>
+      <ProjectTransfer
+        {...{
+          projectData,
+          setProjectData,
+          files,
+          setFiles,
+          errors,
+          fileErrors,
+          hasSubmitted,
+        }}
+      />
+      <div className="ml-auto mr-6 mt-auto flex flex-wrap gap-3">
+        <CustomLink
+          className="h-10 px-4 py-2 text-lg uppercase"
+          onClick={transferProject}
+          href={null}
+          color="secondary"
+          variant="contained"
+          button
+        >
+          Transfer project
+        </CustomLink>
+        <CancelButton onClick={() => setIsModalOpen(false)} />
+      </div>
+    </>
   )
 }
 
@@ -51,8 +90,8 @@ const TransferProjectModal = ({
       onClose={() => setIsModalOpen(false)}
       keepMounted
     >
-      <Box className="flex w-full max-w-lg flex-col px-0 absolute-center md:max-w-2xl">
-        <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
+      <Box className="flex min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl px-6 py-3 absolute-center 2xl:w-[60%]">
+        <Typography className="mb-4 text-2xl font-medium">
           Transfer project
         </Typography>
         <Loading
@@ -60,7 +99,7 @@ const TransferProjectModal = ({
           active={loading}
         />
         {!loading && data && (
-          <ProjectTransfer project={data} {...{ setIsModalOpen }} />
+          <ProjectTransferWrapper project={data} {...{ setIsModalOpen }} />
         )}
       </Box>
     </Modal>
