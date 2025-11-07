@@ -101,6 +101,9 @@ const ProjectView = ({
   loadedFiles: boolean
 }) => {
   const [activeTab, setActiveTab] = useState(0)
+  const [metaProjectId, setMetaProjectId] = useState<number | null>(
+    project.meta_project_id,
+  )
 
   const {
     fetchProjectFields,
@@ -145,7 +148,7 @@ const ProjectView = ({
       ) ?? [])
     : []
 
-  const relatedProjects = useGetRelatedProjects(project, 'view')
+  const relatedProjects = useGetRelatedProjects(project, 'view', metaProjectId)
 
   const tabs = [
     {
@@ -237,7 +240,16 @@ const ProjectView = ({
           {
             id: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            component: (
+              <ProjectRelatedProjects
+                {...{
+                  project,
+                  relatedProjects,
+                  metaProjectId,
+                  setMetaProjectId,
+                }}
+              />
+            ),
           },
         ]
       : []),

@@ -74,6 +74,8 @@ const ProjectsCreate = ({
   loadedFiles,
   onBpDataChange,
   bpData,
+  metaProjectId,
+  setMetaProjectId,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -93,6 +95,8 @@ const ProjectsCreate = ({
     loadedFiles?: boolean
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
+    metaProjectId: number | null
+    setMetaProjectId: (id: number | null) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -592,7 +596,16 @@ const ProjectsCreate = ({
             id: 'project-related-projects-section',
             label: 'Related projects',
             component: (
-              <ProjectRelatedProjects {...{ relatedProjects, setCurrentTab }} />
+              <ProjectRelatedProjects
+                {...{
+                  project,
+                  relatedProjects,
+                  metaProjectId,
+                  setMetaProjectId,
+                  postExComUpdate,
+                  setCurrentTab,
+                }}
+              />
             ),
           },
         ]
