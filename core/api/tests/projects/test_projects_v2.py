@@ -1432,3 +1432,74 @@ class TestProjectV2FileIncludePreviousVersions:
         assert data[1]["id"] == project3.id  # project3 is the archived version
         assert any(f["id"] == project2_file.id for f in data[0]["files"])
         assert any(f["id"] == project3_file.id for f in data[1]["files"])
+
+    def test_edit_type_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_file,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        mlfs_admin_user,
+        admin_user,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        data = {
+            "file_type": "endorsement_letter",
+        }
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.put(url, data, format="json")
+            assert response.status_code == expected_response_status
+
+        # Unauthenticated
+        self.client.force_authenticate(user=None)
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(mlfs_admin_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_edit_type(
+        self,
+        mlfs_admin_user,
+        project,
+        project_file,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        self.client.force_authenticate(user=mlfs_admin_user)
+        data = {
+            "file_type": "endorsement_letter",
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["type"] == "endorsement_letter"
+        project_file.refresh_from_db()
+        assert project_file.type == "endorsement_letter"

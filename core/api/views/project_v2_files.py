@@ -53,7 +53,7 @@ class ProjectFileV2ViewSet(
             "retrieve",
         ]:
             return [HasProjectV2ViewAccess]
-        if self.action in ["create", "delete"]:
+        if self.action in ["create", "delete", "edit_type"]:
             return [HasProjectV2EditPlusV3Access]
         return [DenyAll]
 
@@ -84,7 +84,7 @@ class ProjectFileV2ViewSet(
         if user.is_superuser:
             return queryset
 
-        if self.action in ["create", "delete"] or results_for_edit:
+        if self.action in ["create", "delete", "edit_type"] or results_for_edit:
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
@@ -280,6 +280,37 @@ class ProjectFileV2ViewSet(
         )
         serializer = self.get_serializer(projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="API endpoint to set the project file type",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["file_type"],
+            properties={
+                "file_type": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The new file type to set for the project file.",
+                ),
+            },
+        ),
+    )
+    @action(methods=["PUT"], detail=True)
+    def edit_type(self, request, *args, **kwargs):
+        """
+        API endpoint to set the project file type
+        """
+        obj = self.get_object()
+        file_type = request.data.get("file_type")
+        if file_type not in dict(ProjectFile.FileType.choices).keys():
+            return Response(
+                {"error": "Invalid file type."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        obj.type = file_type
+        obj.save()
+        response = self.get_serializer(obj).data
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class ProjectV2FileView(
