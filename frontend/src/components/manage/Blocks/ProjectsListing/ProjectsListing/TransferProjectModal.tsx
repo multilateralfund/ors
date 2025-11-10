@@ -1,15 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
-import { getFormattedDecimalValue, getNonFieldErrors } from '../utils'
-import { ProjectTransferData, ProjectTypeApi } from '../interfaces'
-import { initialTranferedProjectData } from '../constants'
+import {
+  ProjectFilesObject,
+  ProjectTransferData,
+  ProjectTypeApi,
+} from '../interfaces'
+import {
+  initialTranferedProjectData,
+  requiredFieldsTransfer,
+} from '../constants'
+import {
+  getFormattedDecimalValue,
+  getNonFieldErrors,
+  getTransferErrors,
+} from '../utils'
+import { api } from '@ors/helpers'
 
-import { Modal, Typography, Box } from '@mui/material'
+import { Modal, Typography, Box, CircularProgress } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
+import { map } from 'lodash'
 
 const ProjectTransferWrapper = ({
   project,
@@ -21,14 +36,37 @@ const ProjectTransferWrapper = ({
   const [projectData, setProjectData] = useState<ProjectTransferData>(
     initialTranferedProjectData,
   )
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState<ProjectFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
+
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  const transferErrors = useMemo(
+    () => getTransferErrors(projectData, project),
+    [projectData],
+  )
+  const filteredErrors = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(errors).filter(([key]) =>
+          requiredFieldsTransfer.includes(key),
+        ),
+      ),
+    [errors],
+  )
+  const allTransferErrors = { ...transferErrors, ...filteredErrors }
+  const disableTransfer = Object.values(transferErrors).some(
+    (errors: any) => errors.length > 0,
+  )
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -39,7 +77,49 @@ const ProjectTransferWrapper = ({
     }))
   }, [])
 
-  const transferProject = () => {}
+  const handleErrors = async (error: any) => {
+    const errors = await error.json()
+
+    if (error.status === 400) {
+      setErrors(errors)
+
+      if (errors?.files) {
+        setFileErrors(errors.files)
+      }
+
+      if (errors?.details) {
+        setOtherErrors(errors.details)
+      }
+    }
+
+    enqueueSnackbar(<>An error occurred. Please try again.</>, {
+      variant: 'error',
+    })
+  }
+
+  const transferProject = async () => {
+    setIsLoading(true)
+    setFileErrors('')
+    setOtherErrors('')
+    setErrors({})
+
+    try {
+      await api(`/api/projects/v2/${project.id}/transfer`, {
+        data: projectData,
+        method: 'POST',
+      })
+
+      setIsModalOpen(false)
+      enqueueSnackbar(<>Project was transferred successfully.</>, {
+        variant: 'success',
+      })
+    } catch (error) {
+      await handleErrors(error)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
 
   return (
     <>
@@ -47,17 +127,33 @@ const ProjectTransferWrapper = ({
         {...{
           projectData,
           setProjectData,
+          project,
           files,
           setFiles,
-          errors,
           fileErrors,
           hasSubmitted,
         }}
+        errors={allTransferErrors}
       />
+      {(nonFieldsErrors.length > 0 || otherErrors) && (
+        <CustomAlert
+          type="error"
+          alertClassName="BPAlert mt-4"
+          content={
+            <div className="mt-0.5 text-lg">
+              {otherErrors}
+              {map(nonFieldsErrors, (err, idx) => (
+                <div key={idx}>{err}</div>
+              ))}
+            </div>
+          }
+        />
+      )}
       <div className="ml-auto mr-6 mt-auto flex flex-wrap gap-3">
         <CustomLink
           className="h-10 px-4 py-2 text-lg uppercase"
           onClick={transferProject}
+          disabled={disableTransfer}
           href={null}
           color="secondary"
           variant="contained"
@@ -66,6 +162,13 @@ const ProjectTransferWrapper = ({
           Transfer project
         </CustomLink>
         <CancelButton onClick={() => setIsModalOpen(false)} />
+        {isLoading && (
+          <CircularProgress
+            color="inherit"
+            size="30px"
+            className="text-align mb-1 ml-1.5 mt-auto"
+          />
+        )}
       </div>
     </>
   )
@@ -90,17 +193,19 @@ const TransferProjectModal = ({
       onClose={() => setIsModalOpen(false)}
       keepMounted
     >
-      <Box className="flex min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl px-6 py-3 absolute-center 2xl:w-[60%]">
-        <Typography className="mb-4 text-2xl font-medium">
-          Transfer project
+      <Box className="flex min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border-0 p-0 absolute-center 2xl:w-[60%]">
+        <Typography className="mb-1 bg-primary py-2 pl-6 text-3xl font-medium text-white">
+          Transfer project {data?.code ?? data?.code_legacy}
         </Typography>
         <Loading
           className="!fixed bg-action-disabledBackground"
           active={loading}
         />
-        {!loading && data && (
-          <ProjectTransferWrapper project={data} {...{ setIsModalOpen }} />
-        )}
+        <div className="flex flex-col px-6 py-3">
+          {!loading && data && (
+            <ProjectTransferWrapper project={data} {...{ setIsModalOpen }} />
+          )}
+        </div>
       </Box>
     </Modal>
   )

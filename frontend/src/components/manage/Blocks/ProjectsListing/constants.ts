@@ -226,3 +226,13 @@ export const metaProjectSelectionFields = [
   { label: 'Project funding (MYA)', key: 'project_funding' },
   { label: 'PSC (MYA)', key: 'support_cost' },
 ]
+
+export const requiredFieldsTransfer = [
+  'agency',
+  'transfer_meeting',
+  'transfer_decision',
+  'transfer_excom_provision',
+  'fund_transferred',
+  'psc_transferred',
+  'psc_received',
+]

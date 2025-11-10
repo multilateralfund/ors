@@ -1,29 +1,46 @@
-import { Dispatch, SetStateAction, useContext, useMemo } from 'react'
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useMemo,
+} from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import {
   getMeetingNr,
   useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { DecisionOption } from '../ProjectsCreate/ProjectIdentifiersFields'
+import ProjectDocumentation from '../ProjectView/ProjectDocumentation'
+import { FormattedNumberInput } from '../../Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { defaultProps, tableColumns } from '../constants'
-import { ProjectTransferData } from '../interfaces'
+import { ProjectTransferData, ProjectTypeApi } from '../interfaces'
+import {
+  defaultProps,
+  defaultPropsSimpleField,
+  textAreaClassname,
+} from '../constants'
 import { ApiDecision } from '@ors/types/api_meetings'
 import { ApiAgency } from '@ors/types/api_agencies'
 import { parseNumber } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-import { map } from 'lodash'
+import { Divider, TextareaAutosize } from '@mui/material'
+import { BsFilesAlt } from 'react-icons/bs'
+import { filter, map } from 'lodash'
 import cx from 'classnames'
 
 const ProjectTransfer = ({
   projectData,
   setProjectData,
+  project,
   files,
   setFiles,
   errors,
@@ -32,6 +49,7 @@ const ProjectTransfer = ({
 }: {
   projectData: ProjectTransferData
   setProjectData: Dispatch<SetStateAction<ProjectTransferData>>
+  project: ProjectTypeApi
   files: any
   setFiles: any
   errors: any
@@ -39,6 +57,10 @@ const ProjectTransfer = ({
   hasSubmitted: boolean
 }) => {
   const { agencies } = useContext(ProjectsDataContext)
+  const agenciesOpts = filter(
+    agencies,
+    (agency) => agency.id !== project.agency_id,
+  )
 
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
@@ -62,10 +84,6 @@ const ProjectTransfer = ({
     },
   }
 
-  // const dataErrors = useMemo(
-  //   () => getProjIdentifiersErrors(projIdentifiers, errors),
-  //   [projIdentifiers, errors],
-  // )
   const hasNoFiles = files.length === 0
 
   const handleChangeAgency = (value: ApiAgency | null) => {
@@ -104,32 +122,73 @@ const ProjectTransfer = ({
     }
   }
 
+  const handleChangeExcomProvision = (
+    event: ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      transfer_excom_provision: event.target.value,
+    }))
+  }
+
+  const handleChangeNumericValues = (
+    event: ChangeEvent<HTMLInputElement>,
+    field: string,
+  ) => {
+    const initialValue = event.target.value
+    const value = initialValue === '' ? null : initialValue
+
+    if (!isNaN(Number(value))) {
+      setProjectData((prevData) => ({
+        ...prevData,
+
+        [field]: value,
+      }))
+    } else {
+      event.preventDefault()
+    }
+  }
+
   const getHasErrors = (field: keyof typeof errors) =>
     hasSubmitted && errors[field]?.length > 0
 
+  const getFieldDefaultProps = (field: string) => ({
+    ...{
+      ...defaultPropsSimpleField,
+      className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
+        'border-red-500': getHasErrors(field),
+      }),
+    },
+  })
+
   return (
-    <>
+    <div className="flex flex-col gap-y-5">
       <div className="flex flex-col gap-y-2">
+        <HeaderWithIcon title="Main attributes" Icon={BsFilesAlt} />
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           <div>
             <Label>Agency</Label>
             <div className="flex items-center">
               <Field
                 widget="autocomplete"
-                options={agencies}
+                options={agenciesOpts}
                 value={projectData.agency}
                 onChange={(_, value) => {
                   handleChangeAgency(value)
                 }}
-                getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                getOptionLabel={(option) =>
+                  getOptionLabel(agenciesOpts, option)
+                }
                 Input={{ error: getHasErrors('agency') }}
                 {...sectionDefaultProps}
               />
-              <FieldErrorIndicator errors={errors} field="agency" />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="agency" />
+              </div>
             </div>
           </div>
           <div>
-            <Label>{tableColumns.meeting}</Label>
+            <Label>Transfer meeting</Label>
             <div className="flex items-center">
               <div className="w-32">
                 <PopoverInput
@@ -151,7 +210,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div className="w-[16rem]">
-            <Label htmlFor="decision">Decision</Label>
+            <Label htmlFor="decision">Transfer decision</Label>
             <div className="flex items-center">
               <Field
                 widget="autocomplete"
@@ -171,7 +230,90 @@ const ProjectTransfer = ({
           </div>
         </div>
       </div>
-    </>
+      <div className="w-full">
+        <Label>Transfer Excom provision (max 500 characters)</Label>
+        <div className="flex items-center">
+          <TextareaAutosize
+            value={projectData.transfer_excom_provision as string}
+            onChange={(event) => handleChangeExcomProvision(event)}
+            className={cx(textAreaClassname, 'max-w-[415px]', {
+              'border-red-500': getHasErrors('transfer_excom_provision'),
+            })}
+            maxLength={500}
+            style={STYLE}
+            minRows={2}
+            tabIndex={-1}
+          />
+          <FieldErrorIndicator
+            errors={errors}
+            field="transfer_excom_provision"
+          />
+        </div>
+      </div>
+      <div className="flex flex-col gap-y-2">
+        <div className="flex flex-wrap gap-x-20 gap-y-3">
+          <div>
+            <Label>Funds transferred (US $)</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="fund_transferred"
+                value={projectData.fund_transferred ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(event, 'fund_transferred')
+                }
+                {...getFieldDefaultProps('fund_transferred')}
+              />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="fund_transferred" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Label>Project support cost transferred (US $)</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="psc_transferred"
+                value={projectData.psc_transferred ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(event, 'psc_transferred')
+                }
+                {...getFieldDefaultProps('psc_transferred')}
+              />
+              <FieldErrorIndicator errors={errors} field="psc_transferred" />
+            </div>
+          </div>
+          <div>
+            <Label>Project support cost received (US $)</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="psc_received"
+                value={projectData.psc_received ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(event, 'psc_received')
+                }
+                {...getFieldDefaultProps('psc_received')}
+              />
+              <FieldErrorIndicator errors={errors} field="psc_received" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <Divider className="my-2" />
+      <ProjectDocumentation
+        mode="transfer"
+        {...{
+          files,
+          setFiles,
+          project,
+        }}
+      />
+    </div>
   )
 }
 

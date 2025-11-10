@@ -1,6 +1,10 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { tableColumns, validationFieldsPairs } from './constants'
+import {
+  requiredFieldsTransfer,
+  tableColumns,
+  validationFieldsPairs,
+} from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -14,6 +18,7 @@ import {
   ProjectAllVersionsFiles,
   OdsOdpFields,
   ListingProjectData,
+  ProjectTransferData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
@@ -569,6 +574,31 @@ export const getDefaultImpactErrors = (
 
 export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
   Object.values(errors).some((errors) => errors.length > 0)
+
+export const getTransferErrors = (
+  projectData: ProjectTransferData,
+  project: ProjectTypeApi,
+) => {
+  const { fund_transferred, psc_received, psc_transferred } = projectData
+
+  return {
+    ...getFieldErrors(requiredFieldsTransfer, projectData, project),
+    ...(Number(fund_transferred) > Number(project.total_fund) && {
+      fund_transferred: ['Value cannot be greater than project funding.'],
+    }),
+    ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
+      psc_transferred: ['Value cannot be greater than project support cost.'],
+    }),
+    ...(Number(psc_received) > Number(project.support_cost_psc) && {
+      psc_received: ['Value cannot be greater than project support cost.'],
+    }),
+    ...(Number(psc_received) > Number(psc_transferred) && {
+      psc_received: [
+        'Value cannot be greater than project support cost transferred.',
+      ],
+    }),
+  }
+}
 
 export const getFieldLabel = (
   specificFields: ProjectSpecificFields[],
