@@ -37,6 +37,21 @@ class ProjectTransferMixin:
                 description="List of documents",
             ),
             openapi.Parameter(
+                name="metadata",
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_STRING,
+                required=True,
+                description=(
+                    """
+                    JSON metadata string.(map by filename):
+                        {
+                            "test_document_1.xlsx": "main_submission",
+                            "test_document_2.xlsx": "final_proposal"
+                        }
+                """
+                ),
+            ),
+            openapi.Parameter(
                 "agency",
                 openapi.IN_FORM,
                 description="Agency ID",
