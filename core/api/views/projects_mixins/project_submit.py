@@ -54,27 +54,23 @@ class ProjectSubmitMixin:
         """
         project = self.get_object()
 
-        associated_projects = Project.objects.filter(
-            meta_project=project.meta_project,
-            submission_status=project.submission_status,
-        )
-
         if project.component:
             # If the project is a component, include only components of the project
-            associated_projects = associated_projects.filter(
+            projects_to_submit = Project.objects.filter(
                 component=project.component,
+                submission_status=project.submission_status,
             )
         else:
             # If the project is not a component, keep only the main project
-            associated_projects = associated_projects.filter(id=project.id)
+            projects_to_submit = Project.objects.filter(id=project.id)
 
-        associated_projects = sorted(
-            associated_projects, key=lambda p: 0 if p.id == project.id else 1
+        projects_to_submit = sorted(
+            projects_to_submit, key=lambda p: 0 if p.id == project.id else 1
         )
 
         has_errors = False
         data = []
-        for associated_project in associated_projects:
+        for associated_project in projects_to_submit:
             project_data = {}
             project_data["id"] = associated_project.id
             project_data["title"] = associated_project.title
@@ -91,7 +87,7 @@ class ProjectSubmitMixin:
 
         submission_status = ProjectSubmissionStatus.objects.get(name="Submitted")
         with transaction.atomic():
-            for associated_project in associated_projects:
+            for associated_project in projects_to_submit:
                 associated_project.submission_status = submission_status
                 associated_project.save()
                 if associated_project.version == 1:
@@ -104,10 +100,10 @@ class ProjectSubmitMixin:
         # Send email notification to the secretariat team
         if config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED:
             send_project_submission_notification.delay(
-                [project.id for project in associated_projects]
+                [project.id for project in projects_to_submit]
             )
 
         return Response(
-            ProjectListV2Serializer(associated_projects, many=True).data,
+            ProjectListV2Serializer(projects_to_submit, many=True).data,
             status=status.HTTP_200_OK,
         )

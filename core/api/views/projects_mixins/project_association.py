@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 
 from core.api.serializers.project_association import AssociateProjectSerializer
 from core.api.serializers.project_v2 import (
+    ProjectV2RecommendSerializer,
     ProjectV2SubmitSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
@@ -214,12 +215,18 @@ class ProjectAssociationMixin:
         context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
+            if project.submission_status.name == "Draft":
+                # Use submit serializer
+                validation_serializer_class = ProjectV2SubmitSerializer
+            else:
+                # Use recommended serializer
+                validation_serializer_class = ProjectV2RecommendSerializer
             data = []
             for associated_project in associated_projects:
                 project_data = ProjectListV2Serializer(
                     associated_project, context=context
                 ).data
-                serializer = ProjectV2SubmitSerializer(
+                serializer = validation_serializer_class(
                     associated_project, data={}, partial=True
                 )
                 if not serializer.is_valid():
