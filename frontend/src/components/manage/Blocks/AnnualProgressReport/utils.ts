@@ -1,12 +1,18 @@
 import dayjs from 'dayjs'
 import { isNil } from 'lodash'
 
-export function formatDate(value: any) {
+export function formatDate(value: any, format = 'DD/MM/YYYY') {
   if (isNil(value)) {
     return ''
   }
 
-  return dayjs(value).format('DD/MM/YYYY')
+  return dayjs(value).format(format)
+}
+
+export function parseDate(value: string | undefined, format = 'YYYY-MM-DD') {
+  if (isNil(value)) return undefined
+  const parsed = dayjs(value, format)
+  return parsed.isValid() ? parsed.toDate() : undefined
 }
 
 export function formatNumber(value: any, options: Intl.NumberFormatOptions) {

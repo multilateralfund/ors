@@ -5,14 +5,16 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import APRTable from '@ors/components/manage/Blocks/AnnualProgressReport/APRTable.tsx'
 import { Box, Chip } from '@mui/material'
 import { FiTable, FiEdit, FiDownload } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
 import Field from '@ors/components/manage/Form/Field.tsx'
-import { tableColumns } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
+import getColumnDefs, {
+  dataTypeDefinitions,
+  tableColumns,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { IoChevronDown } from 'react-icons/io5'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
 import useApi from '@ors/hooks/useApi.ts'
@@ -24,6 +26,7 @@ import {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import Link from '@ors/components/ui/Link/Link.tsx'
+import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 
 interface Filter {
   id: string
@@ -59,6 +62,8 @@ export default function APRWorkspace() {
   if (!canViewAPR || !user.agency_id) {
     return <NotFoundPage />
   }
+
+  const { columnDefs, defaultColDef } = getColumnDefs()
 
   const choosableStatuses = projectStatuses.filter(
     (status) => !MANDATORY_STATUSES.includes(status.code),
@@ -177,7 +182,15 @@ export default function APRWorkspace() {
           </div>
         </div>
         <Loader active={loading} />
-        {loaded && <APRTable projectReports={apr.project_reports} />}
+        {loaded && (
+          <ViewTable
+            dataTypeDefinitions={dataTypeDefinitions}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            rowData={apr.project_reports}
+            tooltipShowDelay={200}
+          />
+        )}
       </Box>
       {isUploadDocumentsModalOpen && (
         <UploadDocumentsModal

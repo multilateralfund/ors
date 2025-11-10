@@ -6,13 +6,19 @@ import {
   formatDecimal,
   formatPercent,
   formatUSD,
+  parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 
 export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
   dateString: {
     baseDataType: 'dateString',
     extendsDataType: 'dateString',
+    // From date picker to our ISO format (YYYY-MM-DD)
+    dateFormatter: (value) => formatDate(value, 'YYYY-MM-DD'),
+    // Format value to UI format (DD/MM/YYYY)
     valueFormatter: (params) => formatDate(params.value),
+    // Parse to date from ISO format
+    dateParser: (value) => parseDate(value),
   },
   currency: {
     baseDataType: 'number',
@@ -473,12 +479,24 @@ export const tableColumns: Record<string, APRTableColumn> = {
   },
 }
 
-export default function getColumnDefs() {
+export default function getColumnDefs(
+  group: string | null = null,
+  isEditable: boolean = false,
+) {
+  let columns = Object.values(tableColumns)
+  if (group) {
+    columns = columns.filter(
+      // Always include project code
+      (col) => col.fieldName === 'project_code' || col.group === group,
+    )
+  }
+
   return {
-    columnDefs: Object.values(tableColumns).map((c) => ({
+    columnDefs: columns.map((c) => ({
       headerName: c.label,
       field: c.fieldName,
       ...(c.overrideOptions ?? {}),
+      editable: c.fieldName !== 'project_code' && isEditable,
     })),
     defaultColDef: {
       headerClass: 'ag-text-center',
