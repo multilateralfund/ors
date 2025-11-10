@@ -58,6 +58,9 @@ const ProjectIdentifiersFields = ({
   isV3ProjectEditable,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
   const { project_type, sector } = projectData.crossCuttingFields
@@ -498,7 +501,9 @@ const ProjectIdentifiersFields = ({
                   checked={projIdentifiers?.lead_agency_submitting_on_behalf}
                   disabled={
                     !areNextSectionsDisabled ||
-                    (isV3Project && project && !getAgencyErrorType(project)) ||
+                    (isV3Project &&
+                      project &&
+                      !getAgencyErrorType(project, agency_id)) ||
                     !canEditField(
                       editableFields,
                       'lead_agency_submitting_on_behalf',

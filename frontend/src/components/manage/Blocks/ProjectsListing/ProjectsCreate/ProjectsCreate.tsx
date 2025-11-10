@@ -77,6 +77,8 @@ const ProjectsCreate = ({
   bpData,
   filesMetaData,
   setFilesMetaData,
+  metaProjectId,
+  setMetaProjectId,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -97,8 +99,13 @@ const ProjectsCreate = ({
     loadedFiles?: boolean
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
+    metaProjectId?: number | null
+    setMetaProjectId?: (id: number | null) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
 
   const {
     projIdentifiers,
@@ -111,7 +118,7 @@ const ProjectsCreate = ({
 
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
+  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
   const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
@@ -170,7 +177,7 @@ const ProjectsCreate = ({
     () => getProjIdentifiersErrors(projIdentifiers, errors),
     [projIdentifiers, errors],
   )
-  const agencyErrorType = getAgencyErrorType(projIdentifiers)
+  const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
 
   const bpErrors = useMemo(
     () =>
@@ -357,9 +364,11 @@ const ProjectsCreate = ({
           ? [
               {
                 message:
-                  agencyErrorType === 'similar_agencies'
-                    ? 'Agency and lead agency cannot be similar when submitting on behalf of a cooperating agency.'
-                    : 'Agency and lead agency cannot be different unless submitting on behalf of a cooperating agency.',
+                  agencyErrorType === 'no_valid_agency'
+                    ? 'At least one agency field must include your own agency.'
+                    : agencyErrorType === 'similar_agencies'
+                      ? 'Agency and lead agency cannot be similar when submitting on behalf of a cooperating agency.'
+                      : 'Agency and lead agency cannot be different unless submitting on behalf of a cooperating agency.',
               },
             ]
           : []),
@@ -598,7 +607,16 @@ const ProjectsCreate = ({
             id: 'project-related-projects-section',
             label: 'Related projects',
             component: (
-              <ProjectRelatedProjects {...{ relatedProjects, setCurrentTab }} />
+              <ProjectRelatedProjects
+                canDisassociate={postExComUpdate}
+                {...{
+                  project,
+                  relatedProjects,
+                  metaProjectId,
+                  setMetaProjectId,
+                  setCurrentTab,
+                }}
+              />
             ),
           },
         ]

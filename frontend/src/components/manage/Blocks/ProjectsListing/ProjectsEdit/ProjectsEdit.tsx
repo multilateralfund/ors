@@ -187,7 +187,10 @@ const ProjectsEdit = ({
     }
   }, [projectFiles])
 
-  const relatedProjects = useGetRelatedProjects(project, mode)
+  const [metaProjectId, setMetaProjectId] = useState<number | null>(
+    project.meta_project_id,
+  )
+  const relatedProjects = useGetRelatedProjects(project, mode, metaProjectId)
 
   const defaultTrancheErrors = {
     errorText: '',
@@ -514,6 +517,8 @@ const ProjectsEdit = ({
             onBpDataChange,
             filesMetaData,
             setFilesMetaData,
+            metaProjectId,
+            setMetaProjectId,
           }}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
