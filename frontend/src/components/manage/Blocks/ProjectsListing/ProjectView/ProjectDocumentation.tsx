@@ -2,6 +2,7 @@ import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileIn
 import { NavigationButton } from '../HelperComponents'
 import { FilesViewer } from './FilesViewer'
 import {
+  FileMetaDataProps,
   ProjectFile,
   ProjectFiles,
   ProjectTabSetters,
@@ -9,8 +10,6 @@ import {
 } from '../interfaces'
 
 const ProjectDocumentation = ({
-  files,
-  setFiles,
   projectFiles = [],
   mode,
   project,
@@ -19,8 +18,11 @@ const ProjectDocumentation = ({
   nextStep,
   hasNextStep,
   isNextButtonDisabled,
+  filesMetaData,
+  ...rest
 }: ProjectFiles &
-  ProjectTabSetters & {
+  ProjectTabSetters &
+  FileMetaDataProps & {
     projectFiles?: ProjectFile[]
     mode: string
     project?: ProjectTypeApi
@@ -33,13 +35,19 @@ const ProjectDocumentation = ({
     <>
       <div className="flex w-full flex-col gap-4">
         <FilesViewer
-          {...{ files, setFiles, mode, project, loadedFiles }}
+          {...{
+            mode,
+            project,
+            loadedFiles,
+            filesMetaData,
+          }}
+          {...rest}
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
 
         {mode !== 'view' && (
           <FileInput
-            {...{ files, setFiles }}
+            {...rest}
             extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
             label="Upload completed template and any supporting documentation"
             value=""

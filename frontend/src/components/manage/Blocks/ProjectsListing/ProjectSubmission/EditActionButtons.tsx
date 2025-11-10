@@ -43,7 +43,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { find, lowerCase, map, pick } from 'lodash'
+import { filter, find, fromPairs, lowerCase, map, pick } from 'lodash'
 import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
@@ -72,6 +72,7 @@ const EditActionButtons = ({
   specificFieldsLoaded,
   postExComUpdate,
   bpData,
+  filesMetaData,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -261,6 +262,16 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
+    const existingFilesMetadata = filter(
+      filesMetaData,
+      (metadata) => metadata.id,
+    )
+    const newFilesMetadata = filter(filesMetaData, (metadata) => !metadata.id)
+    const formattedFilesMetadata = fromPairs(
+      map(newFilesMetadata, (file) => [file.name, file.type]),
+    )
+    const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
     try {
       // Validate files
       if (newFiles.length > 0) {
@@ -269,6 +280,7 @@ const EditActionButtons = ({
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
@@ -299,6 +311,7 @@ const EditActionButtons = ({
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
@@ -317,7 +330,7 @@ const EditActionButtons = ({
 
       try {
         const res = await api(
-          `/api/project/${id}/files/include_previous_versions/v2/`,
+          `/api/projects/v2/${id}/project-files/include_previous_versions`,
           {
             withStoreCache: false,
           },

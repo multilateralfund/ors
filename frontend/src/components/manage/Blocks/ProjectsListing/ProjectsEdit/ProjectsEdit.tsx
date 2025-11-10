@@ -27,6 +27,7 @@ import {
   RelatedProjectsType,
   TrancheErrorType,
   BpDataProps,
+  FileMetaDataType,
 } from '../interfaces'
 import {
   considerationOpts,
@@ -152,6 +153,7 @@ const ProjectsEdit = ({
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
 
   useEffect(() => {
     if (!loadedFiles) return
@@ -181,6 +183,7 @@ const ProjectsEdit = ({
         deletedFilesIds: [],
         newFiles: [],
       })
+      setFilesMetaData(projectFiles)
     }
   }, [projectFiles])
 
@@ -485,6 +488,7 @@ const ProjectsEdit = ({
             specificFieldsLoaded,
             setProjectData,
             bpData,
+            filesMetaData,
           }}
         />
         <ProjectsCreate
@@ -508,6 +512,8 @@ const ProjectsEdit = ({
             approvalFields,
             bpData,
             onBpDataChange,
+            filesMetaData,
+            setFilesMetaData,
           }}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||

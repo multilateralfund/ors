@@ -24,6 +24,7 @@ import {
   TrancheErrors,
   RelatedProjectsSectionType,
   BpDataProps,
+  FileMetaDataProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -74,10 +75,13 @@ const ProjectsCreate = ({
   loadedFiles,
   onBpDataChange,
   bpData,
+  filesMetaData,
+  setFilesMetaData,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
-  TrancheErrors & {
+  TrancheErrors &
+  FileMetaDataProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -523,6 +527,8 @@ const ProjectsCreate = ({
             project,
             loadedFiles,
             setCurrentTab,
+            filesMetaData,
+            setFilesMetaData,
           }}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
