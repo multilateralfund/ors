@@ -701,3 +701,13 @@ class ProjectFilesDownloadView(generics.RetrieveAPIView):
             f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
         )
         return response
+
+
+class FileTypeView(APIView):
+    """
+    View to return a list of all ProjectFile FileTypes choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = ProjectFile.FileType.choices
+        return Response(choices)

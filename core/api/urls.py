@@ -128,6 +128,7 @@ from core.api.views.projects_v2 import (
     ProjectV2ViewSet,
 )
 from core.api.views.project_v2_files import (
+    FileTypeView,
     ProjectFileV2ViewSet,
     ProjectV2FileView,
     ProjectFilesDownloadView,
@@ -488,6 +489,11 @@ urlpatterns = [
         "countries/",
         CountryListView.as_view(),
         name="countries-list",
+    ),
+    path(
+        "file-types/",
+        FileTypeView.as_view(),
+        name="file-type-list",
     ),
     path(
         "meta-projects/",
