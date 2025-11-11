@@ -5,6 +5,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import { FieldErrorIndicator } from '../HelperComponents'
 import ExportConfirmModal from './ExportConfirmModal'
 import { defaultProps, exportButtonClassname } from '../constants'
 import { ProjectDocs, ProjectFile } from '../interfaces'
@@ -12,7 +13,7 @@ import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
-import { filter, isNil, map } from 'lodash'
+import { filter, find, isNil, map } from 'lodash'
 import { TbFiles } from 'react-icons/tb'
 import cx from 'classnames'
 
@@ -26,6 +27,7 @@ export function FilesViewer(props: ProjectDocs) {
     loadedFiles,
     filesMetaData,
     setFilesMetaData,
+    errors,
   } = props
 
   const { fileTypes } = useContext(ProjectsDataContext)
@@ -176,7 +178,7 @@ export function FilesViewer(props: ProjectDocs) {
                         {fileName}
                       </span>
                     </a>
-                    {filesMetaData && setFilesMetaData && (
+                    {filesMetaData ? (
                       <div className="w-64">
                         <Label>Type</Label>
                         <div className="flex items-center">
@@ -191,13 +193,27 @@ export function FilesViewer(props: ProjectDocs) {
                               getOptionLabel(fileTypesOpts, option)
                             }
                             disabled={!isFileEditable}
-                            // Input={{
-                            //   error: getIsInputDisabled('country'),
-                            // }}
                             {...firstColFieldsProps}
                           />
-                          {/* <FieldErrorIndicator errors={errors} field="country" /> */}
+                          <FieldErrorIndicator
+                            errors={{
+                              file: filter(
+                                errors,
+                                (error) => error?.id === index,
+                              ).map(
+                                (error) => error?.message.split(' - ')[1] || '',
+                              ),
+                            }}
+                            field="file"
+                          />
                         </div>
+                      </div>
+                    ) : (
+                      <div>
+                        {find(
+                          fileTypes,
+                          (type) => type[0] === file.type,
+                        )?.[1] ?? ''}
                       </div>
                     )}
                     {isFileEditable && (

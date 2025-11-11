@@ -98,6 +98,10 @@ const CreateActionButtons = ({
         if (errors?.details) {
           setOtherErrors(errors.details)
         }
+
+        if (errors?.metadata) {
+          setFileErrors(errors.metadata)
+        }
       }
 
       setProjectId(null)

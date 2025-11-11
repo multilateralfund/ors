@@ -19,6 +19,7 @@ const ProjectDocumentation = ({
   hasNextStep,
   isNextButtonDisabled,
   filesMetaData,
+  errors,
   ...rest
 }: ProjectFiles &
   ProjectTabSetters &
@@ -30,6 +31,7 @@ const ProjectDocumentation = ({
     nextStep?: number
     hasNextStep?: boolean
     isNextButtonDisabled?: boolean
+    errors?: Array<{ id: number; message: string } | null>
   }) => {
   return (
     <>
@@ -40,6 +42,7 @@ const ProjectDocumentation = ({
             project,
             loadedFiles,
             filesMetaData,
+            errors,
           }}
           {...rest}
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}

@@ -236,7 +236,7 @@ const EditActionButtons = ({
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
-  const handleErrors = async (error: any) => {
+  const handleErrors = async (error: any, type?: string) => {
     const errors = await error.json()
 
     if (error.status === 400) {
@@ -246,8 +246,16 @@ const EditActionButtons = ({
         setFileErrors(errors.files)
       }
 
+      if (errors?.metadata) {
+        setFileErrors(errors.metadata)
+      }
+
       if (errors?.details) {
         setOtherErrors(errors.details)
+      }
+
+      if (type === 'files' && errors?.error) {
+        setFileErrors(errors.error)
       }
     }
 
@@ -327,7 +335,7 @@ const EditActionButtons = ({
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/projects/v2/${id}/project-files/`, {
+        await api(`/api/projects/v2/${id}/project-files/delete`, {
           data: {
             file_ids: deletedFilesIds,
           },
@@ -338,14 +346,24 @@ const EditActionButtons = ({
         })
       }
 
-      map(filesForUpdate, async (file: FileMetaDataType) => {
-        await api(`/api/projects/v2/${id}/project-files/${file.id}/edit_type`, {
-          data: {
-            file_type: file.type,
-          },
-          method: 'PUT',
-        })
-      })
+      await Promise.all(
+        map(filesForUpdate, async (file: FileMetaDataType) => {
+          try {
+            await api(
+              `/api/projects/v2/${id}/project-files/${file.id}/edit_type`,
+              {
+                data: {
+                  file_type: file.type,
+                },
+                method: 'PUT',
+              },
+            )
+          } catch (error) {
+            await handleErrors(error, 'files')
+            throw error
+          }
+        }),
+      )
 
       try {
         const res = await api(

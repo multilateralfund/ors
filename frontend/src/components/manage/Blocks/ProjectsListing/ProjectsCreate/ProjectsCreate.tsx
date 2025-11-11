@@ -315,6 +315,17 @@ const ProjectsCreate = ({
       project?.id === project?.component.original_project_id) &&
     getHasNoFiles(parseInt(project_id), files, projectFiles)
 
+  const missingFileTypeErrors = loadedFiles
+    ? map(filesMetaData, ({ type }, index) =>
+        !type
+          ? {
+              id: index,
+              message: `Attachment ${Number(index) + 1} - File type is required.`,
+            }
+          : null,
+      ).filter(Boolean)
+    : []
+
   const steps = [
     {
       id: 'project-identifiers',
@@ -517,7 +528,9 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Attachments</div>
-          {fileErrors || (loadedFiles && hasNoFiles) ? (
+          {fileErrors ||
+          (loadedFiles && hasNoFiles) ||
+          missingFileTypeErrors.length > 0 ? (
             areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
@@ -546,6 +559,7 @@ const ProjectsCreate = ({
           isNextButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
+          errors={missingFileTypeErrors}
           {...rest}
         />
       ),
@@ -564,6 +578,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
+        ...missingFileTypeErrors,
       ],
     },
     ...(isApprovalTabAvailable

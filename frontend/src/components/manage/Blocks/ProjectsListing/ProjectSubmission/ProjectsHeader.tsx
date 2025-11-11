@@ -22,6 +22,7 @@ import {
 import { useStore } from '@ors/store'
 
 import { CircularProgress } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectsHeader = ({
   projectData,
@@ -34,6 +35,7 @@ const ProjectsHeader = ({
   specificFields,
   approvalFields,
   bpData,
+  filesMetaData,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -64,7 +66,10 @@ const ProjectsHeader = ({
   )
 
   const isSaveDisabled =
-    hasMissingRequiredFields || hasValidationErrors || bpData.bpDataLoading
+    hasMissingRequiredFields ||
+    hasValidationErrors ||
+    bpData.bpDataLoading ||
+    !!find(filesMetaData, (metadata) => !metadata.type)
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
@@ -117,6 +122,7 @@ const ProjectsHeader = ({
                 files,
                 mode,
                 specificFields,
+                filesMetaData,
               }}
               {...rest}
             />
@@ -136,6 +142,7 @@ const ProjectsHeader = ({
                 approvalFields,
                 postExComUpdate,
                 bpData,
+                filesMetaData,
               }}
               {...rest}
             />
