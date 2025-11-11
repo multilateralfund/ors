@@ -1,5 +1,5 @@
 import { AgGridReactProps, CustomCellRendererProps } from 'ag-grid-react'
-import { DataTypeDefinition } from 'ag-grid-community'
+import { DataTypeDefinition, IHeaderParams } from 'ag-grid-community'
 import {
   formatBoolean,
   formatDate,
@@ -8,6 +8,8 @@ import {
   formatUSD,
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import React from 'react'
+import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 
 export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
   dateString: {
@@ -375,7 +377,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     group: 'Financial data fields',
     input: true,
     overrideOptions: {
-      minWidth: 120,
+      minWidth: 140,
       cellDataType: 'currency',
     },
   },
@@ -405,7 +407,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
     group: 'Financial data fields',
     input: true,
     overrideOptions: {
-      minWidth: 120,
+      minWidth: 140,
       cellDataType: 'currency',
     },
   },
@@ -479,10 +481,32 @@ export const tableColumns: Record<string, APRTableColumn> = {
   },
 }
 
-export default function getColumnDefs(
-  group: string | null = null,
-  isEditable: boolean = false,
-) {
+interface BaseColumnDefOptions {
+  group?: string | null
+  inlineEdit?: boolean
+}
+
+interface ClipboardDisabled extends BaseColumnDefOptions {
+  clipboardEdit?: false
+  rows?: undefined
+  setRows?: undefined
+}
+
+interface ClipboardEnabled extends BaseColumnDefOptions {
+  clipboardEdit: true
+  rows: any[]
+  setRows: (state: any[]) => void
+}
+
+type ColumnDefOptions = ClipboardDisabled | ClipboardEnabled
+
+export default function getColumnDefs({
+  group = null,
+  inlineEdit = false,
+  clipboardEdit = false,
+  rows,
+  setRows,
+}: ColumnDefOptions = {}) {
   let columns = Object.values(tableColumns)
   if (group) {
     columns = columns.filter(
@@ -496,7 +520,20 @@ export default function getColumnDefs(
       headerName: c.label,
       field: c.fieldName,
       ...(c.overrideOptions ?? {}),
-      editable: c.fieldName !== 'project_code' && isEditable,
+      editable: inlineEdit && c.input,
+      // Clipboard editing requires a custom header component
+      headerComponent:
+        clipboardEdit && c.input && rows && setRows
+          ? (props: IHeaderParams) => (
+              <HeaderPasteWrapper
+                field={props.column.getColDef().field!}
+                form={rows}
+                label={props.displayName}
+                setForm={setRows}
+                rowIdField="project_code"
+              />
+            )
+          : undefined,
     })),
     defaultColDef: {
       headerClass: 'ag-text-center',
