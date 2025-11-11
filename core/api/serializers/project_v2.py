@@ -1149,6 +1149,8 @@ class ProjectV2EditApprovalFieldsSerializer(
         """
         user = self.context["request"].user
         validated_data["date_approved"] = validated_data["meeting"].end_date
+        # project_end_date should take the value of date_completion at this point
+        validated_data["project_end_date"] = validated_data["date_completion"]
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
