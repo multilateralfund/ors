@@ -102,7 +102,7 @@ const RemoveAssociation = (props: RemoveAssociationProps) => {
   return (
     <>
       <Button
-        className="mx-1 mb-1 h-7 w-fit whitespace-nowrap px-2 text-lg uppercase"
+        className="mx-1.5 mb-1 h-7 w-fit whitespace-nowrap px-2 text-lg uppercase"
         size="large"
         variant="contained"
         onClick={handleOpenModal}

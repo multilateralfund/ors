@@ -407,6 +407,6 @@ export interface FileMetaDataType {
 }
 
 export interface FileMetaDataProps {
-  filesMetaData: FileMetaDataType[]
-  setFilesMetaData: Dispatch<SetStateAction<FileMetaDataType[]>>
+  filesMetaData?: FileMetaDataType[]
+  setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
 }

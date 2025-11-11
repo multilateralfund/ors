@@ -69,7 +69,7 @@ const CreateActionButtons = ({
 
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${result.id}/files/v2/`,
+          `/api/projects/v2/${result.id}/project-files/`,
           newFiles,
           false,
           'list',

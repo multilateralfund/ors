@@ -77,13 +77,13 @@ export function FilesViewer(props: ProjectDocs) {
         : [...(files?.deletedFilesIds || []), (file as ProjectFile).id],
     })
 
-    setFilesMetaData((prev) =>
+    setFilesMetaData?.((prev) =>
       filter(prev, (_, index: number) => fileIndex !== index),
     )
   }
 
   const handleChangeFileType = (value: any, fileIndex: number) => {
-    setFilesMetaData((prev) =>
+    setFilesMetaData?.((prev) =>
       map(prev, (file, index: number) =>
         fileIndex === index ? { ...file, type: value?.id ?? null } : file,
       ),
@@ -176,28 +176,30 @@ export function FilesViewer(props: ProjectDocs) {
                         {fileName}
                       </span>
                     </a>
-                    <div className="w-48">
-                      <Label>Type</Label>
-                      <div className="flex items-center">
-                        <Field
-                          widget="autocomplete"
-                          options={fileTypesOpts}
-                          value={filesMetaData[index]?.type}
-                          onChange={(_, value) =>
-                            handleChangeFileType(value, index)
-                          }
-                          getOptionLabel={(option) =>
-                            getOptionLabel(fileTypesOpts, option)
-                          }
-                          disabled={!isFileEditable}
-                          // Input={{
-                          //   error: getIsInputDisabled('country'),
-                          // }}
-                          {...firstColFieldsProps}
-                        />
-                        {/* <FieldErrorIndicator errors={errors} field="country" /> */}
+                    {filesMetaData && setFilesMetaData && (
+                      <div className="w-64">
+                        <Label>Type</Label>
+                        <div className="flex items-center">
+                          <Field
+                            widget="autocomplete"
+                            options={fileTypesOpts}
+                            value={filesMetaData[index]?.type}
+                            onChange={(_, value) =>
+                              handleChangeFileType(value, index)
+                            }
+                            getOptionLabel={(option) =>
+                              getOptionLabel(fileTypesOpts, option)
+                            }
+                            disabled={!isFileEditable}
+                            // Input={{
+                            //   error: getIsInputDisabled('country'),
+                            // }}
+                            {...firstColFieldsProps}
+                          />
+                          {/* <FieldErrorIndicator errors={errors} field="country" /> */}
+                        </div>
                       </div>
-                    </div>
+                    )}
                     {isFileEditable && (
                       <IoTrash
                         className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"

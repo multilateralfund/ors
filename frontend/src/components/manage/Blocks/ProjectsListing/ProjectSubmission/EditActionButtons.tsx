@@ -38,6 +38,7 @@ import {
   TrancheErrorType,
   ProjectSpecificFields,
   BpDataProps,
+  FileMetaDataType,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
@@ -266,6 +267,15 @@ const EditActionButtons = ({
       filesMetaData,
       (metadata) => metadata.id,
     )
+
+    const filesForUpdate = filter(
+      existingFilesMetadata,
+      (metadata: FileMetaDataType) => {
+        const crtFile = find(projectFiles, { id: metadata.id }) as ProjectFile
+        return crtFile && crtFile.type !== metadata.type
+      },
+    )
+
     const newFilesMetadata = filter(filesMetaData, (metadata) => !metadata.id)
     const formattedFilesMetadata = fromPairs(
       map(newFilesMetadata, (file) => [file.name, file.type]),
@@ -307,7 +317,7 @@ const EditActionButtons = ({
       // Upload files
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${id}/files/v2/`,
+          `/api/projects/v2/${id}/project-files/`,
           newFiles,
           false,
           'list',
@@ -317,7 +327,7 @@ const EditActionButtons = ({
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/project/${id}/files/v2`, {
+        await api(`/api/projects/v2/${id}/project-files/`, {
           data: {
             file_ids: deletedFilesIds,
           },
@@ -327,6 +337,15 @@ const EditActionButtons = ({
           method: 'DELETE',
         })
       }
+
+      map(filesForUpdate, async (file: FileMetaDataType) => {
+        await api(`/api/projects/v2/${id}/project-files/${file.id}/edit_type`, {
+          data: {
+            file_type: file.type,
+          },
+          method: 'PUT',
+        })
+      })
 
       try {
         const res = await api(
