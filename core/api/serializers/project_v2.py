@@ -117,7 +117,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.file.name
 
     def get_download_url(self, obj):
-        return reverse("project-files-v2-download", args=(obj.project_id, obj.id))
+        return reverse("project-file-v2-download", args=(obj.project_id, obj.id))
 
     def get_editable(self, obj):
         edit_queryset_ids = self.context.get("edit_queryset_ids", set())
