@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
 
 from core.models.utils import get_protected_storage
 from core.models.agency import Agency
@@ -261,7 +262,7 @@ class AnnualProjectReport(models.Model):
             return self.project.sector.code
         return ""
 
-    @property
+    @cached_property
     def consumption_phased_out_odp_proposal(self):
         # TODO: we may want some additional filters on `get_version` and `latest_version`
         # so that we only take into account changes for the *previous* year.
@@ -271,7 +272,7 @@ class AnnualProjectReport(models.Model):
 
         return version3.consumption_phased_out_odp
 
-    @property
+    @cached_property
     def consumption_phased_out_co2_proposal(self):
         version3 = self.project.get_version(3)
         if not version3:
@@ -279,7 +280,7 @@ class AnnualProjectReport(models.Model):
 
         return version3.consumption_phased_out_co2
 
-    @property
+    @cached_property
     def production_phased_out_odp_proposal(self):
         version3 = self.project.get_version(3)
         if not version3:
@@ -287,7 +288,7 @@ class AnnualProjectReport(models.Model):
 
         return version3.production_phased_out_odp
 
-    @property
+    @cached_property
     def production_phased_out_co2_proposal(self):
         version3 = self.project.get_version(3)
         if not version3:
@@ -295,7 +296,7 @@ class AnnualProjectReport(models.Model):
 
         return version3.production_phased_out_co2
 
-    @property
+    @cached_property
     def approved_funding(self):
         # TODO: are we sure it's .total_fund and not .total_fund_approved?
         version3 = self.project.get_version(3)
@@ -304,7 +305,7 @@ class AnnualProjectReport(models.Model):
 
         return version3.total_fund
 
-    @property
+    @cached_property
     def adjustment(self):
         if not self.project.final_version or self.project.final_version.version < 3:
             return None
@@ -320,7 +321,7 @@ class AnnualProjectReport(models.Model):
 
         return latest_funding - self.approved_funding
 
-    @property
+    @cached_property
     def approved_funding_plus_adjustment(self):
         # Returning `total_fund` directly, that's what it should add up to
         if not self.project.final_version:
@@ -328,7 +329,7 @@ class AnnualProjectReport(models.Model):
 
         return self.project.final_version.total_fund
 
-    @property
+    @cached_property
     def per_cent_funds_disbursed(self):
         if (
             self.funds_disbursed is None
@@ -338,14 +339,14 @@ class AnnualProjectReport(models.Model):
 
         return self.funds_disbursed / self.approved_funding_plus_adjustment
 
-    @property
+    @cached_property
     def balance(self):
         if self.approved_funding is None:
             return None
 
         return self.approved_funding - (self.funds_disbursed or 0)
 
-    @property
+    @cached_property
     def support_cost_adjustment(self):
         # Support cost in the latest version - Support cost in version 3
         version3 = self.project.get_version(3)
@@ -357,7 +358,7 @@ class AnnualProjectReport(models.Model):
 
         return self.project.final_version.support_cost_psc - version3.support_cost_psc
 
-    @property
+    @cached_property
     def support_cost_approved_plus_adjustment(self):
         # Using final_version.support_cost_psc directly, as that's what it should be
         if (
@@ -368,7 +369,7 @@ class AnnualProjectReport(models.Model):
 
         return self.project.final_version.support_cost_psc
 
-    @property
+    @cached_property
     def support_cost_balance(self):
         # Support Costs Approved Funding plus Adjustments - Support Cost Disbursed
         if self.support_cost_approved_plus_adjustment is None:
