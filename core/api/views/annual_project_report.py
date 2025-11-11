@@ -109,11 +109,15 @@ class APRWorkspaceView(RetrieveAPIView):
             },
         )
 
-        # When creating for the first time, populate individual project reports
+        # When creating for the first time, populate individual project reports.
+        # We don't need to consider the case of new projects being added after this.
         if created or agency_report.project_reports.count() == 0:
             # Get projects for this agency and create AnnualProjectReport for each
             projects_queryset = (
-                Project.objects.filter(latest_project__isnull=True)
+                Project.objects.filter(
+                    latest_project__isnull=True,
+                    version__gte=3,
+                )
                 .select_related(
                     "country",
                     "agency",

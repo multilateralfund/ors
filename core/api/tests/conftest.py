@@ -1459,6 +1459,7 @@ def multiple_projects_for_apr(
             status=project_ongoing_status,
             date_approved=date(2022, 1, 1),
             code=f"TEST/ONG/{i}/INV/01",
+            version=3,
         )
         for i in range(1, 4)
     ]
@@ -1471,6 +1472,7 @@ def multiple_projects_for_apr(
             status=project_completed_status,
             date_approved=date(2021, 6, 1),
             code=f"TEST/COM/{i}/INV/01",
+            version=3,
         )
         for i in range(1, 3)
     ]
