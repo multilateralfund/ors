@@ -10,6 +10,7 @@ import { useStore } from '@ors/store'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { fromPairs, map } from 'lodash'
 
 const CreateActionButtons = ({
   projectData,
@@ -25,6 +26,7 @@ const CreateActionButtons = ({
   specificFields,
   specificFieldsLoaded,
   mode,
+  filesMetaData,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
@@ -49,12 +51,18 @@ const CreateActionButtons = ({
         formatProjectFields(projectFields),
       )
 
+      const formattedFilesMetadata = fromPairs(
+        map(filesMetaData, (file) => [file.name, file.type]),
+      )
+      const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
       if (newFiles.length > 0) {
         await uploadFiles(
           `/api/project/files/validate/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
       const result = await api(`api/projects/v2/`, {
@@ -73,6 +81,7 @@ const CreateActionButtons = ({
           newFiles,
           false,
           'list',
+          params,
         )
       }
       setLocation(`/projects-listing/${result.id}/edit`)

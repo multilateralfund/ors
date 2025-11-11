@@ -259,7 +259,7 @@ export interface ProjectHeader {
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
-  filesMetaData: FileMetaDataType[]
+  filesMetaData?: FileMetaDataType[]
 }
 
 export type ActionButtons = ProjectHeader & {

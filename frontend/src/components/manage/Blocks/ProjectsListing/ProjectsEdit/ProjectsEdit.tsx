@@ -171,6 +171,15 @@ const ProjectsEdit = ({
           ...prev,
           newFiles: resolvedFiles,
         }))
+
+        setFilesMetaData((prev) => [
+          ...prev,
+          ...map(data, (file) => ({
+            id: null,
+            name: file.filename,
+            type: file.type,
+          })),
+        ])
       }
 
       loadFiles()
