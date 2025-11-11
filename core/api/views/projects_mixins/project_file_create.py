@@ -50,6 +50,11 @@ class ProjectFileCreateMixin:
                     {"file": f"File extension {extension} is not valid"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+        if len(set(filenames)) != len(filenames):
+            return Response(
+                {"files": "Duplicate filenames in the upload"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if kwargs.get("project_id"):
             existing_file = ProjectFile.objects.filter(
                 project_id=kwargs.get("project_id"),
