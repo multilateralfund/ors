@@ -956,6 +956,7 @@ class TestProjectsV2Update:
         data = {
             "meeting": meeting.id,
             "decision": decision.id,
+            "date_completion": "2023-10-01",
         }
 
         def _test_user_permissions(user, expected_response_status):
@@ -1038,6 +1039,7 @@ class TestProjectsV2Update:
         assert response.data["pcr_waived"] is True
         assert response.data["ad_hoc_pcr"] is False
         assert response.data["date_approved"] == meeting.end_date
+        assert response.data["project_end_date"] == data["date_completion"]
 
 
 class TestProjectFiles:
