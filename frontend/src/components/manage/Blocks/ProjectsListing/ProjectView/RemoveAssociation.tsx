@@ -59,7 +59,6 @@ const RemoveAssociationModal = ({
       aria-labelledby="disassociate-modal"
       open={isModalOpen}
       onClose={() => setIsModalOpen(false)}
-      keepMounted
     >
       <Box className="flex w-full max-w-lg flex-col absolute-center">
         <Typography className="mb-4 text-[20px] font-medium text-black">
@@ -103,7 +102,7 @@ const RemoveAssociation = (props: RemoveAssociationProps) => {
   return (
     <>
       <Button
-        className="mb-2 mt-4 h-9 w-fit px-4 py-2 text-lg uppercase"
+        className="mx-1 mb-1 h-7 w-fit whitespace-nowrap px-2 text-lg uppercase"
         size="large"
         variant="contained"
         onClick={handleOpenModal}
