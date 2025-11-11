@@ -91,8 +91,8 @@ const CreateActionButtons = ({
       if (error.status === 400) {
         setErrors(errors)
 
-        if (errors?.file) {
-          setFileErrors(errors.file)
+        if (errors?.files) {
+          setFileErrors(errors.files)
         }
 
         if (errors?.details) {

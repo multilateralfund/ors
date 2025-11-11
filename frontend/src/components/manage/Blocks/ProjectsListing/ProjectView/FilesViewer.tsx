@@ -39,7 +39,7 @@ export function FilesViewer(props: ProjectDocs) {
   const firstColFieldsProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-full',
+      className: defaultProps.FieldProps.className + ' w-full ProjAssociation',
     },
   }
 
@@ -159,9 +159,9 @@ export function FilesViewer(props: ProjectDocs) {
                 const downloadUrl = (file as ProjectFile).download_url
 
                 return (
-                  <div key={index} className="flex items-center gap-2">
+                  <div key={index} className="flex flex-wrap items-end gap-2">
                     <a
-                      className="m-0 flex items-center gap-2.5 no-underline"
+                      className="m-0 mb-1 flex items-center gap-2.5 no-underline"
                       href={
                         downloadUrl
                           ? formatApiUrl(downloadUrl)
@@ -179,8 +179,8 @@ export function FilesViewer(props: ProjectDocs) {
                       </span>
                     </a>
                     {filesMetaData ? (
-                      <div className="w-64">
-                        <Label>Type</Label>
+                      <div className="w-[290px]">
+                        <Label className="!mb-0.5 !text-[15px]">Type</Label>
                         <div className="flex items-center">
                           <Field
                             widget="autocomplete"
@@ -209,16 +209,18 @@ export function FilesViewer(props: ProjectDocs) {
                         </div>
                       </div>
                     ) : (
-                      <div>
+                      <div className="mb-1 text-lg italic">
+                        (
                         {find(
                           fileTypes,
                           (type) => type[0] === file.type,
                         )?.[1] ?? ''}
+                        )
                       </div>
                     )}
                     {isFileEditable && (
                       <IoTrash
-                        className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                        className="transition-colors mb-1.5 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                         onClick={() => handleDelete(file, index)}
                       />
                     )}

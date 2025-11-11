@@ -315,16 +315,17 @@ const ProjectsCreate = ({
       project?.id === project?.component.original_project_id) &&
     getHasNoFiles(parseInt(project_id), files, projectFiles)
 
-  const missingFileTypeErrors = loadedFiles
-    ? map(filesMetaData, ({ type }, index) =>
-        !type
-          ? {
-              id: index,
-              message: `Attachment ${Number(index) + 1} - File type is required.`,
-            }
-          : null,
-      ).filter(Boolean)
-    : []
+  const missingFileTypeErrors =
+    mode === 'add' || loadedFiles
+      ? map(filesMetaData, ({ type }, index) =>
+          !type
+            ? {
+                id: index,
+                message: `Attachment ${Number(index) + 1} - File type is required.`,
+              }
+            : null,
+        ).filter(Boolean)
+      : []
 
   const steps = [
     {
