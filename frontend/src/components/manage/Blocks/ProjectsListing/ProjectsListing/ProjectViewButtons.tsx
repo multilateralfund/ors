@@ -5,9 +5,7 @@ import { useContext, useState } from 'react'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import SubmitProjectModal from '../ProjectSubmission/SubmitProjectModal'
-import SubmitTranchesWarningModal from '../ProjectSubmission/SubmitTranchesWarningModal'
-import ChangeStatusModal from '../ProjectSubmission/ChangeStatusModal'
+import EditActionModals from '../ProjectSubmission/EditActionModals'
 import {
   DropDownButtonProps,
   DropDownMenuProps,
@@ -80,6 +78,7 @@ const ProjectViewButtons = ({
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
@@ -138,27 +137,8 @@ const ProjectViewButtons = ({
     }
   }
 
-  const recommendProject = async () => {
-    setIsLoading(true)
-
-    try {
-      await api(`api/projects/v2/${id}/recommend/`, {
-        method: 'POST',
-      })
-      setParams((prev: any) => ({ ...prev }))
-    } catch (error) {
-      enqueueSnackbar(
-        <>
-          Could not recommend project. Please check project's data and try
-          again.
-        </>,
-        {
-          variant: 'error',
-        },
-      )
-    } finally {
-      setIsLoading(false)
-    }
+  const onRecommendProject = async () => {
+    setIsRecommendModalOpen(true)
   }
 
   const sendProjectBackToDraft = async () => {
@@ -240,7 +220,7 @@ const ProjectViewButtons = ({
               >
                 <Dropdown.Item
                   className={cx(dropdownItemClassname, 'text-primary')}
-                  onClick={recommendProject}
+                  onClick={onRecommendProject}
                 >
                   Recommend project
                 </Dropdown.Item>
@@ -283,38 +263,23 @@ const ProjectViewButtons = ({
             className="text-align mb-1 ml-1.5 mt-auto"
           />
         )}
-        {isSubmitModalOpen && (
-          <SubmitProjectModal
-            id={id}
-            isModalOpen={isSubmitModalOpen}
-            setIsModalOpen={setIsSubmitModalOpen}
-          />
-        )}
-        {isWithdrawModalOpen && (
-          <ChangeStatusModal
-            mode="withdraw"
-            isModalOpen={isWithdrawModalOpen}
-            setIsModalOpen={setIsWithdrawModalOpen}
-            onAction={withdrawProject}
-          />
-        )}
-        {isSendToDraftModalOpen && (
-          <ChangeStatusModal
-            mode="sendToDraft"
-            isModalOpen={isSendToDraftModalOpen}
-            setIsModalOpen={setIsSendToDraftModalOpen}
-            onAction={sendProjectBackToDraft}
-          />
-        )}
-        {isTrancheWarningOpen && (
-          <SubmitTranchesWarningModal
-            {...{
-              isTrancheWarningOpen,
-              setIsTrancheWarningOpen,
-              setIsSubmitModalOpen,
-            }}
-          />
-        )}
+        <EditActionModals
+          {...{
+            id,
+            isSubmitModalOpen,
+            setIsSubmitModalOpen,
+            isRecommendModalOpen,
+            setIsRecommendModalOpen,
+            isWithdrawModalOpen,
+            setIsWithdrawModalOpen,
+            isSendToDraftModalOpen,
+            setIsSendToDraftModalOpen,
+            isTrancheWarningOpen,
+            setIsTrancheWarningOpen,
+            withdrawProject,
+            sendProjectBackToDraft,
+          }}
+        />
       </div>
     )
   )
