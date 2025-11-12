@@ -159,7 +159,12 @@ export function FilesViewer(props: ProjectDocs) {
                 const downloadUrl = (file as ProjectFile).download_url
 
                 return (
-                  <div key={index} className="flex flex-wrap items-end gap-2">
+                  <div
+                    key={index}
+                    className={cx('flex flex-wrap items-end gap-2', {
+                      'gap-4': mode === 'edit',
+                    })}
+                  >
                     <a
                       className="m-0 mb-1 flex items-center gap-2.5 no-underline"
                       href={
