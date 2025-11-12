@@ -38,12 +38,13 @@ import {
   TrancheErrorType,
   ProjectSpecificFields,
   BpDataProps,
+  FileMetaDataType,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { find, lowerCase, map, pick } from 'lodash'
+import { filter, find, fromPairs, lowerCase, map, pick } from 'lodash'
 import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
@@ -72,6 +73,7 @@ const EditActionButtons = ({
   specificFieldsLoaded,
   postExComUpdate,
   bpData,
+  filesMetaData,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -234,7 +236,7 @@ const EditActionButtons = ({
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
-  const handleErrors = async (error: any) => {
+  const handleErrors = async (error: any, type?: string) => {
     const errors = await error.json()
 
     if (error.status === 400) {
@@ -244,8 +246,16 @@ const EditActionButtons = ({
         setFileErrors(errors.files)
       }
 
+      if (errors?.metadata) {
+        setFileErrors(errors.metadata)
+      }
+
       if (errors?.details) {
         setOtherErrors(errors.details)
+      }
+
+      if (type === 'files' && errors?.error) {
+        setFileErrors(errors.error)
       }
     }
 
@@ -261,6 +271,25 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
+    const existingFilesMetadata = filter(
+      filesMetaData,
+      (metadata) => metadata.id,
+    )
+
+    const filesForUpdate = filter(
+      existingFilesMetadata,
+      (metadata: FileMetaDataType) => {
+        const crtFile = find(projectFiles, { id: metadata.id }) as ProjectFile
+        return crtFile && crtFile.type !== metadata.type
+      },
+    )
+
+    const newFilesMetadata = filter(filesMetaData, (metadata) => !metadata.id)
+    const formattedFilesMetadata = fromPairs(
+      map(newFilesMetadata, (file) => [file.name, file.type]),
+    )
+    const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
     try {
       // Validate files
       if (newFiles.length > 0) {
@@ -269,6 +298,7 @@ const EditActionButtons = ({
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
@@ -295,16 +325,17 @@ const EditActionButtons = ({
       // Upload files
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${id}/files/v2/`,
+          `/api/projects/v2/${id}/project-files/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/project/${id}/files/v2`, {
+        await api(`/api/projects/v2/${id}/project-files/delete`, {
           data: {
             file_ids: deletedFilesIds,
           },
@@ -315,9 +346,28 @@ const EditActionButtons = ({
         })
       }
 
+      await Promise.all(
+        map(filesForUpdate, async (file: FileMetaDataType) => {
+          try {
+            await api(
+              `/api/projects/v2/${id}/project-files/${file.id}/edit_type`,
+              {
+                data: {
+                  file_type: file.type,
+                },
+                method: 'PUT',
+              },
+            )
+          } catch (error) {
+            await handleErrors(error, 'files')
+            throw error
+          }
+        }),
+      )
+
       try {
         const res = await api(
-          `/api/project/${id}/files/include_previous_versions/v2/`,
+          `/api/projects/v2/${id}/project-files/include_previous_versions`,
           {
             withStoreCache: false,
           },

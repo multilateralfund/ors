@@ -1,19 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
+import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import { FieldErrorIndicator } from '../HelperComponents'
 import ExportConfirmModal from './ExportConfirmModal'
+import { defaultProps, exportButtonClassname } from '../constants'
 import { ProjectDocs, ProjectFile } from '../interfaces'
-import { exportButtonClassname } from '../constants'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
+import { filter, find, isNil, map } from 'lodash'
 import { TbFiles } from 'react-icons/tb'
-import { filter, isNil } from 'lodash'
 import cx from 'classnames'
 
 export function FilesViewer(props: ProjectDocs) {
-  const { bpFiles, files, setFiles, mode, project, loadedFiles } = props
+  const {
+    bpFiles,
+    files,
+    setFiles,
+    mode,
+    project,
+    loadedFiles,
+    filesMetaData,
+    setFilesMetaData,
+    errors,
+  } = props
+
+  const { fileTypes } = useContext(ProjectsDataContext)
+  const fileTypesOpts = map(fileTypes, (type) => ({
+    id: type[0],
+    name: type[1],
+  }))
+
+  const firstColFieldsProps = {
+    ...defaultProps,
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-full ProjAssociation',
+    },
+  }
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
   const [exportConfirmModalType, setExportConfirmModalType] = useState<
@@ -31,7 +59,7 @@ export function FilesViewer(props: ProjectDocs) {
     setCurrentFiles([...existingFiles, ...newFiles])
   }, [bpFiles, files])
 
-  const handleDelete = (file: ProjectFile | File) => {
+  const handleDelete = (file: ProjectFile | File, fileIndex: number) => {
     const isNewFile = !(file as ProjectFile).id
     const updatedFiles = filter(currentFiles, (crtFile) =>
       isNewFile
@@ -50,6 +78,18 @@ export function FilesViewer(props: ProjectDocs) {
         ? files?.deletedFilesIds || []
         : [...(files?.deletedFilesIds || []), (file as ProjectFile).id],
     })
+
+    setFilesMetaData?.((prev) =>
+      filter(prev, (_, index: number) => fileIndex !== index),
+    )
+  }
+
+  const handleChangeFileType = (value: any, fileIndex: number) => {
+    setFilesMetaData?.((prev) =>
+      map(prev, (file, index: number) =>
+        fileIndex === index ? { ...file, type: value?.id ?? null } : file,
+      ),
+    )
   }
 
   return (
@@ -112,35 +152,86 @@ export function FilesViewer(props: ProjectDocs) {
                 No files available
               </p>
             ) : (
-              currentFiles.map((file, index: number) => (
-                <div key={index} className="flex items-center gap-2">
-                  <a
-                    className="m-0 flex items-center gap-2.5 no-underline"
-                    href={
-                      (file as ProjectFile).download_url
-                        ? formatApiUrl((file as ProjectFile).download_url)
-                        : URL.createObjectURL(file as File)
-                    }
-                    {...(!(file as ProjectFile).download_url && {
-                      target: '_blank',
-                      rel: 'noopener noreferrer',
-                    })}
-                    download={(file as ProjectFile).filename || file.name}
-                  >
-                    <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
-                    <span className="text-lg font-medium text-secondary">
-                      {(file as ProjectFile).filename || file.name}
-                    </span>
-                  </a>
+              currentFiles.map((file, index: number) => {
+                const isFileEditable =
+                  setFiles && ('editable' in file ? file.editable : true)
+                const fileName = (file as ProjectFile).filename || file.name
+                const downloadUrl = (file as ProjectFile).download_url
 
-                  {setFiles && ('editable' in file ? file.editable : true) && (
-                    <IoTrash
-                      className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                      onClick={() => handleDelete(file)}
-                    />
-                  )}
-                </div>
-              ))
+                return (
+                  <div
+                    key={index}
+                    className={cx('flex flex-wrap items-end gap-2', {
+                      'gap-4': mode === 'edit',
+                    })}
+                  >
+                    <a
+                      className="m-0 mb-1 flex items-center gap-2.5 no-underline"
+                      href={
+                        downloadUrl
+                          ? formatApiUrl(downloadUrl)
+                          : URL.createObjectURL(file as File)
+                      }
+                      {...(!downloadUrl && {
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      })}
+                      download={fileName}
+                    >
+                      <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                      <span className="text-lg font-medium text-secondary">
+                        {fileName}
+                      </span>
+                    </a>
+                    {filesMetaData ? (
+                      <div className="w-[290px]">
+                        <Label className="!mb-0.5 !text-[15px]">Type</Label>
+                        <div className="flex items-center">
+                          <Field
+                            widget="autocomplete"
+                            options={fileTypesOpts}
+                            value={filesMetaData[index]?.type}
+                            onChange={(_, value) =>
+                              handleChangeFileType(value, index)
+                            }
+                            getOptionLabel={(option) =>
+                              getOptionLabel(fileTypesOpts, option)
+                            }
+                            disabled={!isFileEditable}
+                            {...firstColFieldsProps}
+                          />
+                          <FieldErrorIndicator
+                            errors={{
+                              file: filter(
+                                errors,
+                                (error) => error?.id === index,
+                              ).map(
+                                (error) => error?.message.split(' - ')[1] || '',
+                              ),
+                            }}
+                            field="file"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-1 text-lg italic">
+                        (
+                        {find(
+                          fileTypes,
+                          (type) => type[0] === file.type,
+                        )?.[1] ?? ''}
+                        )
+                      </div>
+                    )}
+                    {isFileEditable && (
+                      <IoTrash
+                        className="transition-colors mb-1.5 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                        onClick={() => handleDelete(file, index)}
+                      />
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         )}
