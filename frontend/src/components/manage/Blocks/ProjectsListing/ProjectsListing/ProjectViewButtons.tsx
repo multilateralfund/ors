@@ -137,7 +137,7 @@ const ProjectViewButtons = ({
     }
   }
 
-  const onRecommendProject = async () => {
+  const onRecommendProject = () => {
     setIsRecommendModalOpen(true)
   }
 

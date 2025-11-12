@@ -263,7 +263,7 @@ const EditActionButtons = ({
     })
   }
 
-  const editProject = async (withNavigation: boolean = false) => {
+  const editProject = async (navigationPage?: string) => {
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
@@ -394,8 +394,8 @@ const EditActionButtons = ({
       setProjectId(result.id)
       setProjectTitle(result.title)
 
-      if (withNavigation) {
-        setLocation(`/projects-listing/${id}/submit`)
+      if (navigationPage) {
+        setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
       if (isRecommended) {
@@ -427,12 +427,8 @@ const EditActionButtons = ({
     setIsWithdrawModalOpen(true)
   }
 
-  const recommendProject = async () => {
-    const canRecommend = await editProject()
-
-    if (canRecommend) {
-      setIsRecommendModalOpen(true)
-    }
+  const onRecommendProject = () => {
+    setIsRecommendModalOpen(true)
   }
 
   const sendProjectBackToDraft = async () => {
@@ -566,7 +562,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableSubmit}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={recommendProject}
+            onClick={onRecommendProject}
           >
             Recommend project
           </Dropdown.Item>

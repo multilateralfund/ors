@@ -60,6 +60,7 @@ import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
+import ProjectsRecommendPage from '@ors/app/projects_listing/[project_id]/recommend/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
@@ -399,6 +400,11 @@ export default function App() {
         <Route path="/projects-listing/:project_id/submit">
           <ProjectsDataProvider>
             <ProjectsSubmitPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/recommend">
+          <ProjectsDataProvider>
+            <ProjectsRecommendPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">

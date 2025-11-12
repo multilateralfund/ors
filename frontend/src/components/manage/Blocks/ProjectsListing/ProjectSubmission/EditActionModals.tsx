@@ -1,5 +1,5 @@
 import AddComponentModal from './AddComponentModal'
-import SubmitProjectModal from './SubmitProjectModal'
+import ChangeVersionModal from './ChangeVersionModal'
 import ChangeStatusModal from './ChangeStatusModal'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 
@@ -34,7 +34,7 @@ const EditActionModals = ({
   setIsSendToDraftModalOpen: (isOpen: boolean) => void
   isTrancheWarningOpen: boolean
   setIsTrancheWarningOpen: (isOpen: boolean) => void
-  editProject?: (withNavigation: boolean) => void
+  editProject?: (navigationPage?: string) => void
   withdrawProject: () => void
   sendProjectBackToDraft: () => void
 }) => (
@@ -47,14 +47,16 @@ const EditActionModals = ({
       />
     )}
     {isSubmitModalOpen && (
-      <SubmitProjectModal
+      <ChangeVersionModal
+        mode="submit"
         isModalOpen={isSubmitModalOpen}
         setIsModalOpen={setIsSubmitModalOpen}
         {...{ id, editProject }}
       />
     )}
     {isRecommendModalOpen && (
-      <SubmitProjectModal
+      <ChangeVersionModal
+        mode="recommend"
         isModalOpen={isRecommendModalOpen}
         setIsModalOpen={setIsRecommendModalOpen}
         {...{ id, editProject }}
