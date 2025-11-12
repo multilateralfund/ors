@@ -10,6 +10,7 @@ import { useStore } from '@ors/store'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { fromPairs, map } from 'lodash'
 
 const CreateActionButtons = ({
   projectData,
@@ -25,6 +26,7 @@ const CreateActionButtons = ({
   specificFields,
   specificFieldsLoaded,
   mode,
+  filesMetaData,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
@@ -49,12 +51,18 @@ const CreateActionButtons = ({
         formatProjectFields(projectFields),
       )
 
+      const formattedFilesMetadata = fromPairs(
+        map(filesMetaData, (file) => [file.name, file.type]),
+      )
+      const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
       if (newFiles.length > 0) {
         await uploadFiles(
           `/api/project/files/validate/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
       const result = await api(`api/projects/v2/`, {
@@ -69,10 +77,11 @@ const CreateActionButtons = ({
 
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${result.id}/files/v2/`,
+          `/api/projects/v2/${result.id}/project-files/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
       setLocation(`/projects-listing/${result.id}/edit`)
@@ -82,12 +91,16 @@ const CreateActionButtons = ({
       if (error.status === 400) {
         setErrors(errors)
 
-        if (errors?.file) {
-          setFileErrors(errors.file)
+        if (errors?.files) {
+          setFileErrors(errors.files)
         }
 
         if (errors?.details) {
           setOtherErrors(errors.details)
+        }
+
+        if (errors?.metadata) {
+          setFileErrors(errors.metadata)
         }
       }
 

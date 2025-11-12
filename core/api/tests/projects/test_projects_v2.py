@@ -1,3 +1,4 @@
+import json
 import pytest
 from django.urls import reverse
 from decimal import Decimal
@@ -26,6 +27,17 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="project_file_url")
 def _project_file_url(project_file):
     return reverse("project-files", args=(project_file.id,))
+
+
+def setup_files(files):
+    metadata = {}
+    for file, file_type in files:
+        metadata[file.name] = file_type
+
+    return {
+        "files": [file.open() for file, _ in files],
+        "metadata": json.dumps(metadata),
+    }
 
 
 @pytest.fixture(name="_setup_project_create")
@@ -1062,8 +1074,14 @@ class TestProjectFiles:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-        url = reverse("project-files-v2", args=(project.id,))
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        url = reverse("project-file-v2-list", args=(project.id,))
+        delete_url = reverse("project-file-v2-delete", args=(project.id,))
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
 
         def _test_user_permissions(
             user,
@@ -1087,7 +1105,7 @@ class TestProjectFiles:
             if expected_get_response_status == 200:
                 if len(response.data) > 0:
                     download_url = reverse(
-                        "project-files-v2-download",
+                        "project-file-v2-download",
                         args=(
                             response.data[0]["project_id"],
                             response.data[0]["id"],
@@ -1096,7 +1114,7 @@ class TestProjectFiles:
                     response = self.client.get(download_url)
                     assert response.status_code == 200
 
-            response = self.client.delete(url, delete_data, format="json")
+            response = self.client.delete(delete_url, delete_data, format="json")
             assert response.status_code == expected_delete_response_status
 
         # test with unauthenticated user
@@ -1105,7 +1123,7 @@ class TestProjectFiles:
         assert response.status_code == 403
         response = self.client.get(url)
         assert response.status_code == 403
-        response = self.client.delete(url)
+        response = self.client.delete(delete_url)
         assert response.status_code == 403
 
         _test_user_permissions(user, 403, 403, 403)
@@ -1134,12 +1152,16 @@ class TestProjectFiles:
         self, agency_inputter_user, project, test_file1, test_file2, wrong_format_file3
     ):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file with wrong extension
-        data = {
-            "files": [test_file1.open(), test_file2.open(), wrong_format_file3.open()]
-        }
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+                (wrong_format_file3, "other"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
         assert response.data == {"file": "File extension .zip is not valid"}
@@ -1151,9 +1173,13 @@ class TestProjectFiles:
         url = reverse("project-files-validation")
 
         # upload file with wrong extension
-        data = {
-            "files": [test_file1.open(), test_file2.open(), wrong_format_file3.open()]
-        }
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+                (wrong_format_file3, "other"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
         assert response.data == {"file": "File extension .zip is not valid"}
@@ -1162,7 +1188,12 @@ class TestProjectFiles:
         url = reverse("project-files-validation")
 
         # upload file
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 200
         assert ProjectFile.objects.all().count() == 0
@@ -1171,10 +1202,15 @@ class TestProjectFiles:
         self, agency_inputter_user, project, test_file1, test_file2
     ):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
         assert project.files.all().count() == 2
@@ -1190,10 +1226,16 @@ class TestProjectFiles:
 
     def test_file_upload(self, agency_inputter_user, project, test_file1, test_file2):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
         data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
@@ -1201,14 +1243,17 @@ class TestProjectFiles:
         response = self.client.get(url)
         assert response.status_code == 200
         assert response.data[0]["project_id"] == project.id
+        assert response.data[0]["type"] == "other"
         assert response.data[0]["filename"] == test_file1.name
+        assert response.data[1]["type"] == "endorsement_letter"
         assert response.data[1]["project_id"] == project.id
         assert response.data[1]["filename"] == test_file2.name
 
         # delete file (DELETE)
         file_ids = [response.data[0]["id"], response.data[1]["id"]]
         data = {"file_ids": file_ids}
-        response = self.client.delete(url, data, format="json")
+        delete_url = reverse("project-file-v2-delete", args=(project.id,))
+        response = self.client.delete(delete_url, data, format="json")
         assert response.status_code == 204
 
         # check delete (GET)
@@ -1218,17 +1263,17 @@ class TestProjectFiles:
 
     def test_file_download(self, agency_inputter_user, project, test_file1):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
-        data = {"files": [test_file1.open()]}
+        data = setup_files(((test_file1, "other"),))
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
         # download file
         my_file = ProjectFile.objects.get(filename=test_file1.name)
         url = reverse(
-            "project-files-v2-download",
+            "project-file-v2-download",
             args=(
                 my_file.project.id,
                 my_file.id,
@@ -1282,7 +1327,7 @@ class TestProjectV2FileIncludePreviousVersions:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project.id,))
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
@@ -1320,7 +1365,7 @@ class TestProjectV2FileIncludePreviousVersions:
         project3,
         project3_file,
     ):
-        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project.id,))
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
@@ -1355,7 +1400,7 @@ class TestProjectV2FileIncludePreviousVersions:
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
-        url = reverse("project-v2-file-include-previous-versions", args=(project3.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project3.id,))
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
 
         response = self.client.get(url)
@@ -1378,7 +1423,7 @@ class TestProjectV2FileIncludePreviousVersions:
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
-        url = reverse("project-v2-file-include-previous-versions", args=(project2.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project2.id,))
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
 
         response = self.client.get(url)
@@ -1389,3 +1434,74 @@ class TestProjectV2FileIncludePreviousVersions:
         assert data[1]["id"] == project3.id  # project3 is the archived version
         assert any(f["id"] == project2_file.id for f in data[0]["files"])
         assert any(f["id"] == project3_file.id for f in data[1]["files"])
+
+    def test_edit_type_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_file,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        mlfs_admin_user,
+        admin_user,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        data = {
+            "file_type": "endorsement_letter",
+        }
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.put(url, data, format="json")
+            assert response.status_code == expected_response_status
+
+        # Unauthenticated
+        self.client.force_authenticate(user=None)
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(mlfs_admin_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_edit_type(
+        self,
+        mlfs_admin_user,
+        project,
+        project_file,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        self.client.force_authenticate(user=mlfs_admin_user)
+        data = {
+            "file_type": "endorsement_letter",
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["type"] == "endorsement_letter"
+        project_file.refresh_from_db()
+        assert project_file.type == "endorsement_letter"

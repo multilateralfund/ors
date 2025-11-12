@@ -8,7 +8,7 @@ export function useGetProjectFiles(project_id: number) {
     options: {
       withStoreCache: false,
     },
-    path: `/api/project/${project_id}/files/include_previous_versions/v2/`,
+    path: `/api/projects/v2/${project_id}/project-files/include_previous_versions`,
   })
 
   const formattedFiles = useMemo(() => formatFiles(data, project_id), [data])

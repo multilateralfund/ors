@@ -126,9 +126,10 @@ from core.api.views.projects_v2 import (
     ProjectProductionControlTypeView,
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
-    ProjectV2FileView,
-    ProjectV2FileIncludePreviousVersionsView,
-    ProjectFilesDownloadView,
+)
+from core.api.views.project_v2_files import (
+    FileTypeView,
+    ProjectFileV2ViewSet,
     ProjectFilesValidationView,
 )
 from core.api.views.project_associations import ProjectAssociationViewSet
@@ -171,6 +172,11 @@ router.register(
     basename="blanket-approval-details",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
+router.register(
+    r"projects/v2/(?P<project_id>\d+)/project-files",
+    ProjectFileV2ViewSet,
+    basename="project-file-v2",
+)
 router.register("projects", ProjectViewSet, basename="project")
 router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"
@@ -476,6 +482,11 @@ urlpatterns = [
         name="countries-list",
     ),
     path(
+        "file-types/",
+        FileTypeView.as_view(),
+        name="file-type-list",
+    ),
+    path(
         "meta-projects/",
         MetaProjectListView.as_view(),
         name="meta-project-list",
@@ -574,21 +585,6 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
-    ),
-    path(
-        "project/<int:project_id>/files/v2/",
-        ProjectV2FileView.as_view(),
-        name="project-files-v2",
-    ),
-    path(
-        "project/<int:project_id>/files/include_previous_versions/v2/",
-        ProjectV2FileIncludePreviousVersionsView.as_view(),
-        name="project-v2-file-include-previous-versions",
-    ),
-    path(
-        "project/<int:project_id>/files/<int:id>/download/v2/",
-        ProjectFilesDownloadView.as_view(),
-        name="project-files-v2-download",
     ),
     path(
         "project/files/validate/",
