@@ -321,7 +321,7 @@ const ProjectsCreate = ({
           !type
             ? {
                 id: index,
-                message: `Attachment ${Number(index) + 1} - File type is required.`,
+                message: `Attachment ${Number(index) + 1} - Type is required.`,
               }
             : null,
         ).filter(Boolean)
