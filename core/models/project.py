@@ -1430,7 +1430,7 @@ class Project(models.Model):
         files.sort(key=lambda f: f.date_created, reverse=True)
         return files[0]
 
-    @property
+    @cached_property
     def final_version(self):
         return self.latest_project if self.latest_project else self
 
@@ -1446,6 +1446,24 @@ class Project(models.Model):
             Project.objects.really_all()
             .filter(latest_project_id=final.id, version=version_number)
             .first()
+        )
+
+    def latest_version_for_year(self, year):
+        """
+        Gets the latest version created by ExCom meeting in or before a specific year.
+
+        Returns None if there's no version fitting the criteria.
+        """
+        final = self.final_version
+        return (
+            Project.objects.really_all()
+            .filter(
+                models.Q(id=final.id) | models.Q(latest_project_id=final.id),
+                post_excom_decision__isnull=False,
+                post_excom_decision__meeting__date__year__lte=year,
+            )
+            .order_by("post_excom_decision__meeting__date")
+            .last()
         )
 
 

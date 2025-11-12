@@ -1478,3 +1478,129 @@ def multiple_projects_for_apr(
     ]
 
     return ongoing_projects + completed_projects
+
+
+@pytest.fixture
+def multiple_meetings_apr_same_year(apr_year):
+    return [
+        MeetingFactory.create(
+            number=10 + i,
+            date=f"{apr_year}-{i}-14",
+            end_date=f"{apr_year}-{i}-15",
+        )
+        for i in range(1, 3)
+    ]
+
+
+@pytest.fixture
+def meeting_apr_next_year(apr_year):
+    return MeetingFactory.create(
+        number=19,
+        date=f"{apr_year + 1}-4-14",
+        end_date=f"{apr_year + 1}-4-15",
+    )
+
+
+@pytest.fixture
+def multiple_decisions_apr_same_year(multiple_meetings_apr_same_year):
+    return [
+        DecisionFactory.create(number=10 + i, meeting=meeting)
+        for (i, meeting) in enumerate(multiple_meetings_apr_same_year)
+    ]
+
+
+@pytest.fixture
+def decision_apr_next_year(meeting_apr_next_year):
+    return DecisionFactory.create(number=19, meeting=meeting_apr_next_year)
+
+
+@pytest.fixture
+def initial_project_version_for_apr(agency, country_ro, sector, project_ongoing_status):
+    return ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/COM/INV/01",
+        version=3,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+
+@pytest.fixture
+def multiple_project_versions_for_apr(
+    agency,
+    country_ro,
+    sector,
+    project_ongoing_status,
+    multiple_decisions_apr_same_year,
+):
+    post_excom_versions = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/COM/INV/01",
+            version=i + 3,
+            post_excom_decision=decision,
+            total_fund=100000.0 + i * 25000.0,
+            support_cost_psc=10000.0 + i * 2500.0,
+        )
+        for (i, decision) in enumerate(multiple_decisions_apr_same_year, start=1)
+    ]
+    final_version = post_excom_versions[-1]
+    initial_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/COM/INV/01",
+        version=3,
+        post_excom_decision=None,
+        latest_project=final_version,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+    for version in post_excom_versions[:-1]:
+        version.latest_project = final_version
+        version.save()
+
+    return [initial_version] + post_excom_versions
+
+
+@pytest.fixture
+def late_post_excom_versions_for_apr(
+    decision_apr_next_year, agency, country_ro, sector, project_ongoing_status
+):
+    later_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/COM/INV/01",
+        version=4,
+        post_excom_decision=decision_apr_next_year,
+        total_fund=200000.0,
+        support_cost_psc=20000.0,
+    )
+    initial_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/COM/INV/01",
+        version=3,
+        latest_project=later_version,
+        post_excom_decision=None,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+    return [initial_version, later_version]

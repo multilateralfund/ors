@@ -84,7 +84,6 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Financial data fields - derived (2)
     support_cost_approved = serializers.FloatField(
-        source="project.support_cost_psc",
         read_only=True,
         allow_null=True,
     )
