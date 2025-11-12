@@ -149,11 +149,14 @@ const ProjectViewButtons = ({
         method: 'POST',
       })
       setParams((prev: any) => ({ ...prev }))
+      enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
+        variant: 'success',
+      })
     } catch (error) {
       enqueueSnackbar(
         <>
-          Could not send project back to draft. Please check project's data and
-          try again.
+          Could not send project(s) back to draft. Please check project(s) data
+          and try again.
         </>,
         {
           variant: 'error',
@@ -278,6 +281,7 @@ const ProjectViewButtons = ({
             setIsTrancheWarningOpen,
             withdrawProject,
             sendProjectBackToDraft,
+            isLoading,
           }}
         />
       </div>

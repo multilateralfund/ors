@@ -1,6 +1,7 @@
 import AddComponentModal from './AddComponentModal'
 import ChangeVersionModal from './ChangeVersionModal'
 import ChangeStatusModal from './ChangeStatusModal'
+import SendProjectToDraftModal from './SendProjectToDraftModal'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 
 const EditActionModals = ({
@@ -20,6 +21,7 @@ const EditActionModals = ({
   editProject,
   withdrawProject,
   sendProjectBackToDraft,
+  isLoading,
 }: {
   id: number
   isComponentModalOpen?: boolean
@@ -37,6 +39,7 @@ const EditActionModals = ({
   editProject?: (navigationPage?: string) => void
   withdrawProject: () => void
   sendProjectBackToDraft: () => void
+  isLoading: boolean
 }) => (
   <>
     {isComponentModalOpen && setIsComponentModalOpen && (
@@ -64,15 +67,14 @@ const EditActionModals = ({
     )}
     {isWithdrawModalOpen && (
       <ChangeStatusModal
-        mode="withdraw"
         isModalOpen={isWithdrawModalOpen}
         setIsModalOpen={setIsWithdrawModalOpen}
         onAction={withdrawProject}
       />
     )}
     {isSendToDraftModalOpen && (
-      <ChangeStatusModal
-        mode="sendToDraft"
+      <SendProjectToDraftModal
+        {...{ id, isLoading }}
         isModalOpen={isSendToDraftModalOpen}
         setIsModalOpen={setIsSendToDraftModalOpen}
         onAction={sendProjectBackToDraft}

@@ -58,6 +58,7 @@ const EditActionButtons = ({
   setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
+  isLoading,
   setIsLoading,
   setHasSubmitted,
   setFileErrors,
@@ -72,6 +73,7 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
 }: ActionButtons & {
+  isLoading: boolean
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
@@ -440,9 +442,12 @@ const EditActionButtons = ({
           method: 'POST',
         })
         setLocation(`/projects-listing/${id}`)
+        enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
+          variant: 'success',
+        })
       } catch (error) {
         enqueueSnackbar(
-          <>Could not send project back to draft. Please try again.</>,
+          <>Could not send project(s) back to draft. Please try again.</>,
           {
             variant: 'error',
           },
@@ -625,6 +630,7 @@ const EditActionButtons = ({
           editProject,
           withdrawProject,
           sendProjectBackToDraft,
+          isLoading,
         }}
         isTrancheWarningOpen={
           !!showSubmitTranchesWarningModal && isTrancheWarningOpen

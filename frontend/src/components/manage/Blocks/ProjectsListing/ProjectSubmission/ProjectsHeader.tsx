@@ -133,6 +133,7 @@ const ProjectsHeader = ({
                 projectData,
                 isSaveDisabled,
                 isSubmitDisabled,
+                isLoading,
                 setIsLoading,
                 files,
                 setProjectFiles,
