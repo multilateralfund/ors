@@ -161,6 +161,9 @@ class AnnualProjectReport(models.Model):
     )
 
     # Date data fields
+    status = models.CharField(
+        max_length=10, blank=True, help_text="Project status code for reporting year"
+    )
     date_first_disbursement = models.DateField(
         null=True, blank=True, verbose_name="First Disbursement Date"
     )
@@ -269,6 +272,21 @@ class AnnualProjectReport(models.Model):
     @cached_property
     def project_version_3(self):
         return self.project.get_version(3)
+
+    @property
+    def date_approved(self):
+        return self.project_version_3.date_approved
+
+    @property
+    def date_of_completion_per_agreement_or_decisions(self):
+        latest_version = self.project.latest_version_for_year(self.report_year)
+        if not latest_version:
+            latest_version = self.project_version_3
+        return latest_version.date_completion
+
+    @property
+    def date_completion_proposal(self):
+        return self.project_version_3.date_completion_proposal
 
     @cached_property
     def consumption_phased_out_odp_proposal(self):
