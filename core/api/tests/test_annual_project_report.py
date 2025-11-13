@@ -473,13 +473,17 @@ class TestAPRFileUploadView(BaseTest):
     def test_upload_file(self, agency_inputter_user, annual_agency_report):
         self.client.force_authenticate(user=agency_inputter_user)
 
-        test_file = SimpleUploadedFile(
+        test_financial_file = SimpleUploadedFile(
             "test_report.pdf", b"file_content", content_type="application/pdf"
         )
+        test_supporting_file = SimpleUploadedFile(
+            "test_support.pdf",
+            b"supporting_file_content",
+            content_type="application/pdf",
+        )
         data = {
-            "file": test_file,
-            "file_name": "Annual Progress Report 2024",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": test_financial_file,
+            "supporting_files": [test_supporting_file],
         }
 
         url = reverse(
@@ -492,8 +496,9 @@ class TestAPRFileUploadView(BaseTest):
         response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert "file" in response.data
-        assert response.data["message"] == "File uploaded successfully."
+        assert "files" in response.data
+        assert len(response.data["files"]) == 2
+        assert response.data["message"] == "Files uploaded successfully."
 
         assert AnnualProjectReportFile.objects.filter(
             report=annual_agency_report
@@ -550,9 +555,7 @@ class TestAPRFileUploadView(BaseTest):
             "new_report.pdf", b"new_content", content_type="application/pdf"
         )
         data = {
-            "file": new_file,
-            "file_name": "Updated Report",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": new_file,
         }
         url = reverse(
             "apr-upload",
@@ -586,9 +589,7 @@ class TestAPRFileUploadView(BaseTest):
             "test.pdf", b"content", content_type="application/pdf"
         )
         data = {
-            "file": test_file,
-            "file_name": "Test Report",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": test_file,
         }
         url = reverse(
             "apr-upload",
@@ -600,7 +601,7 @@ class TestAPRFileUploadView(BaseTest):
         response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["message"] == "File uploaded successfully."
+        assert response.data["message"] == "Files uploaded successfully."
 
 
 @pytest.mark.django_db

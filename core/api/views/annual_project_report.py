@@ -28,6 +28,7 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
     AnnualAgencyProjectReportReadSerializer,
     AnnualProjectReportBulkUpdateSerializer,
+    AnnualProjectReportFileSerializer,
     AnnualProjectReportFileUploadSerializer,
     AnnualAgencyProjectReportStatusUpdateSerializer,
 )
@@ -247,9 +248,15 @@ class APRFileUploadView(APIView):
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            serializer.save(report=agency_report)
+            result = serializer.save(report=agency_report)
+            created_files_data = AnnualProjectReportFileSerializer(
+                result["created_files"], many=True, context={"request": request}
+            ).data
             return Response(
-                {"message": "File uploaded successfully.", "file": serializer.data},
+                {
+                    "message": "Files uploaded successfully.",
+                    "files": created_files_data,
+                },
                 status=status.HTTP_201_CREATED,
             )
 
