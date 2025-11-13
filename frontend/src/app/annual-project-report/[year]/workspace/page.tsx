@@ -152,7 +152,6 @@ export default function APRWorkspace() {
           <div className="flex flex-col items-end gap-y-2">
             <Button
               variant="contained"
-              disabled
               onClick={() => setIsUploadDocumentsModalOpen(true)}
             >
               Upload Documents
