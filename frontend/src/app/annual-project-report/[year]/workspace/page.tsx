@@ -197,6 +197,7 @@ export default function APRWorkspace() {
           setIsModalOpen={setIsUploadDocumentsModalOpen}
           year={year}
           agencyId={user.agency_id}
+          oldFiles={apr.files}
         />
       )}
     </PageWrapper>
