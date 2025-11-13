@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { viewModesHandler } from './ViewHelperComponents'
-import { viewColumnsClassName } from '../constants'
+import { numberDetailItem, viewModesHandler } from './ViewHelperComponents'
+import { tableColumns, viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
@@ -45,6 +45,18 @@ const ProjectApproval = ({
               </span>
             ),
         )}
+        {canViewField(viewableFields, 'total_fund') &&
+          numberDetailItem(
+            tableColumns.total_fund + ' (US $)',
+            project.total_fund as string,
+            'decimal',
+          )}
+        {canViewField(viewableFields, 'support_cost_psc') &&
+          numberDetailItem(
+            tableColumns.support_cost_psc + ' (US $)',
+            project.support_cost_psc as string,
+            'decimal',
+          )}
       </div>
     </div>
   )

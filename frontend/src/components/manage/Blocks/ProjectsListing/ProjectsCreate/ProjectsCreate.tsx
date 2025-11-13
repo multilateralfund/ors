@@ -44,7 +44,7 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -198,13 +198,19 @@ const ProjectsCreate = ({
     [crossCuttingFields, errors, mode],
   )
 
-  const approvalErrors = useMemo(
-    () =>
-      mode === 'edit' && project?.submission_status === 'Recommended'
-        ? getApprovalErrors(approvalData, approvalFields, errors, project)
-        : {},
-    [approvalData, approvalFields, errors],
-  )
+  const approvalErrors = useMemo(() => {
+    const approvalCrossCuttingErrors = pick(crossCuttingErrors, [
+      'total_fund',
+      'support_cost_psc',
+    ])
+
+    return mode === 'edit' && project?.submission_status === 'Recommended'
+      ? {
+          ...getApprovalErrors(approvalData, approvalFields, errors, project),
+          ...approvalCrossCuttingErrors,
+        }
+      : {}
+  }, [approvalData, approvalFields, errors, crossCuttingErrors])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
   const hasV3EditPermissions =

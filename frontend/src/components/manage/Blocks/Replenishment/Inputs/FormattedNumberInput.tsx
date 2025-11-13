@@ -54,7 +54,11 @@ export default function FormattedNumberInput(
   return (
     <div className="relative">
       {prefix && (
-        <span className="absolute left-0 flex h-10 items-center px-4 py-2">
+        <span
+          className={cx('absolute left-0 flex h-10 items-center px-4 py-2', {
+            '!text-[#9ca3af]': rest.disabled,
+          })}
+        >
           {prefix}
         </span>
       )}
