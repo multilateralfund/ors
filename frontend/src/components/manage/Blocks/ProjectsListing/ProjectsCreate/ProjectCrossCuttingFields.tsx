@@ -137,8 +137,6 @@ const ProjectCrossCuttingFields = ({
     sector
   )
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
-  const areCostFieldsDisabled =
-    mode === 'edit' && submission_status === 'Recommended'
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setProjectData((prevData) => ({
@@ -159,10 +157,7 @@ const ProjectCrossCuttingFields = ({
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getIsInputDisabled(field),
-          [disabledClassName]:
-            !canEditField(editableFields, field) ||
-            (['total_fund', 'support_cost_psc'].includes(field) &&
-              areCostFieldsDisabled),
+          [disabledClassName]: !canEditField(editableFields, field),
         }),
       },
     }
@@ -399,10 +394,7 @@ const ProjectCrossCuttingFields = ({
                           setProjectData,
                         )
                       }
-                      disabled={
-                        !canEditField(editableFields, 'total_fund') ||
-                        areCostFieldsDisabled
-                      }
+                      disabled={!canEditField(editableFields, 'total_fund')}
                       {...getFieldDefaultProps('total_fund')}
                     />
                     <div className="w-8">
@@ -429,8 +421,7 @@ const ProjectCrossCuttingFields = ({
                         )
                       }
                       disabled={
-                        !canEditField(editableFields, 'support_cost_psc') ||
-                        areCostFieldsDisabled
+                        !canEditField(editableFields, 'support_cost_psc')
                       }
                       {...getFieldDefaultProps('support_cost_psc')}
                     />

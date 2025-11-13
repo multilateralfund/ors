@@ -48,6 +48,8 @@ const ProjectApprovalFields = ({
   const crossCuttingSectionData = projectData[crossCuttingSectionIdentifier]
   const { total_fund, support_cost_psc } = crossCuttingSectionData
 
+  const isRecommended = project?.submission_status === 'Recommended'
+
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -83,7 +85,10 @@ const ProjectApprovalFields = ({
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getIsInputDisabled(field),
-          [disabledClassName]: !canEditField(editableFields, field),
+          [disabledClassName]:
+            !canEditField(editableFields, field) ||
+            (['total_fund', 'support_cost_psc'].includes(field) &&
+              !isRecommended),
         }),
       },
     }
@@ -197,7 +202,9 @@ const ProjectApprovalFields = ({
                     setProjectData,
                   )
                 }
-                disabled={!canEditField(editableFields, 'total_fund')}
+                disabled={
+                  !canEditField(editableFields, 'total_fund') || !isRecommended
+                }
                 {...getFieldDefaultProps('total_fund')}
               />
               <FieldErrorIndicator errors={errors} field="total_fund" />
@@ -221,7 +228,10 @@ const ProjectApprovalFields = ({
                     setProjectData,
                   )
                 }
-                disabled={!canEditField(editableFields, 'support_cost_psc')}
+                disabled={
+                  !canEditField(editableFields, 'support_cost_psc') ||
+                  !isRecommended
+                }
                 {...getFieldDefaultProps('support_cost_psc')}
               />
               <FieldErrorIndicator errors={errors} field="support_cost_psc" />
