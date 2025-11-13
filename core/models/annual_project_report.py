@@ -7,6 +7,8 @@ from core.models.agency import Agency
 from core.models.meeting import Meeting
 from core.models.project import Project
 
+# pylint: disable=R0904
+
 
 class AnnualProgressReport(models.Model):
     year = models.IntegerField(verbose_name="Year of the report")
