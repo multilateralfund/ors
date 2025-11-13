@@ -20,9 +20,10 @@ import {
 } from '../interfaces'
 import { api } from '@ors/helpers'
 
-import { filter, find, groupBy, isNull, replace } from 'lodash'
+import { filter, find, groupBy, isEmpty, isNull, replace } from 'lodash'
 import { CircularProgress, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 import cx from 'classnames'
 
 const EditLink = (props: any) => {
@@ -52,6 +53,8 @@ const ProjectViewButtons = ({
   specificFields: ProjectSpecificFields[]
   setParams: any
 }) => {
+  const [_, setLocation] = useLocation()
+
   const {
     canEditProjects,
     canSubmitProjects,
@@ -122,6 +125,28 @@ const ProjectViewButtons = ({
     }
   }
 
+  const getIsProjectValid = async () => {
+    try {
+      const result = await api(
+        `/api/projects/v2/${id}/list_associated_projects/?included_entries=only_project&include_validation=true&include_project=true`,
+      )
+
+      return result.every((project: RelatedProjectsType) =>
+        isEmpty(project.errors),
+      )
+    } catch (error) {
+      enqueueSnackbar(
+        <>An error occurred during project validation. Please try again.</>,
+        {
+          variant: 'error',
+        },
+      )
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const onSubmitProject = async () => {
     if (tranche > 1) {
       setIsLoading(true)
@@ -133,12 +158,26 @@ const ProjectViewButtons = ({
         setIsSubmitModalOpen(true)
       }
     } else {
-      setIsSubmitModalOpen(true)
+      setIsLoading(true)
+      const isProjectValid = await getIsProjectValid()
+
+      if (isProjectValid) {
+        setIsSubmitModalOpen(true)
+      } else {
+        setLocation(`/projects-listing/${id}/edit`)
+      }
     }
   }
 
-  const onRecommendProject = () => {
-    setIsRecommendModalOpen(true)
+  const onRecommendProject = async () => {
+    setIsLoading(true)
+    const isProjectValid = await getIsProjectValid()
+
+    if (isProjectValid) {
+      setIsRecommendModalOpen(true)
+    } else {
+      setLocation(`/projects-listing/${id}/edit`)
+    }
   }
 
   const sendProjectBackToDraft = async () => {
@@ -281,7 +320,6 @@ const ProjectViewButtons = ({
             setIsTrancheWarningOpen,
             withdrawProject,
             sendProjectBackToDraft,
-            isLoading,
           }}
         />
       </div>

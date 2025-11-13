@@ -7,18 +7,16 @@ import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { AssociatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
-import { Modal, Typography, Box, CircularProgress } from '@mui/material'
+import { Modal, Typography, Box } from '@mui/material'
 import { debounce } from 'lodash'
 
 const SendProjectToDraftModal = ({
   id,
-  isLoading,
   isModalOpen,
   setIsModalOpen,
   onAction,
 }: {
   id: number
-  isLoading: boolean
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
   onAction: () => void
@@ -90,13 +88,6 @@ const SendProjectToDraftModal = ({
               Send project{hasAssociatedPojects ? 's' : ''} back to draft
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
-            {isLoading && (
-              <CircularProgress
-                color="inherit"
-                size="30px"
-                className="text-align mb-1 ml-1.5 mt-auto"
-              />
-            )}
           </div>
         </Box>
       </Modal>

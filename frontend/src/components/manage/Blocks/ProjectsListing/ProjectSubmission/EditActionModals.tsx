@@ -21,7 +21,6 @@ const EditActionModals = ({
   editProject,
   withdrawProject,
   sendProjectBackToDraft,
-  isLoading,
 }: {
   id: number
   isComponentModalOpen?: boolean
@@ -39,7 +38,6 @@ const EditActionModals = ({
   editProject?: (navigationPage?: string) => void
   withdrawProject: () => void
   sendProjectBackToDraft: () => void
-  isLoading: boolean
 }) => (
   <>
     {isComponentModalOpen && setIsComponentModalOpen && (
@@ -74,7 +72,7 @@ const EditActionModals = ({
     )}
     {isSendToDraftModalOpen && (
       <SendProjectToDraftModal
-        {...{ id, isLoading }}
+        id={id}
         isModalOpen={isSendToDraftModalOpen}
         setIsModalOpen={setIsSendToDraftModalOpen}
         onAction={sendProjectBackToDraft}

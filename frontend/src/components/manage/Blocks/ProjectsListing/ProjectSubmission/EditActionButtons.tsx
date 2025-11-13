@@ -58,7 +58,6 @@ const EditActionButtons = ({
   setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
-  isLoading,
   setIsLoading,
   setHasSubmitted,
   setFileErrors,
@@ -73,7 +72,6 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
 }: ActionButtons & {
-  isLoading: boolean
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
@@ -630,7 +628,6 @@ const EditActionButtons = ({
           editProject,
           withdrawProject,
           sendProjectBackToDraft,
-          isLoading,
         }}
         isTrancheWarningOpen={
           !!showSubmitTranchesWarningModal && isTrancheWarningOpen
