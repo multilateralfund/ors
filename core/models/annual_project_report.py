@@ -1,10 +1,13 @@
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
 
 from core.models.utils import get_protected_storage
 from core.models.agency import Agency
 from core.models.meeting import Meeting
 from core.models.project import Project
+
+# pylint: disable=R0904
 
 
 class AnnualProgressReport(models.Model):
@@ -160,6 +163,9 @@ class AnnualProjectReport(models.Model):
     )
 
     # Date data fields
+    status = models.CharField(
+        max_length=10, blank=True, help_text="Project status code for reporting year"
+    )
     date_first_disbursement = models.DateField(
         null=True, blank=True, verbose_name="First Disbursement Date"
     )
@@ -261,74 +267,88 @@ class AnnualProjectReport(models.Model):
             return self.project.sector.code
         return ""
 
+    @cached_property
+    def report_year(self):
+        return self.report.progress_report.year
+
+    @cached_property
+    def project_version_3(self):
+        return self.project.get_version(3)
+
     @property
+    def date_approved(self):
+        return self.project_version_3.date_approved
+
+    @property
+    def date_of_completion_per_agreement_or_decisions(self):
+        latest_version = self.project.latest_version_for_year(self.report_year)
+        if not latest_version:
+            latest_version = self.project_version_3
+        return latest_version.date_completion
+
+    @property
+    def date_completion_proposal(self):
+        return self.project_version_3.date_completion_proposal
+
+    @cached_property
     def consumption_phased_out_odp_proposal(self):
-        # TODO: we may want some additional filters on `get_version` and `latest_version`
-        # so that we only take into account changes for the *previous* year.
-        version3 = self.project.get_version(3)
-        if not version3:
+        if not self.project_version_3:
             return None
 
-        return version3.consumption_phased_out_odp
+        return self.project_version_3.consumption_phase_out_odp
 
-    @property
+    @cached_property
     def consumption_phased_out_co2_proposal(self):
-        version3 = self.project.get_version(3)
-        if not version3:
+        if not self.project_version_3:
             return None
 
-        return version3.consumption_phased_out_co2
+        return self.project_version_3.consumption_phase_out_co2
 
-    @property
+    @cached_property
     def production_phased_out_odp_proposal(self):
-        version3 = self.project.get_version(3)
-        if not version3:
+        if not self.project_version_3:
             return None
 
-        return version3.production_phased_out_odp
+        return self.project_version_3.production_phase_out_odp
 
-    @property
+    @cached_property
     def production_phased_out_co2_proposal(self):
-        version3 = self.project.get_version(3)
-        if not version3:
+        if not self.project_version_3:
             return None
 
-        return version3.production_phased_out_co2
+        return self.project_version_3.production_phase_out_co2
 
-    @property
+    @cached_property
     def approved_funding(self):
         # TODO: are we sure it's .total_fund and not .total_fund_approved?
-        version3 = self.project.get_version(3)
-        if not version3 or not version3.ods_odp.exists():
+        if not self.project_version_3:
             return None
 
-        return version3.total_fund
+        return self.project_version_3.total_fund
 
-    @property
+    @cached_property
     def adjustment(self):
-        if not self.project.final_version or self.project.final_version.version < 3:
+        latest_version = self.project.latest_version_for_year(self.report_year)
+        if not latest_version or latest_version.version < 3:
             return None
 
-        latest_funding = self.project.final_version.total_fund
+        latest_funding = latest_version.total_fund
         if latest_funding is None:
             return None
 
-        if self.approved_funding is None:
-            if latest_funding is not None:
-                return latest_funding
-            return None
+        return latest_funding - (self.approved_funding or 0)
 
-        return latest_funding - self.approved_funding
-
-    @property
+    @cached_property
     def approved_funding_plus_adjustment(self):
-        # Returning `total_fund` directly, that's what it should add up to
-        if not self.project.final_version:
-            return None
+        latest_version = self.project.latest_version_for_year(self.report_year)
+        if not latest_version:
+            if not self.project_version_3:
+                return None
+            return self.project_version_3.total_fund
 
-        return self.project.final_version.total_fund
+        return latest_version.total_fund
 
-    @property
+    @cached_property
     def per_cent_funds_disbursed(self):
         if (
             self.funds_disbursed is None
@@ -338,37 +358,37 @@ class AnnualProjectReport(models.Model):
 
         return self.funds_disbursed / self.approved_funding_plus_adjustment
 
-    @property
+    @cached_property
     def balance(self):
         if self.approved_funding is None:
             return None
 
         return self.approved_funding - (self.funds_disbursed or 0)
 
-    @property
+    @cached_property
+    def support_cost_approved(self):
+        if not self.project_version_3 or not self.project_version_3.support_cost_psc:
+            return None
+        return self.project_version_3.support_cost_psc
+
+    @cached_property
     def support_cost_adjustment(self):
         # Support cost in the latest version - Support cost in version 3
-        version3 = self.project.get_version(3)
-        if not version3 or not version3.support_cost_psc:
+        latest_version = self.project.latest_version_for_year(self.report_year)
+        if not latest_version or not latest_version.support_cost_psc:
             return None
 
-        if not self.project.final_version.support_cost_psc:
-            return None
+        return latest_version.support_cost_psc - (self.support_cost_approved or 0)
 
-        return self.project.final_version.support_cost_psc - version3.support_cost_psc
-
-    @property
+    @cached_property
     def support_cost_approved_plus_adjustment(self):
-        # Using final_version.support_cost_psc directly, as that's what it should be
-        if (
-            not self.project.final_version
-            or not self.project.final_version.support_cost_psc
-        ):
-            return None
+        if self.support_cost_approved is None:
+            if self.support_cost_adjustment is None:
+                return None
+            return self.support_cost_adjustment
+        return self.support_cost_approved + (self.support_cost_adjustment or 0)
 
-        return self.project.final_version.support_cost_psc
-
-    @property
+    @cached_property
     def support_cost_balance(self):
         # Support Costs Approved Funding plus Adjustments - Support Cost Disbursed
         if self.support_cost_approved_plus_adjustment is None:

@@ -37,15 +37,11 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     project_title = serializers.CharField(source="project.title", read_only=True)
 
     # Project date data fields - derived
-    date_approved = serializers.DateField(
-        source="project.date_approved", read_only=True, allow_null=True
-    )
-    date_completion_proposal = serializers.DateField(
-        source="project.date_completion", read_only=True, allow_null=True
-    )
+    date_approved = serializers.DateField(read_only=True, allow_null=True)
+    date_completion_proposal = serializers.DateField(read_only=True, allow_null=True)
 
     # Project date data fields - input
-    status = serializers.CharField(source="project.status.name", read_only=True)
+    status = serializers.CharField(allow_blank=True)
     date_first_disbursement = serializers.DateField(allow_null=True)
     date_planned_completion = serializers.DateField(allow_null=True)
     date_actual_completion = serializers.DateField(allow_null=True)
@@ -84,7 +80,6 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Financial data fields - derived (2)
     support_cost_approved = serializers.FloatField(
-        source="project.support_cost_psc",
         read_only=True,
         allow_null=True,
     )
@@ -112,7 +107,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         allow_null=True, allow_blank=True, read_only=True
     )
     date_of_completion_per_agreement_or_decisions = serializers.DateField(
-        source="project.date_completion", read_only=True, allow_null=True
+        read_only=True, allow_null=True
     )
 
     # Narrative and indicator data fields - input
