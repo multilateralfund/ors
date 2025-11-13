@@ -4,8 +4,9 @@ import { DataType } from '@ors/types/primitives'
 import Cookies from 'js-cookie'
 
 import { formatApiUrl } from '@ors/helpers'
-
 import api from './_api'
+
+import { keys, values } from 'lodash'
 
 export function getResults<D = DataType>(
   data?: { results: D[] } | D[] | ResultsType<D> | null,
@@ -75,6 +76,7 @@ export async function uploadFiles(
   files: File[],
   isValidation: boolean = false,
   formDataType?: string,
+  params?: any,
 ) {
   const formData = new FormData()
 
@@ -82,6 +84,7 @@ export async function uploadFiles(
     files.forEach((file) => {
       formData.append('files', file)
     })
+    formData.append(keys(params)[0], values(params)[0])
   } else {
     files.forEach((file) => {
       formData.append(file.name, file)

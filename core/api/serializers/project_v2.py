@@ -106,6 +106,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "filename",
+            "type",
             "date_created",
             "download_url",
             "project_id",
@@ -116,7 +117,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.file.name
 
     def get_download_url(self, obj):
-        return reverse("project-files-v2-download", args=(obj.project_id, obj.id))
+        return reverse("project-file-v2-download", args=(obj.project_id, obj.id))
 
     def get_editable(self, obj):
         edit_queryset_ids = self.context.get("edit_queryset_ids", set())
@@ -1149,6 +1150,8 @@ class ProjectV2EditApprovalFieldsSerializer(
         """
         user = self.context["request"].user
         validated_data["date_approved"] = validated_data["meeting"].end_date
+        # project_end_date should take the value of date_completion at this point
+        validated_data["project_end_date"] = validated_data["date_completion"]
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")

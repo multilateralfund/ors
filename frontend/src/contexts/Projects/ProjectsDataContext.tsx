@@ -16,6 +16,7 @@ interface ProjectsDataContextProps {
   subsectors: ProjectSubSectorType[]
   substances: ApiSubstance[]
   blends: ApiBlend[]
+  fileTypes: string[]
 }
 
 const ProjectsDataContext = createContext<ProjectsDataContextProps>(

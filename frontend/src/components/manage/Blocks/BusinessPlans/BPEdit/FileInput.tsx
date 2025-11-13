@@ -5,6 +5,7 @@ import { BpFileInput } from '../types'
 
 import { TextField } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
+import { map } from 'lodash'
 import cx from 'classnames'
 
 const FileInput = (props: BpFileInput) => {
@@ -17,6 +18,7 @@ const FileInput = (props: BpFileInput) => {
     inputValue,
     accept,
     label,
+    setFilesMetaData,
   } = props
   const { newFiles = [] } = files || {}
 
@@ -25,11 +27,26 @@ const FileInput = (props: BpFileInput) => {
     'Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .jpg, .jpeg, .png, .gif, .zip, .rar, .7z'
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (setFiles && event.target.files && event.target.files.length > 0) {
-      setFiles({
-        ...files,
-        newFiles: [...(newFiles || []), ...Array.from(event.target.files)],
-      })
+    if (event.target.files && event.target.files.length > 0) {
+      if (setFiles) {
+        setFiles({
+          ...files,
+          newFiles: [...(newFiles || []), ...Array.from(event.target.files)],
+        })
+      }
+
+      if (setFilesMetaData) {
+        const uploadedFiles = Array.from(event.target.files)
+
+        setFilesMetaData((prev) => [
+          ...prev,
+          ...map(uploadedFiles, (file) => ({
+            id: null,
+            name: file.name,
+            type: null,
+          })),
+        ])
+      }
     }
   }
 

@@ -14,6 +14,7 @@ import {
 } from '../constants.ts'
 import {
   BpDataProps,
+  FileMetaDataType,
   ProjectData,
   ProjectFilesObject,
   ProjectSpecificFields,
@@ -94,6 +95,7 @@ const ProjectsCreateWrapper = () => {
     bpDataLoading: false,
   })
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+  const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
@@ -148,6 +150,7 @@ const ProjectsCreateWrapper = () => {
           specificFieldsLoaded,
           setProjectData,
           bpData,
+          filesMetaData,
         }}
       />
       <ProjectsCreate
@@ -164,6 +167,8 @@ const ProjectsCreateWrapper = () => {
           specificFieldsLoaded,
           bpData,
           onBpDataChange,
+          filesMetaData,
+          setFilesMetaData,
         }}
       />
       <ProjectFormFooter
