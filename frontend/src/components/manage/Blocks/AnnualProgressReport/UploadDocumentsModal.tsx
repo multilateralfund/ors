@@ -2,20 +2,56 @@ import React, { Dispatch, FormEvent, SetStateAction } from 'react'
 import { Box, Modal, Typography } from '@mui/material'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import Button from '@mui/material/Button'
+import Cookies from 'js-cookie'
+import { formatApiUrl } from '@ors/helpers'
+import { enqueueSnackbar } from 'notistack'
 
 interface UploadDocumentsModalProps {
   isModalOpen: boolean
   setIsModalOpen: Dispatch<SetStateAction<boolean>>
+  year: string | undefined
+  agencyId: number
 }
 
 export default function UploadDocumentsModal({
   isModalOpen,
   setIsModalOpen,
+  year,
+  agencyId,
 }: UploadDocumentsModalProps) {
   const formSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    console.log(formData.getAll('supporting_files'))
+
+    const csrftoken = Cookies.get('csrftoken')
+    try {
+      const response = await fetch(
+        formatApiUrl(
+          `api/annual-project-report/${year}/agency/${agencyId}/upload/`,
+        ),
+        {
+          body: formData,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'POST',
+        },
+      )
+
+      if (!response.ok) {
+        throw response
+      }
+
+      enqueueSnackbar(<>Files uploaded successfully</>, {
+        variant: 'success',
+      })
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
   }
 
   return (

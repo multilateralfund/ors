@@ -195,6 +195,8 @@ export default function APRWorkspace() {
         <UploadDocumentsModal
           isModalOpen={isUploadDocumentsModalOpen}
           setIsModalOpen={setIsUploadDocumentsModalOpen}
+          year={year}
+          agencyId={user.agency_id}
         />
       )}
     </PageWrapper>
