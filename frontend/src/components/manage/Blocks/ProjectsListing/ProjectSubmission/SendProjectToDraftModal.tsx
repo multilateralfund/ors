@@ -87,9 +87,7 @@ const SendProjectToDraftModal = ({
               variant="contained"
               button
             >
-              {hasAssociatedPojects
-                ? `Send ${pluralizeWord(associatedProjects, 'project')} back to draft`
-                : 'Send project back to draft'}
+              Send project{hasAssociatedPojects ? 's' : ''} back to draft
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
             {isLoading && (

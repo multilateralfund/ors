@@ -103,9 +103,7 @@ const ChangeVersionModal = ({
               variant="contained"
               button
             >
-              {hasAssociatedPojects
-                ? `${mode} ${pluralizeWord(associatedProjects, 'project')}`
-                : `${mode} project`}
+              {mode} project{hasAssociatedPojects ? 's' : ''}
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
           </div>
