@@ -8,19 +8,21 @@ import { AssociatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
 import { Modal, Typography, Box } from '@mui/material'
+import { capitalize, debounce } from 'lodash'
 import { useLocation } from 'wouter'
-import { debounce } from 'lodash'
 
-const SubmitProjectModal = ({
+const ChangeVersionModal = ({
+  mode,
   id,
   isModalOpen,
   setIsModalOpen,
   editProject,
 }: {
+  mode: string
   id: number
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
-  editProject?: (withNavigation: boolean) => void
+  editProject?: (navigationPage?: string) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -40,11 +42,15 @@ const SubmitProjectModal = ({
     debouncedGetAssociatedProjects()
   }, [])
 
+  const isSubmit = mode === 'submit'
+  const formatText = (termination: string) =>
+    (isSubmit ? mode + 't' : mode) + termination
+
   const onEditProject = () => {
     if (editProject) {
-      editProject(true)
+      editProject(mode)
     } else {
-      setLocation(`/projects-listing/${id}/submit`)
+      setLocation(`/projects-listing/${id}/${mode}`)
     }
     setIsModalOpen(false)
   }
@@ -56,21 +62,21 @@ const SubmitProjectModal = ({
         active={!loaded}
       />
       <Modal
-        aria-labelledby="submit-modal"
+        aria-labelledby="change-version-modal"
         open={isModalOpen && loaded}
         onClose={() => setIsModalOpen(false)}
         keepMounted
       >
         <Box className="flex w-full max-w-lg flex-col px-0 absolute-center md:max-w-2xl">
           <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
-            Submit project
+            {capitalize(mode)} project
           </Typography>
           <div className="mb-4 flex flex-col gap-6 bg-[#F5F5F5] p-6">
             <div className="flex flex-col">
               <span className="text-lg">
                 {hasAssociatedPojects
-                  ? `Together with this project, you will be submitting the following ${pluralizeWord(associatedProjects, 'project')}:`
-                  : 'You are submitting this project to the MLFS.'}
+                  ? `Together with this project, you will be ${formatText('ing')} the following ${pluralizeWord(associatedProjects, 'project')}:`
+                  : `You are ${formatText('ing')} this project${isSubmit ? ' to the MLFS' : ''}.`}
               </span>
             </div>
             {hasAssociatedPojects && (
@@ -84,8 +90,8 @@ const SubmitProjectModal = ({
             )}
             <span className="text-lg">
               {hasAssociatedPojects
-                ? `Please ensure ${associatedProjects.length > 1 ? 'these projects are' : 'this project is'} complete and ready to be submitted to the Secretariat.`
-                : 'Are you sure there are no other components or associated projects which need to be submitted together with this one?'}
+                ? `Please ensure ${associatedProjects.length > 1 ? 'these projects are' : 'this project is'} complete and ready to be ${formatText('ed')}${isSubmit ? ' to the Secretariat' : ''}.`
+                : `Are you sure there are no other components or associated projects which need to be ${formatText('ed')} together with this one?`}
             </span>
           </div>
           <div className="ml-auto mr-6 flex flex-wrap gap-3">
@@ -97,9 +103,7 @@ const SubmitProjectModal = ({
               variant="contained"
               button
             >
-              {hasAssociatedPojects
-                ? `Submit ${pluralizeWord(associatedProjects, 'project')}`
-                : 'Submit project'}
+              {mode} project{hasAssociatedPojects ? 's' : ''}
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
           </div>
@@ -109,4 +113,4 @@ const SubmitProjectModal = ({
   )
 }
 
-export default SubmitProjectModal
+export default ChangeVersionModal

@@ -4,22 +4,16 @@ import { CancelButton } from '../HelperComponents'
 import { Typography, Box, Modal } from '@mui/material'
 
 const ChangeStatusModal = ({
-  mode,
   isModalOpen,
   setIsModalOpen,
   onAction,
 }: {
-  mode: string
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
   onAction: () => void
 }) => {
-  const title =
-    mode === 'withdraw' ? 'Withdraw project' : 'Send project back to draft'
-  const text =
-    mode === 'withdraw'
-      ? 'withdraw the project'
-      : 'send the project back to draft'
+  const title = 'Withdraw project'
+  const text = 'withdraw the project'
 
   return (
     <Modal

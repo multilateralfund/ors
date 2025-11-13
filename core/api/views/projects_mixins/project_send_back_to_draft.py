@@ -5,8 +5,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from core.models import Project
 from core.api.serializers.project_v2 import (
-    ProjectDetailsV2Serializer,
+    ProjectListV2Serializer,
     HISTORY_DESCRIPTION_STATUS_CHANGE,
 )
 from core.models.project_metadata import (
@@ -26,7 +27,7 @@ class ProjectSendBackToDraftMixin:
         """,
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
         responses={
-            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_200_OK: ProjectListV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
@@ -39,14 +40,27 @@ class ProjectSendBackToDraftMixin:
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        project.submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
-        project.save()
-        log_project_history(
-            project,
-            request.user,
-            HISTORY_DESCRIPTION_STATUS_CHANGE.format(project.submission_status),
-        )
+        if project.component:
+            # If the project is a component, send back components of the project
+            projects_to_send_back = Project.objects.filter(
+                component=project.component,
+                submission_status=project.submission_status,
+                version=project.version,
+            )
+        else:
+            # If the project is not a component, only send back the project
+            projects_to_send_back = Project.objects.filter(id=project.id)
+
+        draft_submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
+        for project_obj in projects_to_send_back:
+            project_obj.submission_status = draft_submission_status
+            log_project_history(
+                project_obj,
+                request.user,
+                HISTORY_DESCRIPTION_STATUS_CHANGE.format(project_obj.submission_status),
+            )
+            project_obj.save()
         return Response(
-            ProjectDetailsV2Serializer(project).data,
+            ProjectListV2Serializer(projects_to_send_back, many=True).data,
             status=status.HTTP_200_OK,
         )

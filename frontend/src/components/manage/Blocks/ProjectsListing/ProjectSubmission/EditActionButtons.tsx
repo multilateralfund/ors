@@ -2,10 +2,7 @@ import { useContext, useMemo, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
-import SubmitProjectModal from './SubmitProjectModal'
-import ChangeStatusModal from './ChangeStatusModal'
-import AddComponentModal from './AddComponentModal'
+import EditActionModals from './EditActionModals'
 import {
   DropDownButtonProps,
   DropDownMenuProps,
@@ -110,6 +107,7 @@ const EditActionButtons = ({
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
 
   const { id, submission_status, version, component } = project
   const {
@@ -265,7 +263,7 @@ const EditActionButtons = ({
     })
   }
 
-  const editProject = async (withNavigation: boolean = false) => {
+  const editProject = async (navigationPage?: string) => {
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
@@ -396,8 +394,8 @@ const EditActionButtons = ({
       setProjectId(result.id)
       setProjectTitle(result.title)
 
-      if (withNavigation) {
-        setLocation(`/projects-listing/${id}/submit`)
+      if (navigationPage) {
+        setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
       if (isRecommended) {
@@ -429,22 +427,8 @@ const EditActionButtons = ({
     setIsWithdrawModalOpen(true)
   }
 
-  const recommendProject = async () => {
-    const canRecommend = await editProject()
-
-    if (canRecommend) {
-      try {
-        await api(`api/projects/v2/${id}/recommend/`, {
-          method: 'POST',
-        })
-        setLocation(`/projects-listing/${id}`)
-      } catch (error) {
-        await handleErrors(error)
-      } finally {
-        setIsLoading(false)
-        setHasSubmitted(true)
-      }
-    }
+  const onRecommendProject = () => {
+    setIsRecommendModalOpen(true)
   }
 
   const sendProjectBackToDraft = async () => {
@@ -456,9 +440,12 @@ const EditActionButtons = ({
           method: 'POST',
         })
         setLocation(`/projects-listing/${id}`)
+        enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
+          variant: 'success',
+        })
       } catch (error) {
         enqueueSnackbar(
-          <>Could not send project back to draft. Please try again.</>,
+          <>Could not send project(s) back to draft. Please try again.</>,
           {
             variant: 'error',
           },
@@ -578,7 +565,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableSubmit}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={recommendProject}
+            onClick={onRecommendProject}
           >
             Recommend project
           </Dropdown.Item>
@@ -624,45 +611,28 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
-      {isComponentModalOpen && (
-        <AddComponentModal
-          id={id}
-          isModalOpen={isComponentModalOpen}
-          setIsModalOpen={setIsComponentModalOpen}
-        />
-      )}
-      {isSubmitModalOpen && (
-        <SubmitProjectModal
-          isModalOpen={isSubmitModalOpen}
-          setIsModalOpen={setIsSubmitModalOpen}
-          {...{ id, editProject }}
-        />
-      )}
-      {isWithdrawModalOpen && (
-        <ChangeStatusModal
-          mode="withdraw"
-          isModalOpen={isWithdrawModalOpen}
-          setIsModalOpen={setIsWithdrawModalOpen}
-          onAction={withdrawProject}
-        />
-      )}
-      {isSendToDraftModalOpen && (
-        <ChangeStatusModal
-          mode="sendToDraft"
-          isModalOpen={isSendToDraftModalOpen}
-          setIsModalOpen={setIsSendToDraftModalOpen}
-          onAction={sendProjectBackToDraft}
-        />
-      )}
-      {showSubmitTranchesWarningModal && isTrancheWarningOpen && (
-        <SubmitTranchesWarningModal
-          {...{
-            isTrancheWarningOpen,
-            setIsTrancheWarningOpen,
-            setIsSubmitModalOpen,
-          }}
-        />
-      )}
+      <EditActionModals
+        {...{
+          id,
+          isComponentModalOpen,
+          setIsComponentModalOpen,
+          isSubmitModalOpen,
+          setIsSubmitModalOpen,
+          isRecommendModalOpen,
+          setIsRecommendModalOpen,
+          isWithdrawModalOpen,
+          setIsWithdrawModalOpen,
+          isSendToDraftModalOpen,
+          setIsSendToDraftModalOpen,
+          setIsTrancheWarningOpen,
+          editProject,
+          withdrawProject,
+          sendProjectBackToDraft,
+        }}
+        isTrancheWarningOpen={
+          !!showSubmitTranchesWarningModal && isTrancheWarningOpen
+        }
+      />
     </div>
   )
 }

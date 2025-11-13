@@ -1397,6 +1397,22 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
         errors = super().validate_required_fields(errors)
 
         # Check that at least one file is attached for recommendation
+        original_project = (
+            self.instance.component.original_project
+            if self.instance.component
+            else None
+        )
+
+        if (
+            self.instance.component
+            and original_project
+            and original_project.id != self.instance.id
+        ):
+            # only original project of a component needs to have files attached
+            # other component projects are not required to have files attached
+            # projects that are not components also need to have files attached
+            return errors
+
         if ProjectFile.objects.filter(project=self.instance).count() < 1:
             errors["files"] = (
                 "At least one file must be attached to the project for submission."

@@ -19,15 +19,17 @@ import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { capitalize, find, lowerCase } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 import { FaCheck } from 'react-icons/fa6'
-import { find, lowerCase } from 'lodash'
 
-const ProjectsSubmit = ({
+const ProjectsVersionChange = ({
+  mode,
   associatedProjects = [],
   loaded,
   setAssociation,
 }: {
+  mode: string
   associatedProjects: RelatedProjectsType[] | undefined
   loaded: boolean
   setAssociation: Dispatch<SetStateAction<AssociatedProjectsType>>
@@ -35,11 +37,15 @@ const ProjectsSubmit = ({
   const { project_id } = useParams<Record<string, string>>()
   const parsedProjectId = parseInt(project_id)
 
+  const isSubmit = mode === 'submit'
+  const formattedMode = isSubmit ? 'submitted' : 'recommended'
+  const modeAction = isSubmit ? 'submission' : 'recommendation'
+
   const hasAssociatedProjects = associatedProjects.length > 1
   const formattedText = pluralizeWord(associatedProjects, 'project')
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [hasSubmitErrors, setHasSubmitErrors] = useState<boolean>()
+  const [isSaving, setIsSaving] = useState(false)
+  const [hasSaveErrors, setHasSaveErrors] = useState<boolean>()
 
   const currentProject = find(
     associatedProjects,
@@ -47,13 +53,15 @@ const ProjectsSubmit = ({
   )
   const { submission_status, title, editable } = currentProject || {}
   const isDraft = lowerCase(submission_status) === 'draft'
+  const isSubmitted = lowerCase(submission_status) === 'submitted'
+  const isValidStatus = mode === 'submit' ? isDraft : isSubmitted
 
-  if (currentProject && !(isDraft && editable)) {
+  if (currentProject && !(isValidStatus && editable)) {
     return <Redirect to="/projects-listing/listing" />
   }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
-  const isSubmitSuccessful = hasSubmitErrors === false
+  const isSaveSuccessful = hasSaveErrors === false
 
   const getErrors = () => {
     useGetAssociatedProjects(
@@ -65,18 +73,19 @@ const ProjectsSubmit = ({
     )
   }
 
-  const submitProjects = async () => {
+  const saveProjects = async () => {
     try {
-      setIsSubmitting(true)
-      await api(`api/projects/v2/${project_id}/submit/`, {
+      setIsSaving(true)
+      await api(`api/projects/v2/${project_id}/${mode}/`, {
         method: 'POST',
       })
-      setHasSubmitErrors(false)
+
+      setHasSaveErrors(false)
     } catch (error) {
-      setHasSubmitErrors(true)
+      setHasSaveErrors(true)
       getErrors()
     } finally {
-      setIsSubmitting(false)
+      setIsSaving(false)
     }
   }
 
@@ -89,7 +98,7 @@ const ProjectsSubmit = ({
             <div className="flex gap-2">
               <PageHeading>
                 <PageTitle
-                  pageTitle="Submit project"
+                  pageTitle={`${capitalize(mode)} project`}
                   projectTitle={title ?? ''}
                 />
               </PageHeading>
@@ -104,11 +113,11 @@ const ProjectsSubmit = ({
         </div>
       </HeaderTitle>
       <Box className="flex flex-col gap-6 border border-solid border-primary p-6">
-        {!isSubmitSuccessful ? (
+        {!isSaveSuccessful ? (
           <span className="text-[22px]">
-            {hasErrors || hasSubmitErrors
-              ? `${hasAssociatedProjects ? 'Some projects need' : 'The project needs'} adjustments before submission:`
-              : `The following ${formattedText} will be submitted:`}
+            {hasErrors || hasSaveErrors
+              ? `${hasAssociatedProjects ? 'Some projects need' : 'The project needs'} adjustments before ${modeAction}:`
+              : `The following ${formattedText} will be ${formattedMode}:`}
           </span>
         ) : (
           <span className="flex items-center gap-1.5 text-[22px]">
@@ -117,24 +126,24 @@ const ProjectsSubmit = ({
             </div>
             The following {formattedText}
             {hasAssociatedProjects ? ' have ' : ' has '}
-            been successfully submitted:
+            been successfully {formattedMode}:
           </span>
         )}
         <RelatedProjects
           data={associatedProjects}
           getErrors={getErrors}
           isLoaded={loaded}
-          canRefreshStatus={!isSubmitSuccessful && !!hasErrors}
+          canRefreshStatus={!isSaveSuccessful && !!hasErrors}
         />
-        {!isSubmitSuccessful && (
+        {!isSaveSuccessful && (
           <div className="flex items-center gap-2">
             <SubmitButton
-              title="Submit"
+              title={mode}
               isDisabled={!!hasErrors || associatedProjects.length === 0}
-              onSubmit={submitProjects}
+              onSubmit={saveProjects}
               className="h-9 w-fit"
             />
-            {isSubmitting && (
+            {isSaving && (
               <CircularProgress
                 color="inherit"
                 size="16px"
@@ -143,18 +152,18 @@ const ProjectsSubmit = ({
             )}
           </div>
         )}
-        {hasSubmitErrors && (
+        {hasSaveErrors && (
           <CustomAlert
             type="error"
             content={
               <Typography className="text-lg leading-none">
-                An error occurred during the {formattedText} submission. Please
-                check the {formattedText} and try again.
+                An error occurred during the {formattedText} {modeAction}.
+                Please check the {formattedText} and try again.
               </Typography>
             }
           />
         )}
-        {isSubmitSuccessful && (
+        {isSaveSuccessful && (
           <CustomLink
             className="h-9 w-fit text-nowrap px-4 py-2 text-lg uppercase"
             href="/projects-listing/listing"
@@ -170,4 +179,4 @@ const ProjectsSubmit = ({
   )
 }
 
-export default ProjectsSubmit
+export default ProjectsVersionChange

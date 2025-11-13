@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 
 from core.api.serializers.project_association import AssociateProjectSerializer
 from core.api.serializers.project_v2 import (
+    ProjectV2RecommendSerializer,
     ProjectV2SubmitSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
@@ -144,9 +145,10 @@ class ProjectAssociationMixin:
                     "* 'all' (default): all associated projects; components and non-components;\n"
                     "* 'only_components': only component projects;\n"
                     "* 'exclude_components': exclude component projects.\n"
+                    "* 'only_project': only the current project."
                 ),
                 type=openapi.TYPE_STRING,
-                enum=["all", "only_components", "exclude_components"],
+                enum=["all", "only_components", "exclude_components", "only_project"],
             ),
             openapi.Parameter(
                 "filter_by_project_status",
@@ -201,6 +203,8 @@ class ProjectAssociationMixin:
             associated_projects = associated_projects.exclude(
                 component=project.component
             )
+        elif included_entries == "only_project":
+            associated_projects = Project.objects.filter(id=project.id)
 
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
@@ -214,12 +218,18 @@ class ProjectAssociationMixin:
         context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
+            if project.submission_status.name == "Draft":
+                # Use submit serializer
+                validation_serializer_class = ProjectV2SubmitSerializer
+            else:
+                # Use recommended serializer
+                validation_serializer_class = ProjectV2RecommendSerializer
             data = []
             for associated_project in associated_projects:
                 project_data = ProjectListV2Serializer(
                     associated_project, context=context
                 ).data
-                serializer = ProjectV2SubmitSerializer(
+                serializer = validation_serializer_class(
                     associated_project, data={}, partial=True
                 )
                 if not serializer.is_valid():

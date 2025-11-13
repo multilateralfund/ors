@@ -324,7 +324,7 @@ class TestProjectVersioning:
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-recommend", args=(project.id,))
 
-        # submit project
+        # recommend project
         response = self.client.post(url)
         assert response.status_code == 200
 
@@ -341,6 +341,76 @@ class TestProjectVersioning:
         project.refresh_from_db()
         assert project.submission_status.name == "Recommended"
         assert project.version == 3
+
+    def test_recommend_project_with_associated_projects(
+        self,
+        project,
+        project_submitted_status,
+        project2,
+        project3,
+        secretariat_v1_v2_edit_access_user,
+        agency_user,
+        project_file,
+        project2_file,
+    ):
+
+        # setup projects for submission
+
+        component = ProjectComponentsFactory()
+
+        # set required fields for project
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.blanket_or_individual_consideration = "individual"
+        project.component = component
+        project.save()
+
+        # set required fields for project2
+        project2.version = 2
+        project2.submission_status = project_submitted_status
+        project2.is_lvc = False
+        project2.project_start_date = "2023-10-01"
+        project2.project_end_date = "2024-09-30"
+        project2.total_fund = 2340000
+        project2.support_cost_psc = 23
+        project2.blanket_or_individual_consideration = "individual"
+        project2.component = component
+        project2.save()
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-recommend", args=(project.id,))
+
+        # recommend project
+        response = self.client.post(url)
+        assert response.status_code == 200
+
+        # check if the projects are archived
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert archived_project.submission_status.name == "Recommended"
+        assert archived_project.version == 2
+
+        archived_project2 = Project.objects.really_all().get(latest_project=project2)
+        assert archived_project2.submission_status.name == "Recommended"
+        assert archived_project2.version == 2
+
+        # check if the projects files are archived
+        assert ProjectFile.objects.filter(project=project).count() == 0
+        assert ProjectFile.objects.filter(project=archived_project).count() == 1
+        assert ProjectFile.objects.filter(project=project2).count() == 0
+        assert ProjectFile.objects.filter(project=archived_project2).count() == 1
+
+        # check projects
+        project.refresh_from_db()
+        assert project.submission_status.name == "Recommended"
+        assert project.version == 3
+        project2.refresh_from_db()
+        assert project2.submission_status.name == "Recommended"
+        assert project2.version == 3
 
     def test_withdraw_permissions(
         self,
@@ -664,3 +734,31 @@ class TestProjectVersioning:
         assert response.status_code == 200
         project.refresh_from_db()
         assert project.submission_status.name == "Draft"
+
+    def test_send_back_to_draft_components(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        project_submitted_status,
+    ):
+        project2.version = 2
+        project2.submission_status = project_submitted_status
+        project2.component = ProjectComponentsFactory()
+        project2.save()
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.meta_project = project2.meta_project
+        project.component = project2.component
+        project.save()
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-send-back-to-draft", args=(project.id,))
+
+        response = self.client.post(url)
+        assert response.status_code == 200
+
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.submission_status.name == "Draft"
+        assert project2.submission_status.name == "Draft"

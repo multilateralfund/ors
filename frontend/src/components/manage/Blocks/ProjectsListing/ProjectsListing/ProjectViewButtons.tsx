@@ -5,9 +5,7 @@ import { useContext, useState } from 'react'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import SubmitProjectModal from '../ProjectSubmission/SubmitProjectModal'
-import SubmitTranchesWarningModal from '../ProjectSubmission/SubmitTranchesWarningModal'
-import ChangeStatusModal from '../ProjectSubmission/ChangeStatusModal'
+import EditActionModals from '../ProjectSubmission/EditActionModals'
 import {
   DropDownButtonProps,
   DropDownMenuProps,
@@ -22,9 +20,10 @@ import {
 } from '../interfaces'
 import { api } from '@ors/helpers'
 
-import { filter, find, groupBy, isNull, replace } from 'lodash'
+import { filter, find, groupBy, isEmpty, isNull, replace } from 'lodash'
 import { CircularProgress, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 import cx from 'classnames'
 
 const EditLink = (props: any) => {
@@ -54,6 +53,8 @@ const ProjectViewButtons = ({
   specificFields: ProjectSpecificFields[]
   setParams: any
 }) => {
+  const [_, setLocation] = useLocation()
+
   const {
     canEditProjects,
     canSubmitProjects,
@@ -80,6 +81,7 @@ const ProjectViewButtons = ({
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
@@ -123,6 +125,28 @@ const ProjectViewButtons = ({
     }
   }
 
+  const getIsProjectValid = async () => {
+    try {
+      const result = await api(
+        `/api/projects/v2/${id}/list_associated_projects/?included_entries=only_project&include_validation=true&include_project=true`,
+      )
+
+      return result.every((project: RelatedProjectsType) =>
+        isEmpty(project.errors),
+      )
+    } catch (error) {
+      enqueueSnackbar(
+        <>An error occurred during project validation. Please try again.</>,
+        {
+          variant: 'error',
+        },
+      )
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const onSubmitProject = async () => {
     if (tranche > 1) {
       setIsLoading(true)
@@ -134,30 +158,25 @@ const ProjectViewButtons = ({
         setIsSubmitModalOpen(true)
       }
     } else {
-      setIsSubmitModalOpen(true)
+      setIsLoading(true)
+      const isProjectValid = await getIsProjectValid()
+
+      if (isProjectValid) {
+        setIsSubmitModalOpen(true)
+      } else {
+        setLocation(`/projects-listing/${id}/edit`)
+      }
     }
   }
 
-  const recommendProject = async () => {
+  const onRecommendProject = async () => {
     setIsLoading(true)
+    const isProjectValid = await getIsProjectValid()
 
-    try {
-      await api(`api/projects/v2/${id}/recommend/`, {
-        method: 'POST',
-      })
-      setParams((prev: any) => ({ ...prev }))
-    } catch (error) {
-      enqueueSnackbar(
-        <>
-          Could not recommend project. Please check project's data and try
-          again.
-        </>,
-        {
-          variant: 'error',
-        },
-      )
-    } finally {
-      setIsLoading(false)
+    if (isProjectValid) {
+      setIsRecommendModalOpen(true)
+    } else {
+      setLocation(`/projects-listing/${id}/edit`)
     }
   }
 
@@ -169,11 +188,14 @@ const ProjectViewButtons = ({
         method: 'POST',
       })
       setParams((prev: any) => ({ ...prev }))
+      enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
+        variant: 'success',
+      })
     } catch (error) {
       enqueueSnackbar(
         <>
-          Could not send project back to draft. Please check project's data and
-          try again.
+          Could not send project(s) back to draft. Please check project(s) data
+          and try again.
         </>,
         {
           variant: 'error',
@@ -240,7 +262,7 @@ const ProjectViewButtons = ({
               >
                 <Dropdown.Item
                   className={cx(dropdownItemClassname, 'text-primary')}
-                  onClick={recommendProject}
+                  onClick={onRecommendProject}
                 >
                   Recommend project
                 </Dropdown.Item>
@@ -283,38 +305,23 @@ const ProjectViewButtons = ({
             className="text-align mb-1 ml-1.5 mt-auto"
           />
         )}
-        {isSubmitModalOpen && (
-          <SubmitProjectModal
-            id={id}
-            isModalOpen={isSubmitModalOpen}
-            setIsModalOpen={setIsSubmitModalOpen}
-          />
-        )}
-        {isWithdrawModalOpen && (
-          <ChangeStatusModal
-            mode="withdraw"
-            isModalOpen={isWithdrawModalOpen}
-            setIsModalOpen={setIsWithdrawModalOpen}
-            onAction={withdrawProject}
-          />
-        )}
-        {isSendToDraftModalOpen && (
-          <ChangeStatusModal
-            mode="sendToDraft"
-            isModalOpen={isSendToDraftModalOpen}
-            setIsModalOpen={setIsSendToDraftModalOpen}
-            onAction={sendProjectBackToDraft}
-          />
-        )}
-        {isTrancheWarningOpen && (
-          <SubmitTranchesWarningModal
-            {...{
-              isTrancheWarningOpen,
-              setIsTrancheWarningOpen,
-              setIsSubmitModalOpen,
-            }}
-          />
-        )}
+        <EditActionModals
+          {...{
+            id,
+            isSubmitModalOpen,
+            setIsSubmitModalOpen,
+            isRecommendModalOpen,
+            setIsRecommendModalOpen,
+            isWithdrawModalOpen,
+            setIsWithdrawModalOpen,
+            isSendToDraftModalOpen,
+            setIsSendToDraftModalOpen,
+            isTrancheWarningOpen,
+            setIsTrancheWarningOpen,
+            withdrawProject,
+            sendProjectBackToDraft,
+          }}
+        />
       </div>
     )
   )
