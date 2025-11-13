@@ -145,9 +145,10 @@ class ProjectAssociationMixin:
                     "* 'all' (default): all associated projects; components and non-components;\n"
                     "* 'only_components': only component projects;\n"
                     "* 'exclude_components': exclude component projects.\n"
+                    "* 'only_project': only the current project."
                 ),
                 type=openapi.TYPE_STRING,
-                enum=["all", "only_components", "exclude_components"],
+                enum=["all", "only_components", "exclude_components", "only_project"],
             ),
             openapi.Parameter(
                 "filter_by_project_status",
@@ -202,6 +203,8 @@ class ProjectAssociationMixin:
             associated_projects = associated_projects.exclude(
                 component=project.component
             )
+        elif included_entries == "only_project":
+            associated_projects = Project.objects.filter(id=project.id)
 
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
