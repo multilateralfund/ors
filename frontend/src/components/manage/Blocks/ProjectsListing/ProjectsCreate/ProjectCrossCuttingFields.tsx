@@ -16,6 +16,7 @@ import {
   canEditField,
   canGoToSecondStep,
   canViewField,
+  handleChangeNumericValues,
   hasFields,
 } from '../utils'
 import {
@@ -102,6 +103,7 @@ const ProjectCrossCuttingFields = ({
     project_end_date,
     blanket_or_individual_consideration,
   } = crossCuttingFields
+  const { submission_status } = project || {}
 
   const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -135,6 +137,8 @@ const ProjectCrossCuttingFields = ({
     sector
   )
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
+  const areCostFieldsDisabled =
+    mode === 'edit' && submission_status === 'Recommended'
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setProjectData((prevData) => ({
@@ -146,26 +150,6 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeNumericValues = (
-    event: ChangeEvent<HTMLInputElement>,
-    field: string,
-  ) => {
-    const initialValue = event.target.value
-    const value = initialValue === '' ? null : initialValue
-
-    if (!isNaN(Number(value))) {
-      setProjectData((prevData) => ({
-        ...prevData,
-        [sectionIdentifier]: {
-          ...prevData[sectionIdentifier],
-          [field]: value,
-        },
-      }))
-    } else {
-      event.preventDefault()
-    }
-  }
-
   const getIsInputDisabled = (field: keyof typeof errors) =>
     hasSubmitted && errors[field]?.length > 0
 
@@ -175,7 +159,10 @@ const ProjectCrossCuttingFields = ({
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getIsInputDisabled(field),
-          [disabledClassName]: !canEditField(editableFields, field),
+          [disabledClassName]:
+            !canEditField(editableFields, field) ||
+            (['total_fund', 'support_cost_psc'].includes(field) &&
+              areCostFieldsDisabled),
         }),
       },
     }
@@ -405,9 +392,17 @@ const ProjectCrossCuttingFields = ({
                       prefix="$"
                       withoutDefaultValue={true}
                       onChange={(event) =>
-                        handleChangeNumericValues(event, 'total_fund')
+                        handleChangeNumericValues(
+                          event,
+                          'total_fund',
+                          sectionIdentifier,
+                          setProjectData,
+                        )
                       }
-                      disabled={!canEditField(editableFields, 'total_fund')}
+                      disabled={
+                        !canEditField(editableFields, 'total_fund') ||
+                        areCostFieldsDisabled
+                      }
                       {...getFieldDefaultProps('total_fund')}
                     />
                     <div className="w-8">
@@ -426,10 +421,16 @@ const ProjectCrossCuttingFields = ({
                       prefix="$"
                       withoutDefaultValue={true}
                       onChange={(event) =>
-                        handleChangeNumericValues(event, 'support_cost_psc')
+                        handleChangeNumericValues(
+                          event,
+                          'support_cost_psc',
+                          sectionIdentifier,
+                          setProjectData,
+                        )
                       }
                       disabled={
-                        !canEditField(editableFields, 'support_cost_psc')
+                        !canEditField(editableFields, 'support_cost_psc') ||
+                        areCostFieldsDisabled
                       }
                       {...getFieldDefaultProps('support_cost_psc')}
                     />
@@ -457,7 +458,7 @@ const ProjectCrossCuttingFields = ({
                       }
                       disabled={
                         (mode === 'edit' &&
-                          project?.submission_status === 'Approved' &&
+                          submission_status === 'Approved' &&
                           !!project?.project_start_date) ||
                         !canEditField(editableFields, 'project_start_date')
                       }
@@ -467,7 +468,7 @@ const ProjectCrossCuttingFields = ({
                           getIsInputDisabled('project_start_date'),
                         [disabledClassName]:
                           (mode === 'edit' &&
-                            project?.submission_status === 'Approved' &&
+                            submission_status === 'Approved' &&
                             !!project_start_date) ||
                           !canEditField(editableFields, 'project_start_date'),
                       })}

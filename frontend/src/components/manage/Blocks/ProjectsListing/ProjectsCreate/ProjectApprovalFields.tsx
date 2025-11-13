@@ -6,7 +6,8 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
-import { canEditField, canViewField } from '../utils'
+import { FormattedNumberInput } from '../../Replenishment/Inputs'
+import { canEditField, canViewField, handleChangeNumericValues } from '../utils'
 import {
   ProjectData,
   ProjectTabSetters,
@@ -43,6 +44,9 @@ const ProjectApprovalFields = ({
   ProjectTabSetters & { project?: ProjectTypeApi }) => {
   const sectionIdentifier = 'approvalFields'
   const crtSectionData = projectData[sectionIdentifier]
+  const crossCuttingSectionIdentifier = 'crossCuttingFields'
+  const crossCuttingSectionData = projectData[crossCuttingSectionIdentifier]
+  const { total_fund, support_cost_psc } = crossCuttingSectionData
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -106,15 +110,13 @@ const ProjectApprovalFields = ({
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {canViewField(viewableFields, 'meeting') && (
-          <div className="w-32">
+          <div className="w-40">
             <Label>{tableColumns.meeting}</Label>
             <PopoverInput
               label={meetingNumber?.toString()}
               options={[]}
               disabled={true}
-              className={cx('!m-0 h-10 !py-1', disabledClassName, {
-                'border-red-500': getIsInputDisabled('meeting'),
-              })}
+              className={cx('!m-0 h-10 !py-1', disabledClassName)}
             />
           </div>
         )}
@@ -178,6 +180,54 @@ const ProjectApprovalFields = ({
               )
             )
           })}
+        {canViewField(viewableFields, 'total_fund') && (
+          <div>
+            <Label>{tableColumns.total_fund} (US $)</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="total_fund"
+                value={total_fund ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(
+                    event,
+                    'total_fund',
+                    crossCuttingSectionIdentifier,
+                    setProjectData,
+                  )
+                }
+                disabled={!canEditField(editableFields, 'total_fund')}
+                {...getFieldDefaultProps('total_fund')}
+              />
+              <FieldErrorIndicator errors={errors} field="total_fund" />
+            </div>
+          </div>
+        )}
+        {canViewField(viewableFields, 'support_cost_psc') && (
+          <div>
+            <Label>{tableColumns.support_cost_psc} (US $)</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="support_cost_psc"
+                value={support_cost_psc ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(
+                    event,
+                    'support_cost_psc',
+                    crossCuttingSectionIdentifier,
+                    setProjectData,
+                  )
+                }
+                disabled={!canEditField(editableFields, 'support_cost_psc')}
+                {...getFieldDefaultProps('support_cost_psc')}
+              />
+              <FieldErrorIndicator errors={errors} field="support_cost_psc" />
+            </div>
+          </div>
+        )}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
