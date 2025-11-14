@@ -146,13 +146,12 @@ class APRWorkspaceView(RetrieveAPIView):
                 },
                 queryset=projects_queryset,
             )
-            if filterset.is_valid():
-                projects = filterset.qs
-                for project in projects:
-                    AnnualProjectReport.objects.get_or_create(
-                        project=project,
-                        report=agency_report,
-                    )
+            projects = filterset.qs
+            for project in projects:
+                AnnualProjectReport.objects.get_or_create(
+                    project=project,
+                    report=agency_report,
+                )
 
         return agency_report
 

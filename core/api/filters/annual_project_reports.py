@@ -13,7 +13,7 @@ class APRProjectFilter(filters.FilterSet):
         fields = ["year", "agency", "status"]
 
     def filter_by_year(self, queryset, _name, value):
-        return queryset.filter(date_approved__year__lt=value)
+        return queryset.filter(date_approved__year__lte=value)
 
     def filter_by_status(self, queryset, _name, value):
         """
