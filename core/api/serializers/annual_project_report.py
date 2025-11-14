@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -251,9 +252,14 @@ class AnnualProjectReportFileSerializer(serializers.ModelSerializer):
     def get_file_url(self, obj):
         """Get download URL for the file."""
         if obj.file:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.file.url)
+            return reverse(
+                "apr-file-download",
+                kwargs={
+                    "year": obj.report.progress_report.year,
+                    "agency_id": obj.report.agency_id,
+                    "pk": obj.pk,
+                },
+            )
         return None
 
     def get_file_size(self, obj):
