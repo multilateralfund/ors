@@ -1430,7 +1430,7 @@ class Project(models.Model):
         files.sort(key=lambda f: f.date_created, reverse=True)
         return files[0]
 
-    @property
+    @cached_property
     def final_version(self):
         return self.latest_project if self.latest_project else self
 
@@ -1448,8 +1448,34 @@ class Project(models.Model):
             .first()
         )
 
+    def latest_version_for_year(self, year):
+        """
+        Gets the latest version created by ExCom meeting in or before a specific year.
+
+        Returns None if there's no version fitting the criteria.
+        """
+        final = self.final_version
+        return (
+            Project.objects.really_all()
+            .filter(
+                models.Q(id=final.id) | models.Q(latest_project_id=final.id),
+                post_excom_decision__isnull=False,
+                post_excom_decision__meeting__date__year__lte=year,
+            )
+            .order_by("post_excom_decision__meeting__date")
+            .last()
+        )
+
 
 class ProjectFile(models.Model):
+    class FileType(models.TextChoices):
+        MAIN_SUBMISSION = "main_submission", "Main project submission"
+        VERIFICATION_REPORT = "verification_report", "Verification report"
+        ENDORSEMENT_LETTER = "endorsement_letter", "Endorsement letter from government"
+        FINAL_PROPOSAL = "final_proposal", "Final project proposal"
+        PROJECT_REVIEW_COMMENTS = "project_review_comments", "Project review comments"
+        OTHER = "other", "Other"
+
     file = models.FileField(
         storage=get_protected_storage,
         upload_to="project_files/",
@@ -1458,6 +1484,7 @@ class ProjectFile(models.Model):
         "core.Project", on_delete=models.CASCADE, related_name="files"
     )
     filename = models.CharField(max_length=100)
+    type = models.CharField(max_length=100, choices=FileType.choices)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

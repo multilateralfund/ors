@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import ProjectsSubmit from './ProjectsSubmit'
+import ProjectsVersionChange from './ProjectsVersionChange'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { AssociatedProjectsType } from '../interfaces'
 
 import { Redirect, useParams } from 'wouter'
 import { debounce, isNull } from 'lodash'
 
-const ProjectsSubmitWrapper = () => {
+const ProjectsVersionChangeWrapper = ({ mode }: { mode: string }) => {
   const { project_id } = useParams<Record<string, string>>()
   const isFirstRender = useRef(false)
 
@@ -49,10 +49,12 @@ const ProjectsSubmitWrapper = () => {
         active={!loaded && !isFirstRender.current}
       />
       {associatedProjects && (
-        <ProjectsSubmit {...{ associatedProjects, loaded, setAssociation }} />
+        <ProjectsVersionChange
+          {...{ associatedProjects, loaded, setAssociation, mode }}
+        />
       )}
     </>
   )
 }
 
-export default ProjectsSubmitWrapper
+export default ProjectsVersionChangeWrapper

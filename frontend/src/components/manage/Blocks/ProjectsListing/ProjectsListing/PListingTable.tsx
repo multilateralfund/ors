@@ -112,7 +112,7 @@ const PListingTable = ({
               return (sort === 'asc' ? '' : '-') + field
             })
             .join(',')
-          setParams({ offset: 0, ordering })
+          setParams({ offset: 0, ordering: ordering + ',-date_created' })
         }}
       />
     )

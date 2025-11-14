@@ -60,6 +60,7 @@ import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
+import ProjectsRecommendPage from '@ors/app/projects_listing/[project_id]/recommend/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
@@ -80,6 +81,7 @@ import NotFoundPage from '@ors/app/not-found'
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
 import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
+import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -401,6 +403,11 @@ export default function App() {
             <ProjectsSubmitPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/:project_id/recommend">
+          <ProjectsDataProvider>
+            <ProjectsRecommendPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/create/:project_id/copy">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="copy" />
@@ -422,6 +429,9 @@ export default function App() {
         </Route>
         <Route path="/apr/:year/workspace">
           <APRWorkspace />
+        </Route>
+        <Route path="/apr/:year/edit">
+          <APREdit />
         </Route>
         <Route>
           <NotFoundPage />

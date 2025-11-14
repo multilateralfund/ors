@@ -28,10 +28,33 @@ const ProjectRelatedProjects = ({
   canDisassociate?: boolean
 }) => {
   const { canDisassociateProjects } = useContext(PermissionsContext)
+  const canRemoveAssociation =
+    canDisassociateProjects &&
+    (project.editable || canDisassociate) &&
+    !!project.meta_project_id &&
+    !!metaProjectId
 
   return (
     <>
       <div className="flex w-full flex-col">
+        {canRemoveAssociation && (
+          <>
+            <SectionTitle>
+              <div className="flex items-center gap-2">
+                <span>Umbrella project code:</span>
+                <h4 className="m-0 normal-case"> {project.umbrella_code}</h4>
+              </div>
+            </SectionTitle>
+            <div className="text-lg">
+              If you want this project to be removed from the umbrella, click
+              <RemoveAssociation {...{ setMetaProjectId }} />
+              (In case of removal, the component relationships will be
+              maintained.)
+            </div>
+            <Divider className="mb-4 mt-3" />
+          </>
+        )}
+
         {map(relatedProjects, ({ data, title, noResultsText }, index) => {
           const { projects: crtData = [], loaded } = data
 
@@ -61,10 +84,6 @@ const ProjectRelatedProjects = ({
             </span>
           )
         })}
-        {canDisassociateProjects &&
-          (project.editable || canDisassociate) &&
-          !!project.meta_project_id &&
-          !!metaProjectId && <RemoveAssociation {...{ setMetaProjectId }} />}
       </div>
       {setCurrentTab && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">

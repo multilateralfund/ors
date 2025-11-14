@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
   requiredFieldsTransfer,
@@ -1042,3 +1042,25 @@ export const getFormattedNumericValue = (value: string) =>
         minimumFractionDigits: 2,
       })
     : '-'
+
+export const handleChangeNumericValues = (
+  event: ChangeEvent<HTMLInputElement>,
+  field: string,
+  sectionIdentifier: keyof ProjectData,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
+) => {
+  const initialValue = event.target.value
+  const value = initialValue === '' ? null : initialValue
+
+  if (!isNaN(Number(value))) {
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        [field]: value,
+      },
+    }))
+  } else {
+    event.preventDefault()
+  }
+}

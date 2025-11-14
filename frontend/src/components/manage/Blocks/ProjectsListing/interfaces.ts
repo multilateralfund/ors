@@ -162,6 +162,7 @@ export type ProjectFile = {
   download_url: string
   project_id: number
   editable: boolean
+  type: string
 }
 
 export type ProjectAllVersionsFiles = {
@@ -211,11 +212,12 @@ export interface ProjectFiles {
   files?: ProjectFilesObject
   setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
 }
-export interface ProjectDocs extends ProjectFiles {
+export interface ProjectDocs extends ProjectFiles, FileMetaDataProps {
   mode: string
   loadedFiles?: boolean
   bpFiles?: ProjectFile[]
   project?: ProjectTypeApi
+  errors?: Array<{ id: number; message: string } | null>
 }
 
 export interface ProjectVersions {
@@ -268,6 +270,7 @@ export interface ProjectHeader {
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
+  filesMetaData?: FileMetaDataType[]
 }
 
 export type ActionButtons = ProjectHeader & {
@@ -406,4 +409,15 @@ export type EnterpriseActionButtons = EnterpriseHeaderProps & {
 export interface BpDataProps {
   hasBpData: boolean
   bpDataLoading: boolean
+}
+
+export interface FileMetaDataType {
+  id: number | null
+  name: string
+  type: string | null
+}
+
+export interface FileMetaDataProps {
+  filesMetaData?: FileMetaDataType[]
+  setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
 }

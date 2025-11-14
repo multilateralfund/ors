@@ -7,19 +7,20 @@ import usePageTitle from '@ors/hooks/usePageTitle'
 
 import { Redirect, useParams } from 'wouter'
 
-export default function SubmitProject() {
-  usePageTitle('Project submission')
+export default function RecommendProject() {
+  usePageTitle('Project recommendation')
 
   const { project_id } = useParams<Record<string, string>>()
-  const { canViewProjects, canSubmitProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canRecommendProjects } =
+    useContext(PermissionsContext)
 
-  if (!canViewProjects || !canSubmitProjects) {
+  if (!canViewProjects || !canRecommendProjects) {
     return <Redirect to="/projects-listing/listing" />
   }
 
   return (
     <PageWrapper>
-      <ProjectsVersionChangeWrapper key={project_id} mode="submit" />
+      <ProjectsVersionChangeWrapper key={project_id} mode="recommend" />
     </PageWrapper>
   )
 }

@@ -2,10 +2,7 @@ import { useContext, useMemo, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
-import SubmitProjectModal from './SubmitProjectModal'
-import ChangeStatusModal from './ChangeStatusModal'
-import AddComponentModal from './AddComponentModal'
+import EditActionModals from './EditActionModals'
 import {
   DropDownButtonProps,
   DropDownMenuProps,
@@ -38,12 +35,13 @@ import {
   TrancheErrorType,
   ProjectSpecificFields,
   BpDataProps,
+  FileMetaDataType,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { find, lowerCase, map, pick } from 'lodash'
+import { filter, find, fromPairs, lowerCase, map, pick } from 'lodash'
 import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
@@ -72,6 +70,7 @@ const EditActionButtons = ({
   specificFieldsLoaded,
   postExComUpdate,
   bpData,
+  filesMetaData,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -108,6 +107,7 @@ const EditActionButtons = ({
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
 
   const { id, submission_status, version, component } = project
   const {
@@ -234,7 +234,7 @@ const EditActionButtons = ({
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
-  const handleErrors = async (error: any) => {
+  const handleErrors = async (error: any, type?: string) => {
     const errors = await error.json()
 
     if (error.status === 400) {
@@ -244,8 +244,16 @@ const EditActionButtons = ({
         setFileErrors(errors.files)
       }
 
+      if (errors?.metadata) {
+        setFileErrors(errors.metadata)
+      }
+
       if (errors?.details) {
         setOtherErrors(errors.details)
+      }
+
+      if (type === 'files' && errors?.error) {
+        setFileErrors(errors.error)
       }
     }
 
@@ -255,11 +263,30 @@ const EditActionButtons = ({
     })
   }
 
-  const editProject = async (withNavigation: boolean = false) => {
+  const editProject = async (navigationPage?: string) => {
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
     setErrors({})
+
+    const existingFilesMetadata = filter(
+      filesMetaData,
+      (metadata) => metadata.id,
+    )
+
+    const filesForUpdate = filter(
+      existingFilesMetadata,
+      (metadata: FileMetaDataType) => {
+        const crtFile = find(projectFiles, { id: metadata.id }) as ProjectFile
+        return crtFile && crtFile.type !== metadata.type
+      },
+    )
+
+    const newFilesMetadata = filter(filesMetaData, (metadata) => !metadata.id)
+    const formattedFilesMetadata = fromPairs(
+      map(newFilesMetadata, (file) => [file.name, file.type]),
+    )
+    const params = { metadata: JSON.stringify(formattedFilesMetadata) }
 
     try {
       // Validate files
@@ -269,6 +296,7 @@ const EditActionButtons = ({
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
@@ -295,16 +323,17 @@ const EditActionButtons = ({
       // Upload files
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${id}/files/v2/`,
+          `/api/projects/v2/${id}/project-files/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/project/${id}/files/v2`, {
+        await api(`/api/projects/v2/${id}/project-files/delete`, {
           data: {
             file_ids: deletedFilesIds,
           },
@@ -315,9 +344,28 @@ const EditActionButtons = ({
         })
       }
 
+      await Promise.all(
+        map(filesForUpdate, async (file: FileMetaDataType) => {
+          try {
+            await api(
+              `/api/projects/v2/${id}/project-files/${file.id}/edit_type`,
+              {
+                data: {
+                  file_type: file.type,
+                },
+                method: 'PUT',
+              },
+            )
+          } catch (error) {
+            await handleErrors(error, 'files')
+            throw error
+          }
+        }),
+      )
+
       try {
         const res = await api(
-          `/api/project/${id}/files/include_previous_versions/v2/`,
+          `/api/projects/v2/${id}/project-files/include_previous_versions`,
           {
             withStoreCache: false,
           },
@@ -346,8 +394,8 @@ const EditActionButtons = ({
       setProjectId(result.id)
       setProjectTitle(result.title)
 
-      if (withNavigation) {
-        setLocation(`/projects-listing/${id}/submit`)
+      if (navigationPage) {
+        setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
       if (isRecommended) {
@@ -379,22 +427,8 @@ const EditActionButtons = ({
     setIsWithdrawModalOpen(true)
   }
 
-  const recommendProject = async () => {
-    const canRecommend = await editProject()
-
-    if (canRecommend) {
-      try {
-        await api(`api/projects/v2/${id}/recommend/`, {
-          method: 'POST',
-        })
-        setLocation(`/projects-listing/${id}`)
-      } catch (error) {
-        await handleErrors(error)
-      } finally {
-        setIsLoading(false)
-        setHasSubmitted(true)
-      }
-    }
+  const onRecommendProject = () => {
+    setIsRecommendModalOpen(true)
   }
 
   const sendProjectBackToDraft = async () => {
@@ -406,9 +440,12 @@ const EditActionButtons = ({
           method: 'POST',
         })
         setLocation(`/projects-listing/${id}`)
+        enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
+          variant: 'success',
+        })
       } catch (error) {
         enqueueSnackbar(
-          <>Could not send project back to draft. Please try again.</>,
+          <>Could not send project(s) back to draft. Please try again.</>,
           {
             variant: 'error',
           },
@@ -528,7 +565,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableSubmit}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={recommendProject}
+            onClick={onRecommendProject}
           >
             Recommend project
           </Dropdown.Item>
@@ -574,45 +611,28 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
-      {isComponentModalOpen && (
-        <AddComponentModal
-          id={id}
-          isModalOpen={isComponentModalOpen}
-          setIsModalOpen={setIsComponentModalOpen}
-        />
-      )}
-      {isSubmitModalOpen && (
-        <SubmitProjectModal
-          isModalOpen={isSubmitModalOpen}
-          setIsModalOpen={setIsSubmitModalOpen}
-          {...{ id, editProject }}
-        />
-      )}
-      {isWithdrawModalOpen && (
-        <ChangeStatusModal
-          mode="withdraw"
-          isModalOpen={isWithdrawModalOpen}
-          setIsModalOpen={setIsWithdrawModalOpen}
-          onAction={withdrawProject}
-        />
-      )}
-      {isSendToDraftModalOpen && (
-        <ChangeStatusModal
-          mode="sendToDraft"
-          isModalOpen={isSendToDraftModalOpen}
-          setIsModalOpen={setIsSendToDraftModalOpen}
-          onAction={sendProjectBackToDraft}
-        />
-      )}
-      {showSubmitTranchesWarningModal && isTrancheWarningOpen && (
-        <SubmitTranchesWarningModal
-          {...{
-            isTrancheWarningOpen,
-            setIsTrancheWarningOpen,
-            setIsSubmitModalOpen,
-          }}
-        />
-      )}
+      <EditActionModals
+        {...{
+          id,
+          isComponentModalOpen,
+          setIsComponentModalOpen,
+          isSubmitModalOpen,
+          setIsSubmitModalOpen,
+          isRecommendModalOpen,
+          setIsRecommendModalOpen,
+          isWithdrawModalOpen,
+          setIsWithdrawModalOpen,
+          isSendToDraftModalOpen,
+          setIsSendToDraftModalOpen,
+          setIsTrancheWarningOpen,
+          editProject,
+          withdrawProject,
+          sendProjectBackToDraft,
+        }}
+        isTrancheWarningOpen={
+          !!showSubmitTranchesWarningModal && isTrancheWarningOpen
+        }
+      />
     </div>
   )
 }

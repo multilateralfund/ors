@@ -1356,3 +1356,89 @@ class TestAPRExportView(BaseTest):
         remarks_col = columns["last_year_remarks"]
         cell_value = worksheet.cell(first_data_row, remarks_col).value
         assert cell_value is None
+
+
+@pytest.mark.django_db
+class TestAnnualProjectReportDerivedProperties(BaseTest):
+    def test_without_login(self, **kwargs):
+        pass
+
+    def test_derived_properties_with_multiple_versions(
+        self, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        # just a sanity check
+        assert version3.version == 3
+
+        middle_version = multiple_project_versions_for_apr[1]
+        # just a sanity check
+        assert middle_version.total_fund == 125000.0
+
+        latest_version = multiple_project_versions_for_apr[2]
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+
+        assert (
+            annual_report.adjustment == latest_version.total_fund - version3.total_fund
+        )
+        assert (
+            annual_report.approved_funding_plus_adjustment == latest_version.total_fund
+        )
+        assert (
+            annual_report.per_cent_funds_disbursed
+            == 80000.0 / latest_version.total_fund
+        )
+        assert annual_report.support_cost_adjustment == 5000.0
+        assert annual_report.support_cost_approved_plus_adjustment == 15000.0
+        assert annual_report.support_cost_balance == 15000.0 - 8000.0
+
+    def test_derived_properties_with_later_latest_version(
+        self,
+        annual_agency_report,
+        late_post_excom_versions_for_apr,
+    ):
+        # Below, we are also setting the project to the *latest* (next-year) version,
+        # to check the logic still behaves correctly.
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=late_post_excom_versions_for_apr[1],
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+
+        # All properties depending on latest_version_for_year should return None
+        assert annual_report.adjustment is None
+        assert annual_report.support_cost_adjustment is None
+
+        # And the addition/substraction-based ones should return initial values
+        assert annual_report.approved_funding_plus_adjustment == 100000.0
+        assert annual_report.support_cost_approved_plus_adjustment == 10000.0
+        assert annual_report.support_cost_balance == 10000.0 - 8000.0
+        assert annual_report.per_cent_funds_disbursed == 0.8
+
+    def test_derived_properties_with_no_latest_version(
+        self,
+        annual_agency_report,
+        initial_project_version_for_apr,
+    ):
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=initial_project_version_for_apr,
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+
+        # All properties depending on latest_version_for_year should return None
+        assert annual_report.adjustment is None
+        assert annual_report.support_cost_adjustment is None
+
+        # And the addition/substraction-based ones should return initial values
+        assert annual_report.approved_funding_plus_adjustment == 100000.0
+        assert annual_report.support_cost_approved_plus_adjustment == 10000.0
+        assert annual_report.support_cost_balance == 10000.0 - 8000.0
+        assert annual_report.per_cent_funds_disbursed == 0.8

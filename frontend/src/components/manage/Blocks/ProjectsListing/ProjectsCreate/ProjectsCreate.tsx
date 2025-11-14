@@ -24,6 +24,7 @@ import {
   TrancheErrors,
   RelatedProjectsSectionType,
   BpDataProps,
+  FileMetaDataProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -43,7 +44,7 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -74,12 +75,15 @@ const ProjectsCreate = ({
   loadedFiles,
   onBpDataChange,
   bpData,
+  filesMetaData,
+  setFilesMetaData,
   metaProjectId,
   setMetaProjectId,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
-  TrancheErrors & {
+  TrancheErrors &
+  FileMetaDataProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -194,13 +198,19 @@ const ProjectsCreate = ({
     [crossCuttingFields, errors, mode],
   )
 
-  const approvalErrors = useMemo(
-    () =>
-      mode === 'edit' && project?.submission_status === 'Recommended'
-        ? getApprovalErrors(approvalData, approvalFields, errors, project)
-        : {},
-    [approvalData, approvalFields, errors],
-  )
+  const approvalErrors = useMemo(() => {
+    const approvalCrossCuttingErrors = pick(crossCuttingErrors, [
+      'total_fund',
+      'support_cost_psc',
+    ])
+
+    return mode === 'edit' && project?.submission_status === 'Recommended'
+      ? {
+          ...getApprovalErrors(approvalData, approvalFields, errors, project),
+          ...approvalCrossCuttingErrors,
+        }
+      : {}
+  }, [approvalData, approvalFields, errors, crossCuttingErrors])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
   const hasV3EditPermissions =
@@ -310,6 +320,18 @@ const ProjectsCreate = ({
     (!project?.component ||
       project?.id === project?.component.original_project_id) &&
     getHasNoFiles(parseInt(project_id), files, projectFiles)
+
+  const missingFileTypeErrors =
+    mode === 'add' || loadedFiles
+      ? map(filesMetaData, ({ type }, index) =>
+          !type
+            ? {
+                id: index,
+                message: `Attachment ${Number(index) + 1} - Type is required.`,
+              }
+            : null,
+        ).filter(Boolean)
+      : []
 
   const steps = [
     {
@@ -513,7 +535,9 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Attachments</div>
-          {fileErrors || (loadedFiles && hasNoFiles) ? (
+          {fileErrors ||
+          (loadedFiles && hasNoFiles) ||
+          missingFileTypeErrors.length > 0 ? (
             areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
@@ -532,6 +556,8 @@ const ProjectsCreate = ({
             project,
             loadedFiles,
             setCurrentTab,
+            filesMetaData,
+            setFilesMetaData,
           }}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
@@ -540,6 +566,7 @@ const ProjectsCreate = ({
           isNextButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
+          errors={missingFileTypeErrors}
           {...rest}
         />
       ),
@@ -558,6 +585,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
+        ...missingFileTypeErrors,
       ],
     },
     ...(isApprovalTabAvailable

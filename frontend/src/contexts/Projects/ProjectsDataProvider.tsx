@@ -89,6 +89,13 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
     path: 'api/blends/',
   })
 
+  const { data: fileTypes } = useApi({
+    options: {
+      withStoreCache: true,
+    },
+    path: 'api/file-types/',
+  })
+
   return (
     <ProjectsDataContext.Provider
       value={{
@@ -100,6 +107,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
         subsectors,
         substances,
         blends,
+        fileTypes,
       }}
     >
       {children}

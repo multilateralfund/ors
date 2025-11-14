@@ -299,7 +299,8 @@ class ProjectFileAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = []
-        return get_final_display_list(ProjectFile, exclude)
+        fields = get_final_display_list(ProjectFile, exclude)
+        return ["id"] + fields
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "project":
