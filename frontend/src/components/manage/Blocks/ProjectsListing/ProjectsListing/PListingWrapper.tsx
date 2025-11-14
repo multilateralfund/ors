@@ -41,6 +41,7 @@ export default function PListingWrapper() {
     projectStatus: '',
   })
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
+  const [transferId, setTansferId] = useState<number>()
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
 
@@ -138,6 +139,16 @@ export default function PListingWrapper() {
     setIsTransferModalOpen(true)
   }
 
+  const onSuccessfulTransfer = (id: number) => {
+    setProjectData({
+      projectId: null,
+      projectTitle: '',
+      projectSubmissionStatus: '',
+      projectStatus: '',
+    })
+    setTansferId(id)
+  }
+
   return (
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-3">
@@ -170,11 +181,13 @@ export default function PListingWrapper() {
           id={projectData.projectId}
           isModalOpen={isTransferModalOpen}
           setIsModalOpen={setIsTransferModalOpen}
+          onSuccess={onSuccessfulTransfer}
         />
       )}
       <Box className="shadow-none">
         {view === 'list' ? (
           <PListingProjects
+            key={transferId}
             {...{
               projectId,
               setProjectData,

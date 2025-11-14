@@ -4,6 +4,7 @@ import {
   SetStateAction,
   useContext,
   useMemo,
+  useState,
 } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
@@ -82,12 +83,14 @@ const ProjectTransfer = ({
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
 
-  const sectionDefaultProps = {
+  const fieldDefaultProps = (field: string) => ({
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[16rem]',
+      className:
+        defaultProps.FieldProps.className +
+        (field === 'agency' ? ' max-w-40 w-40' : ' w-[16rem]'),
     },
-  }
+  })
 
   const handleChangeAgency = (value: ApiAgency | null) => {
     setProjectData((prevData) => ({
@@ -125,14 +128,15 @@ const ProjectTransfer = ({
     }
   }
 
-  const handleChangeExcomProvision = (
-    event: ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      transfer_excom_provision: event.target.value,
+  const [localExcom, setLocalExcom] = useState(
+    projectData.transfer_excom_provision,
+  )
+
+  const saveLocalExcom = () =>
+    setProjectData((prev) => ({
+      ...prev,
+      transfer_excom_provision: localExcom,
     }))
-  }
 
   const handleChangeNumericValues = (
     event: ChangeEvent<HTMLInputElement>,
@@ -165,7 +169,7 @@ const ProjectTransfer = ({
   })
 
   return (
-    <div className="flex flex-col gap-y-5">
+    <div className="flex flex-col gap-y-4">
       <div className="flex flex-col gap-y-2">
         <HeaderWithIcon title="Main attributes" Icon={BsFilesAlt} />
         <div className="flex flex-wrap gap-x-20 gap-y-3">
@@ -183,17 +187,17 @@ const ProjectTransfer = ({
                   getOptionLabel(agenciesOpts, option)
                 }
                 Input={{ error: getHasErrors('agency') }}
-                {...sectionDefaultProps}
+                {...fieldDefaultProps('agency')}
               />
               <div className="w-8">
                 <FieldErrorIndicator errors={errors} field="agency" />
               </div>
             </div>
           </div>
-          <div>
+          <div className="w-[250px]">
             <Label>Transfer meeting</Label>
             <div className="flex items-center">
-              <div className="w-32">
+              <div className="w-40">
                 <PopoverInput
                   label={getMeetingNr(
                     projectData.transfer_meeting ?? undefined,
@@ -212,7 +216,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div className="w-[16rem]">
+          <div>
             <Label htmlFor="decision">Transfer decision</Label>
             <div className="flex items-center">
               <Field
@@ -226,7 +230,7 @@ const ProjectTransfer = ({
                   getOptionLabel(decisionOptions, option, 'value')
                 }
                 Input={{ error: getHasErrors('transfer_decision') }}
-                {...sectionDefaultProps}
+                {...fieldDefaultProps('decision')}
               />
               <FieldErrorIndicator errors={errors} field="transfer_decision" />
             </div>
@@ -237,9 +241,10 @@ const ProjectTransfer = ({
         <Label>Transfer Excom provision (max 500 characters)</Label>
         <div className="flex items-center">
           <TextareaAutosize
-            value={projectData.transfer_excom_provision as string}
-            onChange={(event) => handleChangeExcomProvision(event)}
-            className={cx(textAreaClassname, 'max-w-[415px]', {
+            value={localExcom}
+            onChange={(e) => setLocalExcom(e.target.value)}
+            onBlur={saveLocalExcom}
+            className={cx(textAreaClassname, 'max-w-[435px]', {
               'border-red-500': getHasErrors('transfer_excom_provision'),
             })}
             maxLength={500}
@@ -273,7 +278,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div>
+          <div className="w-[250px]">
             <Label>Project support cost transferred (US $)</Label>
             <div className="flex items-center">
               <FormattedNumberInput
@@ -307,7 +312,7 @@ const ProjectTransfer = ({
           </div>
         </div>
       </div>
-      <Divider className="my-2" />
+      <Divider className="my-1" />
       <ProjectDocumentation
         mode="transfer"
         errors={missingFileTypeErrors}

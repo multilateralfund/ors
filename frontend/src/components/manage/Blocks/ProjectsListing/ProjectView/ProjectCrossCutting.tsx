@@ -132,6 +132,22 @@ const ProjectCrossCutting = ({
                   )}
               </div>
             </div>
+            {project.status === 'Transferred' && (
+              <div className="flex w-full flex-col gap-4">
+                <div className={viewColumnsClassName}>
+                  {numberDetailItem(
+                    'Transferred project funding (US $)',
+                    project.fund_transferred.toString(),
+                    'decimal',
+                  )}
+                  {numberDetailItem(
+                    'Transferred project support cost (US $)',
+                    project.psc_transferred.toString(),
+                    'decimal',
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex w-full flex-col gap-4">
               <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'project_start_date') &&

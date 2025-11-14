@@ -31,9 +31,11 @@ import Cookies from 'js-cookie'
 const ProjectTransferWrapper = ({
   project,
   setIsModalOpen,
+  onSuccess,
 }: {
   project: ProjectTypeApi
   setIsModalOpen: (isOpen: boolean) => void
+  onSuccess: (id: number) => void
 }) => {
   const [projectData, setProjectData] = useState<ProjectTransferData>(
     initialTranferedProjectData,
@@ -93,9 +95,10 @@ const ProjectTransferWrapper = ({
     [errors],
   )
   const allTransferErrors = { ...transferErrors, ...filteredErrors }
-  const disableTransfer = Object.values(transferErrors).some(
-    (errors: any) => errors.length > 0,
-  )
+  const disableTransfer =
+    Object.values(transferErrors).some((errors: any) => errors.length > 0) ||
+    missingFileTypeErrors.length > 0 ||
+    allFileErrors.some((err) => !!err.message)
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -107,22 +110,24 @@ const ProjectTransferWrapper = ({
   }, [])
 
   const handleErrors = async (error: any) => {
-    const errors = await error.json()
+    let errors = error
 
-    if (error.status === 400) {
-      setErrors(errors)
+    if (error?.json && typeof error.json === 'function') {
+      errors = await errors.json()
+    }
 
-      if (errors?.files) {
-        setFileErrors(errors.files)
-      }
+    setErrors(errors)
 
-      if (errors?.metadata) {
-        setFileErrors(errors.metadata)
-      }
+    if (errors?.file) {
+      setFileErrors(errors.file)
+    }
 
-      if (errors?.details) {
-        setOtherErrors(errors.details)
-      }
+    if (errors?.metadata) {
+      setFileErrors(errors.metadata)
+    }
+
+    if (errors?.details) {
+      setOtherErrors(errors.details)
     }
 
     if (errors?.detail) {
@@ -170,19 +175,28 @@ const ProjectTransferWrapper = ({
 
       const csrftoken = Cookies.get('csrftoken')
 
-      await fetch(formatApiUrl(`/api/projects/v2/${project.id}/transfer`), {
-        body: formData,
-        credentials: 'include',
-        headers: {
-          ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+      const response = await fetch(
+        formatApiUrl(`/api/projects/v2/${project.id}/transfer`),
+        {
+          body: formData,
+          credentials: 'include',
+          headers: {
+            ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
+          },
+          method: 'POST',
         },
-        method: 'POST',
-      })
+      )
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        throw data ?? { message: 'An error occurred' }
+      }
 
       setIsModalOpen(false)
       enqueueSnackbar(<>Project was transferred successfully.</>, {
         variant: 'success',
       })
+      onSuccess(data.id)
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -251,10 +265,12 @@ const TransferProjectModal = ({
   id,
   isModalOpen,
   setIsModalOpen,
+  onSuccess,
 }: {
   id: number
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
+  onSuccess: (id: number) => void
 }) => {
   const project = useGetProject(id.toString())
   const { data, loading } = project
@@ -266,7 +282,7 @@ const TransferProjectModal = ({
       onClose={() => setIsModalOpen(false)}
       keepMounted
     >
-      <Box className="flex max-h-[90%] min-h-[250px] w-[80%] max-w-[1400px] flex-col rounded-2xl border-0 p-0 absolute-center 2xl:w-[60%]">
+      <Box className="flex max-h-[95%] min-h-[250px] w-[80%] max-w-[1400px] flex-col rounded-2xl border-0 p-0 absolute-center 2xl:w-[60%]">
         <Typography className="mb-1 rounded-t-2xl bg-primary py-2 pl-6 text-3xl font-medium text-white">
           Transfer project {data?.code ?? data?.code_legacy}
         </Typography>
@@ -276,7 +292,10 @@ const TransferProjectModal = ({
         />
         <div className="flex flex-col overflow-y-auto px-6 py-3">
           {!loading && data && (
-            <ProjectTransferWrapper project={data} {...{ setIsModalOpen }} />
+            <ProjectTransferWrapper
+              project={data}
+              {...{ setIsModalOpen, onSuccess }}
+            />
           )}
         </div>
       </Box>

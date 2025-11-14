@@ -375,6 +375,24 @@ const ProjectIdentifiersFields = ({
               </div>
             </div>
           </div>
+          {project?.status === 'Transferred' && (
+            <div>
+              <Label>Transferred meeting</Label>
+              <div className="flex items-center">
+                <div className="w-32">
+                  <PopoverInput
+                    label={getMeetingNr(
+                      project?.meeting ?? undefined,
+                    )?.toString()}
+                    options={[]}
+                    disabled={true}
+                    className={cx('!m-0 h-10 !py-1', disabledClassName)}
+                  />
+                </div>
+                <div className="w-8" />
+              </div>
+            </div>
+          )}
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
@@ -395,6 +413,7 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={
+                    (isV3Project && !!project?.agency_id) ||
                     !areNextSectionsDisabled ||
                     !canEditField(editableFields, 'agency')
                   }

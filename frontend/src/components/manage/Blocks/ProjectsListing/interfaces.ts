@@ -183,6 +183,8 @@ export type ProjectTypeApi = ProjIdentifiers &
     latest_project: number | null
     meta_project: Record<string, any>
     history: ProjectType['history']
+    fund_transferred: number
+    psc_transferred: number
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
