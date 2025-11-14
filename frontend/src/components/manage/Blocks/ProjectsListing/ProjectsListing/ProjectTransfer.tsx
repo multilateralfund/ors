@@ -194,7 +194,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div className="w-[250px]">
+          <div>
             <Label>Transfer meeting</Label>
             <div className="flex items-center">
               <div className="w-40">
@@ -259,8 +259,8 @@ const ProjectTransfer = ({
         </div>
       </div>
       <div className="flex flex-col gap-y-2">
-        <div className="flex flex-wrap gap-x-20 gap-y-3">
-          <div>
+        <div className="flex flex-wrap gap-y-3">
+          <div className="mr-20">
             <Label>Funds transferred (US $)</Label>
             <div className="flex items-center">
               <FormattedNumberInput
@@ -278,7 +278,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div className="w-[250px]">
+          <div className="mr-9">
             <Label>Project support cost transferred (US $)</Label>
             <div className="flex items-center">
               <FormattedNumberInput
