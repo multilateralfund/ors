@@ -4,6 +4,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { FieldErrorIndicator } from '../HelperComponents'
 import ExportConfirmModal from './ExportConfirmModal'
@@ -28,6 +29,7 @@ export function FilesViewer(props: ProjectDocs) {
     filesMetaData,
     setFilesMetaData,
     errors,
+    allFileErrors,
   } = props
 
   const { fileTypes } = useContext(ProjectsDataContext)
@@ -96,6 +98,23 @@ export function FilesViewer(props: ProjectDocs) {
     <>
       <div className="flex flex-col gap-2">
         <HeaderWithIcon title="File attachments" Icon={TbFiles} />
+        {mode === 'transfer' && allFileErrors && allFileErrors.length > 0 && (
+          <CustomAlert
+            type="error"
+            alertClassName="mt-1"
+            content={
+              <div className="mt-0.5 flex flex-col gap-1.5 text-base">
+                {allFileErrors.map((err, idx) =>
+                  err ? (
+                    <div key={idx}>
+                      {'\u2022'} {err.message}
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            }
+          />
+        )}
         {mode === 'edit' && (
           <>
             <div className="mt-5 flex gap-4">
@@ -146,7 +165,11 @@ export function FilesViewer(props: ProjectDocs) {
         {!isNil(loadedFiles) && !loadedFiles ? (
           <CircularProgress color="inherit" size="30px" className="mt-2" />
         ) : (
-          <div className="mt-3 flex flex-col gap-2.5">
+          <div
+            className={cx('flex flex-col gap-2.5', {
+              'mt-3': mode !== 'transfer',
+            })}
+          >
             {currentFiles.length === 0 ? (
               <p className="m-1 ml-0 text-lg font-normal text-gray-500">
                 No files available
@@ -162,7 +185,7 @@ export function FilesViewer(props: ProjectDocs) {
                   <div
                     key={index}
                     className={cx('flex flex-wrap items-end gap-2', {
-                      'gap-4': mode === 'edit',
+                      'gap-4': mode !== 'view',
                     })}
                   >
                     <a

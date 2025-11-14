@@ -218,6 +218,7 @@ export interface ProjectDocs extends ProjectFiles, FileMetaDataProps {
   bpFiles?: ProjectFile[]
   project?: ProjectTypeApi
   errors?: Array<{ id: number; message: string } | null>
+  allFileErrors?: { message: string }[]
 }
 
 export interface ProjectVersions {

@@ -21,7 +21,12 @@ import ProjectDocumentation from '../ProjectView/ProjectDocumentation'
 import { FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { ProjectTransferData, ProjectTypeApi } from '../interfaces'
+import { BpFilesObject } from '../../BusinessPlans/types'
+import {
+  FileMetaDataProps,
+  ProjectTransferData,
+  ProjectTypeApi,
+} from '../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -41,20 +46,20 @@ const ProjectTransfer = ({
   projectData,
   setProjectData,
   project,
-  files,
-  setFiles,
   errors,
-  fileErrors,
   hasSubmitted,
-}: {
+  missingFileTypeErrors,
+  ...rest
+}: FileMetaDataProps & {
   projectData: ProjectTransferData
   setProjectData: Dispatch<SetStateAction<ProjectTransferData>>
   project: ProjectTypeApi
-  files: any
-  setFiles: any
-  errors: any
-  fileErrors: any
+  files: BpFilesObject
+  setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
+  errors: { [key: string]: string[] }
   hasSubmitted: boolean
+  missingFileTypeErrors: Array<{ id: number; message: string } | null>
+  allFileErrors: { message: string }[]
 }) => {
   const { agencies } = useContext(ProjectsDataContext)
   const agenciesOpts = filter(
@@ -83,8 +88,6 @@ const ProjectTransfer = ({
       className: defaultProps.FieldProps.className + ' w-[16rem]',
     },
   }
-
-  const hasNoFiles = files.length === 0
 
   const handleChangeAgency = (value: ApiAgency | null) => {
     setProjectData((prevData) => ({
@@ -307,11 +310,9 @@ const ProjectTransfer = ({
       <Divider className="my-2" />
       <ProjectDocumentation
         mode="transfer"
-        {...{
-          files,
-          setFiles,
-          project,
-        }}
+        errors={missingFileTypeErrors}
+        {...{ project }}
+        {...rest}
       />
     </div>
   )
