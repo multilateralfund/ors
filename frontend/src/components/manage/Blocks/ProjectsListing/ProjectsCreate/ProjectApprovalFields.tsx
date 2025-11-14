@@ -58,15 +58,15 @@ const ProjectApprovalFields = ({
   const meetings = projectSlice.meetings.data
   const meetingNumber = find(
     meetings,
-    (option) => option.id === project?.meeting,
+    (option) => option.id === project?.meeting_id,
   )?.number
 
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
     options: {
-      triggerIf: !!project?.meeting,
+      triggerIf: !!project?.meeting_id,
       params: {
-        meeting_id: project?.meeting,
+        meeting_id: project?.meeting_id,
       },
     },
   })

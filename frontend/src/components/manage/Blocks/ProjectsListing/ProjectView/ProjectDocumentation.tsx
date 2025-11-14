@@ -12,14 +12,10 @@ import {
 const ProjectDocumentation = ({
   projectFiles = [],
   mode,
-  project,
-  loadedFiles,
   setCurrentTab,
   nextStep,
   hasNextStep,
   isNextButtonDisabled,
-  filesMetaData,
-  errors,
   ...rest
 }: ProjectFiles &
   ProjectTabSetters &
@@ -32,19 +28,13 @@ const ProjectDocumentation = ({
     hasNextStep?: boolean
     isNextButtonDisabled?: boolean
     errors?: Array<{ id: number; message: string } | null>
+    allFileErrors?: { message: string }[]
   }) => {
   return (
     <>
       <div className="flex w-full flex-col gap-4">
         <FilesViewer
-          {...{
-            mode,
-            project,
-            loadedFiles,
-            filesMetaData,
-            errors,
-          }}
-          {...rest}
+          {...{ mode, ...rest }}
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
 
