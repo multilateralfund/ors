@@ -152,7 +152,6 @@ export default function APRWorkspace() {
           <div className="flex flex-col items-end gap-y-2">
             <Button
               variant="contained"
-              disabled
               onClick={() => setIsUploadDocumentsModalOpen(true)}
             >
               Upload Documents
@@ -196,6 +195,9 @@ export default function APRWorkspace() {
         <UploadDocumentsModal
           isModalOpen={isUploadDocumentsModalOpen}
           setIsModalOpen={setIsUploadDocumentsModalOpen}
+          year={year}
+          agencyId={user.agency_id}
+          oldFiles={apr.files}
         />
       )}
     </PageWrapper>

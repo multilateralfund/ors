@@ -460,7 +460,7 @@ class TestAPRFileUploadView(BaseTest):
         }
 
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -473,17 +473,21 @@ class TestAPRFileUploadView(BaseTest):
     def test_upload_file(self, agency_inputter_user, annual_agency_report):
         self.client.force_authenticate(user=agency_inputter_user)
 
-        test_file = SimpleUploadedFile(
+        test_financial_file = SimpleUploadedFile(
             "test_report.pdf", b"file_content", content_type="application/pdf"
         )
+        test_supporting_file = SimpleUploadedFile(
+            "test_support.pdf",
+            b"supporting_file_content",
+            content_type="application/pdf",
+        )
         data = {
-            "file": test_file,
-            "file_name": "Annual Progress Report 2024",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": test_financial_file,
+            "supporting_files": [test_supporting_file],
         }
 
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -492,8 +496,9 @@ class TestAPRFileUploadView(BaseTest):
         response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert "file" in response.data
-        assert response.data["message"] == "File uploaded successfully."
+        assert "files" in response.data
+        assert len(response.data["files"]) == 2
+        assert response.data["message"] == "Files uploaded successfully."
 
         assert AnnualProjectReportFile.objects.filter(
             report=annual_agency_report
@@ -503,7 +508,7 @@ class TestAPRFileUploadView(BaseTest):
         self.client.force_authenticate(user=agency_viewer_user)
 
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -524,7 +529,7 @@ class TestAPRFileUploadView(BaseTest):
         )
 
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -550,12 +555,10 @@ class TestAPRFileUploadView(BaseTest):
             "new_report.pdf", b"new_content", content_type="application/pdf"
         )
         data = {
-            "file": new_file,
-            "file_name": "Updated Report",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": new_file,
         }
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -586,12 +589,10 @@ class TestAPRFileUploadView(BaseTest):
             "test.pdf", b"content", content_type="application/pdf"
         )
         data = {
-            "file": test_file,
-            "file_name": "Test Report",
-            "file_type": AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            "financial_file": test_file,
         }
         url = reverse(
-            "apr-upload",
+            "apr-file-upload",
             kwargs={
                 "year": annual_agency_report.progress_report.year,
                 "agency_id": annual_agency_report.agency.id,
@@ -600,11 +601,220 @@ class TestAPRFileUploadView(BaseTest):
         response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["message"] == "File uploaded successfully."
+        assert response.data["message"] == "Files uploaded successfully."
 
 
 @pytest.mark.django_db
-class TestAPRGlobaliewSet(BaseTest):
+class TestAPRFileDownloadView(BaseTest):
+    def test_without_login(self, annual_agency_report):
+        file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
+
+        self.client.force_authenticate(user=None)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_user_can_download_own_file(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="test_report.pdf",
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Disposition"] == 'attachment; filename="test_report.pdf"'
+        )
+        assert "Content-Type" in response
+
+    def test_agency_user_cannot_download_other_agency_file(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        other_agency = AgencyFactory()
+        other_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_agency_report.progress_report,
+            agency=other_agency,
+        )
+        file_obj = AnnualProjectReportFileFactory(report=other_report)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": other_report.progress_report.year,
+                "agency_id": other_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_user_can_download_any_file(
+        self, secretariat_viewer_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="mlfs_download_test.pdf",
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Disposition"]
+            == 'attachment; filename="mlfs_download_test.pdf"'
+        )
+
+    def test_download_nonexistent_file(self, agency_viewer_user, annual_agency_report):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": 99999,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_download_file_with_wrong_year_or_agency(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+
+        # Wrong year
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": 9999,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        # Wrong agency
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": 9999,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_download_financial_report_file(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            file_name="financial_report_2024.pdf",
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            'attachment; filename="financial_report_2024.pdf"'
+            in response["Content-Disposition"]
+        )
+
+    def test_download_supporting_document_file(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_type=AnnualProjectReportFile.FileType.OTHER_SUPPORTING_DOCUMENT,
+            file_name="supporting_doc.docx",
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-file-download",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            'attachment; filename="supporting_doc.docx"'
+            in response["Content-Disposition"]
+        )
+
+    def test_serializer_file_url(self, agency_viewer_user, annual_agency_report):
+        file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["files"]) == 1
+
+        file_url = response.data["files"][0]["file_url"]
+        expected_file_url = (
+            f"/api/annual-project-report/{annual_agency_report.progress_report.year}"
+            f"/agency/{annual_agency_report.agency.id}/files/{file_obj.pk}/download/"
+        )
+        assert expected_file_url in file_url
+        assert "/media/" not in file_url
+
+
+@pytest.mark.django_db
+class TestAPRGlobalViewSet(BaseTest):
     def test_without_login(self, apr_year):
         self.client.force_authenticate(user=None)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})

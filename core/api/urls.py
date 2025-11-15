@@ -146,6 +146,7 @@ from core.api.views.annual_project_report import (
     APRWorkspaceView,
     APRBulkUpdateView,
     APRFileUploadView,
+    APRFileDownloadView,
     APRFileDeleteView,
     APRStatusView,
     APRExportView,
@@ -730,7 +731,12 @@ urlpatterns = [
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/upload/",
         APRFileUploadView.as_view(),
-        name="apr-upload",
+        name="apr-file-upload",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/download/",
+        APRFileDownloadView.as_view(),
+        name="apr-file-download",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",

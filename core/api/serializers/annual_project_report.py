@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -251,9 +252,14 @@ class AnnualProjectReportFileSerializer(serializers.ModelSerializer):
     def get_file_url(self, obj):
         """Get download URL for the file."""
         if obj.file:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.file.url)
+            return reverse(
+                "apr-file-download",
+                kwargs={
+                    "year": obj.report.progress_report.year,
+                    "agency_id": obj.report.agency_id,
+                    "pk": obj.pk,
+                },
+            )
         return None
 
     def get_file_size(self, obj):
@@ -524,64 +530,95 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
         return updated_reports, errors
 
 
-class AnnualProjectReportFileUploadSerializer(serializers.ModelSerializer):
+class AnnualProjectReportFileUploadSerializer(serializers.Serializer):
     """
     Serializer for uploading files to an agency report; validates file type
     """
 
-    class Meta:
-        model = AnnualProjectReportFile
-        fields = ["file", "file_name", "file_type"]
+    financial_file = serializers.FileField(required=False, allow_null=True)
+    supporting_files = serializers.ListField(
+        child=serializers.FileField(),
+        required=False,
+        allow_empty=True,
+    )
 
-    def validate(self, attrs):
+    def validate_financial_file(self, value):
         """
         Validate file type matches the file extension.
         For ANNUAL_PROGRESS_FINANCIAL_REPORT, only allow PDF/Word.
         """
-        file_type = attrs.get("file_type")
-        file = attrs.get("file")
+        if value is None:
+            return value
 
-        if (
-            file_type
-            == AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
-        ):
-            # Only allowing PDF and Word documents
-            allowed_extensions = ["pdf", "doc", "docx"]
-            file_extension = file.name.lower().split(".")[-1]
+        allowed_extensions = ["pdf", "doc", "docx"]
+        file_extension = value.name.lower().split(".")[-1]
 
-            if file_extension not in allowed_extensions:
-                raise serializers.ValidationError(
-                    {
-                        "file": (
-                            f"For Annual Progress & Financial Report, "
-                            "only PDF and Word documents are allowed. "
-                            f"Current file type: .{file_extension}"
-                        )
-                    }
-                )
+        if file_extension not in allowed_extensions:
+            raise serializers.ValidationError(
+                {
+                    "file": (
+                        f"For Annual Progress & Financial Report, "
+                        "only PDF and Word documents are allowed. "
+                        f"Current file type: .{file_extension}"
+                    )
+                }
+            )
+
+        return value
+
+    def validate(self, attrs):
+        """Ensure at least one file is provided."""
+        financial_file = attrs.get("financial_file")
+        supporting_files = attrs.get("supporting_files", [])
+
+        if not financial_file and not supporting_files:
+            raise serializers.ValidationError(
+                "At least one file of any type must be provided."
+            )
 
         return attrs
 
     def create(self, validated_data):
         """
-        Create the file record.
+        Create the file records for all received files.
         If file_type is ANNUAL_PROGRESS_FINANCIAL_REPORT and one already exists,
         delete the old one first (due to unique constraint).
+        For supporting files, creation is additive (no replacement)
         """
         report = validated_data.get("report")
-        file_type = validated_data.get("file_type")
+        financial_file = validated_data.get("financial_file")
+        supporting_files = validated_data.get("supporting_files", [])
 
-        # Check if we need to replace an existing file
-        if (
-            file_type
-            == AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
-        ):
+        created_files = []
+
+        # Check if we need to replace an existing financial file
+        if financial_file:
             # Delete existing file of this type for this report
             AnnualProjectReportFile.objects.filter(
-                report=report, file_type=file_type
+                report=report,
+                file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
             ).delete()
 
-        return super().create(validated_data)
+            # And then create new financial report file
+            financial_record = AnnualProjectReportFile.objects.create(
+                report=report,
+                file=financial_file,
+                file_name=financial_file.name,
+                file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+            )
+            created_files.append(financial_record)
+
+        for supporting_file in supporting_files:
+            # TODO: what do we do in case of *name* clash?
+            supporting_record = AnnualProjectReportFile.objects.create(
+                report=report,
+                file=supporting_file,
+                file_name=supporting_file.name,
+                file_type=AnnualProjectReportFile.FileType.OTHER_SUPPORTING_DOCUMENT,
+            )
+            created_files.append(supporting_record)
+
+        return {"created_files": created_files}
 
 
 class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):

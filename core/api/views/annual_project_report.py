@@ -1,3 +1,5 @@
+import os
+from django.http import Http404, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -28,6 +30,7 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
     AnnualAgencyProjectReportReadSerializer,
     AnnualProjectReportBulkUpdateSerializer,
+    AnnualProjectReportFileSerializer,
     AnnualProjectReportFileUploadSerializer,
     AnnualAgencyProjectReportStatusUpdateSerializer,
 )
@@ -247,13 +250,49 @@ class APRFileUploadView(APIView):
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
-            serializer.save(report=agency_report)
+            result = serializer.save(report=agency_report)
+            created_files_data = AnnualProjectReportFileSerializer(
+                result["created_files"], many=True, context={"request": request}
+            ).data
             return Response(
-                {"message": "File uploaded successfully.", "file": serializer.data},
+                {
+                    "message": "Files uploaded successfully.",
+                    "files": created_files_data,
+                },
                 status=status.HTTP_201_CREATED,
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class APRFileDownloadView(APIView):
+    """
+    Download a file from an agency report, taking permissions into account.
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
+
+    def get(self, request, year, agency_id, pk):
+        file_obj = get_object_or_404(
+            AnnualProjectReportFile.objects.select_related(
+                "report", "report__agency", "report__progress_report"
+            ),
+            pk=pk,
+            report__progress_report__year=year,
+            report__agency_id=agency_id,
+        )
+        self.check_object_permissions(request, file_obj.report)
+
+        if not file_obj.file or not os.path.exists(file_obj.file.path):
+            raise Http404("File not found on disk.")
+
+        response = FileResponse(
+            file_obj.file.open("rb"), content_type="application/octet-stream"
+        )
+        filename = file_obj.file_name or os.path.basename(file_obj.file.name)
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        return response
 
 
 class APRFileDeleteView(DestroyAPIView):
