@@ -51,6 +51,7 @@ export default function APRWorkspace() {
     loading,
     loaded,
     setParams,
+    refetch,
   } = useApi({
     options: {
       withStoreCache: false,
@@ -88,6 +89,7 @@ export default function APRWorkspace() {
     <PageWrapper>
       <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
       <Box className="shadow-none">
+        <Loader active={loading} />
         <div className="mb-2 flex items-end justify-between">
           <div className="flex flex-col gap-x-2">
             <Field
@@ -180,7 +182,6 @@ export default function APRWorkspace() {
             </div>
           </div>
         </div>
-        <Loader active={loading} />
         {loaded && (
           <ViewTable
             dataTypeDefinitions={dataTypeDefinitions}
@@ -198,6 +199,7 @@ export default function APRWorkspace() {
           year={year}
           agencyId={user.agency_id}
           oldFiles={apr.files}
+          revalidateFiles={refetch}
         />
       )}
     </PageWrapper>
