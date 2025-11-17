@@ -377,7 +377,7 @@ const ProjectIdentifiersFields = ({
           </div>
           {project?.status === 'Transferred' && (
             <div>
-              <Label>Transferred meeting number</Label>
+              <Label>{tableColumns.transfer_meeting}</Label>
               <div className="flex items-center">
                 <div className="w-32">
                   <PopoverInput

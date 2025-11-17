@@ -191,7 +191,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div>
-            <Label>Transfer meeting</Label>
+            <Label>{tableColumns.transfer_meeting}</Label>
             <div className="flex items-center">
               <div className="w-40">
                 <PopoverInput
@@ -235,7 +235,9 @@ const ProjectTransfer = ({
         </div>
       </div>
       <div className="w-full">
-        <Label>Transfer Excom provision (max 500 characters)</Label>
+        <Label>
+          {tableColumns.transfer_excom_provision} (max 500 characters)
+        </Label>
         <div className="flex items-center">
           <TextareaAutosize
             value={localExcom}
@@ -257,7 +259,7 @@ const ProjectTransfer = ({
       </div>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-y-3">
-          <div className="mr-20">
+          <div className="mr-[4rem]">
             <Label>{tableColumns.fund_transferred}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
@@ -275,7 +277,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div className="mr-9">
+          <div className="mr-[1.7rem]">
             <Label>{tableColumns.psc_transferred}</Label>
             <div className="flex items-center">
               <FormattedNumberInput

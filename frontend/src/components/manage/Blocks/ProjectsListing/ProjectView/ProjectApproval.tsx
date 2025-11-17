@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { numberDetailItem, viewModesHandler } from './ViewHelperComponents'
+import {
+  detailItem,
+  numberDetailItem,
+  viewModesHandler,
+} from './ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { canViewField } from '../utils'
@@ -25,10 +29,9 @@ const ProjectApproval = ({
   return (
     <div className="flex w-full flex-col gap-4">
       <div className={viewColumnsClassName}>
-        {map(
-          specificFields,
-          (field) =>
-            canViewField(viewableFields, field.write_field_name) && (
+        {map(specificFields, (field) => (
+          <>
+            {canViewField(viewableFields, field.write_field_name) && (
               <span key={field.write_field_name}>
                 {viewModesHandler[field.data_type](
                   project,
@@ -43,8 +46,18 @@ const ProjectApproval = ({
                   getFieldHistory(field.write_field_name),
                 )}
               </span>
-            ),
-        )}
+            )}
+            {project.status === 'Transferred' &&
+              (field.write_field_name === 'meeting'
+                ? detailItem(tableColumns.transfer_meeting, project.meeting)
+                : field.write_field_name === 'excom_provision'
+                  ? detailItem(
+                      tableColumns.transfer_excom_provision,
+                      project.excom_provision,
+                    )
+                  : null)}
+          </>
+        ))}
         {canViewField(viewableFields, 'total_fund') &&
           numberDetailItem(
             tableColumns.total_fund + ' (US $)',

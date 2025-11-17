@@ -56,6 +56,8 @@ export const tableColumns: { [key: string]: string } = {
   cost_effectiveness_approved: 'Cost effectiveness approved',
   remarks: 'Remarks',
   id: 'Enterprise',
+  transfer_meeting: 'Transfer meeting number',
+  transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
   psc_received: 'Received project support cost (US $)',

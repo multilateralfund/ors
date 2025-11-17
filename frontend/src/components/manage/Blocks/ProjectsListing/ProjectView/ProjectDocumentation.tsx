@@ -42,7 +42,11 @@ const ProjectDocumentation = ({
           <FileInput
             {...rest}
             extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
-            label="Upload completed template and any supporting documentation"
+            label={
+              mode === 'transfer'
+                ? 'Upload file attachments'
+                : 'Upload completed template and any supporting documentation'
+            }
             value=""
             clearable={false}
             inputValue={[]}
