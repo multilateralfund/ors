@@ -6,16 +6,13 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
+import { initialTranferedProjectData } from '../constants'
 import {
   FileMetaDataType,
   ProjectFilesObject,
   ProjectTransferData,
   ProjectTypeApi,
 } from '../interfaces'
-import {
-  initialTranferedProjectData,
-  requiredFieldsTransfer,
-} from '../constants'
 import {
   getFormattedDecimalValue,
   getNonFieldErrors,
@@ -44,7 +41,6 @@ const ProjectTransferWrapper = ({
     deletedFilesIds: [],
     newFiles: [],
   })
-
   const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -54,7 +50,6 @@ const ProjectTransferWrapper = ({
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
-
   const transferErrors = useMemo(
     () => getTransferErrors(projectData, project),
     [projectData],
@@ -70,12 +65,11 @@ const ProjectTransferWrapper = ({
     ...(files.newFiles?.length === 0
       ? [
           {
-            message: `At least one file must be attached.`,
+            message: 'At least one file must be attached.',
           },
         ]
       : []),
   ]
-
   const missingFileTypeErrors = map(filesMetaData, ({ type }, index) =>
     !type
       ? {
@@ -84,21 +78,21 @@ const ProjectTransferWrapper = ({
         }
       : null,
   ).filter(Boolean)
-
   const filteredErrors = useMemo(
     () =>
       Object.fromEntries(
         Object.entries(errors).filter(([key]) =>
-          requiredFieldsTransfer.includes(key),
+          keys(initialTranferedProjectData).includes(key),
         ),
       ),
     [errors],
   )
   const allTransferErrors = { ...transferErrors, ...filteredErrors }
+
   const disableTransfer =
     Object.values(transferErrors).some((errors: any) => errors.length > 0) ||
     missingFileTypeErrors.length > 0 ||
-    allFileErrors.some((err) => !!err.message)
+    files.newFiles?.length === 0
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -118,20 +112,14 @@ const ProjectTransferWrapper = ({
 
     setErrors(errors)
 
-    if (errors?.file) {
-      setFileErrors(errors.file)
+    const fileError = errors?.file || errors?.files || errors?.metadata
+    if (fileError) {
+      setFileErrors(fileError)
     }
 
-    if (errors?.metadata) {
-      setFileErrors(errors.metadata)
-    }
-
-    if (errors?.details) {
-      setOtherErrors(errors.details)
-    }
-
-    if (errors?.detail) {
-      setOtherErrors(errors.detail)
+    const otherError = errors?.details || errors?.detail
+    if (otherError) {
+      setOtherErrors(otherError)
     }
 
     enqueueSnackbar(<>An error occurred. Please try again.</>, {

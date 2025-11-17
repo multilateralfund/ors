@@ -56,6 +56,9 @@ export const tableColumns: { [key: string]: string } = {
   cost_effectiveness_approved: 'Cost effectiveness approved',
   remarks: 'Remarks',
   id: 'Enterprise',
+  fund_transferred: 'Transferred project funding (US $)',
+  psc_transferred: 'Transferred project support cost (US $)',
+  psc_received: 'Received project support cost (US $)',
 }
 
 export const defaultProps = {
@@ -225,14 +228,4 @@ export const metaProjectSelectionFields = [
   { label: 'End date (MYA)', key: 'end_date' },
   { label: 'Project funding (MYA)', key: 'project_funding' },
   { label: 'PSC (MYA)', key: 'support_cost' },
-]
-
-export const requiredFieldsTransfer = [
-  'agency',
-  'transfer_meeting',
-  'transfer_decision',
-  'transfer_excom_provision',
-  'fund_transferred',
-  'psc_transferred',
-  'psc_received',
 ]

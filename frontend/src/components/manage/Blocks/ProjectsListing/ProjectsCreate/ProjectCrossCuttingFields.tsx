@@ -437,7 +437,7 @@ const ProjectCrossCuttingFields = ({
               {project?.status === 'Transferred' && (
                 <>
                   <div>
-                    <Label>Transferred project funding (US $)</Label>
+                    <Label>{tableColumns.fund_transferred}</Label>
                     <div className="flex items-center">
                       <FormattedNumberInput
                         id="fund_transferred"
@@ -451,7 +451,7 @@ const ProjectCrossCuttingFields = ({
                     </div>
                   </div>
                   <div>
-                    <Label>Transferred project support cost (US $)</Label>
+                    <Label>{tableColumns.psc_transferred}</Label>
                     <FormattedNumberInput
                       id="psc_transferred"
                       value={project?.psc_transferred ?? ''}

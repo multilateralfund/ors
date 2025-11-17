@@ -1,7 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
-  requiredFieldsTransfer,
+  initialTranferedProjectData,
   tableColumns,
   validationFieldsPairs,
 } from './constants'
@@ -582,7 +582,7 @@ export const getTransferErrors = (
   const { fund_transferred, psc_received, psc_transferred } = projectData
 
   return {
-    ...getFieldErrors(requiredFieldsTransfer, projectData, project),
+    ...getFieldErrors(keys(initialTranferedProjectData), projectData, project),
     ...(Number(fund_transferred) > Number(project.total_fund) && {
       fund_transferred: ['Value cannot be greater than project funding.'],
     }),
@@ -594,7 +594,7 @@ export const getTransferErrors = (
     }),
     ...(Number(psc_received) > Number(psc_transferred) && {
       psc_received: [
-        'Value cannot be greater than project support cost transferred.',
+        'Value cannot be greater than transferred project support cost.',
       ],
     }),
   }

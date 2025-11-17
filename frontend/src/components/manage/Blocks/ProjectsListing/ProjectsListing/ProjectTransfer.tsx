@@ -31,6 +31,7 @@ import {
 import {
   defaultProps,
   defaultPropsSimpleField,
+  tableColumns,
   textAreaClassname,
 } from '../constants'
 import { ApiDecision } from '@ors/types/api_meetings'
@@ -131,7 +132,6 @@ const ProjectTransfer = ({
   const [localExcom, setLocalExcom] = useState(
     projectData.transfer_excom_provision,
   )
-
   const saveLocalExcom = () =>
     setProjectData((prev) => ({
       ...prev,
@@ -146,11 +146,7 @@ const ProjectTransfer = ({
     const value = initialValue === '' ? null : initialValue
 
     if (!isNaN(Number(value))) {
-      setProjectData((prevData) => ({
-        ...prevData,
-
-        [field]: value,
-      }))
+      setProjectData((prevData) => ({ ...prevData, [field]: value }))
     } else {
       event.preventDefault()
     }
@@ -204,10 +200,11 @@ const ProjectTransfer = ({
                   )?.toString()}
                   options={useMeetingOptions()}
                   onChange={handleChangeMeeting}
-                  onClear={() => handleChangeMeeting()}
+                  onClear={handleChangeMeeting}
                   className={cx('!m-0 h-10 !py-1', {
                     'border-red-500': getHasErrors('transfer_meeting'),
                   })}
+                  withClear={true}
                   clearBtnClassName="right-1"
                 />
               </div>
@@ -261,7 +258,7 @@ const ProjectTransfer = ({
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-y-3">
           <div className="mr-20">
-            <Label>Funds transferred (US $)</Label>
+            <Label>{tableColumns.fund_transferred}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
                 id="fund_transferred"
@@ -279,7 +276,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div className="mr-9">
-            <Label>Project support cost transferred (US $)</Label>
+            <Label>{tableColumns.psc_transferred}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
                 id="psc_transferred"
@@ -295,7 +292,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div>
-            <Label>Project support cost received (US $)</Label>
+            <Label>{tableColumns.psc_received}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
                 id="psc_received"

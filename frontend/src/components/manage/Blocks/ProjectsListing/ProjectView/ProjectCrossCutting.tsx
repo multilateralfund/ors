@@ -136,12 +136,12 @@ const ProjectCrossCutting = ({
               <div className="flex w-full flex-col gap-4">
                 <div className={viewColumnsClassName}>
                   {numberDetailItem(
-                    'Transferred project funding (US $)',
+                    tableColumns.fund_transferred,
                     project.fund_transferred.toString(),
                     'decimal',
                   )}
                   {numberDetailItem(
-                    'Transferred project support cost (US $)',
+                    tableColumns.psc_transferred,
                     project.psc_transferred.toString(),
                     'decimal',
                   )}
