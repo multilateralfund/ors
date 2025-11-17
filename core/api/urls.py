@@ -261,7 +261,9 @@ router.register(
     basename="replenishment-status-files",
 )
 router.register(
-    r"annual-project-report/mlfs/(?P<year>\d+)/agencies", APRGlobalViewSet, basename="apr-mlfs"
+    r"annual-project-report/mlfs/(?P<year>\d+)/agencies",
+    APRGlobalViewSet,
+    basename="apr-mlfs",
 )
 
 schema_view = get_schema_view(
