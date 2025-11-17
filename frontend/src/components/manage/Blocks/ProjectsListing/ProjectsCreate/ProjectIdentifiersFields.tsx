@@ -377,12 +377,12 @@ const ProjectIdentifiersFields = ({
           </div>
           {project?.status === 'Transferred' && (
             <div>
-              <Label>Transferred meeting</Label>
+              <Label>Transferred meeting number</Label>
               <div className="flex items-center">
                 <div className="w-32">
                   <PopoverInput
                     label={getMeetingNr(
-                      project?.meeting ?? undefined,
+                      project?.meeting_id ?? undefined,
                     )?.toString()}
                     options={[]}
                     disabled={true}
