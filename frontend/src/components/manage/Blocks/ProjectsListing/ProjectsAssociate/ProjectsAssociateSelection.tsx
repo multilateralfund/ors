@@ -109,6 +109,7 @@ const ProjectsAssociateSelection = ({
         <PListingTable
           mode="association"
           projects={projectsForAssociation}
+          sortable={true}
           {...{ filters, associationIds, setAssociationIds }}
         />
       </form>

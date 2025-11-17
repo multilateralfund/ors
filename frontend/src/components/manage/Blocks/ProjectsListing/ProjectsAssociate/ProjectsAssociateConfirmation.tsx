@@ -134,7 +134,12 @@ const MetaProjectSelection = ({
     ...metaProjects.map((metaProject) => ({
       headerComponent: MetaProjectHeader,
       headerComponentParams: { metaProject },
+      headerTooltip: metaProject.project_code,
       field: String(metaProject.id),
+      tooltipValueGetter: (params: any) => {
+        const { value } = params.value || {}
+        return value
+      },
       cellRenderer: (params: any) => {
         const { label, value } = params.value || {}
         return (
