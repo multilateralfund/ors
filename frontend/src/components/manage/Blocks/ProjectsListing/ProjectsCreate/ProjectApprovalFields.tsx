@@ -133,7 +133,9 @@ const ProjectApprovalFields = ({
           <div className="w-40">
             <Label>{tableColumns.transfer_meeting}</Label>
             <PopoverInput
-              label={getMeetingNr(project?.meeting_id ?? undefined)?.toString()}
+              label={getMeetingNr(
+                project?.transfer_meeting_id ?? undefined,
+              )?.toString()}
               options={[]}
               disabled={true}
               className={cx('!m-0 h-10 !py-1', disabledClassName)}
@@ -207,7 +209,7 @@ const ProjectApprovalFields = ({
                         characters)
                       </Label>
                       <TextareaAutosize
-                        value={project?.excom_provision}
+                        value={project?.transfer_excom_provision}
                         disabled={true}
                         className={cx(textAreaClassname, 'max-w-[415px]')}
                         maxLength={500}

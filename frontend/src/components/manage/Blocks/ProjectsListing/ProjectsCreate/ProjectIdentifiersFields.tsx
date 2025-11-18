@@ -382,7 +382,7 @@ const ProjectIdentifiersFields = ({
                 <div className="w-32">
                   <PopoverInput
                     label={getMeetingNr(
-                      project?.meeting_id ?? undefined,
+                      project?.transfer_meeting_id ?? undefined,
                     )?.toString()}
                     options={[]}
                     disabled={true}

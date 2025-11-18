@@ -49,11 +49,14 @@ const ProjectApproval = ({
             )}
             {project.status === 'Transferred' &&
               (field.write_field_name === 'meeting'
-                ? detailItem(tableColumns.transfer_meeting, project.meeting)
+                ? detailItem(
+                    tableColumns.transfer_meeting,
+                    project.transfer_meeting,
+                  )
                 : field.write_field_name === 'excom_provision'
                   ? detailItem(
                       tableColumns.transfer_excom_provision,
-                      project.excom_provision,
+                      project.transfer_excom_provision,
                     )
                   : null)}
           </>

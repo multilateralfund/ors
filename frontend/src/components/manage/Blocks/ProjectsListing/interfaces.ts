@@ -185,6 +185,9 @@ export type ProjectTypeApi = ProjIdentifiers &
     history: ProjectType['history']
     fund_transferred: number
     psc_transferred: number
+    transfer_meeting: string
+    transfer_meeting_id: number | null
+    transfer_excom_provision: string
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
