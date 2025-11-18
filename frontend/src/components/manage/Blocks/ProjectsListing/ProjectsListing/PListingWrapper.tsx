@@ -132,6 +132,21 @@ export default function PListingWrapper() {
     </Modal>
   )
 
+  const handleTransferModalOpen = () => {
+    setIsTransferModalOpen(true)
+  }
+
+  const onSuccessfulTransfer = (id: number) => {
+    setProjectData({
+      projectId: null,
+      projectTitle: '',
+      projectSubmissionStatus: '',
+      projectStatus: '',
+      projectMetaprojectId: null,
+    })
+    setTansferId(id)
+  }
+
   return (
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-3">
