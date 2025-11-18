@@ -183,6 +183,11 @@ export type ProjectTypeApi = ProjIdentifiers &
     latest_project: number | null
     meta_project: Record<string, any>
     history: ProjectType['history']
+    fund_transferred: number
+    psc_transferred: number
+    transfer_meeting: string
+    transfer_meeting_id: number | null
+    transfer_excom_provision: string
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
@@ -218,6 +223,7 @@ export interface ProjectDocs extends ProjectFiles, FileMetaDataProps {
   bpFiles?: ProjectFile[]
   project?: ProjectTypeApi
   errors?: Array<{ id: number; message: string } | null>
+  allFileErrors?: { message: string }[]
 }
 
 export interface ProjectVersions {
@@ -240,6 +246,16 @@ export interface ProjectData {
     isLinkedToBP: boolean
     bpId: number | null
   }
+}
+
+export interface ProjectTransferData {
+  agency: number | null
+  transfer_meeting: number | null
+  transfer_decision: number | null
+  transfer_excom_provision: string
+  fund_transferred: string | null
+  psc_transferred: string | null
+  psc_received: string | null
 }
 
 export interface ProjectDataProps {

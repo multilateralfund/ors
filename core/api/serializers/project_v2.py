@@ -521,6 +521,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    transfer_meeting = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
     component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
@@ -577,6 +580,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "quantity_hfc_23_by_product_generation_rate_actual",
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
+            "transfer_meeting",
+            "transfer_meeting_id",
+            "transfer_excom_provision",
         ]
 
     def get_editable(self, obj):
@@ -1447,7 +1453,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
     ProjectSerializer class for transferring a project
     """
 
-    psc_received = serializers.DecimalField(max_digits=20, decimal_places=2)
+    psc_received = serializers.DecimalField(max_digits=20, decimal_places=15)
 
     class Meta:
         model = Project
