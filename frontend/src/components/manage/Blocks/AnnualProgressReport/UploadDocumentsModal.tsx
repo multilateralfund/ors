@@ -7,6 +7,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import { IoTrash } from 'react-icons/io5'
 import { api } from '@ors/helpers'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 interface APRFile {
   id: number
@@ -167,8 +168,19 @@ interface FileViewProps {
 }
 
 function FileView({ file, revalidateFiles, year, agencyId }: FileViewProps) {
+  const confirm = useConfirmation()
+
   const deleteFile = async () => {
     try {
+      const response = await confirm({
+        title: 'File deletion',
+        message: 'Are you sure you want to delete this file?',
+      })
+
+      if (!response) {
+        return
+      }
+
       await api(
         `api/annual-project-report/${year}/agency/${agencyId}/files/${file.id}/`,
         {
