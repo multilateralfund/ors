@@ -1,4 +1,4 @@
-import React, { Dispatch, FormEvent, SetStateAction } from 'react'
+import React, { Dispatch, FormEvent, SetStateAction, useState } from 'react'
 import { Box, IconButton, Link, Modal, Typography } from '@mui/material'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import Button from '@mui/material/Button'
@@ -33,6 +33,13 @@ export default function UploadDocumentsModal({
   oldFiles,
   revalidateFiles,
 }: UploadDocumentsModalProps) {
+  const [fileState, setFileState] = useState({
+    financialFileKey: 0,
+    financialFileSelected: false,
+    supportingFilesKey: 0,
+    supportingFilesSelected: false,
+  })
+
   const formSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     // Capture form, as event.currentTarget becomes null after the event finishes bubbling
@@ -126,11 +133,36 @@ export default function UploadDocumentsModal({
               />
             )}
             {!financialFile && (
-              <input
-                name="financial_file"
-                type="file"
-                accept=".pdf,.doc,.docx"
-              />
+              <div className="flex items-center gap-x-2">
+                {fileState.financialFileSelected && (
+                  <IconButton
+                    size="small"
+                    aria-label="Clear"
+                    onClick={() =>
+                      setFileState((prev) => ({
+                        ...prev,
+                        financialFileKey: prev.financialFileKey + 1,
+                        financialFileSelected: false,
+                      }))
+                    }
+                  >
+                    <IoTrash />
+                  </IconButton>
+                )}
+                <input
+                  key={fileState.financialFileKey}
+                  name="financial_file"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(event) => {
+                    setFileState((prev) => ({
+                      ...prev,
+                      financialFileSelected:
+                        (event.target.files?.length ?? 0) > 0,
+                    }))
+                  }}
+                />
+              </div>
             )}
           </div>
           <div className="flex flex-col gap-y-2">
@@ -146,7 +178,36 @@ export default function UploadDocumentsModal({
                 agencyId={agencyId}
               />
             ))}
-            <input name="supporting_files" type="file" multiple />
+            <div className="flex items-center gap-x-2">
+              {fileState.supportingFilesSelected && (
+                <IconButton
+                  size="small"
+                  aria-label="Clear"
+                  onClick={() =>
+                    setFileState((prev) => ({
+                      ...prev,
+                      supportingFilesKey: prev.supportingFilesKey + 1,
+                      supportingFilesSelected: false,
+                    }))
+                  }
+                >
+                  <IoTrash />
+                </IconButton>
+              )}
+              <input
+                key={fileState.supportingFilesKey}
+                name="supporting_files"
+                type="file"
+                multiple
+                onChange={(event) => {
+                  setFileState((prev) => ({
+                    ...prev,
+                    supportingFilesSelected:
+                      (event.target.files?.length ?? 0) > 0,
+                  }))
+                }}
+              />
+            </div>
           </div>
         </form>
         <div className="ml-auto mr-6 flex gap-3">
