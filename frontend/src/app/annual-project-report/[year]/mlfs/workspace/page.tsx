@@ -13,7 +13,6 @@ import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
-import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
 import getColumnDefs, {
   dataTypeDefinitions,
   tableColumns,
@@ -33,17 +32,16 @@ interface Filter {
 }
 
 interface ProjectReport {
-  id: number
-  project_code: string
+  agency_name: string
   country_name: string
   region_name: string
-  cluster_name?: string
+  cluster_name: string | null
   status: string
   approved_funding: number | null
   funds_disbursed: number | null
-  per_cent_funds_disbursed: number | null
-  agency_id: number
-  agency_name: string
+  agency_status: string
+  agency_is_unlocked: boolean
+  [key: string]: any
 }
 
 export default function APRMLFSWorkspace() {
@@ -82,8 +80,6 @@ export default function APRMLFSWorkspace() {
     return aprData.flatMap((agencyData: any) =>
       agencyData.project_reports.map((report: any) => ({
         ...report,
-        agency_id: agencyData.agency.id,
-        agency_name: agencyData.agency.name,
         agency_status: agencyData.status,
         agency_is_unlocked: agencyData.is_unlocked,
       }))
