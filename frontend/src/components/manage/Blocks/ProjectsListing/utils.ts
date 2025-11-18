@@ -713,8 +713,12 @@ export const getMenus = (
     canUpdatePostExcom,
     canViewMetaProjects,
   } = permissions
-  const { projectId, projectSubmissionStatus, projectStatus } =
-    projectData ?? {}
+  const {
+    projectId,
+    projectSubmissionStatus,
+    projectStatus,
+    projectMetaprojectId,
+  } = projectData ?? {}
 
   return [
     {
@@ -737,8 +741,9 @@ export const getMenus = (
       menuItems: [
         {
           title: 'Update MYA data',
-          url: '/projects-listing/update-mya-data',
-          disabled: !canViewMetaProjects,
+          url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
+          disabled:
+            !canViewMetaProjects || (!!projectId && !projectMetaprojectId),
         },
         {
           title: 'Update post ExCom fields',

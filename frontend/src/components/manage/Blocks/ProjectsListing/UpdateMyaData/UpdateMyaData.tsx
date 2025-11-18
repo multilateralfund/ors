@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { MetaProjectType } from '@ors/types/api_projects.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -19,9 +19,11 @@ import { MetaProjectFiltersSelectedOptions } from '@ors/components/manage/Blocks
 import useApi from '@ors/hooks/useApi.ts'
 
 import { Box, Divider } from '@mui/material'
-import { Redirect } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 export default function UpdateMyaData() {
+  const { metaproject_id } = useParams()
+
   const [filters, setFilters] = useState(() => initialFilters)
 
   const countriesApi = useApi({
@@ -82,6 +84,12 @@ export default function UpdateMyaData() {
       return newValue
     })
   }
+
+  useEffect(() => {
+    if (!!metaproject_id) {
+      setSelected({ id: Number(metaproject_id) } as MetaProjectType)
+    }
+  }, [])
 
   if (!(canViewProjects && canViewMetaProjects)) {
     return <Redirect to="/projects-listing" />

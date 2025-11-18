@@ -127,12 +127,15 @@ const getColumnDefs = (
                                 projectSubmissionStatus:
                                   props.data.submission_status,
                                 projectStatus: props.data.status,
+                                projectMetaprojectId:
+                                  props.data.meta_project_id,
                               }
                             : {
                                 projectId: null,
                                 projectTitle: '',
                                 projectSubmissionStatus: '',
                                 projectStatus: '',
+                                projectMetaprojectId: null,
                               },
                         )
                       }}

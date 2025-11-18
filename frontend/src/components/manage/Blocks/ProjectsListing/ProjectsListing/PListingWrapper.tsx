@@ -37,6 +37,7 @@ export default function PListingWrapper() {
     projectTitle: '',
     projectSubmissionStatus: '',
     projectStatus: '',
+    projectMetaprojectId: null,
   })
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
