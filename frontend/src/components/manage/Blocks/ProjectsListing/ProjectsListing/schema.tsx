@@ -24,6 +24,7 @@ const getColumnDefs = (
   setProjectData?: (data: ListingProjectData) => void,
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
+  sortable?: boolean,
 ) => {
   const {
     canViewProjects,
@@ -272,7 +273,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: mode === 'listing',
+      sortable: mode === 'listing' || !!sortable,
     },
   }
 }

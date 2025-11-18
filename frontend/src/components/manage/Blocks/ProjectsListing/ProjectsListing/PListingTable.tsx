@@ -19,6 +19,7 @@ export type PListingTableProps = {
   associationIds?: number[]
   setAssociationIds?: (data: number[]) => void
   enablePagination?: boolean
+  sortable?: boolean
 }
 
 const PListingTable = ({
@@ -30,6 +31,7 @@ const PListingTable = ({
   associationIds,
   setAssociationIds,
   enablePagination,
+  sortable,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -39,6 +41,7 @@ const PListingTable = ({
     setProjectData,
     associationIds,
     setAssociationIds,
+    sortable,
   )
 
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
