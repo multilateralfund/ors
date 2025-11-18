@@ -6,6 +6,7 @@ import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlans
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import TransferProjectModal from './TransferProjectModal'
 import PListingAssociation from './PListingAssociation'
 import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
@@ -28,6 +29,7 @@ export default function PListingWrapper() {
     canUpdateProjects,
     canAssociateProjects,
     canUpdatePostExcom,
+    canTransferProjects,
     canViewMetaProjects,
   } = useContext(PermissionsContext)
 
@@ -40,7 +42,9 @@ export default function PListingWrapper() {
     projectMetaprojectId: null,
   })
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
+  const [transferId, setTansferId] = useState<number>()
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
 
   const projectActions = (
     <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-4">
@@ -158,9 +162,11 @@ export default function PListingWrapper() {
               canViewEnterprises,
               canEditProjectEnterprise,
               canUpdatePostExcom,
+              canTransferProjects,
               canViewMetaProjects,
             },
             projectData,
+            handleTransferModalOpen,
           ).map((menu) => (
             <ExpandableMenu key={menu.title} menu={menu} />
           ))}
@@ -172,9 +178,18 @@ export default function PListingWrapper() {
           />
         )}
       </div>
+      {isTransferModalOpen && projectData.projectId && (
+        <TransferProjectModal
+          id={projectData.projectId}
+          isModalOpen={isTransferModalOpen}
+          setIsModalOpen={setIsTransferModalOpen}
+          onSuccess={onSuccessfulTransfer}
+        />
+      )}
       <Box className="shadow-none">
         {view === 'list' ? (
           <PListingProjects
+            key={transferId}
             {...{
               projectId,
               setProjectData,

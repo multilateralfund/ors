@@ -12,14 +12,10 @@ import {
 const ProjectDocumentation = ({
   projectFiles = [],
   mode,
-  project,
-  loadedFiles,
   setCurrentTab,
   nextStep,
   hasNextStep,
   isNextButtonDisabled,
-  filesMetaData,
-  errors,
   ...rest
 }: ProjectFiles &
   ProjectTabSetters &
@@ -32,19 +28,13 @@ const ProjectDocumentation = ({
     hasNextStep?: boolean
     isNextButtonDisabled?: boolean
     errors?: Array<{ id: number; message: string } | null>
+    allFileErrors?: { message: string }[]
   }) => {
   return (
     <>
       <div className="flex w-full flex-col gap-4">
         <FilesViewer
-          {...{
-            mode,
-            project,
-            loadedFiles,
-            filesMetaData,
-            errors,
-          }}
-          {...rest}
+          {...{ mode, ...rest }}
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
 
@@ -52,7 +42,11 @@ const ProjectDocumentation = ({
           <FileInput
             {...rest}
             extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
-            label="Upload completed template and any supporting documentation"
+            label={
+              mode === 'transfer'
+                ? 'Upload file attachments'
+                : 'Upload completed template and any supporting documentation'
+            }
             value=""
             clearable={false}
             inputValue={[]}

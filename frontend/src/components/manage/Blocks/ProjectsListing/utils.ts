@@ -1,6 +1,10 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import { tableColumns, validationFieldsPairs } from './constants'
+import {
+  initialTranferedProjectData,
+  tableColumns,
+  validationFieldsPairs,
+} from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -14,6 +18,7 @@ import {
   ProjectAllVersionsFiles,
   OdsOdpFields,
   ListingProjectData,
+  ProjectTransferData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
@@ -570,6 +575,31 @@ export const getDefaultImpactErrors = (
 export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
   Object.values(errors).some((errors) => errors.length > 0)
 
+export const getTransferErrors = (
+  projectData: ProjectTransferData,
+  project: ProjectTypeApi,
+) => {
+  const { fund_transferred, psc_received, psc_transferred } = projectData
+
+  return {
+    ...getFieldErrors(keys(initialTranferedProjectData), projectData, project),
+    ...(Number(fund_transferred) > Number(project.total_fund) && {
+      fund_transferred: ['Value cannot be greater than project funding.'],
+    }),
+    ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
+      psc_transferred: ['Value cannot be greater than project support cost.'],
+    }),
+    ...(Number(psc_received) > Number(project.support_cost_psc) && {
+      psc_received: ['Value cannot be greater than project support cost.'],
+    }),
+    ...(Number(psc_received) > Number(psc_transferred) && {
+      psc_received: [
+        'Value cannot be greater than transferred project support cost.',
+      ],
+    }),
+  }
+}
+
 export const getFieldLabel = (
   specificFields: ProjectSpecificFields[],
   field: string,
@@ -704,6 +734,7 @@ export const getIsUpdatablePostExcom = (
 export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
+  onTransferProject?: () => void,
 ) => {
   const {
     canViewBp,
@@ -711,6 +742,7 @@ export const getMenus = (
     canViewEnterprises,
     canEditProjectEnterprise,
     canUpdatePostExcom,
+    canTransferProjects,
     canViewMetaProjects,
   } = permissions
   const {
@@ -766,7 +798,15 @@ export const getMenus = (
           url: `/projects-listing/enterprises`,
           disabled: !canViewEnterprises,
         },
-        { title: 'Transfer a project', url: null, disabled: true },
+        {
+          title: 'Transfer a project',
+          url: null,
+          onClick: onTransferProject,
+          disabled:
+            !canTransferProjects ||
+            !projectId ||
+            projectSubmissionStatus !== 'Approved',
+        },
       ],
     },
     {

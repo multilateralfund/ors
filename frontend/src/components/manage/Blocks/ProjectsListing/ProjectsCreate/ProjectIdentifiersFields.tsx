@@ -38,7 +38,7 @@ import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 
-type DecisionOption = {
+export type DecisionOption = {
   name: string
   value: number
 }
@@ -375,6 +375,24 @@ const ProjectIdentifiersFields = ({
               </div>
             </div>
           </div>
+          {project?.status === 'Transferred' && (
+            <div>
+              <Label>{tableColumns.transfer_meeting}</Label>
+              <div className="flex items-center">
+                <div className="w-32">
+                  <PopoverInput
+                    label={getMeetingNr(
+                      project?.transfer_meeting_id ?? undefined,
+                    )?.toString()}
+                    options={[]}
+                    disabled={true}
+                    className={cx('!m-0 h-10 !py-1', disabledClassName)}
+                  />
+                </div>
+                <div className="w-8" />
+              </div>
+            </div>
+          )}
           {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
@@ -395,6 +413,7 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={
+                    (isV3Project && !!project?.agency_id) ||
                     !areNextSectionsDisabled ||
                     !canEditField(editableFields, 'agency')
                   }
