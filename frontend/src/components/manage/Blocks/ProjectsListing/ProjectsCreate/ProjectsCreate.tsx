@@ -123,8 +123,8 @@ const ProjectsCreate = ({
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
   const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
 
-  const areNextSectionsDisabled =
-    !canLinkToBp || currentStep < 1 || bpData.bpDataLoading
+  const areFieldsDisabled = !canLinkToBp || currentStep < 1
+  const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
   const areProjectSpecificTabsDisabled =
     areNextSectionsDisabled || !project_type || !sector
 
@@ -360,7 +360,6 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
-            areNextSectionsDisabled,
             setCurrentStep,
             setCurrentTab,
             hasSubmitted,
@@ -372,6 +371,7 @@ const ProjectsCreate = ({
             onBpDataChange,
             bpData,
           }}
+          areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
         />
