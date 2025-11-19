@@ -82,6 +82,7 @@ import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
 import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
+import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -424,14 +425,18 @@ export default function App() {
           </ProjectsDataProvider>
         </Route>
         {/* APR routes */}
-        <Route path="/apr">
-          <Redirect to={`/apr/${currentYear}/workspace`} replace />
-        </Route>
-        <Route path="/apr/:year/workspace">
-          <APRWorkspace />
-        </Route>
-        <Route path="/apr/:year/edit">
-          <APREdit />
+        <Route path="/apr" nest>
+          <APRProvider>
+            <Route path="/">
+              <Redirect to={`/${currentYear}/workspace`} replace />
+            </Route>
+            <Route path="/:year/workspace">
+              <APRWorkspace />
+            </Route>
+            <Route path="/:year/edit">
+              <APREdit />
+            </Route>
+          </APRProvider>
         </Route>
         <Route>
           <NotFoundPage />

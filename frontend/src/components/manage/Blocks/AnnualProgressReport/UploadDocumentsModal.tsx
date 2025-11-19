@@ -1,4 +1,4 @@
-import React, { Dispatch, FormEvent, SetStateAction } from 'react'
+import React, { Dispatch, FormEvent, SetStateAction, useState } from 'react'
 import { Box, IconButton, Link, Modal, Typography } from '@mui/material'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import Button from '@mui/material/Button'
@@ -6,6 +6,8 @@ import Cookies from 'js-cookie'
 import { formatApiUrl } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import { IoTrash } from 'react-icons/io5'
+import { api } from '@ors/helpers'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 interface APRFile {
   id: number
@@ -20,6 +22,7 @@ interface UploadDocumentsModalProps {
   year: string | undefined
   agencyId: number
   oldFiles: APRFile[]
+  revalidateFiles: () => void
 }
 
 export default function UploadDocumentsModal({
@@ -28,10 +31,41 @@ export default function UploadDocumentsModal({
   year,
   agencyId,
   oldFiles,
+  revalidateFiles,
 }: UploadDocumentsModalProps) {
+  const [fileState, setFileState] = useState({
+    financialFileKey: 0,
+    financialFileSelected: false,
+    supportingFilesKey: 0,
+    supportingFilesSelected: false,
+  })
+
   const formSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
+    // Capture form, as event.currentTarget becomes null after the event finishes bubbling
+    const form = event.currentTarget
+    const formData = new FormData(form)
+
+    const financialReport = formData.get('financial_file')
+    if (!(financialReport instanceof File) || financialReport.size === 0) {
+      formData.delete('financial_file')
+    }
+
+    const supportingFiles = formData.getAll('supporting_files')
+    const validSupportingFiles = supportingFiles.filter(
+      (file) => file instanceof File && file.size > 0,
+    )
+    formData.delete('supporting_files')
+    validSupportingFiles.forEach((file) => {
+      formData.append('supporting_files', file)
+    })
+
+    if (!financialReport && validSupportingFiles.length === 0) {
+      enqueueSnackbar(<>Please select at least one file.</>, {
+        variant: 'error',
+      })
+      return
+    }
 
     const csrftoken = Cookies.get('csrftoken')
     try {
@@ -53,6 +87,13 @@ export default function UploadDocumentsModal({
         throw response
       }
 
+      form.reset()
+      setFileState((prev) => ({
+        ...prev,
+        financialFileSelected: false,
+        supportingFilesSelected: false,
+      }))
+      revalidateFiles()
       enqueueSnackbar(<>Files uploaded successfully</>, {
         variant: 'success',
       })
@@ -88,13 +129,45 @@ export default function UploadDocumentsModal({
             <p className="m-0 text-lg font-medium">
               Upload Annual Progress & Financial Report
             </p>
-            {financialFile && <File file={financialFile} />}
-            {!financialFile && (
-              <input
-                name="financial_file"
-                type="file"
-                accept=".pdf,.doc,.docx"
+            {financialFile && (
+              <FileView
+                file={financialFile}
+                revalidateFiles={revalidateFiles}
+                year={year}
+                agencyId={agencyId}
               />
+            )}
+            {!financialFile && (
+              <div className="flex items-center gap-x-2">
+                {fileState.financialFileSelected && (
+                  <IconButton
+                    size="small"
+                    aria-label="Clear"
+                    onClick={() =>
+                      setFileState((prev) => ({
+                        ...prev,
+                        financialFileKey: prev.financialFileKey + 1,
+                        financialFileSelected: false,
+                      }))
+                    }
+                  >
+                    <IoTrash />
+                  </IconButton>
+                )}
+                <input
+                  key={fileState.financialFileKey}
+                  name="financial_file"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(event) => {
+                    setFileState((prev) => ({
+                      ...prev,
+                      financialFileSelected:
+                        (event.target.files?.length ?? 0) > 0,
+                    }))
+                  }}
+                />
+              </div>
             )}
           </div>
           <div className="flex flex-col gap-y-2">
@@ -102,9 +175,44 @@ export default function UploadDocumentsModal({
               Other Supporting Documents
             </p>
             {supportingFiles.map((file) => (
-              <File file={file} />
+              <FileView
+                key={file.id}
+                file={file}
+                revalidateFiles={revalidateFiles}
+                year={year}
+                agencyId={agencyId}
+              />
             ))}
-            <input name="supporting_files" type="file" multiple />
+            <div className="flex items-center gap-x-2">
+              {fileState.supportingFilesSelected && (
+                <IconButton
+                  size="small"
+                  aria-label="Clear"
+                  onClick={() =>
+                    setFileState((prev) => ({
+                      ...prev,
+                      supportingFilesKey: prev.supportingFilesKey + 1,
+                      supportingFilesSelected: false,
+                    }))
+                  }
+                >
+                  <IoTrash />
+                </IconButton>
+              )}
+              <input
+                key={fileState.supportingFilesKey}
+                name="supporting_files"
+                type="file"
+                multiple
+                onChange={(event) => {
+                  setFileState((prev) => ({
+                    ...prev,
+                    supportingFilesSelected:
+                      (event.target.files?.length ?? 0) > 0,
+                  }))
+                }}
+              />
+            </div>
           </div>
         </form>
         <div className="ml-auto mr-6 flex gap-3">
@@ -118,37 +226,44 @@ export default function UploadDocumentsModal({
   )
 }
 
-function File({ file }: { file: APRFile }) {
-  // TODO
+interface FileViewProps {
+  file: APRFile
+  revalidateFiles: () => void
+  year: string | undefined
+  agencyId: number
+}
+
+function FileView({ file, revalidateFiles, year, agencyId }: FileViewProps) {
+  const confirm = useConfirmation()
+
   const deleteFile = async () => {
-    // const csrftoken = Cookies.get('csrftoken')
-    // try {
-    //   const response = await fetch(
-    //     formatApiUrl(
-    //       `api/annual-project-report/${year}/agency/${agencyId}/upload/`,
-    //     ),
-    //     {
-    //       credentials: 'include',
-    //       headers: {
-    //         ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
-    //       },
-    //       method: 'DELETE',
-    //     },
-    //   )
-    //
-    //   if (!response.ok) {
-    //     throw response
-    //   }
-    //
-    //   enqueueSnackbar(<>Files deleted successfully</>, {
-    //     variant: 'success',
-    //   })
-    // } catch (e) {
-    //   // TODO: better error reporting
-    //   enqueueSnackbar(<>An error occurred. Please try again.</>, {
-    //     variant: 'error',
-    //   })
-    // }
+    try {
+      const response = await confirm({
+        title: 'File deletion',
+        message: 'Are you sure you want to delete this file?',
+      })
+
+      if (!response) {
+        return
+      }
+
+      await api(
+        `api/annual-project-report/${year}/agency/${agencyId}/files/${file.id}/`,
+        {
+          method: 'DELETE',
+        },
+      )
+
+      revalidateFiles()
+      enqueueSnackbar(<>Deleted file.</>, {
+        variant: 'success',
+      })
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
   }
 
   return (

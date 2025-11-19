@@ -35,8 +35,10 @@ export default function useApi<DT = DataType>(
   params: Record<string, any>
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
   setParams: (params: Record<string, any>) => void
+  refetch: () => void
 } {
   const id = useId()
+  const [fetchIndex, setFetchIndex] = useState(0)
   const [apiSettings, setApiSettings] = useState(props)
   const { options, path, throwError = true } = apiSettings
   const [data, setData] = useState<DT | null | undefined>(undefined)
@@ -108,7 +110,11 @@ export default function useApi<DT = DataType>(
       `useApi:${id}`,
     )
     /* eslint-disable-next-line */
-  }, [path, options, throwError])
+  }, [path, options, throwError, fetchIndex])
+
+  const refetch = useCallback(() => {
+    setFetchIndex((index) => index + 1)
+  }, [])
 
   return {
     apiSettings,
@@ -119,5 +125,6 @@ export default function useApi<DT = DataType>(
     params: options?.params || {},
     setApiSettings,
     setParams,
+    refetch,
   }
 }
