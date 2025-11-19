@@ -20,6 +20,7 @@ import {
   INITIAL_PARAMS_MLFS,
   MANDATORY_STATUSES,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
+import { formatUSD } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { union } from 'lodash'
 import { useStore } from '@ors/store.tsx'
 
@@ -423,25 +424,26 @@ export default function APRMLFSWorkspace() {
             <div className="rounded border p-3">
               <div className="text-sm text-gray-600">Total Approved Funding</div>
               <div className="text-2xl font-semibold">
-                $
-                {filteredProjectReports
-                  .reduce((sum, r) => sum + (r.approved_funding || 0), 0)
-                  .toLocaleString()}
+                {formatUSD(
+                  filteredProjectReports.reduce(
+                    (sum, r) => sum + (r.approved_funding || 0), 0
+                  )
+                )}
               </div>
             </div>
             <div className="rounded border p-3">
               <div className="text-sm text-gray-600">Total Funds Disbursed</div>
               <div className="text-2xl font-semibold">
-                $
-                {filteredProjectReports
-                  .reduce((sum, r) => sum + (r.funds_disbursed || 0), 0)
-                  .toLocaleString()}
+                {formatUSD(
+                  filteredProjectReports.reduce(
+                    (sum, r) => sum + (r.funds_disbursed || 0), 0
+                  )
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Table with AG Grid */}
         <Loader active={loading} />
         {loaded && (
           <ViewTable
