@@ -128,51 +128,6 @@ export default function APRMLFSWorkspace() {
     }))
   }, [allProjectReports])
 
-  // Apply filters to project reports
-  const filteredProjectReports = useMemo(() => {
-    let filtered = allProjectReports
-
-    // Filter by status
-    if (filters.status && filters.status.length > 0) {
-      filtered = filtered.filter((report) =>
-        filters.status.some((s) => s.code === report.status)
-      )
-    }
-
-    // Filter by agency
-    if (filters.agency && filters.agency.length > 0) {
-      filtered = filtered.filter((report) =>
-        filters.agency.some((a) => a.id === report.agency_id)
-      )
-    }
-
-    // Filter by region
-    if (filters.region && filters.region.length > 0) {
-      filtered = filtered.filter((report) =>
-        report.region_name &&
-        filters.region.some((r) => r.id === report.region_name)
-      )
-    }
-
-    // Filter by country
-    if (filters.country && filters.country.length > 0) {
-      filtered = filtered.filter((report) =>
-        report.country_name &&
-        filters.country.some((c) => c.id === report.country_name)
-      )
-    }
-
-    // Filter by cluster
-    if (filters.cluster && filters.cluster.length > 0) {
-      filtered = filtered.filter((report) =>
-        report.cluster_name &&
-        filters.cluster.some((cl) => cl.id === report.cluster_name)
-      )
-    }
-
-    return filtered
-  }, [allProjectReports, filters])
-
   const choosableStatuses = useMemo(() => {
     return projectStatuses.filter(
       (status) => !MANDATORY_STATUSES.includes(status.code),
@@ -418,14 +373,14 @@ export default function APRMLFSWorkspace() {
             <div className="rounded border p-3">
               <div className="text-sm text-gray-600">Total Projects</div>
               <div className="text-2xl font-semibold">
-                {filteredProjectReports.length}
+                {allProjectReports.length}
               </div>
             </div>
             <div className="rounded border p-3">
               <div className="text-sm text-gray-600">Total Approved Funding</div>
               <div className="text-2xl font-semibold">
                 {formatUSD(
-                  filteredProjectReports.reduce(
+                  allProjectReports.reduce(
                     (sum, r) => sum + (r.approved_funding || 0), 0
                   )
                 )}
@@ -435,7 +390,7 @@ export default function APRMLFSWorkspace() {
               <div className="text-sm text-gray-600">Total Funds Disbursed</div>
               <div className="text-2xl font-semibold">
                 {formatUSD(
-                  filteredProjectReports.reduce(
+                  allProjectReports.reduce(
                     (sum, r) => sum + (r.funds_disbursed || 0), 0
                   )
                 )}
@@ -450,7 +405,7 @@ export default function APRMLFSWorkspace() {
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            rowData={filteredProjectReports}
+            rowData={allProjectReports}
             tooltipShowDelay={200}
           />
         )}
