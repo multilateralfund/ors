@@ -78,6 +78,8 @@ export default function APREdit() {
     return <NotFoundPage />
   }
 
+  const isDraft = apr?.status === 'draft' || apr?.is_unlocked
+
   const exportAll = async () => {
     if (!gridRef.current) {
       return
@@ -145,7 +147,12 @@ export default function APREdit() {
               )
             })}
           </Tabs>
-          <Button className="mb-2" variant="contained" onClick={exportAll}>
+          <Button
+            disabled={loading || !isDraft}
+            className="mb-2"
+            variant="contained"
+            onClick={exportAll}
+          >
             Save
           </Button>
         </div>

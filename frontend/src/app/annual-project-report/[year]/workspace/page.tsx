@@ -184,7 +184,7 @@ export default function APRWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/apr/${year}/edit`}
+                href={`/${year}/edit`}
                 disabled={!isDraft}
               >
                 Update APR
