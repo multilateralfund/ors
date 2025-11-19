@@ -88,6 +88,11 @@ export default function UploadDocumentsModal({
       }
 
       form.reset()
+      setFileState((prev) => ({
+        ...prev,
+        financialFileSelected: false,
+        supportingFilesSelected: false,
+      }))
       revalidateFiles()
       enqueueSnackbar(<>Files uploaded successfully</>, {
         variant: 'success',
