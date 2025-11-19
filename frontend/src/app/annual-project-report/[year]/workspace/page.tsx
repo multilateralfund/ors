@@ -54,7 +54,7 @@ export default function APRWorkspace() {
   } = useApi({
     options: {
       withStoreCache: false,
-      skip: !canViewAPR,
+      triggerIf: canViewAPR,
     },
     path: `api/annual-project-report/${year}/workspace/`,
   })

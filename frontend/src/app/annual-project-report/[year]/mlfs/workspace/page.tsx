@@ -62,7 +62,7 @@ export default function APRMLFSWorkspace() {
   } = useApi({
     options: {
       withStoreCache: false,
-      skip: !canViewAPR || !isMlfsUser,
+      triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/mlfs/${year}/agencies/`,
   })

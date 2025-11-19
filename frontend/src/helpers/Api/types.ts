@@ -8,7 +8,6 @@ export interface IApi {
     next?: any
     params?: Record<string, any>
     removeCacheTimeout?: number
-    skip?: boolean
     triggerIf?: boolean
     updateSliceData?: string
     withStoreCache?: boolean
