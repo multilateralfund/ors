@@ -89,13 +89,6 @@ export default function useApi<DT = DataType>(
   useEffect(() => {
     debounce(
       () => {
-        if (options?.skip) {
-          // Reset state when skipped and... errmm.. do no API call
-          setLoading(false)
-          setLoaded(false)
-          return
-        }
-
         const params = isFunction(props.parseParams)
           ? props.parseParams(options?.params)
           : options?.params
