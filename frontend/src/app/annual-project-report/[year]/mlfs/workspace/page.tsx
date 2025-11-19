@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useState, useMemo } from 'react'
 import { useParams, Redirect } from 'wouter'
 import { Box, Chip, Button, Alert } from '@mui/material'
@@ -19,7 +17,7 @@ import getColumnDefs, {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import {
-  INITIAL_PARAMS,
+  INITIAL_PARAMS_MLFS,
   MANDATORY_STATUSES,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
 import { union } from 'lodash'
@@ -52,13 +50,8 @@ export default function APRMLFSWorkspace() {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
 
-  const [filters, setFilters] = useState<Record<string, Filter[]>>({
-    ...INITIAL_PARAMS,
-    agency: [],
-    region: [],
-    country: [],
-    cluster: [],
-  })
+  const [filters, setFilters] =
+    useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
 
   const {
     data: aprData,
@@ -409,15 +402,8 @@ export default function APRMLFSWorkspace() {
                 <Button
                   variant="text"
                   onClick={() => {
-                    const resetFilters = {
-                      ...INITIAL_PARAMS,
-                      agency: [],
-                      region: [],
-                      country: [],
-                      cluster: [],
-                    }
-                    setFilters(resetFilters)
-                    setParams(resetFilters)
+                    setFilters(INITIAL_PARAMS_MLFS)
+                    setParams(INITIAL_PARAMS_MLFS)
                   }}
                 >
                   Clear all
