@@ -151,20 +151,9 @@ export default function APRMLFSWorkspace() {
       })
     }
 
-  const { columnDefs: baseColumnDefs, defaultColDef } = getColumnDefs()
-  const columnDefs = useMemo(() => {
-    return [
-      {
-        headerName: 'Agency',
-        field: 'agency_name',
-        sortable: true,
-        filter: true,
-        pinned: 'left' as const,
-        width: 150,
-      },
-      ...baseColumnDefs,
-    ] as any
-  }, [baseColumnDefs])
+  const { columnDefs: columnDefs, defaultColDef } = getColumnDefs({
+    includeAgency: true,
+  })
 
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
