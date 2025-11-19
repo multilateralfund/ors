@@ -73,8 +73,7 @@ class APRGlobalFilter(filters.FilterSet):
 
     def filter_by_status(self, queryset, _name, value):
         """
-        Accepts a comma-separated list, defaults to ongoing & completed,
-        which are always included.
+        Accepts a comma-separated list of *Project Report* statuses.
         """
         if not value:
             return queryset
