@@ -43,7 +43,7 @@ export default function APREdit() {
   const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   const [activeTab, setActiveTab] = useState(0)
-  const { canViewAPR } = useContext(PermissionsContext)
+  const { canEditAPR } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
   const {
     data: apr,
@@ -74,7 +74,7 @@ export default function APREdit() {
   })
 
   // TODO: change later for mlfs
-  if (!canViewAPR || !user.agency_id) {
+  if (!canEditAPR || !user.agency_id) {
     return <NotFoundPage />
   }
 

@@ -23,6 +23,7 @@ interface UploadDocumentsModalProps {
   agencyId: number
   oldFiles: APRFile[]
   revalidateFiles: () => void
+  disabled: boolean
 }
 
 export default function UploadDocumentsModal({
@@ -32,6 +33,7 @@ export default function UploadDocumentsModal({
   agencyId,
   oldFiles,
   revalidateFiles,
+  disabled,
 }: UploadDocumentsModalProps) {
   const [fileState, setFileState] = useState({
     financialFileKey: 0,
@@ -131,6 +133,7 @@ export default function UploadDocumentsModal({
             </p>
             {financialFile && (
               <FileView
+                disabled={disabled}
                 file={financialFile}
                 revalidateFiles={revalidateFiles}
                 year={year}
@@ -155,6 +158,7 @@ export default function UploadDocumentsModal({
                   </IconButton>
                 )}
                 <input
+                  disabled={disabled}
                   key={fileState.financialFileKey}
                   name="financial_file"
                   type="file"
@@ -176,6 +180,7 @@ export default function UploadDocumentsModal({
             </p>
             {supportingFiles.map((file) => (
               <FileView
+                disabled={disabled}
                 key={file.id}
                 file={file}
                 revalidateFiles={revalidateFiles}
@@ -200,6 +205,7 @@ export default function UploadDocumentsModal({
                 </IconButton>
               )}
               <input
+                disabled={disabled}
                 key={fileState.supportingFilesKey}
                 name="supporting_files"
                 type="file"
@@ -216,7 +222,12 @@ export default function UploadDocumentsModal({
           </div>
         </form>
         <div className="ml-auto mr-6 flex gap-3">
-          <Button variant="contained" type="submit" form="documents-modal-form">
+          <Button
+            disabled={disabled}
+            variant="contained"
+            type="submit"
+            form="documents-modal-form"
+          >
             Save files
           </Button>
           <CancelButton onClick={() => setIsModalOpen(false)} />
@@ -231,9 +242,16 @@ interface FileViewProps {
   revalidateFiles: () => void
   year: string | undefined
   agencyId: number
+  disabled: boolean
 }
 
-function FileView({ file, revalidateFiles, year, agencyId }: FileViewProps) {
+function FileView({
+  file,
+  revalidateFiles,
+  year,
+  agencyId,
+  disabled,
+}: FileViewProps) {
   const confirm = useConfirmation()
 
   const deleteFile = async () => {
@@ -268,7 +286,12 @@ function FileView({ file, revalidateFiles, year, agencyId }: FileViewProps) {
 
   return (
     <div className="flex items-center gap-x-2">
-      <IconButton size="small" aria-label="Delete" onClick={deleteFile}>
+      <IconButton
+        disabled={disabled}
+        size="small"
+        aria-label="Delete"
+        onClick={deleteFile}
+      >
         <IoTrash />
       </IconButton>
       <Link href={formatApiUrl(file.file_url)}>{file.file_name}</Link>
