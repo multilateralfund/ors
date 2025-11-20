@@ -3,18 +3,23 @@ import {
   formatEntity,
   getAreFiltersApplied,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils.ts'
-import { map } from 'lodash'
-import { displaySelectedOption } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
-import { Typography } from '@mui/material'
+import {
+  displaySearchTerm,
+  displaySelectedOption,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import {
   initialFilters,
   initialParams,
 } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
 
+import { Typography } from '@mui/material'
+import { map } from 'lodash'
+
 export const MetaProjectFiltersSelectedOptions = (
   props: MetaProjectFiltersSelectedOptionsProps,
 ) => {
   const {
+    form,
     countries,
     agencies,
     clusters,
@@ -43,8 +48,9 @@ export const MetaProjectFiltersSelectedOptions = (
     },
   ]
 
-  return areFiltersApplied ? (
+  return areFiltersApplied || filters?.search ? (
     <div className="mt-1.5 flex flex-wrap gap-2">
+      {displaySearchTerm(form, filters, handleFilterChange, handleParamsChange)}
       {map(
         filterSelectedOpts,
         (selectedOpt) =>
@@ -63,6 +69,10 @@ export const MetaProjectFiltersSelectedOptions = (
         color="secondary"
         component="span"
         onClick={() => {
+          const inputSearch = form.current?.search
+          if (inputSearch) {
+            inputSearch.value = ''
+          }
           handleParamsChange({ ...initialParams })
           handleFilterChange({ ...initialFilters })
         }}

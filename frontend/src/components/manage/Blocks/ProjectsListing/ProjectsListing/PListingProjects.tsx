@@ -36,7 +36,6 @@ export default function PListingProjects({
             {...{
               form,
               filters,
-              initialFilters,
               setFilters,
               setParams,
               projectFilters,

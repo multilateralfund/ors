@@ -1,8 +1,10 @@
-import { Dispatch, ReactNode, SetStateAction } from 'react'
+import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import Field from '@ors/components/manage/Form/Field.tsx'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
+import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import {
   HeaderTag,
   VersionsDropdown,
@@ -13,6 +15,7 @@ import {
   ProjectTypeApi,
   RelatedProjectsType,
 } from './interfaces'
+import { debounce } from '@ors/helpers'
 
 import { filter, lowerCase, map, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
@@ -26,6 +29,8 @@ import {
   Typography,
   MenuProps,
   ButtonProps,
+  InputAdornment,
+  IconButton as MuiIconButton,
 } from '@mui/material'
 import {
   IoAlertCircle,
@@ -33,6 +38,7 @@ import {
   IoChevronUp,
   IoClose,
   IoReturnUpBack,
+  IoSearchOutline,
 } from 'react-icons/io5'
 
 type CustomButtonProps = {
@@ -530,3 +536,101 @@ export const FieldErrorIndicator = ({
     )
   )
 }
+
+export const SearchFilter = ({
+  form,
+  filters,
+  placeholder,
+  handleFilterChange,
+  handleParamsChange,
+}: {
+  form: RefObject<HTMLFormElement>
+  filters: Record<string, any>
+  placeholder: string
+  handleFilterChange: (params: Record<string, any>) => void
+  handleParamsChange: (params: Record<string, any>) => void
+}) => {
+  const searchRef = useFocusOnCtrlF()
+
+  return (
+    <Field
+      name="search"
+      defaultValue={filters.search}
+      inputRef={searchRef}
+      placeholder={placeholder}
+      FieldProps={{
+        className: 'mb-0 w-full md:w-[14.375rem] BPList',
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <MuiIconButton
+              aria-label="search table"
+              edge="start"
+              tabIndex={-1}
+              onClick={() => {
+                const search = form.current?.search?.value ?? ''
+
+                handleParamsChange({
+                  offset: 0,
+                  search,
+                })
+                handleFilterChange({ search })
+              }}
+              disableRipple
+            >
+              <IoSearchOutline />
+            </MuiIconButton>
+          </InputAdornment>
+        ),
+      }}
+      onKeyDown={() => {
+        debounce(
+          () => {
+            const search = form.current?.search?.value ?? ''
+
+            handleParamsChange({
+              offset: 0,
+              search,
+            })
+            handleFilterChange({ search })
+            if (searchRef.current) {
+              searchRef.current.select()
+            }
+          },
+          1000,
+          'PFilterSearch',
+        )
+      }}
+    />
+  )
+}
+
+export const displaySearchTerm = (
+  form: RefObject<HTMLFormElement>,
+  filters: Record<string, any>,
+  handleFilterChange: (params: Record<string, any>) => void,
+  handleParamsChange: (params: Record<string, any>) => void,
+) =>
+  !!filters.search && (
+    <Typography
+      className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
+      component="p"
+      variant="h6"
+    >
+      {filters.search}
+      <IoClose
+        className="cursor-pointer"
+        size={18}
+        color="#666"
+        onClick={() => {
+          const inputSearch = form.current?.search
+          if (inputSearch) {
+            inputSearch.value = ''
+          }
+          handleParamsChange({ offset: 0, search: '' })
+          handleFilterChange({ search: '' })
+        }}
+      />
+    </Typography>
+  )

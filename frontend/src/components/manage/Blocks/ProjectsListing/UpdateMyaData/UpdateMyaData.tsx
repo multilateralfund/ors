@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { MetaProjectType } from '@ors/types/api_projects.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -23,6 +23,7 @@ import { Redirect, useParams } from 'wouter'
 
 export default function UpdateMyaData() {
   const { metaproject_id } = useParams()
+  const form = useRef<any>()
 
   const [filters, setFilters] = useState(() => initialFilters)
 
@@ -139,22 +140,27 @@ export default function UpdateMyaData() {
   return (
     <>
       <Box className="shadow-none">
-        <MetaProjectFilters
-          filters={filters}
-          countries={countries}
-          agencies={agencies}
-          clusters={clusters}
-          handleFilterChange={handleFilterChange}
-          handleParamsChange={handleParamsChange}
-        />
-        <MetaProjectFiltersSelectedOptions
-          filters={filters}
-          countries={countries}
-          agencies={agencies}
-          clusters={clusters}
-          handleFilterChange={handleFilterChange}
-          handleParamsChange={handleParamsChange}
-        />
+        <form ref={form}>
+          <MetaProjectFilters
+            form={form}
+            filters={filters}
+            countries={countries}
+            agencies={agencies}
+            clusters={clusters}
+            handleFilterChange={handleFilterChange}
+            handleParamsChange={handleParamsChange}
+          />
+          <MetaProjectFiltersSelectedOptions
+            form={form}
+            filters={filters}
+            countries={countries}
+            agencies={agencies}
+            clusters={clusters}
+            handleFilterChange={handleFilterChange}
+            handleParamsChange={handleParamsChange}
+          />
+        </form>
+
         <Divider className="my-2" />
         <ViewTable<MetaProjectType>
           key={JSON.stringify(filters)}
