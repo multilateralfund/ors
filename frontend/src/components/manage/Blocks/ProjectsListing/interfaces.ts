@@ -321,7 +321,7 @@ export type RelatedProjectsType = ProjectTypeApi & {
 }
 
 export type RelatedProjectsSectionType = {
-  title: string
+  title: ReactNode
   data: AssociatedProjectsType
   setData: Dispatch<SetStateAction<AssociatedProjectsType>>
   queryParams: string

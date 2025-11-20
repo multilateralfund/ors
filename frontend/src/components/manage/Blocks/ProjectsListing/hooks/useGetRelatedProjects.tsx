@@ -4,6 +4,8 @@ import { useGetAssociatedProjects } from './useGetAssociatedProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 
 import { debounce, isNull } from 'lodash'
+import { formatApiUrl } from '@ors/helpers'
+import Link from '@ors/components/ui/Link/Link.tsx'
 
 const useGetRelatedProjects = (
   project: ProjectTypeApi,
@@ -30,7 +32,20 @@ const useGetRelatedProjects = (
       noResultsText: "This project doesn't have additional components.",
     },
     {
-      title: 'Associated projects',
+      title: (
+        <span className="flex items-center justify-between">
+          <span>Associated projects</span>
+          <Link
+            className="border-primary bg-secondary font-bold text-white hover:bg-primary hover:text-mlfs-hlYellow"
+            href={formatApiUrl(
+              `/api/projects/v2/export_associated_projects?project_id=${project.id}`,
+            )}
+            button
+          >
+            Download associated projects
+          </Link>
+        </span>
+      ),
       data: associatedProjectsAssociation,
       setData: setassociatedProjectsAssociation,
       queryParams: 'exclude_components',

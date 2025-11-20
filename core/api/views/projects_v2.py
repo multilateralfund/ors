@@ -186,6 +186,7 @@ class ProjectV2ViewSet(
             "list",
             "retrieve",
             "export",
+            "export_associated_projects",
             "list_previous_tranches",
             "list_associated_projects",
             "field_history",
@@ -353,7 +354,7 @@ class ProjectV2ViewSet(
         return queryset
 
     def get_object(self):
-        if self.action == "export":
+        if self.action in ["export", "export_associated_projects"]:
             project_id = self.request.query_params.get("project_id")
             return get_object_or_404(self.get_queryset(), id=project_id)
         return super().get_object()
