@@ -1,7 +1,13 @@
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 
-from core.models import Project, Agency, Country, AnnualAgencyProjectReport
+from core.models import (
+    Project,
+    Agency,
+    Country,
+    AnnualAgencyProjectReport,
+    AnnualProjectReport,
+)
 
 
 class APRProjectFilter(filters.FilterSet):
@@ -30,6 +36,43 @@ class APRProjectFilter(filters.FilterSet):
         status_codes = list(set(status_codes) | mandatory_statuses)
 
         return queryset.filter(status__code__in=status_codes)
+
+
+def build_filtered_project_reports_queryset(filter_params):
+    """
+    Helper method that builds a filtered queryset for AnnualProjectReport,
+    based on the same filter params used for filtering AnnualAgencyProjectReport!
+
+    Used for prefetching the *nested* project reports in the MLFS global view.
+
+    Params for country and region are Country querysets with appropriate types selected.
+    """
+    queryset = AnnualProjectReport.objects.select_related(
+        "project",
+        "project__country",
+        "project__country__parent",
+        "project__agency",
+        "project__sector",
+        "project__project_type",
+        "project__status",
+        "project__cluster",
+    )
+
+    if filter_params.get("country"):
+        queryset = queryset.filter(project__country__in=filter_params["country"])
+
+    if filter_params.get("region"):
+        queryset = queryset.filter(project__country__parent__in=filter_params["region"])
+
+    if filter_params.get("cluster"):
+        cluster_names = [
+            c.strip() for c in filter_params["cluster"].split(",") if c.strip()
+        ]
+        if cluster_names:
+            queryset = queryset.filter(project__cluster__name__in=cluster_names)
+
+    # No need to also filter by status - `status` is on AnnualAgencyProjectReport
+    return queryset
 
 
 class APRGlobalFilter(filters.FilterSet):
