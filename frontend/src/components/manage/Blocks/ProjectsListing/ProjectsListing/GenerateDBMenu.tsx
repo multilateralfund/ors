@@ -8,7 +8,8 @@ import { MdExpandMore } from 'react-icons/md'
 import { GoDatabase } from 'react-icons/go'
 
 const GenerateDBMenu = () => {
-  const { canViewProjects, canApproveProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canApproveProjects, isMlfsUser } =
+    useContext(PermissionsContext)
 
   const menuItems = [
     {
@@ -19,21 +20,25 @@ const GenerateDBMenu = () => {
     {
       title: 'Approval summary',
       url: '/projects-listing/approval-summary',
-      permissions: [canApproveProjects],
+      permissions: [isMlfsUser && canApproveProjects],
     },
     {
       title: 'Summary of projects',
       url: '/projects-listing/summary-of-projects',
-      permissions: [canApproveProjects],
+      permissions: [isMlfsUser && canApproveProjects],
     },
     {
       title: 'Blanket approval details',
       url: '/projects-listing/blanket-approval-details',
-      permissions: [canViewProjects],
+      permissions: [isMlfsUser && canViewProjects],
     },
-    { title: 'Enterprise warehouse', url: null },
-    { title: 'Associated projects', url: null },
-    { title: 'Compare versions', url: null },
+    {
+      title: 'Enterprise warehouse',
+      url: null,
+      permissions: [isMlfsUser && canViewProjects],
+    },
+    { title: 'Associated projects', url: null, permissions: [canViewProjects] },
+    { title: 'Compare versions', url: null, permissions: [canViewProjects] },
   ]
 
   const filteredMenuItems = menuItems.filter(
