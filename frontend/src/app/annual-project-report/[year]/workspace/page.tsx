@@ -6,7 +6,7 @@ import { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import { Box, Chip } from '@mui/material'
-import { FiTable, FiEdit, FiDownload } from 'react-icons/fi'
+import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
@@ -27,6 +27,7 @@ import {
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
+import SubmitButton from '@ors/components/manage/Blocks/AnnualProgressReport/SubmitButton.tsx'
 
 interface Filter {
   id: string
@@ -39,7 +40,8 @@ export default function APRWorkspace() {
     useState(false)
   const { year } = useParams()
   usePageTitle(`Annual Progress Report (${year})`)
-  const { canViewAPR } = useContext(PermissionsContext)
+  const { canViewAPR, canSubmitAPR, canEditAPR } =
+    useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
   const {
     statuses: { data: projectStatuses },
@@ -84,6 +86,8 @@ export default function APRWorkspace() {
         [filterKey]: newFilters.map((f) => f[paramKey]).join(','),
       })
     }
+
+  const isDraft = apr?.status === 'draft' || apr?.is_unlocked
 
   return (
     <PageWrapper>
@@ -152,6 +156,14 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-col items-end gap-y-2">
+            {canSubmitAPR && (
+              <SubmitButton
+                disabled={!isDraft || loading}
+                revalidateData={refetch}
+                year={year}
+                agencyId={user.agency_id}
+              />
+            )}
             <Button
               variant="contained"
               onClick={() => setIsUploadDocumentsModalOpen(true)}
@@ -172,7 +184,8 @@ export default function APRWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/apr/${year}/edit`}
+                href={`/${year}/edit`}
+                disabled={!isDraft}
               >
                 Update APR
               </Link>
@@ -200,6 +213,7 @@ export default function APRWorkspace() {
           agencyId={user.agency_id}
           oldFiles={apr.files}
           revalidateFiles={refetch}
+          disabled={!isDraft || !canEditAPR || loading}
         />
       )}
     </PageWrapper>

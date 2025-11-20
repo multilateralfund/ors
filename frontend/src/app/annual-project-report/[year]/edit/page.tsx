@@ -43,7 +43,7 @@ export default function APREdit() {
   const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   const [activeTab, setActiveTab] = useState(0)
-  const { canViewAPR } = useContext(PermissionsContext)
+  const { canEditAPR } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
   const {
     data: apr,
@@ -74,9 +74,11 @@ export default function APREdit() {
   })
 
   // TODO: change later for mlfs
-  if (!canViewAPR || !user.agency_id) {
+  if (!canEditAPR || !user.agency_id) {
     return <NotFoundPage />
   }
+
+  const isDraft = apr?.status === 'draft' || apr?.is_unlocked
 
   const exportAll = async () => {
     if (!gridRef.current) {
@@ -145,7 +147,12 @@ export default function APREdit() {
               )
             })}
           </Tabs>
-          <Button className="mb-2" variant="contained" onClick={exportAll}>
+          <Button
+            disabled={loading || !isDraft}
+            className="mb-2"
+            variant="contained"
+            onClick={exportAll}
+          >
             Save
           </Button>
         </div>
