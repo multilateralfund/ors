@@ -159,7 +159,7 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-col items-end gap-y-2">
-            {canSubmitAPR && (
+            {canSubmitAPR && user.agency_id && (
               <SubmitButton
                 disabled={!isDraft || loading}
                 revalidateData={refetch}
