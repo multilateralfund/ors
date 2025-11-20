@@ -92,6 +92,36 @@ const ProjectIdentifiersFields = ({
         project?.id === project?.component?.original_project_id) &&
       (project?.submission_status === 'Withdrawn' || project?.version === 1))
 
+  const isAgencyDisabled =
+    (isV3Project && !!project?.agency_id) ||
+    !canEditField(editableFields, 'agency')
+  const isClusterDisabled =
+    (isV3Project && !!project?.cluster_id) ||
+    !specificFieldsLoaded ||
+    !canEditField(editableFields, 'cluster')
+  const isProductionDisabled =
+    (isV3Project && !!project?.cluster_id) ||
+    !canViewProductionProjects ||
+    !isNull(
+      getClusterDetails(clusters, projIdentifiers.cluster, 'production'),
+    ) ||
+    !canEditField(editableFields, 'production')
+  const isSubmitOnBehalfDisabled =
+    (isV3Project && project && !getAgencyErrorType(project, agency_id)) ||
+    !canEditField(editableFields, 'lead_agency_submitting_on_behalf')
+  const isLeadAgencyDisabled =
+    !canUpdateLeadAgency || !canEditField(editableFields, 'lead_agency')
+
+  const hasNextButtons =
+    mode !== 'edit' ||
+    !(
+      isAgencyDisabled &&
+      isClusterDisabled &&
+      isProductionDisabled &&
+      isSubmitOnBehalfDisabled &&
+      isLeadAgencyDisabled
+    )
+
   const decisionsApi = useApi<ApiDecision[]>({
     path: 'api/decisions',
     options: {
@@ -412,11 +442,7 @@ const ProjectIdentifiersFields = ({
                     }
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                  disabled={
-                    (isV3Project && !!project?.agency_id) ||
-                    !areNextSectionsDisabled ||
-                    !canEditField(editableFields, 'agency')
-                  }
+                  disabled={isAgencyDisabled || !areNextSectionsDisabled}
                   Input={{
                     error: getIsInputDisabled('agency'),
                   }}
@@ -441,12 +467,7 @@ const ProjectIdentifiersFields = ({
                     getOptionLabel={(option) =>
                       getOptionLabel(clusters, option)
                     }
-                    disabled={
-                      (isV3Project && !!project?.cluster_id) ||
-                      !areNextSectionsDisabled ||
-                      !specificFieldsLoaded ||
-                      !canEditField(editableFields, 'cluster')
-                    }
+                    disabled={isClusterDisabled || !areNextSectionsDisabled}
                     Input={{
                       error: getIsInputDisabled('cluster'),
                     }}
@@ -467,19 +488,7 @@ const ProjectIdentifiersFields = ({
                 control={
                   <Checkbox
                     checked={!!projIdentifiers?.production}
-                    disabled={
-                      (isV3Project && !!project?.cluster_id) ||
-                      !areNextSectionsDisabled ||
-                      !canViewProductionProjects ||
-                      !isNull(
-                        getClusterDetails(
-                          clusters,
-                          projIdentifiers.cluster,
-                          'production',
-                        ),
-                      ) ||
-                      !canEditField(editableFields, 'production')
-                    }
+                    disabled={isProductionDisabled || !areNextSectionsDisabled}
                     onChange={handleChangeProduction}
                     size="small"
                     sx={{
@@ -519,14 +528,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={projIdentifiers?.lead_agency_submitting_on_behalf}
                   disabled={
-                    !areNextSectionsDisabled ||
-                    (isV3Project &&
-                      project &&
-                      !getAgencyErrorType(project, agency_id)) ||
-                    !canEditField(
-                      editableFields,
-                      'lead_agency_submitting_on_behalf',
-                    )
+                    isSubmitOnBehalfDisabled || !areNextSectionsDisabled
                   }
                   onChange={handleChangeSubmitOnBehalf}
                   size="small"
@@ -558,11 +560,7 @@ const ProjectIdentifiersFields = ({
                     }
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                  disabled={
-                    !areNextSectionsDisabled ||
-                    !canUpdateLeadAgency ||
-                    !canEditField(editableFields, 'lead_agency')
-                  }
+                  disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
                   Input={{
                     error: getIsInputDisabled('lead_agency'),
                   }}
@@ -586,9 +584,7 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        {(mode === 'copy' ||
-          (isV3Project && areNextSectionsDisabled) ||
-          !(isV3Project || project?.submission_status === 'Approved')) && (
+        {hasNextButtons && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NavigationButton
               nextStep={project_type && sector ? 5 : 2}
