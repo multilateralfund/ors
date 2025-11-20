@@ -31,9 +31,9 @@ const GenerateDBMenu = () => {
       url: '/projects-listing/blanket-approval-details',
       permissions: [canViewProjects],
     },
-    { title: 'ExCom provisions', url: null },
     { title: 'Enterprise warehouse', url: null },
-    { title: 'Report on associated projects', url: null },
+    { title: 'Associated projects', url: null },
+    { title: 'Compare versions', url: null },
   ]
 
   const filteredMenuItems = menuItems.filter(

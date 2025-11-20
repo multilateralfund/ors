@@ -203,7 +203,8 @@ class ProjectsV2ProjectExportDocx:
 
     def build_related_tranches(self):
         table = self.find_table("Related tranches (metacode and linked projects)")
-        if table and self.project.meta_project:
+        is_mya = self.project.category == Project.Category.MYA
+        if table and is_mya and self.project.meta_project:
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
             )
