@@ -543,9 +543,8 @@ export default function getColumnDefs({
       headerComponent: undefined,
       field: 'agency_name',
       editable: false,
-      sortable: true,
-      filter: true,
-      pinned: 'left' as const,
+      sortable: false,
+      filter: false,
       minWidth: 150,
     })
   }

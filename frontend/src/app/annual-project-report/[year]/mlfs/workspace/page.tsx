@@ -76,7 +76,7 @@ export default function APRMLFSWorkspace() {
         ...report,
         agency_status: agencyData.status,
         agency_is_unlocked: agencyData.is_unlocked,
-      }))
+      })),
     )
   }, [aprData])
 
@@ -157,7 +157,7 @@ export default function APRMLFSWorkspace() {
 
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
-    return <Redirect to={`/apr/${year}/workspace`} replace />
+    return <Redirect to={`/${year}/workspace`} replace />
   }
 
   if (!canViewAPR) {
@@ -176,7 +176,8 @@ export default function APRMLFSWorkspace() {
           icon={<IoInformationCircleOutline size={24} />}
           severity="info"
         >
-          Viewing project reports for all agencies. Use filters for viewing less reports.
+          Viewing project reports for all agencies. Use filters for viewing less
+          reports.
         </Alert>
 
         {/* Filters section */}
@@ -342,7 +343,9 @@ export default function APRMLFSWorkspace() {
                 </li>
               ))
             })}
-            {Object.values(filters).some((filterArr) => filterArr.length > 0) && (
+            {Object.values(filters).some(
+              (filterArr) => filterArr.length > 0,
+            ) && (
               <li>
                 <Button
                   variant="text"
@@ -366,12 +369,15 @@ export default function APRMLFSWorkspace() {
               </div>
             </div>
             <div className="rounded border p-3">
-              <div className="text-sm text-gray-600">Total Approved Funding</div>
+              <div className="text-sm text-gray-600">
+                Total Approved Funding
+              </div>
               <div className="text-2xl font-semibold">
                 {formatUSD(
                   allProjectReports.reduce(
-                    (sum, r) => sum + (r.approved_funding || 0), 0
-                  )
+                    (sum, r) => sum + (r.approved_funding || 0),
+                    0,
+                  ),
                 )}
               </div>
             </div>
@@ -380,8 +386,9 @@ export default function APRMLFSWorkspace() {
               <div className="text-2xl font-semibold">
                 {formatUSD(
                   allProjectReports.reduce(
-                    (sum, r) => sum + (r.funds_disbursed || 0), 0
-                  )
+                    (sum, r) => sum + (r.funds_disbursed || 0),
+                    0,
+                  ),
                 )}
               </div>
             </div>
@@ -399,7 +406,6 @@ export default function APRMLFSWorkspace() {
           />
         )}
       </Box>
-
     </PageWrapper>
   )
 }

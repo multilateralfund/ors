@@ -437,10 +437,10 @@ export default function App() {
             <Route path="/:year/edit">
               <APREdit />
             </Route>
+            <Route path="/:year/mlfs/workspace">
+              <APRMLFSWorkspace />
+            </Route>
           </APRProvider>
-        </Route>
-        <Route path="/apr/:year/mlfs/workspace">
-          <APRMLFSWorkspace />
         </Route>
         <Route>
           <NotFoundPage />

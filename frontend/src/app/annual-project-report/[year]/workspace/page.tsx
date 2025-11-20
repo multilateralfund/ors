@@ -66,7 +66,7 @@ export default function APRWorkspace() {
     return <NotFoundPage />
   }
   if (isMlfsUser) {
-    return <Redirect to={`/apr/${year}/mlfs/workspace`} replace />
+    return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
 
   const { columnDefs, defaultColDef } = getColumnDefs()
