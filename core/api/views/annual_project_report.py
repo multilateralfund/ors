@@ -338,7 +338,7 @@ class APRStatusView(APIView):
 
     def post(self, request, year, agency_id):
         """
-        By default, it submit the agency report. If it's another status change,
+        By default, it submits the agency report. If it's another status change,
         the request body looks like:
         {
             "status": "SUB"

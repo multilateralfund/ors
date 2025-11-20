@@ -82,6 +82,8 @@ const ProjectIdentifiers = ({
           {detailItem(tableColumns.meeting, project.meeting, {
             fieldHistory: getFieldHistory('meeting'),
           })}
+          {project.status === 'Transferred' &&
+            detailItem(tableColumns.transfer_meeting, project.transfer_meeting)}
           {canViewField(viewableFields, 'agency') &&
             detailItem(tableColumns.agency, project.agency, {
               fieldHistory: getFieldHistory('agency'),

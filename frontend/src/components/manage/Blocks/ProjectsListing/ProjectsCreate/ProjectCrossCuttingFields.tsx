@@ -157,7 +157,9 @@ const ProjectCrossCuttingFields = ({
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getIsInputDisabled(field),
-          [disabledClassName]: !canEditField(editableFields, field),
+          [disabledClassName]:
+            !canEditField(editableFields, field) ||
+            ['fund_transferred', 'psc_transferred'].includes(field),
         }),
       },
     }
@@ -431,6 +433,35 @@ const ProjectCrossCuttingFields = ({
                     />
                   </div>
                 </div>
+              )}
+              {project?.status === 'Transferred' && (
+                <>
+                  <div>
+                    <Label>{tableColumns.fund_transferred}</Label>
+                    <div className="flex items-center">
+                      <FormattedNumberInput
+                        id="fund_transferred"
+                        value={project?.fund_transferred ?? ''}
+                        prefix="$"
+                        withoutDefaultValue={true}
+                        disabled={true}
+                        {...getFieldDefaultProps('fund_transferred')}
+                      />
+                      <div className="w-8" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>{tableColumns.psc_transferred}</Label>
+                    <FormattedNumberInput
+                      id="psc_transferred"
+                      value={project?.psc_transferred ?? ''}
+                      prefix="$"
+                      withoutDefaultValue={true}
+                      disabled={true}
+                      {...getFieldDefaultProps('psc_transferred')}
+                    />
+                  </div>
+                </>
               )}
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>

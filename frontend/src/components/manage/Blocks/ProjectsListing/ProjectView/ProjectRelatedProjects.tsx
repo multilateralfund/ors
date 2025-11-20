@@ -41,12 +41,13 @@ const ProjectRelatedProjects = ({
           <>
             <SectionTitle>
               <div className="flex items-center gap-2">
-                <span>Umbrella project code:</span>
+                <span>Umbrella metacode:</span>
                 <h4 className="m-0 normal-case"> {project.umbrella_code}</h4>
               </div>
             </SectionTitle>
             <div className="text-lg">
-              If you want this project to be removed from the umbrella, click
+              If you want this project to be removed from the umbrella metacode,
+              click
               <RemoveAssociation {...{ setMetaProjectId }} />
               (In case of removal, the component relationships will be
               maintained.)
