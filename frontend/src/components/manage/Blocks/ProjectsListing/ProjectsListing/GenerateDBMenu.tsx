@@ -7,7 +7,6 @@ import { Menu, MenuItem } from '@mui/material'
 import { MdExpandMore } from 'react-icons/md'
 import { GoDatabase } from 'react-icons/go'
 import { formatApiUrl } from '@ors/helpers'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { ListingProjectData } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 const GenerateDBMenu = ({
@@ -52,11 +51,25 @@ const GenerateDBMenu = ({
               `/api/projects/v2/export_associated_projects?project_id=${projectData.projectId}`,
             )
           : null,
+        onClick: (evt: MouseEvent) => {
+          const proceed = confirm(
+            `Do you want to generate the report on associated projects for ${projectData.projectCode}?`,
+          )
+          if (!proceed) {
+            evt.preventDefault()
+          }
+        },
         permissions: [canViewProjects],
       },
       { title: 'Compare versions', url: null, permissions: [canViewProjects] },
     ],
-    [canApproveProjects, canViewProjects, isMlfsUser, projectData.projectId],
+    [
+      canApproveProjects,
+      canViewProjects,
+      isMlfsUser,
+      projectData.projectCode,
+      projectData.projectId,
+    ],
   )
 
   const filteredMenuItems = menuItems.filter(
@@ -116,7 +129,7 @@ const GenerateDBMenu = ({
           },
         }}
       >
-        {filteredMenuItems.map(({ url, title }) => (
+        {filteredMenuItems.map(({ url, title, onClick }) => (
           <MenuItem
             key={title}
             className="whitespace-normal rounded-none p-0 hover:bg-white"
@@ -126,15 +139,8 @@ const GenerateDBMenu = ({
             <CustomLink
               className="h-full w-full break-words py-2 pl-3.5 pr-7 text-lg normal-case leading-tight tracking-[0.05em] no-underline"
               href={url}
-              onClick={(evt: MouseEvent) => {
-                const proceed = confirm(
-                  `Do you want to generate the report on associated projects for ${projectData.projectCode}?`,
-                )
-                if (!proceed) {
-                  evt.preventDefault()
-                }
-              }}
               variant="contained"
+              onClick={onClick}
             >
               {title}
             </CustomLink>
