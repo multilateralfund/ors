@@ -1,4 +1,4 @@
-import { useParams } from 'wouter'
+import { useParams, Redirect } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
@@ -40,7 +40,7 @@ export default function APRWorkspace() {
     useState(false)
   const { year } = useParams()
   usePageTitle(`Annual Progress Report (${year})`)
-  const { canViewAPR, canSubmitAPR, canEditAPR } =
+  const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
     useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
   const {
@@ -57,13 +57,16 @@ export default function APRWorkspace() {
   } = useApi({
     options: {
       withStoreCache: false,
+      triggerIf: canViewAPR,
     },
     path: `api/annual-project-report/${year}/workspace/`,
   })
 
-  // TODO: change later for mlfs
-  if (!canViewAPR || !user.agency_id) {
+  if (!canViewAPR) {
     return <NotFoundPage />
+  }
+  if (isMlfsUser) {
+    return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
 
   const { columnDefs, defaultColDef } = getColumnDefs()
@@ -156,7 +159,7 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-col items-end gap-y-2">
-            {canSubmitAPR && (
+            {canSubmitAPR && user.agency_id && (
               <SubmitButton
                 disabled={!isDraft || loading}
                 revalidateData={refetch}
@@ -205,7 +208,7 @@ export default function APRWorkspace() {
           />
         )}
       </Box>
-      {isUploadDocumentsModalOpen && (
+      {isUploadDocumentsModalOpen && user.agency_id && (
         <UploadDocumentsModal
           isModalOpen={isUploadDocumentsModalOpen}
           setIsModalOpen={setIsUploadDocumentsModalOpen}

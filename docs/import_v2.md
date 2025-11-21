@@ -18,11 +18,11 @@ The scripts should be run in the following order when installing locally or when
     python manage.py import_projects_v2 populate_existing_projects_metacode
     python manage.py import_projects_v2 populate_existing_projects_lead_agency
     python manage.py import_projects_v2 populate_existing_projects_category
-    python manage.py import projects_v2 populate_existing_projects_production
-    python manage.py import projects_v2 populate_existing_meta_projects_umbrella_code
+    python manage.py import_projects_v2 populate_existing_projects_production
+    python manage.py import_projects_v2 populate_existing_meta_projects_umbrella_code
 
     ONLY AFTER EXTRACTING ALL INFORMATION FROM META-PROJECTS:
-    python manage.py import projects_v2 remove-all-meta-project-associations
+    python manage.py import_projects_v2 remove-all-meta-project-associations
 
     python manage.py import_projects_v2 migrate-subsectors-sector-data
     python manage.py import_projects_v2 mark_obsolete_values

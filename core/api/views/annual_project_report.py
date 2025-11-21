@@ -1,4 +1,5 @@
 import os
+from django.db.models import Prefetch
 from django.http import Http404, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -16,8 +17,13 @@ from core.models import (
     AnnualProjectReport,
     AnnualProjectReportFile,
     Project,
+    Country,
 )
-from core.api.filters.annual_project_reports import APRProjectFilter, APRGlobalFilter
+from core.api.filters.annual_project_reports import (
+    APRProjectFilter,
+    APRGlobalFilter,
+    build_filtered_project_reports_queryset,
+)
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.permissions import (
     HasAPRViewAccess,
@@ -146,13 +152,12 @@ class APRWorkspaceView(RetrieveAPIView):
                 },
                 queryset=projects_queryset,
             )
-            if filterset.is_valid():
-                projects = filterset.qs
-                for project in projects:
-                    AnnualProjectReport.objects.get_or_create(
-                        project=project,
-                        report=agency_report,
-                    )
+            projects = filterset.qs
+            for project in projects:
+                AnnualProjectReport.objects.get_or_create(
+                    project=project,
+                    report=agency_report,
+                )
 
         return agency_report
 
@@ -483,25 +488,58 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return queryset
 
     def get_list_queryset(self, year):
-        return (
-            AnnualAgencyProjectReport.objects.filter(
-                progress_report__year=year,
-            )
-            .select_related(
-                "progress_report",
-                "agency",
-                "created_by",
-                "submitted_by",
-            )
-            .prefetch_related(
-                "project_reports",
-                "project_reports__project",
-                "project_reports__project__country",
-                "project_reports__project__sector",
-                "files",
-            )
-            .order_by("agency__name")
+        queryset = AnnualAgencyProjectReport.objects.filter(
+            progress_report__year=year,
+        ).select_related(
+            "progress_report",
+            "agency",
+            "created_by",
+            "submitted_by",
         )
+
+        # Also filter the *nested* project reports for each agency report
+        filter_params = {}
+
+        country_param = self.request.query_params.get("country")
+        if country_param:
+            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
+            filter_params["country"] = Country.objects.filter(
+                name__in=country_names, location_type=Country.LocationType.COUNTRY
+            )
+
+        region_param = self.request.query_params.get("region")
+        if region_param:
+            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
+            filter_params["region"] = Country.objects.filter(
+                name__in=region_names,
+                location_type__in=[
+                    Country.LocationType.REGION,
+                    Country.LocationType.SUBREGION,
+                ],
+            )
+
+        cluster_param = self.request.query_params.get("cluster")
+        if cluster_param:
+            filter_params["cluster"] = cluster_param
+
+        project_reports_qs = build_filtered_project_reports_queryset(filter_params)
+        project_reports_qs = project_reports_qs.select_related(
+            "project__meta_project",
+            "project__meeting",
+            "project__decision",
+        ).prefetch_related(
+            "project__subsectors",
+            "project__ods_odp",
+            "project__ods_odp__ods_substance",
+            "project__ods_odp__ods_blend",
+        )
+
+        queryset = queryset.prefetch_related(
+            Prefetch("project_reports", queryset=project_reports_qs),
+            "files",
+        ).order_by("agency__name")
+
+        return queryset
 
     def get_detail_queryset(self, year):
         return (

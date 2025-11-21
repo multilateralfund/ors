@@ -3,7 +3,7 @@ import { IoReturnUpBack } from 'react-icons/io5'
 import { Link } from 'wouter'
 
 export default function BackToWorkspace({ year }: { year?: string }) {
-  const url = year ? `/apr/${year}/workspace` : '/apr'
+  const url = year ? `/${year}/workspace` : '/apr'
 
   return (
     <Link className="text-black no-underline" href={url}>

@@ -81,6 +81,7 @@ import NotFoundPage from '@ors/app/not-found'
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
 import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
+import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspace/page.tsx'
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 
@@ -435,6 +436,9 @@ export default function App() {
             </Route>
             <Route path="/:year/edit">
               <APREdit />
+            </Route>
+            <Route path="/:year/mlfs/workspace">
+              <APRMLFSWorkspace />
             </Route>
           </APRProvider>
         </Route>

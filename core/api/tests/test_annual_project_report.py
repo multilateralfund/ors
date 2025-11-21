@@ -948,7 +948,7 @@ class TestAPRGlobalViewSet(BaseTest):
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
-        response = self.client.get(url, {"country": country_ro.id})
+        response = self.client.get(url, {"country": country_ro.name})
 
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) >= 1

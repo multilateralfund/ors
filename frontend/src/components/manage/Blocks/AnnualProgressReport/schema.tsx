@@ -484,6 +484,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
 interface BaseColumnDefOptions {
   group?: string | null
   inlineEdit?: boolean
+  includeAgency?: boolean
 }
 
 interface ClipboardDisabled extends BaseColumnDefOptions {
@@ -504,6 +505,7 @@ export default function getColumnDefs({
   group = null,
   inlineEdit = false,
   clipboardEdit = false,
+  includeAgency = false,
   rows,
   setRows,
 }: ColumnDefOptions = {}) {
@@ -515,26 +517,40 @@ export default function getColumnDefs({
     )
   }
 
+  const columnDefs = columns.map((c) => ({
+    headerName: c.label,
+    field: c.fieldName,
+    ...(c.overrideOptions ?? {}),
+    editable: inlineEdit && c.input,
+    // Clipboard editing requires a custom header component
+    headerComponent:
+      clipboardEdit && c.input && rows && setRows
+        ? (props: IHeaderParams) => (
+            <HeaderPasteWrapper
+              field={props.column.getColDef().field!}
+              form={rows}
+              label={props.displayName}
+              setForm={setRows}
+              rowIdField="project_code"
+            />
+          )
+        : undefined,
+  }))
+
+  if (includeAgency) {
+    columnDefs.unshift({
+      headerName: 'Agency',
+      headerComponent: undefined,
+      field: 'agency_name',
+      editable: false,
+      sortable: false,
+      filter: false,
+      minWidth: 150,
+    })
+  }
+
   return {
-    columnDefs: columns.map((c) => ({
-      headerName: c.label,
-      field: c.fieldName,
-      ...(c.overrideOptions ?? {}),
-      editable: inlineEdit && c.input,
-      // Clipboard editing requires a custom header component
-      headerComponent:
-        clipboardEdit && c.input && rows && setRows
-          ? (props: IHeaderParams) => (
-              <HeaderPasteWrapper
-                field={props.column.getColDef().field!}
-                form={rows}
-                label={props.displayName}
-                setForm={setRows}
-                rowIdField="project_code"
-              />
-            )
-          : undefined,
-    })),
+    columnDefs,
     defaultColDef: {
       headerClass: 'ag-text-center',
       cellClass: 'ag-text-center ag-cell-ellipsed',

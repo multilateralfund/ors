@@ -1,6 +1,13 @@
 from django_filters import rest_framework as filters
+from django_filters.fields import CSVWidget
 
-from core.models import Project, Agency, Country, AnnualAgencyProjectReport
+from core.models import (
+    Project,
+    Agency,
+    Country,
+    AnnualAgencyProjectReport,
+    AnnualProjectReport,
+)
 
 
 class APRProjectFilter(filters.FilterSet):
@@ -13,7 +20,7 @@ class APRProjectFilter(filters.FilterSet):
         fields = ["year", "agency", "status"]
 
     def filter_by_year(self, queryset, _name, value):
-        return queryset.filter(date_approved__year__lt=value)
+        return queryset.filter(date_approved__year__lte=value)
 
     def filter_by_status(self, queryset, _name, value):
         """
@@ -31,6 +38,43 @@ class APRProjectFilter(filters.FilterSet):
         return queryset.filter(status__code__in=status_codes)
 
 
+def build_filtered_project_reports_queryset(filter_params):
+    """
+    Helper method that builds a filtered queryset for AnnualProjectReport,
+    based on the same filter params used for filtering AnnualAgencyProjectReport!
+
+    Used for prefetching the *nested* project reports in the MLFS global view.
+
+    Params for country and region are Country querysets with appropriate types selected.
+    """
+    queryset = AnnualProjectReport.objects.select_related(
+        "project",
+        "project__country",
+        "project__country__parent",
+        "project__agency",
+        "project__sector",
+        "project__project_type",
+        "project__status",
+        "project__cluster",
+    )
+
+    if filter_params.get("country"):
+        queryset = queryset.filter(project__country__in=filter_params["country"])
+
+    if filter_params.get("region"):
+        queryset = queryset.filter(project__country__parent__in=filter_params["region"])
+
+    if filter_params.get("cluster"):
+        cluster_names = [
+            c.strip() for c in filter_params["cluster"].split(",") if c.strip()
+        ]
+        if cluster_names:
+            queryset = queryset.filter(project__cluster__name__in=cluster_names)
+
+    # No need to also filter by status - `status` is on AnnualAgencyProjectReport
+    return queryset
+
+
 class APRGlobalFilter(filters.FilterSet):
     """
     Filters for the MLFS "global" list view.
@@ -38,31 +82,41 @@ class APRGlobalFilter(filters.FilterSet):
 
     agency = filters.ModelMultipleChoiceFilter(
         queryset=Agency.objects.all(),
-        field_name="agency",
+        widget=CSVWidget,
+        distinct=True,
     )
 
     region = filters.ModelMultipleChoiceFilter(
-        queryset=Country.objects.filter(location_type=Country.LocationType.REGION),
-        field_name="project_reports__project__country__parent",
-        distinct=True,
+        queryset=Country.objects.filter(
+            location_type__in=[
+                Country.LocationType.REGION,
+                Country.LocationType.SUBREGION,
+            ]
+        ),
+        to_field_name="name",
+        widget=CSVWidget,
+        method="filter_by_region",
     )
 
     country = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.filter(location_type=Country.LocationType.COUNTRY),
-        field_name="project_reports__project__country",
+        to_field_name="name",
+        widget=CSVWidget,
         distinct=True,
+        method="filter_by_country",
     )
+
+    cluster = filters.CharFilter(method="filter_by_cluster")
 
     status = filters.CharFilter(method="filter_by_status")
 
     class Meta:
         model = AnnualAgencyProjectReport
-        fields = ["agency", "region", "country", "status"]
+        fields = ["agency", "region", "country", "status", "cluster"]
 
     def filter_by_status(self, queryset, _name, value):
         """
-        Accepts a comma-separated list, defaults to ongoing & completed,
-        which are always included.
+        Accepts a comma-separated list of *Project Report* statuses.
         """
         if not value:
             return queryset
@@ -77,3 +131,32 @@ class APRGlobalFilter(filters.FilterSet):
             return queryset
 
         return queryset.filter(status__in=status_codes)
+
+    def filter_by_region(self, queryset, _name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            project_reports__project__country__parent__in=value
+        ).distinct()
+
+    def filter_by_country(self, queryset, _name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(project_reports__project__country__in=value).distinct()
+
+    def filter_by_cluster(self, queryset, _name, value):
+        """
+        Accepts a comma-separated list of cluster *names*.
+        """
+        if not value:
+            return queryset
+
+        cluster_names = [c.strip() for c in value.split(",") if c.strip()]
+        if not cluster_names:
+            return queryset
+
+        return queryset.filter(
+            project_reports__project__cluster__name__in=cluster_names
+        ).distinct()
