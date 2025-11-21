@@ -222,12 +222,19 @@ const ProjectsCreate = ({
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
 
+  const bpErrorMessage = 'A business plan activity should be selected.'
   const hasBpDefaultErrors =
     canViewBp &&
     mode === 'edit' &&
     canEditField(editableFields, 'bp_activity') &&
     bpData.hasBpData &&
     !bpLinking.bpId
+  const allBpErrors = hasBpDefaultErrors
+    ? {
+        ...bpErrors,
+        bp_activity: [bpErrorMessage],
+      }
+    : bpErrors
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -374,6 +381,7 @@ const ProjectsCreate = ({
           areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
+          bpErrors={allBpErrors}
         />
       ),
       errors: [
@@ -390,13 +398,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(hasBpDefaultErrors
-          ? [
-              {
-                message: 'A business plan activity should be selected.',
-              },
-            ]
-          : []),
+        ...(hasBpDefaultErrors ? [{ message: bpErrorMessage }] : []),
       ],
     },
     {
@@ -628,6 +630,7 @@ const ProjectsCreate = ({
           {
             id: 'project-related-projects-section',
             label: 'Related projects',
+            disabled: areNextSectionsDisabled,
             component: (
               <ProjectRelatedProjects
                 canDisassociate={postExComUpdate}
@@ -652,7 +655,7 @@ const ProjectsCreate = ({
                 <div className="leading-tight">History</div>
               </div>
             ),
-            disabled: false,
+            disabled: areNextSectionsDisabled,
             component: <ProjectHistory {...{ project, setCurrentTab }} />,
           },
         ]

@@ -1,7 +1,7 @@
 import { ChangeEvent } from 'react'
 
 import LinkedBPTableWrapper from './LinkedBPTable'
-import { NavigationButton } from '../HelperComponents'
+import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { ProjectDataProps, ProjectTabSetters, BpDataProps } from '../interfaces'
 
@@ -16,12 +16,14 @@ const ProjectBPLinking = ({
   setCurrentTab,
   bpData,
   onBpDataChange,
+  bpErrors,
 }: Omit<ProjectDataProps, 'hasSubmitted'> &
   ProjectTabSetters & {
     isSectionDisabled: boolean
     isNextButtonDisabled: boolean
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
+    bpErrors: { [key: string]: string[] }
   }) => {
   const { country, agency, cluster } = projectData.projIdentifiers
   const { isLinkedToBP } = projectData.bpLinking
@@ -49,7 +51,12 @@ const ProjectBPLinking = ({
       <div
         className={cx({ 'pointer-events-none opacity-50': isSectionDisabled })}
       >
-        <SectionTitle>Business Plan</SectionTitle>
+        <div className="flex items-center">
+          <SectionTitle>Business Plan</SectionTitle>
+          <div className="mb-4">
+            <FieldErrorIndicator errors={bpErrors} field="bp_activity" />
+          </div>
+        </div>
         <FormControlLabel
           label="The proposal is included in a BP"
           control={
