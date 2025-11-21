@@ -262,7 +262,6 @@ export interface ProjectTransferData {
 export interface ProjectDataProps {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
-  hasSubmitted: boolean
   errors?: { [key: string]: string[] }
 }
 
@@ -272,7 +271,6 @@ export interface ProjectHeader {
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
   setErrors: (value: { [key: string]: [] }) => void
-  setHasSubmitted: (value: boolean) => void
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
@@ -296,7 +294,6 @@ export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
   errors: { [key: string]: string[] }
-  hasSubmitted: boolean
   mode: string
   project?: ProjectTypeApi
   postExComUpdate?: boolean

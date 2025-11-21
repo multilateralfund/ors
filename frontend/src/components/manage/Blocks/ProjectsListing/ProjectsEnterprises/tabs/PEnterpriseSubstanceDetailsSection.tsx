@@ -4,7 +4,6 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { FormattedNumberInput } from '../../../Replenishment/Inputs'
 import { SubmitButton } from '../../HelperComponents'
 import {
@@ -20,7 +19,7 @@ import {
   tableColumns,
 } from '../../constants'
 
-import { find, get, isObject, map, sortBy, split } from 'lodash'
+import { find, get, isArray, isNil, isObject, map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -147,8 +146,22 @@ const PEnterpriseSubstanceDetailsSection = ({
     })
   }
 
+  const getIsInputDisabled = (
+    hasSubmitted: boolean,
+    errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+    field: string,
+    index?: number,
+  ) => {
+    const isError =
+      isArray(errors) && !isNil(index)
+        ? errors?.[index]?.[field]?.length > 0
+        : !isArray(errors) && errors?.[field]?.length > 0
+
+    return hasSubmitted && isError
+  }
+
   const getErrors = (field: string, index: number) =>
-    getIsInputDisabled(hasSubmitted, odsOdpErrors, false, field, index)
+    getIsInputDisabled(hasSubmitted, odsOdpErrors, field, index)
 
   const getFieldDefaultProps = (
     field: string,

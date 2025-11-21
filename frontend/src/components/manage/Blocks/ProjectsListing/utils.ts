@@ -490,7 +490,13 @@ export const getCrossCuttingErrors = (
       : requiredFields
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [
+        ...requiredFields,
+        'subsector_ids',
+        'blanket_or_individual_consideration',
+      ].includes(key),
+    ),
   )
 
   const { total_fund, support_cost_psc, project_start_date, project_end_date } =
@@ -525,7 +531,9 @@ export const getApprovalErrors = (
   ]
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [...requiredFields, 'funding_window'].includes(key),
+    ),
   )
 
   const allErrors = {

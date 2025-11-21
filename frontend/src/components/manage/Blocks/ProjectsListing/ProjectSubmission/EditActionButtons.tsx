@@ -59,7 +59,6 @@ const EditActionButtons = ({
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
-  setHasSubmitted,
   setFileErrors,
   setOtherErrors,
   setErrors,
@@ -407,7 +406,6 @@ const EditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(false)
     }
   }
 
@@ -498,7 +496,6 @@ const EditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(false)
     }
   }
 
@@ -515,7 +512,6 @@ const EditActionButtons = ({
         await handleErrors(error)
       } finally {
         setIsLoading(false)
-        setHasSubmitted(true)
       }
     }
   }

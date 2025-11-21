@@ -94,7 +94,6 @@ const ProjectsCreateWrapper = () => {
     hasBpData: false,
     bpDataLoading: false,
   })
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
   const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
@@ -143,7 +142,6 @@ const ProjectsCreateWrapper = () => {
           files,
           setProjectId,
           setErrors,
-          setHasSubmitted,
           setFileErrors,
           setOtherErrors,
           specificFields,
@@ -162,7 +160,6 @@ const ProjectsCreateWrapper = () => {
           files,
           setFiles,
           errors,
-          hasSubmitted,
           fileErrors,
           specificFieldsLoaded,
           bpData,

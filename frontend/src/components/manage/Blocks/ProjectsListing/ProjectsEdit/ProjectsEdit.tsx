@@ -213,7 +213,6 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
   const [projectId, setProjectId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
@@ -490,7 +489,6 @@ const ProjectsEdit = ({
             files,
             setProjectId,
             setErrors,
-            setHasSubmitted,
             setFileErrors,
             setOtherErrors,
             setProjectFiles,
@@ -516,7 +514,6 @@ const ProjectsEdit = ({
             setFiles,
             projectFiles,
             errors,
-            hasSubmitted,
             fileErrors,
             trancheErrors,
             getTrancheErrors,
