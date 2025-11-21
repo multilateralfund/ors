@@ -327,7 +327,10 @@ const ProjectCrossCuttingFields = ({
                         FieldProps={{ className: 'w-full BPListUpload mb-0' }}
                       />
                     </div>
-                    <FieldErrorIndicator errors={errors} field="subsector" />
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="subsector_ids"
+                    />
                   </div>
                 </div>
               )}

@@ -291,30 +291,53 @@ const ProjectsCreate = ({
     !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
   ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
+  const formatFieldName = (field: string) =>
+    ['ods_substance_id', 'ods_blend_id'].includes(field)
+      ? 'ods_display_name'
+      : field
+
   const formattedOdsOdpErrors = map(
     filteredOdsOdpErrors,
     ({ id, ...fields }) => {
-      const fieldLabels = map(
+      const substanceNo = Number(id) + 1
+
+      const fieldLabels = Object.entries(
         fields as Record<string, string[]>,
-        (errorMsgs, field) => {
-          if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
-            return getFieldLabel(specificFields, field)
-          }
-          return null
-        },
-      ).filter(Boolean)
+      ).filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
 
       if (fieldLabels.length === 0) return null
 
-      return {
-        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
-      }
+      const missingFields = fieldLabels
+        .filter(([_, errors]) => errors[0] === 'This field is required.')
+        .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+
+      const invalidFields = fieldLabels
+        .filter(([_, errors]) => errors[0] !== 'This field is required.')
+        .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+
+      const messages = [
+        missingFields.length > 0
+          ? `${missingFields.join(', ')}: ${
+              missingFields.length > 1 ? 'These fields are' : 'This field is'
+            } required${errorMessageExtension}.`
+          : null,
+        invalidFields.length > 0
+          ? `${invalidFields.join(', ')}: ${
+              invalidFields.length > 1 ? 'These fields are' : 'This field is'
+            } not valid.`
+          : null,
+      ].filter(Boolean)
+
+      return { message: `Substance ${substanceNo} -` + messages.join(' ') }
     },
   ).filter(Boolean)
 
   const odsOdpErrors = map(
     formattedOdsOdp as { [key: string]: [] }[],
-    (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
+    (error) =>
+      mapKeys(error, (_, key) =>
+        getFieldLabel(specificFields, formatFieldName(key)),
+      ),
   )
 
   const hasNoFiles =
