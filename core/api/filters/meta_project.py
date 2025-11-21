@@ -1,11 +1,17 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models import Agency
 from core.models import Country
 from core.models import MetaProject
 from core.models import ProjectCluster
+
+
+class MetaProjectMyaFilterBackend(DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        return MetaProjectMyaFilter
 
 
 class MetaProjectMyaFilter(filters.FilterSet):
@@ -45,6 +51,7 @@ class MetaProjectMyaFilter(filters.FilterSet):
     class Meta:
         model = MetaProject
         fields = [
+            "id",
             "code",
             "type",
             "country_id",
