@@ -359,40 +359,6 @@ export default function APRMLFSWorkspace() {
               </li>
             )}
           </ul>
-
-          {/* Summary stats */}
-          <div className="flex gap-4">
-            <div className="rounded border p-3">
-              <div className="text-sm text-gray-600">Total Projects</div>
-              <div className="text-2xl font-semibold">
-                {allProjectReports.length}
-              </div>
-            </div>
-            <div className="rounded border p-3">
-              <div className="text-sm text-gray-600">
-                Total Approved Funding
-              </div>
-              <div className="text-2xl font-semibold">
-                {formatUSD(
-                  allProjectReports.reduce(
-                    (sum, r) => sum + (r.approved_funding || 0),
-                    0,
-                  ),
-                )}
-              </div>
-            </div>
-            <div className="rounded border p-3">
-              <div className="text-sm text-gray-600">Total Funds Disbursed</div>
-              <div className="text-2xl font-semibold">
-                {formatUSD(
-                  allProjectReports.reduce(
-                    (sum, r) => sum + (r.funds_disbursed || 0),
-                    0,
-                  ),
-                )}
-              </div>
-            </div>
-          </div>
         </div>
 
         <Loader active={loading} />

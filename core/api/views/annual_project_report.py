@@ -488,27 +488,6 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return queryset
 
     def get_list_queryset(self, year):
-        """
-        return (
-            AnnualAgencyProjectReport.objects.filter(
-                progress_report__year=year,
-            )
-            .select_related(
-                "progress_report",
-                "agency",
-                "created_by",
-                "submitted_by",
-            )
-            .prefetch_related(
-                "project_reports",
-                "project_reports__project",
-                "project_reports__project__country",
-                "project_reports__project__sector",
-                "files",
-            )
-            .order_by("agency__name")
-        )
-        """
         queryset = AnnualAgencyProjectReport.objects.filter(
             progress_report__year=year,
         ).select_related(
