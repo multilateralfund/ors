@@ -1,4 +1,4 @@
-import { useParams } from 'wouter'
+import { useParams, Redirect } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
@@ -6,7 +6,7 @@ import { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import { Box, Chip } from '@mui/material'
-import { FiTable, FiEdit, FiDownload } from 'react-icons/fi'
+import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
@@ -27,6 +27,7 @@ import {
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
+import SubmitButton from '@ors/components/manage/Blocks/AnnualProgressReport/SubmitButton.tsx'
 
 interface Filter {
   id: string
@@ -39,7 +40,8 @@ export default function APRWorkspace() {
     useState(false)
   const { year } = useParams()
   usePageTitle(`Annual Progress Report (${year})`)
-  const { canViewAPR } = useContext(PermissionsContext)
+  const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
+    useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
   const {
     statuses: { data: projectStatuses },
@@ -51,16 +53,20 @@ export default function APRWorkspace() {
     loading,
     loaded,
     setParams,
+    refetch,
   } = useApi({
     options: {
       withStoreCache: false,
+      triggerIf: canViewAPR,
     },
     path: `api/annual-project-report/${year}/workspace/`,
   })
 
-  // TODO: change later for mlfs
-  if (!canViewAPR || !user.agency_id) {
+  if (!canViewAPR) {
     return <NotFoundPage />
+  }
+  if (isMlfsUser) {
+    return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
 
   const { columnDefs, defaultColDef } = getColumnDefs()
@@ -84,10 +90,13 @@ export default function APRWorkspace() {
       })
     }
 
+  const isDraft = apr?.status === 'draft' || apr?.is_unlocked
+
   return (
     <PageWrapper>
       <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
       <Box className="shadow-none">
+        <Loader active={loading} />
         <div className="mb-2 flex items-end justify-between">
           <div className="flex flex-col gap-x-2">
             <Field
@@ -150,6 +159,14 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-col items-end gap-y-2">
+            {canSubmitAPR && user.agency_id && (
+              <SubmitButton
+                disabled={!isDraft || loading}
+                revalidateData={refetch}
+                year={year}
+                agencyId={user.agency_id}
+              />
+            )}
             <Button
               variant="contained"
               onClick={() => setIsUploadDocumentsModalOpen(true)}
@@ -170,7 +187,8 @@ export default function APRWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/apr/${year}/edit`}
+                href={`/${year}/edit`}
+                disabled={!isDraft}
               >
                 Update APR
               </Link>
@@ -180,7 +198,6 @@ export default function APRWorkspace() {
             </div>
           </div>
         </div>
-        <Loader active={loading} />
         {loaded && (
           <ViewTable
             dataTypeDefinitions={dataTypeDefinitions}
@@ -191,13 +208,15 @@ export default function APRWorkspace() {
           />
         )}
       </Box>
-      {isUploadDocumentsModalOpen && (
+      {isUploadDocumentsModalOpen && user.agency_id && (
         <UploadDocumentsModal
           isModalOpen={isUploadDocumentsModalOpen}
           setIsModalOpen={setIsUploadDocumentsModalOpen}
           year={year}
           agencyId={user.agency_id}
           oldFiles={apr.files}
+          revalidateFiles={refetch}
+          disabled={!isDraft || !canEditAPR || loading}
         />
       )}
     </PageWrapper>

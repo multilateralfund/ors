@@ -27,7 +27,6 @@ const ProjectSubstanceDetails = ({
   sectionFields,
   overviewFields,
   errors = {},
-  hasSubmitted,
   odsOdpErrors,
 }: SpecificFieldsSectionProps & {
   overviewFields: ProjectSpecificFields[]
@@ -129,8 +128,6 @@ const ProjectSubstanceDetails = ({
                 setProjectData,
                 field,
                 errors,
-                false,
-                hasSubmitted,
                 editableFields,
               )}
             </span>
@@ -161,8 +158,6 @@ const ProjectSubstanceDetails = ({
                                   setProjectData,
                                   odsOdpField,
                                   odsOdpErrors,
-                                  false,
-                                  hasSubmitted,
                                   editableFields,
                                   sectionIdentifier,
                                   field,

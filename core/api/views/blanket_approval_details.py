@@ -78,7 +78,12 @@ class BlanketApprovalDetailsViewset(
     """ViewSet for blanket approval details."""
 
     filterset_class = BlanketApprovalDetailsFilter
-    queryset = Project.objects.all()
+    queryset = Project.objects.filter(
+        submission_status__name__in=[
+            "Recommended",
+            "Approved",
+        ]
+    )
     permission_classes = (HasProjectV2ViewAccess,)
 
     _template_path = (

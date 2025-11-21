@@ -19,10 +19,12 @@ const ProjectIdentifiersSection = ({
   setCurrentTab,
   bpData,
   onBpDataChange,
+  bpErrors,
   ...rest
 }: ProjectIdentifiersSectionProps & {
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
+  bpErrors: { [key: string]: string[] }
 }) => {
   const { canViewBp } = useContext(PermissionsContext)
 
@@ -67,6 +69,7 @@ const ProjectIdentifiersSection = ({
             setCurrentTab,
             onBpDataChange,
             bpData,
+            bpErrors,
           }}
           isSectionDisabled={
             areNextSectionsDisabled ||

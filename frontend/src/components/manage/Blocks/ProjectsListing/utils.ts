@@ -424,14 +424,18 @@ export const getProjIdentifiersErrors = (
 
 export const getAgencyErrorType = (
   projIdentifiers: ProjIdentifiers | ProjectTypeApi,
-  agency_id: number | undefined,
+  agencyId: number | undefined,
 ) => {
-  const { agency, lead_agency, lead_agency_submitting_on_behalf } =
-    projIdentifiers
+  const { lead_agency, lead_agency_submitting_on_behalf } = projIdentifiers
 
-  if (!(agency && lead_agency) && !agency_id) return null
+  const agency =
+    'agency_id' in projIdentifiers
+      ? projIdentifiers.agency_id
+      : projIdentifiers.agency
 
-  return agency_id && agency_id !== agency && agency_id !== lead_agency
+  if (!(agency && lead_agency) && !agencyId) return null
+
+  return agencyId && agencyId !== agency && agencyId !== lead_agency
     ? 'no_valid_agency'
     : lead_agency_submitting_on_behalf
       ? agency === lead_agency
@@ -486,7 +490,13 @@ export const getCrossCuttingErrors = (
       : requiredFields
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [
+        ...requiredFields,
+        'subsector_ids',
+        'blanket_or_individual_consideration',
+      ].includes(key),
+    ),
   )
 
   const { total_fund, support_cost_psc, project_start_date, project_end_date } =
@@ -521,7 +531,9 @@ export const getApprovalErrors = (
   ]
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [...requiredFields, 'funding_window'].includes(key),
+    ),
   )
 
   const allErrors = {

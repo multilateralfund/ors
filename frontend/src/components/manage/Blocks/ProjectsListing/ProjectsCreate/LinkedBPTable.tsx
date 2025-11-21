@@ -19,7 +19,7 @@ import { find, map } from 'lodash'
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
 const LinkedBPTableWrapper = (
-  props: Omit<ProjectDataProps, 'hasSubmitted'> & {
+  props: ProjectDataProps & {
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
   },
@@ -89,7 +89,7 @@ const LinkedBPTable = ({
   }
 
   const activities = useGetActivities(filters)
-  const { loading, results: foundActivities } = activities
+  const { results: foundActivities } = activities
 
   const bp = useMemo(() => {
     return foundActivities.length > 0 ? foundActivities[0].business_plan : null
@@ -111,7 +111,6 @@ const LinkedBPTable = ({
           projectData,
           activities,
           filters,
-          loading,
         }}
         {...rest}
       />
@@ -119,15 +118,11 @@ const LinkedBPTable = ({
   )
 }
 
-type LatestEndorsedBPActivitiesProps = Omit<
-  ProjectDataProps,
-  'hasSubmitted'
-> & {
+type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
-  loading?: boolean
 }
 
 export type LinkableActivity = ApiBPActivity & {
@@ -142,7 +137,6 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     setProjectData,
     bpData,
     onBpDataChange,
-    loading,
     ...rest
   } = props
   const { results, ...restActivities } = activities
@@ -192,7 +186,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
 
     onBpDataChange({
       hasBpData: hasResults,
-      bpDataLoading: !!loading,
+      bpDataLoading: !areActivitiesLoaded,
     })
   }, [areActivitiesLoaded])
 

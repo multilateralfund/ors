@@ -49,7 +49,6 @@ const ProjectTransfer = ({
   setProjectData,
   project,
   errors,
-  hasSubmitted,
   missingFileTypeErrors,
   ...rest
 }: FileMetaDataProps & {
@@ -59,7 +58,6 @@ const ProjectTransfer = ({
   files: BpFilesObject
   setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
   errors: { [key: string]: string[] }
-  hasSubmitted: boolean
   missingFileTypeErrors: Array<{ id: number; message: string } | null>
   allFileErrors: { message: string }[]
 }) => {
@@ -152,17 +150,12 @@ const ProjectTransfer = ({
     }
   }
 
-  const getHasErrors = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
-
-  const getFieldDefaultProps = (field: string) => ({
+  const numberFieldDefaultProps = {
     ...{
       ...defaultPropsSimpleField,
-      className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-        'border-red-500': getHasErrors(field),
-      }),
+      className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1'),
     },
-  })
+  }
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -182,7 +175,6 @@ const ProjectTransfer = ({
                 getOptionLabel={(option) =>
                   getOptionLabel(agenciesOpts, option)
                 }
-                Input={{ error: getHasErrors('agency') }}
                 {...fieldDefaultProps('agency')}
               />
               <div className="w-8">
@@ -201,9 +193,7 @@ const ProjectTransfer = ({
                   options={useMeetingOptions()}
                   onChange={handleChangeMeeting}
                   onClear={handleChangeMeeting}
-                  className={cx('!m-0 h-10 !py-1', {
-                    'border-red-500': getHasErrors('transfer_meeting'),
-                  })}
+                  className="!m-0 h-10 !py-1"
                   withClear={true}
                   clearBtnClassName="right-1"
                 />
@@ -226,7 +216,6 @@ const ProjectTransfer = ({
                 getOptionLabel={(option) =>
                   getOptionLabel(decisionOptions, option, 'value')
                 }
-                Input={{ error: getHasErrors('transfer_decision') }}
                 {...fieldDefaultProps('decision')}
               />
               <FieldErrorIndicator errors={errors} field="transfer_decision" />
@@ -243,9 +232,7 @@ const ProjectTransfer = ({
             value={localExcom}
             onChange={(e) => setLocalExcom(e.target.value)}
             onBlur={saveLocalExcom}
-            className={cx(textAreaClassname, 'max-w-[435px]', {
-              'border-red-500': getHasErrors('transfer_excom_provision'),
-            })}
+            className={cx(textAreaClassname, 'max-w-[435px]')}
             maxLength={500}
             style={STYLE}
             minRows={2}
@@ -270,7 +257,7 @@ const ProjectTransfer = ({
                 onChange={(event) =>
                   handleChangeNumericValues(event, 'fund_transferred')
                 }
-                {...getFieldDefaultProps('fund_transferred')}
+                {...numberFieldDefaultProps}
               />
               <div className="w-8">
                 <FieldErrorIndicator errors={errors} field="fund_transferred" />
@@ -288,7 +275,7 @@ const ProjectTransfer = ({
                 onChange={(event) =>
                   handleChangeNumericValues(event, 'psc_transferred')
                 }
-                {...getFieldDefaultProps('psc_transferred')}
+                {...numberFieldDefaultProps}
               />
               <FieldErrorIndicator errors={errors} field="psc_transferred" />
             </div>
@@ -304,7 +291,7 @@ const ProjectTransfer = ({
                 onChange={(event) =>
                   handleChangeNumericValues(event, 'psc_received')
                 }
-                {...getFieldDefaultProps('psc_received')}
+                {...numberFieldDefaultProps}
               />
               <FieldErrorIndicator errors={errors} field="psc_received" />
             </div>

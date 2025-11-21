@@ -18,7 +18,6 @@ const ProjectOverview = ({
   setProjectData,
   sectionFields,
   errors = {},
-  hasSubmitted,
   trancheErrors,
   getTrancheErrors,
 }: SpecificFieldsSectionProps & TrancheErrors) => {
@@ -43,8 +42,6 @@ const ProjectOverview = ({
                   setProjectData,
                   field,
                   errors,
-                  !!errorText,
-                  hasSubmitted,
                   editableFields,
                 )}
               </span>
