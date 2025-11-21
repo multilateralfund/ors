@@ -1,11 +1,14 @@
 import { MetaProjectFiltersProps } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
-import { IoChevronDown } from 'react-icons/io5'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { SearchFilter } from '../HelperComponents'
+
+import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
 
 export const MetaProjectFilters = (props: MetaProjectFiltersProps) => {
   const {
+    form,
     filters,
     countries,
     agencies,
@@ -31,6 +34,10 @@ export const MetaProjectFilters = (props: MetaProjectFiltersProps) => {
 
   return (
     <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
+      <SearchFilter
+        placeholder="Search for project..."
+        {...{ form, filters, handleFilterChange, handleParamsChange }}
+      />
       <Field
         Input={{ placeholder: 'Country' }}
         options={getFilterOptions(filters, countries, 'country_id')}

@@ -1,3 +1,4 @@
+import { RefObject } from 'react'
 import {
   MetaProjectType,
   ProjectCluster,
@@ -19,6 +20,7 @@ export type MetaProjectDetailType = {
 } & MetaProjectType
 
 export type MetaProjectFiltersProps = {
+  form: RefObject<HTMLFormElement>
   filters: typeof initialFilters
   countries: Country[]
   agencies: ApiAgency[]
@@ -27,5 +29,6 @@ export type MetaProjectFiltersProps = {
   handleParamsChange: (params: Record<string, any>) => void
 }
 
-export type MetaProjectFiltersSelectedOptionsProps =
-  {} & MetaProjectFiltersProps
+export type MetaProjectFiltersSelectedOptionsProps = {
+  params: typeof initialFilters
+} & MetaProjectFiltersProps

@@ -39,6 +39,7 @@ export default function PListingWrapper() {
     projectTitle: '',
     projectSubmissionStatus: '',
     projectStatus: '',
+    projectMetaprojectId: null,
     projectCode: '',
   })
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
@@ -146,6 +147,7 @@ export default function PListingWrapper() {
       projectTitle: '',
       projectSubmissionStatus: '',
       projectStatus: '',
+      projectMetaprojectId: null,
       projectCode: '',
     })
     setTansferId(id)

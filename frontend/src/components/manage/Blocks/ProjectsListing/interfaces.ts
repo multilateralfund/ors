@@ -7,6 +7,7 @@ export type ListingProjectData = {
   projectTitle: string
   projectSubmissionStatus: string
   projectStatus: string
+  projectMetaprojectId: number | null
   projectCode: string
 }
 export interface PListingProps {
