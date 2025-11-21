@@ -39,6 +39,7 @@ export default function PListingWrapper() {
     projectTitle: '',
     projectSubmissionStatus: '',
     projectStatus: '',
+    projectCode: '',
   })
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
   const [transferId, setTansferId] = useState<number>()
@@ -83,7 +84,7 @@ export default function PListingWrapper() {
           )}
         </>
       )}
-      <GenerateDBMenu />
+      <GenerateDBMenu projectData={projectData} />
     </div>
   )
 
@@ -145,6 +146,7 @@ export default function PListingWrapper() {
       projectTitle: '',
       projectSubmissionStatus: '',
       projectStatus: '',
+      projectCode: '',
     })
     setTansferId(id)
   }

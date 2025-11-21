@@ -7,6 +7,7 @@ export type ListingProjectData = {
   projectTitle: string
   projectSubmissionStatus: string
   projectStatus: string
+  projectCode: string
 }
 export interface PListingProps {
   tableToolbar: ReactNode
@@ -321,11 +322,12 @@ export type RelatedProjectsType = ProjectTypeApi & {
 }
 
 export type RelatedProjectsSectionType = {
-  title: ReactNode
+  title: string
   data: AssociatedProjectsType
   setData: Dispatch<SetStateAction<AssociatedProjectsType>>
   queryParams: string
   noResultsText: string
+  downloadButton?: ReactNode
 }
 
 export type AssociatedProjectsType = {

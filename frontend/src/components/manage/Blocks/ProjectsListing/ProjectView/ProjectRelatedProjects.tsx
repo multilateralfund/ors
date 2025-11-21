@@ -56,35 +56,48 @@ const ProjectRelatedProjects = ({
           </>
         )}
 
-        {map(relatedProjects, ({ data, title, noResultsText }, index) => {
-          const { projects: crtData = [], loaded } = data
+        {map(
+          relatedProjects,
+          ({ data, title, noResultsText, downloadButton }, index) => {
+            const { projects: crtData = [], loaded } = data
+            const showDownloadButton =
+              crtData && crtData.length > 0 && downloadButton
 
-          return (
-            <span key={index}>
-              {index !== 0 && <Divider className="mb-4 mt-3" />}
-              <SectionTitle>{title}</SectionTitle>
-              {loaded ? (
-                crtData && crtData.length > 0 ? (
-                  <RelatedProjects
-                    data={crtData}
-                    isLoaded={true}
-                    withExtraProjectInfo={true}
-                    canRefreshStatus={false}
-                    mode="view"
-                  />
+            return (
+              <span key={index}>
+                {index !== 0 && <Divider className="mb-4 mt-3" />}
+                {showDownloadButton ? (
+                  <SectionTitle>
+                    <span className="flex items-center justify-between">
+                      {title} {downloadButton}
+                    </span>
+                  </SectionTitle>
                 ) : (
-                  <div className="mb-3 text-lg italic">{noResultsText}</div>
-                )
-              ) : (
-                <CircularProgress
-                  color="inherit"
-                  size="24px"
-                  className="ml-1.5"
-                />
-              )}
-            </span>
-          )
-        })}
+                  <SectionTitle>{title}</SectionTitle>
+                )}
+                {loaded ? (
+                  crtData && crtData.length > 0 ? (
+                    <RelatedProjects
+                      data={crtData}
+                      isLoaded={true}
+                      withExtraProjectInfo={true}
+                      canRefreshStatus={false}
+                      mode="view"
+                    />
+                  ) : (
+                    <div className="mb-3 text-lg italic">{noResultsText}</div>
+                  )
+                ) : (
+                  <CircularProgress
+                    color="inherit"
+                    size="24px"
+                    className="ml-1.5"
+                  />
+                )}
+              </span>
+            )
+          },
+        )}
       </div>
       {setCurrentTab && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">

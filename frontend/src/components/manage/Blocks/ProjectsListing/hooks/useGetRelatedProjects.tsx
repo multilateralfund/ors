@@ -32,19 +32,17 @@ const useGetRelatedProjects = (
       noResultsText: "This project doesn't have additional components.",
     },
     {
-      title: (
-        <span className="flex items-center justify-between">
-          <span>Associated projects</span>
-          <Link
-            className="border-primary bg-secondary font-bold text-white hover:bg-primary hover:text-mlfs-hlYellow"
-            href={formatApiUrl(
-              `/api/projects/v2/export_associated_projects?project_id=${project.id}`,
-            )}
-            button
-          >
-            Download associated projects
-          </Link>
-        </span>
+      title: 'Associated projects',
+      downloadButton: (
+        <Link
+          className="border-primary bg-primary font-bold text-white hover:bg-primary hover:text-mlfs-hlYellow"
+          href={formatApiUrl(
+            `/api/projects/v2/export_associated_projects?project_id=${project.id}`,
+          )}
+          button
+        >
+          Download associated projects
+        </Link>
       ),
       data: associatedProjectsAssociation,
       setData: setassociatedProjectsAssociation,
