@@ -42,7 +42,6 @@ const ProjectTransferWrapper = ({
     newFiles: [],
   })
   const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
@@ -189,7 +188,6 @@ const ProjectTransferWrapper = ({
       await handleErrors(error)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
@@ -204,7 +202,6 @@ const ProjectTransferWrapper = ({
           project,
           files,
           setFiles,
-          hasSubmitted,
           missingFileTypeErrors,
           allFileErrors,
         }}

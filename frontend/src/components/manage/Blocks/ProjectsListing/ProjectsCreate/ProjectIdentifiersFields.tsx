@@ -51,7 +51,6 @@ const ProjectIdentifiersFields = ({
   setCurrentStep,
   setCurrentTab,
   errors,
-  hasSubmitted,
   mode,
   project,
   postExComUpdate,
@@ -284,9 +283,6 @@ const ProjectIdentifiersFields = ({
     }))
   }
 
-  const getIsInputDisabled = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
-
   return (
     <>
       {postExComUpdate ? (
@@ -368,9 +364,6 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(countries, option)
                     }
                     disabled={!isAddOrCopy || !areNextSectionsDisabled}
-                    Input={{
-                      error: getIsInputDisabled('country'),
-                    }}
                     {...firstColFieldsProps}
                   />
                 </div>
@@ -393,7 +386,6 @@ const ProjectIdentifiersFields = ({
                   onClear={() => handleChangeMeeting()}
                   disabled={!canEditMeeting}
                   className={cx('!m-0 h-10 !py-1', {
-                    'border-red-500': getIsInputDisabled('meeting'),
                     [disabledClassName]: !canEditMeeting,
                   })}
                   clearBtnClassName="right-1"
@@ -443,9 +435,6 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={isAgencyDisabled || !areNextSectionsDisabled}
-                  Input={{
-                    error: getIsInputDisabled('agency'),
-                  }}
                   {...sectionDefaultProps}
                 />
                 <FieldErrorIndicator errors={errors} field="agency" />
@@ -468,9 +457,6 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(clusters, option)
                     }
                     disabled={isClusterDisabled || !areNextSectionsDisabled}
-                    Input={{
-                      error: getIsInputDisabled('cluster'),
-                    }}
                     {...firstColFieldsProps}
                   />
                 </div>
@@ -561,9 +547,6 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
-                  Input={{
-                    error: getIsInputDisabled('lead_agency'),
-                  }}
                   {...firstColFieldsProps}
                 />
               </div>

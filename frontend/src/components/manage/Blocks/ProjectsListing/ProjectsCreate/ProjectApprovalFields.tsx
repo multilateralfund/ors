@@ -41,7 +41,6 @@ const ProjectApprovalFields = ({
   setProjectData,
   project,
   errors = {},
-  hasSubmitted,
   sectionFields,
   setCurrentTab,
 }: SpecificFieldsSectionProps &
@@ -80,15 +79,11 @@ const ProjectApprovalFields = ({
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
 
-  const getIsInputDisabled = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
-
   const getFieldDefaultProps = (field: string) => {
     return {
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          'border-red-500': getIsInputDisabled(field),
           [disabledClassName]:
             !canEditField(editableFields, field) ||
             (['total_fund', 'support_cost_psc'].includes(field) &&
@@ -194,8 +189,6 @@ const ProjectApprovalFields = ({
                       setProjectData,
                       field,
                       errors,
-                      false,
-                      hasSubmitted,
                       editableFields,
                       sectionIdentifier,
                     )}

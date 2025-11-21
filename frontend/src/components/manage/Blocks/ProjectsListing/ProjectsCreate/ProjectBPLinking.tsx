@@ -17,7 +17,7 @@ const ProjectBPLinking = ({
   bpData,
   onBpDataChange,
   bpErrors,
-}: Omit<ProjectDataProps, 'hasSubmitted'> &
+}: ProjectDataProps &
   ProjectTabSetters & {
     isSectionDisabled: boolean
     isNextButtonDisabled: boolean

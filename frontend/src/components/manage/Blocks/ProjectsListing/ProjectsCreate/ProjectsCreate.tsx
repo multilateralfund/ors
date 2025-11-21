@@ -64,7 +64,6 @@ const ProjectsCreate = ({
   files,
   projectFiles,
   errors,
-  hasSubmitted,
   project,
   fileErrors,
   trancheErrors,
@@ -89,7 +88,6 @@ const ProjectsCreate = ({
     postExComUpdate?: boolean
     approval?: boolean
     errors: { [key: string]: [] }
-    hasSubmitted: boolean
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
@@ -369,7 +367,6 @@ const ProjectsCreate = ({
             setProjectData,
             setCurrentStep,
             setCurrentTab,
-            hasSubmitted,
             mode,
             project,
             postExComUpdate,
@@ -421,7 +418,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             project,
-            hasSubmitted,
             setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
@@ -467,7 +463,6 @@ const ProjectsCreate = ({
             setProjectData,
             overviewFields,
             substanceDetailsFields,
-            hasSubmitted,
             overviewErrors,
             substanceDetailsErrors,
             odsOdpErrors,
@@ -521,7 +516,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             project,
-            hasSubmitted,
             setCurrentTab,
             postExComUpdate,
             hasV3EditPermissions,
@@ -615,7 +609,6 @@ const ProjectsCreate = ({
                   projectData,
                   setProjectData,
                   project,
-                  hasSubmitted,
                   setCurrentTab,
                 }}
                 errors={approvalErrors}
