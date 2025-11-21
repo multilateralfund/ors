@@ -29,5 +29,6 @@ export type MetaProjectFiltersProps = {
   handleParamsChange: (params: Record<string, any>) => void
 }
 
-export type MetaProjectFiltersSelectedOptionsProps =
-  {} & MetaProjectFiltersProps
+export type MetaProjectFiltersSelectedOptionsProps = {
+  params: typeof initialFilters
+} & MetaProjectFiltersProps

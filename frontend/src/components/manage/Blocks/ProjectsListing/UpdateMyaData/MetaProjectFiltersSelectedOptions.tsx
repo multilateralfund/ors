@@ -7,10 +7,7 @@ import {
   displaySearchTerm,
   displaySelectedOption,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
-import {
-  initialFilters,
-  initialParams,
-} from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
+import { initialFilters } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
 
 import { Typography } from '@mui/material'
 import { map } from 'lodash'
@@ -20,6 +17,7 @@ export const MetaProjectFiltersSelectedOptions = (
 ) => {
   const {
     form,
+    params,
     countries,
     agencies,
     clusters,
@@ -73,7 +71,7 @@ export const MetaProjectFiltersSelectedOptions = (
           if (inputSearch) {
             inputSearch.value = ''
           }
-          handleParamsChange({ ...initialParams })
+          handleParamsChange({ ...params })
           handleFilterChange({ ...initialFilters })
         }}
       >

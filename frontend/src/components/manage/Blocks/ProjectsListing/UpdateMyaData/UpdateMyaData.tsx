@@ -70,8 +70,12 @@ export default function UpdateMyaData() {
   const { canViewProjects, canViewMetaProjects } =
     useContext(PermissionsContext)
 
+  const params = metaproject_id
+    ? { ...initialParams, id: metaproject_id }
+    : initialParams
+
   const { loaded, loading, results, count, setParams } =
-    useGetMetaProjects(initialParams)
+    useGetMetaProjects(params)
 
   const { data: metaproject, refresh: refreshMetaProjectDetails } =
     useGetMetaProjectDetails(selected?.id)
@@ -153,6 +157,7 @@ export default function UpdateMyaData() {
           <MetaProjectFiltersSelectedOptions
             form={form}
             filters={filters}
+            params={params}
             countries={countries}
             agencies={agencies}
             clusters={clusters}
