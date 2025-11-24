@@ -1976,7 +1976,7 @@ class ReplenishmentInvoiceViewSet(
 
         # request.data is not mutable and we need to perform some boolean-string magic
         # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
+        request_data = dict(request.data)
 
         is_ferm = self._parse_is_ferm_flag(request)
         request_data["is_ferm"] = is_ferm
@@ -2339,7 +2339,7 @@ class ReplenishmentPaymentViewSet(
             return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
         # request.data is not mutable and we need to perform some boolean-string magic
         # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
+        request_data = dict(request.data)
 
         is_ferm = self._parse_is_ferm_flag(request)
         request_data["is_ferm"] = is_ferm
@@ -2377,7 +2377,7 @@ class ReplenishmentPaymentViewSet(
 
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
+        request_data = dict(request.data)
         is_ferm = self._parse_is_ferm_flag(request)
         request_data["is_ferm"] = is_ferm
 
