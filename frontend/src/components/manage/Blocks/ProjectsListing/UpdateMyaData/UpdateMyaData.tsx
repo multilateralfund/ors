@@ -16,6 +16,7 @@ import {
 import { MetaProjectEdit } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectEdit.tsx'
 import { MetaProjectFilters } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectFilters.tsx'
 import { MetaProjectFiltersSelectedOptions } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/MetaProjectFiltersSelectedOptions.tsx'
+import { getPaginationPageSize } from '../utils'
 import useApi from '@ors/hooks/useApi.ts'
 
 import { Box, Divider } from '@mui/material'
@@ -183,7 +184,7 @@ export default function UpdateMyaData() {
           alwaysShowHorizontalScroll={false}
           loaded={loaded}
           loading={loading}
-          paginationPageSize={MT_PER_PAGE}
+          paginationPageSize={getPaginationPageSize(count, MT_PER_PAGE)}
           paginationPageSizeSelector={[10, 20, 50, 80, 100].filter(
             (nr) => nr < count,
           )}

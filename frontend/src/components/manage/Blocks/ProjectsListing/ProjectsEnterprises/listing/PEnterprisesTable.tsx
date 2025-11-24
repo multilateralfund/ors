@@ -6,8 +6,7 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import DeletePEnterpriseModal from './DeletePEnterpriseModal'
 import getColumnDefs from '../../Enterprises/listing/schema'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
-import { getPaginationSelectorOpts } from '../../utils'
-import { PROJECTS_PER_PAGE } from '../../constants'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'
 import { api } from '@ors/helpers'
 
 import { enqueueSnackbar } from 'notistack'
@@ -56,7 +55,7 @@ const PEnterprisesTable = ({
           enablePagination={true}
           loaded={loaded}
           loading={loading}
-          paginationPageSize={PROJECTS_PER_PAGE}
+          paginationPageSize={getPaginationPageSize(count)}
           paginationPageSizeSelector={paginationPageSizeSelectorOpts}
           resizeGridOnRowUpdate={true}
           rowBuffer={100}

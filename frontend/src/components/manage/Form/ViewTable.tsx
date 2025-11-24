@@ -1,32 +1,13 @@
 import { ThemeSlice } from '@ors/types/store'
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
 import { ColDef, IRowNode, RowClassRules } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import {
-  forEach,
-  get,
-  indexOf,
-  isEmpty,
-  isFunction,
-  isObject,
-  noop,
-  omit,
-  range,
-  times,
-} from 'lodash'
+import { forEach, indexOf, isFunction, noop, omit, range, times } from 'lodash'
 
 import {
   defaultColDef as globalColDef,
@@ -34,7 +15,6 @@ import {
 } from '@ors/config/Table/columnsDef'
 
 import { debounce, getError } from '@ors/helpers/Utils/Utils'
-import { useStore } from '@ors/store'
 
 type Pagination = {
   page: number
@@ -182,6 +162,10 @@ function ViewTable<TData = any>(props: TableProps<TData>) {
     rowsPerPage: paginationPageSize,
   })
   const [fullScreen, setFullScreen] = useState(false)
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, rowsPerPage: paginationPageSize }))
+  }, [paginationPageSize])
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({

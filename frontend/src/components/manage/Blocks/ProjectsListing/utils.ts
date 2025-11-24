@@ -2,6 +2,7 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
   initialTranferedProjectData,
+  PROJECTS_PER_PAGE,
   tableColumns,
   validationFieldsPairs,
 } from './constants'
@@ -953,6 +954,11 @@ export const getPaginationSelectorOpts = (
   return count < maxResults
     ? [...filteredNrResultsOptions, count]
     : filteredNrResultsOptions
+}
+
+export const getPaginationPageSize = (count: number, nrEntries?: number) => {
+  const entriesPerPage = nrEntries ?? PROJECTS_PER_PAGE
+  return min([count, entriesPerPage])
 }
 
 export const getAreFiltersApplied = (filters: Record<string, any>) =>

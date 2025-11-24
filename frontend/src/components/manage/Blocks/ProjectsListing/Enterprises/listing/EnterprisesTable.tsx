@@ -2,8 +2,7 @@
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
-import { getPaginationSelectorOpts } from '../../utils'
-import { PROJECTS_PER_PAGE } from '../../constants'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'
 import getColumnDefs from './schema'
 
 const EnterprisesTable = ({
@@ -26,7 +25,7 @@ const EnterprisesTable = ({
         enablePagination={true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={PROJECTS_PER_PAGE}
+        paginationPageSize={getPaginationPageSize(count)}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={100}
