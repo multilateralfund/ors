@@ -39,6 +39,7 @@ const ProjectsHeader = ({
   ...rest
 }: ProjectHeader & {
   mode: string
+  setParams?: any
   postExComUpdate?: boolean
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi

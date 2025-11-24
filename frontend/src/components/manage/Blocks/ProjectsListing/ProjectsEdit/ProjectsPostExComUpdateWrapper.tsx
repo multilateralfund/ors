@@ -10,7 +10,7 @@ const ProjectsPostExComUpdateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
 
   const project = useGetProject(project_id)
-  const { data, loading } = project
+  const { data, loading, setParams } = project
 
   if (
     project?.error ||
@@ -28,7 +28,12 @@ const ProjectsPostExComUpdateWrapper = () => {
         active={loading}
       />
       {!loading && data && (
-        <ProjectsEdit project={data} mode={'edit'} postExComUpdate={true} />
+        <ProjectsEdit
+          project={data}
+          mode="edit"
+          postExComUpdate={true}
+          setParams={setParams}
+        />
       )}
     </>
   )
