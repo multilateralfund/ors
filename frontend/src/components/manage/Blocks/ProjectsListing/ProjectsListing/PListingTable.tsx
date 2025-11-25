@@ -3,7 +3,7 @@
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
-import { getPaginationSelectorOpts } from '../utils'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../utils'
 import { ListingProjectData } from '../interfaces'
 import { PROJECTS_PER_PAGE } from '../constants'
 import getColumnDefs from './schema'
@@ -45,6 +45,10 @@ const PListingTable = ({
   )
 
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
+  const paginationPageSize = getPaginationPageSize(
+    count,
+    mode === 'listing' ? PROJECTS_PER_PAGE : 50,
+  )
 
   return (
     loaded && (
@@ -73,7 +77,7 @@ const PListingTable = ({
         enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={mode === 'listing' ? PROJECTS_PER_PAGE : 50}
+        paginationPageSize={paginationPageSize}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={100}

@@ -67,6 +67,7 @@ const EditActionButtons = ({
   trancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
+  setParams,
   postExComUpdate,
   bpData,
   filesMetaData,
@@ -78,6 +79,7 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
   approvalFields?: ProjectSpecificFields[]
+  setParams?: any
   postExComUpdate?: boolean
   bpData: BpDataProps
 }) => {
@@ -400,6 +402,11 @@ const EditActionButtons = ({
       if (isRecommended) {
         await editApprovalFields()
       }
+
+      if (postExComUpdate) {
+        setParams((prev: any) => ({ ...prev }))
+      }
+
       return true
     } catch (error) {
       await handleErrors(error)
