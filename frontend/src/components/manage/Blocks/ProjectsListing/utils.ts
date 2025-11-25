@@ -512,15 +512,15 @@ export const getCrossCuttingErrors = (
     ...(Number(total_fund) < Number(support_cost_psc) && {
       support_cost_psc: ['Value cannot be greater than project funding.'],
     }),
-    ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
-      project_end_date: ['Start date cannot be later than end date.'],
-    }),
     ...(validateApproval &&
       mode === 'edit' &&
       (project?.version ?? 0) >= 3 &&
       dayjs(project_end_date).isBefore(dayjs(), 'day') && {
         project_end_date: ['Cannot be a past date.'],
       }),
+    ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
+      project_end_date: ['Start date cannot be later than end date.'],
+    }),
     ...filteredErrors,
   }
 }
