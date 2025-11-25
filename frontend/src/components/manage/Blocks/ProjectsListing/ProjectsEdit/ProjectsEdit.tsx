@@ -340,6 +340,10 @@ const ProjectsEdit = ({
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
           meeting: project.meeting_id,
           decision: project.decision_id,
+          ...(mode === 'edit' &&
+            project.submission_status === 'Recommended' && {
+              date_completion: project.project_end_date,
+            }),
         },
       }))
       approvalFieldsValuesLoaded.current = true

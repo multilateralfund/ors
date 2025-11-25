@@ -496,7 +496,7 @@ const DateWidget = <T,>(
             value={value}
             disabled={!canEditField(editableFields, fieldName)}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-            onChange={(value) =>
+            onChange={(value) => {
               changeHandler[field.data_type]<T, SpecificFields>(
                 value,
                 fieldName,
@@ -505,7 +505,18 @@ const DateWidget = <T,>(
                 subField,
                 index,
               )
-            }
+
+              if (fieldName === 'date_completion') {
+                changeHandler[field.data_type]<T, SpecificFields>(
+                  value,
+                  'project_end_date' as keyof SpecificFields,
+                  setFields,
+                  'crossCuttingFields' as keyof T,
+                  subField,
+                  index,
+                )
+              }
+            }}
             {...omit(getFieldDefaultProps(editableFields, field), [
               'containerClassName',
             ])}

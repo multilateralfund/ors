@@ -143,8 +143,15 @@ const EditActionButtons = ({
     [crossCuttingFields],
   )
   const approvalErrors = useMemo(
-    () => getApprovalErrors(approvalData, approvalFields, {}, project),
-    [approvalData, approvalFields],
+    () =>
+      getApprovalErrors(
+        approvalData,
+        crossCuttingFields,
+        approvalFields,
+        {},
+        project,
+      ),
+    [approvalData, crossCuttingFields, approvalFields],
   )
 
   const specificErrors = useMemo(
