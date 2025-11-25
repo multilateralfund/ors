@@ -192,6 +192,7 @@ const ProjectsCreate = ({
         errors,
         mode,
         mode === 'edit' ? project : undefined,
+        true,
       ),
     [crossCuttingFields, errors, mode],
   )

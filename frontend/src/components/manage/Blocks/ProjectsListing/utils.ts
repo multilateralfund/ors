@@ -473,6 +473,7 @@ export const getCrossCuttingErrors = (
   errors: { [key: string]: [] },
   mode: string,
   project: ProjectTypeApi | undefined,
+  validateApproval: boolean,
 ) => {
   const requiredFields = [
     'title',
@@ -514,7 +515,8 @@ export const getCrossCuttingErrors = (
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
-    ...(mode === 'edit' &&
+    ...(validateApproval &&
+      mode === 'edit' &&
       project?.submission_status === 'Recommended' &&
       dayjs(project_end_date).isBefore(dayjs(), 'day') && {
         project_end_date: ['Cannot be a past date.'],
