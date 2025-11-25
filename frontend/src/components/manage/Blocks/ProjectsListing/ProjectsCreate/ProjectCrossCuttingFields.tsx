@@ -500,10 +500,7 @@ const ProjectCrossCuttingFields = ({
                           setProjectData,
                           sectionIdentifier,
                         )
-                        if (
-                          mode === 'edit' &&
-                          project?.submission_status === 'Recommended'
-                        ) {
+                        if (mode === 'edit' && (project?.version ?? 0) >= 3) {
                           changeField(
                             event.target.value || null,
                             'date_completion',
