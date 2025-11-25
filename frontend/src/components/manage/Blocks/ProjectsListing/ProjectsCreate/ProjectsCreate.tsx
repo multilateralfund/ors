@@ -729,6 +729,22 @@ const ProjectsCreate = ({
             return (
               <span key={id}>
                 {mode === 'edit' &&
+                  project?.submission_status === 'Draft' &&
+                  project?.version === 2 &&
+                  !hasV3EditPermissions && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="text-lg leading-5">
+                          Any mistake in completing the identifier fields will
+                          require the project to be resubmitted with the correct
+                          information.
+                        </Typography>
+                      }
+                    />
+                  )}
+                {mode === 'edit' &&
                   project?.submission_status === 'Approved' &&
                   !postExComUpdate &&
                   !canEditApprovedProjects && (
