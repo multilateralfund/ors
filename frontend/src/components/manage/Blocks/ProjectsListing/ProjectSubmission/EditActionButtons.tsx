@@ -211,7 +211,9 @@ const EditActionButtons = ({
     commonErrors ||
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors))
+      : hasSectionErrors(impactErrors)) ||
+    (isAfterApproval &&
+      dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit =
     !specificFieldsLoaded ||
@@ -404,7 +406,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
-      if (isRecommended) {
+      if (isRecommended || isAfterApproval) {
         await editApprovalFields()
       }
 

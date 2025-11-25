@@ -517,7 +517,7 @@ export const getCrossCuttingErrors = (
     }),
     ...(validateApproval &&
       mode === 'edit' &&
-      project?.submission_status === 'Recommended' &&
+      (project?.version ?? 0) >= 3 &&
       dayjs(project_end_date).isBefore(dayjs(), 'day') && {
         project_end_date: ['Cannot be a past date.'],
       }),
