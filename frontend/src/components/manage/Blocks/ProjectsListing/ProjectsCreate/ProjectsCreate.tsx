@@ -204,11 +204,23 @@ const ProjectsCreate = ({
 
     return mode === 'edit' && project?.submission_status === 'Recommended'
       ? {
-          ...getApprovalErrors(approvalData, approvalFields, errors, project),
+          ...getApprovalErrors(
+            approvalData,
+            crossCuttingFields,
+            approvalFields,
+            errors,
+            project,
+          ),
           ...approvalCrossCuttingErrors,
         }
       : {}
-  }, [approvalData, approvalFields, errors, crossCuttingErrors])
+  }, [
+    approvalData,
+    crossCuttingFields,
+    approvalFields,
+    errors,
+    crossCuttingErrors,
+  ])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
   const hasV3EditPermissions =

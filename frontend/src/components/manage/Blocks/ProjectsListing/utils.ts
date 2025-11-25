@@ -514,12 +514,18 @@ export const getCrossCuttingErrors = (
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
+    ...(mode === 'edit' &&
+      project?.submission_status === 'Recommended' &&
+      dayjs(project_end_date).isBefore(dayjs(), 'day') && {
+        project_end_date: ['Cannot be a past date.'],
+      }),
     ...filteredErrors,
   }
 }
 
 export const getApprovalErrors = (
   approvalData: SpecificFields,
+  crossCuttingFields: CrossCuttingFields,
   specificFields: ProjectSpecificFields[] | undefined = [],
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
@@ -541,6 +547,11 @@ export const getApprovalErrors = (
     ...getFieldErrors(requiredFields, approvalData, project),
     ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
       date_completion: ['Cannot be a past date.'],
+    }),
+    ...(dayjs(approvalData.date_completion).isBefore(
+      dayjs(crossCuttingFields.project_start_date),
+    ) && {
+      date_completion: ['Start date cannot be later than date of completion.'],
     }),
     ...filteredErrors,
   }

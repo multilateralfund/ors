@@ -493,14 +493,25 @@ const ProjectCrossCuttingFields = ({
                     <DateInput
                       id="project_end_date"
                       value={project_end_date as string}
-                      onChange={(event) =>
+                      onChange={(event) => {
                         changeField(
                           event.target.value || null,
                           'project_end_date',
                           setProjectData,
                           sectionIdentifier,
                         )
-                      }
+                        if (
+                          mode === 'edit' &&
+                          project?.submission_status === 'Recommended'
+                        ) {
+                          changeField(
+                            event.target.value || null,
+                            'date_completion',
+                            setProjectData,
+                            'approvalFields',
+                          )
+                        }
+                      }}
                       disabled={
                         !canEditField(editableFields, 'project_end_date')
                       }
