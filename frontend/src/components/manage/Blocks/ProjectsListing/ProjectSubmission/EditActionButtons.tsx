@@ -139,7 +139,7 @@ const EditActionButtons = ({
   const isAfterApproval = isApproved || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
+    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project, false),
     [crossCuttingFields],
   )
   const approvalErrors = useMemo(
@@ -211,9 +211,7 @@ const EditActionButtons = ({
     commonErrors ||
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors)) ||
-    (isRecommended &&
-      dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
+      : hasSectionErrors(impactErrors))
 
   const disableSubmit =
     !specificFieldsLoaded ||
