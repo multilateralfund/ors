@@ -90,6 +90,7 @@ const ProjectIdentifiersFields = ({
       (!project?.component ||
         project?.id === project?.component?.original_project_id) &&
       (project?.submission_status === 'Withdrawn' || project?.version === 1))
+  const isMeetingDisabled = !(canEditMeeting && areNextSectionsDisabled)
 
   const isAgencyDisabled =
     (isV3Project && !!project?.agency_id) ||
@@ -113,6 +114,7 @@ const ProjectIdentifiersFields = ({
 
   const hasNextButtons =
     mode !== 'edit' ||
+    canEditMeeting ||
     !(
       isAgencyDisabled &&
       isClusterDisabled &&
@@ -384,12 +386,12 @@ const ProjectIdentifiersFields = ({
                   options={useMeetingOptions()}
                   onChange={handleChangeMeeting}
                   onClear={() => handleChangeMeeting()}
-                  disabled={!canEditMeeting}
+                  disabled={isMeetingDisabled}
                   className={cx('!m-0 h-10 !py-1', {
-                    [disabledClassName]: !canEditMeeting,
+                    [disabledClassName]: isMeetingDisabled,
                   })}
                   clearBtnClassName="right-1"
-                  withClear={canEditMeeting}
+                  withClear={!isMeetingDisabled}
                 />
               </div>
               <div className="w-8">
