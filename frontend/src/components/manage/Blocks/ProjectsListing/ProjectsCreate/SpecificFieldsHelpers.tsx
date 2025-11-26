@@ -9,7 +9,7 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { canEditField, formatOptions } from '../utils'
+import { canEditField, formatFieldLabel, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -387,7 +387,7 @@ const NumberWidget = <T,>(
       })}
     >
       <Label className={cx({ italic: isDisabledImpactField })}>
-        {field.label}
+        {formatFieldLabel(field.label)}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
       <div className="flex items-center">

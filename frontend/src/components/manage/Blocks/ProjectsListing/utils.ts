@@ -1133,3 +1133,6 @@ export const filterApprovalFields = (
       (mappedField && odsOdpFieldsNames.includes(mappedField)))
   )
 }
+
+export const formatFieldLabel = (label: string) =>
+  label.replace(/(?<=CO)2/g, '₂')
