@@ -120,7 +120,6 @@ const ProjectCrossCutting = ({
                     tableColumns.total_fund + ' (US $)',
                     project.total_fund as string,
                     'decimal',
-
                     getFieldHistory('total_fund', 'decimal'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&

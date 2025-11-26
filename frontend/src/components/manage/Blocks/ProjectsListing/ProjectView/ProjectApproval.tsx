@@ -73,6 +73,20 @@ const ProjectApproval = ({
             project.support_cost_psc as string,
             'decimal',
           )}
+        {project.status === 'Transferred' && (
+          <>
+            {numberDetailItem(
+              tableColumns.fund_transferred,
+              project.fund_transferred.toString(),
+              'decimal',
+            )}
+            {numberDetailItem(
+              tableColumns.psc_transferred,
+              project.psc_transferred.toString(),
+              'decimal',
+            )}
+          </>
+        )}
       </div>
     </div>
   )

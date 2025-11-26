@@ -6,10 +6,10 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
+import ProjectFundFields from './ProjectFundFields'
 import { widgets } from './SpecificFieldsHelpers'
-import { FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
-import { canEditField, canViewField, handleChangeNumericValues } from '../utils'
+import { canEditField, canViewField } from '../utils'
 import {
   ProjectData,
   ProjectTabSetters,
@@ -17,7 +17,6 @@ import {
   SpecificFieldsSectionProps,
 } from '../interfaces'
 import {
-  defaultPropsSimpleField,
   disabledClassName,
   tableColumns,
   defaultProps,
@@ -47,11 +46,6 @@ const ProjectApprovalFields = ({
   ProjectTabSetters & { project?: ProjectTypeApi }) => {
   const sectionIdentifier = 'approvalFields'
   const crtSectionData = projectData[sectionIdentifier]
-  const crossCuttingSectionIdentifier = 'crossCuttingFields'
-  const crossCuttingSectionData = projectData[crossCuttingSectionIdentifier]
-  const { total_fund, support_cost_psc } = crossCuttingSectionData
-
-  const isRecommended = project?.submission_status === 'Recommended'
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -78,20 +72,6 @@ const ProjectApprovalFields = ({
     const data = decisionsApi.data ?? ([] as ApiDecision[])
     return map(data, (d) => ({ name: d.number, value: d.id }))
   }, [decisionsApi.data])
-
-  const getFieldDefaultProps = (field: string) => {
-    return {
-      ...{
-        ...defaultPropsSimpleField,
-        className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          [disabledClassName]:
-            !canEditField(editableFields, field) ||
-            (['total_fund', 'support_cost_psc'].includes(field) &&
-              !isRecommended),
-        }),
-      },
-    }
-  }
 
   const handleChangeDecision = (option: DecisionOption | string | null) => {
     const initialValue =
@@ -215,59 +195,12 @@ const ProjectApprovalFields = ({
               </>
             )
           })}
-        {canViewField(viewableFields, 'total_fund') && (
-          <div>
-            <Label>{tableColumns.total_fund} (US $)</Label>
-            <div className="flex items-center">
-              <FormattedNumberInput
-                id="total_fund"
-                value={total_fund ?? ''}
-                prefix="$"
-                withoutDefaultValue={true}
-                onChange={(event) =>
-                  handleChangeNumericValues(
-                    event,
-                    'total_fund',
-                    crossCuttingSectionIdentifier,
-                    setProjectData,
-                  )
-                }
-                disabled={
-                  !canEditField(editableFields, 'total_fund') || !isRecommended
-                }
-                {...getFieldDefaultProps('total_fund')}
-              />
-              <FieldErrorIndicator errors={errors} field="total_fund" />
-            </div>
-          </div>
-        )}
-        {canViewField(viewableFields, 'support_cost_psc') && (
-          <div>
-            <Label>{tableColumns.support_cost_psc} (US $)</Label>
-            <div className="flex items-center">
-              <FormattedNumberInput
-                id="support_cost_psc"
-                value={support_cost_psc ?? ''}
-                prefix="$"
-                withoutDefaultValue={true}
-                onChange={(event) =>
-                  handleChangeNumericValues(
-                    event,
-                    'support_cost_psc',
-                    crossCuttingSectionIdentifier,
-                    setProjectData,
-                  )
-                }
-                disabled={
-                  !canEditField(editableFields, 'support_cost_psc') ||
-                  !isRecommended
-                }
-                {...getFieldDefaultProps('support_cost_psc')}
-              />
-              <FieldErrorIndicator errors={errors} field="support_cost_psc" />
-            </div>
-          </div>
-        )}
+      </div>
+      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
+        <ProjectFundFields
+          {...{ projectData, setProjectData, project, errors }}
+          type="approval"
+        />
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <NavigationButton type="previous" setCurrentTab={setCurrentTab} />

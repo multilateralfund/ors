@@ -4,19 +4,16 @@ import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import {
-  DateInput,
-  FormattedNumberInput,
-} from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
+import ProjectFundFields from './ProjectFundFields'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
 import {
   canEditField,
   canGoToSecondStep,
   canViewField,
-  handleChangeNumericValues,
   hasFields,
 } from '../utils'
 import {
@@ -96,8 +93,6 @@ const ProjectCrossCuttingFields = ({
     is_lvc,
     title,
     description,
-    total_fund,
-    support_cost_psc,
     project_start_date,
     project_end_date,
     blanket_or_individual_consideration,
@@ -152,9 +147,7 @@ const ProjectCrossCuttingFields = ({
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          [disabledClassName]:
-            !canEditField(editableFields, field) ||
-            ['fund_transferred', 'psc_transferred'].includes(field),
+          [disabledClassName]: !canEditField(editableFields, field),
         }),
       },
     }
@@ -363,90 +356,10 @@ const ProjectCrossCuttingFields = ({
               )}
             </div>
             <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
-              {canViewField(viewableFields, 'total_fund') && (
-                <div>
-                  <Label>{tableColumns.total_fund} (US $)</Label>
-                  <div className="flex items-center">
-                    <FormattedNumberInput
-                      id="total_fund"
-                      value={total_fund ?? ''}
-                      prefix="$"
-                      withoutDefaultValue={true}
-                      onChange={(event) =>
-                        handleChangeNumericValues(
-                          event,
-                          'total_fund',
-                          sectionIdentifier,
-                          setProjectData,
-                        )
-                      }
-                      disabled={!canEditField(editableFields, 'total_fund')}
-                      {...getFieldDefaultProps('total_fund')}
-                    />
-                    <div className="w-8">
-                      <FieldErrorIndicator errors={errors} field="total_fund" />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {canViewField(viewableFields, 'support_cost_psc') && (
-                <div>
-                  <Label>{tableColumns.support_cost_psc} (US $)</Label>
-                  <div className="flex items-center">
-                    <FormattedNumberInput
-                      id="support_cost_psc"
-                      value={support_cost_psc ?? ''}
-                      prefix="$"
-                      withoutDefaultValue={true}
-                      onChange={(event) =>
-                        handleChangeNumericValues(
-                          event,
-                          'support_cost_psc',
-                          sectionIdentifier,
-                          setProjectData,
-                        )
-                      }
-                      disabled={
-                        !canEditField(editableFields, 'support_cost_psc')
-                      }
-                      {...getFieldDefaultProps('support_cost_psc')}
-                    />
-                    <FieldErrorIndicator
-                      errors={errors}
-                      field="support_cost_psc"
-                    />
-                  </div>
-                </div>
-              )}
-              {project?.status === 'Transferred' && (
-                <>
-                  <div>
-                    <Label>{tableColumns.fund_transferred}</Label>
-                    <div className="flex items-center">
-                      <FormattedNumberInput
-                        id="fund_transferred"
-                        value={project?.fund_transferred ?? ''}
-                        prefix="$"
-                        withoutDefaultValue={true}
-                        disabled={true}
-                        {...getFieldDefaultProps('fund_transferred')}
-                      />
-                      <div className="w-8" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>{tableColumns.psc_transferred}</Label>
-                    <FormattedNumberInput
-                      id="psc_transferred"
-                      value={project?.psc_transferred ?? ''}
-                      prefix="$"
-                      withoutDefaultValue={true}
-                      disabled={true}
-                      {...getFieldDefaultProps('psc_transferred')}
-                    />
-                  </div>
-                </>
-              )}
+              <ProjectFundFields
+                {...{ projectData, setProjectData, project, errors }}
+                type="crossCutting"
+              />
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>
                   <Label>{tableColumns.project_start_date}</Label>
