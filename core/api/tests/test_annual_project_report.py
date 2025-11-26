@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from io import BytesIO
 from openpyxl import load_workbook
 
@@ -903,36 +903,69 @@ class TestAPRGlobalViewSet(BaseTest):
         assert len(response.data) == 1
         assert response.data[0]["agency_id"] == agency1.id
 
-    def test_filter_by_status(self, mlfs_admin_user, apr_year, annual_progress_report):
+    def test_filter_by_status(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
+        project_closed_status,
+    ):
         agency1 = AgencyFactory()
         agency2 = AgencyFactory()
 
-        AnnualAgencyProjectReportFactory(
+        report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
-        AnnualAgencyProjectReportFactory(
+        report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
-            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        project_ong = ProjectFactory(
+            agency=agency1,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+            date_approved=date(apr_year - 1, 1, 1),
+        )
+        project_clo = ProjectFactory(
+            agency=agency2,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+            date_approved=date(apr_year - 1, 1, 1),
+        )
+
+        AnnualProjectReportFactory(
+            report=report1, project=project_ong, status=project_ong.status.code
+        )
+        AnnualProjectReportFactory(
+            report=report2, project=project_clo, status=project_clo.status.code
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
-        response = self.client.get(
-            url, {"status": AnnualAgencyProjectReport.SubmissionStatus.DRAFT}
-        )
+
+        response = self.client.get(url, {"status": "CLO"})
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert (
-            response.data[0]["status"]
-            == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
-        )
+        assert len(response.data) == 2
+
+        # Check that them nested project reports are filtered correctly
+        agency1_data = next(r for r in response.data if r["agency_id"] == agency1.id)
+        assert len(agency1_data["project_reports"]) == 1
+        assert agency1_data["project_reports"][0]["status"] == "ONG"
+
+        agency2_data = next(r for r in response.data if r["agency_id"] == agency2.id)
+        assert len(agency2_data["project_reports"]) == 1
+        assert agency2_data["project_reports"][0]["status"] == "CLO"
 
     def test_filter_by_country(
-        self, mlfs_admin_user, apr_year, annual_progress_report, country_ro
+        self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
     ):
         agency = AgencyFactory()
         annual_agency_report = AnnualAgencyProjectReportFactory(
@@ -941,17 +974,20 @@ class TestAPRGlobalViewSet(BaseTest):
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
         project = ProjectFactory(country=country_ro, agency=agency)
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
+        project_new = ProjectFactory(country=new_country, agency=agency)
+
+        AnnualProjectReportFactory(report=annual_agency_report, project=project)
+        AnnualProjectReportFactory(report=annual_agency_report, project=project_new)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
         response = self.client.get(url, {"country": country_ro.name})
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) >= 1
+        assert len(response.data) == 1
+        # Check that only the filtered country's project is returned
+        assert len(response.data[0]["project_reports"]) == 1
+        assert response.data[0]["project_reports"][0]["country_name"] == country_ro.name
 
     def test_unlocked_flag(self, mlfs_admin_user, apr_year, annual_progress_report):
         agency = AgencyFactory()
