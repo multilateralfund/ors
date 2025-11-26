@@ -77,13 +77,13 @@ class ProjectAssociationMixin:
         validated_data = data.validated_data
         meta_project = validated_data.get("meta_project", None)
         if not meta_project:
-            project_type = validated_data["projects"].first().project_type
+            project_category = validated_data["projects"].first().category
             country = validated_data["projects"].first().country
             # do we need to receive it from FE?!
             metacode = validated_data["projects"].first().metacode
             meta_project = MetaProject.objects.create(
                 umbrella_code=get_umbrella_code(country),
-                type=project_type,
+                type=project_category,
             )
         else:
             metacode = (

@@ -5,7 +5,10 @@ from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
-from core.api.serializers.project_metadata import ProjectClusterSerializer
+from core.api.serializers.project_metadata import (
+    ProjectClusterSerializer,
+    ProjectSectorSerializer,
+)
 from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import MetaProject
 
@@ -138,6 +141,7 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
     lead_agency = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     clusters = serializers.SerializerMethodField()
+    sectors = serializers.SerializerMethodField()
 
     class Meta:
         model = MetaProject
@@ -148,6 +152,7 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
             "umbrella_code",
             "country",
             "clusters",
+            "sectors",
         ]
 
     def get_lead_agency(self, obj):
@@ -163,3 +168,9 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
         for project in obj.projects.all():
             clusters.add(project.cluster)
         return [ProjectClusterSerializer(cluster).data for cluster in clusters]
+
+    def get_sectors(self, obj):
+        sectors = set()
+        for project in obj.projects.all():
+            sectors.add(project.sector)
+        return [ProjectSectorSerializer(sector).data for sector in sectors]

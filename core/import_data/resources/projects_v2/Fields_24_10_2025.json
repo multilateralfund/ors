@@ -278,6 +278,42 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
+        "IMPORT_NAME": "Total phase out (M t)",
+        "LABEL": "Total phase out (M t)",
+        "WRITE_FIELD_NAME": "total_phase_out_metric_tonnes",
+        "READ_FIELD_NAME": "total_phase_out_metric_tonnes",
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Approval",
+        "SORT_ORDER": 20,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Total phase out (ODP t)",
+        "LABEL": "Total phase out (ODP t)",
+        "WRITE_FIELD_NAME": "total_phase_out_odp_tonnes",
+        "READ_FIELD_NAME": "total_phase_out_odp_tonnes",
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Approval",
+        "SORT_ORDER": 21,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Total phase out (CO2-eq t)",
+        "LABEL": "Total phase out (CO2-eq t)",
+        "WRITE_FIELD_NAME": "total_phase_out_co2_tonnes",
+        "READ_FIELD_NAME": "total_phase_out_co2_tonnes",
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Approval",
+        "SORT_ORDER": 22,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
         "IMPORT_NAME": "Project Support Cost",
         "LABEL": "Project support cost",
         "WRITE_FIELD_NAME": "support_cost_psc",
