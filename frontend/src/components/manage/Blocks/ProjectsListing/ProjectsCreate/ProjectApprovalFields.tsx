@@ -12,6 +12,7 @@ import { STYLE } from '../../Replenishment/Inputs/constants'
 import { canEditField, canViewField } from '../utils'
 import {
   ProjectData,
+  ProjectSpecificFields,
   ProjectTabSetters,
   ProjectTypeApi,
   SpecificFieldsSectionProps,
@@ -21,6 +22,7 @@ import {
   tableColumns,
   defaultProps,
   textAreaClassname,
+  approvalOdsFields,
 } from '../constants'
 import useApi from '@ors/hooks/useApi.ts'
 import { useStore } from '@ors/store'
@@ -90,6 +92,22 @@ const ProjectApprovalFields = ({
     }
   }
 
+  const approvalField = (field: ProjectSpecificFields, data_type?: string) =>
+    canViewField(viewableFields, field.write_field_name) && (
+      <React.Fragment key={field.write_field_name}>
+        {widgets[
+          (data_type ?? field.data_type) as keyof typeof widgets
+        ]<ProjectData>(
+          projectData,
+          setProjectData,
+          field,
+          errors,
+          editableFields,
+          sectionIdentifier,
+        )}
+      </React.Fragment>
+    )
+
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
@@ -149,9 +167,12 @@ const ProjectApprovalFields = ({
         {sectionFields
           .filter(
             (field) =>
-              !['meeting', 'decision', 'date_approved'].includes(
-                field.write_field_name,
-              ),
+              ![
+                ...approvalOdsFields,
+                'meeting',
+                'decision',
+                'date_approved',
+              ].includes(field.write_field_name),
           )
           .map((field) => {
             const dataType = ['programme_officer', 'funding_window'].includes(
@@ -162,18 +183,7 @@ const ProjectApprovalFields = ({
 
             return (
               <>
-                {canViewField(viewableFields, field.write_field_name) && (
-                  <React.Fragment key={field.write_field_name}>
-                    {widgets[dataType]<ProjectData>(
-                      projectData,
-                      setProjectData,
-                      field,
-                      errors,
-                      editableFields,
-                      sectionIdentifier,
-                    )}
-                  </React.Fragment>
-                )}
+                {approvalField(field, dataType)}
                 {field.write_field_name === 'excom_provision' &&
                   project?.status === 'Transferred' && (
                     <div className="w-full">
@@ -195,6 +205,11 @@ const ProjectApprovalFields = ({
               </>
             )
           })}
+      </div>
+      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
+        {sectionFields
+          .filter((field) => approvalOdsFields.includes(field.write_field_name))
+          .map((field) => approvalField(field))}
       </div>
       <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
         <ProjectFundFields

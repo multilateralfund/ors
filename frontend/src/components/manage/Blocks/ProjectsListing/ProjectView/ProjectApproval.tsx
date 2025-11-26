@@ -6,11 +6,11 @@ import {
   viewModesHandler,
 } from './ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../constants'
-import { ProjectTypeApi, ProjectViewProps } from '../interfaces'
-import { canViewField } from '../utils'
+import { canViewField, formatFieldLabel } from '../utils'
+import { ProjectViewProps } from '../interfaces'
 import { useStore } from '@ors/store'
 
-import { filter, map } from 'lodash'
+import { filter, get } from 'lodash'
 
 const ProjectApproval = ({
   project,
@@ -70,12 +70,9 @@ const ProjectApproval = ({
             canViewField(viewableFields, field.write_field_name) && (
               <span key={field.write_field_name}>
                 {numberDetailItem(
-                  field.label,
-                  project[field.read_field_name] ??
-                    project[
-                      ('computed_' +
-                        field.read_field_name) as keyof ProjectTypeApi
-                    ],
+                  formatFieldLabel(field.label),
+                  get(project, field.read_field_name) ??
+                    get(project, `computed_${field.read_field_name}`),
                   field.data_type,
                 )}
               </span>

@@ -1,6 +1,8 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
+  approvalOdsFields,
+  approvalToOdsMap,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
@@ -24,6 +26,12 @@ import {
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
 
+import dayjs from 'dayjs'
+import {
+  ITooltipParams,
+  ValueFormatterParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
 import {
   concat,
   difference,
@@ -32,6 +40,7 @@ import {
   flatMap,
   fromPairs,
   get,
+  groupBy,
   isArray,
   isNaN,
   isNil,
@@ -43,12 +52,6 @@ import {
   pick,
   reduce,
 } from 'lodash'
-import {
-  ITooltipParams,
-  ValueFormatterParams,
-  ValueGetterParams,
-} from 'ag-grid-community'
-import dayjs from 'dayjs'
 
 const getFieldId = <T>(
   field: ProjectSpecificFields,
@@ -533,6 +536,7 @@ export const getApprovalErrors = (
   project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
+    ...approvalOdsFields,
     'decision',
     'date_completion',
     'programme_officer',
@@ -1110,3 +1114,25 @@ export const handleChangeNumericValues = (
     event.preventDefault()
   }
 }
+
+export const filterApprovalFields = (
+  specificFields: ProjectSpecificFields[],
+  field: ProjectSpecificFields,
+) => {
+  const groupedFields = groupBy(specificFields, 'table')
+  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
+  const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
+
+  const mappedField = approvalToOdsMap[field.write_field_name]
+
+  return (
+    field.section === 'Approval' &&
+    (field.table !== 'ods_odp' ||
+      (mappedField && odsOdpFieldsNames.includes(mappedField)))
+  )
+}
+
+export const formatFieldLabel = (label: string) =>
+  label.replace(/(?<=CO)2/g, '₂')
