@@ -1484,6 +1484,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
             new_transfer_project.cluster,

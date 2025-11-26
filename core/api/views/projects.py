@@ -191,6 +191,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
                 "projects__agency",
                 "projects__cluster",
                 "projects__country",
+                "projects__sector",
             )
             # Maybe exclude if ALL sub-projects Completed OR Transfered.
             # .filter(

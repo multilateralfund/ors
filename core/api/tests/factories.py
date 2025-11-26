@@ -471,6 +471,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     meeting = factory.SubFactory(MeetingFactory)
     submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
+    category = Project.Category.MYA
 
     # pylint: disable=E1101
     @factory.post_generation
