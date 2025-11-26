@@ -83,7 +83,6 @@ class APRWorkspaceView(RetrieveAPIView):
         user = self.request.user
         if not user.is_superuser and not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
-                # TODO: I am not sure how to deal with Lead Agency !
                 queryset = queryset.filter(agency=user.agency)
             else:
                 queryset = queryset.none()
@@ -478,7 +477,6 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         else:
             queryset = self.get_detail_queryset(year)
 
-        # TODO: did I understand correctly, or should all users only see sumibtted?
         user = self.request.user
         if not user.has_perm("core.has_apr_edit_access"):
             queryset = queryset.filter(
