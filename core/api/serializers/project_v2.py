@@ -58,6 +58,12 @@ HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
 HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
 HISTORY_DESCRIPTION_TRANSFER = "Project transferred"
+HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.
+                            Old code: {}
+                            New code: {}
+                            Old metacode: {}
+                            New metacode: {}
+                           """
 
 
 class UpdateOdsOdpEntries:
@@ -1484,6 +1490,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
             new_transfer_project.cluster,
@@ -1493,6 +1500,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.meeting,
             new_transfer_project.meeting_transf,
             new_transfer_project.serial_number,
+            new_transfer_project.metacode,
         )
         new_transfer_project.save()
 

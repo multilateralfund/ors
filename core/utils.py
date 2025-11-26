@@ -68,6 +68,7 @@ def get_project_sub_code(
     meeting_appr,
     meeting_transf=None,
     serial_number=None,
+    metacode=None,
 ):
     """
     Get a new project sub code
@@ -84,19 +85,25 @@ def get_project_sub_code(
     @return: str
 
     """
-    if not serial_number:
-        serial_number = Project.objects.get_next_serial_number(country.id)
-
-    country_code = country.iso3 or country.abbr if country else "-"
-    cluster_code = cluster.code if cluster else "-"
     agency_code = agency.code or agency.name if agency else "-"
     project_type_code = project_type.code if project_type else "-"
     sector_code = sector.code if sector else "-"
     meeting_appr_code = meeting_appr.number if meeting_appr else "-"
     meeting_transf_code = f".{meeting_transf.number}" if meeting_transf else ""
     meetings_code = f"{meeting_appr_code}{meeting_transf_code}"
+    if not serial_number:
+        serial_number = Project.objects.get_next_serial_number(country.id)
+    if not metacode:
+        country_code = country.iso3 or country.abbr if country else "-"
+        cluster_code = cluster.code if cluster else "-"
+        return (
+            f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
+            f"{sector_code}/{meetings_code}"
+        )
+    metacode_parts = metacode.split("/")
+    metacode_prefix = "/".join(metacode_parts[0:2])  # country_code/cluster_code
     return (
-        f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
+        f"{metacode_prefix}/{serial_number}/{agency_code}/{project_type_code}/"
         f"{sector_code}/{meetings_code}"
     )
 
@@ -104,13 +111,27 @@ def get_project_sub_code(
 def generate_project_metacode(project):
     """
     Get the metacode for a project.
-    Still TBD, but right now the metacode is the same only for components.
-    The project category will most likely also play a role in defining the metacode.
+    Components should have the same metacode.
+    If the category if MYA, the project needs to be placed under the existing metacode of
+    the same country and cluster.
     """
     component = getattr(project, "component", None)
     if component:
         existing_metacode = (
             Project.objects.filter(component=component, metacode__isnull=False)
+            .values_list("metacode", flat=True)
+            .first()
+        )
+        if existing_metacode:
+            return existing_metacode
+    if project.category == Project.Category.MYA:
+        existing_metacode = (
+            Project.objects.filter(
+                category=Project.Category.MYA,
+                cluster=project.cluster,
+                country=project.country,
+                metacode__isnull=False,
+            )
             .values_list("metacode", flat=True)
             .first()
         )
@@ -129,6 +150,10 @@ def post_approval_changes(project):
     Create an umbrella project (meta project) only if the project has components
     (even if the components are not approved yet).
     """
+
+    # generate or retrieve meta code
+    project.metacode = generate_project_metacode(project)
+
     # generate project code
     project.code = get_project_sub_code(
         project.country,
@@ -139,10 +164,8 @@ def post_approval_changes(project):
         project.meeting,
         project.transfer_meeting,
         project.serial_number,
+        project.metacode,
     )
-
-    # generate or retrieve meta code
-    project.metacode = generate_project_metacode(project)
     project.save()
 
     # create meta project (if required)
