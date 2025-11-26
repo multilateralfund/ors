@@ -1521,6 +1521,10 @@ class ProjectFile(models.Model):
         ENDORSEMENT_LETTER = "endorsement_letter", "Endorsement letter from government"
         FINAL_PROPOSAL = "final_proposal", "Final project proposal"
         PROJECT_REVIEW_COMMENTS = "project_review_comments", "Project review comments"
+        TRANSFERRED_PROJECT_PROPOSAL = (
+            "transferred_project_proposal",
+            "Transferred project proposal",
+        )
         OTHER = "other", "Other"
 
     file = models.FileField(
