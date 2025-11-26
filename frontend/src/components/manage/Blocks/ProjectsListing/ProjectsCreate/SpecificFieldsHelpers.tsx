@@ -36,7 +36,7 @@ const getFieldDefaultProps = (
   field: ProjectSpecificFields,
 ) => {
   const fieldName = field.write_field_name
-  const isOdp = field.table === 'ods_odp'
+  const isOdp = field.table === 'ods_odp' && field.section !== 'Approval'
 
   return {
     ...{
@@ -382,7 +382,8 @@ const NumberWidget = <T,>(
   return (
     <div
       className={cx('flex h-full flex-col', {
-        'justify-between': field.table !== 'ods_odp',
+        'justify-between':
+          field.table !== 'ods_odp' || field.section === 'Approval',
       })}
     >
       <Label className={cx({ italic: isDisabledImpactField })}>
@@ -408,14 +409,20 @@ const NumberWidget = <T,>(
           }
           {...getFieldDefaultProps(editableFields, field)}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(index)
-              ? (errors as { [key: string]: string[] }[])[index]
-              : errors
-          }
-          field={field.label}
-        />
+        <div
+          className={cx({
+            'w-8': field.section === 'Approval' && field.table === 'ods_odp',
+          })}
+        >
+          <FieldErrorIndicator
+            errors={
+              !isNil(index)
+                ? (errors as { [key: string]: string[] }[])[index]
+                : errors
+            }
+            field={field.label}
+          />
+        </div>
       </div>
     </div>
   )

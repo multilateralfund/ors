@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
+  approvalOdsFields,
   approvalToOdsMap,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
@@ -535,6 +536,7 @@ export const getApprovalErrors = (
   project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
+    ...approvalOdsFields,
     'decision',
     'date_completion',
     'programme_officer',

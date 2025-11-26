@@ -31,6 +31,7 @@ import {
   FileMetaDataType,
 } from '../interfaces'
 import {
+  approvalOdsFields,
   considerationOpts,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
@@ -337,12 +338,6 @@ const ProjectsEdit = ({
       setCanViewTabs(true)
     }
   }, [cluster, project_type, sector])
-
-  const approvalOdsFields = [
-    'total_phase_out_metric_tonnes',
-    'total_phase_out_odp_tonnes',
-    'total_phase_out_co2_tonnes',
-  ]
 
   useEffect(() => {
     if (
