@@ -232,7 +232,13 @@ export const metaProjectSelectionFields = [
   { label: 'PSC (MYA)', key: 'support_cost' },
 ]
 
-export const approvalToOdsMap: Record<string, string> = {
+export const approvalOdsFields = [
+  'total_phase_out_metric_tonnes',
+  'total_phase_out_odp_tonnes',
+  'total_phase_out_co2_tonnes',
+]
+
+export const approvalToOdsMap = {
   total_phase_out_metric_tonnes: 'phase_out_mt',
   total_phase_out_odp_tonnes: 'odp',
   total_phase_out_co2_tonnes: 'co2_mt',

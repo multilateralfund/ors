@@ -13,16 +13,20 @@ import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
-import { getIsUpdatablePostExcom, getSectionFields, hasFields } from '../utils'
+import {
+  filterApprovalFields,
+  getIsUpdatablePostExcom,
+  getSectionFields,
+  hasFields,
+} from '../utils'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
-import { approvalToOdsMap } from '../constants'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { debounce, groupBy, isArray, isNull, map } from 'lodash'
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
+import { debounce, isArray, isNull } from 'lodash'
 import { Tabs, Tab, Tooltip } from '@mui/material'
 import cx from 'classnames'
 
@@ -144,24 +148,12 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Impact'),
   ]
 
-  const groupedFields = groupBy(specificFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
-  const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
-
   const hasApprovalTab = project.version >= 3
 
   const approvalFields = hasApprovalTab
-    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter((field) => {
-        const mappedField = approvalToOdsMap[field.write_field_name]
-
-        return (
-          field.section === 'Approval' &&
-          (field.table !== 'ods_odp' ||
-            (mappedField && odsOdpFieldsNames.includes(mappedField)))
-        )
-      }) ?? [])
+    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter((field) =>
+        filterApprovalFields(specificFields, field),
+      ) ?? [])
     : []
 
   const relatedProjects = useGetRelatedProjects(project, 'view', metaProjectId)
