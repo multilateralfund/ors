@@ -3,6 +3,7 @@ import { ApiBPActivity } from './api_bp_get'
 import { ApiAgency } from '@ors/types/api_agencies.ts'
 import { Country } from '@ors/types/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
+import { ProjectSectorType } from './api_project_sector'
 
 export type ProjectSubSectorType = {
   id: number
@@ -202,5 +203,6 @@ export type MetaProjectType = {
   lead_agency: ApiAgency
   country: Country
   clusters: ProjectCluster[]
+  sectors: ProjectSectorType[]
   type: string
 }
