@@ -71,7 +71,15 @@ def build_filtered_project_reports_queryset(filter_params):
         if cluster_names:
             queryset = queryset.filter(project__cluster__name__in=cluster_names)
 
-    # No need to also filter by status - `status` is on AnnualAgencyProjectReport
+    if filter_params.get("status"):
+        status_codes = [
+            s.strip() for s in filter_params["status"].split(",") if s.strip()
+        ]
+        mandatory_statuses = {"ONG", "COM"}
+        status_codes = list(set(status_codes) | mandatory_statuses)
+        if status_codes:
+            queryset = queryset.filter(project__status__code__in=status_codes)
+
     return queryset
 
 
@@ -108,15 +116,36 @@ class APRGlobalFilter(filters.FilterSet):
 
     cluster = filters.CharFilter(method="filter_by_cluster")
 
+    # This filters on each individual project report status nested in the agency reports
     status = filters.CharFilter(method="filter_by_status")
+
+    # This is for filtering by the actual agency report status
+    report_status = filters.CharFilter(method="filter_by_agency_report_status")
 
     class Meta:
         model = AnnualAgencyProjectReport
-        fields = ["agency", "region", "country", "status", "cluster"]
+        fields = ["agency", "region", "country", "cluster", "status", "report_status"]
 
     def filter_by_status(self, queryset, _name, value):
         """
-        Accepts a comma-separated list of *Project Report* statuses.
+        Accepts a comma-separated list of Project status codes (e.g., ONG, COM, CAN).
+        Filters agencies that have at least one project with the specified status.
+        """
+        if not value:
+            status_codes = ["ONG", "COM"]
+        else:
+            status_codes = [s.strip() for s in value.split(",") if s.strip()]
+
+        mandatory_statuses = {"ONG", "COM"}
+        status_codes = list(set(status_codes) | mandatory_statuses)
+
+        return queryset.filter(
+            project_reports__project__status__code__in=status_codes
+        ).distinct()
+
+    def filter_by_agency_report_status(self, queryset, _name, value):
+        """
+        Accepts a comma-separated list of *Agency Project Report* statuses.
         """
         if not value:
             return queryset
