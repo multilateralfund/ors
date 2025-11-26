@@ -731,7 +731,8 @@ const ProjectsCreate = ({
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   project?.version === 2 &&
-                  !hasV3EditPermissions && (
+                  !hasV3EditPermissions &&
+                  currentTab === 0 && (
                     <CustomAlert
                       type="info"
                       alertClassName="mb-3"
