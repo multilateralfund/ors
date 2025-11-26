@@ -34,6 +34,8 @@ class MetaProjectAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "type",
+        "projects__country",
+        "projects__cluster",
     ]
 
     def get_list_display(self, request):

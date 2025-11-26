@@ -132,6 +132,13 @@ export default function UpdateMyaData() {
         return params.data?.clusters.map((c) => c.name).join(', ')
       },
     },
+    {
+      headerName: 'Sector',
+      sortable: false,
+      valueGetter: (params) => {
+        return params.data?.sectors.map((s) => s.name).join(', ')
+      },
+    },
   ]
 
   const handleParamsChange = (params: Record<string, any>) => {

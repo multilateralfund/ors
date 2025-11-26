@@ -506,6 +506,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     """
 
     ods_odp = ProjectV2OdsOdpListSerializer(many=True, read_only=True)
+    computed_total_phase_out_metric_tonnes = serializers.SerializerMethodField()
+    computed_total_phase_out_odp_tonnes = serializers.SerializerMethodField()
+    computed_total_phase_out_co2_tonnes = serializers.SerializerMethodField()
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
     )
@@ -583,6 +586,12 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "transfer_meeting",
             "transfer_meeting_id",
             "transfer_excom_provision",
+            "total_phase_out_metric_tonnes",
+            "total_phase_out_odp_tonnes",
+            "total_phase_out_co2_tonnes",
+            "computed_total_phase_out_metric_tonnes",
+            "computed_total_phase_out_odp_tonnes",
+            "computed_total_phase_out_co2_tonnes",
         ]
 
     def get_editable(self, obj):
@@ -691,6 +700,15 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     version_obj
                 ).data
         return versions
+
+    def get_computed_total_phase_out_metric_tonnes(self, obj):
+        return obj.computed_total_phase_out_metric_tonnes
+
+    def get_computed_total_phase_out_odp_tonnes(self, obj):
+        return obj.computed_total_phase_out_odp_tonnes
+
+    def get_computed_total_phase_out_co2_tonnes(self, obj):
+        return obj.computed_total_phase_out_co2_tonnes
 
 
 class ProjectV2OdsOdpCreateUpdateSerializer(
@@ -1148,6 +1166,9 @@ class ProjectV2EditApprovalFieldsSerializer(
             "pcr_waived",
             "ad_hoc_pcr",
             "date_approved",
+            "total_phase_out_metric_tonnes",
+            "total_phase_out_odp_tonnes",
+            "total_phase_out_co2_tonnes",
         ]
 
     def update(self, instance, validated_data):
@@ -1484,6 +1505,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
             new_transfer_project.cluster,

@@ -369,6 +369,28 @@ class FileTypeView(APIView):
     View to return a list of all ProjectFile FileTypes choices
     """
 
+    @swagger_auto_schema(
+        operation_description="Get a list of all ProjectFile FileTypes choices",
+        manual_parameters=[
+            openapi.Parameter(
+                "include_transferred_options",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Include the transferred project proposal file type. By default, it is excluded.",
+                default=False,
+            ),
+        ],
+    )
     def get(self, request, *args, **kwargs):
+        include_transferred = (
+            request.query_params.get("include_transferred_options", "false").lower()
+            == "true"
+        )
         choices = ProjectFile.FileType.choices
+        if not include_transferred:
+            choices = [
+                choice
+                for choice in choices
+                if choice[0] != ProjectFile.FileType.TRANSFERRED_PROJECT_PROPOSAL
+            ]
         return Response(choices)
