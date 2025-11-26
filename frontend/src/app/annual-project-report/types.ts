@@ -76,7 +76,7 @@ export interface AnnualAgencyProjectReport {
   progress_report_year: number
   agency: Agency
   agency_id: number
-  status: string
+  status: 'draft' | 'submitted'
   is_unlocked: boolean
   is_endorsed: boolean
   project_reports: AnnualProjectReport[]

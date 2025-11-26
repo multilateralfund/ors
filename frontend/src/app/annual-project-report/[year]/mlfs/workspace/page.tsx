@@ -1,14 +1,14 @@
-import { useContext, useState, useMemo } from 'react'
-import { useParams, Redirect } from 'wouter'
+import React, { useContext, useMemo, useState } from 'react'
+import { Redirect, useParams } from 'wouter'
 import {
-  Box,
-  Chip,
-  Button,
-  Alert,
-  Tabs,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Tabs,
 } from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
@@ -37,9 +37,16 @@ import {
   AnnualAgencyProjectReport,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
+import { MdExpandMore } from 'react-icons/md'
+import { FiLock, FiUnlock } from 'react-icons/fi'
+import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { enqueueSnackbar } from 'notistack'
+import { api } from '@ors/helpers'
 
 export default function APRMLFSWorkspace() {
   const [activeTab, setActiveTab] = useState(0)
+  const confirm = useConfirmation()
   const { year } = useParams()
   usePageTitle(`MLFS Annual Progress Report (${year})`)
   const { canViewAPR, isMlfsUser } = useContext(PermissionsContext)
@@ -55,6 +62,7 @@ export default function APRMLFSWorkspace() {
     loading,
     loaded,
     setParams,
+    refetch,
   } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
@@ -158,6 +166,40 @@ export default function APRMLFSWorkspace() {
 
   if (!canViewAPR) {
     return <NotFoundPage />
+  }
+
+  const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
+    const action = agencyData.is_unlocked ? 'lock' : 'unlock'
+    const response = await confirm({
+      title: `${agencyData.agency.name} report ${action}`,
+      message: `Are you sure you want to ${action} the ${agencyData.agency.name} report?`,
+    })
+
+    if (!response) {
+      return
+    }
+
+    try {
+      await api(
+        `api/annual-project-report/${year}/agency/${agencyData.agency_id}/toggle-lock/`,
+        {
+          method: 'POST',
+          data: {
+            is_unlocked: !agencyData.is_unlocked,
+          },
+        },
+      )
+
+      refetch()
+      enqueueSnackbar(<>Report {action} successful.</>, {
+        variant: 'success',
+      })
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
   }
 
   return (
@@ -419,8 +461,63 @@ export default function APRMLFSWorkspace() {
                 return (
                   <li className="m-0 list-none" key={agencyData.id}>
                     <Accordion>
-                      <AccordionSummary>
-                        {agencyData.agency.name}
+                      <AccordionSummary
+                        className="group flex-row-reverse gap-x-4"
+                        expandIcon={
+                          <div className="rounded-full border border-solid border-black bg-mlfs-hlYellow">
+                            <MdExpandMore size={16} color="black" />
+                          </div>
+                        }
+                      >
+                        {/* w-full is necesary because MUI wraps our content in a flex container */}
+                        <div className="flex w-full justify-between">
+                          <div className="flex items-center gap-x-4">
+                            <span className="text-lg font-medium">
+                              {agencyData.agency.name}
+                            </span>
+                            <span
+                              className={cx(
+                                'rounded border border-solid px-1 py-0.5 text-sm',
+                                {
+                                  'border-transparent bg-primary text-white group-hover:border-mlfs-hlYellow group-hover:!text-mlfs-hlYellow':
+                                    agencyData.status === 'draft',
+                                },
+                              )}
+                            >
+                              {agencyData.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-x-4">
+                            {agencyData.status === 'submitted' && (
+                              <>
+                                <Button
+                                  className="hover:!text-mlfs-hlYellow group-hover:text-white"
+                                  variant="text"
+                                  startIcon={
+                                    agencyData.is_unlocked ? (
+                                      <FiLock size={18} />
+                                    ) : (
+                                      <FiUnlock size={18} />
+                                    )
+                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    changeLockStatus(agencyData)
+                                  }}
+                                  disabled={loading}
+                                >
+                                  {agencyData.is_unlocked ? 'Lock' : 'Unlock'}
+                                </Button>
+                                <span className="text-sm font-medium">
+                                  Submitted:{' '}
+                                  <span className="font-bold">
+                                    {formatDate(agencyData.submitted_at)}
+                                  </span>
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </AccordionSummary>
                       <AccordionDetails>Details</AccordionDetails>
                     </Accordion>
