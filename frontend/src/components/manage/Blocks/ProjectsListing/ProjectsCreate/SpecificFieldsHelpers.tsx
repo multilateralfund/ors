@@ -26,31 +26,12 @@ import {
   textFieldClassName,
 } from '../constants'
 
-import { find, get, isObject, isBoolean, isNil, isArray, omit } from 'lodash'
+import { find, get, isObject, isBoolean, isNil, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-export const getIsInputDisabled = (
-  hasSubmitted: boolean,
-  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  field: string,
-  index?: number,
-) => {
-  const isError =
-    isArray(errors) && !isNil(index)
-      ? errors?.[index]?.[field]?.length > 0
-      : !isArray(errors) && errors?.[field]?.length > 0
-
-  return (
-    hasSubmitted &&
-    (isError || (field === 'Tranche number' && hasTrancheErrors))
-  )
-}
-
 const getFieldDefaultProps = (
-  isError: boolean,
   editableFields: string[],
   field: ProjectSpecificFields,
 ) => {
@@ -62,7 +43,6 @@ const getFieldDefaultProps = (
       ...defaultPropsSimpleField,
       className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
         'w-[125px]': isOdp,
-        'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
         '!flex-grow-0': field.data_type === 'date',
       }),
@@ -187,8 +167,6 @@ export const AutocompleteWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -253,15 +231,6 @@ export const AutocompleteWidget = <T,>(
                 : (find(options, { id: option }) as OptionsType)?.[field]) || ''
             )
           }}
-          Input={{
-            error: getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
-              index,
-            ),
-          }}
           {...defaultProps}
           {...(additionalProperties[fieldName] ?? {})}
           {...(field.section === 'Impact'
@@ -290,8 +259,6 @@ export const TextWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -323,17 +290,7 @@ export const TextWidget = <T,>(
               index,
             )
           }
-          {...getFieldDefaultProps(
-            getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
-              index,
-            ),
-            editableFields,
-            field,
-          )}
+          {...getFieldDefaultProps(editableFields, field)}
           containerClassName={
             defaultPropsSimpleField.containerClassName +
             (fieldName === 'programme_officer'
@@ -359,8 +316,6 @@ export const TextAreaWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -389,13 +344,6 @@ export const TextAreaWidget = <T,>(
           }
           className={cx(textAreaClassname, 'max-w-[415px]', {
             '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
-            'border-red-500': getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
-              index,
-            ),
           })}
           maxLength={500}
           style={STYLE}
@@ -420,8 +368,6 @@ const NumberWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -460,17 +406,7 @@ const NumberWidget = <T,>(
               index,
             )
           }
-          {...getFieldDefaultProps(
-            getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
-              index,
-            ),
-            editableFields,
-            field,
-          )}
+          {...getFieldDefaultProps(editableFields, field)}
         />
         <FieldErrorIndicator
           errors={
@@ -490,8 +426,6 @@ const BooleanWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -524,17 +458,7 @@ const BooleanWidget = <T,>(
               index,
             )
           }
-          sx={{
-            color: getIsInputDisabled(
-              hasSubmitted,
-              errors,
-              hasTrancheErrors,
-              field.label,
-              index,
-            )
-              ? 'red'
-              : 'black',
-          }}
+          sx={{ color: 'black' }}
         />
         <FieldErrorIndicator
           errors={
@@ -554,8 +478,6 @@ const DateWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -574,7 +496,7 @@ const DateWidget = <T,>(
             value={value}
             disabled={!canEditField(editableFields, fieldName)}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-            onChange={(value) =>
+            onChange={(value) => {
               changeHandler[field.data_type]<T, SpecificFields>(
                 value,
                 fieldName,
@@ -583,21 +505,21 @@ const DateWidget = <T,>(
                 subField,
                 index,
               )
-            }
-            {...omit(
-              getFieldDefaultProps(
-                getIsInputDisabled(
-                  hasSubmitted,
-                  errors,
-                  hasTrancheErrors,
-                  field.label,
+
+              if (fieldName === 'date_completion') {
+                changeHandler[field.data_type]<T, SpecificFields>(
+                  value,
+                  'project_end_date' as keyof SpecificFields,
+                  setFields,
+                  'crossCuttingFields' as keyof T,
+                  subField,
                   index,
-                ),
-                editableFields,
-                field,
-              ),
-              ['containerClassName'],
-            )}
+                )
+              }
+            }}
+            {...omit(getFieldDefaultProps(editableFields, field), [
+              'containerClassName',
+            ])}
           />
         </div>
         <FieldErrorIndicator

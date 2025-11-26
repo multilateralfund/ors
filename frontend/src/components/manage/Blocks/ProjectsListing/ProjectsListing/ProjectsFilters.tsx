@@ -6,12 +6,10 @@ import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import { SearchFilter } from '../HelperComponents'
 import { tableColumns } from '../constants'
-import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
-import { debounce } from '@ors/helpers/Utils/Utils'
 
-import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
-import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
+import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
 
 const ProjectsFilters = ({
@@ -28,7 +26,6 @@ const ProjectsFilters = ({
   const meetingsOptions = filterOptions?.meeting
     ? [...filterOptions.meeting].reverse()
     : []
-  const searchRef = useFocusOnCtrlF()
 
   const defaultProps = {
     multiple: true,
@@ -47,53 +44,9 @@ const ProjectsFilters = ({
 
   return (
     <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
-      <Field
-        name="search"
-        defaultValue={filters.search}
-        inputRef={searchRef}
+      <SearchFilter
         placeholder="Search by keyword..."
-        FieldProps={{
-          className: 'mb-0 w-full md:w-[14.375rem] BPList',
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <MuiIconButton
-                aria-label="search table"
-                edge="start"
-                tabIndex={-1}
-                onClick={() => {
-                  const search = form.current.search.value
-                  handleParamsChange({
-                    offset: 0,
-                    search,
-                  })
-                  handleFilterChange({ search })
-                }}
-                disableRipple
-              >
-                <IoSearchOutline />
-              </MuiIconButton>
-            </InputAdornment>
-          ),
-        }}
-        onKeyDown={() => {
-          debounce(
-            () => {
-              const search = form.current.search.value
-              handleParamsChange({
-                offset: 0,
-                search,
-              })
-              handleFilterChange({ search })
-              if (searchRef.current) {
-                searchRef.current.select()
-              }
-            },
-            1000,
-            'PFilterSearch',
-          )
-        }}
+        {...{ form, filters, handleFilterChange, handleParamsChange }}
       />
       {mode === 'listing' && (
         <Field

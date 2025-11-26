@@ -45,11 +45,13 @@ import { enqueueSnackbar } from 'notistack'
 const ProjectsEdit = ({
   project,
   mode,
+  setParams,
   postExComUpdate = false,
   approval = false,
 }: {
   project: ProjectTypeApi
   mode: string
+  setParams?: any
   postExComUpdate?: boolean
   approval?: boolean
 }) => {
@@ -213,7 +215,6 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
   const [projectId, setProjectId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
@@ -339,6 +340,7 @@ const ProjectsEdit = ({
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
           meeting: project.meeting_id,
           decision: project.decision_id,
+          date_completion: project.project_end_date,
         },
       }))
       approvalFieldsValuesLoaded.current = true
@@ -485,12 +487,12 @@ const ProjectsEdit = ({
             mode,
             postExComUpdate,
             project,
+            setParams,
             projectData,
             projectFiles,
             files,
             setProjectId,
             setErrors,
-            setHasSubmitted,
             setFileErrors,
             setOtherErrors,
             setProjectFiles,
@@ -516,7 +518,6 @@ const ProjectsEdit = ({
             setFiles,
             projectFiles,
             errors,
-            hasSubmitted,
             fileErrors,
             trancheErrors,
             getTrancheErrors,

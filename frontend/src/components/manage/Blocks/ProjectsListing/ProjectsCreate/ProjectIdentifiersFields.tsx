@@ -51,7 +51,6 @@ const ProjectIdentifiersFields = ({
   setCurrentStep,
   setCurrentTab,
   errors,
-  hasSubmitted,
   mode,
   project,
   postExComUpdate,
@@ -91,6 +90,7 @@ const ProjectIdentifiersFields = ({
       (!project?.component ||
         project?.id === project?.component?.original_project_id) &&
       (project?.submission_status === 'Withdrawn' || project?.version === 1))
+  const isMeetingDisabled = !(canEditMeeting && areNextSectionsDisabled)
 
   const isAgencyDisabled =
     (isV3Project && !!project?.agency_id) ||
@@ -114,6 +114,7 @@ const ProjectIdentifiersFields = ({
 
   const hasNextButtons =
     mode !== 'edit' ||
+    canEditMeeting ||
     !(
       isAgencyDisabled &&
       isClusterDisabled &&
@@ -284,9 +285,6 @@ const ProjectIdentifiersFields = ({
     }))
   }
 
-  const getIsInputDisabled = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
-
   return (
     <>
       {postExComUpdate ? (
@@ -368,9 +366,6 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(countries, option)
                     }
                     disabled={!isAddOrCopy || !areNextSectionsDisabled}
-                    Input={{
-                      error: getIsInputDisabled('country'),
-                    }}
                     {...firstColFieldsProps}
                   />
                 </div>
@@ -391,13 +386,12 @@ const ProjectIdentifiersFields = ({
                   options={useMeetingOptions()}
                   onChange={handleChangeMeeting}
                   onClear={() => handleChangeMeeting()}
-                  disabled={!canEditMeeting}
+                  disabled={isMeetingDisabled}
                   className={cx('!m-0 h-10 !py-1', {
-                    'border-red-500': getIsInputDisabled('meeting'),
-                    [disabledClassName]: !canEditMeeting,
+                    [disabledClassName]: isMeetingDisabled,
                   })}
                   clearBtnClassName="right-1"
-                  withClear={canEditMeeting}
+                  withClear={!isMeetingDisabled}
                 />
               </div>
               <div className="w-8">
@@ -443,9 +437,6 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={isAgencyDisabled || !areNextSectionsDisabled}
-                  Input={{
-                    error: getIsInputDisabled('agency'),
-                  }}
                   {...sectionDefaultProps}
                 />
                 <FieldErrorIndicator errors={errors} field="agency" />
@@ -468,9 +459,6 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(clusters, option)
                     }
                     disabled={isClusterDisabled || !areNextSectionsDisabled}
-                    Input={{
-                      error: getIsInputDisabled('cluster'),
-                    }}
                     {...firstColFieldsProps}
                   />
                 </div>
@@ -561,9 +549,6 @@ const ProjectIdentifiersFields = ({
                   }}
                   getOptionLabel={(option) => getOptionLabel(agencies, option)}
                   disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
-                  Input={{
-                    error: getIsInputDisabled('lead_agency'),
-                  }}
                   {...firstColFieldsProps}
                 />
               </div>

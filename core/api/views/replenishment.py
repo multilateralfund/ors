@@ -1975,8 +1975,12 @@ class ReplenishmentInvoiceViewSet(
         files = self._parse_invoice_new_files(request)
 
         # request.data is not mutable and we need to perform some boolean-string magic
-        # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
+        # for the is_ferm and file fields, because we receive it from a form.
+        request_data = {
+            key: value
+            for key, value in request.data.items()
+            if not key.startswith("files[")
+        }
 
         is_ferm = self._parse_is_ferm_flag(request)
         request_data["is_ferm"] = is_ferm
@@ -2010,15 +2014,19 @@ class ReplenishmentInvoiceViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        new_files = self._parse_invoice_new_files(request)
+        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
+
         # request.data is not mutable and we need to perform some boolean-string magic
-        # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
+        # for the is_ferm and file fields, because we receive it from a form.
+        request_data = {
+            key: value
+            for key, value in request.data.items()
+            if not key.startswith("files[")
+        }
 
         is_ferm = self._parse_is_ferm_flag(request)
         request_data["is_ferm"] = is_ferm
-
-        new_files = self._parse_invoice_new_files(request)
-        files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
         # First perform the update for the Invoice fields
         serializer = InvoiceCreateSerializer(current_obj, data=request_data)
@@ -2337,8 +2345,9 @@ class ReplenishmentPaymentViewSet(
         files = self._parse_payment_new_files(request)
         if file_errors := validate_files([f["contents"] for f in files]):
             return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
+
         # request.data is not mutable and we need to perform some boolean-string magic
-        # for the is_ferm field, because we receive it from a forn.
+        # for the is_ferm and file fields, because we receive it from a form.
         request_data = request.data.copy()
 
         is_ferm = self._parse_is_ferm_flag(request)
@@ -2375,16 +2384,17 @@ class ReplenishmentPaymentViewSet(
         previous_amount = current_obj.amount_assessed
         previous_ferm_gain_loss = current_obj.ferm_gain_or_loss
 
-        # request.data is not mutable and we need to perform some string-bollean magic
-        # for the is_ferm field, because we receive it from a forn.
-        request_data = request.data.copy()
-        is_ferm = self._parse_is_ferm_flag(request)
-        request_data["is_ferm"] = is_ferm
-
         new_files = self._parse_payment_new_files(request)
         if file_errors := validate_files([f["contents"] for f in new_files]):
             return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
+
+        # request.data is not mutable and we need to perform some boolean-string magic
+        # for the is_ferm and file fields, because we receive it from a form.
+        request_data = request.data.copy()
+
+        is_ferm = self._parse_is_ferm_flag(request)
+        request_data["is_ferm"] = is_ferm
 
         # First perform the update for the Payment fields
         serializer = PaymentCreateSerializer(current_obj, data=request_data)

@@ -2,6 +2,7 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import {
   initialTranferedProjectData,
+  PROJECTS_PER_PAGE,
   tableColumns,
   validationFieldsPairs,
 } from './constants'
@@ -472,6 +473,7 @@ export const getCrossCuttingErrors = (
   errors: { [key: string]: [] },
   mode: string,
   project: ProjectTypeApi | undefined,
+  validateApproval: boolean,
 ) => {
   const requiredFields = [
     'title',
@@ -490,7 +492,13 @@ export const getCrossCuttingErrors = (
       : requiredFields
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [
+        ...requiredFields,
+        'subsector_ids',
+        'blanket_or_individual_consideration',
+      ].includes(key),
+    ),
   )
 
   const { total_fund, support_cost_psc, project_start_date, project_end_date } =
@@ -504,6 +512,12 @@ export const getCrossCuttingErrors = (
     ...(Number(total_fund) < Number(support_cost_psc) && {
       support_cost_psc: ['Value cannot be greater than project funding.'],
     }),
+    ...(validateApproval &&
+      mode === 'edit' &&
+      (project?.version ?? 0) >= 3 &&
+      dayjs(project_end_date).isBefore(dayjs(), 'day') && {
+        project_end_date: ['Cannot be a past date.'],
+      }),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
@@ -513,6 +527,7 @@ export const getCrossCuttingErrors = (
 
 export const getApprovalErrors = (
   approvalData: SpecificFields,
+  crossCuttingFields: CrossCuttingFields,
   specificFields: ProjectSpecificFields[] | undefined = [],
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
@@ -525,13 +540,20 @@ export const getApprovalErrors = (
   ]
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [...requiredFields, 'funding_window'].includes(key),
+    ),
   )
 
   const allErrors = {
     ...getFieldErrors(requiredFields, approvalData, project),
     ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
       date_completion: ['Cannot be a past date.'],
+    }),
+    ...(dayjs(approvalData.date_completion).isBefore(
+      dayjs(crossCuttingFields.project_start_date),
+    ) && {
+      date_completion: ['Start date cannot be later than date of completion.'],
     }),
     ...filteredErrors,
   }
@@ -749,8 +771,12 @@ export const getMenus = (
     canTransferProjects,
     canViewMetaProjects,
   } = permissions
-  const { projectId, projectSubmissionStatus, projectStatus } =
-    projectData ?? {}
+  const {
+    projectId,
+    projectSubmissionStatus,
+    projectStatus,
+    projectMetaprojectId,
+  } = projectData ?? {}
 
   return [
     {
@@ -773,8 +799,9 @@ export const getMenus = (
       menuItems: [
         {
           title: 'Update MYA data',
-          url: '/projects-listing/update-mya-data',
-          disabled: !canViewMetaProjects,
+          url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
+          disabled:
+            !canViewMetaProjects || (!!projectId && !projectMetaprojectId),
         },
         {
           title: 'Update post ExCom fields',
@@ -940,6 +967,11 @@ export const getPaginationSelectorOpts = (
   return count < maxResults
     ? [...filteredNrResultsOptions, count]
     : filteredNrResultsOptions
+}
+
+export const getPaginationPageSize = (count: number, nrEntries?: number) => {
+  const entriesPerPage = nrEntries ?? PROJECTS_PER_PAGE
+  return min([count, entriesPerPage])
 }
 
 export const getAreFiltersApplied = (filters: Record<string, any>) =>

@@ -335,6 +335,11 @@ export default function App() {
             <ProjectsUpdateMyaDataPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/update-mya-data/:metaproject_id">
+          <ProjectsDataProvider>
+            <ProjectsUpdateMyaDataPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/enterprises">
           <ProjectsDataProvider>
             <EnterprisesPage />

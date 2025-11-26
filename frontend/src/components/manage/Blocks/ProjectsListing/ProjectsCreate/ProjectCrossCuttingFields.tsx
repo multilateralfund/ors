@@ -51,7 +51,6 @@ const ProjectCrossCuttingFields = ({
   setProjectData,
   project,
   errors = {},
-  hasSubmitted,
   nextStep,
   setCurrentTab,
   fieldsOpts,
@@ -148,15 +147,11 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const getIsInputDisabled = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
-
   const getFieldDefaultProps = (field: string) => {
     return {
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          'border-red-500': getIsInputDisabled(field),
           [disabledClassName]:
             !canEditField(editableFields, field) ||
             ['fund_transferred', 'psc_transferred'].includes(field),
@@ -213,9 +208,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={!canEditField(editableFields, 'description')}
-                    className={cx(textAreaClassname + ' max-w-[64rem]', {
-                      'border-red-500': getIsInputDisabled('description'),
-                    })}
+                    className={cx(textAreaClassname, 'max-w-[64rem]')}
                     maxLength={1000}
                     style={STYLE}
                     minRows={7}
@@ -269,9 +262,6 @@ const ProjectCrossCuttingFields = ({
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'project_type')
                       }
-                      Input={{
-                        error: getIsInputDisabled('project_type'),
-                      }}
                       {...sectionDefaultProps}
                     />
                     <div className="w-5">
@@ -305,9 +295,6 @@ const ProjectCrossCuttingFields = ({
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'sector')
                       }
-                      Input={{
-                        error: getIsInputDisabled('sector'),
-                      }}
                       {...sectionDefaultProps}
                     />
                     <FieldErrorIndicator errors={errors} field="sector" />
@@ -337,13 +324,13 @@ const ProjectCrossCuttingFields = ({
                           getOptionLabel(subsectors, option)
                         }
                         disabled={!canEditField(editableFields, 'subsectors')}
-                        Input={{
-                          error: getIsInputDisabled('subsector_ids'),
-                        }}
                         FieldProps={{ className: 'w-full BPListUpload mb-0' }}
                       />
                     </div>
-                    <FieldErrorIndicator errors={errors} field="subsector" />
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="subsector_ids"
+                    />
                   </div>
                 </div>
               )}
@@ -368,9 +355,6 @@ const ProjectCrossCuttingFields = ({
                         getOptionLabel(lvcNonLvcOpts, option)
                       }
                       disabled={!canEditField(editableFields, 'is_lvc')}
-                      Input={{
-                        error: getIsInputDisabled('is_lvc'),
-                      }}
                       {...defaultProps}
                     />
                     <FieldErrorIndicator errors={errors} field="is_lvc" />
@@ -486,8 +470,6 @@ const ProjectCrossCuttingFields = ({
                       }
                       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                       className={cx(defaultPropsDateInput.className, {
-                        'border-red-500':
-                          getIsInputDisabled('project_start_date'),
                         [disabledClassName]:
                           (mode === 'edit' &&
                             submission_status === 'Approved' &&
@@ -511,21 +493,27 @@ const ProjectCrossCuttingFields = ({
                     <DateInput
                       id="project_end_date"
                       value={project_end_date as string}
-                      onChange={(event) =>
+                      onChange={(event) => {
                         changeField(
                           event.target.value || null,
                           'project_end_date',
                           setProjectData,
                           sectionIdentifier,
                         )
-                      }
+                        if (mode === 'edit' && (project?.version ?? 0) >= 3) {
+                          changeField(
+                            event.target.value || null,
+                            'date_completion',
+                            setProjectData,
+                            'approvalFields',
+                          )
+                        }
+                      }}
                       disabled={
                         !canEditField(editableFields, 'project_end_date')
                       }
                       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                       className={cx(defaultPropsDateInput.className, {
-                        'border-red-500':
-                          getIsInputDisabled('project_end_date'),
                         [disabledClassName]: !canEditField(
                           editableFields,
                           'project_end_date',
@@ -578,11 +566,6 @@ const ProjectCrossCuttingFields = ({
                         'blanket_or_individual_consideration',
                       )
                     }
-                    Input={{
-                      error: getIsInputDisabled(
-                        'blanket_or_individual_consideration',
-                      ),
-                    }}
                     {...{
                       ...defaultProps,
                       FieldProps: {

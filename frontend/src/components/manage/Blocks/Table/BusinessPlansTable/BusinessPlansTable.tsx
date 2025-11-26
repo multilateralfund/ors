@@ -22,6 +22,7 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import { getPaginationPageSize } from '../../ProjectsListing/utils'
 import { formatDecimalValue, getResults } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -215,6 +216,10 @@ export const BPTable = ({
     return [...filteredNrResultsOptions, count]
   }
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
+  const paginationPageSize = getPaginationPageSize(
+    count,
+    bpPerPage || BP_PER_PAGE,
+  )
 
   return (
     loaded && (
@@ -226,7 +231,7 @@ export const BPTable = ({
         enablePagination={true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={bpPerPage || BP_PER_PAGE}
+        paginationPageSize={paginationPageSize}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowCount={count}

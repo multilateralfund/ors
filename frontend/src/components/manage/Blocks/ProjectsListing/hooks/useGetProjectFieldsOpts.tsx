@@ -6,7 +6,7 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'
 
-import { debounce, filter, find } from 'lodash'
+import { debounce, filter, find, sortBy } from 'lodash'
 
 const useGetProjectFieldsOpts = (
   projectData: ProjectData,
@@ -32,7 +32,9 @@ const useGetProjectFieldsOpts = (
     [],
   )
   const crtSubsectorsOpts = filter(subsectorsOpts, (opt) => !opt.obsolete)
-  const subsectors = mode === 'edit' ? subsectorsOpts : crtSubsectorsOpts
+  const unsortedSsubsectors =
+    mode === 'edit' ? subsectorsOpts : crtSubsectorsOpts
+  const subsectors = sortBy(unsortedSsubsectors, 'id')
 
   const fetchProjectTypes = async () => {
     try {

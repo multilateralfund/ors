@@ -59,7 +59,6 @@ const EditActionButtons = ({
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
-  setHasSubmitted,
   setFileErrors,
   setOtherErrors,
   setErrors,
@@ -68,6 +67,7 @@ const EditActionButtons = ({
   trancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
+  setParams,
   postExComUpdate,
   bpData,
   filesMetaData,
@@ -79,6 +79,7 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
   approvalFields?: ProjectSpecificFields[]
+  setParams?: any
   postExComUpdate?: boolean
   bpData: BpDataProps
 }) => {
@@ -138,12 +139,19 @@ const EditActionButtons = ({
   const isAfterApproval = isApproved || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
+    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project, false),
     [crossCuttingFields],
   )
   const approvalErrors = useMemo(
-    () => getApprovalErrors(approvalData, approvalFields, {}, project),
-    [approvalData, approvalFields],
+    () =>
+      getApprovalErrors(
+        approvalData,
+        crossCuttingFields,
+        approvalFields,
+        {},
+        project,
+      ),
+    [approvalData, crossCuttingFields, approvalFields],
   )
 
   const specificErrors = useMemo(
@@ -204,7 +212,7 @@ const EditActionButtons = ({
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
       : hasSectionErrors(impactErrors)) ||
-    (isRecommended &&
+    (isAfterApproval &&
       dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit =
@@ -398,16 +406,20 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
-      if (isRecommended) {
+      if (isRecommended || isAfterApproval) {
         await editApprovalFields()
       }
+
+      if (postExComUpdate) {
+        setParams((prev: any) => ({ ...prev }))
+      }
+
       return true
     } catch (error) {
       await handleErrors(error)
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(false)
     }
   }
 
@@ -498,7 +510,6 @@ const EditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(false)
     }
   }
 
@@ -515,7 +526,6 @@ const EditActionButtons = ({
         await handleErrors(error)
       } finally {
         setIsLoading(false)
-        setHasSubmitted(true)
       }
     }
   }

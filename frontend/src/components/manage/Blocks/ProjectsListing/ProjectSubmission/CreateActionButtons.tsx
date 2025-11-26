@@ -20,7 +20,6 @@ const CreateActionButtons = ({
   isSaveDisabled,
   setIsLoading,
   setErrors,
-  setHasSubmitted,
   setFileErrors,
   setOtherErrors,
   specificFields,
@@ -110,7 +109,6 @@ const CreateActionButtons = ({
       })
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 

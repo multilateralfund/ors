@@ -21,7 +21,6 @@ const ProjectImpact = ({
   project,
   sectionFields,
   errors = {},
-  hasSubmitted,
   setCurrentTab,
   postExComUpdate,
   nextStep,
@@ -72,8 +71,6 @@ const ProjectImpact = ({
             setProjectData,
             field,
             errors,
-            false,
-            hasSubmitted,
             filteredEditableFields,
           ),
       )
