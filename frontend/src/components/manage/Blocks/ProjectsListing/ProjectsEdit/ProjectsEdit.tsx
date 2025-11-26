@@ -9,6 +9,7 @@ import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
+  filterApprovalFields,
   getDefaultValues,
   getFieldData,
   getFileFromMetadata,
@@ -30,7 +31,6 @@ import {
   FileMetaDataType,
 } from '../interfaces'
 import {
-  approvalToOdsMap,
   considerationOpts,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
@@ -114,7 +114,6 @@ const ProjectsEdit = ({
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
-  const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
 
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
@@ -158,15 +157,7 @@ const ProjectsEdit = ({
 
   const approvalFields =
     isVersion3 && isArray(allFields)
-      ? allFields.filter((field) => {
-          const mappedField = approvalToOdsMap[field.write_field_name]
-
-          return (
-            field.section === 'Approval' &&
-            (field.table !== 'ods_odp' ||
-              (mappedField && odsOdpFieldsNames.includes(mappedField)))
-          )
-        })
+      ? allFields.filter((field) => filterApprovalFields(specificFields, field))
       : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
@@ -347,25 +338,27 @@ const ProjectsEdit = ({
     }
   }, [cluster, project_type, sector])
 
+  const approvalOdsFields = [
+    'total_phase_out_metric_tonnes',
+    'total_phase_out_odp_tonnes',
+    'total_phase_out_co2_tonnes',
+  ]
+
   useEffect(() => {
     if (
       isVersion3 &&
       !approvalFieldsValuesLoaded.current &&
       approvalFields.length > 0
     ) {
-      const fieldsValues: Record<string, any> = {
-        total_phase_out_metric_tonnes:
-          project.total_phase_out_metric_tonnes ??
-          project.computed_total_phase_out_metric_tonnes,
-        total_phase_out_odp_tonnes:
-          project.total_phase_out_odp_tonnes ??
-          project.computed_total_phase_out_odp_tonnes,
-        total_phase_out_co2_tonnes:
-          project.total_phase_out_co2_tonnes ??
-          project.computed_total_phase_out_co2_tonnes,
-      }
+      const fieldsValues = Object.fromEntries(
+        approvalOdsFields.map((field) => [
+          field,
+          project[field as keyof ProjectTypeApi] ??
+            project[`computed_${field}` as keyof ProjectTypeApi],
+        ]),
+      )
 
-      const filteredApprovalFields = pick(
+      const filteredFieldsValues = pick(
         fieldsValues,
         approvalFields.map((field) => field.write_field_name),
       )
@@ -377,9 +370,10 @@ const ProjectsEdit = ({
           meeting: project.meeting_id,
           decision: project.decision_id,
           date_completion: project.project_end_date,
-          ...filteredApprovalFields,
+          ...filteredFieldsValues,
         },
       }))
+
       if (fieldsValuesLoaded.current) {
         approvalFieldsValuesLoaded.current = true
       }
