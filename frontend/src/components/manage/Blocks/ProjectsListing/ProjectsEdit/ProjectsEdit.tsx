@@ -30,6 +30,7 @@ import {
   FileMetaDataType,
 } from '../interfaces'
 import {
+  approvalToOdsMap,
   considerationOpts,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
@@ -39,8 +40,17 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+import {
+  debounce,
+  groupBy,
+  map,
+  filter,
+  find,
+  replace,
+  isArray,
+  pick,
+} from 'lodash'
 
 const ProjectsEdit = ({
   project,
@@ -104,6 +114,7 @@ const ProjectsEdit = ({
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+  const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
 
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
@@ -147,7 +158,15 @@ const ProjectsEdit = ({
 
   const approvalFields =
     isVersion3 && isArray(allFields)
-      ? allFields.filter((field) => field.section === 'Approval')
+      ? allFields.filter((field) => {
+          const mappedField = approvalToOdsMap[field.write_field_name]
+
+          return (
+            field.section === 'Approval' &&
+            (field.table !== 'ods_odp' ||
+              (mappedField && odsOdpFieldsNames.includes(mappedField)))
+          )
+        })
       : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
@@ -334,6 +353,23 @@ const ProjectsEdit = ({
       !approvalFieldsValuesLoaded.current &&
       approvalFields.length > 0
     ) {
+      const fieldsValues: Record<string, any> = {
+        total_phase_out_metric_tonnes:
+          project.total_phase_out_metric_tonnes ??
+          project.computed_total_phase_out_metric_tonnes,
+        total_phase_out_odp_tonnes:
+          project.total_phase_out_odp_tonnes ??
+          project.computed_total_phase_out_odp_tonnes,
+        total_phase_out_co2_tonnes:
+          project.total_phase_out_co2_tonnes ??
+          project.computed_total_phase_out_co2_tonnes,
+      }
+
+      const filteredApprovalFields = pick(
+        fieldsValues,
+        approvalFields.map((field) => field.write_field_name),
+      )
+
       setProjectData((prevData) => ({
         ...prevData,
         approvalFields: {
@@ -341,9 +377,12 @@ const ProjectsEdit = ({
           meeting: project.meeting_id,
           decision: project.decision_id,
           date_completion: project.project_end_date,
+          ...filteredApprovalFields,
         },
       }))
-      approvalFieldsValuesLoaded.current = true
+      if (fieldsValuesLoaded.current) {
+        approvalFieldsValuesLoaded.current = true
+      }
     }
   }, [approvalFields, approvalFieldsValuesLoaded])
 

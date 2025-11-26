@@ -190,6 +190,12 @@ export type ProjectTypeApi = ProjIdentifiers &
     transfer_meeting: string
     transfer_meeting_id: number | null
     transfer_excom_provision: string
+    total_phase_out_metric_tonnes: string | null
+    total_phase_out_odp_tonnes: string | null
+    total_phase_out_co2_tonnes: string | null
+    computed_total_phase_out_metric_tonnes: string | null
+    computed_total_phase_out_odp_tonnes: string | null
+    computed_total_phase_out_co2_tonnes: string | null
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
