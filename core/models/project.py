@@ -898,6 +898,27 @@ class Project(models.Model):
         blank=True,
         help_text="PCR waived",
     )
+    total_phase_out_metric_tonnes = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Total substance phase-out (metric tonnes). Filled during approval process.",
+    )
+    total_phase_out_odp_tonnes = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Total substance phase-out (ODP tonnes). Filled during approval process.",
+    )
+    total_phase_out_co2_tonnes = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Total substance phase-out (CO2-eq tonnes). Filled during approval process.",
+    )
 
     # impact indicators (old RBM measures)
     total_number_of_technicians_trained = models.IntegerField(
@@ -1279,6 +1300,20 @@ class Project(models.Model):
         ordering = ["-date_actual", "country__name", "serial_number"]
 
     @cached_property
+    def phase_out_data_for_approval(self):
+        data = {
+            "total_phase_out_metric_tonnes": 0,
+            "total_phase_out_odp_tonnes": 0,
+            "total_phase_out_co2_tonnes": 0,
+        }
+
+        for substance in self.ods_odp.all():
+            data["total_phase_out_metric_tonnes"] += substance.phase_out_mt or 0
+            data["total_phase_out_odp_tonnes"] += substance.odp or 0
+            data["total_phase_out_co2_tonnes"] += substance.co2_mt or 0
+        return data
+
+    @cached_property
     def phase_out_data(self):
         # Make sure that we return None (not 0) if no data is available
         data = {
@@ -1327,6 +1362,18 @@ class Project(models.Model):
     @property
     def production_phase_out_co2(self):
         return self.phase_out_data["production_co2"]
+
+    @property
+    def computed_total_phase_out_metric_tonnes(self):
+        return self.phase_out_data_for_approval["total_phase_out_metric_tonnes"]
+
+    @property
+    def computed_total_phase_out_odp_tonnes(self):
+        return self.phase_out_data_for_approval["total_phase_out_odp_tonnes"]
+
+    @property
+    def computed_total_phase_out_co2_tonnes(self):
+        return self.phase_out_data_for_approval["total_phase_out_co2_tonnes"]
 
     def copy_project(self, duplicate_files=False, remove_legacy_data=False):
         def _get_new_file_path(original_file_name, new_project_id):
