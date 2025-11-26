@@ -19,6 +19,10 @@ import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { IoClipboardOutline, IoInformationCircleOutline } from 'react-icons/io5'
+import {
+  AnnualAgencyProjectReport,
+  AnnualProjectReport,
+} from '@ors/app/annual-project-report/types.ts'
 
 const TABS = [
   {
@@ -49,13 +53,13 @@ export default function APREdit() {
     data: apr,
     loading,
     loaded,
-  } = useApi({
+  } = useApi<AnnualAgencyProjectReport>({
     options: {
       withStoreCache: false,
     },
     path: `api/annual-project-report/${year}/workspace/`,
   })
-  const [rows, setRows] = useState<any[]>([])
+  const [rows, setRows] = useState<AnnualProjectReport[]>([])
 
   // Copy the initial data in our state for modifying
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function APREdit() {
       return
     }
 
-    const allData: any[] = []
+    const allData: AnnualProjectReport[] = []
     gridRef.current.api.forEachNode((node) => {
       allData.push(node.data)
     })
@@ -101,7 +105,7 @@ export default function APREdit() {
         },
       )
 
-      enqueueSnackbar(<>Submitted APR.</>, {
+      enqueueSnackbar(<>Saved APR.</>, {
         variant: 'success',
       })
     } catch (e) {

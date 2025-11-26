@@ -28,12 +28,10 @@ import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.ts
 import Link from '@ors/components/ui/Link/Link.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import SubmitButton from '@ors/components/manage/Blocks/AnnualProgressReport/SubmitButton.tsx'
-
-interface Filter {
-  id: string
-  name: string
-  code?: string
-}
+import {
+  AnnualAgencyProjectReport,
+  Filter,
+} from '@ors/app/annual-project-report/types.ts'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -54,7 +52,7 @@ export default function APRWorkspace() {
     loaded,
     setParams,
     refetch,
-  } = useApi({
+  } = useApi<AnnualAgencyProjectReport>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR,
@@ -203,7 +201,7 @@ export default function APRWorkspace() {
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            rowData={apr.project_reports}
+            rowData={apr?.project_reports ?? []}
             tooltipShowDelay={200}
           />
         )}
@@ -214,7 +212,7 @@ export default function APRWorkspace() {
           setIsModalOpen={setIsUploadDocumentsModalOpen}
           year={year}
           agencyId={user.agency_id}
-          oldFiles={apr.files}
+          oldFiles={apr?.files ?? []}
           revalidateFiles={refetch}
           disabled={!isDraft || !canEditAPR || loading}
         />
