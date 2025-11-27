@@ -139,9 +139,9 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
 class MetaProjectMyaSerializer(serializers.ModelSerializer):
     lead_agency = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
     clusters = serializers.SerializerMethodField()
     sectors = serializers.SerializerMethodField()
+    country = CountrySerializer()
 
     class Meta:
         model = MetaProject
@@ -159,15 +159,14 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
         lead_agency = obj.projects.first().lead_agency
         return AgencySerializer(lead_agency).data
 
-    def get_country(self, obj):
-        country = obj.projects.first().country
-        return CountrySerializer(country).data
-
     def get_clusters(self, obj):
         clusters = set()
         for project in obj.projects.all():
             clusters.add(project.cluster)
         return [ProjectClusterSerializer(cluster).data for cluster in clusters]
+
+    def get_country(self, obj):
+        return CountrySerializer(obj.country).data
 
     def get_sectors(self, obj):
         sectors = set()
