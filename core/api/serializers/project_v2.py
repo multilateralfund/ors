@@ -58,11 +58,11 @@ HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
 HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
 HISTORY_DESCRIPTION_TRANSFER = "Project transferred"
-HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.
-                            Old code: {}
-                            New code: {}
-                            Old metacode: {}
-                            New metacode: {}
+HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.\n
+                            Old code: {}\n
+                            New code: {}\n
+                            Old metacode: {}\n
+                            New metacode: {}\n
                            """
 
 
