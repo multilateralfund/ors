@@ -80,7 +80,6 @@ export default function EndorseAprModal({
           </div>
         </form>
         <div className="ml-auto mr-6 flex gap-3">
-          <CancelButton onClick={() => setIsModalOpen(false)} />
           <Button
             // TODO: Endorsement when endpoint is ready
             disabled={disabled || true}
@@ -90,6 +89,7 @@ export default function EndorseAprModal({
           >
             Endorse
           </Button>
+          <CancelButton onClick={() => setIsModalOpen(false)} />
         </div>
       </Box>
     </Modal>

@@ -216,7 +216,6 @@ export default function UploadDocumentsModal({
           </div>
         </form>
         <div className="ml-auto mr-6 flex gap-3">
-          <CancelButton onClick={() => setIsModalOpen(false)} />
           <Button
             disabled={disabled}
             variant="contained"
@@ -225,6 +224,7 @@ export default function UploadDocumentsModal({
           >
             Save files
           </Button>
+          <CancelButton onClick={() => setIsModalOpen(false)} />
         </div>
       </Box>
     </Modal>
