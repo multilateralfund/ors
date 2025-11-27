@@ -11,6 +11,7 @@ import ExportConfirmModal from './ExportConfirmModal'
 import { defaultProps, exportButtonClassname } from '../constants'
 import { ProjectDocs, ProjectFile } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
+import useApi from '@ors/hooks/useApi'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
@@ -33,10 +34,19 @@ export function FilesViewer(props: ProjectDocs) {
   } = props
 
   const { fileTypes } = useContext(ProjectsDataContext)
-  const fileTypesOpts = map(fileTypes, (type) => ({
-    id: type[0],
-    name: type[1],
-  }))
+  const { data: commonFileTypes } = useApi({
+    options: {
+      withStoreCache: true,
+    },
+    path: 'api/file-types/',
+  })
+
+  const formatOption = ([id, name]: [number, string]) => ({ id, name })
+
+  const allFileTypesOpts = map(fileTypes, formatOption)
+
+  const crtFileTypesOpts = mode === 'transfer' ? fileTypes : commonFileTypes
+  const fileTypesOpts = map(crtFileTypesOpts, formatOption)
 
   const firstColFieldsProps = {
     ...defaultProps,
@@ -218,7 +228,7 @@ export function FilesViewer(props: ProjectDocs) {
                               handleChangeFileType(value, index)
                             }
                             getOptionLabel={(option) =>
-                              getOptionLabel(fileTypesOpts, option)
+                              getOptionLabel(allFileTypesOpts, option)
                             }
                             disabled={!isFileEditable}
                             {...firstColFieldsProps}

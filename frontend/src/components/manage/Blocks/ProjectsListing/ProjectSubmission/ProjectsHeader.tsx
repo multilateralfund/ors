@@ -36,6 +36,7 @@ const ProjectsHeader = ({
   approvalFields,
   bpData,
   filesMetaData,
+  loadedFiles,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -46,6 +47,7 @@ const ProjectsHeader = ({
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
   bpData: BpDataProps
+  loadedFiles?: boolean
 }) => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
@@ -67,6 +69,7 @@ const ProjectsHeader = ({
   )
 
   const isSaveDisabled =
+    (mode !== 'add' && !loadedFiles) ||
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
