@@ -122,6 +122,7 @@ const ProjectsEdit = ({
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
 
   const { files: data, loadedFiles } = useGetProjectFiles(parseInt(project_id))
+  const areFilesLoaded = loadedFiles && filesLoaded.current
 
   const {
     fetchProjectFields,
@@ -549,6 +550,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
           }}
+          loadedFiles={areFilesLoaded}
         />
         <ProjectsCreate
           {...{
@@ -579,7 +581,7 @@ const ProjectsEdit = ({
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
             !(cluster && project_type && sector)
           }
-          loadedFiles={loadedFiles && filesLoaded.current}
+          loadedFiles={areFilesLoaded}
         />
         <ProjectFormFooter
           id={projectId}
