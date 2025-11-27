@@ -50,6 +50,20 @@ class MetaProject(models.Model):
         blank=True,
         help_text="Obsolete. Replaced by the metacode in Project model.",
     )
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE,
+        related_name="meta_projects",
+        null=True,
+        blank=True,
+    )
+    cluster = models.ForeignKey(
+        ProjectCluster,
+        on_delete=models.CASCADE,
+        related_name="meta_projects",
+        null=True,
+        blank=True,
+    )
     umbrella_code = models.CharField(
         max_length=255,
         null=True,
@@ -426,7 +440,9 @@ class Project(models.Model):
         blank=True,
         help_text="""
             Old field from the initial imported data/implementation of projects.
-            Still relevant in the generation of the project code?!
+            It is required in the generation of the project sub-code.
+            The serial number should be saved when the project is approved and
+            should not change afterwards. It should be used when re-generating the project sub-code.
         """,
     )
     additional_funding = models.BooleanField(

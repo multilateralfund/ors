@@ -278,10 +278,10 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Total phase out (M t)",
-        "LABEL": "Total phase out (M t)",
-        "WRITE_FIELD_NAME": "total_phase_out_metric_tonnes",
-        "READ_FIELD_NAME": "total_phase_out_metric_tonnes",
+        "IMPORT_NAME": "Total phase out (CO2-eq t)",
+        "LABEL": "Total phase out (CO2-eq t)",
+        "WRITE_FIELD_NAME": "total_phase_out_co2_tonnes",
+        "READ_FIELD_NAME": "total_phase_out_co2_tonnes",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Approval",
@@ -302,10 +302,10 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Total phase out (CO2-eq t)",
-        "LABEL": "Total phase out (CO2-eq t)",
-        "WRITE_FIELD_NAME": "total_phase_out_co2_tonnes",
-        "READ_FIELD_NAME": "total_phase_out_co2_tonnes",
+        "IMPORT_NAME": "Total phase out (M t)",
+        "LABEL": "Total phase out (M t)",
+        "WRITE_FIELD_NAME": "total_phase_out_metric_tonnes",
+        "READ_FIELD_NAME": "total_phase_out_metric_tonnes",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Approval",

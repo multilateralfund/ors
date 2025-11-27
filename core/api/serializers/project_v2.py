@@ -1523,6 +1523,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.serial_number,
             new_transfer_project.metacode,
         )
+        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
+            new_transfer_project.country.id
+        )
         new_transfer_project.save()
 
         project.transfer_meeting = self.validated_data.get("transfer_meeting")

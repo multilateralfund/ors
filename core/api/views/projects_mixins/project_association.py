@@ -21,7 +21,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.utils import get_project_sub_code, get_umbrella_code
+from core.utils import get_project_sub_code
 
 
 class ProjectAssociationMixin:
@@ -79,19 +79,15 @@ class ProjectAssociationMixin:
         if not meta_project:
             project_category = validated_data["projects"].first().category
             country = validated_data["projects"].first().country
-            # do we need to receive it from FE?!
             metacode = validated_data["projects"].first().metacode
             meta_project = MetaProject.objects.create(
-                umbrella_code=get_umbrella_code(country),
+                umbrella_code=metacode,
+                country=country,
+                cluster=validated_data["projects"].first().cluster,
                 type=project_category,
             )
         else:
-            metacode = (
-                meta_project.projects.filter(metacode__isnull=False)
-                .order_by("date_created")
-                .first()
-                .metacode
-            )
+            metacode = meta_project.umbrella_code
 
         for project in validated_data["projects"]:
             old_project_code = project.code

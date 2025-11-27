@@ -13,26 +13,6 @@ IMPORT_DB_OLDEST_MAX_YEAR = 2004
 VALIDATION_MIN_YEAR = 2023
 
 
-def get_umbrella_code(country):
-    country_code = country.iso3 or country.abbr
-    prefix = f"meta/{country_code}/"
-    serials = []
-
-    umbrellas = MetaProject.objects.filter(
-        umbrella_code__startswith=prefix
-    ).values_list("umbrella_code", flat=True)
-    for umb in umbrellas:
-        try:
-            serial = int(umb.split("/")[-1])
-            serials.append(serial)
-        except (IndexError, ValueError):
-            continue
-    serial_number = 1
-    if serials:
-        serial_number = max(serials) + 1
-    return f"meta/{country_code}/{serial_number:08d}"
-
-
 def get_meta_project_code(country, cluster, serial_number=None):
     """
     Get a new meta project code for a country and a cluster
@@ -108,42 +88,6 @@ def get_project_sub_code(
     )
 
 
-def generate_project_metacode(project):
-    """
-    Get the metacode for a project.
-    Components should have the same metacode.
-    If the category if MYA, the project needs to be placed under the existing metacode of
-    the same country and cluster.
-    """
-    component = getattr(project, "component", None)
-    if component:
-        existing_metacode = (
-            Project.objects.filter(component=component, metacode__isnull=False)
-            .values_list("metacode", flat=True)
-            .first()
-        )
-        if existing_metacode:
-            return existing_metacode
-    if project.category == Project.Category.MYA:
-        existing_metacode = (
-            Project.objects.filter(
-                category=Project.Category.MYA,
-                cluster=project.cluster,
-                country=project.country,
-                metacode__isnull=False,
-            )
-            .values_list("metacode", flat=True)
-            .first()
-        )
-        if existing_metacode:
-            return existing_metacode
-    metacode = get_meta_project_code(
-        project.country,
-        project.cluster,
-    )
-    return metacode
-
-
 def post_approval_changes(project):
     """
     Generate project code and meta code when a project is approved.
@@ -151,9 +95,50 @@ def post_approval_changes(project):
     (even if the components are not approved yet).
     """
 
-    # generate or retrieve meta code
-    project.metacode = generate_project_metacode(project)
+    # create meta project (if required)
+    if project.component:
+        meta_project = MetaProject.objects.filter(
+            projects__component=project.component
+        ).first()
+        if not meta_project:
+            meta_project = MetaProject.objects.create(
+                umbrella_code=get_meta_project_code(
+                    project.country,
+                    project.cluster,
+                ),
+                country=project.country,
+                cluster=project.cluster,
+                type=project.category,
+            )
+        project.meta_project = meta_project
+        project.save()
+    elif project.category == Project.Category.MYA:
+        # MYA projects must have a meta project to allow the update of the MYA fields
+        # The system atempts to find an existing meta project for the country and cluster
+        # if not found, a new one is created
+        meta_project = MetaProject.objects.filter(
+            country=project.country, cluster=project.cluster, type=Project.Category.MYA
+        ).first()
+        if not meta_project:
+            meta_project = MetaProject.objects.create(
+                country=project.country,
+                cluster=project.cluster,
+                type=Project.Category.MYA,
+                umbrella_code=get_meta_project_code(
+                    project.country,
+                    project.cluster,
+                ),
+            )
+        project.meta_project = meta_project
+        project.save()
 
+    if project.meta_project:
+        project.metacode = project.meta_project.umbrella_code
+    else:
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
     # generate project code
     project.code = get_project_sub_code(
         project.country,
@@ -166,24 +151,6 @@ def post_approval_changes(project):
         project.serial_number,
         project.metacode,
     )
+    project.serial_number = Project.objects.get_next_serial_number(project.country.id)
     project.save()
-
-    # create meta project (if required)
-    if project.component:
-        meta_project = MetaProject.objects.filter(
-            projects__component=project.component
-        ).first()
-        if not meta_project:
-            meta_project = MetaProject.objects.create(
-                umbrella_code=get_umbrella_code(project.country), type=project.category
-            )
-        project.meta_project = meta_project
-        project.save()
-    elif project.category == Project.Category.MYA:
-        # MYA projects must have a meta project to allow the update of the MYA fields
-        meta_project = MetaProject.objects.create(
-            umbrella_code=get_umbrella_code(project.country), type=project.category
-        )
-        project.meta_project = meta_project
-        project.save()
     return project
