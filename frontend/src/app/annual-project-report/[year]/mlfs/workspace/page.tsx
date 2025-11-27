@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   Chip,
+  Link,
   Tabs,
 } from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
@@ -35,14 +36,15 @@ import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
+  APRFile,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
 import { MdExpandMore } from 'react-icons/md'
-import { FiLock, FiUnlock } from 'react-icons/fi'
+import { FiFile, FiLock, FiUnlock } from 'react-icons/fi'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { enqueueSnackbar } from 'notistack'
-import { api } from '@ors/helpers'
+import { api, formatApiUrl } from '@ors/helpers'
 
 export default function APRMLFSWorkspace() {
   const [activeTab, setActiveTab] = useState(0)
@@ -519,7 +521,13 @@ export default function APRMLFSWorkspace() {
                           </div>
                         </div>
                       </AccordionSummary>
-                      <AccordionDetails>Details</AccordionDetails>
+                      <AccordionDetails>
+                        {agencyData.files.length > 0 ? (
+                          <FilesView files={agencyData.files} />
+                        ) : (
+                          'No files uploaded'
+                        )}
+                      </AccordionDetails>
                     </Accordion>
                   </li>
                 )
@@ -529,5 +537,48 @@ export default function APRMLFSWorkspace() {
         </div>
       </Box>
     </PageWrapper>
+  )
+}
+
+function FilesView({ files }: { files: APRFile[] }) {
+  const financialFile = files.find(
+    (file) => file.file_type === 'annual_progress_financial_report',
+  )
+  const supportingFiles = files.filter(
+    (file) => file.file_type === 'other_supporting_document',
+  )
+
+  return (
+    <div className="flex flex-col gap-y-4">
+      {financialFile && (
+        <div className="flex flex-col gap-y-2">
+          <p className="m-0 text-xl font-medium">
+            Annual Progress & Financial Report
+          </p>
+          <FileView file={financialFile} />
+        </div>
+      )}
+      {supportingFiles.length > 0 && (
+        <div className="flex flex-col gap-y-2">
+          <p className="m-0 text-xl font-medium">Other Supporting Documents</p>
+          <ul className="m-0 flex gap-x-4 p-0">
+            {supportingFiles.map((file) => (
+              <li className="m-0 list-none">
+                <FileView file={file} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FileView({ file }: { file: APRFile }) {
+  return (
+    <span className="inline-flex gap-x-2 rounded bg-[#f5f5f5] p-2">
+      <FiFile className="text-secondary" size={18} />
+      <Link href={formatApiUrl(file.file_url)}>{file.file_name}</Link>
+    </span>
   )
 }
