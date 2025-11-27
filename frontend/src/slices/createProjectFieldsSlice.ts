@@ -1,3 +1,5 @@
+import { ProjectSpecificFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
+import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { defaultSliceData } from './createYearRangesSlice'
 import type { CreateSliceProps, ProjectsFieldsSlice } from '@ors/types/store'
 import { fetchSliceData } from '@ors/helpers/Store/Store'
@@ -104,7 +106,13 @@ export const createProjectFieldsSlice = ({
 
       set(
         produce((state) => {
-          state.projectFields.projectFields = fields
+          const formattedFields = (fields || []).map(
+            (field: ProjectSpecificFields) => ({
+              ...field,
+              label: formatFieldLabel(field.label),
+            }),
+          )
+          state.projectFields.projectFields = formattedFields
         }),
       )
     },
