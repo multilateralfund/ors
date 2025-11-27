@@ -91,6 +91,9 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
 
   const { data: fileTypes } = useApi({
     options: {
+      params: {
+        include_transferred_options: true,
+      },
       withStoreCache: true,
     },
     path: 'api/file-types/',
