@@ -39,6 +39,7 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportFileSerializer,
     AnnualProjectReportFileUploadSerializer,
     AnnualAgencyProjectReportStatusUpdateSerializer,
+    AnnualProgressReportEndorseSerializer,
 )
 
 
@@ -627,10 +628,6 @@ class APREndorseView(APIView):
     def post(self, request, year):
         progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
-        # Check if already endorsed
-        if progress_report.endorsed:
-            raise ValidationError(f"APR for year {year} is already endorsed.")
-
         # Check that all agency reports are SUBMITTED
         agency_reports = progress_report.agency_project_reports.all()
         draft_reports = agency_reports.filter(
@@ -640,18 +637,30 @@ class APREndorseView(APIView):
             draft_agencies = [ar.agency.name for ar in draft_reports]
             raise ValidationError(
                 "Cannot endorse APR. The following agencies have DRAFT reports: "
-                f"draft_agencies: {draft_agencies}"
+                f"{', '.join(draft_agencies)}"
             )
 
-        # Endorse the progress report
-        progress_report.endorsed = True
-        progress_report.save(update_fields=["endorsed"])
-
-        return Response(
-            {
-                "message": f"APR for year {year} has been endorsed successfully.",
-                "year": year,
-                "total_agencies": agency_reports.count(),
-            },
-            status=status.HTTP_200_OK,
+        # Use serializer to validate and set endorsement fields, then endorse
+        serializer = AnnualProgressReportEndorseSerializer(
+            instance=progress_report, data=request.data
         )
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {
+                    "message": f"APR for year {year} has been endorsed successfully.",
+                    "year": year,
+                    "date_endorsed": progress_report.date_endorsed,
+                    "meeting_endorsed": (
+                        progress_report.meeting_endorsed.number
+                        if progress_report.meeting_endorsed
+                        else None
+                    ),
+                    "remarks_endorsed": progress_report.remarks_endorsed,
+                    "total_agencies": agency_reports.count(),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

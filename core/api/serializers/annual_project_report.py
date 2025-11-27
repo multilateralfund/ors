@@ -8,6 +8,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProjectReportFile,
+    Meeting,
 )
 from core.api.serializers.agency import AgencySerializer
 
@@ -346,33 +347,6 @@ class AnnualAgencyProjectReportReadSerializer(serializers.ModelSerializer):
         return obj.is_endorsed()
 
 
-class AnnualProgressReportSerializer(serializers.ModelSerializer):
-    """Serializer for AnnualProgressReport (yearly container)."""
-
-    meeting_endorsed_number = serializers.IntegerField(
-        source="meeting_endorsed.number", read_only=True, allow_null=True
-    )
-    agency_reports_count = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = AnnualProgressReport
-        fields = [
-            "id",
-            "year",
-            "meeting_endorsed",
-            "meeting_endorsed_number",
-            "date_endorsed",
-            "remarks_endorsed",
-            "endorsed",
-            "agency_reports_count",
-        ]
-        read_only_fields = ["id", "meeting_endorsed_number", "agency_reports_count"]
-
-    def get_agency_reports_count(self, obj):
-        """Count of agency reports for this year."""
-        return obj.agency_project_reports.count()
-
-
 class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     """
     Write serializer for updating AnnualProjectReport.
@@ -662,4 +636,100 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
             instance.submitted_by = self.context.get("request").user
 
         instance.save()
+        return instance
+
+
+class AnnualProgressReportSerializer(serializers.ModelSerializer):
+    """Serializer for AnnualProgressReport (yearly container)."""
+
+    meeting_endorsed_number = serializers.IntegerField(
+        source="meeting_endorsed.number", read_only=True, allow_null=True
+    )
+    agency_reports_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = AnnualProgressReport
+        fields = [
+            "id",
+            "year",
+            "meeting_endorsed",
+            "meeting_endorsed_number",
+            "date_endorsed",
+            "remarks_endorsed",
+            "endorsed",
+            "agency_reports_count",
+        ]
+        read_only_fields = ["id", "meeting_endorsed_number", "agency_reports_count"]
+
+    def get_agency_reports_count(self, obj):
+        """Count of agency reports for this year."""
+        return obj.agency_project_reports.count()
+
+
+class AnnualProgressReportEndorseSerializer(AnnualProgressReportSerializer):
+    """Write serializer for endorsing `AnnualProgressReport`s."""
+
+    # Overriding fields to make them required and add constraints
+    date_endorsed = serializers.DateField(required=True)
+    meeting_endorsed = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all(),
+        required=True,
+        error_messages={
+            "does_not_exist": "Meeting with ID {pk_value} does not exist.",
+            "required": "Meeting is required for endorsement.",
+        },
+    )
+    remarks_endorsed = serializers.CharField(
+        max_length=400,
+        allow_blank=True,
+        required=False,
+        default="",
+        error_messages={
+            "max_length": "Remarks cannot exceed 400 characters.",
+        },
+    )
+
+    class Meta(AnnualProgressReportSerializer.Meta):
+        model = AnnualProgressReport
+        fields = [
+            "date_endorsed",
+            "meeting_endorsed",
+            "remarks_endorsed",
+        ]
+
+    def validate(self, attrs):
+        instance = self.instance
+        if not instance:
+            raise serializers.ValidationError("No progress report instance provided.")
+
+        if instance.endorsed:
+            raise serializers.ValidationError(
+                f"APR for year {instance.year} is already endorsed."
+            )
+
+        return attrs
+
+    def validate_date_endorsed(self, value):
+        today = timezone.now().date()
+        if value > today:
+            raise serializers.ValidationError(
+                "Endorsement date cannot be in the future."
+            )
+        return value
+
+    def update(self, instance, validated_data):
+        instance.date_endorsed = validated_data["date_endorsed"]
+        instance.meeting_endorsed = validated_data["meeting_endorsed"]
+        instance.remarks_endorsed = validated_data.get("remarks_endorsed", "")
+        instance.endorsed = True
+
+        instance.save(
+            update_fields=[
+                "date_endorsed",
+                "meeting_endorsed",
+                "remarks_endorsed",
+                "endorsed",
+            ]
+        )
+
         return instance

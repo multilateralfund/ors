@@ -1493,6 +1493,15 @@ def multiple_meetings_apr_same_year(apr_year):
 
 
 @pytest.fixture
+def meeting_apr_same_year(apr_year):
+    return MeetingFactory.create(
+        number=29,
+        date=f"{apr_year}-4-14",
+        end_date=f"{apr_year}-4-15",
+    )
+
+
+@pytest.fixture
 def meeting_apr_next_year(apr_year):
     return MeetingFactory.create(
         number=19,

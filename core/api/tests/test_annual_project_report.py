@@ -5,6 +5,7 @@ from openpyxl import load_workbook
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 
 from core.api.export.annual_project_report import APRExportWriter
@@ -1248,7 +1249,7 @@ class TestAPREndorseView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_mlfs_full_access_can_endorse(
-        self, mlfs_admin_user, apr_year, annual_progress_report
+        self, mlfs_admin_user, apr_year, meeting_apr_same_year, annual_progress_report
     ):
         # Create some submitted reports to allow endorsing
         agency1 = AgencyFactory()
@@ -1267,7 +1268,12 @@ class TestAPREndorseView(BaseTest):
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-endorse", kwargs={"year": apr_year})
-        response = self.client.post(url, {}, format="json")
+        data = {
+            "date_endorsed": timezone.now().date().isoformat(),
+            "meeting_endorsed": meeting_apr_same_year.id,
+            "remarks_endorsed": "Endorsed with all reports submitted.",
+        }
+        response = self.client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
         assert "endorsed successfully" in response.data["message"]
