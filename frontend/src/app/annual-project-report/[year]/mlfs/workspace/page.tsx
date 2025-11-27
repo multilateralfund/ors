@@ -45,13 +45,15 @@ import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/u
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
+import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'
 
 export default function APRMLFSWorkspace() {
   const [activeTab, setActiveTab] = useState(0)
+  const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
   const confirm = useConfirmation()
   const { year } = useParams()
   usePageTitle(`MLFS Annual Progress Report (${year})`)
-  const { canViewAPR, isMlfsUser } = useContext(PermissionsContext)
+  const { canViewAPR, isMlfsUser, canEditAPR } = useContext(PermissionsContext)
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
@@ -170,6 +172,9 @@ export default function APRMLFSWorkspace() {
     return <NotFoundPage />
   }
 
+  const canEndorseAPR =
+    canEditAPR && aprData?.every((data) => data.status === 'submitted')
+
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
     const action = agencyData.is_unlocked ? 'lock' : 'unlock'
     const response = await confirm({
@@ -239,7 +244,14 @@ export default function APRMLFSWorkspace() {
               aria-controls="tabpanel-submissions"
             ></Tab>
           </Tabs>
-          <Button disabled className="mb-2" variant="contained">
+          <Button
+            disabled={loading || !canEndorseAPR}
+            className="mb-2"
+            variant="contained"
+            onClick={() => {
+              setIsEndorseModalOpen(true)
+            }}
+          >
             Endorse
           </Button>
         </div>
@@ -536,6 +548,11 @@ export default function APRMLFSWorkspace() {
           )}
         </div>
       </Box>
+      <EndorseAprModal
+        isModalOpen={isEndorseModalOpen}
+        setIsModalOpen={setIsEndorseModalOpen}
+        disabled={loading}
+      />
     </PageWrapper>
   )
 }
@@ -563,7 +580,7 @@ function FilesView({ files }: { files: APRFile[] }) {
           <p className="m-0 text-xl font-medium">Other Supporting Documents</p>
           <ul className="m-0 flex gap-x-4 p-0">
             {supportingFiles.map((file) => (
-              <li className="m-0 list-none">
+              <li key={file.id} className="m-0 list-none">
                 <FileView file={file} />
               </li>
             ))}
