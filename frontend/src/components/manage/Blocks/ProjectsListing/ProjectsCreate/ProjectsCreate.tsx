@@ -354,6 +354,7 @@ const ProjectsCreate = ({
   )
 
   const hasNoFiles =
+    loadedFiles &&
     mode === 'edit' &&
     project?.submission_status !== 'Withdrawn' &&
     (project?.submission_status !== 'Draft' || project?.version === 1) &&
@@ -567,9 +568,9 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Attachments</div>
-          {fileErrors ||
-          (loadedFiles && hasNoFiles) ||
-          missingFileTypeErrors.length > 0 ? (
+          {mode !== 'add' && !loadedFiles ? (
+            LoadingTab
+          ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
             areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
@@ -610,7 +611,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(loadedFiles && hasNoFiles
+        ...(hasNoFiles
           ? [
               {
                 message: `At least one file must be attached to this version${errorMessageExtension}.`,
