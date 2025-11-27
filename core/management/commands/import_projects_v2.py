@@ -11,7 +11,6 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-from core.utils import get_umbrella_code
 
 logger = logging.getLogger(__name__)
 
@@ -52,22 +51,27 @@ def populate_existing_projects_lead_agency():
     logger.info("✅ Successfully populated lead agency for existing projects.")
 
 
-def populate_existing_meta_projects_umbrella_code():
+def populate_existing_meta_projects_fields():
     """
-    Populate the umbrella_code field in MetaProject model using the umbrella_code field.
-    This will only be used in development, as all associations should be removed after the association
-    feature is implemented.
+    Populate the umbrella_code, cluster and country fields for the existing meta projects.
+    The umbrella_code will be populated using the metacode of the first associated project.
+    The cluster and country will be populated using the first associated project's cluster and country.
     """
     logger.info("⏳ Populating umbrella_code for existing meta projects...")
-    meta_projects = MetaProject.objects.filter(
-        umbrella_code__isnull=True
-    ).prefetch_related("projects__country")
+    meta_projects = MetaProject.objects.all().prefetch_related(
+        "projects__country", "projects__cluster"
+    )
 
     for meta_project in meta_projects:
-        project = meta_project.projects.first()
+        project = meta_project.projects.filter(metacode__isnull=False).first()
         if not project:
+            logger.warning(
+                f"MetaProject {meta_project.id} has no associated projects. Skipping."
+            )
             continue
-        meta_project.umbrella_code = get_umbrella_code(project.country)
+        meta_project.umbrella_code = project.metacode
+        meta_project.country = project.country
+        meta_project.cluster = project.cluster
         meta_project.save()
     logger.info("✅ Successfully populated umbrella_code for existing meta projects.")
 
@@ -278,7 +282,7 @@ class Command(BaseCommand):
             default="all",
             choices=[
                 "populate_existing_projects_metacode",
-                "populate_existing_meta_projects_umbrella_code",
+                "populate_existing_meta_projects_fields",
                 "populate_existing_projects_lead_agency",
                 "populate_existing_projects_category",
                 "populate_existing_projects_production",
@@ -294,8 +298,8 @@ class Command(BaseCommand):
 
         if imp_type == "populate_existing_projects_metacode":
             populate_existing_projects_metacode()
-        elif imp_type == "populate_existing_meta_projects_umbrella_code":
-            populate_existing_meta_projects_umbrella_code()
+        elif imp_type == "populate_existing_meta_projects_fields":
+            populate_existing_meta_projects_fields()
         elif imp_type == "populate_existing_projects_lead_agency":
             populate_existing_projects_lead_agency()
         elif imp_type == "populate_existing_projects_category":

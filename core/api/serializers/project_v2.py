@@ -58,6 +58,12 @@ HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
 HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
 HISTORY_DESCRIPTION_TRANSFER = "Project transferred"
+HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.\n
+                            Old code: {}\n
+                            New code: {}\n
+                            Old metacode: {}\n
+                            New metacode: {}\n
+                           """
 
 
 class UpdateOdsOdpEntries:
@@ -1515,6 +1521,10 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.meeting,
             new_transfer_project.meeting_transf,
             new_transfer_project.serial_number,
+            new_transfer_project.metacode,
+        )
+        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
+            new_transfer_project.country.id
         )
         new_transfer_project.save()
 

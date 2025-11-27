@@ -120,9 +120,7 @@ class MetaProjectCountryListView(generics.ListAPIView):
             projects__submission_status__name="Approved",
         ).distinct()
 
-        return Country.objects.filter(
-            project__meta_project__in=meta_projects
-        ).distinct()
+        return Country.objects.filter(meta_projects__in=meta_projects).distinct()
 
 
 class MetaProjectClusterListView(generics.ListAPIView):
@@ -139,9 +137,7 @@ class MetaProjectClusterListView(generics.ListAPIView):
             projects__submission_status__name="Approved",
         ).distinct()
 
-        return ProjectCluster.objects.filter(
-            project__meta_project__in=meta_projects
-        ).distinct()
+        return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
 
 
 class MetaProjectLeadAgencyListView(generics.ListAPIView):
@@ -179,7 +175,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
         MetaProjectMyaFilterBackend,
         filters.SearchFilter,
     ]
-    search_fields = ["projects__code", "projects__title"]
+    search_fields = ["projects__code", "projects__title", "umbrella_code"]
 
     def get_queryset(self):
         result = (
@@ -190,7 +186,6 @@ class MetaProjectMyaListView(generics.ListAPIView):
                 "projects",
                 "projects__agency",
                 "projects__cluster",
-                "projects__country",
                 "projects__sector",
             )
             # Maybe exclude if ALL sub-projects Completed OR Transfered.

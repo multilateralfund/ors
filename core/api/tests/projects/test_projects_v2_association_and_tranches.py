@@ -8,6 +8,7 @@ from core.api.tests.factories import (
     ProjectFieldFactory,
     ProjectSpecificFieldsFactory,
 )
+from core.utils import get_meta_project_code
 
 
 pytestmark = pytest.mark.django_db
@@ -236,6 +237,16 @@ class TestAssociateProject:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
+        project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
+        project2.save()
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
 
@@ -277,8 +288,16 @@ class TestAssociateProject:
     ):
         # both projects are without meta projects
         # expect a new meta project to be created and assigned to both projects
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
         project.meta_project = None
         project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
         project2.meta_project = None
         project2.save()
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
@@ -310,7 +329,15 @@ class TestAssociateProject:
         # one project has a meta project, the other does not
         # expect the project without meta project to be assigned to the meta project of the other project
         project.meta_project = meta_project
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
         project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
         project2.meta_project = None
         project2.save()
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
@@ -338,15 +365,31 @@ class TestAssociateProject:
         secretariat_v1_v2_edit_access_user,
         project,
         project2,
+        project3,
         meta_project,
     ):
         # both projects have different meta projects
         # expect to receive a meta_project_id which will be assigned to both projects
         another_meta_project = MetaProjectFactory.create()
         meta_project_to_assign = MetaProjectFactory.create()
+        project3.meta_project = meta_project_to_assign
+        project3.metacode = get_meta_project_code(
+            project3.country,
+            project3.cluster,
+        )
+        project3.save()
+
         project.meta_project = meta_project
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
         project.save()
         project2.meta_project = another_meta_project
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
         project2.save()
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-associate-projects")

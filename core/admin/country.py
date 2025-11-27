@@ -37,6 +37,7 @@ class CountryAdmin(admin.ModelAdmin):
             "disputed_contributions",
             "finalreportsview",
             "enterprises",
+            "meta_projects",
         ]
         fields = get_final_display_list(Country, exclude)
         return fields

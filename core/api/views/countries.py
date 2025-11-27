@@ -48,7 +48,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
                 ).distinct()
 
                 queryset = Country.objects.filter(
-                    project__meta_project__in=meta_projects
+                    meta_projects__in=meta_projects
                 ).distinct()
         elif values_exclusive_for == "all":
             queryset = Country.objects.all()
