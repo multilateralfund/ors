@@ -23,7 +23,6 @@ import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import getColumnDefs, {
   dataTypeDefinitions,
-  tableColumns,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import {
@@ -46,6 +45,7 @@ import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.ts
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
 import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'
+import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
 
 export default function APRMLFSWorkspace() {
   const [activeTab, setActiveTab] = useState(0)
@@ -273,36 +273,7 @@ export default function APRMLFSWorkspace() {
 
           {/* Filters section */}
           <div className="mb-2 flex flex-col gap-y-4">
-            <div className="flex flex-wrap gap-2">
-              {/* Status filter */}
-              <Field
-                Input={{ placeholder: tableColumns.status.label }}
-                options={getFilterOptions(filters, choosableStatuses, 'status')}
-                widget="autocomplete"
-                multiple={true}
-                value={[]}
-                getOptionLabel={(option: any) => option?.name}
-                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-                FieldProps={{ className: 'mb-0 md:w-32 BPList' }}
-                componentsProps={{
-                  popupIndicator: {
-                    sx: {
-                      transform: 'none !important',
-                    },
-                  },
-                }}
-                onChange={(_: any, value: any) => {
-                  const statusFilters = union(filters.status, value)
-                  setFilters((oldFilters) => ({
-                    ...oldFilters,
-                    status: statusFilters,
-                  }))
-                  setParams({
-                    status: statusFilters.map((v: any) => v.code).join(','),
-                  })
-                }}
-              />
-
+            <div className="flex flex-wrap items-center gap-2">
               {/* Agency filter */}
               <Field
                 Input={{ placeholder: 'Agency' }}
@@ -312,7 +283,7 @@ export default function APRMLFSWorkspace() {
                 value={[]}
                 getOptionLabel={(option: any) => option?.name}
                 popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-                FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: {
                     sx: {
@@ -341,7 +312,7 @@ export default function APRMLFSWorkspace() {
                 value={[]}
                 getOptionLabel={(option: any) => option?.name}
                 popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-                FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: {
                     sx: {
@@ -370,7 +341,7 @@ export default function APRMLFSWorkspace() {
                 value={[]}
                 getOptionLabel={(option: any) => option?.name}
                 popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-                FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: {
                     sx: {
@@ -399,7 +370,7 @@ export default function APRMLFSWorkspace() {
                 value={[]}
                 getOptionLabel={(option: any) => option?.name}
                 popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-                FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: {
                     sx: {
@@ -418,25 +389,44 @@ export default function APRMLFSWorkspace() {
                   })
                 }}
               />
+
+              <StatusFilter
+                disabled={loading}
+                statusOptions={choosableStatuses}
+                selectedCodes={filters.status.map((f) => f.code!)}
+                onToggle={(status, checked) => {
+                  const statusFilters = checked
+                    ? union(filters.status, [status])
+                    : filters.status.filter((f) => f.code !== status.code)
+
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    status: statusFilters,
+                  }))
+                  setParams({
+                    status: statusFilters.map((f) => f.code).join(','),
+                  })
+                }}
+              />
             </div>
 
             {/* Also display the active filters */}
-            <ul className="m-0 flex list-none flex-wrap gap-2 px-0">
-              {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
-                const paramKey: keyof Filter =
-                  filterKey === 'status' ? 'code' : 'id'
-                return filterValue.map((val) => (
-                  <li key={`${filterKey}-${val.id}`}>
-                    <Chip
-                      label={val.name}
-                      onDelete={onChipDelete(filterKey, val, paramKey)}
-                    />
-                  </li>
-                ))
-              })}
-              {Object.values(filters).some(
-                (filterArr) => filterArr.length > 0,
-              ) && (
+            {Object.values(filters).some(
+              (filterArr) => filterArr.length > 0,
+            ) && (
+              <ul className="m-0 flex list-none flex-wrap gap-2 px-0">
+                {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
+                  const paramKey: keyof Filter =
+                    filterKey === 'status' ? 'code' : 'id'
+                  return filterValue.map((val) => (
+                    <li key={`${filterKey}-${val.id}`}>
+                      <Chip
+                        label={val.name}
+                        onDelete={onChipDelete(filterKey, val, paramKey)}
+                      />
+                    </li>
+                  ))
+                })}
                 <li>
                   <Button
                     variant="text"
@@ -448,8 +438,8 @@ export default function APRMLFSWorkspace() {
                     Clear all
                   </Button>
                 </li>
-              )}
-            </ul>
+              </ul>
+            )}
           </div>
 
           {loaded && (
