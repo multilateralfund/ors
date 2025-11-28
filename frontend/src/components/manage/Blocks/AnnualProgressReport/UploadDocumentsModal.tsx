@@ -8,13 +8,7 @@ import { enqueueSnackbar } from 'notistack'
 import { IoTrash } from 'react-icons/io5'
 import { api } from '@ors/helpers'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
-
-interface APRFile {
-  id: number
-  file_name: string
-  file_url: string
-  file_type: 'annual_progress_financial_report' | 'other_supporting_document'
-}
+import { APRFile } from '@ors/app/annual-project-report/types.ts'
 
 interface UploadDocumentsModalProps {
   isModalOpen: boolean

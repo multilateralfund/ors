@@ -44,11 +44,11 @@ function ConfirmDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} color="secondary">
-          {cancelText}
-        </Button>
         <Button onClick={onConfirm} color="primary" autoFocus>
           {confirmText}
+        </Button>
+        <Button onClick={onCancel} color="secondary">
+          {cancelText}
         </Button>
       </DialogActions>
     </Dialog>
