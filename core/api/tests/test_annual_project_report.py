@@ -1283,6 +1283,26 @@ class TestAPREndorseView(BaseTest):
         annual_progress_report.refresh_from_db()
         assert annual_progress_report.endorsed is True
 
+    def test_endorse_missing_required_fields(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency = AgencyFactory()
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+
+        # Missing all required fields
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "date_endorsed" in response.data
+        assert "meeting_endorsed" in response.data
+
     def test_cannot_endorse_if_draft_reports_exist(
         self, mlfs_admin_user, apr_year, annual_progress_report
     ):
