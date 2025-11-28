@@ -1345,6 +1345,101 @@ class TestAPREndorseView(BaseTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    def test_get_endorsement_status_not_endorsed(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == apr_year
+        assert response.data["endorsed"] is False
+        assert response.data["is_endorsable"] is True
+        assert response.data["total_agencies"] == 2
+        assert response.data["submitted_agencies"] == 2
+        assert response.data["draft_agencies"] == 0
+        assert response.data["draft_agency_names"] == []
+
+    def test_get_endorsement_status_with_draft_reports(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        draft_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_endorsable"] is False
+        assert response.data["total_agencies"] == 2
+        assert response.data["submitted_agencies"] == 1
+        assert response.data["draft_agencies"] == 1
+        assert draft_report.agency.name in response.data["draft_agency_names"]
+
+    def test_get_endorsement_status_already_endorsed(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report_endorsed,
+        meeting_apr_same_year,
+    ):
+        agency = AgencyFactory()
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["endorsed"] is True
+        assert response.data["is_endorsable"] is False
+        assert (
+            response.data["date_endorsed"]
+            == annual_progress_report_endorsed.date_endorsed.isoformat()
+        )
+        assert response.data["meeting_endorsed"] == meeting_apr_same_year.id
+        assert response.data["remarks_endorsed"] == "Test endorsement"
+
+    def test_get_endorsement_status_requires_mlfs_access(
+        self, agency_viewer_user, apr_year, annual_progress_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 @pytest.mark.django_db
 class TestAPRExportView(BaseTest):
