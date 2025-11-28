@@ -14,12 +14,14 @@ from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
+    HISTORY_ASSOCIATION_MADE,
 )
+from core.api.views.utils import log_project_history
 from core.models.project import (
     MetaProject,
     Project,
 )
-from core.utils import get_umbrella_code
+from core.utils import get_project_sub_code
 
 
 class ProjectAssociationMixin:
@@ -77,15 +79,45 @@ class ProjectAssociationMixin:
         if not meta_project:
             project_category = validated_data["projects"].first().category
             country = validated_data["projects"].first().country
+            metacode = validated_data["projects"].first().metacode
             meta_project = MetaProject.objects.create(
-                umbrella_code=get_umbrella_code(country),
+                umbrella_code=metacode,
+                country=country,
+                cluster=validated_data["projects"].first().cluster,
                 type=project_category,
             )
+        else:
+            metacode = meta_project.umbrella_code
 
         for project in validated_data["projects"]:
+            old_project_code = project.code
+            old_project_metacode = project.metacode
+            project.metacode = metacode
+            project.code = get_project_sub_code(
+                project.country,
+                project.cluster,
+                project.agency,
+                project.project_type,
+                project.sector,
+                project.meeting,
+                project.transfer_meeting,
+                project.serial_number,
+                project.metacode,
+            )
             project.meta_project = meta_project
             project.lead_agency = validated_data["lead_agency"]
             project.save()
+            log_project_history(
+                project,
+                request.user,
+                HISTORY_ASSOCIATION_MADE.format(
+                    meta_project.umbrella_code,
+                    old_project_code,
+                    project.code,
+                    old_project_metacode,
+                    project.metacode,
+                ),
+            )
 
         return Response(
             {

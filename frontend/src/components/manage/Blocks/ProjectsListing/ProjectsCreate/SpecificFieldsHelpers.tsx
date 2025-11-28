@@ -9,7 +9,7 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { canEditField, formatFieldLabel, formatOptions } from '../utils'
+import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -24,12 +24,21 @@ import {
   additionalProperties,
   disabledClassName,
   textFieldClassName,
+  approvalToOdsMap,
 } from '../constants'
 
-import { find, get, isObject, isBoolean, isNil, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import {
+  find,
+  get,
+  isObject,
+  isBoolean,
+  isNil,
+  omit,
+  isUndefined,
+} from 'lodash'
 
 const getFieldDefaultProps = (
   editableFields: string[],
@@ -61,8 +70,10 @@ const changeNestedField: FieldHandler = (
   subField,
   index,
 ) => {
+  const approvalIdentifier = 'approvalFields'
+
   if (!isNil(index) && subField) {
-    setState((prevData) => {
+    setState((prevData: any) => {
       const sectionData = prevData[section] as Record<string, any>
       const subSectionData = sectionData[subField] || []
 
@@ -71,11 +82,36 @@ const changeNestedField: FieldHandler = (
         [field]: value,
       }
 
+      let computedTotal: Record<string, number> = {}
+
+      const approvalField = Object.keys(approvalToOdsMap).find(
+        (key) =>
+          approvalToOdsMap[key as keyof typeof approvalToOdsMap] === field,
+      )
+
+      if (
+        approvalField &&
+        isUndefined(prevData[approvalIdentifier][approvalField])
+      ) {
+        const computedField = `computed_${approvalField}`
+
+        const total = subSectionData.reduce(
+          (sum: number, item: any) => sum + (Number(item[field]) || 0),
+          0,
+        )
+
+        computedTotal[computedField] = total
+      }
+
       return {
         ...prevData,
         [section]: {
           ...prevData[section],
           [subField]: subSectionData,
+        },
+        [approvalIdentifier]: {
+          ...prevData[approvalIdentifier],
+          ...computedTotal,
         },
       }
     })
@@ -373,8 +409,22 @@ const NumberWidget = <T,>(
   subField?: string,
   index?: number,
 ) => {
+  const isApprovalOdp =
+    field.section === 'Approval' && field.table === 'ods_odp'
+
   const fieldName = field.write_field_name
-  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  const fieldForValue =
+    isApprovalOdp && isUndefined(fields[sectionIdentifier][fieldName])
+      ? `computed_${fieldName}`
+      : fieldName
+  const value = getValue(
+    fields,
+    sectionIdentifier,
+    fieldForValue,
+    subField,
+    index,
+  )
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
@@ -387,7 +437,7 @@ const NumberWidget = <T,>(
       })}
     >
       <Label className={cx({ italic: isDisabledImpactField })}>
-        {formatFieldLabel(field.label)}
+        {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
       <div className="flex items-center">

@@ -6,8 +6,8 @@ import {
   viewModesHandler,
 } from './ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../constants'
-import { canViewField, formatFieldLabel } from '../utils'
 import { ProjectViewProps } from '../interfaces'
+import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
 import { filter, get } from 'lodash'
@@ -18,6 +18,8 @@ const ProjectApproval = ({
   fieldHistory,
 }: { fieldHistory: any } & ProjectViewProps) => {
   const { viewableFields } = useStore((state) => state.projectFields)
+
+  const odsFields = filter(specificFields, (field) => field.table === 'ods_odp')
 
   const getFieldHistory = useCallback(
     (name: string) => {
@@ -64,21 +66,23 @@ const ProjectApproval = ({
           ),
         )}
       </div>
-      <div className={viewColumnsClassName}>
-        {filter(specificFields, (field) => field.table === 'ods_odp').map(
-          (field) =>
-            canViewField(viewableFields, field.write_field_name) && (
-              <span key={field.write_field_name}>
-                {numberDetailItem(
-                  formatFieldLabel(field.label),
-                  get(project, field.read_field_name) ??
-                    get(project, `computed_${field.read_field_name}`),
-                  field.data_type,
-                )}
-              </span>
-            ),
-        )}
-      </div>
+      {odsFields.length > 0 && (
+        <div className={viewColumnsClassName}>
+          {odsFields.map(
+            (field) =>
+              canViewField(viewableFields, field.write_field_name) && (
+                <span key={field.write_field_name}>
+                  {numberDetailItem(
+                    field.label,
+                    get(project, field.read_field_name) ??
+                      get(project, `computed_${field.read_field_name}`),
+                    field.data_type,
+                  )}
+                </span>
+              ),
+          )}
+        </div>
+      )}
       <div className={viewColumnsClassName}>
         {canViewField(viewableFields, 'total_fund') &&
           numberDetailItem(

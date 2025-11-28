@@ -25,7 +25,7 @@ class ProjectClusterAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["project", "bpactivity", "project_specific_fields"]
+        exclude = ["project", "bpactivity", "project_specific_fields", "meta_projects"]
         return get_final_display_list(ProjectCluster, exclude)
 
 

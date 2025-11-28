@@ -44,7 +44,11 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
           id={`report_summary`}
           className="text-md my-1 font-medium text-gray-900"
         >
-          {description}
+          {description.split('\n').map((desc, i) => (
+            <span key={i}>
+              {desc} <br />
+            </span>
+          ))}
         </p>
       </div>
       <div>

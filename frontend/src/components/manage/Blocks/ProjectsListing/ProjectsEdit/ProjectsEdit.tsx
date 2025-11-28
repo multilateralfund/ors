@@ -51,6 +51,7 @@ import {
   replace,
   isArray,
   pick,
+  mapKeys,
 } from 'lodash'
 
 const ProjectsEdit = ({
@@ -121,6 +122,7 @@ const ProjectsEdit = ({
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
 
   const { files: data, loadedFiles } = useGetProjectFiles(parseInt(project_id))
+  const areFilesLoaded = loadedFiles && filesLoaded.current
 
   const {
     fetchProjectFields,
@@ -248,7 +250,7 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
-        category: !shouldEmptyCluster ? project.cluster.category : null,
+        category: !shouldEmptyCluster ? project.cluster?.category : null,
         post_excom_meeting:
           mode === 'edit' ? project.post_excom_meeting_id : null,
         post_excom_decision:
@@ -345,17 +347,32 @@ const ProjectsEdit = ({
       !approvalFieldsValuesLoaded.current &&
       approvalFields.length > 0
     ) {
-      const fieldsValues = Object.fromEntries(
-        approvalOdsFields.map((field) => [
-          field,
-          project[field as keyof ProjectTypeApi] ??
-            project[`computed_${field}` as keyof ProjectTypeApi],
-        ]),
+      const approvalFieldsNames = approvalFields.map((f) => f.write_field_name)
+
+      const totalFieldsValues = pick(
+        Object.fromEntries(
+          approvalOdsFields.map((field) => [
+            field,
+            project[field as keyof ProjectTypeApi] ?? undefined,
+          ]),
+        ),
+        approvalFieldsNames,
       )
 
       const filteredFieldsValues = pick(
-        fieldsValues,
-        approvalFields.map((field) => field.write_field_name),
+        Object.fromEntries(
+          approvalOdsFields.map((field) => [
+            field,
+            project[field as keyof ProjectTypeApi] ??
+              project[`computed_${field}` as keyof ProjectTypeApi],
+          ]),
+        ),
+        approvalFieldsNames,
+      )
+
+      const computedFieldsValues = mapKeys(
+        filteredFieldsValues,
+        (_, key) => `computed_${key}`,
       )
 
       setProjectData((prevData) => ({
@@ -365,7 +382,8 @@ const ProjectsEdit = ({
           meeting: project.meeting_id,
           decision: project.decision_id,
           date_completion: project.project_end_date,
-          ...filteredFieldsValues,
+          ...computedFieldsValues,
+          ...totalFieldsValues,
         },
       }))
 
@@ -532,6 +550,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
           }}
+          loadedFiles={areFilesLoaded}
         />
         <ProjectsCreate
           {...{
@@ -562,7 +581,7 @@ const ProjectsEdit = ({
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
             !(cluster && project_type && sector)
           }
-          loadedFiles={loadedFiles && filesLoaded.current}
+          loadedFiles={areFilesLoaded}
         />
         <ProjectFormFooter
           id={projectId}

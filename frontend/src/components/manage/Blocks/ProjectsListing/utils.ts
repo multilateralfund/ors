@@ -44,6 +44,7 @@ import {
   isArray,
   isNaN,
   isNil,
+  isUndefined,
   keys,
   lowerCase,
   map,
@@ -517,7 +518,7 @@ export const getCrossCuttingErrors = (
     }),
     ...(validateApproval &&
       mode === 'edit' &&
-      (project?.version ?? 0) >= 3 &&
+      project?.submission_status === 'Recommended' &&
       dayjs(project_end_date).isBefore(dayjs(), 'day') && {
         project_end_date: ['Cannot be a past date.'],
       }),
@@ -535,12 +536,21 @@ export const getApprovalErrors = (
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
 ) => {
-  const requiredFields = [
-    ...approvalOdsFields,
+  const defaultRequiredFields = [
     'decision',
     'date_completion',
     'programme_officer',
     'excom_provision',
+  ]
+
+  const requiredFields = [...defaultRequiredFields, ...approvalOdsFields]
+  const fieldsForValidation = [
+    ...defaultRequiredFields,
+    ...approvalOdsFields.map((field) =>
+      isUndefined(approvalData[field as keyof SpecificFields])
+        ? `computed_${field}`
+        : field,
+    ),
   ]
 
   const filteredErrors = Object.fromEntries(
@@ -550,7 +560,7 @@ export const getApprovalErrors = (
   )
 
   const allErrors = {
-    ...getFieldErrors(requiredFields, approvalData, project),
+    ...getFieldErrors(fieldsForValidation, approvalData, project),
     ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
       date_completion: ['Cannot be a past date.'],
     }),
