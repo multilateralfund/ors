@@ -60,7 +60,6 @@ export const tableColumns: { [key: string]: string } = {
   transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
-  psc_received: 'Received project support cost (US $)',
 }
 
 export const defaultProps = {
@@ -125,7 +124,6 @@ export const initialTranferedProjectData = {
   transfer_excom_provision: '',
   fund_transferred: null,
   psc_transferred: null,
-  psc_received: null,
 }
 
 export const lvcNonLvcOpts = [

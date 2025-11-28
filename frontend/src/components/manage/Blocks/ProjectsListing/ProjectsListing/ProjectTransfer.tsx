@@ -280,22 +280,6 @@ const ProjectTransfer = ({
               <FieldErrorIndicator errors={errors} field="psc_transferred" />
             </div>
           </div>
-          <div>
-            <Label>{tableColumns.psc_received}</Label>
-            <div className="flex items-center">
-              <FormattedNumberInput
-                id="psc_received"
-                value={projectData.psc_received ?? ''}
-                prefix="$"
-                withoutDefaultValue={true}
-                onChange={(event) =>
-                  handleChangeNumericValues(event, 'psc_received')
-                }
-                {...numberFieldDefaultProps}
-              />
-              <FieldErrorIndicator errors={errors} field="psc_received" />
-            </div>
-          </div>
         </div>
       </div>
       <Divider className="my-1" />

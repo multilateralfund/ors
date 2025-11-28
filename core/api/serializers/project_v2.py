@@ -1480,8 +1480,6 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
     ProjectSerializer class for transferring a project
     """
 
-    psc_received = serializers.DecimalField(max_digits=20, decimal_places=15)
-
     class Meta:
         model = Project
         fields = [
@@ -1491,7 +1489,6 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             "transfer_excom_provision",
             "fund_transferred",
             "psc_transferred",
-            "psc_received",
         ]
 
     def save(self, **kwargs):
@@ -1510,7 +1507,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
-        new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        new_transfer_project.support_cost_psc = self.validated_data.get("psc_transferred")
         new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,

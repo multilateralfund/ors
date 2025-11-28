@@ -263,7 +263,6 @@ export interface ProjectTransferData {
   transfer_excom_provision: string
   fund_transferred: string | null
   psc_transferred: string | null
-  psc_received: string | null
 }
 
 export interface ProjectDataProps {
