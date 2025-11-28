@@ -417,7 +417,6 @@ class APRExportView(APIView):
 
         self.check_object_permissions(request, agency_report)
 
-        # TODO: do we need to ensure ONG & COM are always selected here as well?
         status_codes = request.query_params.get("status", "ONG,COM")
         status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
 

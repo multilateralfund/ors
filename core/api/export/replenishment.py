@@ -725,7 +725,6 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
 
 
 class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
-    # TODO: HEADERS_ROW could be a list
     HEADERS_ROW = 7
     TEMPLATE_FIRST_DATA_ROW = 11
     TEMPLATE_LAST_DATA_ROW = 65
