@@ -100,6 +100,12 @@ def post_approval_changes(project):
         meta_project = MetaProject.objects.filter(
             projects__component=project.component
         ).first()
+        if not meta_project and project.category == Project.Category.MYA:
+            meta_project = MetaProject.objects.filter(
+                country=project.country,
+                cluster=project.cluster,
+                type=Project.Category.MYA,
+            ).first()
         if not meta_project:
             meta_project = MetaProject.objects.create(
                 umbrella_code=get_meta_project_code(
