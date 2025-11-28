@@ -598,6 +598,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "computed_total_phase_out_metric_tonnes",
             "computed_total_phase_out_odp_tonnes",
             "computed_total_phase_out_co2_tonnes",
+            "transferred_from"
         ]
 
     def get_editable(self, obj):
@@ -1507,7 +1508,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
-        new_transfer_project.support_cost_psc = self.validated_data.get("psc_transferred")
+        new_transfer_project.support_cost_psc = self.validated_data.get(
+            "psc_transferred"
+        )
         new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
@@ -1523,6 +1526,7 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.serial_number = Project.objects.get_next_serial_number(
             new_transfer_project.country.id
         )
+        new_transfer_project.transferred_from = project
         new_transfer_project.save()
 
         project.transfer_meeting = self.validated_data.get("transfer_meeting")
