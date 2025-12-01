@@ -39,6 +39,8 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportFileSerializer,
     AnnualProjectReportFileUploadSerializer,
     AnnualAgencyProjectReportStatusUpdateSerializer,
+    AnnualProgressReportSerializer,
+    AnnualProgressReportEndorseSerializer,
 )
 
 
@@ -415,7 +417,6 @@ class APRExportView(APIView):
 
         self.check_object_permissions(request, agency_report)
 
-        # TODO: do we need to ensure ONG & COM are always selected here as well?
         status_codes = request.query_params.get("status", "ONG,COM")
         status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
 
@@ -617,19 +618,48 @@ class APRToggleLockView(APIView):
 
 class APREndorseView(APIView):
     """
-    Endorse the Annual Progress Report for a specific year.
-    This marks *all* agency reports for that year as final and locked.
+    Get or Endorse (via POST) the Annual Progress Report for a specific year.
+
+    Endorsing marks *all* agency reports for that year as final and locked.
     As a prerequisites, all agency reports must be SUBMITTED.
     """
 
     permission_classes = [IsAuthenticated, HasMLFSFullAccess]
 
-    def post(self, request, year):
+    def get(self, request, year):
+        """Gets the endorsement status for the APR year."""
         progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
-        # Check if already endorsed
-        if progress_report.endorsed:
-            raise ValidationError(f"APR for year {year} is already endorsed.")
+        agency_reports = progress_report.agency_project_reports.all()
+        draft_reports = agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        )
+        submitted_reports = agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        # Can only be endorsed if all reports are submitted
+        is_endorsable = not progress_report.endorsed and draft_reports.count() == 0
+
+        serializer = AnnualProgressReportSerializer(progress_report)
+
+        return Response(
+            {
+                **serializer.data,
+                "is_endorsable": is_endorsable,
+                "total_agencies": agency_reports.count(),
+                "submitted_agencies": submitted_reports.count(),
+                "draft_agencies": draft_reports.count(),
+                "draft_agency_names": [ar.agency.name for ar in draft_reports],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, year):
+        """
+        This endorses the APR, using the request data to set relevant fields.
+        """
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
         # Check that all agency reports are SUBMITTED
         agency_reports = progress_report.agency_project_reports.all()
@@ -640,18 +670,30 @@ class APREndorseView(APIView):
             draft_agencies = [ar.agency.name for ar in draft_reports]
             raise ValidationError(
                 "Cannot endorse APR. The following agencies have DRAFT reports: "
-                f"draft_agencies: {draft_agencies}"
+                f"{', '.join(draft_agencies)}"
             )
 
-        # Endorse the progress report
-        progress_report.endorsed = True
-        progress_report.save(update_fields=["endorsed"])
-
-        return Response(
-            {
-                "message": f"APR for year {year} has been endorsed successfully.",
-                "year": year,
-                "total_agencies": agency_reports.count(),
-            },
-            status=status.HTTP_200_OK,
+        # Use serializer to validate and set endorsement fields, then endorse
+        serializer = AnnualProgressReportEndorseSerializer(
+            instance=progress_report, data=request.data
         )
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {
+                    "message": f"APR for year {year} has been endorsed successfully.",
+                    "year": year,
+                    "date_endorsed": progress_report.date_endorsed,
+                    "meeting_endorsed": (
+                        progress_report.meeting_endorsed.number
+                        if progress_report.meeting_endorsed
+                        else None
+                    ),
+                    "remarks_endorsed": progress_report.remarks_endorsed,
+                    "total_agencies": agency_reports.count(),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

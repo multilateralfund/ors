@@ -23,7 +23,9 @@ class AnnualProgressReport(models.Model):
     date_endorsed = models.DateField(
         null=True, blank=True, verbose_name="Endorsement date"
     )
-    remarks_endorsed = models.TextField(verbose_name="Endorsement remarks")
+    remarks_endorsed = models.TextField(
+        max_length=400, verbose_name="Endorsement remarks"
+    )
     endorsed = models.BooleanField(
         default=False, verbose_name="The annual progress report is endorsed"
     )
