@@ -1,6 +1,16 @@
-import { useContext, useState, useMemo } from 'react'
-import { useParams, Redirect } from 'wouter'
-import { Box, Chip, Button, Alert } from '@mui/material'
+import React, { useContext, useMemo, useState } from 'react'
+import { Redirect, useParams } from 'wouter'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Link,
+  Tabs,
+} from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
@@ -13,40 +23,37 @@ import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import getColumnDefs, {
   dataTypeDefinitions,
-  tableColumns,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import {
   INITIAL_PARAMS_MLFS,
   MANDATORY_STATUSES,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
-import { formatUSD } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { union } from 'lodash'
 import { useStore } from '@ors/store.tsx'
-
-interface Filter {
-  id: string | number
-  name: string
-  code?: string
-}
-
-interface ProjectReport {
-  agency_name: string
-  country_name: string
-  region_name: string
-  cluster_name: string | null
-  status: string
-  approved_funding: number | null
-  funds_disbursed: number | null
-  agency_status: string
-  agency_is_unlocked: boolean
-  [key: string]: any
-}
+import Tab from '@mui/material/Tab/Tab'
+import cx from 'classnames'
+import {
+  AnnualAgencyProjectReport,
+  APRFile,
+  Filter,
+} from '@ors/app/annual-project-report/types.ts'
+import { MdExpandMore } from 'react-icons/md'
+import { FiFile, FiLock, FiUnlock } from 'react-icons/fi'
+import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { enqueueSnackbar } from 'notistack'
+import { api, formatApiUrl } from '@ors/helpers'
+import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'
+import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
 
 export default function APRMLFSWorkspace() {
+  const [activeTab, setActiveTab] = useState(0)
+  const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
+  const confirm = useConfirmation()
   const { year } = useParams()
   usePageTitle(`MLFS Annual Progress Report (${year})`)
-  const { canViewAPR, isMlfsUser } = useContext(PermissionsContext)
+  const { canViewAPR, isMlfsUser, canEditAPR } = useContext(PermissionsContext)
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
@@ -59,7 +66,8 @@ export default function APRMLFSWorkspace() {
     loading,
     loaded,
     setParams,
-  } = useApi({
+    refetch,
+  } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
@@ -68,28 +76,30 @@ export default function APRMLFSWorkspace() {
   })
 
   // Flatten project reports from all agencies and add agency info
-  const allProjectReports = useMemo((): ProjectReport[] => {
+  const allProjectReports = useMemo(() => {
     if (!aprData || !Array.isArray(aprData)) return []
 
-    return aprData.flatMap((agencyData: any) =>
-      agencyData.project_reports.map((report: any) => ({
-        ...report,
-        agency_status: agencyData.status,
-        agency_is_unlocked: agencyData.is_unlocked,
-      })),
+    return aprData.flatMap((agencyData) =>
+      structuredClone(agencyData.project_reports),
     )
   }, [aprData])
 
   // Extract unique filter options
   const agencies = useMemo((): Filter[] => {
     if (!aprData || !Array.isArray(aprData)) return []
-    return aprData.map((agencyData: any) => ({
-      id: agencyData.agency.id,
-      name: agencyData.agency.name,
-    }))
+    return aprData
+      .filter(
+        (agencyData) =>
+          Array.isArray(agencyData.project_reports) &&
+          agencyData.project_reports.length > 0,
+      )
+      .map((agencyData) => ({
+        id: agencyData.agency.id,
+        name: agencyData.agency.name,
+      }))
   }, [aprData])
 
-  const regions = useMemo((): Filter[] => {
+  const regions = useMemo(() => {
     const uniqueRegions = new Set<string>()
     allProjectReports.forEach((report) => {
       if (report.region_name) {
@@ -102,7 +112,7 @@ export default function APRMLFSWorkspace() {
     }))
   }, [allProjectReports])
 
-  const countries = useMemo((): Filter[] => {
+  const countries = useMemo(() => {
     const uniqueCountries = new Set<string>()
     allProjectReports.forEach((report) => {
       if (report.country_name) {
@@ -115,7 +125,7 @@ export default function APRMLFSWorkspace() {
     }))
   }, [allProjectReports])
 
-  const clusters = useMemo((): Filter[] => {
+  const clusters = useMemo(() => {
     const uniqueClusters = new Set<string>()
     allProjectReports.forEach((report) => {
       if (report.cluster_name) {
@@ -151,9 +161,7 @@ export default function APRMLFSWorkspace() {
       })
     }
 
-  const { columnDefs: columnDefs, defaultColDef } = getColumnDefs({
-    includeAgency: true,
-  })
+  const { columnDefs: columnDefs, defaultColDef } = getColumnDefs()
 
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
@@ -164,6 +172,43 @@ export default function APRMLFSWorkspace() {
     return <NotFoundPage />
   }
 
+  const canEndorseAPR =
+    canEditAPR && aprData?.every((data) => data.status === 'submitted')
+
+  const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
+    const action = agencyData.is_unlocked ? 'lock' : 'unlock'
+    const response = await confirm({
+      title: `${agencyData.agency.name} report ${action}`,
+      message: `Are you sure you want to ${action} the ${agencyData.agency.name} report?`,
+    })
+
+    if (!response) {
+      return
+    }
+
+    try {
+      await api(
+        `api/annual-project-report/${year}/agency/${agencyData.agency_id}/toggle-lock/`,
+        {
+          method: 'POST',
+          data: {
+            is_unlocked: !agencyData.is_unlocked,
+          },
+        },
+      )
+
+      refetch()
+      enqueueSnackbar(<>Report {action} successful.</>, {
+        variant: 'success',
+      })
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
+  }
+
   return (
     <PageWrapper>
       <PageHeading className="min-w-fit">
@@ -171,207 +216,376 @@ export default function APRMLFSWorkspace() {
       </PageHeading>
 
       <Box className="shadow-none">
-        <Alert
-          className="mb-4 bg-mlfs-bannerColor"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="info"
+        <Loader active={loading} />
+        <div className="flex justify-between">
+          <Tabs
+            className="sectionsTabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            TabIndicatorProps={{
+              className: 'h-0',
+              style: { transitionDuration: '150ms' },
+            }}
+            value={activeTab}
+            onChange={(_, value) => {
+              setActiveTab(value)
+            }}
+            aria-label="Anual Project Report form tabs"
+          >
+            <Tab
+              label="Projects"
+              id="tab-projects"
+              aria-controls="tabpanel-projects"
+            ></Tab>
+            <Tab
+              label="IA/BA Submissions"
+              id="tab-submissions"
+              aria-controls="tabpanel-submissions"
+            ></Tab>
+          </Tabs>
+          <Button
+            disabled={loading || !canEndorseAPR}
+            className="mb-2"
+            variant="contained"
+            onClick={() => {
+              setIsEndorseModalOpen(true)
+            }}
+          >
+            Endorse
+          </Button>
+        </div>
+
+        <div
+          className={cx({ hidden: activeTab !== 0 })}
+          id="tabpanel-projects"
+          aria-labelledby="tab-projects"
+          role="tabpanel"
         >
-          Viewing project reports for all agencies. Use filters for viewing less
-          reports.
-        </Alert>
+          <Alert
+            className="mb-4 bg-mlfs-bannerColor"
+            icon={<IoInformationCircleOutline size={24} />}
+            severity="info"
+          >
+            Viewing project reports for all agencies. Use filters for viewing
+            less reports.
+          </Alert>
 
-        {/* Filters section */}
-        <div className="mb-2 flex flex-col gap-y-4">
-          <div className="flex flex-wrap gap-2">
-            {/* Status filter */}
-            <Field
-              Input={{ placeholder: tableColumns.status.label }}
-              options={getFilterOptions(filters, choosableStatuses, 'status')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-32 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
+          {/* Filters section */}
+          <div className="mb-2 flex flex-col gap-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Agency filter */}
+              <Field
+                Input={{ placeholder: 'Agency' }}
+                options={getFilterOptions(filters, agencies, 'agency')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: {
+                    sx: {
+                      transform: 'none !important',
+                    },
                   },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const statusFilters = union(filters.status, value)
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  status: statusFilters,
-                }))
-                setParams({
-                  status: statusFilters.map((v: any) => v.code).join(','),
-                })
-              }}
-            />
+                }}
+                onChange={(_: any, value: any) => {
+                  const agencyFilters = union(filters.agency, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    agency: agencyFilters,
+                  }))
+                  setParams({
+                    agency: agencyFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
 
-            {/* Agency filter */}
-            <Field
-              Input={{ placeholder: 'Agency' }}
-              options={getFilterOptions(filters, agencies, 'agency')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
+              {/* Region filter */}
+              <Field
+                Input={{ placeholder: 'Region' }}
+                options={getFilterOptions(filters, regions, 'region')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: {
+                    sx: {
+                      transform: 'none !important',
+                    },
                   },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const agencyFilters = union(filters.agency, value)
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  agency: agencyFilters,
-                }))
-                setParams({
-                  agency: agencyFilters.map((v: any) => v.id).join(','),
-                })
-              }}
-            />
+                }}
+                onChange={(_: any, value: any) => {
+                  const regionFilters = union(filters.region, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    region: regionFilters,
+                  }))
+                  setParams({
+                    region: regionFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
 
-            {/* Region filter */}
-            <Field
-              Input={{ placeholder: 'Region' }}
-              options={getFilterOptions(filters, regions, 'region')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
+              {/* Country filter */}
+              <Field
+                Input={{ placeholder: 'Country' }}
+                options={getFilterOptions(filters, countries, 'country')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: {
+                    sx: {
+                      transform: 'none !important',
+                    },
                   },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const regionFilters = union(filters.region, value)
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  region: regionFilters,
-                }))
-                setParams({
-                  region: regionFilters.map((v: any) => v.id).join(','),
-                })
-              }}
-            />
+                }}
+                onChange={(_: any, value: any) => {
+                  const countryFilters = union(filters.country, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    country: countryFilters,
+                  }))
+                  setParams({
+                    country: countryFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
 
-            {/* Country filter */}
-            <Field
-              Input={{ placeholder: 'Country' }}
-              options={getFilterOptions(filters, countries, 'country')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
+              {/* Cluster filter */}
+              <Field
+                Input={{ placeholder: 'Cluster' }}
+                options={getFilterOptions(filters, clusters, 'cluster')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: {
+                    sx: {
+                      transform: 'none !important',
+                    },
                   },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const countryFilters = union(filters.country, value)
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  country: countryFilters,
-                }))
-                setParams({
-                  country: countryFilters.map((v: any) => v.id).join(','),
-                })
-              }}
-            />
+                }}
+                onChange={(_: any, value: any) => {
+                  const clusterFilters = union(filters.cluster, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    cluster: clusterFilters,
+                  }))
+                  setParams({
+                    cluster: clusterFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
 
-            {/* Cluster filter */}
-            <Field
-              Input={{ placeholder: 'Cluster' }}
-              options={getFilterOptions(filters, clusters, 'cluster')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-48 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
-                  },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const clusterFilters = union(filters.cluster, value)
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  cluster: clusterFilters,
-                }))
-                setParams({
-                  cluster: clusterFilters.map((v: any) => v.id).join(','),
-                })
-              }}
-            />
-          </div>
+              <StatusFilter
+                disabled={loading}
+                statusOptions={choosableStatuses}
+                selectedCodes={filters.status.map((f) => f.code!)}
+                onToggle={(status, checked) => {
+                  const statusFilters = checked
+                    ? union(filters.status, [status])
+                    : filters.status.filter((f) => f.code !== status.code)
 
-          {/* Also display the active filters */}
-          <ul className="m-0 flex list-none flex-wrap gap-2 px-0">
-            {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
-              const paramKey: keyof Filter =
-                filterKey === 'status' ? 'code' : 'id'
-              return filterValue.map((val) => (
-                <li key={`${filterKey}-${val.id}`}>
-                  <Chip
-                    label={val.name}
-                    onDelete={onChipDelete(filterKey, val, paramKey)}
-                  />
-                </li>
-              ))
-            })}
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    status: statusFilters,
+                  }))
+                  setParams({
+                    status: statusFilters.map((f) => f.code).join(','),
+                  })
+                }}
+              />
+            </div>
+
+            {/* Also display the active filters */}
             {Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
             ) && (
-              <li>
-                <Button
-                  variant="text"
-                  onClick={() => {
-                    setFilters(INITIAL_PARAMS_MLFS)
-                    setParams(INITIAL_PARAMS_MLFS)
-                  }}
-                >
-                  Clear all
-                </Button>
-              </li>
+              <ul className="m-0 flex list-none flex-wrap gap-2 px-0">
+                {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
+                  const paramKey: keyof Filter =
+                    filterKey === 'status' ? 'code' : 'id'
+                  return filterValue.map((val) => (
+                    <li key={`${filterKey}-${val.id}`}>
+                      <Chip
+                        label={val.name}
+                        onDelete={onChipDelete(filterKey, val, paramKey)}
+                      />
+                    </li>
+                  ))
+                })}
+                <li>
+                  <Button
+                    variant="text"
+                    onClick={() => {
+                      setFilters(INITIAL_PARAMS_MLFS)
+                      setParams(INITIAL_PARAMS_MLFS)
+                    }}
+                  >
+                    Clear all
+                  </Button>
+                </li>
+              </ul>
             )}
-          </ul>
+          </div>
+
+          {loaded && (
+            <ViewTable
+              dataTypeDefinitions={dataTypeDefinitions}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              rowData={allProjectReports}
+              tooltipShowDelay={200}
+            />
+          )}
         </div>
 
-        <Loader active={loading} />
-        {loaded && (
-          <ViewTable
-            dataTypeDefinitions={dataTypeDefinitions}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            rowData={allProjectReports}
-            tooltipShowDelay={200}
-          />
-        )}
+        <div
+          className={cx({ hidden: activeTab !== 1 })}
+          id="tabpanel-submissions"
+          aria-labelledby="tab-submissions"
+          role="tabpanel"
+        >
+          {loaded && (
+            <ul className="m-0 flex flex-col gap-y-4 p-0">
+              {(aprData ?? []).map((agencyData) => {
+                return (
+                  <li className="m-0 list-none" key={agencyData.id}>
+                    <Accordion>
+                      <AccordionSummary
+                        className="group flex-row-reverse gap-x-4"
+                        expandIcon={
+                          <div className="rounded-full border border-solid border-black bg-mlfs-hlYellow">
+                            <MdExpandMore size={16} color="black" />
+                          </div>
+                        }
+                      >
+                        {/* w-full is necesary because MUI wraps our content in a flex container */}
+                        <div className="flex w-full justify-between">
+                          <div className="flex items-center gap-x-4">
+                            <span className="text-lg font-medium">
+                              {agencyData.agency.name}
+                            </span>
+                            <span
+                              className={cx(
+                                'rounded border border-solid px-1 py-0.5 text-sm',
+                                {
+                                  'border-transparent bg-primary text-white group-hover:border-mlfs-hlYellow group-hover:!text-mlfs-hlYellow':
+                                    agencyData.status === 'draft',
+                                },
+                              )}
+                            >
+                              {agencyData.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-x-4">
+                            {agencyData.status === 'submitted' && (
+                              <>
+                                <Button
+                                  className="hover:!text-mlfs-hlYellow group-hover:text-white"
+                                  variant="text"
+                                  startIcon={
+                                    agencyData.is_unlocked ? (
+                                      <FiLock size={18} />
+                                    ) : (
+                                      <FiUnlock size={18} />
+                                    )
+                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    changeLockStatus(agencyData)
+                                  }}
+                                  disabled={loading}
+                                >
+                                  {agencyData.is_unlocked ? 'Lock' : 'Unlock'}
+                                </Button>
+                                <span className="text-sm font-medium">
+                                  Submitted:{' '}
+                                  <span className="font-bold">
+                                    {formatDate(agencyData.submitted_at)}
+                                  </span>
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {agencyData.files.length > 0 ? (
+                          <FilesView files={agencyData.files} />
+                        ) : (
+                          'No files uploaded'
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
       </Box>
+      <EndorseAprModal
+        isModalOpen={isEndorseModalOpen}
+        setIsModalOpen={setIsEndorseModalOpen}
+        disabled={loading}
+      />
     </PageWrapper>
+  )
+}
+
+function FilesView({ files }: { files: APRFile[] }) {
+  const financialFile = files.find(
+    (file) => file.file_type === 'annual_progress_financial_report',
+  )
+  const supportingFiles = files.filter(
+    (file) => file.file_type === 'other_supporting_document',
+  )
+
+  return (
+    <div className="flex flex-col gap-y-4">
+      {financialFile && (
+        <div className="flex flex-col gap-y-2">
+          <p className="m-0 text-xl font-medium">
+            Annual Progress & Financial Report
+          </p>
+          <FileView file={financialFile} />
+        </div>
+      )}
+      {supportingFiles.length > 0 && (
+        <div className="flex flex-col gap-y-2">
+          <p className="m-0 text-xl font-medium">Other Supporting Documents</p>
+          <ul className="m-0 flex gap-x-4 p-0">
+            {supportingFiles.map((file) => (
+              <li key={file.id} className="m-0 list-none">
+                <FileView file={file} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FileView({ file }: { file: APRFile }) {
+  return (
+    <span className="inline-flex gap-x-2 rounded bg-[#f5f5f5] p-2">
+      <FiFile className="text-secondary" size={18} />
+      <Link href={formatApiUrl(file.file_url)}>{file.file_name}</Link>
+    </span>
   )
 }

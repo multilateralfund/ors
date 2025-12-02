@@ -148,8 +148,7 @@ export const tableColumns: Record<string, APRTableColumn> = {
   },
   status: {
     label: 'Status',
-    // TODO: fieldname
-    fieldName: '',
+    fieldName: 'status',
     group: 'Date data fields',
     input: true,
   },
@@ -484,7 +483,6 @@ export const tableColumns: Record<string, APRTableColumn> = {
 interface BaseColumnDefOptions {
   group?: string | null
   inlineEdit?: boolean
-  includeAgency?: boolean
 }
 
 interface ClipboardDisabled extends BaseColumnDefOptions {
@@ -505,7 +503,6 @@ export default function getColumnDefs({
   group = null,
   inlineEdit = false,
   clipboardEdit = false,
-  includeAgency = false,
   rows,
   setRows,
 }: ColumnDefOptions = {}) {
@@ -536,18 +533,6 @@ export default function getColumnDefs({
           )
         : undefined,
   }))
-
-  if (includeAgency) {
-    columnDefs.unshift({
-      headerName: 'Agency',
-      headerComponent: undefined,
-      field: 'agency_name',
-      editable: false,
-      sortable: false,
-      filter: false,
-      minWidth: 150,
-    })
-  }
 
   return {
     columnDefs,

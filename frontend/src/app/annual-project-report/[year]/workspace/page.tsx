@@ -1,8 +1,8 @@
-import { useParams, Redirect } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import { Box, Chip } from '@mui/material'
@@ -10,15 +10,11 @@ import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
-import Field from '@ors/components/manage/Form/Field.tsx'
 import getColumnDefs, {
   dataTypeDefinitions,
-  tableColumns,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
-import { IoChevronDown } from 'react-icons/io5'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
 import useApi from '@ors/hooks/useApi.ts'
-import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import { union } from 'lodash'
 import {
   INITIAL_PARAMS,
@@ -28,12 +24,11 @@ import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.ts
 import Link from '@ors/components/ui/Link/Link.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
 import SubmitButton from '@ors/components/manage/Blocks/AnnualProgressReport/SubmitButton.tsx'
-
-interface Filter {
-  id: string
-  name: string
-  code?: string
-}
+import {
+  AnnualAgencyProjectReport,
+  Filter,
+} from '@ors/app/annual-project-report/types.ts'
+import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -54,7 +49,7 @@ export default function APRWorkspace() {
     loaded,
     setParams,
     refetch,
-  } = useApi({
+  } = useApi<AnnualAgencyProjectReport>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR,
@@ -99,50 +94,40 @@ export default function APRWorkspace() {
         <Loader active={loading} />
         <div className="mb-2 flex items-end justify-between">
           <div className="flex flex-col gap-x-2">
-            <Field
-              Input={{ placeholder: tableColumns.status.label }}
-              options={getFilterOptions(filters, choosableStatuses, 'status')}
-              widget="autocomplete"
-              multiple={true}
-              value={[]}
-              getOptionLabel={(option: any) => option?.name}
-              popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
-              FieldProps={{ className: 'mb-0 md:w-32 BPList' }}
-              componentsProps={{
-                popupIndicator: {
-                  sx: {
-                    transform: 'none !important',
-                  },
-                },
-              }}
-              onChange={(_: any, value: any) => {
-                const statusFilters = union(filters.status, value)
+            <StatusFilter
+              disabled={loading}
+              statusOptions={choosableStatuses}
+              selectedCodes={filters.status.map((f) => f.code!)}
+              onToggle={(status, checked) => {
+                const statusFilters = checked
+                  ? union(filters.status, [status])
+                  : filters.status.filter((f) => f.code !== status.code)
 
                 setFilters((oldFilters) => ({
                   ...oldFilters,
                   status: statusFilters,
                 }))
                 setParams({
-                  status: statusFilters.map((v: any) => v.code).join(','),
+                  status: statusFilters.map((f) => f.code).join(','),
                 })
               }}
             />
-            <ul className="m-0 flex list-none gap-x-2 px-0 py-2">
-              {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
-                const paramKey: keyof Filter =
-                  filterKey === 'status' ? 'code' : 'id'
-                return filterValue.map((val) => (
-                  <li key={val.id}>
-                    <Chip
-                      label={val.name}
-                      onDelete={onChipDelete(filterKey, val, paramKey)}
-                    />
-                  </li>
-                ))
-              })}
-              {Object.values(filters).some(
-                (filterArr) => filterArr.length > 0,
-              ) && (
+            {Object.values(filters).some(
+              (filterArr) => filterArr.length > 0,
+            ) && (
+              <ul className="m-0 flex list-none gap-x-2 px-0 py-2">
+                {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
+                  const paramKey: keyof Filter =
+                    filterKey === 'status' ? 'code' : 'id'
+                  return filterValue.map((val) => (
+                    <li key={val.id}>
+                      <Chip
+                        label={val.name}
+                        onDelete={onChipDelete(filterKey, val, paramKey)}
+                      />
+                    </li>
+                  ))
+                })}
                 <li>
                   <Button
                     variant="text"
@@ -154,8 +139,8 @@ export default function APRWorkspace() {
                     Clear all
                   </Button>
                 </li>
-              )}
-            </ul>
+              </ul>
+            )}
           </div>
 
           <div className="flex flex-col items-end gap-y-2">
@@ -203,7 +188,7 @@ export default function APRWorkspace() {
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            rowData={apr.project_reports}
+            rowData={apr?.project_reports ?? []}
             tooltipShowDelay={200}
           />
         )}
@@ -214,7 +199,7 @@ export default function APRWorkspace() {
           setIsModalOpen={setIsUploadDocumentsModalOpen}
           year={year}
           agencyId={user.agency_id}
-          oldFiles={apr.files}
+          oldFiles={apr?.files ?? []}
           revalidateFiles={refetch}
           disabled={!isDraft || !canEditAPR || loading}
         />

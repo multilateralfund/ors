@@ -4,6 +4,7 @@ import unicodedata
 from datetime import date
 
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
@@ -1434,6 +1435,17 @@ def annual_progress_report(apr_year):
 
 
 @pytest.fixture
+def annual_progress_report_endorsed(apr_year, meeting_apr_same_year):
+    return AnnualProgressReportFactory(
+        year=apr_year,
+        endorsed=True,
+        date_endorsed=timezone.now().date(),
+        meeting_endorsed=meeting_apr_same_year,
+        remarks_endorsed="Test endorsement",
+    )
+
+
+@pytest.fixture
 def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
     return AnnualAgencyProjectReportFactory(
         progress_report=annual_progress_report,
@@ -1494,6 +1506,15 @@ def multiple_meetings_apr_same_year(apr_year):
         )
         for i in range(1, 3)
     ]
+
+
+@pytest.fixture
+def meeting_apr_same_year(apr_year):
+    return MeetingFactory.create(
+        number=29,
+        date=f"{apr_year}-4-14",
+        end_date=f"{apr_year}-4-15",
+    )
 
 
 @pytest.fixture
