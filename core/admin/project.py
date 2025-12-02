@@ -213,6 +213,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "archive_projects",
             "project_history",
             "annual_reports",
+            "transferred_projects",
         ]
         return get_final_display_list(Project, exclude)
 

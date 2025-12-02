@@ -40,9 +40,8 @@ from core.models.project_metadata import (
 )
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
-from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 
-# pylint: disable=C0302,R1702,W0707,R0912
+# pylint: disable=C0302,R1702,W0707,R0912,E1101
 
 
 HISTORY_DESCRIPTION_CREATE = "Create project"
@@ -81,7 +80,10 @@ class UpdateOdsOdpEntries:
                 incoming_ids.add(item_id)
                 ods_odp_instance = existing_ods_odp_map[item_id]
                 serializer = ProjectV2OdsOdpCreateUpdateSerializer(
-                    instance=ods_odp_instance, data=ods_odp, partial=True
+                    instance=ods_odp_instance,
+                    data=ods_odp,
+                    partial=True,
+                    context=self.context,
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
@@ -598,7 +600,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "computed_total_phase_out_metric_tonnes",
             "computed_total_phase_out_odp_tonnes",
             "computed_total_phase_out_co2_tonnes",
-            "transferred_from"
+            "transferred_from",
         ]
 
     def get_editable(self, obj):
@@ -772,19 +774,53 @@ class ProjectV2OdsOdpCreateUpdateSerializer(
                 )
 
         if attrs.get("ods_substance_id"):
+            if "cluster" not in self.context:
+                raise serializers.ValidationError(
+                    "Cluster context is required for validating ods_substance_id"
+                )
+            cluster = ProjectCluster.objects.filter(id=self.context["cluster"]).first()
+            if not cluster:
+                raise serializers.ValidationError(
+                    "Invalid cluster context for validating ods_substance_id"
+                )
+            group_ids = cluster.annex_groups.values_list("id", flat=True) or []
             accepted_substances = (
-                Substance.objects.all().filter_project_accepted_substances()
+                Substance.objects.all().filter_project_accepted_substances(
+                    group_ids=group_ids
+                )
             )
             if not accepted_substances.filter(id=attrs["ods_substance_id"]).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
                 raise serializers.ValidationError(
-                    f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                    f"Substance must be one of {names_alt} groups"
                 )
 
         if attrs.get("ods_blend_id"):
-            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
-            if not accepted_blends.filter(id=attrs["ods_blend_id"]).exists():
+            if "cluster" not in self.context:
                 raise serializers.ValidationError(
-                    f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                    "Cluster context is required for validating ods_blend_id"
+                )
+            cluster = ProjectCluster.objects.filter(id=self.context["cluster"]).first()
+            if not cluster:
+                raise serializers.ValidationError(
+                    "Invalid cluster context for validating ods_blend_id"
+                )
+            group_ids = cluster.annex_groups.values_list("id", flat=True) or None
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends(
+                group_ids=group_ids
+            )
+            if not accepted_blends.filter(id=attrs["ods_blend_id"]).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
+                raise serializers.ValidationError(
+                    f"Blend must have at least one substance in {names_alt} groups"
                 )
         return super(ProjectV2OdsOdpListSerializer, self).validate(attrs)
 

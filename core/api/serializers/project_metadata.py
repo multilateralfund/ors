@@ -1,11 +1,9 @@
 from rest_framework import serializers
 
 from core.models import (
-    Group,
     Substance,
     ProjectOdsOdp,
 )
-from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 from core.api.serializers.chemicals import (
     GroupSerializer,
     SubstanceSerializer,
@@ -246,14 +244,11 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
         """
         ! Returns options only for specific fields.
         """
-
         if obj.read_field_name == "group":
-            return GroupSerializer(
-                Group.objects.filter(
-                    name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-                ).order_by("name"),
-                many=True,
-            ).data
+            groups_queryset = self.context["cluster"].annex_groups.order_by("name")
+            if not groups_queryset.exists():
+                return []
+            return GroupSerializer(groups_queryset, many=True).data
         if obj.read_field_name == "ods_type":
             return [
                 (
@@ -267,11 +262,14 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             ]
         if obj.read_field_name == "ods_display_name":
             data = {}
-
+            group_ids = (
+                self.context["cluster"].annex_groups.values_list("id", flat=True)
+                or None
+            )
             substances = (
                 Substance.objects.all()
                 .select_related("group")
-                .filter_project_accepted_substances()
+                .filter_project_accepted_substances(group_ids=group_ids)
                 .order_by("name")
             )
             data["substances"] = SubstanceSerializer(substances, many=True).data
@@ -280,7 +278,7 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
 
             blends = (
                 Blend.objects.all()
-                .filter_project_accepted_blends()
+                .filter_project_accepted_blends(group_ids=group_ids)
                 .prefetch_related(
                     "components",
                     "components__substance",
@@ -335,7 +333,10 @@ class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
             obj.fields.all(),
             many=True,
             read_only=True,
-            context={"project_submission_status_name": project_submission_status_name},
+            context={
+                "project_submission_status_name": project_submission_status_name,
+                "cluster": obj.cluster,
+            },
         ).data
 
     class Meta:

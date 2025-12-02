@@ -178,6 +178,14 @@ class ProjectV2ViewSet(
         context["edit_queryset_ids"] = set(
             projects_edit_queryset.values_list("id", flat=True)
         )
+        cluster = self.request.data.get("cluster", None)
+        if not cluster:
+            try:
+                project = self.get_object()
+                cluster = project.cluster_id
+            except AssertionError:
+                cluster = None
+        context["cluster"] = cluster
         return context
 
     @property

@@ -14,9 +14,10 @@ from core.api.serializers.chemicals import (
     GroupSerializer,
     SubstanceSerializer,
 )
-from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES, SECTION_ANNEX_MAPPING
+from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
 from core.models.group import Group
+from core.models.project import Project
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage
 
@@ -108,12 +109,19 @@ class SubstancesListView(ChemicalBaseListView):
         )
         if not include_user_substances:
             queryset = queryset.filter(created_by__isnull=True)
-
-        if (
-            self.request.query_params.get("filter_for_projects", "false").lower()
-            == "true"
-        ):
-            queryset = queryset.filter_project_accepted_substances()
+        if self.request.query_params.get("filter_by_project", None):
+            project = Project.objects.filter(
+                id=self.request.query_params.get("filter_by_project")
+            ).first()
+            if project:
+                group_ids = (
+                    project.cluster.annex_groups.values_list("id", flat=True) or None
+                )
+                queryset = queryset.filter_project_accepted_substances(
+                    group_ids=group_ids
+                )
+            else:
+                queryset = queryset.none()
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -144,10 +152,10 @@ class SubstancesListView(ChemicalBaseListView):
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
-                "filter_for_projects",
+                "filter_by_project",
                 openapi.IN_QUERY,
-                description=f"Include only substances of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups",
-                type=openapi.TYPE_BOOLEAN,
+                description="Include only substances of that are part of the project's cluster accepted annex groups.",
+                type=openapi.TYPE_INTEGER,
             ),
             openapi.Parameter(
                 "for_year",
@@ -231,12 +239,12 @@ class BlendsListView(ChemicalBaseListView):
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
-                "filter_for_projects",
+                "filter_by_project",
                 openapi.IN_QUERY,
-                description=f"""
-                    Include only blends that have at least one
-                    substance in their composition of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups""",
-                type=openapi.TYPE_BOOLEAN,
+                description="""
+                    Include only blends that have at least one substance
+                    in their composition of the project's cluster accepted annex groups.""",
+                type=openapi.TYPE_INTEGER,
             ),
             openapi.Parameter(
                 "for_year",
@@ -254,12 +262,21 @@ class BlendsListView(ChemicalBaseListView):
         if request.query_params.get("limit", None):
             return super().get(request, *args, **kwargs)
 
-        # if filter_for_projects is true, filter blends that have at least one substance in their composition
-        if (
-            self.request.query_params.get("filter_for_projects", "false").lower()
-            == "true"
-        ):
-            blends_queryset = Blend.objects.all().filter_project_accepted_blends()
+        # if filter_by_project is provided, filter blends that have at least one substance in their composition
+        # of the project's cluster accepted annex groups
+        if self.request.query_params.get("filter_by_project", None):
+            project = Project.objects.filter(
+                id=self.request.query_params.get("filter_by_project")
+            ).first()
+            if project:
+                group_ids = (
+                    project.cluster.annex_groups.values_list("id", flat=True) or None
+                )
+                blends_queryset = Blend.objects.all().filter_project_accepted_blends(
+                    group_ids=group_ids
+                )
+            else:
+                blends_queryset = self.get_queryset().none()
         else:
             blends_queryset = self.get_queryset()
 

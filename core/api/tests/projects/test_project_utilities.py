@@ -323,6 +323,7 @@ class TestProjectCluster(BaseTest):
 @pytest.fixture(name="_setup_project_specific_fields")
 def setup_project_specific_fields(groupHCFC):
     cluster1 = ProjectClusterFactory.create(name="Cluster1", code="CL1", sort_order=1)
+    cluster1.annex_groups.add(groupHCFC)
     project_type1 = ProjectTypeFactory.create(name="Type1", code="TYP1")
     sector1 = ProjectSectorFactory.create(name="Sector1", code="SEC1")
 

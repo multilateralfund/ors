@@ -8,6 +8,7 @@ from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
 )
 
+from core.models.group import Group
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -146,6 +147,16 @@ def import_project_clusters(file_path):
             production = True
         elif row["Production"] == "Both":
             production = None
+
+        # get annex groups
+        annex_groups = []
+        if row["Annex groups"]:
+            annex_groups_name_alt = row["Annex groups"].split(",")
+            annex_groups = Group.objects.filter(name__in=annex_groups_name_alt)
+            if annex_groups.count() != len(annex_groups_name_alt):
+                logger.warning(
+                    f"⚠️ Some annex groups not found for cluster {row['Name']}"
+                )
         cluster_data = {
             "name": row["Name"],
             "code": row["Acronym"],
@@ -154,9 +165,12 @@ def import_project_clusters(file_path):
             "production": production,
             "sort_order": index,
         }
-        ProjectCluster.objects.update_or_create(
+
+        cluster, _ = ProjectCluster.objects.update_or_create(
             name=cluster_data["name"], defaults=cluster_data
         )
+        if annex_groups:
+            cluster.annex_groups.set(annex_groups)
 
 
 def clean_up_project_statuses():

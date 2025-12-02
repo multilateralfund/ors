@@ -5,10 +5,10 @@ from django.db import models
 
 
 class SubstanceQuerySet(models.QuerySet):
-    def filter_project_accepted_substances(self):
-        from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-
-        return self.filter(group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES)
+    def filter_project_accepted_substances(self, *args, **kwargs):
+        if "group_ids" in kwargs and kwargs["group_ids"] is not None:
+            return self.filter(group__id__in=kwargs.get("group_ids"))
+        return self.none()
 
 
 class SubstanceManager(models.Manager):
