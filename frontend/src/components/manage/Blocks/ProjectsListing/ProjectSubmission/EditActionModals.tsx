@@ -3,6 +3,7 @@ import ChangeVersionModal from './ChangeVersionModal'
 import ChangeStatusModal from './ChangeStatusModal'
 import SendProjectToDraftModal from './SendProjectToDraftModal'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
+import ApprovalModal from './ApprovalModal'
 
 const EditActionModals = ({
   id,
@@ -16,11 +17,14 @@ const EditActionModals = ({
   setIsWithdrawModalOpen,
   isSendToDraftModalOpen,
   setIsSendToDraftModalOpen,
+  approvalModalType,
+  setApprovalModalType,
   isTrancheWarningOpen,
   setIsTrancheWarningOpen,
   editProject,
   withdrawProject,
   sendProjectBackToDraft,
+  approveRejectProject,
 }: {
   id: number
   isComponentModalOpen?: boolean
@@ -33,11 +37,14 @@ const EditActionModals = ({
   setIsWithdrawModalOpen: (isOpen: boolean) => void
   isSendToDraftModalOpen: boolean
   setIsSendToDraftModalOpen: (isOpen: boolean) => void
+  approvalModalType: string | null
+  setApprovalModalType: (approvalType: string | null) => void
   isTrancheWarningOpen: boolean
   setIsTrancheWarningOpen: (isOpen: boolean) => void
   editProject?: (navigationPage?: string) => void
   withdrawProject: () => void
   sendProjectBackToDraft: () => void
+  approveRejectProject: (action: string) => void
 }) => (
   <>
     {isComponentModalOpen && setIsComponentModalOpen && (
@@ -68,6 +75,14 @@ const EditActionModals = ({
         isModalOpen={isWithdrawModalOpen}
         setIsModalOpen={setIsWithdrawModalOpen}
         onAction={withdrawProject}
+      />
+    )}
+    {!!approvalModalType && (
+      <ApprovalModal
+        type={approvalModalType}
+        isModalOpen={!!approvalModalType}
+        setModalType={setApprovalModalType}
+        onAction={approveRejectProject}
       />
     )}
     {isSendToDraftModalOpen && (

@@ -109,6 +109,9 @@ const EditActionButtons = ({
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
   const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
+  const [approvalModalType, setApprovalModalType] = useState<string | null>(
+    null,
+  )
 
   const { id, submission_status, version, component } = project
   const {
@@ -443,6 +446,10 @@ const EditActionButtons = ({
     setIsRecommendModalOpen(true)
   }
 
+  const onApproveRejectProject = (action: string) => {
+    setApprovalModalType(action)
+  }
+
   const sendProjectBackToDraft = async () => {
     const canSendBackToDraft = await editProject()
 
@@ -523,11 +530,13 @@ const EditActionButtons = ({
         })
         setLocation(`/projects-listing/${id}`)
       } catch (error) {
-        await handleErrors(error)
-      } finally {
-        setIsLoading(false)
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
       }
     }
+
+    setApprovalModalType(null)
   }
 
   return (
@@ -607,7 +616,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={() => approveRejectProject('approve')}
+            onClick={() => onApproveRejectProject('approve')}
           >
             Approve project
           </Dropdown.Item>
@@ -615,7 +624,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-red-900')}
-            onClick={() => approveRejectProject('reject')}
+            onClick={() => onApproveRejectProject('reject')}
           >
             Not approve project
           </Dropdown.Item>
@@ -634,10 +643,13 @@ const EditActionButtons = ({
           setIsWithdrawModalOpen,
           isSendToDraftModalOpen,
           setIsSendToDraftModalOpen,
+          approvalModalType,
+          setApprovalModalType,
           setIsTrancheWarningOpen,
           editProject,
           withdrawProject,
           sendProjectBackToDraft,
+          approveRejectProject,
         }}
         isTrancheWarningOpen={
           !!showSubmitTranchesWarningModal && isTrancheWarningOpen
