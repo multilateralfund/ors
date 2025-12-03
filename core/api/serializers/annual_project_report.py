@@ -354,6 +354,9 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     Requires project_code for matching the correct project report.
     """
 
+    # ID is optional for agency, but needed for MLFS (checked in view)
+    id = serializers.IntegerField(required=False, write_only=True)
+
     # Required field for matching the project report
     project_code = serializers.CharField(write_only=True, required=True)
 
@@ -396,7 +399,8 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnnualProjectReport
         fields = [
-            # Project code is needed for matching rows
+            "id",
+            # project_code is needed for matching rows
             "project_code",
             # Only editable fields should be here; derived fields absent
             # Project date data fields - input
@@ -451,8 +455,12 @@ class AnnualProjectReportBulkUpdateSerializer(serializers.Serializer):
             )
 
         # Check for duplicate project codes
-        project_codes = [pr["project_code"] for pr in value]
-        duplicates = [code for code in project_codes if project_codes.count(code) > 1]
+        project_codes = [pr.get("project_code") for pr in value]
+        duplicates = [
+            code
+            for code in project_codes
+            if code is not None and project_codes.count(code) > 1
+        ]
 
         if duplicates:
             unique_duplicates = list(set(duplicates))
@@ -733,3 +741,101 @@ class AnnualProgressReportEndorseSerializer(AnnualProgressReportSerializer):
         )
 
         return instance
+
+
+class AnnualProjectReportMLFSBulkUpdateSerializer(serializers.Serializer):
+    """
+    MLFS-based serializer for bulk updating project reports across all agencies.
+    Matches by project report ID, which seems the only certainly unique option.
+    """
+
+    project_reports = AnnualProjectReportUpdateSerializer(many=True)
+
+    def validate_project_reports(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                "At least one project report must be provided."
+            )
+
+        ids = [pr.get("id") for pr in value if pr.get("id")]
+        if len(ids) != len(set(ids)):
+            raise serializers.ValidationError(
+                "Duplicate project report IDs found in request."
+            )
+
+        return value
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        project_reports_data = self.validated_data.get("project_reports", [])
+        year = self.context.get("year")
+        updated_reports = []
+        errors = []
+
+        ids = [pr.get("id") for pr in project_reports_data if pr.get("id")]
+        existing_reports = AnnualProjectReport.objects.filter(
+            id__in=ids,
+            report__progress_report__year=year,
+        ).select_related(
+            "project",
+            "report",
+            "report__agency",
+            "report__progress_report",
+        )
+        report_map = {report.id: report for report in existing_reports}
+
+        for pr_data in project_reports_data:
+            report_id = pr_data.get("id")
+            if not report_id:
+                errors.append(
+                    {
+                        "error": "Missing 'id' field",
+                        "data": pr_data,
+                    }
+                )
+                continue
+
+            report = report_map.get(report_id)
+            if not report:
+                errors.append(
+                    {
+                        "id": report_id,
+                        "error": f"Project report with ID {report_id} not found for year {year}",
+                    }
+                )
+                continue
+
+            # MLFS (or agency) cannot edit endorsed reports
+            if report.report.is_endorsed():
+                errors.append(
+                    {
+                        "id": report_id,
+                        "project_code": report.project.code,
+                        "agency": report.report.agency.name,
+                        "error": "Cannot edit endorsed reports",
+                    }
+                )
+                continue
+
+            # Update the report
+            serializer = AnnualProjectReportUpdateSerializer(
+                instance=report,
+                data=pr_data,
+                partial=True,
+                context=self.context,
+            )
+
+            if serializer.is_valid():
+                serializer.save()
+                updated_reports.append(report)
+            else:
+                errors.append(
+                    {
+                        "id": report_id,
+                        "project_code": report.project.code,
+                        "agency": report.report.agency.name,
+                        "errors": serializer.errors,
+                    }
+                )
+
+        return updated_reports, errors

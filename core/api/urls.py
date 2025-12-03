@@ -154,6 +154,7 @@ from core.api.views.annual_project_report import (
     APRGlobalViewSet,
     APRToggleLockView,
     APREndorseView,
+    APRMLFSBulkUpdateView,
 )
 
 router = routers.SimpleRouter()
@@ -729,6 +730,11 @@ urlpatterns = [
         "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
         APRBulkUpdateView.as_view(),
         name="apr-update",
+    ),
+    path(
+        "annual-project-report/mlfs/<int:year>/bulk-update/",
+        APRMLFSBulkUpdateView.as_view(),
+        name="apr-mlfs-bulk-update",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/upload/",
