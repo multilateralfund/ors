@@ -236,7 +236,6 @@ const ProjectTransfer = ({
             maxLength={500}
             style={STYLE}
             minRows={2}
-            tabIndex={-1}
           />
           <FieldErrorIndicator
             errors={errors}

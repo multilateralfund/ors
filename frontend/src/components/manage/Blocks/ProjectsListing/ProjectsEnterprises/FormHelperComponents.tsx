@@ -182,7 +182,6 @@ export const EnterpriseTextAreaField = <T,>({
       maxLength={500}
       style={STYLE}
       minRows={5}
-      tabIndex={-1}
     />
   </div>
 )

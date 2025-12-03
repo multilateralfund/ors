@@ -384,7 +384,6 @@ export const TextAreaWidget = <T,>(
           maxLength={500}
           style={STYLE}
           minRows={isOdsReplacement ? 1 : 2}
-          tabIndex={-1}
         />
         <FieldErrorIndicator
           errors={

@@ -205,7 +205,6 @@ const ProjectCrossCuttingFields = ({
                     maxLength={1000}
                     style={STYLE}
                     minRows={7}
-                    tabIndex={-1}
                   />
                   <FieldErrorIndicator errors={errors} field="description" />
                 </div>

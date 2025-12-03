@@ -37,14 +37,14 @@ const EditActionModals = ({
   setIsWithdrawModalOpen: (isOpen: boolean) => void
   isSendToDraftModalOpen: boolean
   setIsSendToDraftModalOpen: (isOpen: boolean) => void
-  approvalModalType: string | null
-  setApprovalModalType: (approvalType: string | null) => void
+  approvalModalType?: string | null
+  setApprovalModalType?: (approvalType: string | null) => void
   isTrancheWarningOpen: boolean
   setIsTrancheWarningOpen: (isOpen: boolean) => void
   editProject?: (navigationPage?: string) => void
   withdrawProject: () => void
   sendProjectBackToDraft: () => void
-  approveRejectProject: (action: string) => void
+  approveRejectProject?: (action: string) => void
 }) => (
   <>
     {isComponentModalOpen && setIsComponentModalOpen && (
@@ -77,7 +77,7 @@ const EditActionModals = ({
         onAction={withdrawProject}
       />
     )}
-    {!!approvalModalType && (
+    {!!approvalModalType && setApprovalModalType && approveRejectProject && (
       <ApprovalModal
         type={approvalModalType}
         isModalOpen={!!approvalModalType}
