@@ -24,8 +24,9 @@ class TestProjectListPreviousTranches:
         project1.tranche = 2
         project1.save()
         project2.tranche = 1
+        project2.country = project1.country
+        project2.cluster = project1.cluster
         project2.submission_status = project_approved_status
-        project2.meta_project = project1.meta_project
         project2.save()
 
     def test_project_list_previous_tranches_permissions(
@@ -80,6 +81,7 @@ class TestProjectListPreviousTranches:
         project_draft_status,
         project2,
         secretariat_v1_v2_edit_access_user,
+        new_country,
     ):
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         self._prepare_projects(project, project2, project_approved_status)
@@ -102,8 +104,8 @@ class TestProjectListPreviousTranches:
         assert response.data[0]["id"] == project2.id
         assert response.data[0]["tranche"] == 1
 
-        # test with project2 without meta_project
-        project2.meta_project = None
+        # test with project2 with different country
+        project2.country = new_country
         project2.save()
         response = self.client.get(
             reverse("project-v2-list-previous-tranches", args=(project.id,))
@@ -113,7 +115,7 @@ class TestProjectListPreviousTranches:
 
         # test with project2 with different tranche
         project2.tranche = 3
-        project2.meta_project = project.meta_project
+        project2.country = project.country
         project2.save()
         response = self.client.get(
             reverse("project-v2-list-previous-tranches", args=(project.id,))

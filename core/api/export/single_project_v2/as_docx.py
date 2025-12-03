@@ -309,10 +309,11 @@ class ProjectsV2ProjectExportDocx:
     def build_impact_previous_tranches(self):
         table = self.find_table("Impact (previous MYA tranches) If applicable")
         if table and self.project.tranche and self.project.meta_project:
-            # TODO: should redefine what previous tranches are
             related_projects = Project.objects.filter(
-                meta_project__id=self.project.meta_project.id,
-                # tranche__lt=self.project.tranche,
+                country=self.project.country,
+                cluster=self.project.cluster,
+                tranche__lt=self.project.tranche,
+                submission_status__name="Approved",
             )
             for project in related_projects:
                 project_specific_fields_obj = ProjectSpecificFields.objects.filter(

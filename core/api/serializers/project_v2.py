@@ -1364,7 +1364,8 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
         except (ValueError, TypeError):
             return errors
         previous_tranches = Project.objects.filter(
-            meta_project=self.instance.meta_project,
+            country=self.instance.country,
+            cluster=self.instance.cluster,
             tranche=tranche - 1,
             submission_status__name="Approved",
         )

@@ -55,7 +55,8 @@ class ProjectListPreviousTranchesMixin:
                     id=project.id,
                 )
                 .filter(
-                    meta_project=project.meta_project,
+                    country=project.country,
+                    cluster=project.cluster,
                     tranche=tranche - 1,
                     submission_status__name="Approved",
                 )
