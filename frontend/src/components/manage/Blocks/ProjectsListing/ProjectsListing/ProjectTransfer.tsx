@@ -204,7 +204,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div>
-            <Label htmlFor="decision">Transfer decision</Label>
+            <Label htmlFor="decision">{tableColumns.transfer_decision}</Label>
             <div className="flex items-center">
               <Field
                 widget="autocomplete"
