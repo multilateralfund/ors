@@ -248,6 +248,11 @@ class ProjectEnterpriseViewSet(
         )
         return queryset
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["project_id"] = self.request.data.get("project") or None
+        return context
+
     def get_serializer_class(self):
         serializer = ProjectEnterpriseSerializer
         return serializer

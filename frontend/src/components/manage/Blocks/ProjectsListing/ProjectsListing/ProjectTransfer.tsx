@@ -204,7 +204,7 @@ const ProjectTransfer = ({
             </div>
           </div>
           <div>
-            <Label htmlFor="decision">Transfer decision</Label>
+            <Label htmlFor="decision">{tableColumns.transfer_decision}</Label>
             <div className="flex items-center">
               <Field
                 widget="autocomplete"
@@ -278,22 +278,6 @@ const ProjectTransfer = ({
                 {...numberFieldDefaultProps}
               />
               <FieldErrorIndicator errors={errors} field="psc_transferred" />
-            </div>
-          </div>
-          <div>
-            <Label>{tableColumns.psc_received}</Label>
-            <div className="flex items-center">
-              <FormattedNumberInput
-                id="psc_received"
-                value={projectData.psc_received ?? ''}
-                prefix="$"
-                withoutDefaultValue={true}
-                onChange={(event) =>
-                  handleChangeNumericValues(event, 'psc_received')
-                }
-                {...numberFieldDefaultProps}
-              />
-              <FieldErrorIndicator errors={errors} field="psc_received" />
             </div>
           </div>
         </div>

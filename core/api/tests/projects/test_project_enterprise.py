@@ -19,6 +19,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="_setup_enterprises")
 def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc):
+
     project2.country = new_country
     project2.lead_agency = new_agency
     project2.save()

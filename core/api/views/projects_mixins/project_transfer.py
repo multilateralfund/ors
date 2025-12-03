@@ -93,13 +93,6 @@ class ProjectTransferMixin:
                 type=openapi.TYPE_NUMBER,
                 required=False,
             ),
-            openapi.Parameter(
-                "psc_received",
-                openapi.IN_FORM,
-                description="PSC received",
-                type=openapi.TYPE_NUMBER,
-                required=False,
-            ),
         ],
         responses={
             status.HTTP_200_OK: ProjectV2TransferSerializer,

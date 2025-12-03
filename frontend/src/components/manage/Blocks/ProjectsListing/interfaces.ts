@@ -196,6 +196,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     computed_total_phase_out_metric_tonnes: string | null
     computed_total_phase_out_odp_tonnes: string | null
     computed_total_phase_out_co2_tonnes: string | null
+    transferred_from: number | null
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
@@ -263,7 +264,6 @@ export interface ProjectTransferData {
   transfer_excom_provision: string
   fund_transferred: string | null
   psc_transferred: string | null
-  psc_received: string | null
 }
 
 export interface ProjectDataProps {

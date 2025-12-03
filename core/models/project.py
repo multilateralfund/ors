@@ -386,6 +386,14 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
+    transferred_from = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="transferred_projects",
+        help_text="If this project is a transferred project, this field will be set to the original project",
+        null=True,
+        blank=True,
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     version_created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

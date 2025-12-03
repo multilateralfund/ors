@@ -162,6 +162,12 @@ class ProjectCluster(models.Model):
             as production projects
         """,
     )
+    annex_groups = models.ManyToManyField(
+        "Group",
+        blank=True,
+        related_name="project_clusters",
+        help_text="List of annex groups that this cluster belongs to. To be used for filtering substance lists.",
+    )
     production = models.BooleanField(
         default=False,
         null=True,

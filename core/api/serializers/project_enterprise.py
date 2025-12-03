@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
-from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 from core.models import (
     Blend,
     Substance,
+    Group,
 )
+from core.models.project import Project
 from core.models.project_enterprise import (
     Enterprise,
     ProjectEnterprise,
@@ -132,20 +133,41 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
                     "Cannot update ods_blend when ods_substance is set"
                 )
 
+        project = None
+        group_ids = []
+        if "project_id" in self.context:
+            project = Project.objects.filter(id=self.context["project_id"]).first()
+        if project:
+            group_ids = project.cluster.annex_groups.values_list("id", flat=True) or []
+
         if attrs.get("ods_substance"):
             accepted_substances = (
-                Substance.objects.all().filter_project_accepted_substances()
+                Substance.objects.all().filter_project_accepted_substances(
+                    group_ids=group_ids
+                )
             )
             if not accepted_substances.filter(id=attrs["ods_substance"].id).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
                 raise serializers.ValidationError(
-                    f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                    f"Substance must be one of {names_alt} groups"
                 )
 
         if attrs.get("ods_blend"):
-            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends(
+                group_ids=group_ids
+            )
             if not accepted_blends.filter(id=attrs["ods_blend"].id).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
                 raise serializers.ValidationError(
-                    f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                    f"Blend must have at least one substance in {names_alt} groups"
                 )
         return super().validate(attrs)
 

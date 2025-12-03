@@ -49,6 +49,8 @@ const ProjectApprovalFields = ({
   const sectionIdentifier = 'approvalFields'
   const crtSectionData = projectData[sectionIdentifier]
 
+  const isTransferred = !!project?.transferred_from
+
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -113,7 +115,11 @@ const ProjectApprovalFields = ({
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {canViewField(viewableFields, 'meeting') && (
           <div className="w-40">
-            <Label>{tableColumns.meeting}</Label>
+            <Label>
+              {isTransferred
+                ? tableColumns.transfer_meeting
+                : tableColumns.meeting}
+            </Label>
             <PopoverInput
               label={meetingNumber?.toString()}
               options={[]}
@@ -137,7 +143,11 @@ const ProjectApprovalFields = ({
         )}
         {canViewField(viewableFields, 'decision') && (
           <div>
-            <Label>{tableColumns.decision}</Label>
+            <Label>
+              {isTransferred
+                ? tableColumns.transfer_decision
+                : tableColumns.decision}
+            </Label>
             <div className="flex items-center">
               <div className="w-[16rem]">
                 <Field<any>

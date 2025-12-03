@@ -38,7 +38,7 @@ export const tableColumns: { [key: string]: string } = {
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
   category: 'Category',
-  decision: 'Decision',
+  decision: 'Decision meeting',
   name: 'Name',
   location: 'Location',
   application: 'Application',
@@ -57,10 +57,10 @@ export const tableColumns: { [key: string]: string } = {
   remarks: 'Remarks',
   id: 'Enterprise',
   transfer_meeting: 'Transfer meeting number',
+  transfer_decision: 'Transfer decision meeting',
   transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
-  psc_received: 'Received project support cost (US $)',
 }
 
 export const defaultProps = {
@@ -125,7 +125,6 @@ export const initialTranferedProjectData = {
   transfer_excom_provision: '',
   fund_transferred: null,
   psc_transferred: null,
-  psc_received: null,
 }
 
 export const lvcNonLvcOpts = [

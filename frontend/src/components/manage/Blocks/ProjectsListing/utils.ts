@@ -619,7 +619,7 @@ export const getTransferErrors = (
   projectData: ProjectTransferData,
   project: ProjectTypeApi,
 ) => {
-  const { fund_transferred, psc_received, psc_transferred } = projectData
+  const { fund_transferred, psc_transferred } = projectData
 
   return {
     ...getFieldErrors(keys(initialTranferedProjectData), projectData, project),
@@ -629,21 +629,8 @@ export const getTransferErrors = (
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
       psc_transferred: ['Value cannot be greater than project support cost.'],
     }),
-    ...(Number(psc_received) > Number(project.support_cost_psc) && {
-      psc_received: ['Value cannot be greater than project support cost.'],
-    }),
-    ...(Number(psc_received) > Number(psc_transferred) && {
-      psc_received: [
-        'Value cannot be greater than transferred project support cost.',
-      ],
-    }),
     ...(Number(psc_transferred) > Number(fund_transferred) && {
       psc_transferred: [
-        'Value cannot be greater than transferred project funding.',
-      ],
-    }),
-    ...(Number(psc_received) > Number(fund_transferred) && {
-      psc_received: [
         'Value cannot be greater than transferred project funding.',
       ],
     }),

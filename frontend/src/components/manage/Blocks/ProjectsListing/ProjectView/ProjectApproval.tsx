@@ -19,6 +19,8 @@ const ProjectApproval = ({
 }: { fieldHistory: any } & ProjectViewProps) => {
   const { viewableFields } = useStore((state) => state.projectFields)
 
+  const isTransferred = !!project.transferred_from
+
   const odsFields = filter(specificFields, (field) => field.table === 'ods_odp')
 
   const getFieldHistory = useCallback(
@@ -32,38 +34,54 @@ const ProjectApproval = ({
     <div className="flex w-full flex-col gap-4">
       <div className={viewColumnsClassName}>
         {filter(specificFields, (field) => field.table === 'project').map(
-          (field) => (
-            <>
-              {canViewField(viewableFields, field.write_field_name) && (
-                <span key={field.write_field_name}>
-                  {viewModesHandler[field.data_type](
-                    project,
-                    field,
-                    field.write_field_name === 'excom_provision'
-                      ? {
-                          containerClassName: '!basis-full w-full',
-                          className: 'whitespace-nowrap',
-                          fieldClassName: 'max-w-[50%]',
-                        }
-                      : undefined,
-                    getFieldHistory(field.write_field_name),
-                  )}
-                </span>
-              )}
-              {project.status === 'Transferred' &&
-                (field.write_field_name === 'meeting'
-                  ? detailItem(
-                      tableColumns.transfer_meeting,
-                      project.transfer_meeting,
-                    )
-                  : field.write_field_name === 'excom_provision'
+          (field) => {
+            const upatedLabels = {
+              meeting: isTransferred
+                ? tableColumns.transfer_meeting
+                : tableColumns.meeting,
+              decision: isTransferred
+                ? tableColumns.transfer_decision
+                : tableColumns.decision,
+            }
+
+            const updatedField =
+              field.write_field_name in upatedLabels
+                ? { ...field, label: upatedLabels[field.write_field_name] }
+                : field
+
+            return (
+              <>
+                {canViewField(viewableFields, field.write_field_name) && (
+                  <span key={field.write_field_name}>
+                    {viewModesHandler[field.data_type](
+                      project,
+                      updatedField,
+                      field.write_field_name === 'excom_provision'
+                        ? {
+                            containerClassName: '!basis-full w-full',
+                            className: 'whitespace-nowrap',
+                            fieldClassName: 'max-w-[50%]',
+                          }
+                        : undefined,
+                      getFieldHistory(field.write_field_name),
+                    )}
+                  </span>
+                )}
+                {project.status === 'Transferred' &&
+                  (field.write_field_name === 'meeting'
                     ? detailItem(
-                        tableColumns.transfer_excom_provision,
-                        project.transfer_excom_provision,
+                        tableColumns.transfer_meeting,
+                        project.transfer_meeting,
                       )
-                    : null)}
-            </>
-          ),
+                    : field.write_field_name === 'excom_provision'
+                      ? detailItem(
+                          tableColumns.transfer_excom_provision,
+                          project.transfer_excom_provision,
+                        )
+                      : null)}
+              </>
+            )
+          },
         )}
       </div>
       {odsFields.length > 0 && (

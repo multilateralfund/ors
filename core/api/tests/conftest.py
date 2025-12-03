@@ -444,7 +444,7 @@ def excluded_usage():
 @pytest.fixture
 def groupA():
     return GroupFactory.create(
-        name="group A", annex="A", name_alt="group A A", group_id="AI"
+        id=7, name="group A", annex="A", name_alt="group A A", group_id="AI"
     )
 
 
@@ -640,13 +640,17 @@ def decision(meeting):
 
 
 @pytest.fixture
-def project_cluster_kpp():
-    return ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+def project_cluster_kpp(groupHCFC):
+    cluster = ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+    cluster.annex_groups.add(groupHCFC)
+    return cluster
 
 
 @pytest.fixture
-def project_cluster_kip():
-    return ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+def project_cluster_kip(groupHCFC):
+    cluster = ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+    cluster.annex_groups.add(groupHCFC)
+    return cluster
 
 
 @pytest.fixture

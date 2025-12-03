@@ -10,10 +10,10 @@ CUST_MIX_NUMBER_REGEX = r"CustMix\-(\d+)$"
 
 
 class BlendQuerySet(models.QuerySet):
-    def filter_project_accepted_blends(self):
+    def filter_project_accepted_blends(self, *args, **kwargs):
         accepted_substances = (
             Substance.objects.all()
-            .filter_project_accepted_substances()
+            .filter_project_accepted_substances(**kwargs)
             .values_list("id", flat=True)
         )
         blend_ids = BlendComponents.objects.filter(
