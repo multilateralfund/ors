@@ -186,6 +186,14 @@ def clean_up_project_statuses():
     )
     ProjectStatus.objects.filter(code="NEWSUB").delete()
 
+    # change the status 'Newly approved' into 'Ongoing' and delete status 'Newly approved'
+
+    on_going_status = ProjectStatus.objects.filter(name="Ongoing").first()
+    Project.objects.really_all().filter(status__code="NEW").update(
+        status=on_going_status
+    )
+    ProjectStatus.objects.filter(code="NEW").delete()
+
 
 def import_project_type(file_path):
     """

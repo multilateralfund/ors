@@ -15,6 +15,7 @@ from core.models.project_metadata import (
     ProjectStatus,
     ProjectSubmissionStatus,
 )
+from core.models.project import Project
 from core.api.views.utils import log_project_history
 from core.utils import post_approval_changes
 
@@ -85,6 +86,9 @@ class ProjectApproveRejectMixin:
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        project.serial_number = Project.objects.get_next_serial_number(
+            project.country.id
+        )
         project.submission_status = ProjectSubmissionStatus.objects.get(name="Approved")
         project.status = ProjectStatus.objects.get(code="ONG")
         log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)

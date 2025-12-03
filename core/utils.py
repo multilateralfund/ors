@@ -15,12 +15,12 @@ VALIDATION_MIN_YEAR = 2023
 
 def get_meta_project_code(country, cluster, serial_number=None):
     """
-    Get a new meta project code for a country and a cluster
+    Get a new meta project code for a country
     """
     country_code = country.iso3 or country.abbr if country else "-"
     cluster_code = cluster.code if cluster else "-"
     if not serial_number:
-        prefix = f"{country_code}/{cluster_code}/"
+        prefix = f"{country_code}/"
         serials = []
 
         metacodes = Project.objects.filter(metacode__startswith=prefix).values_list(
@@ -157,6 +157,5 @@ def post_approval_changes(project):
         project.serial_number,
         project.metacode,
     )
-    project.serial_number = Project.objects.get_next_serial_number(project.country.id)
     project.save()
     return project
