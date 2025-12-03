@@ -3,10 +3,14 @@ import { PropsWithChildren } from 'react'
 import ProjectsDataContext from './ProjectsDataContext'
 import useApi from '@ors/hooks/useApi'
 
+import { useParams } from 'wouter'
+
 interface ProjectsDataProviderProps extends PropsWithChildren {}
 
 const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { children } = props
+
+  const { project_id } = useParams<Record<string, string>>()
 
   const { data: countries } = useApi({
     options: {
@@ -72,7 +76,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { data: substances } = useApi({
     options: {
       params: {
-        filter_for_projects: true,
+        filter_by_project: project_id,
       },
       withStoreCache: true,
     },
@@ -82,7 +86,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { data: blends } = useApi({
     options: {
       params: {
-        filter_for_projects: true,
+        filter_by_project: project_id,
       },
       withStoreCache: true,
     },
