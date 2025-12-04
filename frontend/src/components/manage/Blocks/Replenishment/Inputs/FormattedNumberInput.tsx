@@ -72,6 +72,11 @@ export default function FormattedNumberInput(
         ref={realInput}
         style={STYLE}
         value={value}
+        tabIndex={0}
+        onFocus={(e) => {
+          setInputMode(true)
+          e.target.selectionStart = e.target.selectionEnd
+        }}
         onBlur={() => setInputMode(false)}
         onChange={onChange}
         allow0Values={withoutDefaultValue}
@@ -86,6 +91,7 @@ export default function FormattedNumberInput(
         readOnly={true}
         ref={maskInput}
         style={STYLE}
+        tabIndex={-1}
         type="text"
         {...((!withoutInitialValue || value) && {
           value: withoutDefaultValue
