@@ -35,7 +35,7 @@ const CreateActionButtons = ({
   const { canUpdateProjects } = useContext(PermissionsContext)
   const { setWarnings } = useStore((state) => state.projectWarnings)
   const { projectFields } = useStore((state) => state.projectFields)
-  const { updatedFields } = useUpdatedFields()
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
@@ -96,6 +96,7 @@ const CreateActionButtons = ({
           params,
         )
       }
+      clearUpdatedFields()
       setLocation(`/projects-listing/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()

@@ -39,6 +39,7 @@ import {
 } from '../constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
@@ -526,7 +527,7 @@ const ProjectsEdit = ({
     }
   }, [tranche, project_id, specificFields])
 
-  const { addUpdatedField } = useUpdatedFields()
+  const { updatedFields, addUpdatedField } = useUpdatedFields()
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
@@ -542,6 +543,8 @@ const ProjectsEdit = ({
         : updater
     })
   }
+
+  useVisibilityChange(updatedFields.size > 0)
 
   return (
     canViewTabs && (

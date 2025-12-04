@@ -103,7 +103,7 @@ const EditActionButtons = ({
   const { projectFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const { updatedFields } = useUpdatedFields()
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
@@ -420,6 +420,8 @@ const EditActionButtons = ({
         setParams((prev: any) => ({ ...prev }))
       }
 
+      clearUpdatedFields()
+
       return true
     } catch (error) {
       await handleErrors(error)
@@ -521,6 +523,8 @@ const EditActionButtons = ({
       })
 
       setProjectId(result.id)
+      clearUpdatedFields()
+
       return true
     } catch (error) {
       await handleErrors(error)
