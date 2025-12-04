@@ -30,6 +30,16 @@ class AnnualProgressReport(models.Model):
         default=False, verbose_name="The annual progress report is endorsed"
     )
 
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_progress_reports",
+        verbose_name="User who initiated this APR",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
