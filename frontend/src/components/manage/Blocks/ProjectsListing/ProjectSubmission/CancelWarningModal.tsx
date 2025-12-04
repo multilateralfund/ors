@@ -31,10 +31,11 @@ const CancelWarningModal = ({
     >
       <Box className="flex w-full max-w-lg flex-col absolute-center">
         <Typography className="mb-4 text-[20px] font-medium text-black">
-          Cancel {mode}
+          Cancel project {mode}
         </Typography>
         <Typography className="mb-4 text-lg text-primary">
-          You have unsaved changes. Are you sure you want to cancel {mode}?
+          You have unsaved changes. Are you sure you want to cancel project{' '}
+          {mode}?
         </Typography>
         <div className="ml-auto mr-5 flex flex-wrap gap-3">
           <CustomLink

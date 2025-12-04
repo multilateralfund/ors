@@ -2,14 +2,12 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import Link from '@ors/components/ui/Link/Link'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CreateActionButtons from './CreateActionButtons'
+import CancelWarningModal from './CancelWarningModal'
 import EditActionButtons from './EditActionButtons'
-import {
-  PageTitle,
-  ProjectStatusInfo,
-  RedirectBackButton,
-  VersionsList,
-} from '../HelperComponents'
+import { PageTitle, ProjectStatusInfo, VersionsList } from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectFile,
@@ -21,7 +19,9 @@ import {
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
+import { IoReturnUpBack } from 'react-icons/io5'
 import { CircularProgress } from '@mui/material'
+import { useLocation } from 'wouter'
 import { find } from 'lodash'
 
 const ProjectsHeader = ({
@@ -49,8 +49,12 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
 }) => {
+  const [_, setLocation] = useLocation()
+
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+
+  const { updatedFields } = useUpdatedFields()
 
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
@@ -82,6 +86,7 @@ const ProjectsHeader = ({
   )
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const pageTitleExtraInfo =
     mode === 'copy'
@@ -90,11 +95,30 @@ const ProjectsHeader = ({
         ? `(component of ${projectTitle ?? 'New project'})`
         : ''
 
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
+
   return (
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
-          <RedirectBackButton />
+          <div className="w-fit">
+            <Link
+              className="cursor-pointer text-black no-underline"
+              onClick={onCancel}
+            >
+              <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
+                <IoReturnUpBack size={18} />
+                IA/BA Portal
+              </div>
+            </Link>
+          </div>
+
           <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             <PageHeading>
               {mode === 'edit' && (
@@ -116,6 +140,13 @@ const ProjectsHeader = ({
             )}
           </div>
         </div>
+        {isCancelModalOpen && (
+          <CancelWarningModal
+            mode={mode === 'edit' ? 'editing' : 'creation'}
+            isModalOpen={isCancelModalOpen}
+            setIsModalOpen={setIsCancelModalOpen}
+          />
+        )}
         <div className="ml-auto mt-auto flex items-center gap-2.5">
           {mode !== 'edit' ? (
             <CreateActionButtons
