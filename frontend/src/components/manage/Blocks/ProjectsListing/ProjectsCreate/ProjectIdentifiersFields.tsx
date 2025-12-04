@@ -219,36 +219,45 @@ const ProjectIdentifiersFields = ({
   }
 
   const handleChangeProduction = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        production: event.target.checked,
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          production: event.target.checked,
+        },
+      }),
+      'production',
+    )
   }
 
   const handleChangeMeeting = (meeting?: string) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        meeting: parseNumber(meeting),
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          meeting: parseNumber(meeting),
+        },
+      }),
+      'meeting',
+    )
   }
 
   const handleChangePostExComMeeting = (meeting?: string) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        post_excom_meeting: parseNumber(meeting),
-        ...(parseNumber(meeting) !== projIdentifiers?.post_excom_meeting
-          ? { post_excom_decision: null }
-          : {}),
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          post_excom_meeting: parseNumber(meeting),
+          ...(parseNumber(meeting) !== projIdentifiers?.post_excom_meeting
+            ? { post_excom_decision: null }
+            : {}),
+        },
+      }),
+      'post_excom_meeting',
+    )
     decisionsApi.setParams({ meeting_id: meeting })
     decisionsApi.setApiSettings((prev) => ({
       ...prev,
@@ -265,24 +274,30 @@ const ProjectIdentifiersFields = ({
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
       const finalVal = initialValue ? parseInt(initialValue) : null
 
-      setProjectData((prevData) => ({
-        ...prevData,
-        [sectionIdentifier]: {
-          ...prevData[sectionIdentifier],
-          post_excom_decision: finalVal,
-        },
-      }))
+      setProjectData(
+        (prevData) => ({
+          ...prevData,
+          [sectionIdentifier]: {
+            ...prevData[sectionIdentifier],
+            post_excom_decision: finalVal,
+          },
+        }),
+        'post_excom_decision',
+      )
     }
   }
 
   const handleChangeSubmitOnBehalf = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        lead_agency_submitting_on_behalf: event.target.checked,
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          lead_agency_submitting_on_behalf: event.target.checked,
+        },
+      }),
+      'lead_agency_submitting_on_behalf',
+    )
   }
 
   return (

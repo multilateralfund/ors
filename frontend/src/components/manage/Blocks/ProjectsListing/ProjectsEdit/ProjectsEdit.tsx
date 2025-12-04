@@ -2,6 +2,7 @@
 
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
@@ -525,6 +526,23 @@ const ProjectsEdit = ({
     }
   }, [tranche, project_id, specificFields])
 
+  const { addUpdatedField } = useUpdatedFields()
+
+  const setProjectDataWithEditTracking = (
+    updater: React.SetStateAction<ProjectData>,
+    fieldName?: string,
+  ) => {
+    setProjectData((prevData) => {
+      if (fieldName) {
+        addUpdatedField(fieldName)
+      }
+
+      return typeof updater === 'function'
+        ? (updater as (prev: ProjectData) => ProjectData)(prevData)
+        : updater
+    })
+  }
+
   return (
     canViewTabs && (
       <>
@@ -555,7 +573,6 @@ const ProjectsEdit = ({
         <ProjectsCreate
           {...{
             projectData,
-            setProjectData,
             mode,
             postExComUpdate,
             approval,
@@ -577,6 +594,7 @@ const ProjectsEdit = ({
             metaProjectId,
             setMetaProjectId,
           }}
+          setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||
             !(cluster && project_type && sector)

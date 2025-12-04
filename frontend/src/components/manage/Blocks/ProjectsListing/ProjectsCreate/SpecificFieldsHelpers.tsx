@@ -119,13 +119,16 @@ const changeNestedField: FieldHandler = (
 }
 
 export const changeField: FieldHandler = (value, field, setState, section) => {
-  setState((prevData) => ({
-    ...prevData,
-    [section]: {
-      ...prevData[section],
-      [field]: value,
-    },
-  }))
+  setState(
+    (prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value,
+      },
+    }),
+    field,
+  )
 }
 
 const getValue = <T,>(

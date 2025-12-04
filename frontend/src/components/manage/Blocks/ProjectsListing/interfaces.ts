@@ -150,7 +150,7 @@ export type SpecificFieldsSectionProps = ProjectDataProps & {
 export type FieldHandler = <T, K>(
   value: any,
   field: keyof K,
-  setState: Dispatch<SetStateAction<T>>,
+  setState: (updater: SetStateAction<T>, fieldName?: keyof K) => void,
   section: keyof T,
   subField?: string,
   index?: number,
@@ -266,9 +266,14 @@ export interface ProjectTransferData {
   psc_transferred: string | null
 }
 
+export type SetProjectData = (
+  updater: SetStateAction<ProjectData>,
+  fieldName?: string,
+) => void
+
 export interface ProjectDataProps {
   projectData: ProjectData
-  setProjectData: Dispatch<SetStateAction<ProjectData>>
+  setProjectData: SetProjectData
   errors?: { [key: string]: string[] }
 }
 
@@ -297,7 +302,7 @@ export type ProjectTabSetters = {
 
 export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   projectData: ProjectData
-  setProjectData: Dispatch<SetStateAction<ProjectData>>
+  setProjectData: SetProjectData
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
   errors: { [key: string]: string[] }

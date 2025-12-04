@@ -37,6 +37,7 @@ import {
   BpDataProps,
   FileMetaDataType,
 } from '../interfaces'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -102,7 +103,9 @@ const EditActionButtons = ({
   const { projectFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+  const { updatedFields } = useUpdatedFields()
 
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
@@ -434,6 +437,14 @@ const EditActionButtons = ({
     }
   }
 
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
+
   const onSendBackToDraftProject = () => {
     setIsSendToDraftModalOpen(true)
   }
@@ -541,7 +552,7 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
+      <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -633,6 +644,8 @@ const EditActionButtons = ({
       <EditActionModals
         {...{
           id,
+          isCancelModalOpen,
+          setIsCancelModalOpen,
           isComponentModalOpen,
           setIsComponentModalOpen,
           isSubmitModalOpen,

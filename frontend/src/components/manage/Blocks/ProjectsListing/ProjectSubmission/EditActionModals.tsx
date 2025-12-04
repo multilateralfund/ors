@@ -1,3 +1,4 @@
+import CancelWarningModal from './CancelWarningModal'
 import AddComponentModal from './AddComponentModal'
 import ChangeVersionModal from './ChangeVersionModal'
 import ChangeStatusModal from './ChangeStatusModal'
@@ -7,6 +8,8 @@ import ApprovalModal from './ApprovalModal'
 
 const EditActionModals = ({
   id,
+  isCancelModalOpen,
+  setIsCancelModalOpen,
   isComponentModalOpen,
   setIsComponentModalOpen,
   isSubmitModalOpen,
@@ -27,6 +30,8 @@ const EditActionModals = ({
   approveRejectProject,
 }: {
   id: number
+  isCancelModalOpen?: boolean
+  setIsCancelModalOpen?: (isOpen: boolean) => void
   isComponentModalOpen?: boolean
   setIsComponentModalOpen?: (isOpen: boolean) => void
   isSubmitModalOpen: boolean
@@ -47,6 +52,13 @@ const EditActionModals = ({
   approveRejectProject?: (action: string) => void
 }) => (
   <>
+    {isCancelModalOpen && setIsCancelModalOpen && (
+      <CancelWarningModal
+        mode="editing"
+        isModalOpen={isCancelModalOpen}
+        setIsModalOpen={setIsCancelModalOpen}
+      />
+    )}
     {isComponentModalOpen && setIsComponentModalOpen && (
       <AddComponentModal
         id={id}

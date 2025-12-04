@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import { UpdatedFieldsProvider } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectsEdit from './ProjectsEdit'
 import { useGetProject } from '../hooks/useGetProject'
@@ -43,7 +44,11 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!loading && data && <ProjectsEdit project={data} mode={mode} />}
+      {!loading && data && (
+        <UpdatedFieldsProvider>
+          <ProjectsEdit project={data} mode={mode} />
+        </UpdatedFieldsProvider>
+      )}
     </>
   )
 }

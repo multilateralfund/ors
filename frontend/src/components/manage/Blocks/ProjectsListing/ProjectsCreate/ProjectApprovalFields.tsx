@@ -84,13 +84,16 @@ const ProjectApprovalFields = ({
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
       const finalVal = initialValue ? parseInt(initialValue) : null
 
-      setProjectData((prevData) => ({
-        ...prevData,
-        [sectionIdentifier]: {
-          ...prevData[sectionIdentifier],
-          decision: finalVal,
-        },
-      }))
+      setProjectData(
+        (prevData) => ({
+          ...prevData,
+          [sectionIdentifier]: {
+            ...prevData[sectionIdentifier],
+            decision: finalVal,
+          },
+        }),
+        'decision',
+      )
     }
   }
 

@@ -22,6 +22,7 @@ import {
   OdsOdpFields,
   ListingProjectData,
   ProjectTransferData,
+  SetProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
@@ -1094,19 +1095,22 @@ export const handleChangeNumericValues = (
   event: ChangeEvent<HTMLInputElement>,
   field: string,
   sectionIdentifier: keyof ProjectData,
-  setProjectData: Dispatch<SetStateAction<ProjectData>>,
+  setProjectData: SetProjectData,
 ) => {
   const initialValue = event.target.value
   const value = initialValue === '' ? null : initialValue
 
   if (!isNaN(Number(value))) {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        [field]: value,
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          [field]: value,
+        },
+      }),
+      field,
+    )
   } else {
     event.preventDefault()
   }

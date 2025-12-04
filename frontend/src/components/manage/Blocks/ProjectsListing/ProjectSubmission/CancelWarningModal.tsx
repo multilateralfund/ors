@@ -1,0 +1,65 @@
+import CustomLink from '@ors/components/ui/Link/Link'
+
+import { Typography, Box, Modal } from '@mui/material'
+import { useLocation } from 'wouter'
+
+const CancelWarningModal = ({
+  mode,
+  isModalOpen,
+  setIsModalOpen,
+}: {
+  mode: string
+  isModalOpen: boolean
+  setIsModalOpen: (isOpen: boolean) => void
+}) => {
+  const [_, setLocation] = useLocation()
+
+  const onContinue = () => {
+    setLocation('/projects-listing/listing')
+  }
+
+  const onCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  return (
+    <Modal
+      aria-labelledby="cancel-modal-title"
+      open={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      keepMounted
+    >
+      <Box className="flex w-full max-w-lg flex-col absolute-center">
+        <Typography className="mb-4 text-[20px] font-medium text-black">
+          Cancel {mode}
+        </Typography>
+        <Typography className="mb-4 text-lg text-primary">
+          You have unsaved changes. Are you sure you want to cancel {mode}?
+        </Typography>
+        <div className="ml-auto mr-5 flex flex-wrap gap-3">
+          <CustomLink
+            className="h-8 px-4 py-2 text-lg uppercase"
+            href={null}
+            color="secondary"
+            variant="contained"
+            button
+            onClick={onContinue}
+          >
+            Yes
+          </CustomLink>
+          <CustomLink
+            className="boder-primary h-8 border border-solid bg-white px-4 py-2 text-lg uppercase text-primary"
+            href={null}
+            variant="contained"
+            button
+            onClick={onCancel}
+          >
+            No
+          </CustomLink>
+        </div>
+      </Box>
+    </Modal>
+  )
+}
+
+export default CancelWarningModal
