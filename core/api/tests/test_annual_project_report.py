@@ -1809,3 +1809,171 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         assert annual_report.support_cost_approved_plus_adjustment == 10000.0
         assert annual_report.support_cost_balance == 10000.0 - 8000.0
         assert annual_report.per_cent_funds_disbursed == 0.8
+
+
+@pytest.mark.django_db
+class TestAPRMLFSBulkUpdateView(BaseTest):
+    def test_without_login(self, apr_year):
+        self.client.force_authenticate(user=None)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_can_bulk_update_across_agencies(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        project1 = ProjectFactory(
+            code="TEST/CODE/2024/001", agency=agency1, version=3, latest_project=None
+        )
+        project2 = ProjectFactory(
+            code="TEST/CODE/2024/002", agency=agency2, version=3, latest_project=None
+        )
+
+        pr1 = AnnualProjectReportFactory(report=report1, project=project1)
+        pr2 = AnnualProjectReportFactory(report=report2, project=project2)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {
+            "project_reports": [
+                {
+                    "id": pr1.id,
+                    "project_code": pr1.project.code,
+                    "funds_disbursed": 100000,
+                },
+                {
+                    "id": pr2.id,
+                    "project_code": pr2.project.code,
+                    "funds_disbursed": 200000,
+                },
+            ]
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 2
+        assert response.data["error_count"] == 0
+
+        pr1.refresh_from_db()
+        pr2.refresh_from_db()
+        assert pr1.funds_disbursed == 100000
+        assert pr2.funds_disbursed == 200000
+
+    def test_mlfs_bulk_update_without_id(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {
+            "project_reports": [{"project_code": "12345", "funds_disbursed": 100000}]
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 0
+        assert response.data["error_count"] == 1
+        assert "Missing 'id' field" in response.data["errors"][0]["error"]
+
+    def test_mlfs_bulk_update_nonexistent_id(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {
+            "project_reports": [
+                {"id": 99999, "project_code": "12345", "funds_disbursed": 100000}
+            ]
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 0
+        assert response.data["error_count"] == 1
+        assert "not found" in response.data["errors"][0]["error"]
+
+    def test_mlfs_bulk_update_duplicate_ids(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency = AgencyFactory()
+        report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        project = ProjectFactory(
+            agency=agency, code="12345", version=3, latest_project=None
+        )
+        pr = AnnualProjectReportFactory(report=report, project=project)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {
+            "project_reports": [
+                # we're using the same id for both reports
+                {"id": pr.id, "project_code": project.code, "funds_disbursed": 100000},
+                {"id": pr.id, "project_code": project.code, "funds_disbursed": 200000},
+            ]
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Duplicate project report IDs" in str(response.data)
+
+    def test_agency_user_cannot_access_mlfs_bulk_update(
+        self, agency_inputter_user, apr_year, annual_progress_report
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {"project_reports": [{"id": 1, "funds_disbursed": 100000}]}
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_cannot_update_endorsed_reports(
+        self, mlfs_admin_user, apr_year, annual_progress_report_endorsed
+    ):
+        agency = AgencyFactory()
+        report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        project = ProjectFactory(agency=agency, version=3, latest_project=None)
+        project_report = AnnualProjectReportFactory(report=report, project=project)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
+
+        data = {
+            "project_reports": [{"id": project_report.id, "funds_disbursed": 500000}]
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "endorsed" in str(response.data).lower()

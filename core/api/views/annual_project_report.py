@@ -41,6 +41,7 @@ from core.api.serializers.annual_project_report import (
     AnnualAgencyProjectReportStatusUpdateSerializer,
     AnnualProgressReportSerializer,
     AnnualProgressReportEndorseSerializer,
+    AnnualProjectReportMLFSBulkUpdateSerializer,
 )
 
 
@@ -695,5 +696,51 @@ class APREndorseView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class APRMLFSBulkUpdateView(APIView):
+    """
+    MLFS bulk update for multiple project reports across all agencies.
+    Unlike the agency bulk update, this uses project report IDs for matching.
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+
+    def post(self, request, year):
+        """
+        Bulk update project reports across all agencies (MLFS only).
+
+        Request body contains a list of nested project reports; id is required for each.
+        """
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
+        if progress_report.endorsed:
+            raise ValidationError(
+                f"Cannot edit reports for year {year}. APR has been endorsed."
+            )
+
+        serializer = AnnualProjectReportMLFSBulkUpdateSerializer(
+            instance=None,
+            data=request.data,
+            context={
+                "request": request,
+                "year": year,
+            },
+        )
+
+        if serializer.is_valid():
+            updated_reports, errors = serializer.save()
+
+            response_data = {
+                "updated_count": len(updated_reports),
+                "error_count": len(errors),
+                "message": f"Successfully updated {len(updated_reports)} project report(s).",
+            }
+
+            if errors:
+                response_data["errors"] = errors
+
+            return Response(response_data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
