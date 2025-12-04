@@ -1,6 +1,7 @@
 import { ChangeEvent } from 'react'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { BpFileInput } from '../types'
 
 import { TextField } from '@mui/material'
@@ -20,6 +21,9 @@ const FileInput = (props: BpFileInput) => {
     label,
     setFilesMetaData,
   } = props
+
+  const { addUpdatedField } = useUpdatedFields()
+
   const { newFiles = [] } = files || {}
 
   const extensionsListText =
@@ -28,6 +32,7 @@ const FileInput = (props: BpFileInput) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
+      addUpdatedField('files')
       if (setFiles) {
         setFiles({
           ...files,

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import { UpdatedFieldsProvider } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectViewButtons from '../ProjectsListing/ProjectViewButtons'
 import ProjectView from './ProjectView'
 import {
@@ -112,15 +113,17 @@ const ProjectViewWrapper = () => {
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>
-          <ProjectView
-            project={data}
-            {...{
-              projectFiles,
-              specificFields,
-              specificFieldsLoaded,
-              loadedFiles,
-            }}
-          />
+          <UpdatedFieldsProvider>
+            <ProjectView
+              project={data}
+              {...{
+                projectFiles,
+                specificFields,
+                specificFieldsLoaded,
+                loadedFiles,
+              }}
+            />
+          </UpdatedFieldsProvider>
         </>
       )}
     </>
