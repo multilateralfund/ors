@@ -15,6 +15,7 @@ const FileInput = (props: BpFileInput) => {
     setFiles,
     extensionsList,
     value,
+    mode,
     clearable = true,
     inputValue,
     accept,
@@ -32,7 +33,10 @@ const FileInput = (props: BpFileInput) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      addUpdatedField('files')
+      if (!!mode && mode !== 'transfer') {
+        addUpdatedField('files')
+      }
+
       if (setFiles) {
         setFiles({
           ...files,

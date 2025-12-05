@@ -75,7 +75,9 @@ export function FilesViewer(props: ProjectDocs) {
   }, [bpFiles, files])
 
   const handleDelete = (file: ProjectFile | File, fileIndex: number) => {
-    addUpdatedField('files')
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
 
     const isNewFile = !(file as ProjectFile).id
     const updatedFiles = filter(currentFiles, (crtFile) =>
@@ -102,7 +104,10 @@ export function FilesViewer(props: ProjectDocs) {
   }
 
   const handleChangeFileType = (value: any, fileIndex: number) => {
-    addUpdatedField('files')
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
+
     setFilesMetaData?.((prev) =>
       map(prev, (file, index: number) =>
         fileIndex === index ? { ...file, type: value?.id ?? null } : file,

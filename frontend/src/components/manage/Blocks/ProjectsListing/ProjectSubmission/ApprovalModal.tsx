@@ -15,7 +15,7 @@ const ApprovalModal = ({
   setModalType: (modalType: string | null) => void
   onAction: (action: string) => void
 }) => {
-  const formattedType = type === 'approve' ? 'approve' : 'not approve'
+  const formattedType = type === 'approve' ? type : 'not approve'
   const title = capitalize(formattedType) + ' project'
 
   return (
