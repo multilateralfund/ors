@@ -109,8 +109,13 @@ export default function UploadDocumentsModal({
     (file) => file.file_type === 'other_supporting_document',
   )
 
+  const onClose = () => {
+    setIsModalOpen(false)
+    setError('')
+  }
+
   return (
-    <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} keepMounted>
+    <Modal open={isModalOpen} onClose={onClose} keepMounted>
       <Box className="flex w-full max-w-lg flex-col px-0 absolute-center">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Upload documents
@@ -234,7 +239,7 @@ export default function UploadDocumentsModal({
           >
             Save files
           </Button>
-          <CancelButton onClick={() => setIsModalOpen(false)} />
+          <CancelButton onClick={onClose} />
         </div>
       </Box>
     </Modal>

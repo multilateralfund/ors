@@ -86,8 +86,13 @@ export default function EndorseAprModal({
     }
   }
 
+  const onClose = () => {
+    setIsModalOpen(false)
+    setErrors([])
+  }
+
   return (
-    <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+    <Modal open={isModalOpen} onClose={onClose}>
       <Box className="flex w-full max-w-lg flex-col px-0 absolute-center">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Endorse APR
@@ -158,7 +163,7 @@ export default function EndorseAprModal({
           >
             Endorse
           </Button>
-          <CancelButton onClick={() => setIsModalOpen(false)} />
+          <CancelButton onClick={onClose} />
         </div>
       </Box>
     </Modal>
