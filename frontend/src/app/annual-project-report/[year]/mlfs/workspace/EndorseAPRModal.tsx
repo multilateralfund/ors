@@ -37,7 +37,7 @@ export default function EndorseAprModal({
   const meetings = projectSlice.meetings.data
   const formattedMeetings = meetings?.map((meeting: any) => ({
     label: meeting.number,
-    value: meeting.id,
+    value: meeting.id.toString(),
   }))
   const meetingOptions = reverse(formattedMeetings)
 
@@ -130,7 +130,7 @@ export default function EndorseAprModal({
             placeholder="Select meeting"
             withClear
             disabled={disabled}
-            value={currentData?.meeting_endorsed}
+            value={currentData?.meeting_endorsed?.toString()}
           />
           <div className="flex items-center">
             <label htmlFor="date_endorsed" className="w-48">

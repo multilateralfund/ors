@@ -81,7 +81,7 @@ export interface IPopoverInputProps {
   options: InputOptionsType
   placeholder?: string
   required?: boolean
-  value?: string | number | null
+  value?: string
   withClear?: boolean
   withInputPlaceholder?: boolean
   label?: string
