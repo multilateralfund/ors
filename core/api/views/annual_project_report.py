@@ -769,15 +769,12 @@ class APRMLFSBulkUpdateView(APIView):
 
 class APRKickStartView(APIView):
     """
-    Endpoint for MLFS to kick-start a new reporting period.
+    Endpoint for MLFS to kick-start a new reporting period - only if MLFS full-access
     GET: checks whether a new APR year can be kicked off
-    POST: kick-starts a new APR reporting cycle (only if MLFS full-access)
+    POST: kick-starts a new APR reporting cycle
     """
 
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [IsAuthenticated(), HasMLFSViewAccess()]
-        return [IsAuthenticated(), HasMLFSFullAccess()]
+    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
 
     def get(self, request):
         latest_endorsed_year = get_latest_endorsed_year()
@@ -828,7 +825,7 @@ class APRKickStartView(APIView):
             # For now we assume a previous APR exists (should exist after importing data)
             if latest_endorsed_year is None:
                 raise ValidationError(
-                    "Cannot kick-start APR. No endorsed APR years exist yet."
+                    "Cannot kick-start APR. No endorsed APRs exist yet."
                 )
             next_year = latest_endorsed_year + 1
 

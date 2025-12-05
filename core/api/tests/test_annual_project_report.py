@@ -11,19 +11,21 @@ from rest_framework import status
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.tests.base import BaseTest
 from core.models import (
+    AnnualProgressReport,
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProjectReportFile,
 )
 from core.api.tests.factories import (
     AgencyFactory,
+    AnnualProgressReportFactory,
     AnnualProjectReportFactory,
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFileFactory,
     ProjectFactory,
 )
 
-# pylint: disable=W0221,W0613,C0302
+# pylint: disable=W0221,W0613,C0302,R0913
 
 
 @pytest.mark.django_db
@@ -1993,3 +1995,471 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "endorsed" in str(response.data).lower()
+
+
+@pytest.mark.django_db
+class TestAPRKickStartView(BaseTest):
+    def test_without_login(self):
+        self.client.force_authenticate(user=None)
+        url = reverse("apr-kick-start")
+
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_user_cannot_kick_start(self, agency_viewer_user):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_viewer_cannot_kick_start(
+        self, secretariat_viewer_user, annual_progress_report_endorsed
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_get_status_with_no_endorsed_years(self, mlfs_admin_user):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["can_kick_start"] is False
+        assert response.data["latest_endorsed_year"] is None
+        assert response.data["next_year"] is None
+        assert "No endorsed APRs exist" in response.data["message"]
+
+    def test_get_status_when_can_kick_start(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["can_kick_start"] is True
+        assert (
+            response.data["latest_endorsed_year"]
+            == annual_progress_report_endorsed.year
+        )
+        assert response.data["next_year"] == annual_progress_report_endorsed.year + 1
+        assert response.data["unendorsed_years"] == []
+
+    def test_get_status_when_unendorsed_year_exists(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        # Create an unendorsed APR for next year
+        next_year = annual_progress_report_endorsed.year + 1
+        AnnualProgressReportFactory(year=next_year, endorsed=False)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["can_kick_start"] is False
+        assert response.data["next_year"] is None
+        assert next_year in response.data["unendorsed_years"]
+        assert "must be endorsed before creating" in response.data["message"]
+
+    def test_kick_start_with_no_endorsed_years(self, mlfs_admin_user):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "No endorsed APRs exist" in str(response.data)
+
+    def test_kick_start_when_unendorsed_year_exists(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        # Create an "existing" unendorsed APR, so that another one can't be created
+        next_year = annual_progress_report_endorsed.year + 1
+        AnnualProgressReportFactory(year=next_year, endorsed=False)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert f"APR for {next_year} already exists" in str(response.data)
+
+    def test_mlfs_admin_can_kick_start_new_year(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        next_year = annual_progress_report_endorsed.year + 1
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["year"] == next_year
+        assert response.data["previous_year"] == annual_progress_report_endorsed.year
+        assert "initialized successfully" in response.data["message"]
+
+        new_apr = AnnualProgressReport.objects.get(year=next_year)
+        assert new_apr.endorsed is False
+        assert new_apr.created_by == mlfs_admin_user
+        assert new_apr.created_at is not None
+
+    def test_kick_start_creates_unendorsed_apr(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        next_year = annual_progress_report_endorsed.year + 1
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        new_apr = AnnualProgressReport.objects.get(year=next_year)
+        assert new_apr.endorsed is False
+        assert new_apr.meeting_endorsed is None
+        assert new_apr.date_endorsed is None
+        assert new_apr.remarks_endorsed == ""
+        assert new_apr.created_by == mlfs_admin_user
+
+    def test_kick_start_uses_latest_endorsed_year(self, mlfs_admin_user):
+        AnnualProgressReportFactory(year=2022, endorsed=True)
+        AnnualProgressReportFactory(year=2024, endorsed=True)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["year"] == 2025
+        assert response.data["previous_year"] == 2024
+
+    def test_kick_start_idempotent(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        # Cannot kick-start the same year twice.
+        next_year = annual_progress_report_endorsed.year + 1
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        response1 = self.client.post(url, {}, format="json")
+        assert response1.status_code == status.HTTP_201_CREATED
+
+        response2 = self.client.post(url, {}, format="json")
+        assert response2.status_code == status.HTTP_400_BAD_REQUEST
+        assert f"APR for {next_year} already exists" in str(response2.data)
+
+
+@pytest.mark.django_db
+class TestAPRWorkspaceAccessControl(BaseTest):
+    """Tests that workspace access & initialization requires an initial kick-start"""
+
+    def test_without_login(self, **kwargs):
+        pass
+
+    def test_workspace_access_without_kickstart(self, agency_viewer_user, agency):
+        non_existent_year = 2030
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": non_existent_year})
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "not been started" in str(response.data)
+
+    def test_workspace_access_after_kickstart(
+        self, agency_viewer_user, agency, mlfs_admin_user
+    ):
+        AnnualProgressReportFactory(year=2023, endorsed=True)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        response = self.client.post(kickstart_url, {}, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        workspace_url = reverse("apr-workspace", kwargs={"year": 2024})
+
+        response = self.client.get(workspace_url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["progress_report_year"] == 2024
+
+    def test_workspace_creates_agency_report_after_kickstart(
+        self, agency_viewer_user, agency, annual_progress_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": annual_progress_report.year})
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report, agency=agency
+        ).exists()
+
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report=annual_progress_report, agency=agency
+        )
+        assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        assert agency_report.created_by == agency_viewer_user
+
+    def test_workspace_prepopulates_from_previous_year(
+        self,
+        agency_viewer_user,
+        agency,
+        mlfs_admin_user,
+        annual_progress_report_endorsed,
+        multiple_projects_for_apr,
+    ):
+        previous_year = annual_progress_report_endorsed.year
+        previous_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+        )
+
+        project = multiple_projects_for_apr[0]
+        AnnualProjectReportFactory(
+            report=previous_agency_report,
+            project=project,
+            status="ONG",
+            funds_disbursed=100000.0,
+            funds_committed=50000.0,
+            last_year_remarks="Previous year remarks",
+            gender_policy=True,
+        )
+
+        # Kick-start next year
+        self.client.force_authenticate(user=agency_viewer_user)
+        next_year = previous_year + 1
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        self.client.post(kickstart_url, {}, format="json")
+
+        # Now access workspace as agency; data should be pre-populated
+        self.client.force_authenticate(user=agency_viewer_user)
+        workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
+
+        response = self.client.get(workspace_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        new_agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report__year=next_year, agency=agency
+        )
+        new_project_report = new_agency_report.project_reports.get(project=project)
+
+        assert new_project_report.status == "ONG"
+        assert new_project_report.funds_disbursed == 100000.0
+        assert new_project_report.funds_committed == 50000.0
+        assert new_project_report.last_year_remarks == "Previous year remarks"
+        assert new_project_report.gender_policy is True
+
+    def test_workspace_creates_new_projects_not_in_previous_year(
+        self,
+        agency_viewer_user,
+        agency,
+        mlfs_admin_user,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        annual_progress_report_endorsed,
+    ):
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        next_year_apr = self.client.post(kickstart_url, {}, format="json")
+        next_year = next_year_apr.data["year"]
+
+        # Create a new project to check its report is not pre-populated
+        new_project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            code="NEW/PROJECT/2024/INV/01",
+            version=3,
+            latest_project=None,
+            date_approved=date(next_year - 1, 1, 1),
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
+
+        response = self.client.get(workspace_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Check that data for the new project report was created with default values
+        # (not pre-populated)
+        new_agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report__year=next_year, agency=agency
+        )
+        new_project_report = new_agency_report.project_reports.get(project=new_project)
+
+        assert new_project_report.funds_disbursed is None
+        assert new_project_report.last_year_remarks == ""
+
+    def test_workspace_matches_by_project_code_and_agency(
+        self,
+        agency_viewer_user,
+        agency,
+        mlfs_admin_user,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        annual_progress_report_endorsed,
+    ):
+        previous_year = annual_progress_report_endorsed.year
+        previous_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+        )
+
+        project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            code="UNIQUE/CODE/2023/INV/01",
+            version=3,
+            latest_project=None,
+            date_approved=date(previous_year - 1, 1, 1),
+        )
+
+        AnnualProjectReportFactory(
+            report=previous_agency_report,
+            project=project,
+            funds_disbursed=250000.0,
+            current_year_remarks="Match by code test",
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        response = self.client.post(kickstart_url, {}, format="json")
+        next_year = response.data["year"]
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
+
+        response = self.client.get(workspace_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        new_agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report__year=next_year, agency=agency
+        )
+        new_project_report = new_agency_report.project_reports.get(project=project)
+
+        assert new_project_report.funds_disbursed == 250000.0
+        assert new_project_report.current_year_remarks == "Match by code test"
+
+    def test_workspace_no_prepopulation_if_no_previous_year(
+        self,
+        agency_viewer_user,
+        agency,
+        multiple_projects_for_apr,
+    ):
+        # Create "first ever" APR (no previous APR year)
+        first_apr = AnnualProgressReportFactory(year=2025, endorsed=False)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": 2025})
+
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Check that all project reports were created with default values
+        agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report=first_apr, agency=agency
+        )
+        assert agency_report.project_reports.exists() is True
+        for project_report in agency_report.project_reports.all():
+            assert project_report.funds_disbursed is None
+            assert project_report.last_year_remarks == ""
+
+    def test_workspace_only_prepopulates_matching_projects(
+        self,
+        agency_viewer_user,
+        agency,
+        mlfs_admin_user,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        annual_progress_report_endorsed,
+    ):
+        previous_year = annual_progress_report_endorsed.year
+        previous_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+        )
+
+        old_project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            code="OLD/PROJECT/2023/INV/01",
+            version=3,
+            latest_project=None,
+            date_approved=date(previous_year - 1, 1, 1),
+        )
+
+        # Only create an existing report for the old project
+        AnnualProjectReportFactory(
+            report=previous_agency_report,
+            project=old_project,
+            funds_disbursed=100000.0,
+        )
+
+        # Now kick-start a new APR, then create a new project (which did not exist)
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        response = self.client.post(kickstart_url, {}, format="json")
+        next_year = response.data["year"]
+
+        new_project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            code="NEW/PROJECT/2024/INV/01",
+            version=3,
+            latest_project=None,
+            date_approved=date(next_year - 1, 1, 1),
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
+
+        response = self.client.get(workspace_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        new_agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report__year=next_year, agency=agency
+        )
+
+        old_project_report = new_agency_report.project_reports.get(project=old_project)
+        assert old_project_report.funds_disbursed == 100000.0
+
+        new_project_report = new_agency_report.project_reports.get(project=new_project)
+        assert new_project_report.funds_disbursed is None
