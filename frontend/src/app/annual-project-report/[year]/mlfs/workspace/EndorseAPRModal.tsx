@@ -10,6 +10,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 import { api } from '@ors/helpers'
 import cx from 'classnames'
 import { AnnualProgressReport } from '@ors/app/annual-project-report/types.ts'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 const REMARKS_LIMIT = 400
 
@@ -30,6 +31,7 @@ export default function EndorseAprModal({
   year,
   currentData,
 }: EndorseAPRModalProps) {
+  const confirm = useConfirmation()
   const [errors, setErrors] = useState<string[]>([])
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
@@ -43,11 +45,20 @@ export default function EndorseAprModal({
     event.preventDefault()
     setErrors([])
 
-    const errors: string[] = []
-
     // Capture form, as event.currentTarget becomes null after the event finishes bubbling
     const form = event.currentTarget
     const formData = new FormData(form)
+
+    const response = await confirm({
+      title: 'Endorse APR',
+      message: 'Are you sure you want to endorse the APR?',
+    })
+
+    if (!response) {
+      return
+    }
+
+    const errors: string[] = []
 
     const meeting = formData.get('meeting_endorsed')
     const date = formData.get('date_endorsed')
