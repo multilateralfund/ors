@@ -1,11 +1,11 @@
 import React, { Dispatch, FormEvent, SetStateAction, useState } from 'react'
-import { Box, IconButton, Link, Modal, Typography } from '@mui/material'
+import { Alert, Box, IconButton, Link, Modal, Typography } from '@mui/material'
 import { CancelButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import Button from '@mui/material/Button'
 import Cookies from 'js-cookie'
 import { formatApiUrl } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
-import { IoTrash } from 'react-icons/io5'
+import { IoInformationCircleOutline, IoTrash } from 'react-icons/io5'
 import { api } from '@ors/helpers'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { APRFile } from '@ors/app/annual-project-report/types.ts'
@@ -29,6 +29,7 @@ export default function UploadDocumentsModal({
   revalidateFiles,
   disabled,
 }: UploadDocumentsModalProps) {
+  const [error, setError] = useState('')
   const [fileState, setFileState] = useState({
     financialFileKey: 0,
     financialFileSelected: false,
@@ -38,6 +39,8 @@ export default function UploadDocumentsModal({
 
   const formSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError('')
+
     // Capture form, as event.currentTarget becomes null after the event finishes bubbling
     const form = event.currentTarget
     const formData = new FormData(form)
@@ -57,9 +60,7 @@ export default function UploadDocumentsModal({
     })
 
     if (!financialReport && validSupportingFiles.length === 0) {
-      enqueueSnackbar(<>Please select at least one file.</>, {
-        variant: 'error',
-      })
+      setError('Please select at least one file.')
       return
     }
 
@@ -215,6 +216,15 @@ export default function UploadDocumentsModal({
             </div>
           </div>
         </form>
+        {error && (
+          <Alert
+            className="mb-2"
+            icon={<IoInformationCircleOutline size={24} />}
+            severity="error"
+          >
+            {error}
+          </Alert>
+        )}
         <div className="ml-auto mr-6 flex gap-3">
           <Button
             disabled={disabled}

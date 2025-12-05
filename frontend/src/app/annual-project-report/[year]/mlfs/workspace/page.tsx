@@ -173,7 +173,9 @@ export default function APRMLFSWorkspace() {
   }
 
   const canEndorseAPR =
-    canEditAPR && aprData?.every((data) => data.status === 'submitted')
+    canEditAPR &&
+    aprData?.every((data) => data.status === 'submitted') &&
+    aprData?.some((data) => !data.is_endorsed)
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
     const action = agencyData.is_unlocked ? 'lock' : 'unlock'
@@ -245,7 +247,7 @@ export default function APRMLFSWorkspace() {
             ></Tab>
           </Tabs>
           <Button
-            disabled={loading || !canEndorseAPR}
+            disabled={loading}
             className="mb-2"
             variant="contained"
             onClick={() => {
@@ -541,7 +543,9 @@ export default function APRMLFSWorkspace() {
       <EndorseAprModal
         isModalOpen={isEndorseModalOpen}
         setIsModalOpen={setIsEndorseModalOpen}
-        disabled={loading}
+        disabled={loading || !canEndorseAPR}
+        revalidateData={refetch}
+        year={year}
       />
     </PageWrapper>
   )
