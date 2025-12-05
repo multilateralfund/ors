@@ -230,8 +230,11 @@ export default function APRMLFSWorkspace() {
 
   return (
     <PageWrapper>
-      <PageHeading className="min-w-fit">
-        {`MLFS Annual Project Report Workspace (${year})`}
+      <PageHeading className="min-w-fit mb-1 flex items-center gap-x-2">
+        {`MLFS Annual Project Report Workspace`}{' '}
+        <span className="text-lg rounded border border-solid px-1">
+          {year} {progressReport?.endorsed ? 'ENDORSED' : ''}
+        </span>
       </PageHeading>
 
       <Box className="shadow-none">
