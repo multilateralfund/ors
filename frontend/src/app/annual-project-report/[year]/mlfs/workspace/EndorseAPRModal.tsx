@@ -11,6 +11,7 @@ import { api } from '@ors/helpers'
 import cx from 'classnames'
 import { AnnualProgressReport } from '@ors/app/annual-project-report/types.ts'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import dayjs from 'dayjs'
 
 const REMARKS_LIMIT = 400
 
@@ -141,6 +142,9 @@ export default function EndorseAprModal({
                 className: cx('bg-white', {
                   '!bg-gray-200': disabled,
                 }),
+              }}
+              inputProps={{
+                max: dayjs().format('YYYY-MM-DD'),
               }}
               id="date_endorsed"
               size="small"
