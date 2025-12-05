@@ -114,7 +114,7 @@ const changeNestedField: FieldHandler = (
           ...computedTotal,
         },
       }
-    })
+    }, field)
   }
 }
 

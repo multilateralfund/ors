@@ -32,7 +32,7 @@ const ApprovalModal = ({
         <Typography className="mb-4 text-lg text-primary">
           Are you sure you want to {formattedType} the project?
         </Typography>
-        <div className="ml-auto mr-6 flex flex-wrap gap-3">
+        <div className="ml-auto mr-2 flex flex-wrap gap-3">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
             onClick={() => onAction(type)}

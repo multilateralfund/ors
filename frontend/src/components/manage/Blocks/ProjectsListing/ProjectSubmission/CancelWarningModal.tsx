@@ -48,7 +48,7 @@ const CancelWarningModal = ({
           You have unsaved changes. Are you sure you want to cancel project{' '}
           {mode}?
         </Typography>
-        <div className="ml-auto mr-5 flex flex-wrap gap-3">
+        <div className="ml-auto mr-2 flex flex-wrap gap-3">
           <CustomLink
             className="h-8 px-4 py-2 text-lg uppercase"
             href={null}
