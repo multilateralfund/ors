@@ -2,7 +2,6 @@ import { useContext } from 'react'
 
 import ProjectsCreateWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreateWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { UpdatedFieldsProvider } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import { Redirect } from 'wouter'
@@ -18,9 +17,7 @@ export default function CreateProject() {
 
   return (
     <PageWrapper>
-      <UpdatedFieldsProvider>
-        <ProjectsCreateWrapper />
-      </UpdatedFieldsProvider>
+      <ProjectsCreateWrapper />
     </PageWrapper>
   )
 }

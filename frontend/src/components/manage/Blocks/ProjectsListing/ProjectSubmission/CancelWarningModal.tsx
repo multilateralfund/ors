@@ -1,4 +1,5 @@
 import CustomLink from '@ors/components/ui/Link/Link'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 
 import { Typography, Box, Modal } from '@mui/material'
 import { useLocation } from 'wouter'
@@ -13,8 +14,10 @@ const CancelWarningModal = ({
   setIsModalOpen: (isOpen: boolean) => void
 }) => {
   const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const onContinue = () => {
+    clearUpdatedFields()
     setLocation('/projects-listing/listing')
   }
 
