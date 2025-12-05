@@ -6,10 +6,12 @@ import { useLocation } from 'wouter'
 
 const CancelWarningModal = ({
   mode,
+  url,
   isModalOpen,
   setIsModalOpen,
 }: {
   mode: string
+  url?: string
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
 }) => {
@@ -18,7 +20,8 @@ const CancelWarningModal = ({
 
   const onContinue = () => {
     clearUpdatedFields()
-    setLocation('/projects-listing/listing')
+    setLocation(url ?? '/projects-listing/listing')
+    setIsModalOpen(false)
   }
 
   const onCancel = () => {
@@ -31,6 +34,11 @@ const CancelWarningModal = ({
       open={isModalOpen}
       onClose={() => setIsModalOpen(false)}
       keepMounted
+      sx={{
+        '& .MuiBackdrop-root': {
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        },
+      }}
     >
       <Box className="flex w-full max-w-lg flex-col absolute-center">
         <Typography className="mb-4 text-[20px] font-medium text-black">

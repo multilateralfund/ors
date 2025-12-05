@@ -9,6 +9,7 @@ import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Logo from '@ors/components/theme/Logo/Logo'
 // import ThemeSelector from '@ors/components/theme/ThemeSelector/ThemeSelector'
 import UnstyledLink from '@ors/components/ui/Link/Link'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { useStore } from '@ors/store'
 
 import HeaderNavigation from './HeaderNavigation'
@@ -17,6 +18,7 @@ import { AiOutlineUser } from 'react-icons/ai'
 
 export default function Header() {
   const user = useStore((state) => state.user)
+  const { clearUpdatedFields } = useUpdatedFields()
 
   return (
     <FadeInOut className="header-motion">
@@ -34,6 +36,7 @@ export default function Header() {
               <div
                 className="absolute right-[-12px] top-[70px] z-50 flex cursor-pointer gap-2.5 whitespace-nowrap text-xl lg:right-9 lg:top-20"
                 onClick={async () => {
+                  clearUpdatedFields()
                   await user.logout()
                 }}
               >

@@ -429,26 +429,44 @@ const DesktopHeaderNavigation = ({
                                 isInternal && updatedFields.size > 0
 
                               return (
-                                <ListItem
-                                  key={subMenuItem.label}
-                                  className={cx(
-                                    'last:rounded-0 cursor-pointer text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
-                                    { 'bg-mlfs-hlYellow': subMenuItem.current },
-                                  )}
-                                  component={Component}
-                                  href={
-                                    !hasUnsavedChanges ? subMenuItem.url : null
-                                  }
-                                  onClick={() => {
-                                    if (hasUnsavedChanges) {
-                                      setIsCancelModalOpen(true)
-                                    } else {
-                                      setLocation(subMenuItem.url)
+                                <>
+                                  <ListItem
+                                    key={subMenuItem.label}
+                                    className={cx(
+                                      'last:rounded-0 cursor-pointer text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
+                                      {
+                                        'bg-mlfs-hlYellow': subMenuItem.current,
+                                      },
+                                    )}
+                                    component={Component}
+                                    href={
+                                      !hasUnsavedChanges
+                                        ? subMenuItem.url
+                                        : null
                                     }
-                                  }}
-                                >
-                                  {subMenuItem.label}
-                                </ListItem>
+                                    onClick={() => {
+                                      if (hasUnsavedChanges) {
+                                        setIsCancelModalOpen(true)
+                                      } else {
+                                        setLocation(subMenuItem.url)
+                                      }
+                                    }}
+                                  >
+                                    {subMenuItem.label}
+                                  </ListItem>
+                                  {isCancelModalOpen && (
+                                    <CancelWarningModal
+                                      mode={
+                                        location.includes('/edit')
+                                          ? 'editing'
+                                          : 'creation'
+                                      }
+                                      url={subMenuItem.url}
+                                      isModalOpen={isCancelModalOpen}
+                                      setIsModalOpen={setIsCancelModalOpen}
+                                    />
+                                  )}
+                                </>
                               )
                             })}
                         </List>
@@ -461,13 +479,6 @@ const DesktopHeaderNavigation = ({
           </div>
         </div>
       ))}
-      {isCancelModalOpen && (
-        <CancelWarningModal
-          mode={location.includes('/edit') ? 'editing' : 'creation'}
-          isModalOpen={isCancelModalOpen}
-          setIsModalOpen={setIsCancelModalOpen}
-        />
-      )}
     </div>
   )
 }
@@ -646,31 +657,47 @@ const MobileHeaderNavigation = ({
                                           isInternal && updatedFields.size > 0
 
                                         return (
-                                          <ListItem
-                                            key={subMenuItem.label}
-                                            className={cx(
-                                              'block cursor-pointer py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
-                                              {
-                                                'bg-mlfs-hlYellowTint':
-                                                  subMenuItem.current,
-                                              },
-                                            )}
-                                            component={Component}
-                                            href={
-                                              !hasUnsavedChanges
-                                                ? subMenuItem.url
-                                                : null
-                                            }
-                                            onClick={() => {
-                                              if (hasUnsavedChanges) {
-                                                setIsCancelModalOpen(true)
-                                              } else {
-                                                setLocation(subMenuItem.url)
+                                          <>
+                                            <ListItem
+                                              key={subMenuItem.label}
+                                              className={cx(
+                                                'block cursor-pointer py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                                {
+                                                  'bg-mlfs-hlYellowTint':
+                                                    subMenuItem.current,
+                                                },
+                                              )}
+                                              component={Component}
+                                              href={
+                                                !hasUnsavedChanges
+                                                  ? subMenuItem.url
+                                                  : null
                                               }
-                                            }}
-                                          >
-                                            {subMenuItem.label}
-                                          </ListItem>
+                                              onClick={() => {
+                                                if (hasUnsavedChanges) {
+                                                  setIsCancelModalOpen(true)
+                                                } else {
+                                                  setLocation(subMenuItem.url)
+                                                }
+                                              }}
+                                            >
+                                              {subMenuItem.label}
+                                            </ListItem>
+                                            {isCancelModalOpen && (
+                                              <CancelWarningModal
+                                                mode={
+                                                  location.includes('/edit')
+                                                    ? 'editing'
+                                                    : 'creation'
+                                                }
+                                                url={subMenuItem.url}
+                                                isModalOpen={isCancelModalOpen}
+                                                setIsModalOpen={
+                                                  setIsCancelModalOpen
+                                                }
+                                              />
+                                            )}
+                                          </>
                                         )
                                       })}
                                   </List>
@@ -687,13 +714,6 @@ const MobileHeaderNavigation = ({
           })}
         </List>
       </Drawer>
-      {isCancelModalOpen && (
-        <CancelWarningModal
-          mode={location.includes('/edit') ? 'editing' : 'creation'}
-          isModalOpen={isCancelModalOpen}
-          setIsModalOpen={setIsCancelModalOpen}
-        />
-      )}
     </div>
   )
 }
