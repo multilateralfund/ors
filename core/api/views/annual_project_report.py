@@ -1,4 +1,5 @@
 import os
+from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, FileResponse
 from django.shortcuts import get_object_or_404
@@ -42,6 +43,14 @@ from core.api.serializers.annual_project_report import (
     AnnualProgressReportSerializer,
     AnnualProgressReportEndorseSerializer,
     AnnualProjectReportMLFSBulkUpdateSerializer,
+    AnnualProjectReportKickStartResponseSerializer,
+    AnnualProjectReportKickStartStatusSerializer,
+)
+
+from core.api.utils import (
+    get_latest_endorsed_year,
+    get_unendorsed_years,
+    get_previous_year_project_reports,
 )
 
 
@@ -105,10 +114,13 @@ class APRWorkspaceView(RetrieveAPIView):
         # Get status filter from query params (defaults are ONG, COM)
         status_codes = self.request.query_params.get("status", "ONG,COM")
 
-        # Get or create annual progress report for the year
-        progress_report, _ = AnnualProgressReport.objects.get_or_create(
-            year=year, defaults={"endorsed": False, "remarks_endorsed": ""}
-        )
+        # Check that the annual progress report for the year actually exists
+        try:
+            progress_report = AnnualProgressReport.objects.get(year=year)
+        except AnnualProgressReport.DoesNotExist as exc:
+            raise ValidationError(
+                f"Reporting for year {year} has not been started yet."
+            ) from exc
 
         # Get or create agency report container
         agency_report, created = AnnualAgencyProjectReport.objects.get_or_create(
@@ -123,7 +135,10 @@ class APRWorkspaceView(RetrieveAPIView):
         # When creating for the first time, populate individual project reports.
         # We don't need to consider the case of new projects being added after this.
         if created or agency_report.project_reports.count() == 0:
-            # Get projects for this agency and create AnnualProjectReport for each
+            # Get the previous year reported data (if any)
+            previous_reports_dict = get_previous_year_project_reports(agency.id, year)
+
+            # Get *current* projects for this agency, create AnnualProjectReport for each
             projects_queryset = (
                 Project.objects.filter(
                     latest_project__isnull=True,
@@ -155,10 +170,16 @@ class APRWorkspaceView(RetrieveAPIView):
                 queryset=projects_queryset,
             )
             projects = filterset.qs
+
             for project in projects:
+                # Check if previously-reported data exists for this project & agency
+                key = (project.code, agency.id)
+                previous_data = previous_reports_dict.get(key, {})
+
                 AnnualProjectReport.objects.get_or_create(
                     project=project,
                     report=agency_report,
+                    defaults=previous_data,
                 )
 
         return agency_report
@@ -744,3 +765,99 @@ class APRMLFSBulkUpdateView(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class APRKickStartView(APIView):
+    """
+    Endpoint for MLFS to kick-start a new reporting period - only if MLFS full-access
+    GET: checks whether a new APR year can be kicked off
+    POST: kick-starts a new APR reporting cycle
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+
+    def get(self, request):
+        latest_endorsed_year = get_latest_endorsed_year()
+        unendorsed_years = get_unendorsed_years()
+
+        if latest_endorsed_year is None:
+            serializer = AnnualProjectReportKickStartStatusSerializer(
+                {
+                    "can_kick_start": False,
+                    "latest_endorsed_year": None,
+                    "next_year": None,
+                    "unendorsed_years": unendorsed_years,
+                    "message": "No endorsed APRs exist. Cannot kick-start a new APR.",
+                }
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        can_kick_start = len(unendorsed_years) == 0
+        next_year = latest_endorsed_year + 1 if can_kick_start else None
+
+        data = {
+            "can_kick_start": can_kick_start,
+            "latest_endorsed_year": latest_endorsed_year,
+            "next_year": next_year,
+            "unendorsed_years": unendorsed_years,
+        }
+
+        if not can_kick_start:
+            data["message"] = (
+                f"Year {unendorsed_years[0]} already exists and must be endorsed "
+                f"before creating year {latest_endorsed_year + 1}."
+            )
+
+        serializer = AnnualProjectReportKickStartStatusSerializer(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Kick-start a new APR year by creating the AnnualProgressReport container.
+
+        Individual agency reports and project reports will be created later,
+        when agencies access their workspaces, with data automatically pre-populated
+        from the previous reporting year.
+        """
+        with transaction.atomic():
+            latest_endorsed_year = get_latest_endorsed_year()
+
+            # For now we assume a previous APR exists (should exist after importing data)
+            if latest_endorsed_year is None:
+                raise ValidationError(
+                    "Cannot kick-start APR. No endorsed APRs exist yet."
+                )
+            next_year = latest_endorsed_year + 1
+
+            unendorsed_years = get_unendorsed_years()
+            if unendorsed_years:
+                raise ValidationError(
+                    f"Cannot kick-start APR. "
+                    f"APR for {unendorsed_years[0]} already exists "
+                    f"and must be endorsed before reporting for {next_year}."
+                )
+
+            if AnnualProgressReport.objects.filter(year=next_year).exists():
+                raise ValidationError(
+                    f"APR for year {next_year} already exists. "
+                    f"It must be endorsed before creating year {next_year + 1}."
+                )
+
+            progress_report = AnnualProgressReport.objects.create(
+                year=next_year,
+                endorsed=False,
+                remarks_endorsed="",
+                created_by=request.user,
+            )
+
+        response_data = {
+            "year": progress_report.year,
+            "message": (
+                f"APR for year {next_year} has been initialized successfully. "
+                "Agencies can now access their workspaces to begin reporting."
+            ),
+            "previous_year": latest_endorsed_year,
+        }
+
+        serializer = AnnualProjectReportKickStartResponseSerializer(response_data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
