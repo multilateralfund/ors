@@ -155,6 +155,7 @@ from core.api.views.annual_project_report import (
     APRToggleLockView,
     APREndorseView,
     APRMLFSBulkUpdateView,
+    APRKickStartView,
 )
 
 router = routers.SimpleRouter()
@@ -770,6 +771,11 @@ urlpatterns = [
         "annual-project-report/<int:year>/endorse/",
         APREndorseView.as_view(),
         name="apr-endorse",
+    ),
+    path(
+        "annual-project-report/kick-start/",
+        APRKickStartView.as_view(),
+        name="apr-kick-start",
     ),
     # User permissions
     path(

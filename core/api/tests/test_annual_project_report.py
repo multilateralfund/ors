@@ -35,7 +35,7 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_workspace_creates_agency_report(
-        self, agency_viewer_user, apr_year, agency
+        self, agency_viewer_user, apr_year, agency, annual_progress_report
     ):
         """
         An agency report is created (if not existing) upon accessing the workspace view.
@@ -60,7 +60,11 @@ class TestAPRWorkspaceView(BaseTest):
         ).exists()
 
     def test_get_workspace_creates_project_reports(
-        self, agency_viewer_user, apr_year, multiple_projects_for_apr
+        self,
+        agency_viewer_user,
+        apr_year,
+        multiple_projects_for_apr,
+        annual_progress_report,
     ):
         """
         Project reports are created (if not existing) upon accessing the workspace view.
@@ -86,7 +90,11 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_workspace_filters_by_status(
-        self, agency_viewer_user, apr_year, multiple_projects_for_apr
+        self,
+        agency_viewer_user,
+        apr_year,
+        annual_progress_report,
+        multiple_projects_for_apr,
     ):
         self.client.force_authenticate(user=agency_viewer_user)
 
@@ -99,7 +107,11 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.data["total_projects"] == 5
 
     def test_get_workspace_idempotent(
-        self, agency_viewer_user, apr_year, multiple_projects_for_apr
+        self,
+        agency_viewer_user,
+        apr_year,
+        annual_progress_report,
+        multiple_projects_for_apr,
     ):
         """Test that multiple calls to workspace don't create duplicates."""
         self.client.force_authenticate(user=agency_viewer_user)
@@ -123,7 +135,11 @@ class TestAPRWorkspaceView(BaseTest):
         )
 
     def test_get_agency_report_nested_data(
-        self, agency_viewer_user, annual_agency_report, annual_project_report
+        self,
+        agency_viewer_user,
+        annual_progress_report,
+        annual_agency_report,
+        annual_project_report,
     ):
         self.client.force_authenticate(user=agency_viewer_user)
 

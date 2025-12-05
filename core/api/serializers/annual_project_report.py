@@ -839,3 +839,17 @@ class AnnualProjectReportMLFSBulkUpdateSerializer(serializers.Serializer):
                 )
 
         return updated_reports, errors
+
+
+class AnnualProjectReportKickStartResponseSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    message = serializers.CharField()
+    previous_year = serializers.IntegerField()
+
+
+class AnnualProjectReportKickStartStatusSerializer(serializers.Serializer):
+    can_kick_start = serializers.BooleanField()
+    latest_endorsed_year = serializers.IntegerField(allow_null=True)
+    next_year = serializers.IntegerField(allow_null=True)
+    unendorsed_years = serializers.ListField(child=serializers.IntegerField())
+    message = serializers.CharField(required=False)
