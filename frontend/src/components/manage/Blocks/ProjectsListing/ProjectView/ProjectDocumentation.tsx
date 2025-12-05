@@ -48,6 +48,7 @@ const ProjectDocumentation = ({
                 : 'Upload completed template and any supporting documentation'
             }
             value=""
+            mode={mode}
             clearable={false}
             inputValue={[]}
             accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg,.gif"

@@ -73,7 +73,7 @@ const ProjectSubstanceDetails = ({
           [field]: [...sectionData, initialOdsOdp],
         },
       }
-    })
+    }, 'substances')
   }
 
   const onRemoveOdsOdp = (index: number) => {
@@ -87,7 +87,7 @@ const ProjectSubstanceDetails = ({
           [field]: sectionData.filter((_, idx) => idx !== index),
         },
       }
-    })
+    }, 'substances')
   }
 
   useEffect(() => {

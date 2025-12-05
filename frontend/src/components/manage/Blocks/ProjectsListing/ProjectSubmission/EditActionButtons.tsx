@@ -37,6 +37,7 @@ import {
   BpDataProps,
   FileMetaDataType,
 } from '../interfaces'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -102,13 +103,18 @@ const EditActionButtons = ({
   const { projectFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
   const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false)
+  const [approvalModalType, setApprovalModalType] = useState<string | null>(
+    null,
+  )
 
   const { id, submission_status, version, component } = project
   const {
@@ -414,6 +420,8 @@ const EditActionButtons = ({
         setParams((prev: any) => ({ ...prev }))
       }
 
+      clearUpdatedFields()
+
       return true
     } catch (error) {
       await handleErrors(error)
@@ -431,6 +439,14 @@ const EditActionButtons = ({
     }
   }
 
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
+
   const onSendBackToDraftProject = () => {
     setIsSendToDraftModalOpen(true)
   }
@@ -441,6 +457,10 @@ const EditActionButtons = ({
 
   const onRecommendProject = () => {
     setIsRecommendModalOpen(true)
+  }
+
+  const onApproveRejectProject = (action: string) => {
+    setApprovalModalType(action)
   }
 
   const sendProjectBackToDraft = async () => {
@@ -503,6 +523,8 @@ const EditActionButtons = ({
       })
 
       setProjectId(result.id)
+      clearUpdatedFields()
+
       return true
     } catch (error) {
       await handleErrors(error)
@@ -523,16 +545,18 @@ const EditActionButtons = ({
         })
         setLocation(`/projects-listing/${id}`)
       } catch (error) {
-        await handleErrors(error)
-      } finally {
-        setIsLoading(false)
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
       }
     }
+
+    setApprovalModalType(null)
   }
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
+      <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -607,7 +631,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={() => approveRejectProject('approve')}
+            onClick={() => onApproveRejectProject('approve')}
           >
             Approve project
           </Dropdown.Item>
@@ -615,7 +639,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-red-900')}
-            onClick={() => approveRejectProject('reject')}
+            onClick={() => onApproveRejectProject('reject')}
           >
             Not approve project
           </Dropdown.Item>
@@ -624,6 +648,8 @@ const EditActionButtons = ({
       <EditActionModals
         {...{
           id,
+          isCancelModalOpen,
+          setIsCancelModalOpen,
           isComponentModalOpen,
           setIsComponentModalOpen,
           isSubmitModalOpen,
@@ -634,10 +660,13 @@ const EditActionButtons = ({
           setIsWithdrawModalOpen,
           isSendToDraftModalOpen,
           setIsSendToDraftModalOpen,
+          approvalModalType,
+          setApprovalModalType,
           setIsTrancheWarningOpen,
           editProject,
           withdrawProject,
           sendProjectBackToDraft,
+          approveRejectProject,
         }}
         isTrancheWarningOpen={
           !!showSubmitTranchesWarningModal && isTrancheWarningOpen

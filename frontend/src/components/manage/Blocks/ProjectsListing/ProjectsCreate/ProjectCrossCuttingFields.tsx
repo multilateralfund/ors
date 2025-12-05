@@ -133,13 +133,16 @@ const ProjectCrossCuttingFields = ({
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
-      },
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
+        },
+      }),
+      'subsector',
+    )
   }
 
   const getFieldDefaultProps = (field: string) => {
@@ -205,7 +208,6 @@ const ProjectCrossCuttingFields = ({
                     maxLength={1000}
                     style={STYLE}
                     minRows={7}
-                    tabIndex={-1}
                   />
                   <FieldErrorIndicator errors={errors} field="description" />
                 </div>

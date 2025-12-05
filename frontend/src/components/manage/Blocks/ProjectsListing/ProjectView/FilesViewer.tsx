@@ -5,6 +5,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { FieldErrorIndicator } from '../HelperComponents'
 import ExportConfirmModal from './ExportConfirmModal'
@@ -60,6 +61,8 @@ export function FilesViewer(props: ProjectDocs) {
     string | null
   >(null)
 
+  const { addUpdatedField } = useUpdatedFields()
+
   useEffect(() => {
     const existingFiles = filter(
       bpFiles,
@@ -72,6 +75,10 @@ export function FilesViewer(props: ProjectDocs) {
   }, [bpFiles, files])
 
   const handleDelete = (file: ProjectFile | File, fileIndex: number) => {
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
+
     const isNewFile = !(file as ProjectFile).id
     const updatedFiles = filter(currentFiles, (crtFile) =>
       isNewFile
@@ -97,6 +104,10 @@ export function FilesViewer(props: ProjectDocs) {
   }
 
   const handleChangeFileType = (value: any, fileIndex: number) => {
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
+
     setFilesMetaData?.((prev) =>
       map(prev, (file, index: number) =>
         fileIndex === index ? { ...file, type: value?.id ?? null } : file,

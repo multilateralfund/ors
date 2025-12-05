@@ -146,11 +146,12 @@ function DeleteButton(props: DeleteButtonProps) {
 
 interface CancelLinkButtonProps extends BaseButtonProps {
   title: string
-  href: string
+  href: string | null
+  onClick?: () => void
 }
 
 const CancelLinkButton = (props: CancelLinkButtonProps) => {
-  const { title, href } = props
+  const { title, href, onClick } = props
 
   return (
     <Link
@@ -160,6 +161,7 @@ const CancelLinkButton = (props: CancelLinkButtonProps) => {
       size="large"
       variant="contained"
       button
+      onClick={onClick}
     >
       {title}
     </Link>

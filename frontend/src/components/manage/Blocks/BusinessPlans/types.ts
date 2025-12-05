@@ -50,6 +50,7 @@ export type BpFileInput = {
   setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
   extensionsList?: string
   value?: string
+  mode?: string
   clearable?: boolean
   inputValue?: []
   accept?: string

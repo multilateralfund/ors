@@ -20,6 +20,7 @@ import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import useSearchParams from '@ors/hooks/useSearchParams'
+import { UpdatedFieldsProvider } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsProvider from '../contexts/PermissionsProvider'
 
 import '../themes/styles/global.css'
@@ -91,8 +92,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/project-types/', {}, false),
           api('api/meetings/', {}, false),
           api('api/decisions/', {}, false),
-          api(
-            'api/project-clusters/', {}, false),
+          api('api/project-clusters/', {}, false),
           api('api/groups/', {}, false),
           api(
             'api/blends/',
@@ -222,9 +222,11 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <PermissionsProvider>
-            <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
-              {children}
-            </LoginWrapper>
+            <UpdatedFieldsProvider>
+              <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
+                {children}
+              </LoginWrapper>
+            </UpdatedFieldsProvider>
           </PermissionsProvider>
         </ThemeProvider>
       </StoreProvider>

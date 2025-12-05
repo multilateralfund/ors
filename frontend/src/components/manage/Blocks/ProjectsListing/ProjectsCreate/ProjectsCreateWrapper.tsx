@@ -2,11 +2,13 @@
 
 import { useContext, useEffect, useMemo, useState } from 'react'
 
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import {
   initialCrossCuttingFields,
@@ -133,6 +135,25 @@ const ProjectsCreateWrapper = () => {
     setBpData(bpData)
   }
 
+  const { updatedFields, addUpdatedField } = useUpdatedFields()
+
+  const setProjectDataWithEditTracking = (
+    updater: React.SetStateAction<ProjectData>,
+    fieldName?: string,
+  ) => {
+    setProjectData((prevData) => {
+      if (fieldName) {
+        addUpdatedField(fieldName)
+      }
+
+      return typeof updater === 'function'
+        ? (updater as (prev: ProjectData) => ProjectData)(prevData)
+        : updater
+    })
+  }
+
+  useVisibilityChange(updatedFields.size > 0)
+
   return (
     <>
       <ProjectsHeader
@@ -155,7 +176,6 @@ const ProjectsCreateWrapper = () => {
         mode="add"
         {...{
           projectData,
-          setProjectData,
           specificFields,
           files,
           setFiles,
@@ -167,6 +187,7 @@ const ProjectsCreateWrapper = () => {
           filesMetaData,
           setFilesMetaData,
         }}
+        setProjectData={setProjectDataWithEditTracking}
       />
       <ProjectFormFooter
         id={projectId}

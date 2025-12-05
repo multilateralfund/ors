@@ -11,6 +11,7 @@ import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
 import { filter, get } from 'lodash'
+import cx from 'classnames'
 
 const ProjectApproval = ({
   project,
@@ -52,7 +53,15 @@ const ProjectApproval = ({
             return (
               <>
                 {canViewField(viewableFields, field.write_field_name) && (
-                  <span key={field.write_field_name}>
+                  <span
+                    key={field.write_field_name}
+                    className={cx({
+                      '!basis-full': [
+                        'programme_officer',
+                        'excom_provision',
+                      ].includes(field.write_field_name),
+                    })}
+                  >
                     {viewModesHandler[field.data_type](
                       project,
                       updatedField,
@@ -68,17 +77,22 @@ const ProjectApproval = ({
                   </span>
                 )}
                 {project.status === 'Transferred' &&
-                  (field.write_field_name === 'meeting'
-                    ? detailItem(
-                        tableColumns.transfer_meeting,
-                        project.transfer_meeting,
-                      )
-                    : field.write_field_name === 'excom_provision'
-                      ? detailItem(
-                          tableColumns.transfer_excom_provision,
-                          project.transfer_excom_provision,
-                        )
-                      : null)}
+                  (field.write_field_name === 'meeting' ? (
+                    detailItem(
+                      tableColumns.transfer_meeting,
+                      project.transfer_meeting,
+                    )
+                  ) : field.write_field_name === 'excom_provision' ? (
+                    <span
+                      key="transfer_excom_provision"
+                      className="!basis-full"
+                    >
+                      {detailItem(
+                        tableColumns.transfer_excom_provision,
+                        project.transfer_excom_provision,
+                      )}
+                    </span>
+                  ) : null)}
               </>
             )
           },

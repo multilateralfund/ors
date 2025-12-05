@@ -114,18 +114,21 @@ const changeNestedField: FieldHandler = (
           ...computedTotal,
         },
       }
-    })
+    }, field)
   }
 }
 
 export const changeField: FieldHandler = (value, field, setState, section) => {
-  setState((prevData) => ({
-    ...prevData,
-    [section]: {
-      ...prevData[section],
-      [field]: value,
-    },
-  }))
+  setState(
+    (prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value,
+      },
+    }),
+    field,
+  )
 }
 
 const getValue = <T,>(
@@ -384,7 +387,6 @@ export const TextAreaWidget = <T,>(
           maxLength={500}
           style={STYLE}
           minRows={isOdsReplacement ? 1 : 2}
-          tabIndex={-1}
         />
         <FieldErrorIndicator
           errors={

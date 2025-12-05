@@ -1,7 +1,14 @@
 import { useContext, useState } from 'react'
-import { useLocation } from 'wouter'
-import Link from '@ors/components/ui/Link/Link'
 
+import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
+import Link from '@ors/components/ui/Link/Link'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { matchPath } from '@ors/helpers/Url/Url'
+
+import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
+import { DebouncedFunc, debounce } from 'lodash'
+import { useLocation } from 'wouter'
 import {
   Collapse,
   Drawer,
@@ -11,13 +18,6 @@ import {
   ListItemButton,
 } from '@mui/material'
 import cx from 'classnames'
-import { DebouncedFunc, debounce } from 'lodash'
-
-import { matchPath } from '@ors/helpers/Url/Url'
-import { useStore } from '@ors/store'
-
-import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
@@ -259,6 +259,10 @@ const DesktopHeaderNavigation = ({
   const initiallyExpanded: Record<string, boolean> = {}
   recursivelyExpandItems(items, initiallyExpanded)
 
+  const [location, setLocation] = useLocation()
+  const { updatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
   const [hideInProgress, setHideInProgress] = useState<
     Record<string, DebouncedFunc<any> | null>
@@ -419,21 +423,50 @@ const DesktopHeaderNavigation = ({
                         <List className="py-0" component="div">
                           {menuItem.menu &&
                             menuItem.menu.map((subMenuItem) => {
-                              const Component = subMenuItem?.internal
-                                ? Link
-                                : 'a'
+                              const isInternal = subMenuItem?.internal
+                              const Component = isInternal ? Link : 'a'
+                              const hasUnsavedChanges =
+                                isInternal && updatedFields.size > 0
+
                               return (
-                                <ListItem
-                                  key={subMenuItem.label}
-                                  className={cx(
-                                    'last:rounded-0 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
-                                    { 'bg-mlfs-hlYellow': subMenuItem.current },
+                                <>
+                                  <ListItem
+                                    key={subMenuItem.label}
+                                    className={cx(
+                                      'last:rounded-0 cursor-pointer text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
+                                      {
+                                        'bg-mlfs-hlYellow': subMenuItem.current,
+                                      },
+                                    )}
+                                    component={Component}
+                                    href={
+                                      !hasUnsavedChanges
+                                        ? subMenuItem.url
+                                        : null
+                                    }
+                                    onClick={() => {
+                                      if (hasUnsavedChanges) {
+                                        setIsCancelModalOpen(true)
+                                      } else {
+                                        setLocation(subMenuItem.url)
+                                      }
+                                    }}
+                                  >
+                                    {subMenuItem.label}
+                                  </ListItem>
+                                  {isCancelModalOpen && (
+                                    <CancelWarningModal
+                                      mode={
+                                        location.includes('/edit')
+                                          ? 'editing'
+                                          : 'creation'
+                                      }
+                                      url={subMenuItem.url}
+                                      isModalOpen={isCancelModalOpen}
+                                      setIsModalOpen={setIsCancelModalOpen}
+                                    />
                                   )}
-                                  component={Component}
-                                  href={subMenuItem.url}
-                                >
-                                  {subMenuItem.label}
-                                </ListItem>
+                                </>
                               )
                             })}
                         </List>
@@ -477,6 +510,10 @@ const MobileHeaderNavigation = ({
     {} as Record<string, boolean>,
   )
 
+  const [location, setLocation] = useLocation()
+  const { updatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [open, setOpen] = useState(false)
   const [openMenus, setOpenMenus] =
     useState<Record<string, boolean>>(initiallyExpanded)
@@ -612,24 +649,55 @@ const MobileHeaderNavigation = ({
                                   <List component="div">
                                     {menuItem.menu &&
                                       menuItem.menu.map((subMenuItem) => {
-                                        const Component = subMenuItem?.internal
+                                        const isInternal = subMenuItem?.internal
+                                        const Component = isInternal
                                           ? Link
                                           : 'a'
+                                        const hasUnsavedChanges =
+                                          isInternal && updatedFields.size > 0
+
                                         return (
-                                          <ListItem
-                                            key={subMenuItem.label}
-                                            className={cx(
-                                              'block py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
-                                              {
-                                                'bg-mlfs-hlYellowTint':
-                                                  subMenuItem.current,
-                                              },
+                                          <>
+                                            <ListItem
+                                              key={subMenuItem.label}
+                                              className={cx(
+                                                'block cursor-pointer py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                                {
+                                                  'bg-mlfs-hlYellowTint':
+                                                    subMenuItem.current,
+                                                },
+                                              )}
+                                              component={Component}
+                                              href={
+                                                !hasUnsavedChanges
+                                                  ? subMenuItem.url
+                                                  : null
+                                              }
+                                              onClick={() => {
+                                                if (hasUnsavedChanges) {
+                                                  setIsCancelModalOpen(true)
+                                                } else {
+                                                  setLocation(subMenuItem.url)
+                                                }
+                                              }}
+                                            >
+                                              {subMenuItem.label}
+                                            </ListItem>
+                                            {isCancelModalOpen && (
+                                              <CancelWarningModal
+                                                mode={
+                                                  location.includes('/edit')
+                                                    ? 'editing'
+                                                    : 'creation'
+                                                }
+                                                url={subMenuItem.url}
+                                                isModalOpen={isCancelModalOpen}
+                                                setIsModalOpen={
+                                                  setIsCancelModalOpen
+                                                }
+                                              />
                                             )}
-                                            component={Component}
-                                            href={subMenuItem.url}
-                                          >
-                                            {subMenuItem.label}
-                                          </ListItem>
+                                          </>
                                         )
                                       })}
                                   </List>

@@ -1,7 +1,9 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
 import { formatProjectFields, formatSubmitData } from '../utils'
 import { ActionButtons } from '../interfaces'
@@ -33,8 +35,19 @@ const CreateActionButtons = ({
   const { canUpdateProjects } = useContext(PermissionsContext)
   const { setWarnings } = useStore((state) => state.projectWarnings)
   const { projectFields } = useStore((state) => state.projectFields)
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const { newFiles = [] } = files || {}
+
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
 
   const createProject = async () => {
     setIsLoading(true)
@@ -83,6 +96,7 @@ const CreateActionButtons = ({
           params,
         )
       }
+      clearUpdatedFields()
       setLocation(`/projects-listing/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()
@@ -114,13 +128,20 @@ const CreateActionButtons = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
+      <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canUpdateProjects && (
         <SubmitButton
           title="Create project (draft)"
           isDisabled={!specificFieldsLoaded || isSaveDisabled}
           onSubmit={createProject}
           className="!py-2"
+        />
+      )}
+      {isCancelModalOpen && (
+        <CancelWarningModal
+          mode="creation"
+          isModalOpen={isCancelModalOpen}
+          setIsModalOpen={setIsCancelModalOpen}
         />
       )}
     </div>
