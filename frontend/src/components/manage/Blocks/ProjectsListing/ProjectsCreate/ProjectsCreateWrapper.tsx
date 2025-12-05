@@ -8,6 +8,7 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import {
   initialCrossCuttingFields,
@@ -134,7 +135,7 @@ const ProjectsCreateWrapper = () => {
     setBpData(bpData)
   }
 
-  const { addUpdatedField } = useUpdatedFields()
+  const { updatedFields, addUpdatedField } = useUpdatedFields()
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
@@ -150,6 +151,8 @@ const ProjectsCreateWrapper = () => {
         : updater
     })
   }
+
+  useVisibilityChange(updatedFields.size > 0)
 
   return (
     <>
