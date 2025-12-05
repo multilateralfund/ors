@@ -90,3 +90,19 @@ export interface AnnualAgencyProjectReport {
   submitted_by: number | null
   submitted_by_username: string | null
 }
+
+export interface AnnualProgressReport {
+  id: number
+  year: number
+  meeting_endorsed: number | null
+  meeting_endorsed_number: number | null
+  date_endorsed: string | null
+  remarks_endorsed: string
+  endorsed: boolean
+  agency_reports_count: number
+  is_endorsable: boolean
+  total_agencies: number
+  submitted_agencies: number
+  draft_agencies: number
+  draft_agency_names: string[]
+}

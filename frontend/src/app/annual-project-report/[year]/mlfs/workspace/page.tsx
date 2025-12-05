@@ -35,6 +35,7 @@ import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
+  AnnualProgressReport,
   APRFile,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
@@ -63,16 +64,28 @@ export default function APRMLFSWorkspace() {
 
   const {
     data: aprData,
-    loading,
-    loaded,
+    loading: loadingAprData,
+    loaded: loadedAprData,
     setParams,
-    refetch,
+    refetch: refetchAprData,
   } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/mlfs/${year}/agencies/`,
+  })
+  const {
+    data: progressReport,
+    loading: loadingReport,
+    loaded: loadedReport,
+    refetch: refetchReport,
+  } = useApi<AnnualProgressReport>({
+    options: {
+      withStoreCache: false,
+      triggerIf: canViewAPR && isMlfsUser,
+    },
+    path: `api/annual-project-report/${year}/endorse/`,
   })
 
   // Flatten project reports from all agencies and add agency info
@@ -172,10 +185,14 @@ export default function APRMLFSWorkspace() {
     return <NotFoundPage />
   }
 
-  const canEndorseAPR =
-    canEditAPR &&
-    aprData?.every((data) => data.status === 'submitted') &&
-    aprData?.some((data) => !data.is_endorsed)
+  const canEndorseAPR = canEditAPR && progressReport?.is_endorsable
+  const loading = loadingReport || loadingAprData
+  const loaded = loadedReport || loadedAprData
+
+  const refetchData = () => {
+    refetchAprData()
+    refetchReport()
+  }
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
     const action = agencyData.is_unlocked ? 'lock' : 'unlock'
@@ -199,7 +216,7 @@ export default function APRMLFSWorkspace() {
         },
       )
 
-      refetch()
+      refetchData()
       enqueueSnackbar(<>Report {action} successful.</>, {
         variant: 'success',
       })
@@ -218,7 +235,7 @@ export default function APRMLFSWorkspace() {
       </PageHeading>
 
       <Box className="shadow-none">
-        <Loader active={loading} />
+        <Loader active={loadingAprData} />
         <div className="flex justify-between">
           <Tabs
             className="sectionsTabs"
@@ -544,8 +561,9 @@ export default function APRMLFSWorkspace() {
         isModalOpen={isEndorseModalOpen}
         setIsModalOpen={setIsEndorseModalOpen}
         disabled={loading || !canEndorseAPR}
-        revalidateData={refetch}
+        revalidateData={refetchData}
         year={year}
+        currentData={progressReport}
       />
     </PageWrapper>
   )

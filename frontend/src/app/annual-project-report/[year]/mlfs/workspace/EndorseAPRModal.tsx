@@ -8,6 +8,8 @@ import { reverse } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { api } from '@ors/helpers'
+import cx from 'classnames'
+import { AnnualProgressReport } from '@ors/app/annual-project-report/types.ts'
 
 const REMARKS_LIMIT = 400
 
@@ -17,6 +19,7 @@ interface EndorseAPRModalProps {
   disabled: boolean
   revalidateData: () => void
   year: string | undefined
+  currentData?: AnnualProgressReport | null
 }
 
 export default function EndorseAprModal({
@@ -25,6 +28,7 @@ export default function EndorseAprModal({
   disabled,
   revalidateData,
   year,
+  currentData,
 }: EndorseAPRModalProps) {
   const [errors, setErrors] = useState<string[]>([])
   const projectSlice = useStore((state) => state.projects)
@@ -105,13 +109,17 @@ export default function EndorseAprModal({
           autoComplete="off"
         >
           <FieldPopoverInput
-            className="!ml-0"
+            className={cx('!ml-0', {
+              '!cursor-not-allowed': disabled,
+            })}
             label="ExCom meeting number"
             id="meeting_endorsed"
             field="meeting_endorsed"
             options={meetingOptions}
             placeholder="Select meeting"
             withClear
+            disabled={disabled}
+            value={currentData?.meeting_endorsed}
           />
           <div className="flex items-center">
             <label htmlFor="date_endorsed" className="w-48">
@@ -119,12 +127,16 @@ export default function EndorseAprModal({
             </label>
             <TextField
               InputProps={{
-                className: 'bg-white',
+                className: cx('bg-white', {
+                  '!bg-gray-200': disabled,
+                }),
               }}
               id="date_endorsed"
               size="small"
               type="date"
               name="date_endorsed"
+              disabled={disabled}
+              defaultValue={currentData?.date_endorsed}
             />
           </div>
           <div className="flex flex-col">
@@ -133,11 +145,15 @@ export default function EndorseAprModal({
             </label>
             <TextField
               InputProps={{
-                className: 'bg-white',
+                className: cx('bg-white', {
+                  'cursor-not-allowed !bg-gray-200': disabled,
+                }),
               }}
               id="remarks_endorsed"
               name="remarks_endorsed"
               multiline
+              disabled={disabled}
+              defaultValue={currentData?.remarks_endorsed}
             />
           </div>
         </form>
@@ -149,7 +165,7 @@ export default function EndorseAprModal({
           >
             <ul className="m-0 list-none p-0">
               {errors.map((e) => (
-                <li>{e}</li>
+                <li key={e}>{e}</li>
               ))}
             </ul>
           </Alert>

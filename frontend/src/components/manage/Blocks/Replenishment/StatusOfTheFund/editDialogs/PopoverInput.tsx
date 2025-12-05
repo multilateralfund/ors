@@ -169,7 +169,7 @@ export default function PopoverInput({
           disabled={disabled}
           onClick={openPopover}
         />
-        {withClear && (label || selectedEntry) && (
+        {withClear && (label || selectedEntry) && !disabled && (
           <ClearButton className={clearBtnClassName} onClick={handleClear} />
         )}
       </div>
