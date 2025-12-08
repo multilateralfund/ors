@@ -1875,6 +1875,10 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         annual_agency_report,
         late_post_excom_versions_for_apr,
     ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
         # Below, we are also setting the project to the *latest* (next-year) version,
         # to check the logic still behaves correctly.
         annual_report = AnnualProjectReportFactory(
