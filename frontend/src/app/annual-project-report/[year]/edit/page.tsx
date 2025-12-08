@@ -220,7 +220,6 @@ export default function APREdit() {
                 isDataFormatted={true}
                 tooltipShowDelay={200}
                 singleClickEdit={true}
-                reactiveCustomComponents={true}
               />
             )}
           </div>

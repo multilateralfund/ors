@@ -89,11 +89,30 @@ export default function APRWorkspace() {
 
   return (
     <PageWrapper>
-      <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
+      <div className="mb-2 flex justify-between">
+        <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
+        <div className="flex gap-x-2">
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setIsUploadDocumentsModalOpen(true)}
+          >
+            Upload Documents
+          </Button>
+          {canSubmitAPR && user.agency_id && (
+            <SubmitButton
+              disabled={!isDraft || loading}
+              revalidateData={refetch}
+              year={year}
+              agencyId={user.agency_id}
+            />
+          )}
+        </div>
+      </div>
       <Box className="shadow-none">
         <Loader active={loading} />
-        <div className="mb-2 flex items-end justify-between">
-          <div className="flex flex-col gap-x-2">
+        <div className="mb-2 flex justify-between">
+          <div className="flex flex-col">
             <StatusFilter
               disabled={loading}
               statusOptions={choosableStatuses}
@@ -143,44 +162,28 @@ export default function APRWorkspace() {
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-y-2">
-            {canSubmitAPR && user.agency_id && (
-              <SubmitButton
-                disabled={!isDraft || loading}
-                revalidateData={refetch}
-                year={year}
-                agencyId={user.agency_id}
-              />
-            )}
+          <div className="flex flex-wrap gap-x-2">
             <Button
-              variant="contained"
-              onClick={() => setIsUploadDocumentsModalOpen(true)}
+              variant="text"
+              startIcon={<FiDownload size={18} />}
+              href={formatApiUrl(
+                `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+              )}
             >
-              Upload Documents
+              Export APR
             </Button>
-            <div className="flex flex-wrap gap-x-2">
-              <Button
-                variant="text"
-                startIcon={<FiDownload size={18} />}
-                href={formatApiUrl(
-                  `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                )}
-              >
-                Export APR
-              </Button>
-              <Link
-                button
-                variant="text"
-                startIcon={<FiEdit size={18} />}
-                href={`/${year}/edit`}
-                disabled={!isDraft}
-              >
-                Update APR
-              </Link>
-              <Button variant="text" startIcon={<FiTable size={18} />} disabled>
-                Generate summary tables
-              </Button>
-            </div>
+            <Link
+              button
+              variant="text"
+              startIcon={<FiEdit size={18} />}
+              href={`/${year}/edit`}
+              disabled={!isDraft}
+            >
+              Update APR
+            </Link>
+            <Button variant="text" startIcon={<FiTable size={18} />} disabled>
+              Generate summary tables
+            </Button>
           </div>
         </div>
         {loaded && (
