@@ -64,12 +64,25 @@ export const createProjectFieldsSlice = ({
               }
 
               if (
-                isPostExcom ||
-                (canEditAll &&
-                  mode === 'edit' &&
-                  submissionStatus === 'Not approved')
+                canEditAll &&
+                mode === 'edit' &&
+                submissionStatus === 'Not approved'
               ) {
                 return section !== 'Approval'
+              }
+
+              const postExcomEditableApprovalFields = [
+                'programme_officer',
+                'excom_provision',
+                'ad_hoc_pcr',
+                'pcr_waived',
+              ]
+
+              if (isPostExcom) {
+                return (
+                  section !== 'Approval' ||
+                  postExcomEditableApprovalFields.includes(write_field_name)
+                )
               }
             }
 
