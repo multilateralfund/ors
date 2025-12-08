@@ -218,7 +218,7 @@ const EditActionButtons = ({
     (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
       : hasSectionErrors(impactErrors)) ||
-    (isAfterApproval &&
+    (isRecommended &&
       dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
   const disableSubmit =
