@@ -620,30 +620,33 @@ class AnnualAgencyProjectReportStatusUpdateSerializer(serializers.Serializer):
 
         current_status = instance.status
 
-        allowed_transitions = {
-            AnnualAgencyProjectReport.SubmissionStatus.DRAFT: [
-                AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
-            ],
-            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED: [],
-        }
+        # From DRAFT, the submission can transition to any state
+        if current_status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT:
+            return value
 
-        if value not in allowed_transitions.get(current_status, []):
-            raise serializers.ValidationError(
-                f"Cannot transition from '{current_status}' to '{value}'."
-            )
+        # From SUBMITTED, we can only re-SUBMIT *if* the submission's unlocked
+        if current_status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED:
+            if instance.is_unlocked:
+                return value
 
-        return value
+        # No other transition allowed.
+        raise serializers.ValidationError(
+            f"Cannot transition from '{current_status}' to '{value}'."
+        )
 
     def update(self, instance, validated_data):
         new_status = validated_data["status"]
         instance.status = new_status
+        update_fields = ["status"]
 
-        # If submitting, set submission metadata
+        # If submitting, set submission metadata and mark is_unlocked as False
         if new_status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED:
+            instance.is_unlocked = False
             instance.submitted_at = timezone.now()
             instance.submitted_by = self.context.get("request").user
+            update_fields.extend(["is_unlocked", "submitted_at", "submitted_by"])
 
-        instance.save()
+        instance.save(update_fields=update_fields)
         return instance
 
 

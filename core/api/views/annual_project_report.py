@@ -372,6 +372,8 @@ class APRStatusView(APIView):
         {
             "status": "SUB"
         }
+        Submitted reports can only be re-submitted if they are unlocked.
+        When an unlocked vertsion is re-submitted, it becomes locked again.
         """
         agency_report = get_object_or_404(
             AnnualAgencyProjectReport, progress_report__year=year, agency_id=agency_id
@@ -393,6 +395,7 @@ class APRStatusView(APIView):
                 {
                     "message": "Report submitted successfully.",
                     "status": agency_report.status,
+                    "is_unlocked": agency_report.is_unlocked,
                     "submitted_at": agency_report.submitted_at,
                     "submitted_by": (
                         agency_report.submitted_by.username
@@ -510,8 +513,7 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
 
     def get_list_queryset(self, year):
         # MLFS users can only see submitted and locked Agency reports
-        # Otherwise, it is considered that they are under editing and should not be seen
-        # TODO: IA re-submitting an unlocked version should make it locked again
+        # Otherwise, it is considered that they are under editing and should not be seen.
         queryset = AnnualAgencyProjectReport.objects.filter(
             progress_report__year=year,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,

@@ -2491,3 +2491,220 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
         new_project_report = new_agency_report.project_reports.get(project=new_project)
         assert new_project_report.funds_disbursed is None
+
+
+@pytest.mark.django_db
+class TestAPRStatusView(BaseTest):
+    def test_without_login(self, annual_agency_report):
+        self.client.force_authenticate(user=None)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_viewer_cannot_submit(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_inputter_cannot_submit(
+        self, agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_submitter_can_submit_draft_report(
+        self, agency_user, annual_agency_report
+    ):
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        )
+        assert annual_agency_report.submitted_at is None
+        assert annual_agency_report.submitted_by is None
+        assert annual_agency_report.is_unlocked is False
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"] == "Report submitted successfully."
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert response.data["submitted_at"] is not None
+        assert response.data["submitted_by"] == agency_user.username
+
+        annual_agency_report.refresh_from_db()
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert annual_agency_report.submitted_at is not None
+        assert annual_agency_report.submitted_by == agency_user
+        assert annual_agency_report.is_unlocked is False
+
+    def test_mlfs_can_submit_draft_report(self, mlfs_admin_user, annual_agency_report):
+        self.client.force_authenticate(user=mlfs_admin_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_cannot_submit_already_submitted_locked_report(
+        self, agency_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.submitted_at = timezone.now()
+        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Cannot transition" in str(response.data)
+
+    def test_submit_unlocked_report_locks_it_again(
+        self, agency_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.submitted_at = timezone.now()
+        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.is_unlocked = True
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        annual_agency_report.refresh_from_db()
+        assert annual_agency_report.is_unlocked is False
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_explicit_status_in_request_body(self, agency_user, annual_agency_report):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {"status": AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_cannot_submit_other_agency_report(self, agency_user, annual_agency_report):
+        other_agency = AgencyFactory()
+        other_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_agency_report.progress_report, agency=other_agency
+        )
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": other_report.progress_report.year,
+                "agency_id": other_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_submit_nonexistent_report(self, agency_user, apr_year):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": apr_year,
+                "agency_id": 99999,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
