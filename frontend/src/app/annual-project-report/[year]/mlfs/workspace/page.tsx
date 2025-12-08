@@ -35,6 +35,7 @@ import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
+  AnnualProgressReport,
   APRFile,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
@@ -63,16 +64,28 @@ export default function APRMLFSWorkspace() {
 
   const {
     data: aprData,
-    loading,
-    loaded,
+    loading: loadingAprData,
+    loaded: loadedAprData,
     setParams,
-    refetch,
+    refetch: refetchAprData,
   } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/mlfs/${year}/agencies/`,
+  })
+  const {
+    data: progressReport,
+    loading: loadingReport,
+    loaded: loadedReport,
+    refetch: refetchReport,
+  } = useApi<AnnualProgressReport>({
+    options: {
+      withStoreCache: false,
+      triggerIf: canViewAPR && isMlfsUser,
+    },
+    path: `api/annual-project-report/${year}/endorse/`,
   })
 
   // Flatten project reports from all agencies and add agency info
@@ -172,8 +185,14 @@ export default function APRMLFSWorkspace() {
     return <NotFoundPage />
   }
 
-  const canEndorseAPR =
-    canEditAPR && aprData?.every((data) => data.status === 'submitted')
+  const canEndorseAPR = canEditAPR && progressReport?.is_endorsable
+  const loading = loadingReport || loadingAprData
+  const loaded = loadedReport || loadedAprData
+
+  const refetchData = () => {
+    refetchAprData()
+    refetchReport()
+  }
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
     const action = agencyData.is_unlocked ? 'lock' : 'unlock'
@@ -197,7 +216,7 @@ export default function APRMLFSWorkspace() {
         },
       )
 
-      refetch()
+      refetchData()
       enqueueSnackbar(<>Report {action} successful.</>, {
         variant: 'success',
       })
@@ -211,8 +230,11 @@ export default function APRMLFSWorkspace() {
 
   return (
     <PageWrapper>
-      <PageHeading className="min-w-fit">
-        {`MLFS Annual Project Report Workspace (${year})`}
+      <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
+        {`MLFS Annual Project Report Workspace`}{' '}
+        <span className="rounded border border-solid px-1 text-lg">
+          {year} {progressReport?.endorsed ? 'ENDORSED' : ''}
+        </span>
       </PageHeading>
 
       <Box className="shadow-none">
@@ -245,7 +267,7 @@ export default function APRMLFSWorkspace() {
             ></Tab>
           </Tabs>
           <Button
-            disabled={loading || !canEndorseAPR}
+            disabled={loading}
             className="mb-2"
             variant="contained"
             onClick={() => {
@@ -541,7 +563,10 @@ export default function APRMLFSWorkspace() {
       <EndorseAprModal
         isModalOpen={isEndorseModalOpen}
         setIsModalOpen={setIsEndorseModalOpen}
-        disabled={loading}
+        disabled={loading || !canEndorseAPR}
+        revalidateData={refetchData}
+        year={year}
+        currentData={progressReport}
       />
     </PageWrapper>
   )
