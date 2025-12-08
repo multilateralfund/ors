@@ -577,6 +577,8 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return (
             AnnualAgencyProjectReport.objects.filter(
                 progress_report__year=year,
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+                is_unlocked=False,
             )
             .select_related(
                 "progress_report",

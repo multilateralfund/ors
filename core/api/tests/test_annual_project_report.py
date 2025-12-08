@@ -1021,7 +1021,9 @@ class TestAPRGlobalViewSet(BaseTest):
         assert len(response.data[0]["project_reports"]) == 1
         assert response.data[0]["project_reports"][0]["country_name"] == country_ro.name
 
-    def test_unlocked_flag(self, mlfs_admin_user, apr_year, annual_progress_report):
+    def test_unlocked_flag_list(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
         agency = AgencyFactory()
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
@@ -1043,8 +1045,12 @@ class TestAPRGlobalViewSet(BaseTest):
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=mlfs_admin_user)
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
 
+        self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse(
             "apr-mlfs-detail",
             kwargs={
@@ -1060,12 +1066,41 @@ class TestAPRGlobalViewSet(BaseTest):
         assert len(response.data["project_reports"]) == 1
         assert response.data["project_reports"][0]["id"] == annual_project_report.id
 
+    def test_unlocked_flag_detail(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency = AgencyFactory()
+        # It's unlocked, so it should not be accessible!
+        annual_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-detail",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
     def test_get_report_nested_data(
         self, mlfs_admin_user, annual_agency_report, annual_project_report
     ):
         self.client.force_authenticate(user=mlfs_admin_user)
 
         AnnualProjectReportFileFactory(report=annual_agency_report)
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        annual_agency_report.save()
 
         url = reverse(
             "apr-mlfs-detail",
@@ -1080,22 +1115,6 @@ class TestAPRGlobalViewSet(BaseTest):
         assert "project_reports" in response.data
         assert "files" in response.data
         assert len(response.data["files"]) == 1
-
-    def test_get_report_superuser_can_access_all(
-        self, admin_user, annual_agency_report
-    ):
-        self.client.force_authenticate(user=admin_user)
-
-        url = reverse(
-            "apr-mlfs-detail",
-            kwargs={
-                "year": annual_agency_report.progress_report.year,
-                "agency_id": annual_agency_report.agency.id,
-            },
-        )
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
