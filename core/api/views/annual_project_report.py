@@ -652,7 +652,7 @@ class APREndorseView(APIView):
     Get or Endorse (via POST) the Annual Progress Report for a specific year.
 
     Endorsing marks *all* agency reports for that year as final and locked.
-    As a prerequisites, all agency reports must be SUBMITTED.
+    As a prerequisite, all agency reports must be SUBMITTED and locked.
     """
 
     permission_classes = [IsAuthenticated, HasMLFSFullAccess]
@@ -662,11 +662,18 @@ class APREndorseView(APIView):
         progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
         agency_reports = progress_report.agency_project_reports.all()
+
+        # Treating DRAFT and unlocked reports as "not ready for endorsement"
         draft_reports = agency_reports.filter(
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        ) | agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
         )
+
         submitted_reports = agency_reports.filter(
-            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         # Can only be endorsed if all reports are submitted
@@ -694,14 +701,20 @@ class APREndorseView(APIView):
 
         # Check that all agency reports are SUBMITTED
         agency_reports = progress_report.agency_project_reports.all()
+
+        # Treating DRAFT and unlocked reports as "not ready for endorsement"
         draft_reports = agency_reports.filter(
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        ) | agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
         )
+
         if draft_reports.exists():
             draft_agencies = [ar.agency.name for ar in draft_reports]
             raise ValidationError(
-                "Cannot endorse APR. The following agencies have DRAFT reports: "
-                f"{', '.join(draft_agencies)}"
+                "Cannot endorse APR. The following agencies have "
+                f"DRAFT or unlocked  reports: {', '.join(draft_agencies)}"
             )
 
         # Use serializer to validate and set endorsement fields, then endorse

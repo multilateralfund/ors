@@ -1381,6 +1381,51 @@ class TestAPREndorseView(BaseTest):
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_cannot_endorse_if_unlocked_reports_exist(
+        self, mlfs_admin_user, apr_year, annual_progress_report, meeting_apr_same_year
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        # Fixturing two submitted reports - one locked, one unlocked
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        unlocked_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+
+        # GET should show report as not endorsable
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_endorsable"] is False
+        assert response.data["total_agencies"] == 2
+        assert response.data["submitted_agencies"] == 1
+        assert response.data["draft_agencies"] == 1
+        assert unlocked_report.agency.name in response.data["draft_agency_names"]
+
+        # POST should fail to endorse
+        data = {
+            "date_endorsed": timezone.now().date().isoformat(),
+            "meeting_endorsed": meeting_apr_same_year.id,
+            "remarks_endorsed": "Should not work with unlocked reports.",
+        }
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "unlocked" in str(response.data).lower()
+        assert unlocked_report.agency.name in str(response.data)
+
     def test_endorse_already_endorsed(
         self, mlfs_admin_user, apr_year, annual_progress_report
     ):
