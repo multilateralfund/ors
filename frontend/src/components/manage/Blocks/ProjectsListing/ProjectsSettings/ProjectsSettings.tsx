@@ -249,7 +249,13 @@ const ProjectsSettings = ({
                           type,
                         )
                       }}
-                      inputProps={{ 'aria-label': 'controlled' }}
+                      inputProps={{ 'aria-label': 'controlled', tabIndex: 0 }}
+                      sx={{
+                        '&.Mui-focusVisible': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                        },
+                        color: 'black',
+                      }}
                     />
                   }
                   componentsProps={{
@@ -296,7 +302,11 @@ const ProjectsSettings = ({
                       checked={areSameEmails}
                       onChange={handleSameEmailsAsAbove}
                       size="small"
+                      inputProps={{ tabIndex: 0 }}
                       sx={{
+                        '&.Mui-focusVisible': {
+                          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                        },
                         color: 'black',
                       }}
                     />

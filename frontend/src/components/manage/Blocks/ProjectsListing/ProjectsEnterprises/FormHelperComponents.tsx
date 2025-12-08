@@ -14,6 +14,7 @@ import {
   handleChangeSelectValues,
   handleChangeTextValues,
 } from '../ProjectsEnterprises/utils'
+import { onTextareaFocus } from '../utils'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -49,6 +50,7 @@ export const EnterpriseTextField = <T,>({
       id={field}
       disabled={isDisabled}
       value={enterpriseData[field as keyof EnterpriseOverview]}
+      onFocus={onTextareaFocus}
       onChange={(event) =>
         handleChangeTextValues<T>(
           field,
@@ -168,6 +170,7 @@ export const EnterpriseTextAreaField = <T,>({
     <TextareaAutosize
       disabled={isDisabled}
       value={enterpriseData[field as keyof EnterpriseOverview] as string}
+      onFocus={onTextareaFocus}
       onChange={(event) =>
         handleChangeTextValues<T>(
           field,

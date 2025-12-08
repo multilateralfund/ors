@@ -1137,3 +1137,11 @@ export const filterApprovalFields = (
 
 export const formatFieldLabel = (label: string) =>
   label.replace(/(?<=CO)2/g, '₂')
+
+export const onTextareaFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+  setTimeout(() => {
+    const element = e.target
+    const textLength = element.value.length
+    element.setSelectionRange(textLength, textLength)
+  })
+}
