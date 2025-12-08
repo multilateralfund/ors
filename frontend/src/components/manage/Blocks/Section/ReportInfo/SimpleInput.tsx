@@ -7,6 +7,7 @@ const SimpleInput = ({
   defaultValue,
   disabled = false,
   label,
+  onFocus,
   onChange,
   type,
   value,
@@ -17,6 +18,7 @@ const SimpleInput = ({
   disabled?: boolean
   id: string
   label: string
+  onFocus?: (event: any) => void
   onChange?: (event: any) => void
   type: string
   value?: any
@@ -45,6 +47,7 @@ const SimpleInput = ({
         disabled={disabled}
         type={type}
         value={value}
+        onFocus={onFocus}
         onChange={onChange}
       />
     </div>

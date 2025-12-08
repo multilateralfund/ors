@@ -64,7 +64,13 @@ const ProjectBPLinking = ({
               checked={isLinkedToBP}
               onChange={handleChangeBPLink}
               size="small"
-              sx={{ color: 'black' }}
+              inputProps={{ tabIndex: 0 }}
+              sx={{
+                '&.Mui-focusVisible': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                },
+                color: 'black',
+              }}
             />
           }
           componentsProps={{ typography: { fontSize: '1rem' } }}

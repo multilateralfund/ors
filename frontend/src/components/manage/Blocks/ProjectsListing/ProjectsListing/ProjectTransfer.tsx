@@ -23,6 +23,7 @@ import { FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
 import { BpFilesObject } from '../../BusinessPlans/types'
+import { onTextareaFocus } from '../utils'
 import {
   FileMetaDataProps,
   ProjectTransferData,
@@ -230,6 +231,7 @@ const ProjectTransfer = ({
         <div className="flex items-center">
           <TextareaAutosize
             value={localExcom}
+            onFocus={onTextareaFocus}
             onChange={(e) => setLocalExcom(e.target.value)}
             onBlur={saveLocalExcom}
             className={cx(textAreaClassname, 'max-w-[435px]')}

@@ -263,6 +263,7 @@ const DesktopHeaderNavigation = ({
   const { updatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [crtUrl, setCrtUrl] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
   const [hideInProgress, setHideInProgress] = useState<
     Record<string, DebouncedFunc<any> | null>
@@ -447,6 +448,7 @@ const DesktopHeaderNavigation = ({
                                     onClick={() => {
                                       if (hasUnsavedChanges) {
                                         setIsCancelModalOpen(true)
+                                        setCrtUrl(subMenuItem.url)
                                       } else {
                                         setLocation(subMenuItem.url)
                                       }
@@ -454,14 +456,14 @@ const DesktopHeaderNavigation = ({
                                   >
                                     {subMenuItem.label}
                                   </ListItem>
-                                  {isCancelModalOpen && (
+                                  {isCancelModalOpen && !!crtUrl && (
                                     <CancelWarningModal
                                       mode={
                                         location.includes('/edit')
                                           ? 'editing'
                                           : 'creation'
                                       }
-                                      url={subMenuItem.url}
+                                      url={crtUrl}
                                       isModalOpen={isCancelModalOpen}
                                       setIsModalOpen={setIsCancelModalOpen}
                                     />
@@ -514,6 +516,7 @@ const MobileHeaderNavigation = ({
   const { updatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [crtUrl, setCrtUrl] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [openMenus, setOpenMenus] =
     useState<Record<string, boolean>>(initiallyExpanded)
@@ -676,6 +679,7 @@ const MobileHeaderNavigation = ({
                                               onClick={() => {
                                                 if (hasUnsavedChanges) {
                                                   setIsCancelModalOpen(true)
+                                                  setCrtUrl(subMenuItem.url)
                                                 } else {
                                                   setLocation(subMenuItem.url)
                                                 }
@@ -683,14 +687,14 @@ const MobileHeaderNavigation = ({
                                             >
                                               {subMenuItem.label}
                                             </ListItem>
-                                            {isCancelModalOpen && (
+                                            {isCancelModalOpen && !!crtUrl && (
                                               <CancelWarningModal
                                                 mode={
                                                   location.includes('/edit')
                                                     ? 'editing'
                                                     : 'creation'
                                                 }
-                                                url={subMenuItem.url}
+                                                url={crtUrl}
                                                 isModalOpen={isCancelModalOpen}
                                                 setIsModalOpen={
                                                   setIsCancelModalOpen

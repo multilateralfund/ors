@@ -58,6 +58,8 @@ export default function DateInput(props: IDateInputProps) {
         style={STYLE}
         type="date"
         value={value}
+        tabIndex={0}
+        onFocus={() => setInputMode(true)}
         onBlur={() => setInputMode(false)}
         onChange={onChange}
         {...rest}
@@ -70,6 +72,7 @@ export default function DateInput(props: IDateInputProps) {
         })}
         ref={maskInput}
         style={STYLE}
+        tabIndex={-1}
         type="text"
         value={maskDate}
         onChange={() => false}

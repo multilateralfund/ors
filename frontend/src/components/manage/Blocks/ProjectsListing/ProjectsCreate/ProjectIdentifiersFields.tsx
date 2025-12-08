@@ -494,7 +494,11 @@ const ProjectIdentifiersFields = ({
                     disabled={isProductionDisabled || !areNextSectionsDisabled}
                     onChange={handleChangeProduction}
                     size="small"
+                    inputProps={{ tabIndex: 0 }}
                     sx={{
+                      '&.Mui-focusVisible': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      },
                       color: 'black',
                     }}
                   />
@@ -535,10 +539,16 @@ const ProjectIdentifiersFields = ({
                   }
                   onChange={handleChangeSubmitOnBehalf}
                   size="small"
-                  sx={{ color: 'black' }}
+                  inputProps={{ tabIndex: 0 }}
+                  sx={{
+                    '&.Mui-focusVisible': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                    },
+                    color: 'black',
+                  }}
                 />
               }
-              componentsProps={{ typography: { fontSize: '1rem' } }}
+              componentsProps={{ typography: { fontSize: '1rem', mt: 0.5 } }}
             />
             <FieldErrorIndicator
               errors={errors}

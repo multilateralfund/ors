@@ -9,7 +9,7 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { canEditField, formatOptions } from '../utils'
+import { canEditField, formatOptions, onTextareaFocus } from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -319,6 +319,7 @@ export const TextWidget = <T,>(
           value={value}
           type="text"
           disabled={!canEditField(editableFields, fieldName)}
+          onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler[field.data_type]<T, SpecificFields>(
               event,
@@ -371,6 +372,7 @@ export const TextAreaWidget = <T,>(
         <TextareaAutosize
           value={value as string}
           disabled={!canEditField(editableFields, fieldName)}
+          onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler[field.data_type]<T, SpecificFields>(
               event,
@@ -517,7 +519,13 @@ const BooleanWidget = <T,>(
               index,
             )
           }
-          sx={{ color: 'black' }}
+          inputProps={{ tabIndex: 0 }}
+          sx={{
+            '&.Mui-focusVisible': {
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            },
+            color: 'black',
+          }}
         />
         <FieldErrorIndicator
           errors={

@@ -75,9 +75,7 @@ const getColumnDefs = (
                       )
                     }
                   }}
-                  sx={{
-                    color: 'black',
-                  }}
+                  sx={{ color: 'black' }}
                 />
               ),
             },

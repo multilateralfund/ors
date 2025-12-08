@@ -15,6 +15,7 @@ import {
   canGoToSecondStep,
   canViewField,
   hasFields,
+  onTextareaFocus,
 } from '../utils'
 import {
   tableColumns,
@@ -169,6 +170,7 @@ const ProjectCrossCuttingFields = ({
                   <SimpleInput
                     id="title"
                     value={title}
+                    onFocus={onTextareaFocus}
                     onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                       changeHandler['text']<ProjectData, CrossCuttingFields>(
                         event,
@@ -195,6 +197,7 @@ const ProjectCrossCuttingFields = ({
                 <div className="flex items-center">
                   <TextareaAutosize
                     value={description}
+                    onFocus={onTextareaFocus}
                     onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
                       changeHandler['text']<ProjectData, CrossCuttingFields>(
                         event,
