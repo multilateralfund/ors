@@ -167,7 +167,9 @@ class TestAPRWorkspaceView(BaseTest):
         # Create report for a different agency to check it can't be accessed
         other_agency = AgencyFactory()
         other_report = AnnualAgencyProjectReportFactory(
-            progress_report=annual_progress_report, agency=other_agency
+            progress_report=annual_progress_report,
+            agency=other_agency,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=agency_viewer_user)
@@ -672,6 +674,7 @@ class TestAPRFileDownloadView(BaseTest):
         other_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_agency_report.progress_report,
             agency=other_agency,
+            is_unlocked=False,
         )
         file_obj = AnnualProjectReportFileFactory(report=other_report)
 
@@ -856,11 +859,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=secretariat_viewer_user)
@@ -884,11 +889,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -896,8 +903,9 @@ class TestAPRGlobalViewSet(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        # For now, MLFS "full access" users can even access draft reports
-        assert len(response.data) == 2
+        # MLFS "full access" users cannot access draft reports
+        assert len(response.data) == 1
+        assert response.data[0]["agency_id"] == agency1.id
 
     def test_filter_by_agency(self, mlfs_admin_user, apr_year, annual_progress_report):
         agency1 = AgencyFactory()
@@ -907,11 +915,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -937,11 +947,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         project_ong = ProjectFactory(
@@ -991,6 +1003,7 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(country=country_ro, agency=agency)
         project_new = ProjectFactory(country=new_country, agency=agency)
@@ -1022,7 +1035,7 @@ class TestAPRGlobalViewSet(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data[0]["is_unlocked"] is True
+        assert len(response.data) == 0
 
     def test_get_report_detail(
         self,
@@ -1277,11 +1290,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1309,6 +1324,7 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1331,11 +1347,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1373,11 +1391,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1403,11 +1423,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         draft_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1433,6 +1455,7 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report_endorsed,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1506,6 +1529,7 @@ class TestAPRExportView(BaseTest):
         other_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_agency_report.progress_report,
             agency=other_agency,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=agency_viewer_user)
@@ -1848,11 +1872,13 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         project1 = ProjectFactory(
@@ -1938,6 +1964,7 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(
             agency=agency, code="12345", version=3, latest_project=None
@@ -1980,6 +2007,7 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report_endorsed,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(agency=agency, version=3, latest_project=None)
         project_report = AnnualProjectReportFactory(report=report, project=project)

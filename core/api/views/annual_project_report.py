@@ -509,8 +509,13 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return queryset
 
     def get_list_queryset(self, year):
+        # MLFS users can only see submitted and locked Agency reports
+        # Otherwise, it is considered that they are under editing and should not be seen
+        # TODO: IA re-submitting an unlocked version should make it locked again
         queryset = AnnualAgencyProjectReport.objects.filter(
             progress_report__year=year,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         ).select_related(
             "progress_report",
             "agency",
