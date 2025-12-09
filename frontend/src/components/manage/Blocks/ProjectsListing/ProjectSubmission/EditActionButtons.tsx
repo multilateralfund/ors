@@ -173,19 +173,6 @@ const EditActionButtons = ({
     [projectSpecificFields, project, specificFields],
   )
 
-  const specificErrorsApproval = useMemo(
-    () =>
-      getSpecificFieldsErrors(
-        projectSpecificFields,
-        specificFields.filter(({ is_actual }) => !is_actual),
-        {},
-        'edit',
-        canEditApprovedProjects,
-        project,
-      ),
-    [projectSpecificFields, project, specificFields],
-  )
-
   const hasOdsOdpFields = find(
     specificFields,
     (field) => field.table === 'ods_odp',
@@ -215,9 +202,7 @@ const EditActionButtons = ({
 
   const hasErrors =
     commonErrors ||
-    (isAfterApproval
-      ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
-      : hasSectionErrors(impactErrors)) ||
+    (!isApproved && hasSectionErrors(impactErrors)) ||
     (isRecommended &&
       dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 

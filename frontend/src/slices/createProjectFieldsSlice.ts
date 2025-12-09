@@ -47,27 +47,26 @@ export const createProjectFieldsSlice = ({
       const editableFields = fields
         .filter(
           ({ editable_in_versions, is_actual, section, write_field_name }) => {
+            if (section === 'MYA') {
+              return false
+            }
+
             const isFieldNotV3Editable = ['bp_activity'].includes(
               write_field_name,
             )
 
             if (!isFieldNotV3Editable) {
               if (
-                !isPostExcom &&
                 mode === 'edit' &&
-                submissionStatus === 'Approved'
+                submissionStatus === 'Approved' &&
+                !isPostExcom
               ) {
-                return canEditAll
-                  ? section !== 'Approval' &&
-                      (section !== 'Impact' || is_actual)
-                  : is_actual
+                return (
+                  section !== 'Approval' && (section !== 'Impact' || is_actual)
+                )
               }
 
-              if (
-                canEditAll &&
-                mode === 'edit' &&
-                submissionStatus === 'Not approved'
-              ) {
+              if (mode === 'edit' && submissionStatus === 'Not approved') {
                 return section !== 'Approval'
               }
 
@@ -80,8 +79,11 @@ export const createProjectFieldsSlice = ({
 
               if (isPostExcom) {
                 return (
-                  section !== 'Approval' ||
-                  postExcomEditableApprovalFields.includes(write_field_name)
+                  (section !== 'Approval' ||
+                    postExcomEditableApprovalFields.includes(
+                      write_field_name,
+                    )) &&
+                  (section !== 'Impact' || is_actual)
                 )
               }
             }

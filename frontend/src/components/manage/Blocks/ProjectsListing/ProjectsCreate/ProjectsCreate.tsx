@@ -549,15 +549,8 @@ const ProjectsCreate = ({
         <ProjectImpact
           sectionFields={impactFields}
           errors={impactErrors}
-          {...{
-            projectData,
-            setProjectData,
-            project,
-            setCurrentTab,
-            postExComUpdate,
-            hasV3EditPermissions,
-          }}
           nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
+          {...{ projectData, setProjectData, setCurrentTab }}
         />
       ),
       errors: formatErrors(impactPlannedErrors),
@@ -731,6 +724,7 @@ const ProjectsCreate = ({
               <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
+                  !canEditApprovedProjects &&
                   currentTab === 0 && (
                     <CustomAlert
                       type="info"
