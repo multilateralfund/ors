@@ -372,6 +372,8 @@ class APRStatusView(APIView):
         {
             "status": "SUB"
         }
+        Submitted reports can only be re-submitted if they are unlocked.
+        When an unlocked vertsion is re-submitted, it becomes locked again.
         """
         agency_report = get_object_or_404(
             AnnualAgencyProjectReport, progress_report__year=year, agency_id=agency_id
@@ -393,6 +395,7 @@ class APRStatusView(APIView):
                 {
                     "message": "Report submitted successfully.",
                     "status": agency_report.status,
+                    "is_unlocked": agency_report.is_unlocked,
                     "submitted_at": agency_report.submitted_at,
                     "submitted_by": (
                         agency_report.submitted_by.username
@@ -509,8 +512,12 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return queryset
 
     def get_list_queryset(self, year):
+        # MLFS users can only see submitted and locked Agency reports
+        # Otherwise, it is considered that they are under editing and should not be seen.
         queryset = AnnualAgencyProjectReport.objects.filter(
             progress_report__year=year,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         ).select_related(
             "progress_report",
             "agency",
@@ -570,6 +577,8 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         return (
             AnnualAgencyProjectReport.objects.filter(
                 progress_report__year=year,
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+                is_unlocked=False,
             )
             .select_related(
                 "progress_report",
@@ -643,7 +652,7 @@ class APREndorseView(APIView):
     Get or Endorse (via POST) the Annual Progress Report for a specific year.
 
     Endorsing marks *all* agency reports for that year as final and locked.
-    As a prerequisites, all agency reports must be SUBMITTED.
+    As a prerequisite, all agency reports must be SUBMITTED and locked.
     """
 
     permission_classes = [IsAuthenticated, HasMLFSFullAccess]
@@ -653,11 +662,18 @@ class APREndorseView(APIView):
         progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
         agency_reports = progress_report.agency_project_reports.all()
+
+        # Treating DRAFT and unlocked reports as "not ready for endorsement"
         draft_reports = agency_reports.filter(
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        ) | agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
         )
+
         submitted_reports = agency_reports.filter(
-            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         # Can only be endorsed if all reports are submitted
@@ -685,14 +701,20 @@ class APREndorseView(APIView):
 
         # Check that all agency reports are SUBMITTED
         agency_reports = progress_report.agency_project_reports.all()
+
+        # Treating DRAFT and unlocked reports as "not ready for endorsement"
         draft_reports = agency_reports.filter(
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        ) | agency_reports.filter(
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
         )
+
         if draft_reports.exists():
             draft_agencies = [ar.agency.name for ar in draft_reports]
             raise ValidationError(
-                "Cannot endorse APR. The following agencies have DRAFT reports: "
-                f"{', '.join(draft_agencies)}"
+                "Cannot endorse APR. The following agencies have "
+                f"DRAFT or unlocked  reports: {', '.join(draft_agencies)}"
             )
 
         # Use serializer to validate and set endorsement fields, then endorse

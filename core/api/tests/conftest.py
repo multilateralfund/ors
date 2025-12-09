@@ -1501,8 +1501,8 @@ def multiple_meetings_apr_same_year(apr_year):
     return [
         MeetingFactory.create(
             number=10 + i,
-            date=f"{apr_year}-{i}-14",
-            end_date=f"{apr_year}-{i}-15",
+            date=date(apr_year, i, 14),
+            end_date=date(apr_year, i, 15),
         )
         for i in range(1, 3)
     ]
@@ -1512,8 +1512,8 @@ def multiple_meetings_apr_same_year(apr_year):
 def meeting_apr_same_year(apr_year):
     return MeetingFactory.create(
         number=29,
-        date=f"{apr_year}-4-14",
-        end_date=f"{apr_year}-4-15",
+        date=date(apr_year, 4, 14),
+        end_date=date(apr_year, 4, 15),
     )
 
 
@@ -1521,8 +1521,8 @@ def meeting_apr_same_year(apr_year):
 def meeting_apr_next_year(apr_year):
     return MeetingFactory.create(
         number=19,
-        date=f"{apr_year + 1}-4-14",
-        end_date=f"{apr_year + 1}-4-15",
+        date=date(apr_year + 1, 4, 14),
+        end_date=date(apr_year + 1, 4, 15),
     )
 
 
@@ -1610,6 +1610,7 @@ def late_post_excom_versions_for_apr(
         date_approved=date(2021, 6, 1),
         code="TEST/COM/INV/01",
         version=4,
+        latest_project=None,
         post_excom_decision=decision_apr_next_year,
         total_fund=200000.0,
         support_cost_psc=20000.0,

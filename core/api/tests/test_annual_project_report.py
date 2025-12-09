@@ -167,7 +167,9 @@ class TestAPRWorkspaceView(BaseTest):
         # Create report for a different agency to check it can't be accessed
         other_agency = AgencyFactory()
         other_report = AnnualAgencyProjectReportFactory(
-            progress_report=annual_progress_report, agency=other_agency
+            progress_report=annual_progress_report,
+            agency=other_agency,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=agency_viewer_user)
@@ -672,6 +674,7 @@ class TestAPRFileDownloadView(BaseTest):
         other_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_agency_report.progress_report,
             agency=other_agency,
+            is_unlocked=False,
         )
         file_obj = AnnualProjectReportFileFactory(report=other_report)
 
@@ -856,11 +859,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=secretariat_viewer_user)
@@ -884,11 +889,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -896,8 +903,9 @@ class TestAPRGlobalViewSet(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        # For now, MLFS "full access" users can even access draft reports
-        assert len(response.data) == 2
+        # MLFS "full access" users cannot access draft reports
+        assert len(response.data) == 1
+        assert response.data[0]["agency_id"] == agency1.id
 
     def test_filter_by_agency(self, mlfs_admin_user, apr_year, annual_progress_report):
         agency1 = AgencyFactory()
@@ -907,11 +915,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -937,11 +947,13 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         project_ong = ProjectFactory(
@@ -991,6 +1003,7 @@ class TestAPRGlobalViewSet(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(country=country_ro, agency=agency)
         project_new = ProjectFactory(country=new_country, agency=agency)
@@ -1008,7 +1021,9 @@ class TestAPRGlobalViewSet(BaseTest):
         assert len(response.data[0]["project_reports"]) == 1
         assert response.data[0]["project_reports"][0]["country_name"] == country_ro.name
 
-    def test_unlocked_flag(self, mlfs_admin_user, apr_year, annual_progress_report):
+    def test_unlocked_flag_list(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
         agency = AgencyFactory()
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
@@ -1022,7 +1037,7 @@ class TestAPRGlobalViewSet(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data[0]["is_unlocked"] is True
+        assert len(response.data) == 0
 
     def test_get_report_detail(
         self,
@@ -1030,8 +1045,12 @@ class TestAPRGlobalViewSet(BaseTest):
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=mlfs_admin_user)
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
 
+        self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse(
             "apr-mlfs-detail",
             kwargs={
@@ -1047,12 +1066,41 @@ class TestAPRGlobalViewSet(BaseTest):
         assert len(response.data["project_reports"]) == 1
         assert response.data["project_reports"][0]["id"] == annual_project_report.id
 
+    def test_unlocked_flag_detail(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency = AgencyFactory()
+        # It's unlocked, so it should not be accessible!
+        annual_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-detail",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
     def test_get_report_nested_data(
         self, mlfs_admin_user, annual_agency_report, annual_project_report
     ):
         self.client.force_authenticate(user=mlfs_admin_user)
 
         AnnualProjectReportFileFactory(report=annual_agency_report)
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        annual_agency_report.save()
 
         url = reverse(
             "apr-mlfs-detail",
@@ -1067,22 +1115,6 @@ class TestAPRGlobalViewSet(BaseTest):
         assert "project_reports" in response.data
         assert "files" in response.data
         assert len(response.data["files"]) == 1
-
-    def test_get_report_superuser_can_access_all(
-        self, admin_user, annual_agency_report
-    ):
-        self.client.force_authenticate(user=admin_user)
-
-        url = reverse(
-            "apr-mlfs-detail",
-            kwargs={
-                "year": annual_agency_report.progress_report.year,
-                "agency_id": annual_agency_report.agency.id,
-            },
-        )
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -1277,11 +1309,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1309,6 +1343,7 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1331,11 +1366,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1343,6 +1380,51 @@ class TestAPREndorseView(BaseTest):
         response = self.client.post(url, {}, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_cannot_endorse_if_unlocked_reports_exist(
+        self, mlfs_admin_user, apr_year, annual_progress_report, meeting_apr_same_year
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        # Fixturing two submitted reports - one locked, one unlocked
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        unlocked_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+
+        # GET should show report as not endorsable
+        url = reverse("apr-endorse", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_endorsable"] is False
+        assert response.data["total_agencies"] == 2
+        assert response.data["submitted_agencies"] == 1
+        assert response.data["draft_agencies"] == 1
+        assert unlocked_report.agency.name in response.data["draft_agency_names"]
+
+        # POST should fail to endorse
+        data = {
+            "date_endorsed": timezone.now().date().isoformat(),
+            "meeting_endorsed": meeting_apr_same_year.id,
+            "remarks_endorsed": "Should not work with unlocked reports.",
+        }
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "unlocked" in str(response.data).lower()
+        assert unlocked_report.agency.name in str(response.data)
 
     def test_endorse_already_endorsed(
         self, mlfs_admin_user, apr_year, annual_progress_report
@@ -1373,11 +1455,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1403,11 +1487,13 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         draft_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1433,6 +1519,7 @@ class TestAPREndorseView(BaseTest):
             progress_report=annual_progress_report_endorsed,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1506,6 +1593,7 @@ class TestAPRExportView(BaseTest):
         other_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_agency_report.progress_report,
             agency=other_agency,
+            is_unlocked=False,
         )
 
         self.client.force_authenticate(user=agency_viewer_user)
@@ -1787,6 +1875,10 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         annual_agency_report,
         late_post_excom_versions_for_apr,
     ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
         # Below, we are also setting the project to the *latest* (next-year) version,
         # to check the logic still behaves correctly.
         annual_report = AnnualProjectReportFactory(
@@ -1848,11 +1940,13 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency1,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             agency=agency2,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
 
         project1 = ProjectFactory(
@@ -1938,6 +2032,7 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(
             agency=agency, code="12345", version=3, latest_project=None
@@ -1980,6 +2075,7 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
             progress_report=annual_progress_report_endorsed,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
         )
         project = ProjectFactory(agency=agency, version=3, latest_project=None)
         project_report = AnnualProjectReportFactory(report=report, project=project)
@@ -2463,3 +2559,220 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
         new_project_report = new_agency_report.project_reports.get(project=new_project)
         assert new_project_report.funds_disbursed is None
+
+
+@pytest.mark.django_db
+class TestAPRStatusView(BaseTest):
+    def test_without_login(self, annual_agency_report):
+        self.client.force_authenticate(user=None)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_viewer_cannot_submit(
+        self, agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_inputter_cannot_submit(
+        self, agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_submitter_can_submit_draft_report(
+        self, agency_user, annual_agency_report
+    ):
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        )
+        assert annual_agency_report.submitted_at is None
+        assert annual_agency_report.submitted_by is None
+        assert annual_agency_report.is_unlocked is False
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"] == "Report submitted successfully."
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert response.data["submitted_at"] is not None
+        assert response.data["submitted_by"] == agency_user.username
+
+        annual_agency_report.refresh_from_db()
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert annual_agency_report.submitted_at is not None
+        assert annual_agency_report.submitted_by == agency_user
+        assert annual_agency_report.is_unlocked is False
+
+    def test_mlfs_can_submit_draft_report(self, mlfs_admin_user, annual_agency_report):
+        self.client.force_authenticate(user=mlfs_admin_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_cannot_submit_already_submitted_locked_report(
+        self, agency_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.submitted_at = timezone.now()
+        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Cannot transition" in str(response.data)
+
+    def test_submit_unlocked_report_locks_it_again(
+        self, agency_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.submitted_at = timezone.now()
+        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.is_unlocked = True
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        annual_agency_report.refresh_from_db()
+        assert annual_agency_report.is_unlocked is False
+        assert (
+            annual_agency_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_explicit_status_in_request_body(self, agency_user, annual_agency_report):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {"status": AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+    def test_cannot_submit_other_agency_report(self, agency_user, annual_agency_report):
+        other_agency = AgencyFactory()
+        other_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_agency_report.progress_report, agency=other_agency
+        )
+
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": other_report.progress_report.year,
+                "agency_id": other_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_submit_nonexistent_report(self, agency_user, apr_year):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": apr_year,
+                "agency_id": 99999,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_404_NOT_FOUND

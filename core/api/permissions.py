@@ -293,7 +293,6 @@ class HasAPRSubmitAccess(permissions.BasePermission):
         else:
             agency_report = obj
 
-        # TODO: we should let MLFS users submit, right?
         if request.user.has_perm("core.can_view_all_agencies"):
             return True
 
