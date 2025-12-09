@@ -724,6 +724,7 @@ const ProjectsCreate = ({
               <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
+                  !canEditApprovedProjects &&
                   currentTab === 0 && (
                     <CustomAlert
                       type="info"

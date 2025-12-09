@@ -47,6 +47,10 @@ export const createProjectFieldsSlice = ({
       const editableFields = fields
         .filter(
           ({ editable_in_versions, is_actual, section, write_field_name }) => {
+            if (section === 'MYA') {
+              return false
+            }
+
             const isFieldNotV3Editable = ['bp_activity'].includes(
               write_field_name,
             )
