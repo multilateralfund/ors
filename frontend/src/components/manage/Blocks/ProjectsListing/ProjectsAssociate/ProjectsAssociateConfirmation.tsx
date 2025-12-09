@@ -205,6 +205,7 @@ const ProjectsAssociateConfirmation = ({
     lead_agency_id: null,
   })
   const [errors, setErrors] = useState(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
     loaded: false,
@@ -242,7 +243,6 @@ const ProjectsAssociateConfirmation = ({
   const onlyMetaProjects = !(isOriginalProjIndiv || isAssociatedProjIndiv)
 
   const [leadAgencyId, setLeadAgencyId] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const originalProjLeadAgencyId = crtProjects[0].lead_agency
   const associatedProjLeadAgencyId = loadedAssociatedProjects
