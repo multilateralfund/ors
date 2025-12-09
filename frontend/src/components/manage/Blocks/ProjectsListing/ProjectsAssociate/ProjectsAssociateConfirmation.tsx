@@ -9,7 +9,6 @@ import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEd
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Loading from '@ors/components/theme/Loading/Loading'
-import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
@@ -25,9 +24,10 @@ import {
 import useApi from '@ors/hooks/useApi'
 import { api } from '@ors/helpers'
 
-import { Button, Checkbox, Typography } from '@mui/material'
+import { Button, Checkbox, CircularProgress, Typography } from '@mui/material'
 import { debounce, filter, map } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 
 type MetaProjectType = {
   metaproject_id: number | null
@@ -198,12 +198,14 @@ const ProjectsAssociateConfirmation = ({
   const form = useRef<any>()
   const { agencies } = useContext(ProjectsDataContext)
 
+  const [_, setLocation] = useLocation()
+
   const [metaProjectData, setMetaProjectData] = useState<MetaProjectType>({
     metaproject_id: null,
     lead_agency_id: null,
   })
   const [errors, setErrors] = useState(null)
-  const [finalMetaCode, setFinalMetaCode] = useState(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
     loaded: false,
@@ -275,6 +277,7 @@ const ProjectsAssociateConfirmation = ({
   }
 
   const associateProjects = async () => {
+    setIsLoading(true)
     setErrors(null)
 
     try {
@@ -289,10 +292,14 @@ const ProjectsAssociateConfirmation = ({
         method: 'POST',
       })
 
-      setFinalMetaCode(response.umbrella_code)
+      enqueueSnackbar(
+        <>Projects were associated in meta-project {response.umbrella_code}.</>,
+        {
+          variant: 'success',
+        },
+      )
+      setLocation('/projects-listing/listing')
     } catch (error) {
-      setFinalMetaCode(null)
-
       const errors = await error.json()
 
       if (error.status === 400) {
@@ -302,6 +309,8 @@ const ProjectsAssociateConfirmation = ({
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -326,12 +335,18 @@ const ProjectsAssociateConfirmation = ({
               title="Submit"
               isDisabled={
                 !(loadedAssociatedProjects && leadAgencyId) ||
-                !!finalMetaCode ||
                 (onlyMetaProjects && !metaProjectData.metaproject_id)
               }
               onSubmit={associateProjects}
               className="h-9"
             />
+            {isLoading && (
+              <CircularProgress
+                color="inherit"
+                size="30px"
+                className="ml-1.5"
+              />
+            )}
           </div>
         </div>
         <p className="my-0">
@@ -410,23 +425,6 @@ const ProjectsAssociateConfirmation = ({
           type="error"
           alertClassName="mb-5"
           content={<Typography className="text-lg">{errors}</Typography>}
-        />
-      )}
-      {finalMetaCode && (
-        <CustomAlert
-          type="success"
-          alertClassName="BPAlert mt-4"
-          content={
-            <Link
-              className="text-xl text-inherit no-underline"
-              href="/projects-listing/listing"
-            >
-              <p className="m-0 mt-0.5 text-lg">
-                Projects were associated in meta-project {finalMetaCode}.{' '}
-                <span className="underline">View projects.</span>
-              </p>
-            </Link>
-          }
         />
       )}
     </>
