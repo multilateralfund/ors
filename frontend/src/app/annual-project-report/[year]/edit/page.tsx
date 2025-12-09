@@ -92,7 +92,13 @@ export default function APREdit() {
     return <NotFoundPage />
   }
 
-  const canUpdateAPR = isMlfsUser || apr?.status === 'draft' || apr?.is_unlocked
+  const canUpdateAPR =
+    (isMlfsUser &&
+      !apr?.every(
+        (reportAgency: AnnualAgencyProjectReport) => reportAgency.is_endorsed,
+      )) ||
+    apr?.status === 'draft' ||
+    apr?.is_unlocked
 
   const exportAll = async () => {
     if (!gridRef.current) {
