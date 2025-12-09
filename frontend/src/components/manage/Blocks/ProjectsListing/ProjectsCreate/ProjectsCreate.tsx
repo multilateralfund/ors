@@ -731,17 +731,15 @@ const ProjectsCreate = ({
               <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
-                  project?.version === 2 &&
-                  !hasV3EditPermissions &&
                   currentTab === 0 && (
                     <CustomAlert
                       type="info"
                       alertClassName="mb-3"
                       content={
                         <Typography className="text-lg leading-5">
-                          Any mistake in completing the Identifiers fields will
-                          require the project to be resubmitted with the correct
-                          information.
+                          {project?.version === 2
+                            ? 'The Identifiers fields cannot be edited anymore. If there was a mistake in completing them, the project needs to be resubmitted with the correct information.'
+                            : "After the project's submission, the Identifiers fields cannot be further edited. Any mistake in completing them will require the project to be resubmitted with the correct information."}
                         </Typography>
                       }
                     />
