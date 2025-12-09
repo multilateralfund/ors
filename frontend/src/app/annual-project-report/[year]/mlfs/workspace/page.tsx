@@ -310,7 +310,7 @@ export default function APRMLFSWorkspace() {
             ></Tab>
           </Tabs>
           <div className="mb-2 flex gap-x-2">
-            {canEditAPR && (
+            {canEditAPR && activeTab === 0 && (
               <Button
                 disabled={loading}
                 variant="contained"
@@ -536,10 +536,9 @@ export default function APRMLFSWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                // href={`/${year}/edit`}
-                disabled={true}
+                href={`/${year}/edit`}
               >
-                Update APR
+                Update APR (tabs)
               </MlfsLink>
               <Button variant="text" startIcon={<FiTable size={18} />} disabled>
                 Generate summary tables

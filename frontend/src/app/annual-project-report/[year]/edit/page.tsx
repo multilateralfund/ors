@@ -47,18 +47,23 @@ export default function APREdit() {
   const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   const [activeTab, setActiveTab] = useState(0)
-  const { canEditAPR } = useContext(PermissionsContext)
+  const { canEditAPR, isMlfsUser } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
+
+  const getPath = isMlfsUser
+    ? `api/annual-project-report/mlfs/${year}/agencies/`
+    : `api/annual-project-report/${year}/workspace/`
   const {
     data: apr,
     loading,
     loaded,
     refetch,
-  } = useApi<AnnualAgencyProjectReport>({
+  } = useApi<any>({
     options: {
       withStoreCache: false,
+      triggerIf: canEditAPR,
     },
-    path: `api/annual-project-report/${year}/workspace/`,
+    path: getPath,
   })
   const [rows, setRows] = useState<AnnualProjectReport[]>([])
 
@@ -68,8 +73,13 @@ export default function APREdit() {
       return
     }
 
-    setRows(apr.project_reports)
-  }, [apr])
+    const aprRows: AnnualProjectReport[] = isMlfsUser
+      ? apr.flatMap((agencyData: AnnualAgencyProjectReport) =>
+          structuredClone(agencyData.project_reports),
+        )
+      : apr.project_reports
+    setRows(aprRows)
+  }, [apr, isMlfsUser])
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     group: TABS[activeTab].fieldsGroup,
@@ -78,12 +88,11 @@ export default function APREdit() {
     setRows,
   })
 
-  // TODO: change later for mlfs
-  if (!canEditAPR || !user.agency_id) {
+  if (!canEditAPR) {
     return <NotFoundPage />
   }
 
-  const isDraft = apr?.status === 'draft' || apr?.is_unlocked
+  const canUpdateAPR = isMlfsUser || apr?.status === 'draft' || apr?.is_unlocked
 
   const exportAll = async () => {
     if (!gridRef.current) {
@@ -96,15 +105,15 @@ export default function APREdit() {
     })
 
     try {
-      await api(
-        `api/annual-project-report/${year}/agency/${user.agency_id}/update/`,
-        {
-          data: {
-            project_reports: allData,
-          },
-          method: 'POST',
+      const updatePath = isMlfsUser
+        ? `api/annual-project-report/mlfs/${year}/bulk-update/`
+        : `api/annual-project-report/${year}/agency/${user.agency_id}/update/`
+      await api(updatePath, {
+        data: {
+          project_reports: allData,
         },
-      )
+        method: 'POST',
+      })
 
       refetch()
       enqueueSnackbar(<>Saved APR.</>, {
@@ -154,7 +163,7 @@ export default function APREdit() {
             })}
           </Tabs>
           <Button
-            disabled={loading || !isDraft}
+            disabled={loading || !canUpdateAPR}
             className="mb-2"
             variant="contained"
             onClick={exportAll}
