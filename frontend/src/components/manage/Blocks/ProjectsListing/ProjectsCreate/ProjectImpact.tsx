@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canViewField } from '../utils'
@@ -26,21 +24,18 @@ const ProjectImpact = ({
     (state) => state.projectFields,
   )
 
-  const ImpactFields = useMemo(
-    () => (fields: ProjectSpecificFields[]) =>
-      fields.map(
-        (field) =>
-          canViewField(viewableFields, field.write_field_name) &&
-          widgets[field.data_type]<ProjectData>(
-            projectData,
-            setProjectData,
-            field,
-            errors,
-            editableFields,
-          ),
-      ),
-    [editableFields],
-  )
+  const ImpactFields = (fields: ProjectSpecificFields[]) =>
+    fields.map(
+      (field) =>
+        canViewField(viewableFields, field.write_field_name) &&
+        widgets[field.data_type]<ProjectData>(
+          projectData,
+          setProjectData,
+          field,
+          errors,
+          editableFields,
+        ),
+    )
 
   return (
     <>
