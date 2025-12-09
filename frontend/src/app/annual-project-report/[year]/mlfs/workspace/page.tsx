@@ -20,7 +20,7 @@ import useApi from '@ors/hooks/useApi.ts'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
-import getColumnDefs, {
+import useGetColumnDefs, {
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
@@ -184,7 +184,7 @@ export default function APRMLFSWorkspace() {
       })
     }
 
-  const { columnDefs: columnDefs, defaultColDef } = getColumnDefs({
+  const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     inlineEdit: canEditAPR && isMlfsUser,
   })
 

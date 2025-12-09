@@ -10,7 +10,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import { useStore } from '@ors/store.tsx'
 import cx from 'classnames'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
-import getColumnDefs, {
+import useGetColumnDefs, {
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { AgGridReact } from 'ag-grid-react'
@@ -70,7 +70,7 @@ export default function APREdit() {
     setRows(apr.project_reports)
   }, [apr])
 
-  const { columnDefs, defaultColDef } = getColumnDefs({
+  const { columnDefs, defaultColDef } = useGetColumnDefs({
     group: TABS[activeTab].fieldsGroup,
     clipboardEdit: true,
     rows,

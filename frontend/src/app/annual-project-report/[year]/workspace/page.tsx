@@ -10,7 +10,7 @@ import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
-import getColumnDefs, {
+import useGetColumnDefs, {
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
@@ -57,6 +57,8 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
   })
 
+  const { columnDefs, defaultColDef } = useGetColumnDefs()
+
   if (!canViewAPR) {
     return <NotFoundPage />
   }
@@ -64,7 +66,6 @@ export default function APRWorkspace() {
     return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
 
-  const { columnDefs, defaultColDef } = getColumnDefs()
 
   const choosableStatuses = projectStatuses.filter(
     (status) => !MANDATORY_STATUSES.includes(status.code),
