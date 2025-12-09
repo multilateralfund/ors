@@ -1,4 +1,5 @@
 import openpyxl
+from django.db.models import Q
 from django.db.models import QuerySet
 
 from core.api.export.base import WriteOnlyBase
@@ -123,10 +124,15 @@ class ProjectsV2AssociatedProjectsExport:
     def get_associated_projects(self) -> QuerySet[Project]:
         result = Project.objects.none()
 
+        project_filters = Q()
         if self.project.meta_project:
-            result = Project.objects.filter(
-                meta_project=self.project.meta_project
-            ).exclude(component=self.project.component)
+            project_filters &= Q(meta_project=self.project.meta_project)
+        elif self.project.component is not None:
+            project_filters &= Q(component=self.project.component)
+        else:
+            project_filters &= Q(id=self.project.id)
+
+        result = Project.objects.filter(project_filters).exclude(id=self.project.id)
 
         return result
 
