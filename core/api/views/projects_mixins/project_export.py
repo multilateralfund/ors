@@ -3,6 +3,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 
+from core.api.export.projects_v2_dump import ProjectsV2Dump
 from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
 from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
 from core.api.export.single_project_v2.associated_projects_as_xlsx import (
@@ -54,12 +55,15 @@ class ProjectExportMixin:
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
         output_format = request.query_params.get("output_format", "xlsx")
+        really_all = request.query_params.get("really_all", "false") == "true"
         if project_id:
             project = self.get_object()
             if output_format == "xlsx":
                 return ProjectsV2ProjectExport(project, request.user).export_xls()
             if output_format == "docx":
                 return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
+        if really_all:
+            return ProjectsV2Dump(self).export()
         return ProjectsV2Export(self).export_xls()
 
     @swagger_auto_schema(
