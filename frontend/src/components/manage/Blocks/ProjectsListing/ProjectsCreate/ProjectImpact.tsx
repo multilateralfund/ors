@@ -8,61 +8,26 @@ import {
   ProjectData,
   ProjectTabSetters,
   ProjectSpecificFields,
-  ProjectTypeApi,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
-import { chunk, find, isArray, isNull } from 'lodash'
+import { chunk, find } from 'lodash'
 import cx from 'classnames'
 
 const ProjectImpact = ({
   projectData,
   setProjectData,
-  project,
   sectionFields,
   errors = {},
   setCurrentTab,
-  postExComUpdate,
   nextStep,
-  hasV3EditPermissions,
-}: SpecificFieldsSectionProps &
-  ProjectTabSetters & {
-    project?: ProjectTypeApi
-    postExComUpdate: boolean
-    nextStep: number
-    hasV3EditPermissions: boolean
-  }) => {
-  const { viewableFields, editableFields, projectFields } = useStore(
+}: SpecificFieldsSectionProps & ProjectTabSetters & { nextStep: number }) => {
+  const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const filteredEditableFields = editableFields.filter((field) => {
-    const allFields = isArray(projectFields)
-      ? projectFields
-      : projectFields?.data
 
-    const fieldData = allFields.find(
-      (projField) => projField.write_field_name === field,
-    )
-
-    if (!postExComUpdate) {
-      if (
-        hasV3EditPermissions &&
-        project?.submission_status === 'Approved' &&
-        fieldData &&
-        fieldData.section === 'Impact' &&
-        !fieldData.is_actual
-      ) {
-        return isNull(project[field as keyof ProjectTypeApi])
-      } else {
-        return true
-      }
-    }
-
-    return fieldData && (fieldData.section !== 'Impact' || fieldData.is_actual)
-  })
-
-  const ImpactFields = useMemo(() => {
-    return (fields: ProjectSpecificFields[]) =>
+  const ImpactFields = useMemo(
+    () => (fields: ProjectSpecificFields[]) =>
       fields.map(
         (field) =>
           canViewField(viewableFields, field.write_field_name) &&
@@ -71,10 +36,11 @@ const ProjectImpact = ({
             setProjectData,
             field,
             errors,
-            filteredEditableFields,
+            editableFields,
           ),
-      )
-  }, [filteredEditableFields])
+      ),
+    [editableFields],
+  )
 
   return (
     <>
