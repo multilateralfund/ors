@@ -189,6 +189,7 @@ export default function useGetColumnDefs({
         cellEditorParams: {
           Input: { placeholder: 'Select status' },
           openOnFocus: true,
+          allowEmptyStringOnClear: true,
           options: projectStatuses,
           getOptionLabel: (option: any) =>
             isObject(option)
@@ -204,7 +205,7 @@ export default function useGetColumnDefs({
             (status) => status.code === params.value,
           )
 
-          return <span>{status?.name}</span>
+          return <span>{status?.name ?? ''}</span>
         },
       },
     },
