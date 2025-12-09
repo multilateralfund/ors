@@ -17,7 +17,7 @@ class ProjectWriter(WriteOnlyBase):
     header_row_start_idx = 1
     COLUMN_WIDTH = 20
 
-    def __init__(self, sheet):
+    def __init__(self, sheet, user):
         headers = [
             {
                 "id": "self_project_code",
@@ -82,6 +82,7 @@ class ProjectWriter(WriteOnlyBase):
                 "id": "blanket_or_individual_consideration",
                 "headerName": "Blanket approval/Individual consideration",
                 "method": get_blanket_consideration_value,
+                "permission": "core.is_mlfs_user",
             },
             {
                 "id": "version",
@@ -89,7 +90,14 @@ class ProjectWriter(WriteOnlyBase):
             },
         ]
 
-        super().__init__(sheet, headers)
+        allowed_headers = []
+
+        for header in headers:
+            perm = header.get("permission", None)
+            if perm and user.has_perm(perm) or perm is None:
+                allowed_headers.append(header)
+
+        super().__init__(sheet, allowed_headers)
 
 
 class ProjectsV2AssociatedProjectsExport:
@@ -97,7 +105,7 @@ class ProjectsV2AssociatedProjectsExport:
     wb: openpyxl.Workbook
     project: Project
 
-    def __init__(self, project, user):
+    def __init__(self, project: Project, user: User):
         self.user = user
         self.project = project
         self.setup_workbook()
@@ -110,7 +118,7 @@ class ProjectsV2AssociatedProjectsExport:
 
     def build(self, data):
         sheet = self.add_sheet("Associated projects")
-        ProjectWriter(sheet).write(data)
+        ProjectWriter(sheet, user=self.user).write(data)
 
     def get_associated_projects(self) -> QuerySet[Project]:
         result = Project.objects.none()
