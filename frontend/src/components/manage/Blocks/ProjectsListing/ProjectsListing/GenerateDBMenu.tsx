@@ -20,8 +20,13 @@ const GenerateDBMenu = ({
   const menuItems = useMemo(
     () => [
       {
-        title: 'Project (MYA) warehouse',
-        url: '/projects-listing/export',
+        title: 'MYA warehouse',
+        url: '/projects-listing/export/mya',
+        permissions: [canViewProjects],
+      },
+      {
+        title: 'Projects warehouse',
+        url: '/projects-listing/export/all',
         permissions: [canViewProjects],
       },
       {

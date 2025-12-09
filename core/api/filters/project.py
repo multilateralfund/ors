@@ -103,6 +103,11 @@ class ProjectFilter(filters.FilterSet):
         widget=CSVWidget,
         method="filter_blanket_or_individual_consideration",
     )
+    category = filters.MultipleChoiceFilter(
+        field_name="category",
+        choices=Project.Category.choices,
+        widget=CSVWidget,
+    )
     date_received = filters.DateFromToRangeFilter(field_name="date_received")
     meta_project__isnull = filters.BooleanFilter(
         field_name="meta_project",

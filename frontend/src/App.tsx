@@ -50,7 +50,7 @@ import BPUpload from '@ors/app/business-plans/upload/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
-import ProjectsExportPage from '@ors/app/projects_listing/export/page'
+import ProjectsExportPage from '@ors/app/projects_listing/export/[export_type]/page.tsx'
 import ProjectsApprovalSummaryPage from '@ors/app/projects_listing/approval-summary/page'
 import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects/page'
 import BlanketApprovalDetailsPage from '@ors/app/projects_listing/blanket-approval-details/page'
@@ -305,7 +305,7 @@ export default function App() {
             <ProjectsAssociationPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/export">
+        <Route path="/projects-listing/export/:export_type">
           <ProjectsDataProvider>
             <ProjectsExportPage />
           </ProjectsDataProvider>

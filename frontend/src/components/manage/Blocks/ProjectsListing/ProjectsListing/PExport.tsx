@@ -12,20 +12,31 @@ import { formatApiUrl } from '@ors/helpers'
 import { initialFilters } from '../constants'
 import Link from '@ors/components/ui/Link/Link'
 
-export default function PExport() {
+export default function PExport({
+  export_type,
+}: {
+  export_type: 'mya' | 'all'
+}) {
   const form = useRef<any>()
 
   const { canViewProjects } = useContext(PermissionsContext)
 
   const downloadUrlBase = '/api/projects/v2/export'
 
-  const [filters, setFilters] = useState<Record<string, any>>({
-    ...initialFilters,
-  })
+  const firstLoadFilters = useMemo(() => {
+    if (export_type === 'all') {
+      return { ...initialFilters, really_all: true }
+    } else if (export_type === 'mya') {
+      return { ...initialFilters, category: 'Multi-year agreement' }
+    }
+    return { ...initialFilters }
+  }, [export_type])
+
+  const [filters, setFilters] = useState<Record<string, any>>(firstLoadFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const projectFilters = useGetProjectFilters(filters)
-  const projects = useGetProjects(initialFilters)
+  const projects = useGetProjects(firstLoadFilters)
   const { loading, params, setParams } = projects
 
   const downloadUrl = useMemo(() => {
@@ -47,7 +58,7 @@ export default function PExport() {
             {...{
               form,
               filters,
-              initialFilters,
+              firstLoadFilters,
               setFilters,
               setParams,
               projectFilters,

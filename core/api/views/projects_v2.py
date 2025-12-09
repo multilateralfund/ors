@@ -319,7 +319,10 @@ class ProjectV2ViewSet(
         return queryset.none()
 
     def get_queryset(self):
-        if self.action in ["export", "retrieve"]:
+        requests_really_all = (
+            self.request.query_params.get("really_all", "false") == "true"
+        )
+        if self.action in ["retrieve"] or requests_really_all:
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
@@ -392,6 +395,21 @@ class ProjectV2ViewSet(
                 description="Returns the projects with date_received equal or before this date",
                 type=openapi.TYPE_STRING,
                 format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "category",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_STRING,
+                    enum=Project.Category.values,
+                ),
+            ),
+            openapi.Parameter(
+                "really_all",
+                openapi.IN_QUERY,
+                description="Queries ALL projects.",
+                type=openapi.TYPE_BOOLEAN,
             ),
         ],
         operation_description="V2 listing endpoint that allow listing, filtering and ordering the projects.",

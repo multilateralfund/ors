@@ -1,18 +1,19 @@
 from django.http import HttpResponseBadRequest
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework.decorators import action
 
+from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
+from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
 from core.api.export.single_project_v2.associated_projects_as_xlsx import (
     ProjectsV2AssociatedProjectsExport,
 )
 from core.api.views.projects_export import ProjectsV2Export
-from core.api.export.single_project_v2.as_xlsx import ProjectsV2ProjectExport
-from core.api.export.single_project_v2.as_docx import ProjectsV2ProjectExportDocx
+from core.models import Project
 
 
 class ProjectExportMixin:
+
     @swagger_auto_schema(
         operation_description="""
         V2 projects endpoint for exporting projects.
@@ -31,6 +32,21 @@ class ProjectExportMixin:
                 type=openapi.TYPE_STRING,
                 enum=["xlsx", "docx"],
                 default="xlsx",
+            ),
+            openapi.Parameter(
+                "category",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_STRING,
+                    enum=Project.Category.values,
+                ),
+            ),
+            openapi.Parameter(
+                "really_all",
+                openapi.IN_QUERY,
+                description="Queries ALL projects.",
+                type=openapi.TYPE_BOOLEAN,
             ),
         ],
     )
