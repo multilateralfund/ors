@@ -28,13 +28,16 @@ class APRExportWriter:
         This ensures consistency between serializer and Excel export.
         """
         excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
-        # Map fields to columns (1-indexed)
+        # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
-    def __init__(self, year, agency_name, project_reports_data):
+    def __init__(self, year, agency_name=None, project_reports_data=None):
+        """
+        If agency_name is None, the report includes all agencies
+        """
         self.year = year
         self.agency_name = agency_name
-        self.project_reports_data = project_reports_data
+        self.project_reports_data = project_reports_data or []
         self.workbook = None
         self.worksheet = None
         self.column_mapping = self.build_column_mapping()
@@ -110,10 +113,14 @@ class APRExportWriter:
         return value if not isinstance(value, str) else str(value)
 
     def _create_response(self):
-        safe_agency_name = "".join(
-            c for c in self.agency_name if c.isalnum() or c in (" ", "-", "_")
-        ).strip()
-        filename = f"APR_{self.year}_{safe_agency_name}.xlsx"
+        if self.agency_name:
+            safe_agency_name = "".join(
+                c for c in self.agency_name if c.isalnum() or c in (" ", "-", "_")
+            ).strip()
+            filename = f"APR_{self.year}_{safe_agency_name}.xlsx"
+        else:
+            # This is a multi-agency report (for MLFS to edit)
+            filename = f"APR_{self.year}_All_Agencies.xlsx"
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
