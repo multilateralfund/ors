@@ -739,7 +739,7 @@ const ProjectsCreate = ({
                       alertClassName="mb-3"
                       content={
                         <Typography className="text-lg leading-5">
-                          Any mistake in completing the identifier fields will
+                          Any mistake in completing the Identifiers fields will
                           require the project to be resubmitted with the correct
                           information.
                         </Typography>
