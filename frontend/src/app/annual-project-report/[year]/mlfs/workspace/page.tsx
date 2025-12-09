@@ -35,6 +35,7 @@ import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
   AnnualProgressReport,
+  AnnualProjectReport,
   APRFile,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
@@ -240,6 +241,36 @@ export default function APRMLFSWorkspace() {
     }
   }
 
+  const saveAPR = async () => {
+    if (!gridRef.current) {
+      return
+    }
+
+    const allData: AnnualProjectReport[] = []
+    gridRef.current.api.forEachNode((node) => {
+      allData.push(node.data)
+    })
+
+    try {
+      await api(`api/annual-project-report/mlfs/${year}/bulk-update/`, {
+        data: {
+          project_reports: allData,
+        },
+        method: 'POST',
+      })
+
+      refetchData()
+      enqueueSnackbar(<>Saved APR.</>, {
+        variant: 'success',
+      })
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
+  }
+
   return (
     <PageWrapper>
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
@@ -278,16 +309,27 @@ export default function APRMLFSWorkspace() {
               aria-controls="tabpanel-submissions"
             ></Tab>
           </Tabs>
-          <Button
-            disabled={loading}
-            className="mb-2"
-            variant="contained"
-            onClick={() => {
-              setIsEndorseModalOpen(true)
-            }}
-          >
-            Endorse
-          </Button>
+          <div className="mb-2 flex gap-x-2">
+            {canEditAPR && (
+              <Button
+                disabled={loading}
+                variant="contained"
+                color="secondary"
+                onClick={saveAPR}
+              >
+                Save
+              </Button>
+            )}
+            <Button
+              disabled={loading}
+              variant="contained"
+              onClick={() => {
+                setIsEndorseModalOpen(true)
+              }}
+            >
+              Endorse
+            </Button>
+          </div>
         </div>
 
         <div

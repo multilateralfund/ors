@@ -53,6 +53,7 @@ export default function APREdit() {
     data: apr,
     loading,
     loaded,
+    refetch,
   } = useApi<AnnualAgencyProjectReport>({
     options: {
       withStoreCache: false,
@@ -105,6 +106,7 @@ export default function APREdit() {
         },
       )
 
+      refetch()
       enqueueSnackbar(<>Saved APR.</>, {
         variant: 'success',
       })
