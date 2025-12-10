@@ -2797,8 +2797,8 @@ class TestAPRMLFSExportView(BaseTest):
     def test_mlfs_viewer_can_export_all_agencies(
         self, secretariat_viewer_user, apr_year, annual_progress_report
     ):
-        agency1 = AgencyFactory()
-        agency2 = AgencyFactory()
+        agency1 = AgencyFactory(name="A")
+        agency2 = AgencyFactory(name="B")
 
         report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
@@ -2842,9 +2842,17 @@ class TestAPRMLFSExportView(BaseTest):
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
         assert data_rows == 2
-        # TODO: test two projects from two agencies
+
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+        columns = APRExportWriter.build_column_mapping()
+        project_col = columns["project_code"]
+
+        project_1_value = worksheet.cell(first_data_row, project_col).value
+        assert project_1_value == project1.code
+        project_2_value = worksheet.cell(first_data_row + 1, project_col).value
+        assert project_2_value == project2.code
 
     def test_only_submitted_and_locked_reports_exported(
         self, mlfs_admin_user, apr_year, annual_progress_report
@@ -2893,9 +2901,14 @@ class TestAPRMLFSExportView(BaseTest):
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
         assert data_rows == 1
-        # TODO: test only the submitted and locked report
+
+        project_col = APRExportWriter.build_column_mapping()["project_code"]
+        project_1_value = worksheet.cell(
+            APRExportWriter.FIRST_DATA_ROW, project_col
+        ).value
+        assert project_1_value == project1.code
 
     def test_filter_by_agency(self, mlfs_admin_user, apr_year, annual_progress_report):
         agency1 = AgencyFactory(name="Agency One")
@@ -2928,9 +2941,14 @@ class TestAPRMLFSExportView(BaseTest):
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
         assert data_rows == 1
-        # TODO: test only agency1's project
+
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+        columns = APRExportWriter.build_column_mapping()
+        agency_col = columns["agency_name"]
+        agency_value = worksheet.cell(first_data_row, agency_col).value
+        assert agency_value == "Agency One"
 
     def test_filter_by_country(
         self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
@@ -2969,9 +2987,12 @@ class TestAPRMLFSExportView(BaseTest):
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
         assert data_rows == 1
-        # TODO: test only project1
+
+        country_column = APRExportWriter.build_column_mapping()["country_name"]
+        country = worksheet.cell(APRExportWriter.FIRST_DATA_ROW, country_column).value
+        assert country == country_ro.name
 
     def test_filter_by_project_status(
         self,
@@ -2980,6 +3001,7 @@ class TestAPRMLFSExportView(BaseTest):
         annual_progress_report,
         project_ongoing_status,
         project_completed_status,
+        project_closed_status,
     ):
         agency = AgencyFactory()
 
@@ -2991,31 +3013,49 @@ class TestAPRMLFSExportView(BaseTest):
         )
 
         project1 = ProjectFactory(
+            code="TEST/ONG/INV/01",
             agency=agency,
             status=project_ongoing_status,
             version=3,
             latest_project=None,
         )
         project2 = ProjectFactory(
+            code="TEST/COM/INV/02",
             agency=agency,
             status=project_completed_status,
+            version=3,
+            latest_project=None,
+        )
+        project3 = ProjectFactory(
+            code="TEST/CLO/INV/03s",
+            agency=agency,
+            status=project_closed_status,
             version=3,
             latest_project=None,
         )
 
         AnnualProjectReportFactory(report=report, project=project1)
         AnnualProjectReportFactory(report=report, project=project2)
+        AnnualProjectReportFactory(report=report, project=project3)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        # This will actually include both ONG and COM, but not CLO
         response = self.client.get(url, {"status": "ONG"})
 
         assert response.status_code == status.HTTP_200_OK
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
-        assert data_rows == 1
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 2
+
+        code_column = APRExportWriter.build_column_mapping()["project_code"]
+        first_code = worksheet.cell(APRExportWriter.FIRST_DATA_ROW, code_column).value
+        second_code = worksheet.cell(
+            APRExportWriter.FIRST_DATA_ROW + 1, code_column
+        ).value
+        assert {first_code, second_code} == {project1.code, project2.code}
 
     def test_empty_export_with_headers(
         self, mlfs_admin_user, apr_year, annual_progress_report
@@ -3030,8 +3070,16 @@ class TestAPRMLFSExportView(BaseTest):
         worksheet = workbook[APRExportWriter.SHEET_NAME]
 
         # Should have headers but no data rows (or one empty template row)
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
-        assert data_rows <= 1
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        # This is just an empty "template" data row
+        assert data_rows == 1
+        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
+        columns = APRExportWriter.build_column_mapping()
+        row_values = [
+            worksheet.cell(first_data_row, col).value
+            for col in range(1, len(columns) + 1)
+        ]
+        assert all(value is None or value == "" for value in row_values)
 
     def test_duplicate_project_codes_across_agencies(
         self, mlfs_admin_user, apr_year, annual_progress_report
@@ -3077,13 +3125,13 @@ class TestAPRMLFSExportView(BaseTest):
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
-        assert data_rows == 0
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 2
 
     def test_agencies_ordered_by_name(
         self, mlfs_admin_user, apr_year, annual_progress_report
     ):
-        agency_z = AgencyFactory(name="Zebra")
+        agency_z = AgencyFactory(name="Zero")
         agency_a = AgencyFactory(name="Alpha")
         agency_o = AgencyFactory(name="Omega")
 
@@ -3113,7 +3161,7 @@ class TestAPRMLFSExportView(BaseTest):
         assert worksheet.cell(first_row + 1, agency_col).value == "Omega"
         assert worksheet.cell(first_row + 2, agency_col).value == "Zero"
 
-    def test_nonexistent_year(self, mlfs_admin_user):
+    def test_empty_export_nonexistent_year(self, mlfs_admin_user):
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": 9999})
         response = self.client.get(url)
@@ -3123,4 +3171,13 @@ class TestAPRMLFSExportView(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
         data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
-        assert data_rows == 0
+
+        # This is just an empty "template" data row
+        assert data_rows == 1
+        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
+        columns = APRExportWriter.build_column_mapping()
+        row_values = [
+            worksheet.cell(first_data_row, col).value
+            for col in range(1, len(columns) + 1)
+        ]
+        assert all(value is None or value == "" for value in row_values)

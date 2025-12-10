@@ -932,6 +932,11 @@ class APRMLFSExportView(APIView):
         # Build the filter parameters for the nested project reports
         filter_params = {}
 
+        agency_param = self.request.query_params.get("agency")
+        if agency_param:
+            agency_ids = [a.strip() for a in agency_param.split(",") if a.strip()]
+            queryset = queryset.filter(agency_id__in=agency_ids)
+
         country_param = self.request.query_params.get("country")
         if country_param:
             country_names = [c.strip() for c in country_param.split(",") if c.strip()]
@@ -977,8 +982,7 @@ class APRMLFSExportView(APIView):
             "project__ods_odp__ods_blend",
         )
 
-        # Prefetch the filtered project reports
-        # TODO: what should the ordering be here? the same as for the global view?
+        # Prefetch the filtered project reports and order the same as the global view
         queryset = queryset.prefetch_related(
             Prefetch("project_reports", queryset=project_reports_qs)
         ).order_by("agency__name")
