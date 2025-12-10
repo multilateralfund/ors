@@ -47,6 +47,7 @@ export default function APRWorkspace() {
     data: apr,
     loading,
     loaded,
+    params,
     setParams,
     refetch,
   } = useApi<AnnualAgencyProjectReport>({
@@ -169,6 +170,7 @@ export default function APRWorkspace() {
               startIcon={<FiDownload size={18} />}
               href={formatApiUrl(
                 `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+                params,
               )}
             >
               Export APR

@@ -77,6 +77,7 @@ export default function APRMLFSWorkspace() {
     data: aprData,
     loading: loadingAprData,
     loaded: loadedAprData,
+    params,
     setParams,
     refetch: refetchAprData,
   } = useApi<AnnualAgencyProjectReport[]>({
@@ -186,7 +187,9 @@ export default function APRMLFSWorkspace() {
     }
 
   const canEndorseAPR = canEditAPR && progressReport?.is_endorsable
-  const canUpdateAPR = Boolean(canEditAPR && progressReport && !progressReport.endorsed)
+  const canUpdateAPR = Boolean(
+    canEditAPR && progressReport && !progressReport.endorsed,
+  )
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     inlineEdit: isMlfsUser && canUpdateAPR,
   })
@@ -527,9 +530,10 @@ export default function APRMLFSWorkspace() {
               <Button
                 variant="text"
                 startIcon={<FiDownload size={18} />}
-                // href={formatApiUrl(
-                //   `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                // )}
+                href={formatApiUrl(
+                  `api/annual-project-report/mlfs/${year}/export/`,
+                  params,
+                )}
               >
                 Export APR
               </Button>

@@ -1,6 +1,7 @@
 import { store } from '@ors/_store'
 import { addTrailingSlash, removeFirstSlash } from '@ors/helpers/Url/Url'
 import config from '@ors/registry'
+import { removeEmptyValues } from '@ors/helpers'
 
 export function delayExecution(ms: number) {
   return new Promise((resolve) => {
@@ -8,14 +9,14 @@ export function delayExecution(ms: number) {
   })
 }
 
-export function formatApiUrl(path: string) {
+export function formatApiUrl(path: string, params?: Record<string, any>) {
   // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   let adjustedPath,
     apiPath = ''
   const settings = store.current.getState().settings
   const headers = null
-  const protocol = (settings?.protocol)?.split(',')[0]
+  const protocol = settings?.protocol?.split(',')[0]
   const host = settings?.host
 
   if (config.settings.apiPath) {
@@ -29,5 +30,17 @@ export function formatApiUrl(path: string) {
   adjustedPath =
     adjustedPath !== '/' ? addTrailingSlash(adjustedPath) : adjustedPath
 
-  return `${apiPath}${adjustedPath}`
+  let url = `${apiPath}${adjustedPath}`
+
+  if (params) {
+    const querystring = new URLSearchParams(
+      removeEmptyValues(params),
+    ).toString()
+
+    if (querystring) {
+      url += `?${querystring}`
+    }
+  }
+
+  return url
 }
