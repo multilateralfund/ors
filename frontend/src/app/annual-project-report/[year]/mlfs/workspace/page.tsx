@@ -605,34 +605,43 @@ export default function APRMLFSWorkspace() {
                             </span>
                           </div>
                           <div className="flex items-center gap-x-4">
-                            {agencyData.status === 'submitted' && (
-                              <>
-                                <Button
-                                  className="hover:!text-mlfs-hlYellow group-hover:text-white"
-                                  variant="text"
-                                  startIcon={
-                                    agencyData.is_unlocked ? (
-                                      <FiLock size={18} />
-                                    ) : (
-                                      <FiUnlock size={18} />
-                                    )
-                                  }
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    changeLockStatus(agencyData)
-                                  }}
-                                  disabled={loading}
-                                >
-                                  {agencyData.is_unlocked ? 'Lock' : 'Unlock'}
-                                </Button>
-                                <span className="text-sm font-medium">
-                                  Submitted:{' '}
-                                  <span className="font-bold">
-                                    {formatDate(agencyData.submitted_at)}
-                                  </span>
-                                </span>
-                              </>
+                            <Button
+                              className="hover:!text-mlfs-hlYellow group-hover:text-white"
+                              variant="text"
+                              startIcon={
+                                agencyData.is_unlocked ? (
+                                  <FiLock size={18} />
+                                ) : (
+                                  <FiUnlock size={18} />
+                                )
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                changeLockStatus(agencyData)
+                              }}
+                              disabled={loading}
+                            >
+                              {agencyData.is_unlocked ? 'Lock' : 'Unlock'}
+                            </Button>
+                            {agencyData.files.length > 0 && (
+                              <Button
+                                className="hover:!text-mlfs-hlYellow group-hover:text-white"
+                                variant="text"
+                                startIcon={<FiDownload size={18} />}
+                                href={formatApiUrl(
+                                  `api/annual-project-report/${year}/agency/${agencyData.agency_id}/files/download-all/`,
+                                )}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Download all files
+                              </Button>
                             )}
+                            <span className="text-sm font-medium">
+                              Submitted:{' '}
+                              <span className="font-bold">
+                                {formatDate(agencyData.submitted_at)}
+                              </span>
+                            </span>
                           </div>
                         </div>
                       </AccordionSummary>
