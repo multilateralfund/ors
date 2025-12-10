@@ -30,13 +30,16 @@ const ProjectImpact = ({
     map(
       fields,
       (field) =>
-        canViewField(viewableFields, field.write_field_name) &&
-        viewModesHandler[field.data_type](
-          project,
-          field,
-          undefined,
-          getFieldHistory(field.write_field_name, field.data_type),
-          !!hasActualFields,
+        canViewField(viewableFields, field.write_field_name) && (
+          <span key={field.write_field_name}>
+            {viewModesHandler[field.data_type](
+              project,
+              field,
+              undefined,
+              getFieldHistory(field.write_field_name, field.data_type),
+              !!hasActualFields,
+            )}
+          </span>
         ),
     )
 
