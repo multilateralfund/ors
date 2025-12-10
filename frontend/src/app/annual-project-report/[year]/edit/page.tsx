@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
-import BackToWorkspace from '@ors/components/manage/Blocks/AnnualProgressReport/BackToWorkspace.tsx'
+import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import { useParams } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import { Alert, Box, Tab, Tabs } from '@mui/material'
@@ -134,7 +134,10 @@ export default function APREdit() {
 
   return (
     <PageWrapper>
-      <BackToWorkspace year={year} />
+      <BackLink
+        url={`/${year}/workspace`}
+        text="Annual Progress Report Workspace"
+      />
       <PageHeading className="min-w-fit">
         <span className="font-normal">Update: </span>
         {`Annual Progress Report (${year})`}

@@ -29,6 +29,7 @@ import {
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
 import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
+import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -91,6 +92,8 @@ export default function APRWorkspace() {
 
   return (
     <PageWrapper>
+      {/* "~" means absolute, outside the nested context */}
+      <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <div className="mb-2 flex justify-between">
         <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
         <div className="flex gap-x-2">

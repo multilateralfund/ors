@@ -2,14 +2,12 @@ import React from 'react'
 import { IoReturnUpBack } from 'react-icons/io5'
 import { Link } from 'wouter'
 
-export default function BackToWorkspace({ year }: { year?: string }) {
-  const url = year ? `/${year}/workspace` : '/apr'
-
+export default function BackLink({ url, text }: { url: string; text: string }) {
   return (
-    <Link className="text-black no-underline max-w-fit inline-block" href={url}>
+    <Link className="inline-block max-w-fit text-black no-underline" href={url}>
       <div className="mb-2 flex items-center gap-2 text-lg uppercase">
         <IoReturnUpBack size={18} />
-        Annual Progress Report Workspace
+        {text}
       </div>
     </Link>
   )

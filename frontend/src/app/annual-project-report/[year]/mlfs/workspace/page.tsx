@@ -58,6 +58,7 @@ import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/Sta
 import MlfsLink from '@ors/components/ui/Link/Link.tsx'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
+import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
@@ -347,6 +348,8 @@ export default function APRMLFSWorkspace() {
 
   return (
     <PageWrapper>
+      {/* "~" means absolute, outside the nested context */}
+      <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
         {`MLFS Annual Project Report Workspace`}{' '}
         <span className="rounded border border-solid px-1 text-lg">
