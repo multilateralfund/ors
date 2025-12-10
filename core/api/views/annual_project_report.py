@@ -699,10 +699,8 @@ class APREndorseView(APIView):
 
     permission_classes = [IsAuthenticated, HasMLFSFullAccess]
 
-    def get(self, request, year):
-        """Gets the endorsement status for the APR year."""
-        progress_report = get_object_or_404(AnnualProgressReport, year=year)
-
+    @staticmethod
+    def _get_draft_and_submitted(progress_report):
         agency_reports = progress_report.agency_project_reports.all()
 
         # Treating DRAFT and unlocked reports as "not ready for endorsement"
@@ -718,8 +716,22 @@ class APREndorseView(APIView):
             is_unlocked=False,
         )
 
+        return draft_reports, submitted_reports
+
+    def get(self, request, year):
+        """Gets the endorsement status for the APR year."""
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
+
+        draft_reports, submitted_reports = self._get_draft_and_submitted(
+            progress_report
+        )
+
         # Can only be endorsed if all reports are submitted
-        is_endorsable = not progress_report.endorsed and draft_reports.count() == 0
+        is_endorsable = (
+            not progress_report.endorsed
+            and draft_reports.count() == 0
+            and submitted_reports.count() > 0
+        )
 
         serializer = AnnualProgressReportSerializer(progress_report)
 
@@ -727,7 +739,7 @@ class APREndorseView(APIView):
             {
                 **serializer.data,
                 "is_endorsable": is_endorsable,
-                "total_agencies": agency_reports.count(),
+                "total_agencies": progress_report.agency_project_reports.count(),
                 "submitted_agencies": submitted_reports.count(),
                 "draft_agencies": draft_reports.count(),
                 "draft_agency_names": [ar.agency.name for ar in draft_reports],
@@ -741,22 +753,20 @@ class APREndorseView(APIView):
         """
         progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
-        # Check that all agency reports are SUBMITTED
-        agency_reports = progress_report.agency_project_reports.all()
-
-        # Treating DRAFT and unlocked reports as "not ready for endorsement"
-        draft_reports = agency_reports.filter(
-            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT
-        ) | agency_reports.filter(
-            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
-            is_unlocked=True,
+        draft_reports, submitted_reports = self._get_draft_and_submitted(
+            progress_report
         )
 
         if draft_reports.exists():
             draft_agencies = [ar.agency.name for ar in draft_reports]
             raise ValidationError(
                 "Cannot endorse APR. The following agencies have "
-                f"DRAFT or unlocked  reports: {', '.join(draft_agencies)}"
+                f"DRAFT or unlocked reports: {', '.join(draft_agencies)}"
+            )
+
+        if not submitted_reports.exists():
+            raise ValidationError(
+                "Cannot endorse APR. No agencies have submitted reports."
             )
 
         # Use serializer to validate and set endorsement fields, then endorse
@@ -777,7 +787,7 @@ class APREndorseView(APIView):
                         else None
                     ),
                     "remarks_endorsed": progress_report.remarks_endorsed,
-                    "total_agencies": agency_reports.count(),
+                    "total_agencies": progress_report.agency_project_reports.count(),
                 },
                 status=status.HTTP_200_OK,
             )
