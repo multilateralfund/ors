@@ -66,7 +66,6 @@ export default function APRWorkspace() {
     return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
 
-
   const choosableStatuses = projectStatuses.filter(
     (status) => !MANDATORY_STATUSES.includes(status.code),
   )
@@ -178,7 +177,7 @@ export default function APRWorkspace() {
               variant="text"
               startIcon={<FiEdit size={18} />}
               href={`/${year}/edit`}
-              disabled={!isDraft}
+              disabled={!isDraft || !canEditAPR}
             >
               Update APR
             </Link>
