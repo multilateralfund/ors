@@ -127,7 +127,7 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Number of enterprises",
     "Aggregated consumption",
     "Cost effectiveness (US$/ Kg)",
-    "Cost effectiveness (US$/ CO₂-eq)",
+    "Cost effectiveness (US$/ CO2-eq)",
 ]
 
 
