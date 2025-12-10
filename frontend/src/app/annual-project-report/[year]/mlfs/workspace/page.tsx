@@ -186,8 +186,9 @@ export default function APRMLFSWorkspace() {
     }
 
   const canEndorseAPR = canEditAPR && progressReport?.is_endorsable
+  const canUpdateAPR = Boolean(canEditAPR && progressReport && !progressReport.endorsed)
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
-    inlineEdit: isMlfsUser && canEndorseAPR,
+    inlineEdit: isMlfsUser && canUpdateAPR,
   })
 
   // Redirect non-MLFS users to the agency workspace
@@ -310,7 +311,7 @@ export default function APRMLFSWorkspace() {
             ></Tab>
           </Tabs>
           <div className="mb-2 flex gap-x-2">
-            {activeTab === 0 && canEndorseAPR && (
+            {activeTab === 0 && canUpdateAPR && (
               <Button
                 disabled={loading}
                 variant="contained"
@@ -537,7 +538,7 @@ export default function APRMLFSWorkspace() {
                 variant="text"
                 startIcon={<FiEdit size={18} />}
                 href={`/${year}/edit`}
-                disabled={!canEndorseAPR}
+                disabled={!canUpdateAPR}
               >
                 Update APR (tabs)
               </MlfsLink>

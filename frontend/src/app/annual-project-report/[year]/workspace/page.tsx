@@ -86,6 +86,7 @@ export default function APRWorkspace() {
     }
 
   const isDraft = apr?.status === 'draft' || apr?.is_unlocked
+  const canUpdateAPR = canEditAPR && isDraft
 
   return (
     <PageWrapper>
@@ -177,7 +178,7 @@ export default function APRWorkspace() {
               variant="text"
               startIcon={<FiEdit size={18} />}
               href={`/${year}/edit`}
-              disabled={!isDraft || !canEditAPR}
+              disabled={!canUpdateAPR}
             >
               Update APR
             </Link>
@@ -204,7 +205,7 @@ export default function APRWorkspace() {
           agencyId={user.agency_id}
           oldFiles={apr?.files ?? []}
           revalidateFiles={refetch}
-          disabled={!isDraft || !canEditAPR || loading}
+          disabled={!canUpdateAPR || loading}
         />
       )}
     </PageWrapper>
