@@ -22,7 +22,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     """
 
     # Project identification - derived fields
-    meta_code = serializers.CharField(source="project.meta_project.new_code", read_only=True)
+    meta_code = serializers.CharField(source="meta_project_code", read_only=True)
     project_code = serializers.CharField(source="project.code", read_only=True)
     legacy_code = serializers.CharField(source="project.legacy_code", read_only=True)
     agency_name = serializers.CharField(
