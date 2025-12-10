@@ -871,38 +871,74 @@ class Project(models.Model):
     number_of_enterprises = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises",
+        help_text="Number of enterprises (planned)",
+    )
+    number_of_enterprises_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of enterprises (actual)",
     )
     number_of_enterprises_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises assisted",
+        help_text="Number of enterprises assisted (planned)",
+    )
+    number_of_enterprises_assisted_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of enterprises assisted (actual)",
     )
     aggregated_consumption = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Aggregated consumption",
+        help_text="Aggregated consumption (planned)",
+    )
+    aggregated_consumption_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Aggregated consumption (actual)",
     )
     cost_effectiveness = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg)",
+        help_text="Cost effectiveness (US$/ Kg) (planned)",
+    )
+    cost_effectiveness_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg) actual",
     )
     cost_effectiveness_co2 = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-eq)",
+        help_text="Cost effectiveness (US$/ CO2-eq) (planned)",
+    )
+    cost_effectiveness_co2_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-eq) actual",
     )
     number_of_production_lines_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of production lines assisted",
+        help_text="Number of production lines assisted (planned)",
+    )
+    number_of_production_lines_assisted_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of production lines assisted (actual)",
     )
 
     # new approval fields

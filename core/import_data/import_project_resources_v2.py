@@ -122,6 +122,12 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Quantity of HFC-23 by-product (by product generation rate)",
     "Quantity of HFC-23 by-product (Destroyed)",
     "Quantity of HFC-23 by-product (Emitted)",
+    "Number of Production Lines assisted",
+    "Number of enterprises assisted",
+    "Number of enterprises",
+    "Aggregated consumption",
+    "Cost effectiveness (US$/ Kg)",
+    "Cost effectiveness (US$/ CO₂-eq)",
 ]
 
 
@@ -407,7 +413,6 @@ def import_project_specific_fields(file_path):
             if field_name in FIELDS_WITH_ACTUAL_VALUES
         ]
         field_names_excluding_mya.extend(actual_field_names)
-
         project_fields = ProjectField.objects.exclude(section="MYA").filter(
             import_name__in=field_names_excluding_mya
         )
