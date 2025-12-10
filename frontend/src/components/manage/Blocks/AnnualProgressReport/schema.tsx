@@ -493,7 +493,7 @@ export default function useGetColumnDefs({
       group: null,
       input: false,
       overrideOptions: {
-        minWidth: 150,
+        minWidth: 200,
       },
     },
     dateCompletionPerAgreementOrDecision: {
