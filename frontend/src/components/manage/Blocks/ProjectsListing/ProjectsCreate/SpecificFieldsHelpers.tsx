@@ -364,10 +364,13 @@ export const TextAreaWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
   const isOdsReplacement = fieldName === 'ods_replacement'
+  const nrChars = isOdsReplacement ? 256 : 500
 
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
-      <Label>{field.label} (max 500 characters)</Label>
+      <Label>
+        {field.label} (max {nrChars} characters)
+      </Label>
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
@@ -386,7 +389,7 @@ export const TextAreaWidget = <T,>(
           className={cx(textAreaClassname, 'max-w-[415px]', {
             '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
           })}
-          maxLength={500}
+          maxLength={nrChars}
           style={STYLE}
           minRows={isOdsReplacement ? 1 : 2}
         />

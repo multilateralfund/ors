@@ -210,7 +210,7 @@ const ProjectCrossCuttingFields = ({
                     className={cx(textAreaClassname, 'max-w-[64rem]')}
                     maxLength={1000}
                     style={STYLE}
-                    minRows={7}
+                    minRows={6}
                   />
                   <FieldErrorIndicator errors={errors} field="description" />
                 </div>
