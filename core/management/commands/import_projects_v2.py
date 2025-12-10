@@ -120,6 +120,7 @@ def populate_existing_projects_category():
     Project.objects.bulk_update(projects, ["category"])
     logger.info("✅ Successfully populated category for existing projects.")
 
+
 def set_correct_version_for_existing_projects():
     """
     Set the correct version for existing projects based on the fields they have.
