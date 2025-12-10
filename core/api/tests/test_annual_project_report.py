@@ -2776,3 +2776,408 @@ class TestAPRStatusView(BaseTest):
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+class TestAPRMLFSExportView(BaseTest):
+    def test_without_login(self, apr_year):
+        self.client.force_authenticate(user=None)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_user_cannot_access(self, agency_viewer_user, apr_year):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_viewer_can_export_all_agencies(
+        self, secretariat_viewer_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory(name="A")
+        agency2 = AgencyFactory(name="B")
+
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        project1 = ProjectFactory(
+            code="AG1/TEST/2024/001",
+            agency=agency1,
+            version=3,
+            latest_project=None,
+        )
+        project2 = ProjectFactory(
+            code="AG2/TEST/2024/001",
+            agency=agency2,
+            version=3,
+            latest_project=None,
+        )
+
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Type"]
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        assert f"APR_{apr_year}_All_Agencies.xlsx" in response["Content-Disposition"]
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 2
+
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+        columns = APRExportWriter.build_column_mapping()
+        project_col = columns["project_code"]
+
+        project_1_value = worksheet.cell(first_data_row, project_col).value
+        assert project_1_value == project1.code
+        project_2_value = worksheet.cell(first_data_row + 1, project_col).value
+        assert project_2_value == project2.code
+
+    def test_only_submitted_and_locked_reports_exported(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+        agency3 = AgencyFactory()
+
+        # Submitted and locked - should be included
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        # Draft - should be excluded
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+            is_unlocked=False,
+        )
+
+        # Submitted but unlocked - should be excluded
+        report3 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency3,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=True,
+        )
+
+        project1 = ProjectFactory(agency=agency1, version=3, latest_project=None)
+        project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
+        project3 = ProjectFactory(agency=agency3, version=3, latest_project=None)
+
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+        AnnualProjectReportFactory(report=report3, project=project3)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 1
+
+        project_col = APRExportWriter.build_column_mapping()["project_code"]
+        project_1_value = worksheet.cell(
+            APRExportWriter.FIRST_DATA_ROW, project_col
+        ).value
+        assert project_1_value == project1.code
+
+    def test_filter_by_agency(self, mlfs_admin_user, apr_year, annual_progress_report):
+        agency1 = AgencyFactory(name="Agency One")
+        agency2 = AgencyFactory(name="Agency Two")
+
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        project1 = ProjectFactory(agency=agency1, version=3, latest_project=None)
+        project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
+
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url, {"agency": f"{agency1.id}"})
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 1
+
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+        columns = APRExportWriter.build_column_mapping()
+        agency_col = columns["agency_name"]
+        agency_value = worksheet.cell(first_data_row, agency_col).value
+        assert agency_value == "Agency One"
+
+    def test_filter_by_country(
+        self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
+    ):
+        agency1 = AgencyFactory()
+        agency2 = AgencyFactory()
+
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        project1 = ProjectFactory(
+            agency=agency1, country=country_ro, version=3, latest_project=None
+        )
+        project2 = ProjectFactory(
+            agency=agency2, country=new_country, version=3, latest_project=None
+        )
+
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url, {"country": country_ro.name})
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 1
+
+        country_column = APRExportWriter.build_column_mapping()["country_name"]
+        country = worksheet.cell(APRExportWriter.FIRST_DATA_ROW, country_column).value
+        assert country == country_ro.name
+
+    def test_filter_by_project_status(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
+        project_completed_status,
+        project_closed_status,
+    ):
+        agency = AgencyFactory()
+
+        report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        project1 = ProjectFactory(
+            code="TEST/ONG/INV/01",
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        project2 = ProjectFactory(
+            code="TEST/COM/INV/02",
+            agency=agency,
+            status=project_completed_status,
+            version=3,
+            latest_project=None,
+        )
+        project3 = ProjectFactory(
+            code="TEST/CLO/INV/03s",
+            agency=agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+
+        AnnualProjectReportFactory(report=report, project=project1)
+        AnnualProjectReportFactory(report=report, project=project2)
+        AnnualProjectReportFactory(report=report, project=project3)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        # This will actually include both ONG and COM, but not CLO
+        response = self.client.get(url, {"status": "ONG"})
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 2
+
+        code_column = APRExportWriter.build_column_mapping()["project_code"]
+        first_code = worksheet.cell(APRExportWriter.FIRST_DATA_ROW, code_column).value
+        second_code = worksheet.cell(
+            APRExportWriter.FIRST_DATA_ROW + 1, code_column
+        ).value
+        assert {first_code, second_code} == {project1.code, project2.code}
+
+    def test_empty_export_with_headers(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+
+        # Should have headers but no data rows (or one empty template row)
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        # This is just an empty "template" data row
+        assert data_rows == 1
+        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
+        columns = APRExportWriter.build_column_mapping()
+        row_values = [
+            worksheet.cell(first_data_row, col).value
+            for col in range(1, len(columns) + 1)
+        ]
+        assert all(value is None or value == "" for value in row_values)
+
+    def test_duplicate_project_codes_across_agencies(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency1 = AgencyFactory(name="Agency One")
+        agency2 = AgencyFactory(name="Agency Two")
+
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency1,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency2,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        # Same project code for both agencies, both should be in the export
+        project1 = ProjectFactory(
+            code="DUPLICATE/CODE/001",
+            agency=agency1,
+            version=3,
+            latest_project=None,
+        )
+        project2 = ProjectFactory(
+            code="DUPLICATE/CODE/001",
+            agency=agency2,
+            version=3,
+            latest_project=None,
+        )
+
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
+        assert data_rows == 2
+
+    def test_agencies_ordered_by_name(
+        self, mlfs_admin_user, apr_year, annual_progress_report
+    ):
+        agency_z = AgencyFactory(name="Zero")
+        agency_a = AgencyFactory(name="Alpha")
+        agency_o = AgencyFactory(name="Omega")
+
+        for agency in [agency_z, agency_a, agency_o]:
+            report = AnnualAgencyProjectReportFactory(
+                progress_report=annual_progress_report,
+                agency=agency,
+                status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+                is_unlocked=False,
+            )
+            project = ProjectFactory(agency=agency, version=3, latest_project=None)
+            AnnualProjectReportFactory(report=report, project=project)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        agency_col = columns["agency_name"]
+
+        first_row = APRExportWriter.FIRST_DATA_ROW
+        assert worksheet.cell(first_row, agency_col).value == "Alpha"
+        assert worksheet.cell(first_row + 1, agency_col).value == "Omega"
+        assert worksheet.cell(first_row + 2, agency_col).value == "Zero"
+
+    def test_empty_export_nonexistent_year(self, mlfs_admin_user):
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": 9999})
+        response = self.client.get(url)
+
+        # Should return empty export (no reports for that year)
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
+
+        # This is just an empty "template" data row
+        assert data_rows == 1
+        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
+        columns = APRExportWriter.build_column_mapping()
+        row_values = [
+            worksheet.cell(first_data_row, col).value
+            for col in range(1, len(columns) + 1)
+        ]
+        assert all(value is None or value == "" for value in row_values)

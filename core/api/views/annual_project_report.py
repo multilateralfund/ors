@@ -883,3 +883,108 @@ class APRKickStartView(APIView):
 
         serializer = AnnualProjectReportKickStartResponseSerializer(response_data)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class APRMLFSExportView(APIView):
+    """
+    Excel export for multiple agencies, for the MLFS global view/dashboard.
+    It exports the project reports for all submitted & locked agency reports.
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+
+    def get(self, request, year):
+        queryset = self._get_filtered_agency_reports(year)
+
+        all_project_reports = []
+        for agency_report in queryset:
+            # Project reports are already filtered
+            # by the prefetch in self._get_filtered_agency_reports() (see below)
+            all_project_reports.extend(agency_report.project_reports.all())
+
+        serializer = AnnualProjectReportReadSerializer(
+            all_project_reports, many=True, context={"request": request}
+        )
+
+        writer = APRExportWriter(
+            year=year,
+            agency_name=None,
+            project_reports_data=serializer.data,
+        )
+        return writer.generate()
+
+    def _get_filtered_agency_reports(self, year):
+        """
+        Applies the same filtering logic as APRGlobalViewSet.get_list_queryset();
+        this is needed to emulate the exact results of the APR Global View.
+
+        Returns queryset of filtered AnnualAgencyProjectReport objects.
+        """
+        queryset = AnnualAgencyProjectReport.objects.filter(
+            progress_report__year=year,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        ).select_related(
+            "progress_report",
+            "agency",
+        )
+
+        # Build the filter parameters for the nested project reports
+        filter_params = {}
+
+        agency_param = self.request.query_params.get("agency")
+        if agency_param:
+            agency_ids = [a.strip() for a in agency_param.split(",") if a.strip()]
+            queryset = queryset.filter(agency_id__in=agency_ids)
+
+        country_param = self.request.query_params.get("country")
+        if country_param:
+            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
+            filter_params["country"] = Country.objects.filter(
+                name__in=country_names, location_type=Country.LocationType.COUNTRY
+            )
+
+        region_param = self.request.query_params.get("region")
+        if region_param:
+            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
+            filter_params["region"] = Country.objects.filter(
+                name__in=region_names,
+                location_type__in=[
+                    Country.LocationType.REGION,
+                    Country.LocationType.SUBREGION,
+                ],
+            )
+
+        cluster_param = self.request.query_params.get("cluster")
+        if cluster_param:
+            filter_params["cluster"] = cluster_param
+
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            filter_params["status"] = status_param
+
+        project_reports_qs = build_filtered_project_reports_queryset(filter_params)
+        project_reports_qs = project_reports_qs.select_related(
+            "project",
+            "project__meta_project",
+            "project__agency",
+            "project__country",
+            "project__cluster",
+            "project__sector",
+            "project__project_type",
+            "project__status",
+            "project__meeting",
+            "project__decision",
+        ).prefetch_related(
+            "project__subsectors",
+            "project__ods_odp",
+            "project__ods_odp__ods_substance",
+            "project__ods_odp__ods_blend",
+        )
+
+        # Prefetch the filtered project reports and order the same as the global view
+        queryset = queryset.prefetch_related(
+            Prefetch("project_reports", queryset=project_reports_qs)
+        ).order_by("agency__name")
+
+        return queryset
