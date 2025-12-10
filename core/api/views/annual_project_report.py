@@ -1,7 +1,7 @@
 import os
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, FileResponse
+from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from zipfile import ZipFile
 
 from core.models import (
     AnnualProgressReport,
@@ -52,6 +53,8 @@ from core.api.utils import (
     get_unendorsed_years,
     get_previous_year_project_reports,
 )
+
+# pylint: disable=C0302
 
 
 class APRWorkspaceView(RetrieveAPIView):
@@ -355,6 +358,45 @@ class APRFileDeleteView(DestroyAPIView):
             )
 
         instance.delete()
+
+
+class APRFilesDownloadAllView(APIView):
+    """
+    Download all files from an agency report as a ZIP archive - MLFS only.
+    """
+
+    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+
+    def get(self, request, year, agency_id):
+        """
+        Response will be an empty ZIP if the agency report has no attached files.
+        """
+        agency_report = get_object_or_404(
+            AnnualAgencyProjectReport.objects.select_related(
+                "progress_report", "agency"
+            ).prefetch_related("files"),
+            progress_report__year=year,
+            agency_id=agency_id,
+        )
+
+        files = agency_report.files.all()
+
+        safe_agency_name = "".join(
+            c for c in agency_report.agency.name if c.isalnum() or c in (" ", "-", "_")
+        ).strip()
+        safe_agency_name = "_".join(safe_agency_name.split()).replace(" ", "_")
+        zip_filename = f"APR_{year}_{safe_agency_name}_Files.zip"
+
+        response = HttpResponse(content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
+
+        with ZipFile(response, "w") as zipf:
+            for file_obj in files:
+                if file_obj.file and os.path.exists(file_obj.file.path):
+                    arcname = file_obj.file_name or os.path.basename(file_obj.file.name)
+                    zipf.write(file_obj.file.path, arcname=arcname)
+
+        return response
 
 
 class APRStatusView(APIView):

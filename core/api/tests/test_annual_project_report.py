@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from io import BytesIO
 from openpyxl import load_workbook
+from zipfile import ZipFile
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -3181,3 +3182,204 @@ class TestAPRMLFSExportView(BaseTest):
             for col in range(1, len(columns) + 1)
         ]
         assert all(value is None or value == "" for value in row_values)
+
+
+@pytest.mark.django_db
+class TestAPRFilesDownloadAllView(BaseTest):
+    def test_without_login(self, apr_year, agency):
+        self.client.force_authenticate(user=None)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={"year": apr_year, "agency_id": agency.id},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_user_cannot_access(self, agency_viewer_user, annual_agency_report):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_mlfs_viewer_can_download_all_files(
+        self, secretariat_viewer_user, annual_agency_report
+    ):
+        file1 = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="report1.pdf",
+            file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+        )
+        file2 = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="support_doc.docx",
+            file_type=AnnualProjectReportFile.FileType.OTHER_SUPPORTING_DOCUMENT,
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/zip"
+        assert "attachment" in response["Content-Disposition"]
+        assert (
+            f"APR_{annual_agency_report.progress_report.year}"
+            in response["Content-Disposition"]
+        )
+        assert annual_agency_report.agency.name[:10] in response["Content-Disposition"]
+
+        zip_content = BytesIO(response.content)
+        with ZipFile(zip_content, "r") as zipf:
+            file_list = zipf.namelist()
+            assert len(file_list) == 2
+            assert file1.file_name in file_list
+            assert file2.file_name in file_list
+
+    def test_mlfs_admin_can_download_all_files(
+        self, mlfs_admin_user, annual_agency_report
+    ):
+        AnnualProjectReportFileFactory(
+            report=annual_agency_report, file_name="test_file.pdf"
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/zip"
+
+    def test_download_all_with_no_files(
+        self, secretariat_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response["Content-Type"] == "application/zip"
+
+        zip_content = BytesIO(response.content)
+        # This should be an empty zip, no files were created for the agency report
+        with ZipFile(zip_content, "r") as zipf:
+            assert len(zipf.namelist()) == 0
+
+    def test_download_all_nonexistent_report(self, secretariat_viewer_user):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={"year": 9999, "agency_id": 9999},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_download_all_with_multiple_file_types(
+        self, secretariat_viewer_user, annual_agency_report
+    ):
+        financial_file = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="financial_2024.pdf",
+            file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
+        )
+        support_file1 = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="support_doc_1.docx",
+            file_type=AnnualProjectReportFile.FileType.OTHER_SUPPORTING_DOCUMENT,
+        )
+        support_file2 = AnnualProjectReportFileFactory(
+            report=annual_agency_report,
+            file_name="support_doc_2.xlsx",
+            file_type=AnnualProjectReportFile.FileType.OTHER_SUPPORTING_DOCUMENT,
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        zip_content = BytesIO(response.content)
+        with ZipFile(zip_content, "r") as zipf:
+            file_list = zipf.namelist()
+            assert len(file_list) == 3
+            assert financial_file.file_name in file_list
+            assert support_file1.file_name in file_list
+            assert support_file2.file_name in file_list
+
+    def test_zip_filename_format(self, secretariat_viewer_user, annual_agency_report):
+        AnnualProjectReportFileFactory(report=annual_agency_report)
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        content_disposition = response["Content-Disposition"]
+
+        assert f"APR_{annual_agency_report.progress_report.year}" in content_disposition
+        assert "_Files.zip" in content_disposition
+        assert "attachment" in content_disposition
+
+    def test_handles_special_characters_in_agency_name(
+        self, secretariat_viewer_user, apr_year, annual_progress_report
+    ):
+        agency = AgencyFactory(name="Test Agency / Special & Co.")
+        report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+        )
+        AnnualProjectReportFileFactory(report=report)
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse(
+            "apr-files-download-all",
+            kwargs={
+                "year": apr_year,
+                "agency_id": agency.id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        content_disposition = response["Content-Disposition"]
+
+        assert "Test_Agency_Special_Co" in content_disposition
+        assert "/" not in content_disposition
+        assert "&" not in content_disposition
