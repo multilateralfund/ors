@@ -106,3 +106,11 @@ export interface AnnualProgressReport {
   draft_agencies: number
   draft_agency_names: string[]
 }
+
+export interface AnnualProgressReportKickstart {
+  can_kick_start: boolean
+  latest_endorsed_year: number | null
+  next_year: number | null
+  unendorsed_years: number[]
+  message: string
+}

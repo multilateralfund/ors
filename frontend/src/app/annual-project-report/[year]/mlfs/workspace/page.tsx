@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useRef, useState } from 'react'
-import { Redirect, useParams } from 'wouter'
+import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
   AccordionDetails,
@@ -35,6 +35,7 @@ import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
   AnnualProgressReport,
+  AnnualProgressReportKickstart,
   AnnualProjectReport,
   APRFile,
   Filter,
@@ -59,6 +60,7 @@ import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
 
 export default function APRMLFSWorkspace() {
+  const [, navigate] = useLocation()
   const gridRef = useRef<AgGridReact>()
   const [activeTab, setActiveTab] = useState(0)
   const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
@@ -79,7 +81,7 @@ export default function APRMLFSWorkspace() {
     loaded: loadedAprData,
     params,
     setParams,
-    refetch: refetchAprData,
+    setApiSettings: refetchAprData,
   } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
@@ -91,13 +93,25 @@ export default function APRMLFSWorkspace() {
     data: progressReport,
     loading: loadingReport,
     loaded: loadedReport,
-    refetch: refetchReport,
+    setApiSettings: refetchReport,
   } = useApi<AnnualProgressReport>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/${year}/endorse/`,
+  })
+  const {
+    data: kickstartAPR,
+    loading: loadingKickstart,
+    loaded: loadedKickstart,
+    setApiSettings: refetchKickstart,
+  } = useApi<AnnualProgressReportKickstart>({
+    options: {
+      withStoreCache: false,
+      triggerIf: canEditAPR && isMlfsUser,
+    },
+    path: `api/annual-project-report/kick-start/`,
   })
 
   // Flatten project reports from all agencies and add agency info
@@ -188,7 +202,13 @@ export default function APRMLFSWorkspace() {
 
   const canEndorseAPR = canEditAPR && progressReport?.is_endorsable
   const canUpdateAPR = Boolean(
-    canEditAPR && progressReport && !progressReport.endorsed,
+    canEditAPR &&
+      allProjectReports.length > 0 &&
+      progressReport &&
+      !progressReport.endorsed,
+  )
+  const canKickstartAPR = Boolean(
+    canEditAPR && kickstartAPR && kickstartAPR.can_kick_start,
   )
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     inlineEdit: isMlfsUser && canUpdateAPR,
@@ -203,12 +223,29 @@ export default function APRMLFSWorkspace() {
     return <NotFoundPage />
   }
 
-  const loading = loadingReport || loadingAprData
-  const loaded = loadedReport || loadedAprData
+  const loading = loadingReport || loadingAprData || loadingKickstart
+  const loaded = loadedReport || loadedAprData || loadedKickstart
 
-  const refetchData = () => {
-    refetchAprData()
-    refetchReport()
+  const refetchData = (newYear?: number) => {
+    // HACK
+    // The useAPI hook is not reactive to the change in year because the path
+    // is not kept in its own state. We have to resort to these kind of hacks
+    // to make it seem reactive
+
+    const pathYear = newYear ?? year
+
+    refetchAprData((prev) => ({
+      ...structuredClone(prev),
+      path: `api/annual-project-report/mlfs/${pathYear}/agencies/`,
+    }))
+    refetchReport((prev) => ({
+      ...structuredClone(prev),
+      path: `api/annual-project-report/${pathYear}/endorse/`,
+    }))
+    refetchKickstart((prev) => ({
+      ...structuredClone(prev),
+      path: `api/annual-project-report/kick-start/`,
+    }))
   }
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
@@ -275,6 +312,39 @@ export default function APRMLFSWorkspace() {
     }
   }
 
+  const kickstartNewAPR = async () => {
+    const response = await confirm({
+      title: 'Kickstart new APR',
+      message: 'Are you sure you want to kickstart a new APR?',
+    })
+
+    if (!response) {
+      return
+    }
+
+    try {
+      const apiResponse = await api(`api/annual-project-report/kick-start/`, {
+        method: 'POST',
+      })
+
+      enqueueSnackbar(
+        <>Kickstarted new APR. Navigating to the new workspace.</>,
+        {
+          variant: 'success',
+        },
+      )
+      setTimeout(() => {
+        navigate(`/${apiResponse.year}/mlfs/workspace`)
+        refetchData(apiResponse.year)
+      }, 2000)
+    } catch (e) {
+      // TODO: better error reporting
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    }
+  }
+
   return (
     <PageWrapper>
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
@@ -324,6 +394,16 @@ export default function APRMLFSWorkspace() {
                 Save
               </Button>
             )}
+            {activeTab === 0 && canKickstartAPR && (
+              <Button
+                disabled={loading}
+                variant="contained"
+                color="secondary"
+                onClick={kickstartNewAPR}
+              >
+                Launch new APR
+              </Button>
+            )}
             <Button
               disabled={loading}
               variant="contained"
@@ -331,7 +411,7 @@ export default function APRMLFSWorkspace() {
                 setIsEndorseModalOpen(true)
               }}
             >
-              Endorse
+              Endorse APR
             </Button>
           </div>
         </div>
