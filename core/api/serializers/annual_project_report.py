@@ -362,7 +362,7 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
 
     # All editable fields are optional, as this endpoint supports partial updates
     # Project date data fields - input
-    status = serializers.CharField(required=False)
+    status = serializers.CharField(required=False, allow_blank=True)
     date_first_disbursement = serializers.DateField(allow_null=True, required=False)
     date_planned_completion = serializers.DateField(allow_null=True, required=False)
     date_actual_completion = serializers.DateField(allow_null=True, required=False)
