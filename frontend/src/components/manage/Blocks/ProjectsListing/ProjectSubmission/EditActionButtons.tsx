@@ -24,6 +24,7 @@ import {
   getApprovalErrors,
   getCrossCuttingErrors,
   getHasNoFiles,
+  getPostExcomApprovalErrors,
   getSpecificFieldsErrors,
   hasSectionErrors,
 } from '../utils'
@@ -159,6 +160,10 @@ const EditActionButtons = ({
       ),
     [approvalData, crossCuttingFields, approvalFields],
   )
+  const postExcomApprovalErrors = useMemo(
+    () => getPostExcomApprovalErrors(approvalData, approvalFields, {}, project),
+    [approvalData, approvalFields],
+  )
 
   const specificErrors = useMemo(
     () =>
@@ -218,10 +223,11 @@ const EditActionButtons = ({
     !specificFieldsLoaded ||
     (project.version >= 3 || isWithdrawn ? disableSubmit : isSaveDisabled) ||
     (postExComUpdate &&
-      !(
+      (!(
         projIdentifiers.post_excom_meeting &&
         projIdentifiers.post_excom_decision
-      ))
+      ) ||
+        hasSectionErrors(postExcomApprovalErrors)))
 
   const disableApprovalActions =
     !specificFieldsLoaded ||
