@@ -30,6 +30,115 @@ from core.api.tests.factories import (
 
 
 @pytest.mark.django_db
+class TestAPRCurrentYearView(BaseTest):
+    def test_without_login(self):
+        self.client.force_authenticate(user=None)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_requires_apr_view_permission(self, user):
+        self.client.force_authenticate(user=user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_returns_unendorsed_year_when_exists(
+        self, agency_viewer_user, annual_progress_report
+    ):
+        AnnualProgressReportFactory(year=2022, endorsed=True)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == annual_progress_report.year
+        assert response.data["endorsed"] is False
+
+    def test_returns_latest_unendorsed_when_multiple_exist(self, agency_viewer_user):
+        AnnualProgressReportFactory(year=2023, endorsed=False)
+        AnnualProgressReportFactory(year=2024, endorsed=False)
+        AnnualProgressReportFactory(year=2022, endorsed=True)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == 2024
+        assert response.data["endorsed"] is False
+
+    def test_returns_latest_endorsed_when_no_unendorsed(
+        self, agency_viewer_user, annual_progress_report_endorsed
+    ):
+        AnnualProgressReportFactory(year=2022, endorsed=True)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == annual_progress_report_endorsed.year
+        assert response.data["endorsed"] is True
+
+    def test_returns_latest_endorsed_among_multiple(self, agency_viewer_user):
+        AnnualProgressReportFactory(year=2021, endorsed=True)
+        AnnualProgressReportFactory(year=2023, endorsed=True)
+        AnnualProgressReportFactory(year=2022, endorsed=True)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == 2023
+        assert response.data["endorsed"] is True
+
+    def test_returns_fallback_when_no_reports_exist(self, agency_viewer_user):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        expected_year = timezone.now().year - 1
+        assert response.data["year"] == expected_year
+        assert response.data["endorsed"] is True
+
+    def test_uses_unendorsed_over_endorsed(self, agency_viewer_user):
+        AnnualProgressReportFactory(year=2023, endorsed=False)
+        AnnualProgressReportFactory(year=2024, endorsed=True)
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == 2023
+        assert response.data["endorsed"] is False
+
+    def test_mlfs_user_can_access(
+        self, secretariat_viewer_user, annual_progress_report
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == annual_progress_report.year
+        assert response.data["endorsed"] is False
+
+    def test_agency_user_can_access(self, agency_viewer_user, annual_progress_report):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-current-year")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["year"] == annual_progress_report.year
+        assert response.data["endorsed"] is False
+
+
+@pytest.mark.django_db
 class TestAPRWorkspaceView(BaseTest):
     def test_without_login(self, apr_year):
         self.client.force_authenticate(user=None)

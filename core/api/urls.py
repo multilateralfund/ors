@@ -143,6 +143,7 @@ from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 from core.api.views.annual_project_report import (
+    APRCurrentYearView,
     APRWorkspaceView,
     APRBulkUpdateView,
     APRFileUploadView,
@@ -719,6 +720,11 @@ urlpatterns = [
         name="replenishment-input-data-export",
     ),
     # Annual Project Reports
+    path(
+        "annual-project-report/current-year/",
+        APRCurrentYearView.as_view(),
+        name="apr-current-year",
+    ),
     path(
         "annual-project-report/<int:year>/workspace/",
         APRWorkspaceView.as_view(),

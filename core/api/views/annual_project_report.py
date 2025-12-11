@@ -1,8 +1,10 @@
 import os
+
 from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -55,6 +57,39 @@ from core.api.utils import (
 )
 
 # pylint: disable=C0302
+
+
+class APRCurrentYearView(APIView):
+    """
+    Returns the current "active" APR year for the workspace.
+
+    If no unendorsed (active reporting) APR exists, returns the latest endorsed.
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
+
+    def get(self, request):
+        unendorsed = (
+            AnnualProgressReport.objects.filter(endorsed=False)
+            .order_by("-year")
+            .first()
+        )
+        if unendorsed:
+            return Response({"year": unendorsed.year, "endorsed": False})
+
+        latest = (
+            AnnualProgressReport.objects.filter(endorsed=True).order_by("-year").first()
+        )
+        if latest:
+            return Response({"year": latest.year, "endorsed": True})
+
+        # Using current year - 1 as fallback; reporting is generally for previous year
+        return Response(
+            {
+                "year": timezone.now().year - 1,
+                "endorsed": True,
+            }
+        )
 
 
 class APRWorkspaceView(RetrieveAPIView):
