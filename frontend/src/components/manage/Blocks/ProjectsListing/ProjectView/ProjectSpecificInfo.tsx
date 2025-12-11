@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
 import { viewModesHandler } from './ViewHelperComponents'
+import { textAreaViewClassname, viewColumnsClassName } from '../constants'
 import { canViewField, getSectionFields, hasFields } from '../utils'
-import { viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -91,21 +91,21 @@ const ProjectSpecificInfo = ({
           <SectionTitle>Substance Details</SectionTitle>
           <div className="flex w-full flex-col gap-4">
             <div
-              className={
-                projectFields.length > 1 ? viewColumnsClassName : 'w-1/2'
-              }
+              className={projectFields.length > 1 ? viewColumnsClassName : ''}
             >
-              {map(
-                projectFields,
-                (field) =>
-                  canViewField(viewableFields, field.write_field_name) &&
-                  viewModesHandler[field.data_type](
-                    project,
-                    field,
-                    undefined,
-                    getFieldHistory(field.write_field_name),
-                  ),
-              )}
+              {map(projectFields, (field) => (
+                <span key={field.write_field_name}>
+                  {canViewField(viewableFields, field.write_field_name) &&
+                    viewModesHandler[field.data_type](
+                      project,
+                      field,
+                      field.write_field_name === 'products_manufactured'
+                        ? textAreaViewClassname
+                        : undefined,
+                      getFieldHistory(field.write_field_name),
+                    )}
+                </span>
+              ))}
             </div>
             {canViewSubstanceSection && odsOdpFields.length > 0 && (
               <ProjectOdsOdpTable

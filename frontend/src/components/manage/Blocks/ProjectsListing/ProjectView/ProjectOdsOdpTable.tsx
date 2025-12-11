@@ -174,8 +174,8 @@ const ProjectOdsOdpTable = ({
     },
   }
 
-  return map(dataToDisplay, (item) => (
-    <>
+  return map(dataToDisplay, (item, index) => (
+    <div key={index}>
       {hasExcomUpdates && (
         <div className="text-base font-semibold">
           Substances {item.titleHelper}
@@ -198,7 +198,7 @@ const ProjectOdsOdpTable = ({
         ]}
         getRowId={(props: GetRowIdParams) => props.data.id}
       />
-    </>
+    </div>
   ))
 }
 

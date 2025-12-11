@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
 import { viewModesHandler } from './ViewHelperComponents'
-import { canViewField, formatFieldsHistory, getSectionFields } from '../utils'
 import { ProjectSpecificFields, ProjectViewProps } from '../interfaces'
+import { canViewField, getSectionFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { chunk, find, map } from 'lodash'
@@ -19,9 +19,8 @@ const ProjectImpact = ({
   const { viewableFields } = useStore((state) => state.projectFields)
 
   const getFieldHistory = useCallback(
-    (name: string, dataType: string) => {
-      const history = fieldHistory?.[name] ?? []
-      return formatFieldsHistory(history, dataType)
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
     },
     [fieldHistory],
   )
@@ -30,13 +29,16 @@ const ProjectImpact = ({
     map(
       fields,
       (field) =>
-        canViewField(viewableFields, field.write_field_name) &&
-        viewModesHandler[field.data_type](
-          project,
-          field,
-          undefined,
-          getFieldHistory(field.write_field_name, field.data_type),
-          !!hasActualFields,
+        canViewField(viewableFields, field.write_field_name) && (
+          <span key={field.write_field_name}>
+            {viewModesHandler[field.data_type](
+              project,
+              field,
+              undefined,
+              getFieldHistory(field.write_field_name),
+              !!hasActualFields,
+            )}
+          </span>
         ),
     )
 

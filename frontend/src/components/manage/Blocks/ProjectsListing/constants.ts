@@ -242,3 +242,9 @@ export const approvalToOdsMap = {
   total_phase_out_odp_tonnes: 'odp',
   total_phase_out_co2_tonnes: 'co2_mt',
 }
+
+export const textAreaViewClassname = {
+  containerClassName: '!basis-full w-full',
+  className: 'md:whitespace-nowrap',
+  fieldClassName: 'max-w-[50%]',
+}

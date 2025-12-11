@@ -1,13 +1,17 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import {
   detailItem,
   numberDetailItem,
   viewModesHandler,
 } from './ViewHelperComponents'
-import { tableColumns, viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { canViewField } from '../utils'
+import {
+  tableColumns,
+  textAreaViewClassname,
+  viewColumnsClassName,
+} from '../constants'
 import { useStore } from '@ors/store'
 
 import { filter, get } from 'lodash'
@@ -35,7 +39,8 @@ const ProjectApproval = ({
     <div className="flex w-full flex-col gap-4">
       <div className={viewColumnsClassName}>
         {filter(specificFields, (field) => field.table === 'project').map(
-          (field) => {
+          (field, index) => {
+            const fieldName = field.write_field_name
             const upatedLabels = {
               meeting: isTransferred
                 ? tableColumns.transfer_meeting
@@ -46,43 +51,41 @@ const ProjectApproval = ({
             }
 
             const updatedField =
-              field.write_field_name in upatedLabels
-                ? { ...field, label: upatedLabels[field.write_field_name] }
+              fieldName in upatedLabels
+                ? { ...field, label: upatedLabels[fieldName] }
                 : field
 
             return (
-              <>
-                {canViewField(viewableFields, field.write_field_name) && (
+              <React.Fragment key={index}>
+                {canViewField(viewableFields, fieldName) && (
                   <span
-                    key={field.write_field_name}
+                    key={fieldName}
                     className={cx({
                       '!basis-full': [
                         'programme_officer',
                         'excom_provision',
-                      ].includes(field.write_field_name),
+                      ].includes(fieldName),
                     })}
                   >
                     {viewModesHandler[field.data_type](
                       project,
                       updatedField,
-                      field.write_field_name === 'excom_provision'
-                        ? {
-                            containerClassName: '!basis-full w-full',
-                            className: 'whitespace-nowrap',
-                            fieldClassName: 'max-w-[50%]',
-                          }
+                      fieldName === 'excom_provision'
+                        ? textAreaViewClassname
                         : undefined,
-                      getFieldHistory(field.write_field_name),
+                      getFieldHistory(fieldName),
                     )}
                   </span>
                 )}
                 {project.status === 'Transferred' &&
-                  (field.write_field_name === 'meeting' ? (
-                    detailItem(
-                      tableColumns.transfer_meeting,
-                      project.transfer_meeting,
-                    )
-                  ) : field.write_field_name === 'excom_provision' ? (
+                  (fieldName === 'meeting' ? (
+                    <span key="transferred_meeting">
+                      {detailItem(
+                        tableColumns.transfer_meeting,
+                        project.transfer_meeting,
+                      )}
+                    </span>
+                  ) : fieldName === 'excom_provision' ? (
                     <span
                       key="transfer_excom_provision"
                       className="!basis-full"
@@ -90,10 +93,11 @@ const ProjectApproval = ({
                       {detailItem(
                         tableColumns.transfer_excom_provision,
                         project.transfer_excom_provision,
+                        { classNames: textAreaViewClassname },
                       )}
                     </span>
                   ) : null)}
-              </>
+              </React.Fragment>
             )
           },
         )}
@@ -121,12 +125,14 @@ const ProjectApproval = ({
             tableColumns.total_fund + ' (US $)',
             project.total_fund as string,
             'decimal',
+            getFieldHistory('total_fund'),
           )}
         {canViewField(viewableFields, 'support_cost_psc') &&
           numberDetailItem(
             tableColumns.support_cost_psc + ' (US $)',
             project.support_cost_psc as string,
             'decimal',
+            getFieldHistory('support_cost_psc'),
           )}
       </div>
       {project.status === 'Transferred' && (

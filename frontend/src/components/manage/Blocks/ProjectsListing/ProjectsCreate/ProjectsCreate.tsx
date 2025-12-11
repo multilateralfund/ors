@@ -283,10 +283,10 @@ const ProjectsCreate = ({
     project?.submission_status === 'Draft' ? ' for submission' : ''
 
   const odsOpdDataErrors =
-    mode === 'edit' && odsOdpFields.length > 0
+    odsOdpFields.length > 0
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) =>
-            checkInvalidValue(odsOdp[field])
+            mode === 'edit' && checkInvalidValue(odsOdp[field])
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
@@ -341,7 +341,7 @@ const ProjectsCreate = ({
           : null,
       ].filter(Boolean)
 
-      return { message: `Substance ${substanceNo} -` + messages.join(' ') }
+      return { message: `Substance ${substanceNo} - ` + messages.join(' ') }
     },
   ).filter(Boolean)
 
@@ -722,8 +722,8 @@ const ProjectsCreate = ({
           .map(({ id, component, errors, actualFieldsErrors }) => {
             return (
               <span key={id}>
-                {mode === 'edit' &&
-                  project?.submission_status === 'Draft' &&
+                {isEditMode &&
+                  project.submission_status === 'Draft' &&
                   !canEditApprovedProjects &&
                   currentTab === 0 && (
                     <CustomAlert
@@ -731,25 +731,9 @@ const ProjectsCreate = ({
                       alertClassName="mb-3"
                       content={
                         <Typography className="text-lg leading-5">
-                          {project?.version === 2
+                          {project.version === 2
                             ? 'The Identifiers fields cannot be edited anymore. If there was a mistake in completing them, the project needs to be resubmitted with the correct information.'
                             : "After the project's submission, the Identifiers fields cannot be further edited. Any mistake in completing them will require the project to be resubmitted with the correct information."}
-                        </Typography>
-                      }
-                    />
-                  )}
-                {mode === 'edit' &&
-                  project?.submission_status === 'Approved' &&
-                  !postExComUpdate &&
-                  !canEditApprovedProjects && (
-                    <CustomAlert
-                      type="info"
-                      alertClassName="mb-3"
-                      content={
-                        <Typography className="text-lg leading-5">
-                          You are editing the approved version of the project
-                          (version 3). Any other updates can be brought only by
-                          adding post ExCom updates.
                         </Typography>
                       }
                     />

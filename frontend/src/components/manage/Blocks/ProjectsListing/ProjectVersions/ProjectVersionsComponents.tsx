@@ -68,7 +68,7 @@ export const VersionsDropdown = ({
       </div>
       <div
         className={cx(
-          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all sm:left-auto sm:right-0',
           {
             'collapse scale-y-0': !showVersionsMenu,
             'scale-y-100 opacity-100': showVersionsMenu,

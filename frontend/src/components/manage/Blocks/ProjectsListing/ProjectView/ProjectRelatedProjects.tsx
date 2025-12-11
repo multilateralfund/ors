@@ -40,7 +40,7 @@ const ProjectRelatedProjects = ({
         {canRemoveAssociation && (
           <>
             <SectionTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span>Umbrella metacode:</span>
                 <h4 className="m-0 normal-case"> {project.umbrella_code}</h4>
               </div>

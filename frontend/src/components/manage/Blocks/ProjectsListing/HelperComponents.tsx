@@ -318,7 +318,7 @@ export const RelatedProjects = ({
           <Link
             component="a"
             className={cx(
-              'flex w-fit items-center gap-2 text-lg normal-case leading-tight no-underline',
+              'flex w-fit flex-wrap items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
                 'pb-2.5': withExtraProjectInfo,
                 '!text-inherit': !hasErrors,
@@ -330,11 +330,13 @@ export const RelatedProjects = ({
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
           >
-            <FaExternalLinkAlt
-              size={16}
-              className="min-h-[16px] min-w-[16px]"
-            />
-            {entry.title}
+            <div className="flex gap-2">
+              <FaExternalLinkAlt
+                size={16}
+                className="min-h-[16px] min-w-[16px]"
+              />
+              {entry.title}
+            </div>
             {mode === 'view' && (
               <div className="italic">
                 [

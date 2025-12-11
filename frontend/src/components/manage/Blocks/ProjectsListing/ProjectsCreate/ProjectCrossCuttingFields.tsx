@@ -210,7 +210,7 @@ const ProjectCrossCuttingFields = ({
                     className={cx(textAreaClassname, 'max-w-[64rem]')}
                     maxLength={1000}
                     style={STYLE}
-                    minRows={7}
+                    minRows={6}
                   />
                   <FieldErrorIndicator errors={errors} field="description" />
                 </div>
@@ -478,7 +478,8 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(considerationOpts, option, 'value')
                     }
                     disabled={
-                      (mode === 'edit' && (project?.version ?? 0) >= 3) ||
+                      (isV3Project &&
+                        !!project?.blanket_or_individual_consideration) ||
                       !canEditField(
                         editableFields,
                         'blanket_or_individual_consideration',

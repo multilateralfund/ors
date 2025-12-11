@@ -32,8 +32,8 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
   // </li>
 
   return (
-    <div className="flex grow items-center justify-between gap-3 text-pretty px-4 py-3 pl-0">
-      <div className="flex items-center gap-2">
+    <div className="flex grow flex-wrap items-center justify-between gap-x-3 gap-y-2 text-pretty px-4 py-3 pl-0">
+      <div className="flex flex-wrap items-center gap-2">
         <p
           id={`report_date`}
           className="my-1 min-w-24 text-sm font-normal text-gray-500"
