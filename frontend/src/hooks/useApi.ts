@@ -24,9 +24,7 @@ export type ApiSettings = {
   parseParams?: any
 } & IApi
 
-export default function useApi<DT = DataType>(
-  props: ApiSettings,
-): {
+export interface UseApiReturn<DT> {
   apiSettings: ApiSettings
   data: DT | null | undefined
   error: ErrorType
@@ -36,7 +34,11 @@ export default function useApi<DT = DataType>(
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
   setParams: (params: Record<string, any>) => void
   refetch: () => void
-} {
+}
+
+export default function useApi<DT = DataType>(
+  props: ApiSettings,
+): UseApiReturn<DT> {
   const id = useId()
   const [fetchIndex, setFetchIndex] = useState(0)
   const [apiSettings, setApiSettings] = useState(props)
