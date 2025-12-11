@@ -79,7 +79,7 @@ const ProjectApproval = ({
                 )}
                 {project.status === 'Transferred' &&
                   (fieldName === 'meeting' ? (
-                    <span key={fieldName}>
+                    <span key="transferred_meeting">
                       {detailItem(
                         tableColumns.transfer_meeting,
                         project.transfer_meeting,
@@ -93,6 +93,7 @@ const ProjectApproval = ({
                       {detailItem(
                         tableColumns.transfer_excom_provision,
                         project.transfer_excom_provision,
+                        { classNames: textAreaViewClassname },
                       )}
                     </span>
                   ) : null)}
@@ -124,12 +125,14 @@ const ProjectApproval = ({
             tableColumns.total_fund + ' (US $)',
             project.total_fund as string,
             'decimal',
+            getFieldHistory('total_fund'),
           )}
         {canViewField(viewableFields, 'support_cost_psc') &&
           numberDetailItem(
             tableColumns.support_cost_psc + ' (US $)',
             project.support_cost_psc as string,
             'decimal',
+            getFieldHistory('support_cost_psc'),
           )}
       </div>
       {project.status === 'Transferred' && (

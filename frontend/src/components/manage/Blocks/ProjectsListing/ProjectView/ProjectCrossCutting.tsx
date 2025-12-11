@@ -5,8 +5,8 @@ import {
   detailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
-import { canViewField, formatFieldsHistory, hasFields } from '../utils'
 import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
+import { canViewField, hasFields } from '../utils'
 import {
   considerationOpts,
   lvcNonLvcOpts,
@@ -53,9 +53,8 @@ const ProjectCrossCutting = ({
       : '-'
 
   const getFieldHistory = useCallback(
-    (name: string, dataType?: string) => {
-      const history = fieldHistory?.[name] ?? []
-      return dataType ? formatFieldsHistory(history, dataType) : history
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
     },
     [fieldHistory],
   )
@@ -120,14 +119,14 @@ const ProjectCrossCutting = ({
                     tableColumns.total_fund + ' (US $)',
                     project.total_fund as string,
                     'decimal',
-                    getFieldHistory('total_fund', 'decimal'),
+                    getFieldHistory('total_fund'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
                     tableColumns.support_cost_psc + ' (US $)',
                     project.support_cost_psc as string,
                     'decimal',
-                    getFieldHistory('support_cost_psc', 'decimal'),
+                    getFieldHistory('support_cost_psc'),
                   )}
               </div>
             </div>

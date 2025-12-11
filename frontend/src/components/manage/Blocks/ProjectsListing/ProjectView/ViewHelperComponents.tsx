@@ -1,5 +1,5 @@
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
-import { hasExcomUpdate } from '../utils'
+import { getFormattedNumericValue, hasExcomUpdate } from '../utils'
 import {
   DetailItemClassname,
   FieldType,
@@ -43,7 +43,11 @@ export const detailItem = (
   } = classNames ?? {}
 
   return fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+    <FieldHistoryIndicator
+      dataType="text"
+      history={fieldHistory}
+      {...{ fieldName, extra }}
+    />
   ) : (
     <span
       className={cx('flex gap-2', containerClassName, {
@@ -67,7 +71,10 @@ export const numberDetailItem = (
   isDisabledImpactField?: boolean,
 ) =>
   fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+    <FieldHistoryIndicator
+      history={fieldHistory}
+      {...{ fieldName, dataType }}
+    />
   ) : (
     <span
       className={cx('flex gap-2', {
@@ -78,12 +85,7 @@ export const numberDetailItem = (
         {fieldName} {isDisabledImpactField ? ' (planned)' : ''}
       </span>
       <h4 className="m-0">
-        {!isNil(fieldValue)
-          ? formatDecimalValue(parseFloat(fieldValue), {
-              maximumFractionDigits: dataType === 'decimal' ? 2 : 0,
-              minimumFractionDigits: dataType === 'decimal' ? 2 : 0,
-            })
-          : '-'}
+        {getFormattedNumericValue(fieldValue, dataType === 'decimal' ? 2 : 0)}
       </h4>
     </span>
   )
@@ -96,7 +98,11 @@ export const booleanDetailItem = (
   isDisabledImpactField?: boolean,
 ) =>
   fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+    <FieldHistoryIndicator
+      dataType="boolean"
+      history={fieldHistory}
+      {...{ fieldName, className }}
+    />
   ) : (
     <span
       className={cx('flex gap-2', className, {
@@ -116,7 +122,11 @@ export const dateDetailItem = (
   fieldHistory?: detailItemExtra['fieldHistory'],
 ) =>
   fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
-    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
+    <FieldHistoryIndicator
+      dataType="date"
+      history={fieldHistory}
+      fieldName={fieldName}
+    />
   ) : (
     <span className="flex gap-2">
       <span>{fieldName}</span>
