@@ -15,7 +15,8 @@ class AnnualProgressReportAdmin(admin.ModelAdmin):
     list_filter = ["year", "endorsed"]
 
     def get_list_display(self, request):
-        return get_final_display_list(AnnualProgressReport, [])
+        exclude = ["remarks_endorsed", "agency_project_reports"]
+        return get_final_display_list(AnnualProgressReport, exclude)
 
 
 class AnnualProjectReportFileInline(admin.TabularInline):
