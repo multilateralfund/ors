@@ -94,63 +94,31 @@ class ProjectsV2DumpWriter:
     def _build_headers(self, fields):
         for f in fields:
             if isinstance(f, DateField):
-                yield self._handle_date_field(f)
+                yield self._field_header(f, get_value_date)
             elif isinstance(f, DateTimeField):
-                yield self._handle_datetime_field(f)
+                yield self._field_header(f, get_value_date)
             elif isinstance(f, BooleanField):
-                yield self._handle_boolean_field(f)
+                yield self._field_header(f, get_value_boolean)
             elif isinstance(f, CharField) and f.choices:
-                yield self._handle_choice_field(f)
+                yield self._field_header(f, partial(get_choice_value, dict(f.choices)))
             elif isinstance(f, JSONField):
                 continue
             elif isinstance(f, ForeignKey):
                 if f.name == "component":
-                    yield self._handle_component_field(f)
+                    yield self._field_header(f, get_value_component_field)
                 else:
-                    yield self._handle_foreignkey_field(f)
+                    yield self._field_header(f, partial(get_value_fk, f))
             elif isinstance(f, ManyToManyField):
-                yield self._handle_manytomany_field(f)
+                yield self._field_header(f, partial(get_value_m2m, f))
             else:
                 yield self._field_header(f)
 
-    def _field_header(self, f):
+    def _field_header(self, f, method=get_field_value):
         return {
             "id": f.name,
             "headerName": f.name,
-            "method": get_field_value,
+            "method": method,
         }
-
-    def _handle_date_field(self, f):
-        header = self._field_header(f)
-        header["method"] = get_value_date
-        return header
-
-    _handle_datetime_field = _handle_date_field
-
-    def _handle_boolean_field(self, f):
-        header = self._field_header(f)
-        header["method"] = get_value_boolean
-        return header
-
-    def _handle_choice_field(self, f):
-        header = self._field_header(f)
-        header["method"] = partial(get_choice_value, dict(f.choices))
-        return header
-
-    def _handle_component_field(self, f):
-        header = self._field_header(f)
-        header["method"] = get_value_component_field
-        return header
-
-    def _handle_foreignkey_field(self, f: ForeignKey):
-        header = self._field_header(f)
-        header["method"] = partial(get_value_fk, f)
-        return header
-
-    def _handle_manytomany_field(self, f: ForeignKey):
-        header = self._field_header(f)
-        header["method"] = partial(get_value_m2m, f)
-        return header
 
 
 class ProjectsV2Dump:
