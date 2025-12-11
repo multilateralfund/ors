@@ -216,14 +216,12 @@ const ProjectsCreate = ({
           ...approvalCrossCuttingErrors,
         }
       : postExComUpdate
-        ? {
-            ...getPostExcomApprovalErrors(
-              approvalData,
-              approvalFields,
-              errors,
-              project,
-            ),
-          }
+        ? getPostExcomApprovalErrors(
+            approvalData,
+            approvalFields,
+            errors,
+            project,
+          )
         : {}
   }, [
     approvalData,
