@@ -1,4 +1,5 @@
 import os
+
 from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
@@ -55,6 +56,43 @@ from core.api.utils import (
 )
 
 # pylint: disable=C0302
+
+
+class APRCurrentYearView(APIView):
+    """
+    Returns the current "active" APR year for the workspace and the list of existing APRs
+    (so the UI can switch years).
+
+    If no unendorsed (active reporting) APR exists, returns the latest endorsed.
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
+
+    def get(self, request):
+        apr_list = list(
+            AnnualProgressReport.objects.order_by("-year").values("year", "endorsed")
+        )
+
+        current_year = None
+        endorsed = False
+        for apr_data in apr_list:
+            if not apr_data["endorsed"]:
+                current_year = apr_data["year"]
+                endorsed = apr_data["endorsed"]
+                break
+
+        # If no unendorsed APR exists, use the latest endorsed
+        if current_year is None and apr_list:
+            current_year = apr_list[0]["year"]
+            endorsed = apr_list[0]["endorsed"]
+
+        return Response(
+            {
+                "current_year": current_year,
+                "endorsed": endorsed,
+                "apr_list": apr_list,
+            }
+        )
 
 
 class APRWorkspaceView(RetrieveAPIView):
