@@ -4,7 +4,6 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -61,7 +60,8 @@ from core.api.utils import (
 
 class APRCurrentYearView(APIView):
     """
-    Returns the current "active" APR year for the workspace.
+    Returns the current "active" APR year for the workspace and the list of existing APRs
+    (so the UI can switch years).
 
     If no unendorsed (active reporting) APR exists, returns the latest endorsed.
     """
@@ -69,25 +69,28 @@ class APRCurrentYearView(APIView):
     permission_classes = [IsAuthenticated, HasAPRViewAccess]
 
     def get(self, request):
-        unendorsed = (
-            AnnualProgressReport.objects.filter(endorsed=False)
-            .order_by("-year")
-            .first()
+        apr_list = list(
+            AnnualProgressReport.objects.order_by("-year").values("year", "endorsed")
         )
-        if unendorsed:
-            return Response({"year": unendorsed.year, "endorsed": False})
 
-        latest = (
-            AnnualProgressReport.objects.filter(endorsed=True).order_by("-year").first()
-        )
-        if latest:
-            return Response({"year": latest.year, "endorsed": True})
+        current_year = None
+        endorsed = False
+        for apr_data in apr_list:
+            if not apr_data["endorsed"]:
+                current_year = apr_data["year"]
+                endorsed = apr_data["endorsed"]
+                break
 
-        # Using current year - 1 as fallback; reporting is generally for previous year
+        # If no unendorsed APR exists, use the latest endorsed
+        if current_year is None and apr_list:
+            current_year = apr_list[0]["year"]
+            endorsed = apr_list[0]["endorsed"]
+
         return Response(
             {
-                "year": timezone.now().year - 1,
-                "endorsed": True,
+                "current_year": current_year,
+                "endorsed": endorsed,
+                "apr_list": apr_list,
             }
         )
 

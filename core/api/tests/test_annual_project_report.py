@@ -53,8 +53,12 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == annual_progress_report.year
+        assert response.data["current_year"] == annual_progress_report.year
         assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 2
+        # Find the unendorsed APR and check it (should be the param fixture)
+        unendorsed = next(a for a in response.data["apr_list"] if not a["endorsed"])
+        assert unendorsed["year"] == annual_progress_report.year
 
     def test_returns_latest_unendorsed_when_multiple_exist(self, agency_viewer_user):
         AnnualProgressReportFactory(year=2023, endorsed=False)
@@ -66,8 +70,9 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == 2024
+        assert response.data["current_year"] == 2024
         assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 3
 
     def test_returns_latest_endorsed_when_no_unendorsed(
         self, agency_viewer_user, annual_progress_report_endorsed
@@ -79,8 +84,9 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == annual_progress_report_endorsed.year
+        assert response.data["current_year"] == annual_progress_report_endorsed.year
         assert response.data["endorsed"] is True
+        assert len(response.data["apr_list"]) == 2
 
     def test_returns_latest_endorsed_among_multiple(self, agency_viewer_user):
         AnnualProgressReportFactory(year=2021, endorsed=True)
@@ -92,18 +98,19 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == 2023
+        assert response.data["current_year"] == 2023
         assert response.data["endorsed"] is True
+        assert len(response.data["apr_list"]) == 3
 
-    def test_returns_fallback_when_no_reports_exist(self, agency_viewer_user):
+    def test_no_reports_exist(self, agency_viewer_user):
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        expected_year = timezone.now().year - 1
-        assert response.data["year"] == expected_year
-        assert response.data["endorsed"] is True
+        assert response.data["current_year"] is None
+        assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 0
 
     def test_uses_unendorsed_over_endorsed(self, agency_viewer_user):
         AnnualProgressReportFactory(year=2023, endorsed=False)
@@ -114,8 +121,9 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == 2023
+        assert response.data["current_year"] == 2023
         assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 2
 
     def test_mlfs_user_can_access(
         self, secretariat_viewer_user, annual_progress_report
@@ -125,8 +133,9 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == annual_progress_report.year
+        assert response.data["current_year"] == annual_progress_report.year
         assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 1
 
     def test_agency_user_can_access(self, agency_viewer_user, annual_progress_report):
         self.client.force_authenticate(user=agency_viewer_user)
@@ -134,8 +143,9 @@ class TestAPRCurrentYearView(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["year"] == annual_progress_report.year
+        assert response.data["current_year"] == annual_progress_report.year
         assert response.data["endorsed"] is False
+        assert len(response.data["apr_list"]) == 1
 
 
 @pytest.mark.django_db
