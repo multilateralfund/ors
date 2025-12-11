@@ -106,7 +106,7 @@ export default function APRMLFSWorkspace() {
     data: kickstartAPR,
     loading: loadingKickstart,
     loaded: loadedKickstart,
-    setApiSettings: refetchKickstart,
+    refetch: refetchKickstart,
   } = useApi<AnnualProgressReportKickstart>({
     options: {
       withStoreCache: false,
@@ -232,7 +232,7 @@ export default function APRMLFSWorkspace() {
     // HACK
     // The useAPI hook is not reactive to the change in year because the path
     // is not kept in its own state. We have to resort to these kind of hacks
-    // to make it seem reactive
+    // to make the year reactive
 
     const pathYear = newYear ?? year
 
@@ -244,10 +244,7 @@ export default function APRMLFSWorkspace() {
       ...structuredClone(prev),
       path: `api/annual-project-report/${pathYear}/endorse/`,
     }))
-    refetchKickstart((prev) => ({
-      ...structuredClone(prev),
-      path: `api/annual-project-report/kick-start/`,
-    }))
+    refetchKickstart()
   }
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
