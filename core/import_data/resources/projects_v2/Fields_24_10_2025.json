@@ -1402,6 +1402,7 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
+        "IS_ACTUAL": true,
         "SORT_ORDER": 107,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]

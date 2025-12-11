@@ -48,7 +48,6 @@ class ProjectFieldAdmin(admin.ModelAdmin):
     search_fields = [
         "read_field_name",
         "write_field_name",
-        "name",
     ]
 
     list_filter = ["table", "data_type", "section", "mlfs_only"]
