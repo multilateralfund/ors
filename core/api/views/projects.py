@@ -390,12 +390,13 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
                 queryset=self.get_project_fields_queryset(include_actuals),
             )
         )
-        return get_object_or_404(
+        obj = get_object_or_404(
             queryset,
             cluster_id=self.kwargs["cluster_id"],
             type_id=self.kwargs["type_id"],
             sector_id=self.kwargs["sector_id"],
         )
+        return obj
 
     @swagger_auto_schema(
         manual_parameters=[

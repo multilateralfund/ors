@@ -1370,6 +1370,19 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Number of enterprises assisted actual",
+        "LABEL": "Number of enterprises assisted (actual)",
+        "WRITE_FIELD_NAME": "number_of_enterprises_assisted_actual",
+        "READ_FIELD_NAME": "number_of_enterprises_assisted_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "Impact",
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 106,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
         "IMPORT_NAME": "Number of Production Lines assisted",
         "LABEL": "Number of production lines assisted",
         "WRITE_FIELD_NAME": "number_of_production_lines_assisted",
@@ -1378,6 +1391,18 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "SORT_ORDER": 106,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Number of Production Lines assisted actual",
+        "LABEL": "Number of production lines assisted (actual)",
+        "WRITE_FIELD_NAME": "number_of_production_lines_assisted_actual",
+        "READ_FIELD_NAME": "number_of_production_lines_assisted_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "Impact",
+        "SORT_ORDER": 107,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
@@ -1394,6 +1419,19 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Number of enterprises actual",
+        "LABEL": "Number of enterprises (actual)",
+        "WRITE_FIELD_NAME": "number_of_enterprises_actual",
+        "READ_FIELD_NAME": "number_of_enterprises_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "Impact",
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 108,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
         "IMPORT_NAME": "Aggregated consumption",
         "LABEL": "Aggregated consumption",
         "WRITE_FIELD_NAME": "aggregated_consumption",
@@ -1402,8 +1440,21 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "SORT_ORDER": 108,
-        "EDITABLE_IN_VERSIONS": [1,2,3],
-        "VISIBLE_IN_VERSIONS": [1,2,3]
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Aggregated consumption actual",
+        "LABEL": "Aggregated consumption (actual)",
+        "WRITE_FIELD_NAME": "aggregated_consumption_actual",
+        "READ_FIELD_NAME": "aggregated_consumption_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Impact",
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 109,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ Kg)",
@@ -1418,6 +1469,19 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Cost effectiveness (US$/ Kg) actual",
+        "LABEL": "Cost effectiveness (US$/ Kg) (actual)",
+        "WRITE_FIELD_NAME": "cost_effectiveness_actual",
+        "READ_FIELD_NAME": "cost_effectiveness_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Impact",
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 110,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
         "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
         "LABEL": "Cost effectiveness (US$/ CO2-eq)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2",
@@ -1428,6 +1492,19 @@
         "SORT_ORDER": 110,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq) actual",
+        "LABEL": "Cost effectiveness (US$/ CO2-eq) (actual)",
+        "WRITE_FIELD_NAME": "cost_effectiveness_co2_actual",
+        "READ_FIELD_NAME": "cost_effectiveness_co2_actual",
+        "TABLE": "project",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Impact",
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 111,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of enterprises assisted (MYA)",

@@ -121,6 +121,19 @@ def populate_existing_projects_category():
     logger.info("✅ Successfully populated category for existing projects.")
 
 
+def set_correct_version_for_existing_projects():
+    """
+    Set the correct version for existing projects based on the fields they have.
+    """
+    logger.info("⏳ Setting correct version for existing projects...")
+    projects = Project.objects.filter(
+        submission_status__name="Approved",
+        version__lte=3,
+    )
+    projects.update(version=3)
+    logger.info("✅ Successfully set correct version for existing projects.")
+
+
 def mark_obsolete_values():
 
     BP_CHEMICAL_TYPE_OBSOLETES = ["MBR", "PRO MBR"]
@@ -287,6 +300,7 @@ class Command(BaseCommand):
                 "populate_existing_projects_category",
                 "populate_existing_projects_production",
                 "mark_obsolete_values",
+                "set_correct_version_for_existing_projects",
                 "migrate-subsectors-sector-data",
                 "set-production-attribute",
                 "remove-all-meta-project-associations",
@@ -308,6 +322,8 @@ class Command(BaseCommand):
             populate_existing_projects_production()
         elif imp_type == "mark_obsolete_values":
             mark_obsolete_values()
+        elif imp_type == "set_correct_version_for_existing_projects":
+            set_correct_version_for_existing_projects()
         elif imp_type == "migrate-subsectors-sector-data":
             migrate_subsectors_sector_data()
         elif imp_type == "remove-all-meta-project-associations":
