@@ -694,7 +694,7 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Number of training institutions newly assisted actual",
+        "IMPORT_NAME": "Number of training institutions newly  assisted actual",
         "LABEL": "Number of training institutions newly assisted (actual)",
         "WRITE_FIELD_NAME": "number_of_training_institutions_newly_assisted_actual",
         "READ_FIELD_NAME": "number_of_training_institutions_newly_assisted_actual",

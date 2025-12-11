@@ -95,7 +95,7 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Number of female trainers trained",
     "Total number of technicians certified",
     "Number of female technicians certified",
-    "Number of training institutions newly assisted",
+    "Number of training institutions newly  assisted",
     "Number of tools sets distributed",
     "Total number of customs officers trained",
     "Number of female customs officers trained",
