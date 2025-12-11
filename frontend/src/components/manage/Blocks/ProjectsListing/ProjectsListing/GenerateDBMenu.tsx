@@ -66,7 +66,13 @@ const GenerateDBMenu = ({
         },
         permissions: [canViewProjects],
       },
-      { title: 'Compare versions', url: null, permissions: [canViewProjects] },
+      {
+        title: 'Compare versions',
+        url: projectData.projectId
+          ? `/projects-listing/${projectData.projectId}/compare-versions`
+          : null,
+        permissions: [canViewProjects],
+      },
     ],
     [
       canApproveProjects,
