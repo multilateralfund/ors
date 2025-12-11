@@ -41,6 +41,7 @@ import {
   getApprovalErrors,
   getAgencyErrorType,
   canEditField,
+  getPostExcomApprovalErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -214,7 +215,16 @@ const ProjectsCreate = ({
           ),
           ...approvalCrossCuttingErrors,
         }
-      : {}
+      : postExComUpdate
+        ? {
+            ...getPostExcomApprovalErrors(
+              approvalData,
+              approvalFields,
+              errors,
+              project,
+            ),
+          }
+        : {}
   }, [
     approvalData,
     crossCuttingFields,

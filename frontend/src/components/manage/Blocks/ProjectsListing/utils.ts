@@ -530,6 +530,25 @@ export const getCrossCuttingErrors = (
   }
 }
 
+const getFormattedErrors = (
+  errors: { [key: string]: [] },
+  specificFields: ProjectSpecificFields[] | undefined = [],
+) =>
+  Object.entries(errors).reduce(
+    (acc, [key, errMsg]) => {
+      const field = specificFields.find(
+        ({ write_field_name }) => write_field_name === key,
+      )
+
+      if (field) {
+        acc[field.label || key] = errMsg as string[]
+      }
+
+      return acc
+    },
+    {} as Record<string, string[]>,
+  )
+
 export const getApprovalErrors = (
   approvalData: SpecificFields,
   crossCuttingFields: CrossCuttingFields,
@@ -573,20 +592,27 @@ export const getApprovalErrors = (
     ...filteredErrors,
   }
 
-  return Object.entries(allErrors).reduce(
-    (acc, [key, errMsg]) => {
-      const field = specificFields.find(
-        ({ write_field_name }) => write_field_name === key,
-      )
+  return getFormattedErrors(allErrors, specificFields)
+}
 
-      if (field) {
-        acc[field.label || key] = errMsg as string[]
-      }
+export const getPostExcomApprovalErrors = (
+  approvalData: SpecificFields,
+  specificFields: ProjectSpecificFields[] | undefined = [],
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+) => {
+  const fieldsForValidation = ['programme_officer', 'excom_provision']
 
-      return acc
-    },
-    {} as Record<string, string[]>,
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => fieldsForValidation.includes(key)),
   )
+
+  const allErrors = {
+    ...getFieldErrors(fieldsForValidation, approvalData, project),
+    ...filteredErrors,
+  }
+
+  return getFormattedErrors(allErrors, specificFields)
 }
 
 export const hasSpecificField = (
