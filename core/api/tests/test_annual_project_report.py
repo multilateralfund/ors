@@ -744,6 +744,64 @@ class TestAPRFileUploadView(BaseTest):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["message"] == "Files uploaded successfully."
 
+    def test_upload_file_to_endorsed_report(
+        self, agency_inputter_user, mlfs_admin_user, annual_agency_report
+    ):
+        annual_agency_report.progress_report.endorsed = True
+        annual_agency_report.progress_report.save()
+
+        test_file = SimpleUploadedFile(
+            "test.pdf", b"content", content_type="application/pdf"
+        )
+        data = {"financial_file": test_file}
+
+        url = reverse(
+            "apr-file-upload",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+
+        # Agency user cannot upload
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "endorsed" in str(response.data).lower()
+
+        # MLFS admin also cannot upload
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "endorsed" in str(response.data).lower()
+
+    def test_delete_file_from_endorsed_report(
+        self, agency_inputter_user, mlfs_admin_user, annual_agency_report
+    ):
+        file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
+
+        annual_agency_report.progress_report.endorsed = True
+        annual_agency_report.progress_report.save()
+
+        url = reverse(
+            "apr-file-delete",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+                "pk": file_obj.pk,
+            },
+        )
+
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.delete(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "endorsed" in str(response.data).lower()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.delete(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "endorsed" in str(response.data).lower()
+
 
 @pytest.mark.django_db
 class TestAPRFileDownloadView(BaseTest):
