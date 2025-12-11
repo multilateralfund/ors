@@ -95,7 +95,17 @@ export default function APRWorkspace() {
       {/* "~" means absolute, outside the nested context */}
       <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <div className="mb-2 flex justify-between">
-        <PageHeading className="min-w-fit">{`Annual Progress Report (${year}) workspace`}</PageHeading>
+        <PageHeading className="flex min-w-fit items-center gap-x-2">
+          {`Annual Progress Report workspace`}
+          <span className="rounded border border-solid px-1 text-lg">
+            {isDraft ? 'DRAFT' : 'SUBMITTED'}
+          </span>
+          {apr?.is_endorsed && (
+            <span className="rounded border border-solid px-1 text-lg">
+              ENDORSED
+            </span>
+          )}
+        </PageHeading>
         <div className="flex gap-x-2">
           <Button
             variant="contained"

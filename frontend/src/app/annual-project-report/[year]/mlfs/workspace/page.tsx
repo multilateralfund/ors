@@ -352,10 +352,12 @@ export default function APRMLFSWorkspace() {
       {/* "~" means absolute, outside the nested context */}
       <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
-        {`MLFS Annual Project Report Workspace`}{' '}
-        <span className="rounded border border-solid px-1 text-lg">
-          {year} {progressReport?.endorsed ? 'ENDORSED' : ''}
-        </span>
+        {`MLFS Annual Project Report Workspace`}
+        {progressReport?.endorsed && (
+          <span className="rounded border border-solid px-1 text-lg">
+            ENDORSED
+          </span>
+        )}
       </PageHeading>
 
       <Box className="shadow-none">
