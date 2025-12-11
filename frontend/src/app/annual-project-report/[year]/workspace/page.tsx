@@ -59,7 +59,7 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs()
+  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })
 
   if (!canViewAPR) {
     return <NotFoundPage />

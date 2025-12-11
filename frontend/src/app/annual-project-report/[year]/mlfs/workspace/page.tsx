@@ -212,6 +212,7 @@ export default function APRMLFSWorkspace() {
     canEditAPR && kickstartAPR && kickstartAPR.can_kick_start,
   )
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
+    year: year!,
     inlineEdit: isMlfsUser && canUpdateAPR,
   })
 

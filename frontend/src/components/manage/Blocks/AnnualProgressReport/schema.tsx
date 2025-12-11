@@ -57,6 +57,7 @@ interface APRTableColumn {
 interface BaseColumnDefOptions {
   group?: string | null
   inlineEdit?: boolean
+  year: string
 }
 
 interface ClipboardDisabled extends BaseColumnDefOptions {
@@ -74,12 +75,13 @@ interface ClipboardEnabled extends BaseColumnDefOptions {
 type ColumnDefOptions = ClipboardDisabled | ClipboardEnabled
 
 export default function useGetColumnDefs({
+  year,
   group = null,
   inlineEdit = false,
   clipboardEdit = false,
   rows,
   setRows,
-}: ColumnDefOptions = {}) {
+}: ColumnDefOptions) {
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
@@ -508,7 +510,7 @@ export default function useGetColumnDefs({
     },
     // Narrative & Indicators Data Fields
     remarksLastYear: {
-      label: 'Remarks (as of 31 December XXXX)',
+      label: `Remarks (as of 31 December ${parseInt(year, 10) - 1})`,
       fieldName: 'last_year_remarks',
       group: 'Narrative & Indicators Data Fields',
       input: true,

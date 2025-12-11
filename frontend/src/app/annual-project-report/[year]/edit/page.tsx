@@ -82,6 +82,7 @@ export default function APREdit() {
   }, [apr, isMlfsUser])
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
+    year: year!,
     group: TABS[activeTab].fieldsGroup,
     clipboardEdit: true,
     rows,
