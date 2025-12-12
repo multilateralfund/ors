@@ -223,6 +223,7 @@ const ProjectsEdit = ({
     isError: false,
     tranchesData: [],
     loaded: false,
+    loading: false,
   }
 
   const [bpData, setBpData] = useState({
@@ -440,7 +441,7 @@ const ProjectsEdit = ({
 
   const getTrancheErrors = async () => {
     setTrancheErrors((prevErrors) => {
-      return { ...prevErrors, loaded: false }
+      return { ...prevErrors, loaded: false, loading: true }
     })
 
     try {
@@ -459,6 +460,7 @@ const ProjectsEdit = ({
           isError: true,
           tranchesData: [],
           loaded: true,
+          loading: false,
         })
       } else {
         const tranches = result.map((entry: RelatedProjectsType) => {
@@ -490,6 +492,7 @@ const ProjectsEdit = ({
           isError: false,
           tranchesData: tranches,
           loaded: true,
+          loading: false,
         })
       }
     } catch (error) {
@@ -498,6 +501,7 @@ const ProjectsEdit = ({
         isError: false,
         tranchesData: [],
         loaded: true,
+        loading: false,
       })
       enqueueSnackbar(
         <>
@@ -522,6 +526,7 @@ const ProjectsEdit = ({
         isError: false,
         tranchesData: [],
         loaded: true,
+        loading: false,
       })
     } else if (isEditMode && canViewProjects) {
       debouncedGetTrancheErrors()
