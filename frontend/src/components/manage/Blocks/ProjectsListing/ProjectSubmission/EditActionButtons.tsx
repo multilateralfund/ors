@@ -27,6 +27,7 @@ import {
   getPostExcomApprovalErrors,
   getSpecificFieldsErrors,
   hasSectionErrors,
+  hasSpecificField,
 } from '../utils'
 import {
   ProjectFile,
@@ -67,6 +68,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
   trancheErrors,
+  getTrancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
   setParams,
@@ -80,6 +82,7 @@ const EditActionButtons = ({
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => void
   approvalFields?: ProjectSpecificFields[]
   setParams?: any
   postExComUpdate?: boolean
@@ -292,6 +295,21 @@ const EditActionButtons = ({
       map(newFilesMetadata, (file) => [file.name, file.type]),
     )
     const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
+    const hasTrancheField = hasSpecificField(specificFields, 'tranche')
+
+    if (
+      hasTrancheField &&
+      (projectData.projectSpecificFields.tranche ?? 0) > 1 &&
+      (project.submission_status !== 'Draft' || !!navigationPage)
+    ) {
+      const trancheErrors = getTrancheErrors?.()
+
+      if (trancheErrors) {
+        setIsLoading(false)
+        return
+      }
+    }
 
     try {
       // Validate files

@@ -32,6 +32,7 @@ const ProjectsHeader = ({
   files,
   setProjectFiles = () => {},
   trancheErrors,
+  getTrancheErrors,
   specificFields,
   approvalFields,
   bpData,
@@ -43,6 +44,7 @@ const ProjectsHeader = ({
   setParams?: any
   postExComUpdate?: boolean
   trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => void
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
@@ -178,6 +180,7 @@ const ProjectsHeader = ({
                 setProjectFiles,
                 setProjectTitle,
                 trancheErrors,
+                getTrancheErrors,
                 specificFields,
                 approvalFields,
                 postExComUpdate,
