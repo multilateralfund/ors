@@ -318,6 +318,7 @@ export type TrancheErrorType = {
   isError: boolean
   tranchesData: RelatedProjectsType[]
   loaded: boolean
+  loading: boolean
 }
 
 export type TrancheErrors = {

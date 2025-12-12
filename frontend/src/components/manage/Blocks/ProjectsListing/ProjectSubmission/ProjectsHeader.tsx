@@ -71,15 +71,18 @@ const ProjectsHeader = ({
     crossCuttingFields,
     agency_id,
   )
+  const hasTrancheErrors =
+    !!trancheErrors?.errorText || !!trancheErrors?.loading
 
   const isSaveDisabled =
     (mode !== 'add' && !loadedFiles) ||
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    !!find(filesMetaData, (metadata) => !metadata.type)
+    !!find(filesMetaData, (metadata) => !metadata.type) ||
+    (mode === 'edit' && (project?.version ?? 0) >= 2 && hasTrancheErrors)
 
-  const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
+  const isSubmitDisabled = isSaveDisabled || hasTrancheErrors
 
   const [projectTitle, setProjectTitle] = useState<string>(
     project?.title ?? 'N/A',
