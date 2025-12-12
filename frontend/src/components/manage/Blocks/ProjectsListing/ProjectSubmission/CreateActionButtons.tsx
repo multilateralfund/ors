@@ -127,7 +127,7 @@ const CreateActionButtons = ({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canUpdateProjects && (
         <SubmitButton

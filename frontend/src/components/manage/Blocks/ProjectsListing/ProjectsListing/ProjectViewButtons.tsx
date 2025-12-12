@@ -30,10 +30,7 @@ const EditLink = (props: any) => {
   const { children, className, ...rest } = props
   return (
     <CustomLink
-      className={cx(
-        'ml-auto mt-auto h-10 text-nowrap text-lg uppercase',
-        className,
-      )}
+      className={cx('mt-auto h-10 text-nowrap text-lg uppercase', className)}
       color="secondary"
       variant="contained"
       {...rest}
@@ -240,7 +237,7 @@ const ProjectViewButtons = ({
 
   return (
     isNull(latest_project) && (
-      <div className="ml-auto flex flex-wrap gap-3">
+      <div className="ml-auto flex flex-wrap justify-end gap-3">
         {editable && (
           <>
             {canEditProjects && (
@@ -250,12 +247,12 @@ const ProjectViewButtons = ({
               <IncreaseVersionButton
                 title="Submit project"
                 onSubmit={onSubmitProject}
-                className="ml-auto mt-auto h-10"
+                className="mt-auto h-10"
               />
             )}
             {canRecommendProjects && isSubmitted && (
               <Dropdown
-                className={cx(dropDownClassName, 'ml-auto mt-auto h-10')}
+                className={cx(dropDownClassName, 'mt-auto h-10')}
                 ButtonProps={DropDownButtonProps}
                 MenuProps={DropDownMenuProps}
                 label={<>Approval</>}
@@ -302,7 +299,7 @@ const ProjectViewButtons = ({
           <CircularProgress
             color="inherit"
             size="30px"
-            className="text-align mb-1 ml-1.5 ml-auto mt-auto"
+            className="text-align mb-1 ml-1.5 mt-auto"
           />
         )}
         <EditActionModals

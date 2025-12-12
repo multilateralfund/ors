@@ -546,7 +546,7 @@ const EditActionButtons = ({
   }
 
   return (
-    <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
+    <div className="container flex w-full flex-wrap justify-end gap-x-3 gap-y-2 px-0">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canEditProject && (
         <Button

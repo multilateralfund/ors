@@ -86,7 +86,7 @@ const ProjectViewWrapper = () => {
       {!loading && data && (
         <>
           <HeaderTitle>
-            <div className="flex flex-wrap justify-between gap-3">
+            <div className="flex flex-wrap gap-3">
               <div className="flex flex-col">
                 <RedirectBackButton />
                 <div className="flex flex-wrap gap-2 sm:flex-nowrap">
