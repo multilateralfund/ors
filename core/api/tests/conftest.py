@@ -54,10 +54,11 @@ from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFactory,
 )
+from core.models import Country
 from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
-from core.models import ProjectFile
+from core.models import ProjectFile, ProjectOdsOdp
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
@@ -248,6 +249,11 @@ def agency_viewer_user(agency):
 @pytest.fixture
 def new_country():
     return CountryFactory.create(iso3="NwC")
+
+
+@pytest.fixture
+def country_europe():
+    return CountryFactory(name="Europe", location_type=Country.LocationType.REGION)
 
 
 @pytest.fixture
@@ -1555,12 +1561,30 @@ def initial_project_version_for_apr(agency, country_ro, sector, project_ongoing_
 
 
 @pytest.fixture
+def initial_project_version_2_for_apr(
+    agency, country_ro, sector, project_ongoing_status
+):
+    return ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/COM/INV/01",
+        version=2,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+
+@pytest.fixture
 def multiple_project_versions_for_apr(
     agency,
     country_ro,
     sector,
     project_ongoing_status,
     multiple_decisions_apr_same_year,
+    substance,
 ):
     post_excom_versions = [
         ProjectFactory(
@@ -1569,6 +1593,7 @@ def multiple_project_versions_for_apr(
             sector=sector,
             status=project_ongoing_status,
             date_approved=date(2021, 6, 1),
+            date_completion=date(2026, 5, 3),
             code="TEST/COM/INV/01",
             version=i + 3,
             post_excom_decision=decision,
@@ -1584,6 +1609,7 @@ def multiple_project_versions_for_apr(
         sector=sector,
         status=project_ongoing_status,
         date_approved=date(2021, 6, 1),
+        date_completion=date(2026, 5, 1),
         code="TEST/COM/INV/01",
         version=3,
         post_excom_decision=None,
@@ -1594,6 +1620,27 @@ def multiple_project_versions_for_apr(
     for version in post_excom_versions[:-1]:
         version.latest_project = final_version
         version.save()
+
+    for i, version in enumerate([initial_version] + post_excom_versions, start=1):
+        # Adding production and consumption for each project
+        ProjectOdsOdpFactory(
+            project=version,
+            ods_substance=substance,
+            odp=0.02 + i,
+            co2_mt=0.05 + i,
+            phase_out_mt=0.15 + i,
+            ods_type=ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
+            sort_order=1,
+        )
+        ProjectOdsOdpFactory(
+            project=version,
+            ods_substance=substance,
+            odp=0.02 + i,
+            co2_mt=0.05 + i,
+            phase_out_mt=0.15 + i,
+            ods_type=ProjectOdsOdp.ProjectOdsOdpType.OTHER,
+            sort_order=1,
+        )
 
     return [initial_version] + post_excom_versions
 
