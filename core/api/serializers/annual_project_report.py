@@ -29,7 +29,9 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         source="project.agency.name", read_only=True, allow_null=True
     )
     # TODO: is it ok to use cluster.name below? or should it be cluster.code?
-    cluster_name = serializers.CharField(source="project.cluster.name", read_only=True)
+    cluster_name = serializers.CharField(
+        source="project.cluster.name", read_only=True, allow_null=True
+    )
     region_name = serializers.CharField(
         source="project.country.parent.name", read_only=True, allow_null=True
     )

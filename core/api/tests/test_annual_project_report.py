@@ -24,6 +24,8 @@ from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFileFactory,
     ProjectFactory,
+    MetaProjectFactory,
+    ProjectClusterFactory,
 )
 
 # pylint: disable=W0221,W0613,C0302,R0913
@@ -3586,3 +3588,420 @@ class TestAPRFilesDownloadAllView(BaseTest):
         assert "Test_Agency_Special_Co" in content_disposition
         assert "/" not in content_disposition
         assert "&" not in content_disposition
+
+
+@pytest.mark.django_db
+class TestAPRDerivedFieldsAPI(BaseTest):
+    """
+    Test class to check that *all* derived fields for AnnualProjectReport
+    are correctly calculated and returned via API based on existing projects.
+    """
+
+    def test_without_login(self):
+        """No need for this here, it's tested elsewhere"""
+
+    def test_project_identification_derived_fields(
+        self, agency_viewer_user, annual_agency_report, country_ro, country_europe
+    ):
+        country_ro.parent = country_europe
+        country_ro.save()
+
+        project = ProjectFactory(
+            code="ROM/FOA/80/TAS/123",
+            legacy_code="ROM/80/TAS/123",
+            title="Test Project for Derived Fields",
+            agency=annual_agency_report.agency,
+            country=country_ro,
+        )
+
+        project.meta_project = MetaProjectFactory(code="ROM/FOA/80/TAS/123")
+        project.cluster = ProjectClusterFactory.create(
+            name="KPP1", code="KPP1", sort_order=1
+        )
+        project.save()
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        assert project_data["meta_code"] == "ROM/FOA/80/TAS/123"
+        assert project_data["project_code"] == "ROM/FOA/80/TAS/123"
+        assert project_data["legacy_code"] == "ROM/80/TAS/123"
+        assert project_data["agency_name"] == project.agency.name
+        assert project_data["cluster_name"] == project.cluster.name
+        assert project_data["region_name"] == project.country.parent.name
+        assert project_data["country_name"] == project.country.name
+        assert project_data["type_code"] == project.project_type.code
+        assert project_data["sector_code"] == project.sector.code
+        assert project_data["project_title"] == "Test Project for Derived Fields"
+
+    def test_date_derived_fields(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # date_approved should come from version 3
+        assert project_data["date_approved"] == version3.date_approved.isoformat()
+
+        # date_completion_proposal should come from version 3
+        assert (
+            project_data["date_completion_proposal"]
+            == version3.date_completion.isoformat()
+        )
+
+        # date_of_completion_per_agreement_or_decisions comes from latest version >= 3
+        assert (
+            project_data["date_of_completion_per_agreement_or_decisions"]
+            == latest_version.date_completion.isoformat()
+        )
+
+    def test_phaseout_proposal_derived_fields(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # All phaseout proposal fields should come from version 3
+        assert (
+            project_data["consumption_phased_out_odp_proposal"]
+            == version3.consumption_phase_out_odp
+        )
+        assert (
+            project_data["consumption_phased_out_co2_proposal"]
+            == version3.consumption_phase_out_co2
+        )
+        assert (
+            project_data["production_phased_out_odp_proposal"]
+            == version3.production_phase_out_odp
+        )
+        assert (
+            project_data["production_phased_out_co2_proposal"]
+            == version3.production_phase_out_co2
+        )
+
+    def test_financial_approved_and_adjustment_fields(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=80000.0,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        assert project_data["approved_funding"] == version3.total_fund
+
+        expected_adjustment = latest_version.total_fund - version3.total_fund
+        assert project_data["adjustment"] == expected_adjustment
+
+        assert (
+            project_data["approved_funding_plus_adjustment"]
+            == latest_version.total_fund
+        )
+
+    def test_financial_calculated_fields(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        funds_disbursed = 80000.0
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=funds_disbursed,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        expected_balance = version3.total_fund - funds_disbursed
+        assert project_data["balance"] == expected_balance
+
+        expected_percentage = funds_disbursed / latest_version.total_fund
+        assert project_data["per_cent_funds_disbursed"] == expected_percentage
+
+    def test_support_cost_derived_fields(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            support_cost_disbursed=8000.0,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # support_cost_approved comes from version 3
+        assert project_data["support_cost_approved"] == version3.support_cost_psc
+
+        # support_cost_adjustment is latest - approved
+        expected_adjustment = (
+            latest_version.support_cost_psc - version3.support_cost_psc
+        )
+        assert project_data["support_cost_adjustment"] == expected_adjustment
+
+        # support_cost_approved_plus_adjustment
+        expected_total = version3.support_cost_psc + expected_adjustment
+        assert project_data["support_cost_approved_plus_adjustment"] == expected_total
+
+    def test_support_cost_balance(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        support_cost_disbursed = 8000.0
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            support_cost_disbursed=support_cost_disbursed,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        expected_balance = latest_version.support_cost_psc - support_cost_disbursed
+        assert project_data["support_cost_balance"] == expected_balance
+
+    def test_implementation_delays_field(
+        self, agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # This field is currently hardcoded to return an empty string
+        assert project_data["implementation_delays_status_report_decisions"] == ""
+
+    def test_derived_fields_with_no_version_3(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        initial_project_version_2_for_apr,
+    ):
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=initial_project_version_2_for_apr,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # Fields that depend on version 3 should be None
+        assert project_data["consumption_phased_out_odp_proposal"] is None
+        assert project_data["consumption_phased_out_co2_proposal"] is None
+        assert project_data["production_phased_out_odp_proposal"] is None
+        assert project_data["production_phased_out_co2_proposal"] is None
+        assert project_data["approved_funding"] is None
+        assert project_data["support_cost_approved"] is None
+
+    def test_derived_fields_with_no_latest_version(
+        self, agency_viewer_user, annual_agency_report, late_post_excom_versions_for_apr
+    ):
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=late_post_excom_versions_for_apr[1],
+            funds_disbursed=80000.0,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # Fields that depend on latest_version_for_year should be == None
+        assert project_data["adjustment"] is None
+        assert project_data["support_cost_adjustment"] is None
+
+        # But approved_funding_plus_adjustment should use version 3 as fallback
+        version3 = late_post_excom_versions_for_apr[0]
+        assert project_data["approved_funding_plus_adjustment"] == version3.total_fund
+
+    def test_null_handling_in_calculations(
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=None,
+        )
+
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = response.data["project_reports"][0]
+
+        # per_cent_funds_disbursed should be None when funds_disbursed is None
+        assert project_data["per_cent_funds_disbursed"] is None
+
+        # balance should treat None as 0
+        assert project_data["balance"] == version3.total_fund
+
+    def test_all_derived_fields_via_mlfs_export(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        url += f"?agency={annual_agency_report.agency.id}"
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert (
+            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            == version3.total_fund
+        )
+        assert worksheet.cell(first_data_row, columns["adjustment"]).value == (
+            latest_version.total_fund - version3.total_fund
+        )
+        assert worksheet.cell(
+            first_data_row, columns["approved_funding_plus_adjustment"]
+        ).value == (latest_version.total_fund)

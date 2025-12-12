@@ -300,7 +300,7 @@ class AnnualProjectReport(models.Model):
 
     @property
     def date_completion_proposal(self):
-        return self.project_version_3.date_completion_proposal
+        return self.project_version_3.date_completion
 
     @cached_property
     def consumption_phased_out_odp_proposal(self):
