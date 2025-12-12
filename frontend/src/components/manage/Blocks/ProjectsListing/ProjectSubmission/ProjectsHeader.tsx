@@ -80,7 +80,9 @@ const ProjectsHeader = ({
     hasValidationErrors ||
     bpData.bpDataLoading ||
     !!find(filesMetaData, (metadata) => !metadata.type) ||
-    (mode === 'edit' && (project?.version ?? 0) >= 2 && hasTrancheErrors)
+    (mode === 'edit' &&
+      project?.submission_status !== 'Draft' &&
+      hasTrancheErrors)
 
   const isSubmitDisabled = isSaveDisabled || hasTrancheErrors
 
