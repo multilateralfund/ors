@@ -476,6 +476,7 @@ const ProjectsEdit = ({
           return {
             title: entry.title,
             id: entry.id,
+            tranche: entry.tranche,
             errors: entry.errors,
             warnings: filteredWarnings,
           }
