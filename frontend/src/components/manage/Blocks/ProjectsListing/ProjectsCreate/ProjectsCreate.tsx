@@ -270,16 +270,15 @@ const ProjectsCreate = ({
 
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
-  const impactErrors = specificFieldsErrors['Impact'] || {}
+  const allImpactErrors = specificFieldsErrors['Impact'] || {}
 
   const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
     key.includes('(actual)') && value?.[0]?.includes('not completed')
 
-  const impactPlannedErrors = Object.fromEntries(
-    Object.entries(impactErrors).filter((error) => !isActualFieldEmpty(error)),
-  )
-  const impactActualErrors = Object.fromEntries(
-    Object.entries(impactErrors).filter((error) => isActualFieldEmpty(error)),
+  const impactErrors = Object.fromEntries(
+    Object.entries(allImpactErrors).filter(
+      (error) => !isActualFieldEmpty(error),
+    ),
   )
 
   const { errorText, isError } = trancheErrors || {}
@@ -561,8 +560,7 @@ const ProjectsCreate = ({
           {...{ projectData, setProjectData, setCurrentTab }}
         />
       ),
-      errors: formatErrors(impactPlannedErrors),
-      actualFieldsErrors: formatErrors(impactActualErrors),
+      errors: formatErrors(impactErrors),
     },
     {
       id: 'project-documentation-section',
@@ -727,7 +725,7 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ id, component, errors, actualFieldsErrors }) => {
+          .map(({ id, component, errors }) => {
             return (
               <span key={id}>
                 {isEditMode &&
@@ -781,25 +779,6 @@ const ProjectsCreate = ({
                           </div>
                         </Typography>
                       </>
-                    }
-                  />
-                )}
-                {actualFieldsErrors && actualFieldsErrors.length > 0 && (
-                  <CustomAlert
-                    type="info"
-                    alertClassName="mb-5"
-                    content={
-                      <Typography>
-                        <div className="flex flex-col gap-y-3">
-                          {actualFieldsErrors.map((err, idx) =>
-                            err ? (
-                              <div key={idx}>
-                                {'\u2022'} {err.message}
-                              </div>
-                            ) : null,
-                          )}
-                        </div>
-                      </Typography>
                     }
                   />
                 )}
