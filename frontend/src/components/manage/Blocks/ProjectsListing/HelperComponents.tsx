@@ -325,7 +325,7 @@ export const RelatedProjects = ({
                 '!text-[#801F00]': hasErrors,
               },
             )}
-            href={`/projects-listing/${entry.id}${mode === 'edit' ? '/edit' : ''}`}
+            href={`/projects-listing/${entry.id}${['edit', 'tranches'].includes(mode) ? '/edit' : ''}`}
             target="_blank"
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
@@ -335,7 +335,14 @@ export const RelatedProjects = ({
                 size={16}
                 className="min-h-[16px] min-w-[16px]"
               />
-              {entry.title}
+              {mode === 'tranches' && entry.tranche ? (
+                <div className="flex gap-1">
+                  {entry.title}
+                  <div className="font-medium">(tranche {entry.tranche})</div>
+                </div>
+              ) : (
+                entry.title
+              )}
             </div>
             {mode === 'view' && (
               <div className="italic">
@@ -424,7 +431,7 @@ export const OpenedList = ({
   getTrancheErrors?: () => void
   loaded?: boolean
   canRefreshStatus?: boolean
-  mode?: string
+  mode: string
 }) => (
   <div className="transition-opacity flex flex-col gap-6 opacity-100 duration-300 ease-in-out">
     <div className="flex items-center justify-between gap-2 text-lg">

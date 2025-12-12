@@ -57,6 +57,7 @@ const ProjectOverview = ({
           {open ? (
             <OpenedList
               title="Previous tranche information"
+              mode="tranches"
               data={tranchesData}
               canRefreshStatus={!!errorText}
               errorAlert={
