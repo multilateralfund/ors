@@ -1555,6 +1555,27 @@ class Project(models.Model):
             .first()
         )
 
+    def all_versions_for_year(self, year):
+        """
+        Gets the all versions created during a specific year, either as v3 or by ExCom.
+        """
+        final = self.final_version
+        return (
+            Project.objects.really_all()
+            .filter(
+                models.Q(id=final.id) | models.Q(latest_project_id=final.id),
+                models.Q(
+                    post_excom_decision__isnull=False,
+                    post_excom_decision__meeting__date__year=year,
+                )
+                | models.Q(
+                    version=3,
+                    post_excom_decision__isnull=True,
+                ),
+            )
+            .order_by("version")
+        )
+
     def latest_version_for_year(self, year):
         """
         Gets the latest version created by ExCom meeting in or before a specific year.

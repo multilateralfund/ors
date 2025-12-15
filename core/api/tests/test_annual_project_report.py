@@ -2133,6 +2133,217 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         assert annual_report.support_cost_balance == 10000.0 - 8000.0
         assert annual_report.per_cent_funds_disbursed == 0.8
 
+    def test_pcr_due_when_ong_to_com_in_same_year(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        project_completed_status,
+        decision_apr_same_year,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/ONG/01",
+            version=3,
+            post_excom_decision=None,
+            total_fund=100000.0,
+        )
+
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/ONG/01",
+            version=4,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=100000.0,
+        )
+        version3.latest_project = version4
+        version3.save()
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        assert annual_report.pcr_due is True
+
+    def test_pcr_due_when_ong_previous_year_to_com_current_year(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        project_completed_status,
+        decision_apr_previous_year,
+        decision_apr_same_year,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/PREV/01",
+            version=3,
+            post_excom_decision=decision_apr_previous_year,
+            total_fund=100000.0,
+        )
+
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/PREV/01",
+            version=4,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=100000.0,
+        )
+        version3.latest_project = version4
+        version3.save()
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        assert annual_report.pcr_due is True
+
+    def test_pcr_due_false_when_already_completed_previous_year(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_completed_status,
+        decision_apr_previous_year,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/OLD/01",
+            version=3,
+            post_excom_decision=decision_apr_previous_year,
+            total_fund=100000.0,
+        )
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+        assert annual_report.pcr_due is False
+
+    def test_pcr_due_false_when_still_ongoing(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        decision_apr_same_year,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/STILL/01",
+            version=3,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=100000.0,
+        )
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        assert annual_report.pcr_due is False
+
+    def test_pcr_due_with_clo_status(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        project_closed_status,
+        decision_apr_same_year,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/CLO/01",
+            version=3,
+            post_excom_decision=None,
+            total_fund=100000.0,
+        )
+
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_closed_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/CLO/01",
+            version=4,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=100000.0,
+        )
+        version3.latest_project = version4
+        version3.save()
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+        assert annual_report.pcr_due is False
+
+    def test_pcr_due_false_with_no_versions_in_year(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+    ):
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/NONE/01",
+            version=3,
+            post_excom_decision=None,
+            total_fund=100000.0,
+        )
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        assert annual_report.pcr_due is False
+
 
 @pytest.mark.django_db
 class TestAPRMLFSBulkUpdateView(BaseTest):
