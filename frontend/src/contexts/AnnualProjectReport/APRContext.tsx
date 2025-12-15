@@ -21,7 +21,9 @@ export function useConfirmation() {
 export function useAPRCurrentYear() {
   const ctx = useContext(APRContext)
   if (!ctx) {
-    throw new Error('useConfirmation must be used inside ConfirmationProvider')
+    throw new Error(
+      'useAPRCurrentYear must be used inside ConfirmationProvider',
+    )
   }
   return ctx.aprCurrentYear
 }
