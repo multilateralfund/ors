@@ -1152,10 +1152,10 @@ class TestAPRGlobalViewSet(BaseTest):
         )
 
         AnnualProjectReportFactory(
-            report=report1, project=project_ong, status=project_ong.status.code
+            report=report1, project=project_ong, status=project_ong.status.name
         )
         AnnualProjectReportFactory(
-            report=report2, project=project_clo, status=project_clo.status.code
+            report=report2, project=project_clo, status=project_clo.status.name
         )
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -1169,11 +1169,11 @@ class TestAPRGlobalViewSet(BaseTest):
         # Check that them nested project reports are filtered correctly
         agency1_data = next(r for r in response.data if r["agency_id"] == agency1.id)
         assert len(agency1_data["project_reports"]) == 1
-        assert agency1_data["project_reports"][0]["status"] == "ONG"
+        assert agency1_data["project_reports"][0]["status"] == "Ongoing"
 
         agency2_data = next(r for r in response.data if r["agency_id"] == agency2.id)
         assert len(agency2_data["project_reports"]) == 1
-        assert agency2_data["project_reports"][0]["status"] == "CLO"
+        assert agency2_data["project_reports"][0]["status"] == "Closed"
 
     def test_filter_by_country(
         self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
@@ -1864,10 +1864,14 @@ class TestAPRExportView(BaseTest):
         assert data_rows == 3
 
     def test_export_with_status_filter(
-        self, agency_viewer_user, annual_agency_report, annual_project_report
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        annual_project_report,
+        project_ongoing_status,
     ):
-        annual_project_report.project.status.code = "ONG"
-        annual_project_report.project.status.save()
+        annual_project_report.project.status = project_ongoing_status
+        annual_project_report.project.save(update_fields=["status"])
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -1925,15 +1929,17 @@ class TestAPRExportView(BaseTest):
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_export_data_correctness(
-        self, agency_viewer_user, annual_agency_report, annual_project_report
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
     ):
         project = ProjectFactory(
             code="TEST/CODE/2024/001",
             title="Test Project Title",
             agency=annual_agency_report.agency,
+            status=project_ongoing_status,
         )
-        project.status.code = "ONG"
-        project.status.save()
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
@@ -1992,14 +1998,15 @@ class TestAPRExportView(BaseTest):
         country_col = columns["country_name"]
         assert worksheet.cell(first_data_row, country_col).value == project.country.name
 
-    def test_export_null_values(self, agency_viewer_user, annual_agency_report):
+    def test_export_null_values(
+        self, agency_viewer_user, annual_agency_report, project_ongoing_status
+    ):
         project = ProjectFactory(
             code="TEST/CODE/2024/001",
             title="Test Project Title",
             agency=annual_agency_report.agency,
+            status=project_ongoing_status,
         )
-        project.status.code = "ONG"
-        project.status.save()
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
@@ -2738,7 +2745,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         AnnualProjectReportFactory(
             report=previous_agency_report,
             project=project,
-            status=project_completed_status.code,
+            status=project_completed_status.name,
             funds_disbursed=50000.0,
             last_year_remarks="Previous year data",
         )
@@ -2764,8 +2771,8 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         assert project_report is not None
 
         # Status should be taken from the APR, not the project
-        assert project_report["status"] == project_completed_status.code
-        assert project_report["status"] != project.status.code
+        assert project_report["status"] == project_completed_status.name
+        assert project_report["status"] != project.status.name
         assert project_report["funds_disbursed"] == 50000.0
         assert project_report["last_year_remarks"] == "Previous year data"
 
