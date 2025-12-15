@@ -45,6 +45,12 @@ export default function APRWorkspace() {
   } = useStore((state) => state.projects)
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS)
+
+  // Memoize the path so it updates when year changes
+  const apiPath = React.useMemo(
+    () => `api/annual-project-report/${year}/workspace/`,
+    [year]
+  )
   const {
     data: apr,
     loading,
@@ -57,7 +63,7 @@ export default function APRWorkspace() {
       withStoreCache: false,
       triggerIf: canViewAPR,
     },
-    path: `api/annual-project-report/${year}/workspace/`,
+    path: apiPath,
   })
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })
