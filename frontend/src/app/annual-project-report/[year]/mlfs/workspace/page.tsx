@@ -50,7 +50,10 @@ import {
   FiUnlock,
 } from 'react-icons/fi'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import {
+  useAPRCurrentYear,
+  useConfirmation,
+} from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
 import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'
@@ -59,6 +62,7 @@ import MlfsLink from '@ors/components/ui/Link/Link.tsx'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
+import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
@@ -76,6 +80,7 @@ export default function APRMLFSWorkspace() {
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
 
+  const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
     data: aprData,
     loading: loadingAprData,
@@ -106,7 +111,7 @@ export default function APRMLFSWorkspace() {
     data: kickstartAPR,
     loading: loadingKickstart,
     loaded: loadedKickstart,
-    setApiSettings: refetchKickstart,
+    refetch: refetchKickstart,
   } = useApi<AnnualProgressReportKickstart>({
     options: {
       withStoreCache: false,
@@ -232,7 +237,7 @@ export default function APRMLFSWorkspace() {
     // HACK
     // The useAPI hook is not reactive to the change in year because the path
     // is not kept in its own state. We have to resort to these kind of hacks
-    // to make it seem reactive
+    // to make the year reactive
 
     const pathYear = newYear ?? year
 
@@ -244,10 +249,7 @@ export default function APRMLFSWorkspace() {
       ...structuredClone(prev),
       path: `api/annual-project-report/${pathYear}/endorse/`,
     }))
-    refetchKickstart((prev) => ({
-      ...structuredClone(prev),
-      path: `api/annual-project-report/kick-start/`,
-    }))
+    refetchKickstart()
   }
 
   const changeLockStatus = async (agencyData: AnnualAgencyProjectReport) => {
@@ -338,6 +340,7 @@ export default function APRMLFSWorkspace() {
       setTimeout(() => {
         navigate(`/${apiResponse.year}/mlfs/workspace`)
         refetchData(apiResponse.year)
+        refetchAPRCurrentYear()
       }, 2000)
     } catch (e) {
       // TODO: better error reporting
@@ -352,10 +355,13 @@ export default function APRMLFSWorkspace() {
       {/* "~" means absolute, outside the nested context */}
       <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
-        {`MLFS Annual Project Report Workspace`}{' '}
-        <span className="rounded border border-solid px-1 text-lg">
-          {year} {progressReport?.endorsed ? 'ENDORSED' : ''}
-        </span>
+        {`MLFS Annual Project Report Workspace`}
+        <AprYearDropdown />
+        {progressReport?.endorsed && (
+          <span className="rounded border border-solid px-1 text-lg">
+            ENDORSED
+          </span>
+        )}
       </PageHeading>
 
       <Box className="shadow-none">
@@ -638,6 +644,7 @@ export default function APRMLFSWorkspace() {
 
           {loaded && (
             <EditTable
+              rowsVisible={100}
               gridRef={gridRef}
               dataTypeDefinitions={dataTypeDefinitions}
               columnDefs={columnDefs}

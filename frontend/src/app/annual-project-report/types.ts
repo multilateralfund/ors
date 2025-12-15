@@ -114,3 +114,12 @@ export interface AnnualProgressReportKickstart {
   unendorsed_years: number[]
   message: string
 }
+
+export interface AnnualProgressReportCurrentYear {
+  current_year: number | null
+  endorsed: boolean
+  apr_list: {
+    year: number
+    endorsed: boolean
+  }[]
+}

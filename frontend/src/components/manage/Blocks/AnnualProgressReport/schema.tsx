@@ -87,6 +87,18 @@ export default function useGetColumnDefs({
   } = useStore((state) => state.projects)
 
   const tableColumns: Record<string, APRTableColumn> = {
+    pcrDue: {
+      label: 'PCR Due',
+      fieldName: 'pcr_due',
+      group: null,
+      input: false,
+      overrideOptions: {
+        cellDataType: 'boolean',
+        cellRenderer: (params: CustomCellRendererProps) => (
+          <>{params.valueFormatted}</>
+        ),
+      },
+    },
     metaCode: {
       label: 'Meta Code',
       fieldName: 'meta_code',
@@ -112,6 +124,13 @@ export default function useGetColumnDefs({
       input: false,
       overrideOptions: {
         minWidth: 120,
+        valueFormatter: (params) => {
+          if (!params.value) {
+            return '-'
+          }
+
+          return params.value
+        },
       },
     },
     agency: {
@@ -196,18 +215,11 @@ export default function useGetColumnDefs({
           getOptionLabel: (option: any) =>
             isObject(option)
               ? get(option, 'name')
-              : (projectStatuses.find((status) => status.code === option)
+              : (projectStatuses.find((status) => status.name === option)
                   ?.name ?? ''),
           isOptionEqualToValue: (option: any, value: any) =>
-            isObject(value) ? isEqual(option, value) : option.code === value,
-          agFormatValue: (value: any) => value?.code || '',
-        },
-        cellRenderer: (params: CustomCellRendererProps) => {
-          const status = projectStatuses.find(
-            (status) => status.code === params.value,
-          )
-
-          return <span>{status?.name ?? ''}</span>
+            isObject(value) ? isEqual(option, value) : option.name === value,
+          agFormatValue: (value: any) => value?.name || '',
         },
       },
     },

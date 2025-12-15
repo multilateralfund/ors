@@ -84,6 +84,7 @@ import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.t
 import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspace/page.tsx'
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
+import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -118,8 +119,6 @@ function RedirectToSection() {
 }
 
 export default function App() {
-  const currentYear = new Date().getFullYear()
-
   return (
     <RootLayout>
       <Switch>
@@ -434,7 +433,7 @@ export default function App() {
         <Route path="/apr" nest>
           <APRProvider>
             <Route path="/">
-              <Redirect to={`/${currentYear}/workspace`} replace />
+              <AprRedirect />
             </Route>
             <Route path="/:year/workspace">
               <APRWorkspace />
