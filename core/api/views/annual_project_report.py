@@ -216,7 +216,7 @@ class APRWorkspaceView(RetrieveAPIView):
                 # Check if previously-reported data exists for this project & agency
                 key = (project.code, agency.id)
                 # If no previous APR exists for this, we default to the project's status
-                default_data = {"status": project.status}
+                default_data = {"status": project.status.name}
                 previous_data = previous_reports_dict.get(key, default_data)
 
                 AnnualProjectReport.objects.get_or_create(
