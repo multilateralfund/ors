@@ -462,6 +462,8 @@ const ProjectsEdit = ({
           loaded: true,
           loading: false,
         })
+
+        return true
       } else {
         const tranches = result.map((entry: RelatedProjectsType) => {
           const filteredWarnings = filter(entry.warnings, (warning) => {
@@ -494,6 +496,8 @@ const ProjectsEdit = ({
           loaded: true,
           loading: false,
         })
+
+        return !!trancheError && !!trancheError.errors[0].message
       }
     } catch (error) {
       setTrancheErrors({
@@ -512,6 +516,8 @@ const ProjectsEdit = ({
           variant: 'error',
         },
       )
+
+      return true
     }
   }
 
@@ -571,6 +577,7 @@ const ProjectsEdit = ({
             setProjectFiles,
             specificFields,
             trancheErrors,
+            getTrancheErrors,
             approvalFields,
             specificFieldsLoaded,
             setProjectData,
