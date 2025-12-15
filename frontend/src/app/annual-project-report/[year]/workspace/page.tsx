@@ -30,6 +30,7 @@ import {
 } from '@ors/app/annual-project-report/types.ts'
 import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
+import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -97,6 +98,7 @@ export default function APRWorkspace() {
       <div className="mb-2 flex justify-between">
         <PageHeading className="flex min-w-fit items-center gap-x-2">
           {`Annual Progress Report workspace`}
+          <AprYearDropdown />
           <span className="rounded border border-solid px-1 text-lg">
             {isDraft ? 'DRAFT' : 'SUBMITTED'}
           </span>
