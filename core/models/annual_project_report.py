@@ -176,7 +176,7 @@ class AnnualProjectReport(models.Model):
 
     # Date data fields
     status = models.CharField(
-        max_length=10, blank=True, help_text="Project status code for reporting year"
+        max_length=255, blank=True, help_text="Project status name for reporting year"
     )
     date_first_disbursement = models.DateField(
         null=True, blank=True, verbose_name="First Disbursement Date"
