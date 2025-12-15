@@ -1590,8 +1590,8 @@ class Project(models.Model):
                 post_excom_decision__isnull=False,
                 post_excom_decision__meeting__date__year__lte=year,
             )
-            .order_by("post_excom_decision__meeting__date", "version")
-            .last()
+            .order_by("-post_excom_decision__meeting__date", "-version")
+            .first()
         )
 
 

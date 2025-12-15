@@ -2143,18 +2143,6 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         project_completed_status,
         decision_apr_same_year,
     ):
-        version3 = ProjectFactory(
-            agency=agency,
-            country=country_ro,
-            sector=sector,
-            status=project_ongoing_status,
-            date_approved=date(2021, 6, 1),
-            code="TEST/PCR/ONG/01",
-            version=3,
-            post_excom_decision=None,
-            total_fund=100000.0,
-        )
-
         version4 = ProjectFactory(
             agency=agency,
             country=country_ro,
@@ -2166,8 +2154,18 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
             post_excom_decision=decision_apr_same_year,
             total_fund=100000.0,
         )
-        version3.latest_project = version4
-        version3.save()
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/ONG/01",
+            version=3,
+            post_excom_decision=None,
+            latest_project=version4,
+            total_fund=100000.0,
+        )
 
         annual_report = AnnualProjectReportFactory(
             report=annual_agency_report,
@@ -2187,18 +2185,6 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         decision_apr_previous_year,
         decision_apr_same_year,
     ):
-        version3 = ProjectFactory(
-            agency=agency,
-            country=country_ro,
-            sector=sector,
-            status=project_ongoing_status,
-            date_approved=date(2021, 6, 1),
-            code="TEST/PCR/PREV/01",
-            version=3,
-            post_excom_decision=decision_apr_previous_year,
-            total_fund=100000.0,
-        )
-
         version4 = ProjectFactory(
             agency=agency,
             country=country_ro,
@@ -2210,8 +2196,18 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
             post_excom_decision=decision_apr_same_year,
             total_fund=100000.0,
         )
-        version3.latest_project = version4
-        version3.save()
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/PREV/01",
+            version=3,
+            post_excom_decision=decision_apr_previous_year,
+            latest_project=version4,
+            total_fund=100000.0,
+        )
 
         annual_report = AnnualProjectReportFactory(
             report=annual_agency_report,
@@ -2285,18 +2281,6 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         project_closed_status,
         decision_apr_same_year,
     ):
-        version3 = ProjectFactory(
-            agency=agency,
-            country=country_ro,
-            sector=sector,
-            status=project_ongoing_status,
-            date_approved=date(2021, 6, 1),
-            code="TEST/PCR/CLO/01",
-            version=3,
-            post_excom_decision=None,
-            total_fund=100000.0,
-        )
-
         version4 = ProjectFactory(
             agency=agency,
             country=country_ro,
@@ -2308,8 +2292,18 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
             post_excom_decision=decision_apr_same_year,
             total_fund=100000.0,
         )
-        version3.latest_project = version4
-        version3.save()
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/CLO/01",
+            version=3,
+            post_excom_decision=None,
+            latest_project=version4,
+            total_fund=100000.0,
+        )
 
         annual_report = AnnualProjectReportFactory(
             report=annual_agency_report,

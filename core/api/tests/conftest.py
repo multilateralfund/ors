@@ -62,9 +62,7 @@ from core.models import ProjectFile, ProjectOdsOdp
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-from core.utils import (
-    get_project_sub_code,
-)
+from core.utils import get_project_sub_code
 
 # pylint: disable=C0302,W0613
 
