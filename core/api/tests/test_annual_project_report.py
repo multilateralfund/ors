@@ -2691,6 +2691,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         assert response.status_code == status.HTTP_200_OK
 
         # Check that all project reports were created with default values
+        # (this means that status was inherited from project)
         agency_report = AnnualAgencyProjectReport.objects.get(
             progress_report=first_apr, agency=agency
         )
@@ -2698,6 +2699,75 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         for project_report in agency_report.project_reports.all():
             assert project_report.funds_disbursed is None
             assert project_report.last_year_remarks == ""
+
+            # Check that status was carried over from the project
+            project = next(
+                p
+                for p in multiple_projects_for_apr
+                if p.code == project_report.project.code
+            )
+            assert project.status.name == project_report.status
+
+    def test_workspace_uses_previous_year_status_over_project_status(
+        self,
+        agency_viewer_user,
+        agency,
+        mlfs_admin_user,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        project_completed_status,
+        annual_progress_report_endorsed,
+    ):
+        previous_year = annual_progress_report_endorsed.year
+        project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            version=3,
+            date_approved=date(previous_year - 1, 6, 1),
+        )
+        previous_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+
+        # This has a different status from the project's status
+        AnnualProjectReportFactory(
+            report=previous_agency_report,
+            project=project,
+            status=project_completed_status.code,
+            funds_disbursed=50000.0,
+            last_year_remarks="Previous year data",
+        )
+
+        # Kick-start new year & then access agency workspace
+        self.client.force_authenticate(user=mlfs_admin_user)
+        kickstart_url = reverse("apr-kick-start")
+        kickstart_response = self.client.post(kickstart_url)
+        assert kickstart_response.status_code == status.HTTP_201_CREATED
+
+        new_year = previous_year + 1
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": new_year})
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        project_reports = response.data["project_reports"]
+        project_report = next(
+            (pr for pr in project_reports if pr["project_code"] == project.code),
+            None,
+        )
+        assert project_report is not None
+
+        # Status should be taken from the APR, not the project
+        assert project_report["status"] == project_completed_status.code
+        assert project_report["status"] != project.status.code
+        assert project_report["funds_disbursed"] == 50000.0
+        assert project_report["last_year_remarks"] == "Previous year data"
 
     def test_workspace_only_prepopulates_matching_projects(
         self,
