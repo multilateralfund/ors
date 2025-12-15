@@ -78,7 +78,7 @@ class BlanketApprovalDetailsViewset(
     """ViewSet for blanket approval details."""
 
     filterset_class = BlanketApprovalDetailsFilter
-    queryset = Project.objects.filter(
+    queryset = Project.objects.really_all().filter(
         submission_status__name__in=[
             "Recommended",
             "Approved",
