@@ -303,10 +303,13 @@ const EditActionButtons = ({
       (projectData.projectSpecificFields.tranche ?? 0) > 1 &&
       (project.submission_status !== 'Draft' || !!navigationPage)
     ) {
-      const trancheErrors = getTrancheErrors?.()
+      const trancheErrors = await getTrancheErrors?.()
 
       if (trancheErrors) {
         setIsLoading(false)
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
         return
       }
     }
