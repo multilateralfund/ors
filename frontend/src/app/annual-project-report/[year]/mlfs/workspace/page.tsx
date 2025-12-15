@@ -644,6 +644,7 @@ export default function APRMLFSWorkspace() {
 
           {loaded && (
             <EditTable
+              rowsVisible={100}
               gridRef={gridRef}
               dataTypeDefinitions={dataTypeDefinitions}
               columnDefs={columnDefs}

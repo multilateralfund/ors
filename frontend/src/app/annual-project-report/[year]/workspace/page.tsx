@@ -206,6 +206,7 @@ export default function APRWorkspace() {
         </div>
         {loaded && (
           <ViewTable
+            rowsVisible={100}
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}

@@ -193,6 +193,7 @@ export default function APREdit() {
             <Loader active={loading} />
             {loaded && (
               <EditTable
+                rowsVisible={100}
                 Toolbar={() => (
                   <Alert
                     className="flex-1 bg-mlfs-bannerColor"
