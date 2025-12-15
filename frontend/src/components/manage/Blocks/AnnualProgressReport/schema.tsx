@@ -112,6 +112,13 @@ export default function useGetColumnDefs({
       input: false,
       overrideOptions: {
         minWidth: 120,
+        valueFormatter: (params) => {
+          if (!params.value) {
+            return '-'
+          }
+
+          return params.value
+        },
       },
     },
     agency: {
