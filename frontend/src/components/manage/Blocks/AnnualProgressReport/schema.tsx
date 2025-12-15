@@ -87,6 +87,18 @@ export default function useGetColumnDefs({
   } = useStore((state) => state.projects)
 
   const tableColumns: Record<string, APRTableColumn> = {
+    pcrDue: {
+      label: 'PCR Due',
+      fieldName: 'pcr_due',
+      group: null,
+      input: false,
+      overrideOptions: {
+        cellDataType: 'boolean',
+        cellRenderer: (params: CustomCellRendererProps) => (
+          <>{params.valueFormatted}</>
+        ),
+      },
+    },
     metaCode: {
       label: 'Meta Code',
       fieldName: 'meta_code',

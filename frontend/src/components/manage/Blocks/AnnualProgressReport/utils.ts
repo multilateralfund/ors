@@ -51,13 +51,9 @@ export function formatPercent(value: any) {
 }
 
 export function formatBoolean(value: any) {
-  if (isNil(value)) {
-    return ''
+  if (!value) {
+    return 'No'
   }
 
-  if (value) {
-    return 'Yes'
-  }
-
-  return 'No'
+  return 'Yes'
 }
