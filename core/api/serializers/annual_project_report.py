@@ -20,6 +20,8 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     Read serializer for AnnualProjectReport.
     Returns a flat structure with both derived (from Project) and editable fields.
     """
+    # PCR due - later-added derived field
+    pcr_due = serializers.BooleanField(read_only=True)
 
     # Project identification - derived fields
     meta_code = serializers.CharField(source="meta_project_code", read_only=True)
@@ -126,6 +128,8 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnnualProjectReport
         excel_fields = [
+            # PCR due - later-added derived field
+            "pcr_due",
             # Project identification - derived fields
             "meta_code",
             "project_code",
