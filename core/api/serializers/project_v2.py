@@ -643,6 +643,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": obj.latest_project.id,
                     "created_by": getattr(obj.version_created_by, "username", None),
                     "date_created": obj.latest_project.date_created,
+                    "meeting": getattr(obj.latest_project.meeting, "number", None),
                     "post_excom_meeting": getattr(
                         obj.latest_project.post_excom_meeting, "number", None
                     ),
@@ -664,6 +665,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": obj.id,
                     "created_by": getattr(obj.version_created_by, "username", None),
                     "date_created": obj.date_created,
+                    "meeting": getattr(obj.meeting, "number", None),
                     "post_excom_meeting": getattr(
                         obj.post_excom_meeting, "number", None
                     ),
@@ -683,6 +685,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                 "submission_status__id",
                 "version_created_by__username",
                 "date_created",
+                "meeting__number",
                 "post_excom_meeting__number",
             )
             .order_by("-version")
@@ -698,6 +701,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": latest_project.id,
                     "created_by": version["version_created_by__username"],
                     "date_created": version["date_created"],
+                    "meeting": version["meeting__number"],
                     "post_excom_meeting": version["post_excom_meeting__number"],
                 }
             )

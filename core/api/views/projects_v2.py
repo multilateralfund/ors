@@ -38,6 +38,7 @@ from core.models.project import (
 from core.api.views.projects_mixins import (
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
+    ProjectCompareVersionsMixin,
     ProjectExportMixin,
     ProjectFileCreateMixin,
     ProjectListPreviousTranchesMixin,
@@ -133,6 +134,7 @@ class ProjectV2ViewSet(
     mixins.UpdateModelMixin,
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
+    ProjectCompareVersionsMixin,
     ProjectExportMixin,
     ProjectFileCreateMixin,
     ProjectListPreviousTranchesMixin,
@@ -199,6 +201,7 @@ class ProjectV2ViewSet(
             "list_associated_projects",
             "field_history",
             "list_filters",
+            "compare_versions",
         ]:
             return [HasProjectV2ViewAccess]
         if self.action in ["create"]:

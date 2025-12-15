@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, FormEventHandler } from 'react'
 import {
   PageTitle,
   RedirectBackButton,
@@ -8,7 +8,13 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 
 import { useGetProject } from '../hooks/useGetProject'
 
-import { Box } from '@mui/material'
+import {
+  Box,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  FormLabel,
+} from '@mui/material'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
 import {
@@ -19,6 +25,13 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
+import FormControl from '@mui/material/FormControl'
+import {
+  ProjectTypeApi,
+  ProjectVersions,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { SubmitButton } from '@ors/components/ui/Button/Button.tsx'
+import { formatApiUrl } from '@ors/helpers'
 
 const defaultProps = {
   FieldProps: { className: 'mb-0 w-full' },
@@ -33,77 +46,52 @@ const defaultProps = {
   },
 }
 
-const Filters = (props: any) => {
-  const { requestParams, setRequestParams } = props
-
-  const meetings = useMeetingOptions()
-  const { agencies } = useContext(ProjectsDataContext)
+const Filters = (props: { project: ProjectTypeApi }) => {
+  const { project } = props
 
   return (
     <Box className="shadow-none">
       <div className="flex w-full gap-4">
-        <div className="w-full md:w-[7.76rem]">
-          <Label htmlFor="meetingPopover">Meeting</Label>
-          <PopoverInput
-            id="meetingPopover"
-            className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[16px] md:w-[7.76rem]"
-            label={
-              meetings.filter((o) => o.value === requestParams.meeting_id)[0]
-                ?.label ?? ''
-            }
-            options={meetings}
-            withClear={true}
-            onChange={(value: string) => {
-              setRequestParams((prev) => ({
-                ...prev,
-                meeting_id: value ?? '',
-              }))
-            }}
-            onClear={() => {
-              setRequestParams((prev) => ({
-                ...prev,
-                meeting_id: '',
-              }))
-            }}
-          />
-        </div>
-        <div className="w-full md:w-[14rem]">
-          <Label htmlFor="agencySelection">Agency</Label>
-          <Field
-            Input={{ placeholder: 'Click to select', id: 'agencySelection' }}
-            options={agencies}
-            value={
-              agencies.filter(
-                (o) => o.id === parseInt(requestParams.agency_id, 10),
-              )[0] ?? null
-            }
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              setRequestParams((prev) => ({
-                ...prev,
-                agency_id: value?.id.toString() ?? '',
-              }))
-            }}
-            {...defaultProps}
-          />
-        </div>
+        <form
+          action={formatApiUrl(
+            `/api/projects/v2/${project.id}/compare-versions`,
+          )}
+          method="GET"
+        >
+          <FormControl>
+            <FormLabel>Select versions</FormLabel>
+            <FormGroup>
+              {project.versions.map((v: ProjectVersions) => {
+                let label
+                if (v.version > 3) {
+                  label = `${v.version}: Updated after ExCom ${v.post_excom_meeting}`
+                } else {
+                  label = `${v.version}: ${v.submission_status} (Meeting ${v.meeting})`
+                }
+                label = `Version ${label}`
+                return (
+                  <FormControlLabel
+                    key={v.id}
+                    control={<Checkbox />}
+                    value={v.id}
+                    label={label}
+                    name="project_id"
+                  />
+                )
+              })}
+            </FormGroup>
+          </FormControl>
+          <SubmitButton>Generate report</SubmitButton>
+        </form>
       </div>
     </Box>
   )
 }
 
 const ProjectCompareVersions = ({ project }: { project: any }) => {
-  const [requestParams, setRequestParams] = useState({
-    meeting_id: '',
-    agency_id: '',
-  })
-
   return (
     <>
-      <Filters
-        requestParams={requestParams}
-        setRequestParams={setRequestParams}
-      />
+      <Filters project={project} />
     </>
   )
 }
@@ -122,7 +110,9 @@ const ProjectCompareVersionsWrapper = ({
         <PageHeading className="min-w-fit">
           <PageTitle
             pageTitle="Compare versions"
-            projectTitle={project?.title ?? '...'}
+            projectTitle={
+              project?.title ? `${project.title} (${project.code})` : '...'
+            }
           />
         </PageHeading>
       </HeaderTitle>
