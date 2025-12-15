@@ -3692,6 +3692,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
 
         project.meta_project = MetaProjectFactory(code="ROM/FOA/80/TAS/123")
+        project.metacode = "ROM/FOA/80/TAS/123/1"
         project.cluster = ProjectClusterFactory.create(
             name="KPP1", code="KPP1", sort_order=1
         )
@@ -3720,7 +3721,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         assert project_data is not None
 
-        assert project_data["meta_code"] == "ROM/FOA/80/TAS/123"
+        assert project_data["meta_code"] == "ROM/FOA/80/TAS/123/1"
         assert project_data["project_code"] == "ROM/FOA/80/TAS/123"
         assert project_data["legacy_code"] == "ROM/80/TAS/123"
         assert project_data["agency_name"] == project.agency.name

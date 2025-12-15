@@ -261,10 +261,8 @@ class AnnualProjectReport(models.Model):
 
     @property
     def meta_project_code(self):
-        if self.project.meta_project:
-            if hasattr(self.project.meta_project, "new_code"):
-                return self.project.meta_project.new_code
-            return self.project.meta_project.code
+        if self.project.metacode:
+            return self.project.metacode
         return ""
 
     @property
