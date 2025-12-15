@@ -20,6 +20,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     Read serializer for AnnualProjectReport.
     Returns a flat structure with both derived (from Project) and editable fields.
     """
+
     # PCR due - later-added derived field
     pcr_due = serializers.BooleanField(read_only=True)
 
