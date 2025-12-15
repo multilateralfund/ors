@@ -3633,7 +3633,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == project.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         assert project_data["meta_code"] == "ROM/FOA/80/TAS/123"
         assert project_data["project_code"] == "ROM/FOA/80/TAS/123"
@@ -3668,7 +3676,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # date_approved should come from version 3
         assert project_data["date_approved"] == version3.date_approved.isoformat()
@@ -3706,7 +3722,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == version3.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # All phaseout proposal fields should come from version 3
         assert (
@@ -3749,7 +3773,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         assert project_data["approved_funding"] == version3.total_fund
 
@@ -3785,7 +3817,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         expected_balance = version3.total_fund - funds_disbursed
         assert project_data["balance"] == expected_balance
@@ -3816,7 +3856,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # support_cost_approved comes from version 3
         assert project_data["support_cost_approved"] == version3.support_cost_psc
@@ -3855,7 +3903,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == version3.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         expected_balance = latest_version.support_cost_psc - support_cost_disbursed
         assert project_data["support_cost_balance"] == expected_balance
@@ -3871,7 +3927,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == annual_project_report.project.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # This field is currently hardcoded to return an empty string
         assert project_data["implementation_delays_status_report_decisions"] == ""
@@ -3895,7 +3959,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == initial_project_version_2_for_apr.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # Fields that depend on version 3 should be None
         assert project_data["consumption_phased_out_odp_proposal"] is None
@@ -3908,9 +3980,10 @@ class TestAPRDerivedFieldsAPI(BaseTest):
     def test_derived_fields_with_no_latest_version(
         self, agency_viewer_user, annual_agency_report, late_post_excom_versions_for_apr
     ):
+        version4 = late_post_excom_versions_for_apr[1]
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=late_post_excom_versions_for_apr[1],
+            project=version4,
             funds_disbursed=80000.0,
         )
 
@@ -3922,7 +3995,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == version4.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # Fields that depend on latest_version_for_year should be == None
         assert project_data["adjustment"] is None
@@ -3954,7 +4035,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        project_data = response.data["project_reports"][0]
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == version3.code
+            ),
+            None,
+        )
+        assert project_data is not None
 
         # per_cent_funds_disbursed should be None when funds_disbursed is None
         assert project_data["per_cent_funds_disbursed"] is None
