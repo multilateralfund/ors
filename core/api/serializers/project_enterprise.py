@@ -41,13 +41,17 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             "code",
             "name",
             "country",
-            "agencies",
             "location",
+            "stage",
+            "sector",
+            "subsector",
             "application",
             "local_ownership",
             "export_to_non_a5",
             "project_enterprises",
-            "remarks",
+            "date_of_approval",
+            "date_of_revision",
+            "meeting",
             "status",
         ]
 
@@ -64,23 +68,6 @@ class EnterpriseSerializer(serializers.ModelSerializer):
 
         return super().validate(attrs)
 
-    def create(self, validated_data):
-        # assign m2m agencies after instance is created
-        agencies_data = validated_data.pop("agencies", [])
-        enterprise = Enterprise.objects.create(**validated_data)
-        enterprise.agencies.set(agencies_data)
-        return enterprise
-
-    def update(self, instance, validated_data):
-        # assign m2m agencies after instance is updated
-        agencies_data = validated_data.pop("agencies", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        if agencies_data is not None:
-            instance.agencies.set(agencies_data)
-        return instance
-
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -95,9 +82,9 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
             "project_enterprise",
             "ods_substance",
             "ods_blend",
-            "phase_out_mt",
-            "ods_replacement",
-            "ods_replacement_phase_in",
+            "consumption",
+            "selected_alternative",
+            "chemical_phased_in",
         ]
 
     def validate(self, attrs):
@@ -184,15 +171,30 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         model = ProjectEnterprise
         fields = [
             "id",
+            "actual_completion_date",
+            "agency",
+            "agency_remarks",
+            "cost_effectiveness_actual",
             "capital_cost_approved",
-            "cost_effectiveness_approved",
+            "capital_cost_disbursed",
+            "co_financing_actual",
+            "co_financing_planned",
+            "date_of_report",
             "enterprise",
-            "ods_odp",
+            "excom_provision",
             "funds_approved",
             "funds_disbursed",
+            "funds_transferred",
+            "impact",
+            "ods_odp",
+            "operating_cost_approved",
+            "operating_cost_disbursed",
+            "project_duration",
+            "planned_completion_date",
             "project",
             "project_code",
-            "operating_cost_approved",
+            "project_type",
+            "secretariat_remarks",
             "status",
         ]
 
@@ -211,20 +213,15 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
                 ):
                     # allow updating enterprise data only if its status is not APPROVED
                     # for users with approval permission, allow updating any status
-                    agencies_data = enterprise_data.pop("agencies", None)
                     for attr, value in enterprise_data.items():
                         setattr(enterprise, attr, value)
                     enterprise.save()
-                    if agencies_data is not None:
-                        enterprise.agencies.set(agencies_data)
             except Enterprise.DoesNotExist as exc:
                 raise serializers.ValidationError(
                     "Enterprise with given ID does not exist."
                 ) from exc
         else:
-            agencies = enterprise_data.pop("agencies", [])
             enterprise = Enterprise.objects.create(**enterprise_data)
-            enterprise.agencies.set(agencies)
         project_enterprise = ProjectEnterprise.objects.create(
             **validated_data, enterprise=enterprise
         )
@@ -278,11 +275,9 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         if enterprise_data and instance.enterprise.status != EnterpriseStatus.APPROVED:
             # Update enterprise data only if its status is not APPROVED
             enterprise = instance.enterprise
-            agencies_data = enterprise_data.pop("agencies", None)
             for attr, value in enterprise_data.items():
                 setattr(enterprise, attr, value)
             enterprise.save()
-            enterprise.agencies.set(agencies_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()

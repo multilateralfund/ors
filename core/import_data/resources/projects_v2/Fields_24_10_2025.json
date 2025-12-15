@@ -1441,8 +1441,8 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "SORT_ORDER": 108,
-        "EDITABLE_IN_VERSIONS": [3],
-        "VISIBLE_IN_VERSIONS": [3]
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Aggregated consumption actual",

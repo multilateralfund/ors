@@ -19,13 +19,17 @@ class EnterpriseAdmin(admin.ModelAdmin):
         "name",
         "country__name",
         "location",
+        "stage",
+        "sector",
+        "subsector",
         "application",
+        "meeting",
     ]
     readonly_fields = [
         "code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("country", "country"),
+        AutocompleteFilterFactory("country", "country", "meeting"),
     ]
 
     def get_list_display(self, request):

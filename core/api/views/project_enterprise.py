@@ -42,6 +42,8 @@ class EnterpriseViewSet(
         "name",
         "country__name",
         "location",
+        "stage",
+        "sector",
         "application",
         "local_ownership",
         "export_to_non_a5",
@@ -74,7 +76,7 @@ class EnterpriseViewSet(
             return queryset
 
         if user.has_perm("core.can_view_only_own_agency"):
-            return queryset.filter(agencies=user.agency)
+            return queryset.filter(project_enterprises__agency=user.agency)
 
         return queryset
 
@@ -180,8 +182,9 @@ class ProjectEnterpriseViewSet(
         "enterprise__name",
         "enterprise__country__name",
         "enterprise__location",
+        "enterprise__stage",
+        "enterprise__sector",
         "enterprise__application",
-        "location",
         "status",
     ]
     search_fields = ["enterprise__code", "enterprise__name"]

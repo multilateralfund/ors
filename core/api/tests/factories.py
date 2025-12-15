@@ -586,10 +586,16 @@ class EnterpriseFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=256)
     country = factory.SubFactory(CountryFactory)
     location = factory.Faker("pystr", max_chars=256)
+    stage = factory.Faker("pystr", max_chars=256)
+    sector = factory.SubFactory(ProjectSectorFactory)
+    subsector = factory.SubFactory(ProjectSubSectorFactory)
     application = factory.Faker("pystr", max_chars=256)
     local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
     export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
-    remarks = factory.Faker("pystr", max_chars=200)
+    status = EnterpriseStatus.PENDING
+    date_of_approval = factory.Faker("date")
+    date_of_revision = factory.Faker("date")
+    meeting = factory.SubFactory(MeetingFactory)
 
 
 class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
@@ -598,15 +604,33 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
 
     project = factory.SubFactory(ProjectFactory)
     enterprise = factory.SubFactory(EnterpriseFactory)
-    location = factory.Faker("pystr", max_chars=256, prefix="Location ")
-    application = factory.Faker("pystr", max_chars=256, prefix="Application ")
-    local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
-    export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    agency = factory.SubFactory(AgencyFactory)
+    project_type = factory.SubFactory(ProjectTypeFactory)
     capital_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     operating_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     funds_disbursed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    capital_cost_disbursed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    operating_cost_disbursed = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    cost_effectiveness_actual = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    co_financing_planned = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    co_financing_actual = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    funds_transferred = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    agency_remarks = factory.Faker("pystr", max_chars=200, prefix="Agency Remark ")
+    secretariat_remarks = factory.Faker(
+        "pystr", max_chars=200, prefix="Secretariat Remark "
+    )
+    excom_provision = factory.Faker("pystr", max_chars=200, prefix="ExCom Provision ")
+    date_of_report = factory.Faker("date")
+    planned_completion_date = factory.Faker("date")
+    actual_completion_date = factory.Faker("date")
+    project_duration = factory.Faker("random_int", min=1, max=120)
     status = EnterpriseStatus.PENDING
-    remarks = factory.Faker("pystr", max_chars=200, prefix="Remark ")
+    impact = factory.Faker("pystr", max_chars=200, prefix="Impact ")
+    funds_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
 
 
 class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
@@ -614,9 +638,9 @@ class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
         model = ProjectEnterpriseOdsOdp
 
     project_enterprise = factory.SubFactory(ProjectEnterpriseFactory)
-    phase_out_mt = factory.Faker("random_int", min=1, max=100)
-    ods_replacement = factory.Faker("pystr", max_chars=100)
-    ods_replacement_phase_in = factory.Faker("random_int", min=1, max_chars=100)
+    consumption = factory.Faker("random_int", min=1, max=100)
+    selected_alternative = factory.Faker("pystr", max_chars=100)
+    chemical_phased_in = factory.Faker("random_int", min=1, max_chars=100)
 
 
 class SubmissionAmountFactory(factory.django.DjangoModelFactory):
