@@ -58,6 +58,7 @@ export default function APRWorkspace() {
     params,
     setParams,
     refetch,
+    setApiSettings,
   } = useApi<AnnualAgencyProjectReport>({
     options: {
       withStoreCache: false,
@@ -65,6 +66,16 @@ export default function APRWorkspace() {
     },
     path: apiPath,
   })
+
+  React.useEffect(() => {
+    setApiSettings({
+      options: {
+        withStoreCache: false,
+        triggerIf: canViewAPR,
+      },
+      path: apiPath,
+    })
+  }, [apiPath, canViewAPR, setApiSettings])
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })
 
