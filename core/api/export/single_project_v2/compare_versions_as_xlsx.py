@@ -6,6 +6,8 @@ from openpyxl.styles import DEFAULT_FONT
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 
+from openpyxl.utils import get_column_letter
+
 from django.db.models import QuerySet
 
 from core.models import Project
@@ -36,7 +38,12 @@ def serialize_project(p):
 
 
 def version_label(p):
-    return p.submission_status.name
+    status = p.submission_status.name
+    post_excom_meeting = p.post_excom_meeting.number if p.post_excom_meeting else ""
+    meeting = p.meeting.number if p.meeting else ""
+    if p.version > 3:
+        return f"{status} (ExCom {post_excom_meeting})"
+    return f"{status} (Meeting {meeting})"
 
 
 class CompareVersionsWriter:
@@ -112,6 +119,9 @@ class CompareVersionsWriter:
             )
 
         self.sheet.append(data)
+
+        for i in range(1, len(data) + 1):
+            self.sheet.column_dimensions[get_column_letter(i)].width = 20
 
     def mark_header_rows(self, headers):
         for i in range(1, len(headers) + 1):
@@ -200,7 +210,7 @@ class CompareVersionsWriter:
                 last = last.get(n)
 
         if isinstance(last, dict):
-            last = last.get("name", str(last))
+            last = last.get("name", last.get("number", str(last)))
         elif isinstance(last, (tuple, list, set)):
             last = ", ".join(map(str, last))
 
@@ -214,7 +224,7 @@ class CompareVersionsProjectExport:
 
     def __init__(self, user, project: Project, queryset: QuerySet[Project]):
         self.user = user
-        self.queryset = queryset
+        self.queryset = queryset.order_by("-date_created")
         self.project = project
         self.setup_workbook()
 
