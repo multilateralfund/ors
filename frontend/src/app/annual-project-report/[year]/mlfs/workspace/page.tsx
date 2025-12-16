@@ -78,7 +78,7 @@ export default function APRMLFSWorkspace() {
   const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
   const confirm = useConfirmation()
   const { year } = useParams()
-  usePageTitle(`MLFS Annual Progress Report (${year})`)
+  usePageTitle(`Secretariat - Annual Progress Report (${year})`)
   const { canViewAPR, isMlfsUser, canEditAPR } = useContext(PermissionsContext)
   const {
     statuses: { data: projectStatuses },
@@ -353,13 +353,11 @@ export default function APRMLFSWorkspace() {
       {/* "~" means absolute, outside the nested context */}
       <BackLink url="~/projects-listing" text="IA/BA Portal" />
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
-        {`MLFS Annual Project Report Workspace`}
+        {`Secretariat - Annual Project Report Workspace`}
         <AprYearDropdown />
-        {progressReport?.endorsed && (
-          <span className="rounded border border-solid px-1 text-lg">
-            ENDORSED
-          </span>
-        )}
+        <span className="rounded border border-solid px-1 text-lg">
+          {progressReport?.endorsed ? 'ENDORSED' : 'DRAFT'}
+        </span>
       </PageHeading>
 
       <Box className="shadow-none">
@@ -642,6 +640,9 @@ export default function APRMLFSWorkspace() {
 
           {loaded && (
             <EditTable
+              noRowsOverlayComponentParams={{
+                label: 'No projects submitted by the IA/BAs yet',
+              }}
               rowsVisible={100}
               gridRef={gridRef}
               dataTypeDefinitions={dataTypeDefinitions}
