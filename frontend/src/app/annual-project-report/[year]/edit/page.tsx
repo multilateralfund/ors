@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
-import { useParams } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import { Alert, Box, Tab, Tabs } from '@mui/material'
 import useApi from '@ors/hooks/useApi.ts'
@@ -23,6 +23,7 @@ import {
   AnnualAgencyProjectReport,
   AnnualProjectReport,
 } from '@ors/app/annual-project-report/types.ts'
+import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 const TABS = [
   {
@@ -44,6 +45,8 @@ const TABS = [
 ]
 
 export default function APREdit() {
+  const [, navigate] = useLocation()
+  const confirm = useConfirmation()
   const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   const [activeTab, setActiveTab] = useState(0)
@@ -133,6 +136,20 @@ export default function APREdit() {
     }
   }
 
+  const goBackToWorkspace = async () => {
+    const response = await confirm({
+      title: 'Navigate to workspace',
+      message: `Are you sure you want to return to the Annual Progress Report workspace? Unsaved data will be lost!`,
+    })
+
+    if (!response) {
+      return
+    }
+
+    const url = isMlfsUser ? `/${year}/mlfs/workspace` : `/${year}/workspace`
+    navigate(url)
+  }
+
   return (
     <PageWrapper>
       <BackLink
@@ -171,14 +188,22 @@ export default function APREdit() {
               )
             })}
           </Tabs>
-          <Button
-            disabled={loading || !canUpdateAPR}
-            className="mb-2"
-            variant="contained"
-            onClick={exportAll}
-          >
-            Save
-          </Button>
+          <div className="mb-2 flex gap-x-2">
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={goBackToWorkspace}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={loading || !canUpdateAPR}
+              variant="contained"
+              onClick={exportAll}
+            >
+              Save
+            </Button>
+          </div>
         </div>
         {TABS.map((tab, index) => (
           <div
