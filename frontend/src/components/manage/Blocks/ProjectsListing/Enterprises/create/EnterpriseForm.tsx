@@ -3,6 +3,12 @@ import { useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
+  textFields,
+  dateFields,
+  integerFields,
+  decimalFields,
+} from '../../ProjectsEnterprises/constants'
+import {
   EnterpriseTextField,
   EnterpriseNumberField,
   EnterpriseSelectField,
@@ -19,15 +25,12 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
   const { canEditEnterprise } = useContext(PermissionsContext)
   const { countries } = useContext(ProjectsDataContext)
 
-  const { sectors, subsectors } = useGetEnterpriseFieldsOpts(
-    enterpriseData,
-    setEnterpriseData,
-  )
+  const { sectors, subsectors } =
+    useGetEnterpriseFieldsOpts<EnterpriseOverview>(
+      enterpriseData,
+      setEnterpriseData,
+    )
 
-  const textFields = ['name', 'location', 'stage', 'application']
-  const dateFields = ['date_of_revision']
-  const integerFields = ['revision']
-  const decimalFields = ['local_ownership', 'export_to_non_a5']
   const selectFields = [
     { fieldName: 'country', options: countries },
     { fieldName: 'sector', options: sectors },

@@ -1,6 +1,5 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SpecificFields } from './interfaces'
-import dayjs from 'dayjs'
 
 export const PROJECTS_PER_PAGE = 100
 
@@ -40,38 +39,11 @@ export const tableColumns: { [key: string]: string } = {
   production: 'Production',
   category: 'Category',
   decision: 'Decision meeting',
-  ods_substance: 'Substance baseline technology',
-  ods_blend: 'Substance baseline technology',
-  phase_out_mt: 'Substance phase out (Mt)',
-  ods_replacement: 'Replacement technology(ies)',
-  ods_replacement_phase_in: 'Replacement technology phased in (Mt)',
-  capital_cost_approved: 'Capital cost approved',
-  operating_cost_approved: 'Operating cost approved',
-  funds_disbursed: 'Funds disbursed',
-  funds_approved: 'Funds approved',
-  cost_effectiveness_approved: 'Cost effectiveness approved',
-  id: 'Enterprise',
   transfer_meeting: 'Transfer meeting number',
   transfer_decision: 'Transfer decision meeting',
   transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
-}
-
-export const enterpriseFieldsMapping: { [key: string]: string } = {
-  code: 'Code',
-  name: 'Enterprise',
-  country: 'Country',
-  location: 'Location',
-  stage: 'Stage',
-  sector: 'Sector',
-  subsector: 'Sub-sector',
-  application: 'Application',
-  local_ownership: 'Local ownership',
-  export_to_non_a5: 'Export to non-A5',
-  revision: 'Revision number',
-  date_of_revision: 'Date of revision',
-  remarks: 'Remarks',
 }
 
 export const defaultProps = {
@@ -200,34 +172,6 @@ export const viewColumnsClassName =
 
 export const exportButtonClassname =
   'cursor-pointer justify-content-center flex items-center rounded-lg border border-solid bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline'
-
-export const initialOverviewFields = {
-  name: '',
-  country: null,
-  location: '',
-  stage: '',
-  sector: null,
-  subsector: null,
-  application: '',
-  local_ownership: null,
-  export_to_non_a5: null,
-  revision: null,
-  date_of_revision: dayjs().format('YYYY-MM-DD'),
-}
-
-export const initialSubstanceDetailsFields = {
-  ods_substance: null,
-  ods_blend: null,
-  phase_out_mt: null,
-  ods_replacement: '',
-  ods_replacement_phase_in: null,
-}
-
-export const initialFundingDetailsFields = {
-  capital_cost_approved: null,
-  operating_cost_approved: null,
-  funds_disbursed: null,
-}
 
 export const enabledButtonClassname =
   'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'

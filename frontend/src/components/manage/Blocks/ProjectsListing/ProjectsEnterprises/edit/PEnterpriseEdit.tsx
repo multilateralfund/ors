@@ -9,9 +9,9 @@ import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { PEnterpriseData, PEnterpriseType } from '../../interfaces'
 import { getFormattedDecimalValue } from '../../utils'
 import {
-  initialOverviewFields,
   initialFundingDetailsFields,
-} from '../../constants'
+  initialOverviewFields,
+} from '../constants'
 
 import { useParams } from 'wouter'
 
@@ -48,9 +48,11 @@ const PEnterpriseEdit = ({
         status: enterpriseObj.status,
         linkStatus: enterprise.status,
         name: enterpriseObj.name,
-        agencies: enterpriseObj.agencies,
         country: enterpriseObj.country,
         location: enterpriseObj.location,
+        stage: enterpriseObj.stage,
+        sector: enterpriseObj.sector,
+        subsector: enterpriseObj.subsector,
         application: enterpriseObj.application,
         local_ownership: getFormattedDecimalValue(
           enterpriseObj.local_ownership,
@@ -58,7 +60,8 @@ const PEnterpriseEdit = ({
         export_to_non_a5: getFormattedDecimalValue(
           enterpriseObj.export_to_non_a5,
         ),
-        remarks: enterpriseObj.remarks,
+        revision: enterpriseObj.revision,
+        date_of_revision: enterpriseObj.date_of_revision,
       },
       substance_details: enterprise.ods_odp,
       funding_details: {

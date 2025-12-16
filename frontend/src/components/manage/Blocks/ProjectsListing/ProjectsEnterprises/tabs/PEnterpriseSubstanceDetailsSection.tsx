@@ -1,11 +1,18 @@
 import { ChangeEvent, useContext } from 'react'
 
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FormattedNumberInput } from '../../../Replenishment/Inputs'
 import { SubmitButton } from '../../HelperComponents'
+import { onTextareaFocus } from '../../utils'
+import {
+  enterpriseFieldsMapping,
+  initialSubstanceDetailsFields,
+  substanceFields,
+} from '../constants'
 import {
   EnterpriseSubstanceDetails,
   PEnterpriseDataProps,
@@ -15,8 +22,6 @@ import {
   defaultProps,
   defaultPropsSimpleField,
   disabledClassName,
-  initialSubstanceDetailsFields,
-  tableColumns,
 } from '../../constants'
 
 import { find, get, isArray, isNil, isObject, map, sortBy, split } from 'lodash'
@@ -38,8 +43,6 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
-
-  const fields = ['phase_out_mt', 'ods_replacement', 'ods_replacement_phase_in']
 
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,
@@ -194,7 +197,7 @@ const PEnterpriseSubstanceDetailsSection = ({
             <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
               <>
                 <div>
-                  <Label>{tableColumns.ods_substance}</Label>
+                  <Label>{enterpriseFieldsMapping.ods_substance}</Label>
                   <Field
                     widget="autocomplete"
                     options={options}
@@ -221,27 +224,46 @@ const PEnterpriseSubstanceDetailsSection = ({
                     }}
                   />
                 </div>
-                {map(fields, (field) => (
-                  <div>
-                    <Label>{tableColumns[field]}</Label>
-                    <FormattedNumberInput
-                      id={field}
-                      disabled={isDisabled}
-                      withoutDefaultValue={true}
-                      value={
-                        (substance[
-                          field as keyof EnterpriseSubstanceDetails
-                        ] as string) ?? ''
-                      }
-                      onChange={(event) =>
-                        field === 'ods_replacement'
-                          ? handleChangeTextValues(event, field, index)
-                          : handleChangeNumericValues(event, field, index)
-                      }
-                      {...getFieldDefaultProps(field, index, isDisabled)}
-                    />
-                  </div>
-                ))}
+                {map(substanceFields, (field) =>
+                  field !== 'selected_alternative' ? (
+                    <div>
+                      <Label>{enterpriseFieldsMapping[field]}</Label>
+                      <FormattedNumberInput
+                        id={field}
+                        disabled={isDisabled}
+                        withoutDefaultValue={true}
+                        value={
+                          (substance[
+                            field as keyof EnterpriseSubstanceDetails
+                          ] as string) ?? ''
+                        }
+                        onChange={(event) =>
+                          handleChangeNumericValues(event, field, index)
+                        }
+                        {...getFieldDefaultProps(field, index, isDisabled)}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>{enterpriseFieldsMapping[field]}</Label>
+                      <SimpleInput
+                        id={field}
+                        disabled={isDisabled}
+                        value={
+                          (substance[
+                            field as keyof EnterpriseSubstanceDetails
+                          ] as string) ?? ''
+                        }
+                        onFocus={onTextareaFocus}
+                        onChange={(event) =>
+                          handleChangeTextValues(event, field, index)
+                        }
+                        type="text"
+                        {...getFieldDefaultProps(field, index, isDisabled)}
+                      />
+                    </div>
+                  ),
+                )}
               </>
               {!isDisabled && (
                 <IoTrash

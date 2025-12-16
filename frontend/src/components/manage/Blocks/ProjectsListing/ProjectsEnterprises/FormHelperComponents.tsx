@@ -7,6 +7,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { DateInput, FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { EnterpriseOverview, EnterprisesCommonProps } from '../interfaces'
+import { enterpriseFieldsMapping } from './constants'
 import {
   getFieldDefaultProps,
   getIsInputInvalid,
@@ -20,7 +21,6 @@ import { onTextareaFocus } from '../utils'
 import {
   defaultProps,
   defaultPropsSimpleField,
-  enterpriseFieldsMapping,
   textAreaClassname,
 } from '../constants'
 

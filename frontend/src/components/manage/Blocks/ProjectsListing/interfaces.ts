@@ -405,9 +405,9 @@ export type EnterpriseType = EnterpriseOverview & {
 export interface EnterpriseSubstanceDetails {
   ods_substance: number | null
   ods_blend: number | null
-  phase_out_mt: string | null
-  ods_replacement: string
-  ods_replacement_phase_in: string | null
+  consumption: string | null
+  selected_alternative: string
+  chemical_phased_in: string | null
 }
 
 export interface EnterpriseFundingDetails {

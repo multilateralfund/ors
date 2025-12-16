@@ -5,11 +5,13 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
+  EnterpriseDateField,
   EnterpriseNumberField,
   EnterpriseSelectField,
-  EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
+import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
+import { dateFields, decimalFields, textFields } from '../constants'
 import { defaultProps } from '../../constants'
 import {
   EnterpriseType,
@@ -30,7 +32,7 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
-  const { countries, agencies } = useContext(ProjectsDataContext)
+  const { countries } = useContext(ProjectsDataContext)
 
   const { enterprise, enterpriseData, setEnterpriseData } = rest
   const { overview } = enterpriseData
@@ -41,15 +43,20 @@ const PEnterpriseOverviewSection = ({
     overviewStatus === 'Approved'
 
   const sectionIdentifier = 'overview'
-  const textFields = ['name', 'location', 'application']
-  const numericFields = ['local_ownership', 'export_to_non_a5']
+  const { sectors, subsectors } = useGetEnterpriseFieldsOpts<PEnterpriseData>(
+    overview,
+    setEnterpriseData,
+    sectionIdentifier,
+  )
+
   const selectFields = [
-    { fieldName: 'agencies', options: agencies, isDisabled: isDisabled },
     {
       fieldName: 'country',
       options: countries,
       isDisabled: isDisabled || !!countryId,
     },
+    { fieldName: 'sector', options: sectors, isDisabled: isDisabled },
+    { fieldName: 'subsector', options: subsectors, isDisabled: isDisabled },
   ]
 
   const handleChangeLinkStatus = (value: any) => {
@@ -63,7 +70,7 @@ const PEnterpriseOverviewSection = ({
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-y-2">
       {!!enterprise && canApproveProjectEnterprise && (
         <div>
           <Label>Status</Label>
@@ -82,43 +89,62 @@ const PEnterpriseOverviewSection = ({
       )}
       <EnterpriseTextField<PEnterpriseData>
         field={textFields[0]}
-        sectionIdentifier={sectionIdentifier}
-        {...{ isDisabled, ...rest }}
+        {...{ sectionIdentifier, isDisabled, ...rest }}
         enterpriseData={overview}
       />
-      {map(selectFields, (field) => (
-        <EnterpriseSelectField<PEnterpriseData>
-          sectionIdentifier={sectionIdentifier}
-          isDisabled={field.isDisabled}
-          {...{ field, ...rest }}
-          enterpriseData={overview}
-        />
-      ))}
-      {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField<PEnterpriseData>
-          sectionIdentifier={sectionIdentifier}
-          {...{ field, isDisabled, ...rest }}
-          enterpriseData={overview}
-        />
-      ))}
-      <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
-        {map(numericFields, (field) => (
-          <EnterpriseNumberField<PEnterpriseData>
-            sectionIdentifier={sectionIdentifier}
-            {...{ field, isDisabled, ...rest }}
+      <EnterpriseSelectField<PEnterpriseData>
+        field={selectFields[0]}
+        isDisabled={selectFields[0].isDisabled}
+        {...{ sectionIdentifier, ...rest }}
+        enterpriseData={overview}
+      />
+      <EnterpriseTextField<PEnterpriseData>
+        field={textFields[1]}
+        {...{ sectionIdentifier, isDisabled, ...rest }}
+        enterpriseData={overview}
+      />
+      <EnterpriseTextField<PEnterpriseData>
+        field={textFields[2]}
+        {...{ sectionIdentifier, isDisabled, ...rest }}
+        enterpriseData={overview}
+      />
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {map(selectFields.slice(1), (field) => (
+          <EnterpriseSelectField<PEnterpriseData>
+            isDisabled={field.isDisabled}
+            {...{ sectionIdentifier, field, ...rest }}
             enterpriseData={overview}
           />
         ))}
       </div>
-      <div className="mt-6">
-        <EnterpriseTextAreaField<PEnterpriseData>
-          field="remarks"
-          sectionIdentifier={sectionIdentifier}
-          {...{ isDisabled, ...rest }}
+      <EnterpriseTextField<PEnterpriseData>
+        field={textFields[3]}
+        {...{ sectionIdentifier, isDisabled, ...rest }}
+        enterpriseData={overview}
+      />
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {map(decimalFields, (field) => (
+          <EnterpriseNumberField<PEnterpriseData>
+            dataType="decimal"
+            {...{ sectionIdentifier, field, isDisabled, ...rest }}
+            enterpriseData={overview}
+          />
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {/* <EnterpriseNumberField<PEnterpriseData>
+                dataType="integer"
+                field={integerFields[0]}
+            {...{ sectionIdentifier, isDisabled, ...rest }}
+            enterpriseData={overview}
+          /> */}
+        <EnterpriseDateField<PEnterpriseData>
+          field={dateFields[0]}
+          {...{ sectionIdentifier, isDisabled, ...rest }}
           enterpriseData={overview}
         />
       </div>
-    </>
+    </div>
   )
 }
 

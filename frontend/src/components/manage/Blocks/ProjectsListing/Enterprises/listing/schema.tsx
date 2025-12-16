@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import Link from '@ors/components/ui/Link/Link'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { enterpriseFieldsMapping } from '../../constants'
+import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
 import { formatNumberColumns } from '../../utils'
 
 import { find, isNil, map } from 'lodash'
@@ -87,6 +87,7 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
       ? formatNumberColumns(params, crtField)
       : ''
   }
+
   return {
     columnDefs: [
       ...(canAccessEditPage

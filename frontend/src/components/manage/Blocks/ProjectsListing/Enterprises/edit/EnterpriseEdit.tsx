@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import EnterpriseHeader from '../create/EnterpriseHeader'
 import EnterpriseCreate from '../create/EnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
+import { initialOverviewFields } from '../../ProjectsEnterprises/constants'
 import { EnterpriseOverview, EnterpriseType } from '../../interfaces'
-import { initialOverviewFields } from '../../constants'
 import { getFormattedDecimalValue } from '../../utils'
 
 const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {

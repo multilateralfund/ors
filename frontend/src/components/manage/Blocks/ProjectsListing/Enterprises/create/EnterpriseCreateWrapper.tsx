@@ -3,10 +3,10 @@
 import { useContext, useState } from 'react'
 
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
+import { initialOverviewFields } from '../../ProjectsEnterprises/constants.ts'
 import EnterpriseHeader from './EnterpriseHeader.tsx'
 import EnterpriseCreate from './EnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
-import { initialOverviewFields } from '../../constants.ts'
 import { EnterpriseOverview } from '../../interfaces.ts'
 
 import { Redirect } from 'wouter'

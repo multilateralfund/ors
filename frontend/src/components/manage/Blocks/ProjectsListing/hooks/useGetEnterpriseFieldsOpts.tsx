@@ -7,9 +7,10 @@ import { api } from '@ors/helpers'
 
 import { debounce, find, sortBy } from 'lodash'
 
-const useGetEnterpriseFieldsOpts = (
+const useGetEnterpriseFieldsOpts = <T,>(
   enterpriseData: EnterpriseOverview,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  sectionIdentifier?: keyof T | null,
 ) => {
   const { sector, subsector } = enterpriseData
 
@@ -78,9 +79,18 @@ const useGetEnterpriseFieldsOpts = (
       (subsectors.length > 0 &&
         !find(subsectors, (crtSubsector) => subsector === crtSubsector.id))
     ) {
-      setEnterpriseData((prevData) => ({
-        ...prevData,
-        subsector: null,
+      setEnterpriseData((prev) => ({
+        ...prev,
+        ...(sectionIdentifier
+          ? {
+              [sectionIdentifier]: {
+                ...prev[sectionIdentifier],
+                subsector: null,
+              },
+            }
+          : {
+              subsector: null,
+            }),
       }))
     }
   }, [JSON.stringify(subsectors), sector])

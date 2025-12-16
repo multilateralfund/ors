@@ -6,7 +6,8 @@ import {
   numberDetailItem,
   dateDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
-import { enterpriseFieldsMapping, viewColumnsClassName } from '../../constants'
+import { viewColumnsClassName } from '../../constants'
+import { enterpriseFieldsMapping } from '../constants'
 import { EnterpriseOverview } from '../../interfaces'
 import { getEntityById } from '../utils'
 

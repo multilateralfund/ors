@@ -1,0 +1,66 @@
+import dayjs from 'dayjs'
+
+export const textFields = ['name', 'location', 'stage', 'application']
+export const dateFields = ['date_of_revision']
+export const integerFields = ['revision']
+export const decimalFields = ['local_ownership', 'export_to_non_a5']
+export const substanceFields = [
+  'consumption',
+  'selected_alternative',
+  'chemical_phased_in',
+]
+
+export const enterpriseFieldsMapping: { [key: string]: string } = {
+  id: 'Enterprise',
+  code: 'Code',
+  name: 'Enterprise',
+  country: 'Country',
+  location: 'Location',
+  stage: 'Stage',
+  sector: 'Sector',
+  subsector: 'Sub-sector',
+  application: 'Application',
+  local_ownership: 'Local ownership',
+  export_to_non_a5: 'Export to non-A5',
+  revision: 'Revision number',
+  date_of_revision: 'Date of revision',
+  consumption: 'Consumption (mt)',
+  selected_alternative: 'Selected alternative',
+  chemical_phased_in: 'Chemical phased in (mt)',
+  ods_substance: 'Chemical name',
+  ods_blend: 'Chemical name',
+  capital_cost_approved: 'Capital cost approved',
+  operating_cost_approved: 'Operating cost approved',
+  funds_disbursed: 'Funds disbursed',
+  funds_approved: 'Funds approved',
+  cost_effectiveness_approved: 'Cost effectiveness approved',
+  remarks: 'Remarks',
+}
+
+export const initialOverviewFields = {
+  name: '',
+  country: null,
+  location: '',
+  stage: '',
+  sector: null,
+  subsector: null,
+  application: '',
+  local_ownership: null,
+  export_to_non_a5: null,
+  revision: null,
+  date_of_revision: dayjs().format('YYYY-MM-DD'),
+}
+
+export const initialSubstanceDetailsFields = {
+  ods_substance: null,
+  ods_blend: null,
+  consumption: null,
+  selected_alternative: '',
+  chemical_phased_in: null,
+}
+
+export const initialFundingDetailsFields = {
+  capital_cost_approved: null,
+  operating_cost_approved: null,
+  funds_disbursed: null,
+}

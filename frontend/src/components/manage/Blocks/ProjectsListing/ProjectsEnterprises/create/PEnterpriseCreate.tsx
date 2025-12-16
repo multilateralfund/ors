@@ -10,14 +10,13 @@ import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDeta
 import PEnterpriseFundingDetailsSection from '../tabs/PEnterpriseFundingDetailsSection.tsx'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
-import { tableColumns } from '../../constants.ts'
+import { enterpriseFieldsMapping } from '../constants.ts'
 import { getFieldErrors } from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
   OptionsType,
 } from '../../interfaces.ts'
-import { useStore } from '@ors/store.tsx'
 
 import { has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
@@ -33,11 +32,8 @@ const PEnterpriseCreate = ({
 }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
   const filters = {
     status: ['Pending Approval', 'Approved'],
-    agencies: agency_id ? [agency_id] : null,
   }
   const { results } = useGetEnterprises(filters, countryId)
 
@@ -68,7 +64,7 @@ const PEnterpriseCreate = ({
       const fieldLabels = uniq(
         map(fields, (errorMsgs, field) => {
           if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
-            return tableColumns[field]
+            return enterpriseFieldsMapping[field]
           }
           return null
         }),
@@ -101,7 +97,7 @@ const PEnterpriseCreate = ({
           errors={searchErrors}
         />
       ),
-      errors: formatErrors(searchErrors),
+      errors: formatErrors(searchErrors, enterpriseFieldsMapping),
     },
     {
       id: 'enterprise-overview',
@@ -119,7 +115,7 @@ const PEnterpriseCreate = ({
           errors={overviewErrors}
         />
       ),
-      errors: formatErrors(overviewErrors),
+      errors: formatErrors(overviewErrors, enterpriseFieldsMapping),
     },
     {
       id: 'enterprise-substance-details',
@@ -138,7 +134,10 @@ const PEnterpriseCreate = ({
           odsOdpErrors={normalizedOdsOdpErrors}
         />
       ),
-      errors: [...formatErrors(odsOdpNonFieldErrors), ...formattedOdsOdpErrors],
+      errors: [
+        ...formatErrors(odsOdpNonFieldErrors, enterpriseFieldsMapping),
+        ...formattedOdsOdpErrors,
+      ],
     },
     {
       id: 'enterprise-funding-details',
@@ -156,7 +155,7 @@ const PEnterpriseCreate = ({
           errors={fundingDetailsErrors}
         />
       ),
-      errors: formatErrors(fundingDetailsErrors),
+      errors: formatErrors(fundingDetailsErrors, enterpriseFieldsMapping),
     },
   ]
 

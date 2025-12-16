@@ -17,7 +17,7 @@ const PEnterpriseFundingDetailsSection = ({
         Number(enterprise.operating_cost_approved ?? 0)
   const totalPhaseOut = sumBy(
     enterprise.ods_odp,
-    ({ phase_out_mt }) => Number(phase_out_mt) || 0,
+    ({ consumption }) => Number(consumption) || 0,
   )
   const cost_effectiveness_approved =
     !isNil(funds_approved) && totalPhaseOut

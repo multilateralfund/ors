@@ -2,13 +2,13 @@ import { useContext } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import { enterpriseFieldsMapping } from '../constants'
 import { PEnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
-import { tableColumns } from '../../constants'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
 
-import { find, sumBy } from 'lodash'
+import { find, isNil, sumBy } from 'lodash'
 import {
   CellClassParams,
   GetRowIdParams,
@@ -46,18 +46,23 @@ const PEnterpriseSubstanceDetailsSection = ({
     odsOdpData.length > 0
       ? [
           {
-            phase_out_mt: sumBy(
+            consumption: sumBy(
               odsOdpData,
-              (ods_odp) => Number(ods_odp.phase_out_mt) || 0,
+              (ods_odp) => Number(ods_odp.consumption) || 0,
             ),
-            ods_replacement: '-',
-            ods_replacement_phase_in: sumBy(
+            selected_alternative: '-',
+            chemical_phased_in: sumBy(
               odsOdpData,
-              (ods_odp) => Number(ods_odp.ods_replacement_phase_in) || 0,
+              (ods_odp) => Number(ods_odp.chemical_phased_in) || 0,
             ),
           },
         ]
       : []
+
+  const getDecimalValue = (
+    params: ValueGetterParams | ITooltipParams,
+    field: string,
+  ) => (!isNil(params.data[field]) ? formatNumberColumns(params, field) : '')
 
   const defaultColDef = {
     headerClass: 'ag-text-center',
@@ -68,7 +73,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   const columnDefs = [
     {
-      headerName: tableColumns.ods_substance,
+      headerName: enterpriseFieldsMapping.ods_substance,
       valueGetter: (params: ValueGetterParams) => getFieldValue(params) || '-',
       tooltipValueGetter: (params: ITooltipParams) =>
         getFieldValue(params) || '-',
@@ -77,29 +82,23 @@ const PEnterpriseSubstanceDetailsSection = ({
       },
     },
     {
-      headerName: tableColumns.phase_out_mt,
+      headerName: enterpriseFieldsMapping.consumption,
       valueGetter: (params: ValueGetterParams) =>
-        formatNumberColumns(params, 'phase_out_mt'),
+        getDecimalValue(params, 'consumption'),
       tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'phase_out_mt', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        }),
+        getDecimalValue(params, 'consumption'),
     },
     {
-      headerName: tableColumns.ods_replacement,
-      field: 'ods_replacement',
-      tooltipField: 'ods_replacement',
+      headerName: enterpriseFieldsMapping.selected_alternative,
+      field: 'selected_alternative',
+      tooltipField: 'selected_alternative',
     },
     {
-      headerName: tableColumns.ods_replacement_phase_in,
+      headerName: enterpriseFieldsMapping.chemical_phased_in,
       valueGetter: (params: ValueGetterParams) =>
-        formatNumberColumns(params, 'ods_replacement_phase_in'),
+        getDecimalValue(params, 'chemical_phased_in'),
       tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'ods_replacement_phase_in', {
-          maximumFractionDigits: 10,
-          minimumFractionDigits: 2,
-        }),
+        getDecimalValue(params, 'chemical_phased_in'),
     },
   ]
 
