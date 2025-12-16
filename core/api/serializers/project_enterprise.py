@@ -49,9 +49,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             "local_ownership",
             "export_to_non_a5",
             "project_enterprises",
-            "date_of_approval",
             "date_of_revision",
-            "meeting",
             "status",
         ]
 
@@ -177,8 +175,10 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             "cost_effectiveness_actual",
             "capital_cost_approved",
             "capital_cost_disbursed",
+            "chemical_phased_out",
             "co_financing_actual",
             "co_financing_planned",
+            "date_of_approval",
             "date_of_report",
             "enterprise",
             "excom_provision",
@@ -186,6 +186,7 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             "funds_disbursed",
             "funds_transferred",
             "impact",
+            "meeting",
             "ods_odp",
             "operating_cost_approved",
             "operating_cost_disbursed",

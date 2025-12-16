@@ -23,7 +23,6 @@ class EnterpriseAdmin(admin.ModelAdmin):
         "sector",
         "subsector",
         "application",
-        "meeting",
     ]
     readonly_fields = [
         "code",
@@ -47,6 +46,8 @@ class EnterpriseAdmin(admin.ModelAdmin):
 @admin.register(ProjectEnterprise)
 class ProjectEnterpriseAdmin(admin.ModelAdmin):
     list_filter = [
+        AutocompleteFilterFactory("enterprise", "enterprise"),
+        AutocompleteFilterFactory("meeting", "meeting"),
         AutocompleteFilterFactory("project", "project"),
         "status",
     ]
@@ -59,6 +60,7 @@ class ProjectEnterpriseAdmin(admin.ModelAdmin):
         exclude = [
             "ods_odp",
             "project",
+            "meeting",
         ]
         data = get_final_display_list(ProjectEnterprise, exclude)
         return data

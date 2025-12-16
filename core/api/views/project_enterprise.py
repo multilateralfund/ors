@@ -44,9 +44,11 @@ class EnterpriseViewSet(
         "location",
         "stage",
         "sector",
+        "subsector",
         "application",
         "local_ownership",
         "export_to_non_a5",
+        "date_of_revision",
         "status",
     ]
     model = Enterprise
@@ -58,7 +60,7 @@ class EnterpriseViewSet(
         Filter the queryset based on the user's permissions.
         """
         queryset = queryset.prefetch_related(
-            "agencies", "project_enterprises", "project_enterprises__project"
+            "project_enterprises", "project_enterprises__project"
         )
         user = self.request.user
         if user.is_superuser:
@@ -184,8 +186,15 @@ class ProjectEnterpriseViewSet(
         "enterprise__location",
         "enterprise__stage",
         "enterprise__sector",
+        "enterprise__subsector",
         "enterprise__application",
+        "enterprise__local_ownership",
+        "enterprise__export_to_non_a5",
+        "enterprise__date_of_revision",
         "status",
+        "agency__name",
+        "meeting",
+        "project_type",
     ]
     search_fields = ["enterprise__code", "enterprise__name"]
 

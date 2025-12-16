@@ -96,6 +96,9 @@ class TestListProjectEnterprise(BaseTest, DataTestMixin):
         "status",
         "impact",
         "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
     ]
 
     enterprise_fields_to_test = [
@@ -111,7 +114,6 @@ class TestListProjectEnterprise(BaseTest, DataTestMixin):
         "local_ownership",
         "export_to_non_a5",
         "status",
-        "date_of_approval",
         "date_of_revision",
     ]
 
@@ -239,6 +241,9 @@ class TestProjectRetrieveProjectEnterprise(DataTestMixin):
         "status",
         "impact",
         "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
     ]
 
     enterprise_fields_to_test = [
@@ -254,7 +259,6 @@ class TestProjectRetrieveProjectEnterprise(DataTestMixin):
         "local_ownership",
         "export_to_non_a5",
         "status",
-        "date_of_approval",
         "date_of_revision",
     ]
 
@@ -367,6 +371,9 @@ class TestCreateProjectEnterprise(DataTestMixin):
         "status",
         "impact",
         "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
     ]
 
     enterprise_fields_to_test = [
@@ -380,11 +387,12 @@ class TestCreateProjectEnterprise(DataTestMixin):
         "local_ownership",
         "export_to_non_a5",
         "status",
-        "date_of_approval",
         "date_of_revision",
     ]
 
-    def get_create_data(self, project, substance, blend, agency, sector, subsector):
+    def get_create_data(
+        self, project, substance, blend, agency, sector, subsector, meeting
+    ):
         blend.composition = f"{substance.name}: 100%"
         blend.components.create(substance=substance, percentage=0.2)
         blend.save()
@@ -401,7 +409,6 @@ class TestCreateProjectEnterprise(DataTestMixin):
                 "application": "New Application",
                 "local_ownership": 50.0,
                 "export_to_non_a5": 30.0,
-                "date_of_approval": "2023-01-15",
                 "date_of_revision": "2023-06-20",
             },
             "capital_cost_approved": 10000.0,
@@ -420,8 +427,11 @@ class TestCreateProjectEnterprise(DataTestMixin):
             "planned_completion_date": "2024-12-31",
             "actual_completion_date": "2024-11-30",
             "project_duration": 24,
-            "impact": "High",
+            "impact": 300.0,
             "funds_approved": 20000.0,
+            "date_of_approval": "2023-01-15",
+            "meeting": meeting.id,
+            "chemical_phased_out": 2000.0,
             "ods_odp": [
                 {
                     "ods_substance": substance.id,
@@ -458,9 +468,10 @@ class TestCreateProjectEnterprise(DataTestMixin):
         blend,
         sector,
         subsector,
+        meeting,
     ):
         data = self.get_create_data(
-            project, substance_hcfc, blend, agency, sector, subsector
+            project, substance_hcfc, blend, agency, sector, subsector, meeting
         )
 
         def _test_user(user, expected_status, data):
@@ -488,11 +499,19 @@ class TestCreateProjectEnterprise(DataTestMixin):
         _test_user(admin_user, 201, data)
 
     def test_create(
-        self, mlfs_admin_user, project, substance_hcfc, blend, agency, sector, subsector
+        self,
+        mlfs_admin_user,
+        project,
+        substance_hcfc,
+        blend,
+        agency,
+        sector,
+        subsector,
+        meeting,
     ):
         self.client.force_authenticate(user=mlfs_admin_user)
         data = self.get_create_data(
-            project, substance_hcfc, blend, agency, sector, subsector
+            project, substance_hcfc, blend, agency, sector, subsector, meeting
         )
         assert ProjectEnterprise.objects.all().count() == 0
         response = self.client.post(self.url, data, format="json")
@@ -544,6 +563,9 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         "status",
         "impact",
         "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
     ]
 
     enterprise_fields_to_test = [
@@ -557,12 +579,19 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         "local_ownership",
         "export_to_non_a5",
         "status",
-        "date_of_approval",
         "date_of_revision",
     ]
 
     def get_update_data(
-        self, project, substance_hcfc, blend, enterprise, agency, sector, subsector
+        self,
+        project,
+        substance_hcfc,
+        blend,
+        enterprise,
+        agency,
+        sector,
+        subsector,
+        meeeting,
     ):
         ods_odp = enterprise.ods_odp.first()
         blend.composition = f"{substance_hcfc.name}: 100%"
@@ -582,7 +611,6 @@ class TestUpdateProjectEnterprise(DataTestMixin):
                 "application": "Updated Application",
                 "local_ownership": 60.0,
                 "export_to_non_a5": 40.0,
-                "date_of_approval": "2023-01-15",
                 "date_of_revision": "2023-06-20",
             },
             "capital_cost_approved": 20000.0,
@@ -601,8 +629,11 @@ class TestUpdateProjectEnterprise(DataTestMixin):
             "planned_completion_date": "2024-12-31",
             "actual_completion_date": "2024-11-30",
             "project_duration": 24,
-            "impact": "High",
+            "impact": 300.0,
             "funds_approved": 20000.0,
+            "date_of_approval": "2023-01-15",
+            "meeting": meeeting.id,
+            "chemical_phased_out": 2500.0,
             "ods_odp": [
                 {
                     "ods_odp": ods_odp.id,
@@ -640,11 +671,19 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         agency,
         sector,
         subsector,
+        meeting,
     ):
         enterprise1, _, _ = _setup_enterprises
 
         data = self.get_update_data(
-            project, substance_hcfc, blend, enterprise1, agency, sector, subsector
+            project,
+            substance_hcfc,
+            blend,
+            enterprise1,
+            agency,
+            sector,
+            subsector,
+            meeting,
         )
 
         def _test_user(user, expected_status, enterprise, data):
@@ -685,6 +724,7 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         agency,
         sector,
         subsector,
+        meeting,
     ):
         project_enterprise1, _, _ = _setup_enterprises
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -696,6 +736,7 @@ class TestUpdateProjectEnterprise(DataTestMixin):
             agency,
             sector,
             subsector,
+            meeting,
         )
         url = reverse("project-enterprise-detail", args=[project_enterprise1.id])
         response = self.client.put(url, data, format="json")

@@ -593,9 +593,7 @@ class EnterpriseFactory(factory.django.DjangoModelFactory):
     local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
     export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
     status = EnterpriseStatus.PENDING
-    date_of_approval = factory.Faker("date")
     date_of_revision = factory.Faker("date")
-    meeting = factory.SubFactory(MeetingFactory)
 
 
 class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
@@ -629,8 +627,11 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     actual_completion_date = factory.Faker("date")
     project_duration = factory.Faker("random_int", min=1, max=120)
     status = EnterpriseStatus.PENDING
+    chemical_phased_out = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     impact = factory.Faker("pystr", max_chars=200, prefix="Impact ")
     funds_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    date_of_approval = factory.Faker("date")
+    meeting = factory.SubFactory(MeetingFactory)
 
 
 class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):

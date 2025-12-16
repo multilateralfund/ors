@@ -88,19 +88,6 @@ class Enterprise(models.Model):
         blank=True,
         help_text="Percentage of produce exported to non-A5 countries",
     )
-    date_of_approval = models.DateField(
-        null=True,
-        blank=True,
-        help_text="Month and year of meeting when project was approved",
-    )
-    meeting = models.ForeignKey(
-        "core.Meeting",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="enterprises",
-        help_text="Meeting where the project was approved",
-    )
     date_of_revision = models.DateField(
         null=True,
         blank=True,
@@ -263,6 +250,19 @@ class ProjectEnterprise(models.Model):
         choices=EnterpriseStatus.choices,
         default=EnterpriseStatus.PENDING,
     )
+    chemical_phased_out = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Total quantity of chemical phased out (mt)",
+    )
+    meeting = models.ForeignKey(
+        "core.Meeting",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enterprises",
+        help_text="Meeting where the project was approved",
+    )
     impact = models.TextField(
         null=True,
         blank=True,
@@ -274,6 +274,11 @@ class ProjectEnterprise(models.Model):
         null=True,
         blank=True,
         help_text="Funds approved/allocated for the enterprise (US $)",
+    )
+    date_of_approval = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Month and year of meeting when project was approved",
     )
 
     def __str__(self):
