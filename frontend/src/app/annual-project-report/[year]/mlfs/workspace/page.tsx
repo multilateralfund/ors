@@ -355,11 +355,9 @@ export default function APRMLFSWorkspace() {
       <PageHeading className="mb-1 flex min-w-fit items-center gap-x-2">
         {`Secretariat - Annual Project Report Workspace`}
         <AprYearDropdown />
-        {progressReport?.endorsed && (
-          <span className="rounded border border-solid px-1 text-lg">
-            ENDORSED
-          </span>
-        )}
+        <span className="rounded border border-solid px-1 text-lg">
+          {progressReport?.endorsed ? 'ENDORSED' : 'DRAFT'}
+        </span>
       </PageHeading>
 
       <Box className="shadow-none">
