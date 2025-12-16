@@ -151,7 +151,8 @@ class ProjectsV2Dump:
         )
 
     @lru_cache
-    def get_valid_fields(self):
+    @staticmethod
+    def get_valid_fields():
         non_reverse = (
             f for f in Project._meta.get_fields() if not isinstance(f, ForeignObjectRel)
         )
