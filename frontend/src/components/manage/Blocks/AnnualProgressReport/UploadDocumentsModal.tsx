@@ -118,7 +118,7 @@ export default function UploadDocumentsModal({
     <Modal open={isModalOpen} onClose={onClose} keepMounted>
       <Box className="flex w-full max-w-lg flex-col px-0 absolute-center">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
-          Upload documents
+          View and upload documents
         </Typography>
         <form
           className="my-2 flex flex-col gap-y-6 bg-[#F5F5F5] px-6 py-2"
@@ -129,7 +129,7 @@ export default function UploadDocumentsModal({
         >
           <div className="flex flex-col gap-y-2">
             <p className="m-0 text-lg font-medium">
-              Upload Annual Progress & Financial Report
+              Annual progress & financial report
             </p>
             {financialFile && (
               <FileView
@@ -176,7 +176,7 @@ export default function UploadDocumentsModal({
           </div>
           <div className="flex flex-col gap-y-2">
             <p className="m-0 text-lg font-medium">
-              Other Supporting Documents
+              Other supporting documents
             </p>
             {supportingFiles.map((file) => (
               <FileView

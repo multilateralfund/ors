@@ -115,7 +115,7 @@ export default function APRWorkspace() {
             color="secondary"
             onClick={() => setIsUploadDocumentsModalOpen(true)}
           >
-            Upload Documents
+            Documents for this APR
           </Button>
           {canSubmitAPR && user.agency_id && (
             <SubmitButton
