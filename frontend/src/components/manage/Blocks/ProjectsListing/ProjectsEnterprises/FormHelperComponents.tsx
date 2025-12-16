@@ -76,24 +76,23 @@ export const EnterpriseNumberField = <T, K>({
   setEnterpriseData,
   field,
   dataType,
+  prefix,
   sectionIdentifier,
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps<T, K> & { dataType: string }) => {
+}: PEnterpriseFieldsProps<T, K> & { dataType: string; prefix?: string }) => {
   const isInteger = dataType === 'integer'
-  const isPercentage = dataType === 'integer'
 
   return (
     <div>
-      <Label>
-        {enterpriseFieldsMapping[field]} {isPercentage ? '(%)' : ''}
-      </Label>
+      <Label>{enterpriseFieldsMapping[field]}</Label>
       <FormattedNumberInput
         id={field}
         disabled={isDisabled}
         withoutDefaultValue={true}
         decimalDigits={isInteger ? 0 : 2}
+        prefix={prefix}
         value={(enterpriseData[field as keyof K] as string) ?? ''}
         onChange={(event) =>
           isInteger

@@ -1,9 +1,9 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { EnterpriseOverview, EnterpriseSubstanceDetails } from '../interfaces'
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import { EnterpriseOverview } from '../interfaces'
 
-import { find, get, isObject, keys } from 'lodash'
+import { find, get, isNil, isObject, keys, sumBy } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = <T>(
@@ -183,3 +183,34 @@ export const getOptionLabel = (
 
 export const getEntityById = (data: any, id: number | null) =>
   find(data, (entry) => entry.id === id)
+
+export const getFundsApproved = (
+  capital_cost_approved: string | null,
+  operating_cost_approved: string | null,
+) =>
+  isNil(capital_cost_approved) && isNil(operating_cost_approved)
+    ? null
+    : Number(capital_cost_approved ?? 0) + Number(operating_cost_approved ?? 0)
+
+export const getCostEffectivenessApproved = (
+  ods_odp: EnterpriseSubstanceDetails[],
+  capital_cost_approved: string | null,
+  operating_cost_approved: string | null,
+) => {
+  const funds_approved = getFundsApproved(
+    capital_cost_approved,
+    operating_cost_approved,
+  )
+  const totalPhaseOut = sumBy(
+    ods_odp,
+    ({ consumption }) => Number(consumption) || 0,
+  )
+  const cost_effectiveness_approved =
+    !isNil(funds_approved) && totalPhaseOut
+      ? (funds_approved ?? 0) / (totalPhaseOut * 1000)
+      : null
+
+  return cost_effectiveness_approved && !isNaN(cost_effectiveness_approved)
+    ? cost_effectiveness_approved
+    : null
+}

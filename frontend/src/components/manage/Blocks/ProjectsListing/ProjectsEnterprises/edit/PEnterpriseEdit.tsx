@@ -80,6 +80,10 @@ const PEnterpriseEdit = ({
           enterprise.operating_cost_approved,
         ),
         funds_disbursed: getFormattedDecimalValue(enterprise.funds_disbursed),
+        cost_effectiveness_approved: getFormattedDecimalValue(
+          enterprise.cost_effectiveness_approved,
+        ),
+        funds_approved: getFormattedDecimalValue(enterprise.funds_approved),
       },
     }))
   }, [])

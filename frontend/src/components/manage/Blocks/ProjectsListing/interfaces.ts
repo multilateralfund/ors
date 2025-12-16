@@ -351,8 +351,6 @@ export type PEnterpriseType = EnterpriseFundingDetails &
     status: string
     enterprise: EnterpriseType
     ods_odp: EnterpriseSubstanceDetails[]
-    funds_approved: string | null
-    cost_effectiveness_approved: string | null
   }
 
 export interface PEnterpriseData {
@@ -421,6 +419,8 @@ export interface EnterpriseFundingDetails {
   capital_cost_approved: string | null
   operating_cost_approved: string | null
   funds_disbursed: string | null
+  funds_approved: string | null
+  cost_effectiveness_approved: string | null
 }
 
 export interface EnterpriseHeaderProps {

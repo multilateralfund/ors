@@ -1,69 +1,61 @@
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
-import { tableColumns, viewColumnsClassName } from '../../constants'
+import { getCostEffectivenessApproved, getFundsApproved } from '../utils'
+import { viewColumnsClassName } from '../../constants'
+import { enterpriseFieldsMapping } from '../constants'
 import { PEnterpriseType } from '../../interfaces'
-
-import { sumBy, isNaN, isNil } from 'lodash'
 
 const PEnterpriseFundingDetailsSection = ({
   enterprise,
 }: {
   enterprise: PEnterpriseType
 }) => {
-  const funds_approved =
-    isNil(enterprise.capital_cost_approved) &&
-    isNil(enterprise.operating_cost_approved)
-      ? null
-      : Number(enterprise.capital_cost_approved ?? 0) +
-        Number(enterprise.operating_cost_approved ?? 0)
-  const totalPhaseOut = sumBy(
-    enterprise.ods_odp,
-    ({ consumption }) => Number(consumption) || 0,
+  const { ods_odp, capital_cost_approved, operating_cost_approved } = enterprise
+  const costEffectivenessApproved = getCostEffectivenessApproved(
+    ods_odp,
+    capital_cost_approved,
+    operating_cost_approved,
   )
-  const cost_effectiveness_approved =
-    !isNil(funds_approved) && totalPhaseOut
-      ? (funds_approved ?? 0) / (totalPhaseOut * 1000)
-      : null
-  const formattedCostEffectivenessApproved = !isNaN(cost_effectiveness_approved)
-    ? cost_effectiveness_approved
-    : null
+  const funds_approved = getFundsApproved(
+    capital_cost_approved,
+    operating_cost_approved,
+  )
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="flex w-full flex-col gap-4">
         <div className={viewColumnsClassName}>
           {numberDetailItem(
-            tableColumns.capital_cost_approved + ' (US $)',
+            enterpriseFieldsMapping.capital_cost_approved,
             enterprise.capital_cost_approved as string,
             'decimal',
           )}
           {numberDetailItem(
-            tableColumns.operating_cost_approved + ' (US $)',
+            enterpriseFieldsMapping.operating_cost_approved,
             enterprise.operating_cost_approved as string,
+            'decimal',
+          )}
+          {numberDetailItem(
+            enterpriseFieldsMapping.funds_disbursed,
+            enterprise.funds_disbursed as string,
             'decimal',
           )}
         </div>
       </div>
-      <div className="mt-4 flex w-full flex-col gap-4">
+      <div className="flex w-full flex-col gap-4">
         <div className={viewColumnsClassName}>
           {numberDetailItem(
-            tableColumns.funds_approved + ' (US $)',
+            enterpriseFieldsMapping.funds_approved,
             funds_approved?.toString() as string,
             'decimal',
           )}
           {numberDetailItem(
-            tableColumns.cost_effectiveness_approved + ' (US $/kg)',
-            formattedCostEffectivenessApproved?.toString() as string,
+            enterpriseFieldsMapping.cost_effectiveness_approved,
+            costEffectivenessApproved?.toString() as string,
             'decimal',
           )}
         </div>
       </div>
-      <div className="mt-4"></div>
-      {numberDetailItem(
-        tableColumns.funds_disbursed + ' (US $)',
-        enterprise.funds_disbursed as string,
-        'decimal',
-      )}
-    </>
+    </div>
   )
 }
 

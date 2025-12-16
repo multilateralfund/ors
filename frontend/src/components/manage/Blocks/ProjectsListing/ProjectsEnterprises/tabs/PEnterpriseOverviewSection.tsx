@@ -126,7 +126,7 @@ const PEnterpriseOverviewSection = ({
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(decimalFields, (field) => (
           <EnterpriseNumberField<PEnterpriseData, EnterpriseOverview>
-            dataType="percentage"
+            dataType="decimal"
             {...{ sectionIdentifier, field, isDisabled, ...rest }}
             enterpriseData={overview}
           />

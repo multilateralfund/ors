@@ -72,7 +72,7 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(decimalFields, (field) => (
           <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
-            dataType="percentage"
+            dataType="decimal"
             {...{ field, isDisabled, ...props }}
           />
         ))}

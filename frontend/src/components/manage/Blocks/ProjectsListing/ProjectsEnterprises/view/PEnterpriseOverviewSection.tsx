@@ -57,12 +57,12 @@ const PEnterpriseOverviewSection = ({
         )}
         <div className={viewColumnsClassName}>
           {numberDetailItem(
-            enterpriseFieldsMapping.local_ownership + ' (%)',
+            enterpriseFieldsMapping.local_ownership,
             enterprise.local_ownership as string,
             'decimal',
           )}
           {numberDetailItem(
-            enterpriseFieldsMapping.export_to_non_a5 + ' (%)',
+            enterpriseFieldsMapping.export_to_non_a5,
             enterprise.export_to_non_a5 as string,
             'decimal',
           )}

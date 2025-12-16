@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
@@ -11,7 +11,11 @@ import PEnterpriseFundingDetailsSection from '../tabs/PEnterpriseFundingDetailsS
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { enterpriseFieldsMapping } from '../constants.ts'
-import { getFieldErrors } from '../utils.ts'
+import {
+  getCostEffectivenessApproved,
+  getFieldErrors,
+  getFundsApproved,
+} from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
@@ -37,8 +41,35 @@ const PEnterpriseCreate = ({
   }
   const { results } = useGetEnterprises(filters, countryId)
 
-  const { enterpriseData, enterprise } = rest
-  const { overview, substance_fields, funding_details } = enterpriseData ?? {}
+  const { enterpriseData, setEnterpriseData, enterprise } = rest
+  const { overview, substance_details, substance_fields, funding_details } =
+    enterpriseData ?? {}
+  const { capital_cost_approved, operating_cost_approved } =
+    funding_details ?? {}
+
+  const costEffectivenessApproved =
+    getCostEffectivenessApproved(
+      substance_details,
+      capital_cost_approved,
+      operating_cost_approved,
+    )?.toString() ?? null
+  const funds_approved =
+    getFundsApproved(
+      capital_cost_approved,
+      operating_cost_approved,
+    )?.toString() ?? null
+
+  useEffect(() => {
+    setEnterpriseData((prevData) => ({
+      ...prevData,
+      funding_details: {
+        ...prevData['funding_details'],
+        cost_effectiveness_approved: costEffectivenessApproved,
+        funds_approved: funds_approved,
+      },
+    }))
+  }, [funding_details, substance_details])
+
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
