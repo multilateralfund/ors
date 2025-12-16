@@ -29,15 +29,23 @@ const PEnterpriseCreateActionButtons = ({
     setOtherErrors('')
 
     try {
-      const { overview, substance_details, substance_fields, funding_details } =
-        enterpriseData
+      const {
+        overview,
+        details,
+        substance_details,
+        substance_fields,
+        funding_details,
+        remarks,
+      } = enterpriseData
 
       const data = {
         project: project_id,
         enterprise: omit(overview, ['status', 'linkStatus']),
         ods_odp: substance_details,
+        ...details,
         ...substance_fields,
         ...funding_details,
+        ...remarks,
       }
 
       const result = await api(`api/project-enterprise/`, {

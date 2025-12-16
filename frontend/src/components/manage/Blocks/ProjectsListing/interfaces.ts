@@ -345,8 +345,10 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type PEnterpriseType = EnterpriseFundingDetails &
-  EnterpriseSubstanceFields & {
+export type PEnterpriseType = EnterpriseDetails &
+  EnterpriseSubstanceFields &
+  EnterpriseFundingDetails &
+  EnterpriseRemarks & {
     id: number | null
     status: string
     enterprise: EnterpriseType
@@ -355,9 +357,11 @@ export type PEnterpriseType = EnterpriseFundingDetails &
 
 export interface PEnterpriseData {
   overview: EnterpriseOverview
+  details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields
   funding_details: EnterpriseFundingDetails
+  remarks: EnterpriseRemarks
 }
 
 export type PEnterpriseDataType = {
@@ -396,6 +400,18 @@ export interface EnterpriseOverview {
   linkStatus?: string
 }
 
+export interface EnterpriseDetails {
+  agency: number | null
+  project_type: number | null
+  planned_completion_date: string | null
+  actual_completion_date: string | null
+  project_duration: string | null
+  date_of_approval: string | null
+  meeting: number | null
+  excom_provision: string
+  date_of_report: string | null
+}
+
 export type EnterpriseType = EnterpriseOverview & {
   id: number
   status: string
@@ -429,6 +445,10 @@ export interface EnterpriseFundingDetails {
   funds_transferred: string | null
 }
 
+export interface EnterpriseRemarks {
+  agency_remarks: string
+  secretariat_remarks: string
+}
 export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void

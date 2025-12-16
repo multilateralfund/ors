@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
+import PEnterpriseDetailsSection from '../tabs/PEnterpriseDetailsSection.tsx'
 import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDetailsSection.tsx'
 import PEnterpriseFundingDetailsSection from '../tabs/PEnterpriseFundingDetailsSection.tsx'
+import PEnterpriseRemarksSection from '../tabs/PEnterpriseRemarksSection.tsx'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { enterpriseFieldsMapping } from '../constants.ts'
@@ -20,18 +22,20 @@ import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
   OptionsType,
+  ProjectTypeApi,
 } from '../../interfaces.ts'
+import { useStore } from '@ors/store.tsx'
 
-import { has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
+import { find, has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
-  countryId,
+  projectData,
   enterpriseStatuses,
   errors,
   ...rest
 }: PEnterpriseDataProps & {
-  countryId: number
+  projectData: ProjectTypeApi
   enterpriseStatuses?: OptionsType[]
 }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
@@ -39,25 +43,39 @@ const PEnterpriseCreate = ({
   const filters = {
     status: ['Pending Approval', 'Approved'],
   }
+  const { country_id: countryId } = projectData
   const { results } = useGetEnterprises(filters, countryId)
 
   const { enterpriseData, setEnterpriseData, enterprise } = rest
-  const { overview, substance_details, substance_fields, funding_details } =
-    enterpriseData ?? {}
+  const {
+    overview,
+    details,
+    substance_details,
+    substance_fields,
+    funding_details,
+    remarks,
+  } = enterpriseData ?? {}
   const { capital_cost_approved, operating_cost_approved } =
     funding_details ?? {}
 
-  const costEffectivenessApproved =
-    getCostEffectivenessApproved(
-      substance_details,
-      capital_cost_approved,
-      operating_cost_approved,
-    )?.toString() ?? null
-  const funds_approved =
-    getFundsApproved(
-      capital_cost_approved,
-      operating_cost_approved,
-    )?.toString() ?? null
+  const costEffectivenessApproved = useMemo(
+    () =>
+      getCostEffectivenessApproved(
+        substance_details,
+        capital_cost_approved,
+        operating_cost_approved,
+      )?.toString() ?? null,
+    [substance_details, capital_cost_approved, operating_cost_approved],
+  )
+
+  const fundsApproved = useMemo(
+    () =>
+      getFundsApproved(
+        capital_cost_approved,
+        operating_cost_approved,
+      )?.toString() ?? null,
+    [capital_cost_approved, operating_cost_approved],
+  )
 
   useEffect(() => {
     setEnterpriseData((prevData) => ({
@@ -65,10 +83,26 @@ const PEnterpriseCreate = ({
       funding_details: {
         ...prevData['funding_details'],
         cost_effectiveness_approved: costEffectivenessApproved,
-        funds_approved: funds_approved,
+        funds_approved: fundsApproved,
       },
     }))
-  }, [funding_details, substance_details])
+  }, [costEffectivenessApproved, fundsApproved])
+
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+
+  useEffect(() => {
+    const crtMeeting =
+      find(meetings, (meeting) => meeting.id === details.meeting)?.date ?? null
+
+    setEnterpriseData((prevData) => ({
+      ...prevData,
+      details: {
+        ...prevData['details'],
+        date_of_approval: crtMeeting,
+      },
+    }))
+  }, [details.meeting])
 
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
@@ -78,7 +112,9 @@ const PEnterpriseCreate = ({
     !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
   const substanceErrors = getFieldErrors(substance_fields, errors)
+  const detailsErrors = getFieldErrors(details, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
+  const remarksErrors = getFieldErrors(remarks, errors)
 
   const odsOdpNonFieldErrors = {
     Subtances:
@@ -150,6 +186,24 @@ const PEnterpriseCreate = ({
       errors: formatErrors(overviewErrors, enterpriseFieldsMapping),
     },
     {
+      id: 'enterprise-details',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Details</div>
+          {hasSectionErrors(detailsErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
+      component: (
+        <PEnterpriseDetailsSection
+          {...{ projectData, ...rest }}
+          errors={detailsErrors}
+        />
+      ),
+      errors: formatErrors(detailsErrors, enterpriseFieldsMapping),
+    },
+    {
       id: 'enterprise-substance-details',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
@@ -191,6 +245,19 @@ const PEnterpriseCreate = ({
         />
       ),
       errors: formatErrors(fundingDetailsErrors, enterpriseFieldsMapping),
+    },
+    {
+      id: 'enterprise-remarks',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Remarks</div>
+          {hasSectionErrors(remarksErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
+      component: <PEnterpriseRemarksSection {...rest} errors={remarksErrors} />,
+      errors: formatErrors(remarksErrors, enterpriseFieldsMapping),
     },
   ]
 

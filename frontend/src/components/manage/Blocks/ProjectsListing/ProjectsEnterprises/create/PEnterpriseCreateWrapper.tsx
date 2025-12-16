@@ -11,8 +11,10 @@ import { useGetProject } from '../../hooks/useGetProject.ts'
 import { PEnterpriseData } from '../../interfaces.ts'
 import {
   initialOverviewFields,
+  initialDetailsFields,
   initialSubstanceFields,
   initialFundingDetailsFields,
+  initialRemarksFields,
 } from '../constants.ts'
 
 import { Redirect, useParams } from 'wouter'
@@ -27,9 +29,11 @@ const PEnterpriseCreateWrapper = () => {
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
+    details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
+    remarks: initialRemarksFields,
   })
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
@@ -44,6 +48,13 @@ const PEnterpriseCreateWrapper = () => {
       overview: {
         ...prevData['overview'],
         country: data?.country_id,
+      },
+      details: {
+        ...prevData['details'],
+        agency: data?.agency_id,
+        project_type: data?.project_type_id,
+        planned_completion_date: data?.project_end_date,
+        meeting: data?.meeting_id,
       },
     }))
   }, [data])
@@ -76,7 +87,7 @@ const PEnterpriseCreateWrapper = () => {
             }}
           />
           <PEnterpriseCreate
-            countryId={data.country_id}
+            projectData={data}
             {...{
               enterpriseData,
               setEnterpriseData,

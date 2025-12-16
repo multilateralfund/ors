@@ -1,7 +1,14 @@
 import dayjs from 'dayjs'
 
 export const textFields = ['name', 'location', 'stage', 'application']
+export const remarksFields = ['agency_remarks', 'secretariat_remarks']
 export const dateFields = ['date_of_revision']
+export const detailsDateFields = [
+  'planned_completion_date',
+  'actual_completion_date',
+  'date_of_approval',
+  'date_of_report',
+]
 export const integerFields = ['revision']
 export const decimalFields = ['local_ownership', 'export_to_non_a5']
 export const substanceDecimalFields = ['chemical_phased_out', 'impact']
@@ -44,7 +51,17 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   co_financing_planned: 'Co-financing planned (US $)',
   co_financing_actual: 'Co-financing actual (US $)',
   funds_transferred: 'Funds transferred (US $)',
-  remarks: 'Remarks',
+  agency: 'Agency',
+  project_type: 'Type',
+  planned_completion_date: 'Planned completion date',
+  actual_completion_date: 'Actual completion date',
+  project_duration: 'Project duration',
+  date_of_approval: 'Date of approval',
+  meeting: 'Meeting',
+  excom_provision: 'ExCom provision',
+  date_of_report: 'Date of report',
+  agency_remarks: 'Agency remarks',
+  secretariat_remarks: 'Secretariat remarks',
 }
 
 export const initialOverviewFields = {
@@ -59,6 +76,18 @@ export const initialOverviewFields = {
   export_to_non_a5: null,
   revision: null,
   date_of_revision: dayjs().format('YYYY-MM-DD'),
+}
+
+export const initialDetailsFields = {
+  agency: null,
+  project_type: null,
+  planned_completion_date: null,
+  actual_completion_date: null,
+  project_duration: null,
+  date_of_approval: null,
+  meeting: null,
+  excom_provision: '',
+  date_of_report: null,
 }
 
 export const initialSubstanceFields = {
@@ -86,4 +115,9 @@ export const initialFundingDetailsFields = {
   operating_cost_disbursed: null,
   co_financing_planned: null,
   co_financing_actual: null,
+}
+
+export const initialRemarksFields = {
+  agency_remarks: '',
+  secretariat_remarks: '',
 }
