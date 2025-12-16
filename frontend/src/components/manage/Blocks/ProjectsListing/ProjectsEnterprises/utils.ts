@@ -10,12 +10,9 @@ export const handleChangeSelectValues = <T>(
   field: string,
   setEnterpriseData: Dispatch<SetStateAction<T>>,
   value: any,
-  isMultiple: boolean,
   sectionIdentifier?: keyof T | null,
 ) => {
-  const formattedValue = isMultiple
-    ? value.map((val: any) => val.id ?? [])
-    : (value?.id ?? null)
+  const formattedValue = value?.id ?? null
 
   setEnterpriseData((prev) => ({
     ...prev,
@@ -51,7 +48,34 @@ export const handleChangeTextValues = <T>(
   }))
 }
 
-export const handleChangeNumericValues = <T>(
+export const handleChangeIntegerValues = <T>(
+  field: string,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  event: ChangeEvent<HTMLInputElement>,
+  sectionIdentifier?: keyof T | null,
+) => {
+  const value = event.target.value
+
+  if (value === '' || !isNaN(parseInt(value))) {
+    const finalVal = value ? parseInt(value) : null
+
+    setEnterpriseData((prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: finalVal,
+            },
+          }
+        : { [field]: finalVal }),
+    }))
+  } else {
+    event.preventDefault()
+  }
+}
+
+export const handleChangeDecimalValues = <T>(
   field: string,
   setEnterpriseData: Dispatch<SetStateAction<T>>,
   event: ChangeEvent<HTMLInputElement>,
@@ -75,6 +99,27 @@ export const handleChangeNumericValues = <T>(
   } else {
     event.preventDefault()
   }
+}
+
+export const handleChangeDateValues = <T>(
+  field: string,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  sectionIdentifier?: keyof T | null,
+) => {
+  const formattedVal = event.target.value || null
+
+  setEnterpriseData((prev) => ({
+    ...prev,
+    ...(sectionIdentifier
+      ? {
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            [field]: formattedVal,
+          },
+        }
+      : { [field]: formattedVal }),
+  }))
 }
 
 export const getIsInputInvalid = (hasSubmitted: boolean, errors: any) =>

@@ -3,6 +3,7 @@
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import EnterpriseForm from './EnterpriseForm.tsx'
 import { getFieldErrors } from '../../ProjectsEnterprises/utils.ts'
+import { enterpriseFieldsMapping } from '../../constants.ts'
 import { EnterpriseDataProps } from '../../interfaces.ts'
 import { formatErrors } from '../../utils.ts'
 
@@ -12,7 +13,10 @@ const EnterpriseCreate = ({
   ...rest
 }: EnterpriseDataProps) => {
   const enterpriseErrors = getFieldErrors(enterpriseData, errors)
-  const formattedErrors = formatErrors(enterpriseErrors)
+  const formattedErrors = formatErrors(
+    enterpriseErrors,
+    enterpriseFieldsMapping,
+  )
 
   return (
     <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">

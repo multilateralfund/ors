@@ -383,13 +383,16 @@ export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
 export interface EnterpriseOverview {
   name: string
-  agencies: number[]
   country: number | null
   location: string
+  stage: string
+  sector: number | null
+  subsector: number | null
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
-  remarks: string
+  revision: string | null
+  date_of_revision: string | null
   linkStatus?: string
 }
 

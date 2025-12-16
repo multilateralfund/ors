@@ -1,5 +1,6 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SpecificFields } from './interfaces'
+import dayjs from 'dayjs'
 
 export const PROJECTS_PER_PAGE = 100
 
@@ -39,11 +40,6 @@ export const tableColumns: { [key: string]: string } = {
   production: 'Production',
   category: 'Category',
   decision: 'Decision meeting',
-  name: 'Name',
-  location: 'Location',
-  application: 'Application',
-  local_ownership: 'Percentage of goods exported to non-Article 5 countries',
-  export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
   ods_substance: 'Substance baseline technology',
   ods_blend: 'Substance baseline technology',
   phase_out_mt: 'Substance phase out (Mt)',
@@ -54,13 +50,28 @@ export const tableColumns: { [key: string]: string } = {
   funds_disbursed: 'Funds disbursed',
   funds_approved: 'Funds approved',
   cost_effectiveness_approved: 'Cost effectiveness approved',
-  remarks: 'Remarks',
   id: 'Enterprise',
   transfer_meeting: 'Transfer meeting number',
   transfer_decision: 'Transfer decision meeting',
   transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
+}
+
+export const enterpriseFieldsMapping: { [key: string]: string } = {
+  code: 'Code',
+  name: 'Enterprise',
+  country: 'Country',
+  location: 'Location',
+  stage: 'Stage',
+  sector: 'Sector',
+  subsector: 'Sub-sector',
+  application: 'Application',
+  local_ownership: 'Local ownership',
+  export_to_non_a5: 'Export to non-A5',
+  revision: 'Revision number',
+  date_of_revision: 'Date of revision',
+  remarks: 'Remarks',
 }
 
 export const defaultProps = {
@@ -192,13 +203,16 @@ export const exportButtonClassname =
 
 export const initialOverviewFields = {
   name: '',
-  agencies: [],
   country: null,
   location: '',
+  stage: '',
+  sector: null,
+  subsector: null,
   application: '',
   local_ownership: null,
   export_to_non_a5: null,
-  remarks: '',
+  revision: null,
+  date_of_revision: dayjs().format('YYYY-MM-DD'),
 }
 
 export const initialSubstanceDetailsFields = {

@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FormattedNumberInput } from '../../../Replenishment/Inputs'
-import { getFieldDefaultProps, handleChangeNumericValues } from '../utils'
+import { getFieldDefaultProps, handleChangeDecimalValues } from '../utils'
 import { tableColumns } from '../../constants'
 import {
   PEnterpriseDataProps,
@@ -41,7 +41,7 @@ const PEnterpriseFundingDetailsSection = ({
               ] as string) ?? ''
             }
             onChange={(event) =>
-              handleChangeNumericValues<PEnterpriseData>(
+              handleChangeDecimalValues<PEnterpriseData>(
                 field,
                 setEnterpriseData,
                 event,

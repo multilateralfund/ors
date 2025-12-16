@@ -8,20 +8,15 @@ import EnterpriseCreate from './EnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { initialOverviewFields } from '../../constants.ts'
 import { EnterpriseOverview } from '../../interfaces.ts'
-import { useStore } from '@ors/store.tsx'
 
 import { Redirect } from 'wouter'
 
 const EnterpriseCreateWrapper = () => {
   const { canEditEnterprise } = useContext(PermissionsContext)
 
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
-
-  const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>({
-    ...initialOverviewFields,
-    agencies: agency_id ? [agency_id] : [],
-  })
+  const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>(
+    initialOverviewFields,
+  )
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 

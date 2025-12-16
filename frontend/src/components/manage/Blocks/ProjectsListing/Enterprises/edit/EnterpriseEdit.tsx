@@ -24,13 +24,16 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
     setEnterpriseData((prevData) => ({
       ...prevData,
       name: enterprise.name,
-      agencies: enterprise.agencies,
       country: enterprise.country,
       location: enterprise.location,
+      stage: enterprise.stage,
+      sector: enterprise.sector,
+      subsector: enterprise.subsector,
       application: enterprise.application,
       local_ownership: getFormattedDecimalValue(enterprise.local_ownership),
       export_to_non_a5: getFormattedDecimalValue(enterprise.export_to_non_a5),
-      remarks: enterprise.remarks,
+      revision: enterprise.revision,
+      date_of_revision: enterprise.date_of_revision,
     }))
   }, [])
 
