@@ -22,6 +22,7 @@ export type ApiSettings = {
   onSuccess?: any
   onSuccessNoCatch?: any
   parseParams?: any
+  reactivePath?: boolean
 } & IApi
 
 export interface UseApiReturn<DT> {
@@ -42,7 +43,7 @@ export default function useApi<DT = DataType>(
   const id = useId()
   const [fetchIndex, setFetchIndex] = useState(0)
   const [apiSettings, setApiSettings] = useState(props)
-  const { options, path, throwError = true } = apiSettings
+  const { options, path, throwError = true, reactivePath = false } = apiSettings
   const [data, setData] = useState<DT | null | undefined>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
   const [loading, setLoading] = useState<boolean>(false)
@@ -117,6 +118,20 @@ export default function useApi<DT = DataType>(
   const refetch = useCallback(() => {
     setFetchIndex((index) => index + 1)
   }, [])
+
+  useEffect(() => {
+    if (!reactivePath) {
+      return
+    }
+
+    if (apiSettings.path !== props.path) {
+      setApiSettings((prev) => ({ ...prev, path: props.path }))
+      refetch()
+    }
+
+    // Yes, props.path, as the "path" in the code comes from state so it's not reactive
+    // unless manually set
+  }, [apiSettings.path, props.path, reactivePath, refetch])
 
   return {
     apiSettings,
