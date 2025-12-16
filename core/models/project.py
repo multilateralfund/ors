@@ -1537,7 +1537,7 @@ class Project(models.Model):
         files.sort(key=lambda f: f.date_created, reverse=True)
         return files[0]
 
-    @property
+    @cached_property
     def final_version(self):
         return self.latest_project if self.latest_project else self
 
@@ -1573,6 +1573,8 @@ class Project(models.Model):
                     version=3,
                 ),
             )
+            .select_related("status")
+            .only("id", "version", "status")
             .order_by("version")
         )
 
@@ -1590,6 +1592,7 @@ class Project(models.Model):
                 post_excom_decision__isnull=False,
                 post_excom_decision__meeting__date__year__lte=year,
             )
+            .select_related("status")
             .order_by("-post_excom_decision__meeting__date", "-version")
             .first()
         )

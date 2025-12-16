@@ -130,6 +130,13 @@ class APRWorkspaceView(RetrieveAPIView):
             "project_reports__project__ods_odp",
             "project_reports__project__ods_odp__ods_substance",
             "project_reports__project__ods_odp__ods_blend",
+            # Prefetching all archive versions to avoid N+1 in pcr_due
+            Prefetch(
+                "project_reports__project__archive_projects",
+                queryset=Project.objects.really_all().select_related(
+                    "status", "post_excom_decision__meeting"
+                ),
+            ),
             "files",
         )
 
