@@ -48,7 +48,7 @@ const defaultProps = {
 
 const Filters = (props: { project: ProjectTypeApi }) => {
   const { project } = props
-  const [ selected, setSelected ] = useState({})
+  const [selected, setSelected] = useState<Record<any, boolean>>({})
   const selectedCount = useMemo(() => {
     return Object.entries(selected).filter(([k, v]) => v).length
   }, [selected])
@@ -81,7 +81,12 @@ const Filters = (props: { project: ProjectTypeApi }) => {
                     disabled={selectedCount >= 2 && !selected[v.id]}
                     label={label}
                     name="project_id"
-                    onChange={(evt) => setSelected((prev) => ({...prev, [evt.target.value]: evt.target.checked}))}
+                    onChange={(evt: any) =>
+                      setSelected((prev) => ({
+                        ...prev,
+                        [evt.target.value]: evt.target.checked,
+                      }))
+                    }
                   />
                 )
               })}
