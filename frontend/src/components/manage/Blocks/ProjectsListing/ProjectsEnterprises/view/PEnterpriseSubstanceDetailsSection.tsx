@@ -2,13 +2,15 @@ import { useContext } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { enterpriseFieldsMapping } from '../constants'
+import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
+import { enterpriseFieldsMapping, substanceDecimalFields } from '../constants'
+import { viewColumnsClassName } from '../../constants'
 import { PEnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
 
-import { find, isNil, sumBy } from 'lodash'
+import { find, isNil, map, sumBy } from 'lodash'
 import {
   CellClassParams,
   GetRowIdParams,
@@ -103,18 +105,31 @@ const PEnterpriseSubstanceDetailsSection = ({
   ]
 
   return (
-    <ViewTable
-      getRowId={(props: GetRowIdParams) => props.data.id}
-      rowData={odsOdpData}
-      defaultColDef={defaultColDef}
-      columnDefs={columnDefs}
-      pinnedBottomRowData={totalRow}
-      className={odsOdpData.length > 0 ? 'enterprise-table' : ''}
-      domLayout="autoHeight"
-      enablePagination={false}
-      suppressCellFocus={true}
-      withSeparators={true}
-    />
+    <>
+      <div className="flex flex-col gap-4">
+        <div className={viewColumnsClassName}>
+          {map(substanceDecimalFields, (field) =>
+            numberDetailItem(
+              enterpriseFieldsMapping[field],
+              enterprise[field as keyof typeof enterprise] as string,
+              'decimal',
+            ),
+          )}
+        </div>
+        <ViewTable
+          getRowId={(props: GetRowIdParams) => props.data.id}
+          rowData={odsOdpData}
+          defaultColDef={defaultColDef}
+          columnDefs={columnDefs}
+          pinnedBottomRowData={totalRow}
+          className={odsOdpData.length > 0 ? 'enterprise-table' : ''}
+          domLayout="autoHeight"
+          enablePagination={false}
+          suppressCellFocus={true}
+          withSeparators={true}
+        />
+      </div>
+    </>
   )
 }
 

@@ -50,13 +50,15 @@ const PEnterpriseEditActionButtons = ({
     setOtherErrors('')
 
     try {
-      const { overview, substance_details, funding_details } = enterpriseData
+      const { overview, substance_details, substance_fields, funding_details } =
+        enterpriseData
 
       const data = {
         project: project_id,
         enterprise: omit(overview, ['status', 'linkStatus']),
         status: overview.linkStatus,
         ods_odp: substance_details,
+        ...substance_fields,
         ...funding_details,
       }
 

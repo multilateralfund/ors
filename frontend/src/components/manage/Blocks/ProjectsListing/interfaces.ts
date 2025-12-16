@@ -345,18 +345,20 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type PEnterpriseType = EnterpriseFundingDetails & {
-  id: number | null
-  status: string
-  enterprise: EnterpriseType
-  ods_odp: EnterpriseSubstanceDetails[]
-  funds_approved: string | null
-  cost_effectiveness_approved: string | null
-}
+export type PEnterpriseType = EnterpriseFundingDetails &
+  EnterpriseSubstanceFields & {
+    id: number | null
+    status: string
+    enterprise: EnterpriseType
+    ods_odp: EnterpriseSubstanceDetails[]
+    funds_approved: string | null
+    cost_effectiveness_approved: string | null
+  }
 
 export interface PEnterpriseData {
   overview: EnterpriseOverview
   substance_details: EnterpriseSubstanceDetails[]
+  substance_fields: EnterpriseSubstanceFields
   funding_details: EnterpriseFundingDetails
 }
 
@@ -408,6 +410,11 @@ export interface EnterpriseSubstanceDetails {
   consumption: string | null
   selected_alternative: string
   chemical_phased_in: string | null
+}
+
+export interface EnterpriseSubstanceFields {
+  chemical_phased_out: string | null
+  impact: string | null
 }
 
 export interface EnterpriseFundingDetails {

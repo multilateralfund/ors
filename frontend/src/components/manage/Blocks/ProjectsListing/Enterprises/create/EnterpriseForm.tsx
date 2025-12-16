@@ -42,48 +42,48 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <EnterpriseTextField<EnterpriseOverview>
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
         field={textFields[0]}
         {...{ isDisabled, ...props }}
       />
-      <EnterpriseSelectField<EnterpriseOverview>
+      <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>
         field={selectFields[0]}
         {...{ isDisabled, ...props }}
       />
-      <EnterpriseTextField<EnterpriseOverview>
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
         field={textFields[1]}
         {...{ isDisabled, ...props }}
       />
-      <EnterpriseTextField<EnterpriseOverview>
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
         field={textFields[2]}
         {...{ isDisabled, ...props }}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields.slice(1), (field) => (
-          <EnterpriseSelectField<EnterpriseOverview>
+          <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>
             {...{ field, isDisabled, ...props }}
           />
         ))}
       </div>
-      <EnterpriseTextField<EnterpriseOverview>
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
         field={textFields[3]}
         {...{ isDisabled, ...props }}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(decimalFields, (field) => (
-          <EnterpriseNumberField<EnterpriseOverview>
-            dataType="decimal"
+          <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
+            dataType="percentage"
             {...{ field, isDisabled, ...props }}
           />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {/* <EnterpriseNumberField<EnterpriseOverview>
+        {/* <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
           dataType="integer"
           field={integerFields[0]}
           {...{ isDisabled, ...props }}
         /> */}
-        <EnterpriseDateField<EnterpriseOverview>
+        <EnterpriseDateField<EnterpriseOverview, EnterpriseOverview>
           field={dateFields[0]}
           {...{ isDisabled, ...props }}
         />

@@ -6,17 +6,21 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FormattedNumberInput } from '../../../Replenishment/Inputs'
+import { EnterpriseNumberField } from '../FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
 import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
   initialSubstanceDetailsFields,
+  substanceDecimalFields,
   substanceFields,
 } from '../constants'
 import {
   EnterpriseSubstanceDetails,
   PEnterpriseDataProps,
   OptionsType,
+  PEnterpriseData,
+  EnterpriseSubstanceFields,
 } from '../../interfaces'
 import {
   defaultProps,
@@ -33,6 +37,7 @@ const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   hasSubmitted,
+  errors,
   odsOdpErrors,
 }: PEnterpriseDataProps & {
   odsOdpErrors: { [key: string]: string[] }[]
@@ -41,6 +46,7 @@ const PEnterpriseSubstanceDetailsSection = ({
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
   const isDisabled = !canEditProjectEnterprise
 
+  const sectionIdentifier = 'substance_fields'
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
 
@@ -191,6 +197,25 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   return (
     <>
+      <div className="mb-2 flex flex-wrap gap-x-20 gap-y-2">
+        {map(substanceDecimalFields, (field) => (
+          <EnterpriseNumberField<PEnterpriseData, EnterpriseSubstanceFields>
+            dataType="decimal"
+            enterpriseData={enterpriseData.substance_fields}
+            {...{
+              setEnterpriseData,
+              sectionIdentifier,
+              field,
+              isDisabled,
+              hasSubmitted,
+              errors,
+            }}
+          />
+        ))}
+      </div>
+
+      <Divider className="my-6" />
+
       <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
         {sectionData.map((substance, index) => (
           <>

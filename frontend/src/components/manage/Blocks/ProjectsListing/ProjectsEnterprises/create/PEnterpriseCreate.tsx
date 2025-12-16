@@ -38,7 +38,7 @@ const PEnterpriseCreate = ({
   const { results } = useGetEnterprises(filters, countryId)
 
   const { enterpriseData, enterprise } = rest
-  const { overview, funding_details } = enterpriseData ?? {}
+  const { overview, substance_fields, funding_details } = enterpriseData ?? {}
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
@@ -46,6 +46,7 @@ const PEnterpriseCreate = ({
   const searchErrors =
     !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
+  const substanceErrors = getFieldErrors(substance_fields, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
 
   const odsOdpNonFieldErrors = {
@@ -123,18 +124,21 @@ const PEnterpriseCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Substance details</div>
           {(formattedOdsOdpErrors.length > 0 ||
-            values(odsOdpNonFieldErrors)[0].length > 0) && (
+            values(odsOdpNonFieldErrors)[0].length > 0 ||
+            hasSectionErrors(substanceErrors)) && (
             <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
       component: (
         <PEnterpriseSubstanceDetailsSection
-          {...{ errors, ...rest }}
+          {...rest}
+          errors={substanceErrors}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
       ),
       errors: [
+        ...formatErrors(substanceErrors, enterpriseFieldsMapping),
         ...formatErrors(odsOdpNonFieldErrors, enterpriseFieldsMapping),
         ...formattedOdsOdpErrors,
       ],

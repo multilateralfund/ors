@@ -6,7 +6,7 @@ import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEd
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { DateInput, FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
-import { EnterpriseOverview, EnterprisesCommonProps } from '../interfaces'
+import { EnterprisesCommonProps } from '../interfaces'
 import { enterpriseFieldsMapping } from './constants'
 import {
   getFieldDefaultProps,
@@ -29,15 +29,15 @@ import { enqueueSnackbar } from 'notistack'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-type PEnterpriseFieldsProps<T> = EnterprisesCommonProps & {
-  enterpriseData: EnterpriseOverview
+type PEnterpriseFieldsProps<T, K> = EnterprisesCommonProps & {
+  enterpriseData: K
   setEnterpriseData: Dispatch<SetStateAction<T>>
   field: string
   sectionIdentifier?: keyof T
   isDisabled: boolean
 }
 
-export const EnterpriseTextField = <T,>({
+export const EnterpriseTextField = <T, K>({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -45,13 +45,13 @@ export const EnterpriseTextField = <T,>({
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps<T>) => (
+}: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
     <SimpleInput
       id={field}
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview]}
+      value={enterpriseData[field as keyof K]}
       onFocus={onTextareaFocus}
       onChange={(event) =>
         handleChangeTextValues<T>(
@@ -71,7 +71,7 @@ export const EnterpriseTextField = <T,>({
   </div>
 )
 
-export const EnterpriseNumberField = <T,>({
+export const EnterpriseNumberField = <T, K>({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -80,22 +80,21 @@ export const EnterpriseNumberField = <T,>({
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps<T> & { dataType: string }) => {
+}: PEnterpriseFieldsProps<T, K> & { dataType: string }) => {
   const isInteger = dataType === 'integer'
+  const isPercentage = dataType === 'integer'
 
   return (
     <div>
       <Label>
-        {enterpriseFieldsMapping[field]} {!isInteger ? '(%)' : ''}
+        {enterpriseFieldsMapping[field]} {isPercentage ? '(%)' : ''}
       </Label>
       <FormattedNumberInput
         id={field}
         disabled={isDisabled}
         withoutDefaultValue={true}
         decimalDigits={isInteger ? 0 : 2}
-        value={
-          (enterpriseData[field as keyof EnterpriseOverview] as string) ?? ''
-        }
+        value={(enterpriseData[field as keyof K] as string) ?? ''}
         onChange={(event) =>
           isInteger
             ? handleChangeIntegerValues<T>(
@@ -117,7 +116,7 @@ export const EnterpriseNumberField = <T,>({
   )
 }
 
-export const EnterpriseSelectField = <T,>({
+export const EnterpriseSelectField = <T, K>({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -126,14 +125,13 @@ export const EnterpriseSelectField = <T,>({
   hasSubmitted,
   errors,
 }: EnterprisesCommonProps & {
-  enterpriseData: EnterpriseOverview
+  enterpriseData: K
   setEnterpriseData: Dispatch<SetStateAction<T>>
   field: { fieldName: string; options: any }
   sectionIdentifier?: keyof T
   isDisabled: boolean
 }) => {
   const { fieldName, options } = field
-  const value = enterpriseData[fieldName as keyof EnterpriseOverview]
 
   return (
     <div>
@@ -142,7 +140,7 @@ export const EnterpriseSelectField = <T,>({
         widget="autocomplete"
         disabled={isDisabled}
         options={options}
-        value={value}
+        value={enterpriseData[fieldName as keyof K]}
         onChange={(_, value) =>
           handleChangeSelectValues<T>(
             fieldName,
@@ -165,7 +163,7 @@ export const EnterpriseSelectField = <T,>({
   )
 }
 
-export const EnterpriseTextAreaField = <T,>({
+export const EnterpriseTextAreaField = <T, K>({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -173,12 +171,12 @@ export const EnterpriseTextAreaField = <T,>({
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps<T>) => (
+}: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]} (max 500 characters)</Label>
     <TextareaAutosize
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview] as string}
+      value={enterpriseData[field as keyof K] as string}
       onFocus={onTextareaFocus}
       onChange={(event) =>
         handleChangeTextValues<T>(
@@ -198,7 +196,7 @@ export const EnterpriseTextAreaField = <T,>({
   </div>
 )
 
-export const EnterpriseDateField = <T,>({
+export const EnterpriseDateField = <T, K>({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -206,12 +204,12 @@ export const EnterpriseDateField = <T,>({
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps<T>) => (
+}: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
     <DateInput
       id={field}
-      value={enterpriseData[field as keyof EnterpriseOverview] as string}
+      value={enterpriseData[field as keyof K] as string}
       disabled={isDisabled}
       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
       onChange={(event) =>

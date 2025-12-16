@@ -9,8 +9,9 @@ import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { PEnterpriseData, PEnterpriseType } from '../../interfaces'
 import { getFormattedDecimalValue } from '../../utils'
 import {
-  initialFundingDetailsFields,
   initialOverviewFields,
+  initialSubstanceFields,
+  initialFundingDetailsFields,
 } from '../constants'
 
 import { useParams } from 'wouter'
@@ -28,6 +29,7 @@ const PEnterpriseEdit = ({
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
+    substance_fields: initialSubstanceFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
   })
@@ -62,6 +64,12 @@ const PEnterpriseEdit = ({
         ),
         revision: enterpriseObj.revision,
         date_of_revision: enterpriseObj.date_of_revision,
+      },
+      substance_fields: {
+        chemical_phased_out: getFormattedDecimalValue(
+          enterprise.chemical_phased_out,
+        ),
+        impact: getFormattedDecimalValue(enterprise.impact),
       },
       substance_details: enterprise.ods_odp,
       funding_details: {

@@ -14,6 +14,7 @@ import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
 import { dateFields, decimalFields, textFields } from '../constants'
 import { defaultProps } from '../../constants'
 import {
+  EnterpriseOverview,
   EnterpriseType,
   OptionsType,
   PEnterpriseData,
@@ -87,58 +88,58 @@ const PEnterpriseOverviewSection = ({
           />
         </div>
       )}
-      <EnterpriseTextField<PEnterpriseData>
+      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
         field={textFields[0]}
         {...{ sectionIdentifier, isDisabled, ...rest }}
         enterpriseData={overview}
       />
-      <EnterpriseSelectField<PEnterpriseData>
+      <EnterpriseSelectField<PEnterpriseData, EnterpriseOverview>
         field={selectFields[0]}
         isDisabled={selectFields[0].isDisabled}
         {...{ sectionIdentifier, ...rest }}
         enterpriseData={overview}
       />
-      <EnterpriseTextField<PEnterpriseData>
+      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
         field={textFields[1]}
         {...{ sectionIdentifier, isDisabled, ...rest }}
         enterpriseData={overview}
       />
-      <EnterpriseTextField<PEnterpriseData>
+      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
         field={textFields[2]}
         {...{ sectionIdentifier, isDisabled, ...rest }}
         enterpriseData={overview}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields.slice(1), (field) => (
-          <EnterpriseSelectField<PEnterpriseData>
+          <EnterpriseSelectField<PEnterpriseData, EnterpriseOverview>
             isDisabled={field.isDisabled}
             {...{ sectionIdentifier, field, ...rest }}
             enterpriseData={overview}
           />
         ))}
       </div>
-      <EnterpriseTextField<PEnterpriseData>
+      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
         field={textFields[3]}
         {...{ sectionIdentifier, isDisabled, ...rest }}
         enterpriseData={overview}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(decimalFields, (field) => (
-          <EnterpriseNumberField<PEnterpriseData>
-            dataType="decimal"
+          <EnterpriseNumberField<PEnterpriseData, EnterpriseOverview>
+            dataType="percentage"
             {...{ sectionIdentifier, field, isDisabled, ...rest }}
             enterpriseData={overview}
           />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {/* <EnterpriseNumberField<PEnterpriseData>
+        {/* <EnterpriseNumberField<PEnterpriseData,EnterpriseOverview>
                 dataType="integer"
                 field={integerFields[0]}
             {...{ sectionIdentifier, isDisabled, ...rest }}
             enterpriseData={overview}
           /> */}
-        <EnterpriseDateField<PEnterpriseData>
+        <EnterpriseDateField<PEnterpriseData, EnterpriseOverview>
           field={dateFields[0]}
           {...{ sectionIdentifier, isDisabled, ...rest }}
           enterpriseData={overview}

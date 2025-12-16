@@ -10,8 +10,9 @@ import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { useGetProject } from '../../hooks/useGetProject.ts'
 import { PEnterpriseData } from '../../interfaces.ts'
 import {
-  initialFundingDetailsFields,
   initialOverviewFields,
+  initialSubstanceFields,
+  initialFundingDetailsFields,
 } from '../constants.ts'
 
 import { Redirect, useParams } from 'wouter'
@@ -26,6 +27,7 @@ const PEnterpriseCreateWrapper = () => {
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
+    substance_fields: initialSubstanceFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
   })
