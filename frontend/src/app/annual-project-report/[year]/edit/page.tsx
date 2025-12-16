@@ -266,6 +266,15 @@ export default function APREdit() {
                 isDataFormatted={true}
                 tooltipShowDelay={200}
                 singleClickEdit={true}
+                noRowsOverlayComponentParams={
+                  isMlfsUser
+                    ? {
+                        label: 'No projects submitted by the IA/BAs yet',
+                      }
+                    : {
+                        label: 'No projects to edit',
+                      }
+                }
               />
             )}
           </div>

@@ -207,6 +207,9 @@ export default function APRWorkspace() {
         </div>
         {loaded && (
           <ViewTable
+            noRowsOverlayComponentParams={{
+              label: 'No projects to edit',
+            }}
             rowsVisible={100}
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}

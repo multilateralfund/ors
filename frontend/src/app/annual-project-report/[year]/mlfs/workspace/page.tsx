@@ -642,6 +642,9 @@ export default function APRMLFSWorkspace() {
 
           {loaded && (
             <EditTable
+              noRowsOverlayComponentParams={{
+                label: 'No projects submitted by the IA/BAs yet',
+              }}
               rowsVisible={100}
               gridRef={gridRef}
               dataTypeDefinitions={dataTypeDefinitions}
