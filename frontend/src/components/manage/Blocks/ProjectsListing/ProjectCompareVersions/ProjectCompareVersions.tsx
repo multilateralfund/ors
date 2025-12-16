@@ -1,4 +1,4 @@
-import { useState, useContext, FormEventHandler } from 'react'
+import { useState, useContext, useMemo, FormEventHandler } from 'react'
 import {
   PageTitle,
   RedirectBackButton,
@@ -48,6 +48,10 @@ const defaultProps = {
 
 const Filters = (props: { project: ProjectTypeApi }) => {
   const { project } = props
+  const [ selected, setSelected ] = useState({})
+  const selectedCount = useMemo(() => {
+    return Object.entries(selected).filter(([k, v]) => v).length
+  }, [selected])
 
   return (
     <Box className="shadow-none">
@@ -59,7 +63,7 @@ const Filters = (props: { project: ProjectTypeApi }) => {
           method="GET"
         >
           <FormControl>
-            <FormLabel>Select versions</FormLabel>
+            <FormLabel>Select versions for comparison</FormLabel>
             <FormGroup>
               {project.versions.map((v: ProjectVersions) => {
                 let label
@@ -74,8 +78,10 @@ const Filters = (props: { project: ProjectTypeApi }) => {
                     key={v.id}
                     control={<Checkbox />}
                     value={v.id}
+                    disabled={selectedCount >= 2 && !selected[v.id]}
                     label={label}
                     name="project_id"
+                    onChange={(evt) => setSelected((prev) => ({...prev, [evt.target.value]: evt.target.checked}))}
                   />
                 )
               })}

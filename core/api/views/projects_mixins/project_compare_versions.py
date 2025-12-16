@@ -13,6 +13,7 @@ class ProjectCompareVersionsMixin:
         queryset = Project.objects.really_all().filter(id__in=project_id)
 
         exporter = CompareVersionsProjectExport(
+            user=request.user,
             project=self.get_object(),
             queryset=queryset,
         )
