@@ -22,46 +22,64 @@ const PEnterpriseFundingDetailsSection = ({
   const sectionIdentifier = 'funding_details'
   const sectionData = enterpriseData[sectionIdentifier]
 
+  const fields = [
+    {
+      slice: [0, 3],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+    {
+      slice: [3, 5],
+      getWidth: (field: string) =>
+        field === 'funds_approved' ? 'w-[250px]' : 'w-[320px]',
+      getPrefix: (field: string) => (field === 'funds_approved' ? '$' : ''),
+      isDisabled: true,
+    },
+    {
+      slice: [5, 7],
+      width: 'w-[250px]',
+      getPrefix: (field: string) =>
+        field !== 'cost_effectiveness_actual' ? '$' : '',
+      isDisabled,
+    },
+    {
+      slice: [7, 9],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+    {
+      slice: [9, 11],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+  ]
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-x-20 gap-y-4">
-        {map(keys(sectionData).slice(0, 3), (field) => (
-          <div className="w-[250px]">
-            <EnterpriseNumberField<PEnterpriseData, EnterpriseFundingDetails>
-              enterpriseData={enterpriseData.funding_details}
-              prefix="$"
-              dataType="decimal"
-              {...{
-                setEnterpriseData,
-                sectionIdentifier,
-                field,
-                isDisabled,
-                hasSubmitted,
-                errors,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-x-20 gap-y-4">
-        {map(keys(sectionData).slice(3, 5), (field) => (
-          <div className="w-[250px]">
-            <EnterpriseNumberField<PEnterpriseData, EnterpriseFundingDetails>
-              enterpriseData={enterpriseData.funding_details}
-              prefix={field === 'funds_approved' ? '$' : ''}
-              dataType="decimal"
-              isDisabled={true}
-              {...{
-                setEnterpriseData,
-                sectionIdentifier,
-                field,
-                hasSubmitted,
-                errors,
-              }}
-            />
-          </div>
-        ))}
-      </div>
+      {fields.map(({ slice, width, getWidth, getPrefix, isDisabled }, idx) => (
+        <div key={idx} className="flex flex-wrap gap-x-20 gap-y-4">
+          {map(keys(sectionData).slice(...slice), (field) => (
+            <div key={field} className={getWidth ? getWidth(field) : width}>
+              <EnterpriseNumberField<PEnterpriseData, EnterpriseFundingDetails>
+                enterpriseData={enterpriseData.funding_details}
+                prefix={getPrefix(field)}
+                dataType="decimal"
+                {...{
+                  setEnterpriseData,
+                  sectionIdentifier,
+                  field,
+                  isDisabled,
+                  hasSubmitted,
+                  errors,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   )
 }

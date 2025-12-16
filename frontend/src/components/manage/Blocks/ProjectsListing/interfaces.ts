@@ -421,6 +421,12 @@ export interface EnterpriseFundingDetails {
   funds_disbursed: string | null
   funds_approved: string | null
   cost_effectiveness_approved: string | null
+  capital_cost_disbursed: string | null
+  operating_cost_disbursed: string | null
+  cost_effectiveness_actual: string | null
+  co_financing_planned: string | null
+  co_financing_actual: string | null
+  funds_transferred: string | null
 }
 
 export interface EnterpriseHeaderProps {

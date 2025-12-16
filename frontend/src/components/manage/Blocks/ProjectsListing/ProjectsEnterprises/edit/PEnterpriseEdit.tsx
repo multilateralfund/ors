@@ -80,10 +80,28 @@ const PEnterpriseEdit = ({
           enterprise.operating_cost_approved,
         ),
         funds_disbursed: getFormattedDecimalValue(enterprise.funds_disbursed),
+        funds_approved: getFormattedDecimalValue(enterprise.funds_approved),
         cost_effectiveness_approved: getFormattedDecimalValue(
           enterprise.cost_effectiveness_approved,
         ),
-        funds_approved: getFormattedDecimalValue(enterprise.funds_approved),
+        funds_transferred: getFormattedDecimalValue(
+          enterprise.funds_transferred,
+        ),
+        cost_effectiveness_actual: getFormattedDecimalValue(
+          enterprise.cost_effectiveness_actual,
+        ),
+        capital_cost_disbursed: getFormattedDecimalValue(
+          enterprise.capital_cost_disbursed,
+        ),
+        operating_cost_disbursed: getFormattedDecimalValue(
+          enterprise.operating_cost_disbursed,
+        ),
+        co_financing_planned: getFormattedDecimalValue(
+          enterprise.co_financing_planned,
+        ),
+        co_financing_actual: getFormattedDecimalValue(
+          enterprise.co_financing_actual,
+        ),
       },
     }))
   }, [])

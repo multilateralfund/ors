@@ -35,8 +35,15 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   capital_cost_approved: 'Capital cost approved (US $)',
   operating_cost_approved: 'Operating cost approved (US $)',
   funds_disbursed: 'Funds disbursed (US $)',
-  funds_approved: 'Funds approved (US $)',
-  cost_effectiveness_approved: 'Cost effectiveness approved (US $/kg)',
+  funds_approved: 'Funds approved (US $) (computed)',
+  cost_effectiveness_approved:
+    'Cost effectiveness approved (US $/kg) (computed)',
+  capital_cost_disbursed: 'Capital cost disbursed (US $)',
+  operating_cost_disbursed: 'Operating cost disbursed (US $)',
+  cost_effectiveness_actual: 'Cost effectiveness actual (US $/kg)',
+  co_financing_planned: 'Co-financing planned (US $)',
+  co_financing_actual: 'Co-financing actual (US $)',
+  funds_transferred: 'Funds transferred (US $)',
   remarks: 'Remarks',
 }
 
@@ -73,4 +80,10 @@ export const initialFundingDetailsFields = {
   funds_disbursed: null,
   funds_approved: null,
   cost_effectiveness_approved: null,
+  funds_transferred: null,
+  cost_effectiveness_actual: null,
+  capital_cost_disbursed: null,
+  operating_cost_disbursed: null,
+  co_financing_planned: null,
+  co_financing_actual: null,
 }
