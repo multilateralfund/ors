@@ -82,8 +82,16 @@ class CompareVersionsWriter:
             data.append(self.get_value(h["id"]))
 
         for h in value_headers:
-            v1 = h["method"](d1, h) if h.get("method") else self.get_value(h["id"], d1)
-            v2 = h["method"](d2, h) if h.get("method") else self.get_value(h["id"], d2)
+            v1 = (
+                h["method"](d1, h)
+                if h.get("method")
+                else self.get_serialized_value(h["id"], d1)
+            )
+            v2 = (
+                h["method"](d2, h)
+                if h.get("method")
+                else self.get_serialized_value(h["id"], d2)
+            )
             variance = None
 
             if v1 or v2:
@@ -176,6 +184,26 @@ class CompareVersionsWriter:
                 last = last.get(n)
             else:
                 last = getattr(last, n, None)
+
+        return last
+
+    def get_serialized_value(self, name, data):
+        last = None
+        for n in name.split("."):
+            if not last:
+                last = data.get(n)
+                continue
+
+            if isinstance(last, (tuple, list, set)):
+                last = [x.get(n) for x in last]
+            elif isinstance(last, dict):
+                last = last.get(n)
+
+        if isinstance(last, dict):
+            last = last.get("name", str(last))
+        elif isinstance(last, (tuple, list, set)):
+            last = ", ".join(map(str, last))
+
         return last
 
 
