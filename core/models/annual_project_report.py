@@ -286,6 +286,29 @@ class AnnualProjectReport(models.Model):
         return self.project.get_version(3)
 
     @property
+    def pcr_due(self):
+        """
+        Returns True if project changed status from ONG to COM or FIN
+        during self.report_year.
+        """
+        statuses_during_year = self.project.all_versions_for_year(
+            self.report_year
+        ).values_list("status__code", flat=True)
+        previous_year_version = self.project.latest_version_for_year(
+            self.report_year - 1
+        )
+
+        started_ong = (
+            previous_year_version and previous_year_version.status.code == "ONG"
+        ) or "ONG" in statuses_during_year
+
+        is_completed_this_year = any(
+            status in statuses_during_year for status in ("COM", "FIN")
+        )
+
+        return started_ong and is_completed_this_year
+
+    @property
     def date_approved(self):
         return self.project_version_3.date_approved
 
@@ -339,7 +362,7 @@ class AnnualProjectReport(models.Model):
     @cached_property
     def adjustment(self):
         latest_version = self.project.latest_version_for_year(self.report_year)
-        if not latest_version or latest_version.version < 3:
+        if not latest_version or latest_version.version <= 3:
             return None
 
         latest_funding = latest_version.total_fund

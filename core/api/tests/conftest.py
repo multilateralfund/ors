@@ -62,9 +62,7 @@ from core.models import ProjectFile, ProjectOdsOdp
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-from core.utils import (
-    get_project_sub_code,
-)
+from core.utils import get_project_sub_code
 
 # pylint: disable=C0302,W0613
 
@@ -1515,6 +1513,15 @@ def multiple_meetings_apr_same_year(apr_year):
 
 
 @pytest.fixture
+def meeting_apr_previous_year(apr_year):
+    return MeetingFactory.create(
+        number=39,
+        date=date(apr_year - 1, 4, 14),
+        end_date=date(apr_year - 1, 4, 15),
+    )
+
+
+@pytest.fixture
 def meeting_apr_same_year(apr_year):
     return MeetingFactory.create(
         number=29,
@@ -1538,6 +1545,16 @@ def multiple_decisions_apr_same_year(multiple_meetings_apr_same_year):
         DecisionFactory.create(number=10 + i, meeting=meeting)
         for (i, meeting) in enumerate(multiple_meetings_apr_same_year)
     ]
+
+
+@pytest.fixture
+def decision_apr_previous_year(meeting_apr_previous_year):
+    return DecisionFactory.create(number=39, meeting=meeting_apr_previous_year)
+
+
+@pytest.fixture
+def decision_apr_same_year(meeting_apr_same_year):
+    return DecisionFactory.create(number=29, meeting=meeting_apr_same_year)
 
 
 @pytest.fixture
