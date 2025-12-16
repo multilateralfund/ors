@@ -58,6 +58,7 @@ export default function APRWorkspace() {
       triggerIf: canViewAPR,
     },
     path: `api/annual-project-report/${year}/workspace/`,
+    reactivePath: true,
   })
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })

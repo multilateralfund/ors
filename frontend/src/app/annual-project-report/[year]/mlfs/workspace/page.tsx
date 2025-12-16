@@ -1,4 +1,11 @@
-import React, { useContext, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
@@ -87,25 +94,27 @@ export default function APRMLFSWorkspace() {
     loaded: loadedAprData,
     params,
     setParams,
-    setApiSettings: refetchAprData,
+    refetch: refetchAprData,
   } = useApi<AnnualAgencyProjectReport[]>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/mlfs/${year}/agencies/`,
+    reactivePath: true,
   })
   const {
     data: progressReport,
     loading: loadingReport,
     loaded: loadedReport,
-    setApiSettings: refetchReport,
+    refetch: refetchReport,
   } = useApi<AnnualProgressReport>({
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR && isMlfsUser,
     },
     path: `api/annual-project-report/${year}/endorse/`,
+    reactivePath: true,
   })
   const {
     data: kickstartAPR,
@@ -233,22 +242,9 @@ export default function APRMLFSWorkspace() {
   const loading = loadingReport || loadingAprData || loadingKickstart
   const loaded = loadedReport || loadedAprData || loadedKickstart
 
-  const refetchData = (newYear?: number) => {
-    // HACK
-    // The useAPI hook is not reactive to the change in year because the path
-    // is not kept in its own state. We have to resort to these kind of hacks
-    // to make the year reactive
-
-    const pathYear = newYear ?? year
-
-    refetchAprData((prev) => ({
-      ...structuredClone(prev),
-      path: `api/annual-project-report/mlfs/${pathYear}/agencies/`,
-    }))
-    refetchReport((prev) => ({
-      ...structuredClone(prev),
-      path: `api/annual-project-report/${pathYear}/endorse/`,
-    }))
+  const refetchData = () => {
+    refetchAprData()
+    refetchReport()
     refetchKickstart()
   }
 
@@ -339,7 +335,9 @@ export default function APRMLFSWorkspace() {
       )
       setTimeout(() => {
         navigate(`/${apiResponse.year}/mlfs/workspace`)
-        refetchData(apiResponse.year)
+
+        // Data that depends on the year will auto-refetch
+        refetchKickstart()
         refetchAPRCurrentYear()
       }, 2000)
     } catch (e) {
