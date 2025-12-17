@@ -16,7 +16,7 @@ from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
-from core.models import Project
+from core.models import Project, AnnualAgencyProjectReport
 
 from multilateralfund.celery import app
 
@@ -24,6 +24,59 @@ from multilateralfund.celery import app
 logger = get_task_logger(__name__)
 User = get_user_model()
 # pylint: disable=W0718
+
+
+def send_html_mail(
+    context: dict,
+    email_template_name: tuple[str],
+    html_email_template_name: tuple[str],
+    recipients: list[str],
+    subject_template_name: tuple[str],
+):
+    subject = loader.render_to_string(subject_template_name, context)
+    # Email subject *must not* contain newlines
+    subject = "".join(subject.splitlines())
+    body = loader.render_to_string(email_template_name, context)
+
+    email_message = EmailMultiAlternatives(
+        subject,
+        body,
+        None,
+        bcc=recipients,
+    )
+
+    html_email = loader.render_to_string(html_email_template_name, context)
+    email_message.attach_alternative(html_email, "text/html")
+    email_message.send()
+
+
+# Annual Progress Report
+@app.task()
+def send_agency_submission_notification(agency_report_id):
+    recipients = config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS
+    if isinstance(recipients, str):
+        recipients = [recipient.strip() for recipient in recipients.split(",")]
+
+    if not recipients:
+        return
+
+    agency_report = AnnualAgencyProjectReport.objects.select_related(
+        "agency", "progress_report"
+    ).get(id=agency_report_id)
+
+    context = {"apr": agency_report}
+    subject_template_name = (
+        "email_templates/apr_agency_submit_notification_subject.txt",
+    )
+    email_template_name = ("email_templates/apr_agency_submit_notification.txt",)
+    html_email_template_name = ("email_templates/apr_agency_submit_notification.html",)
+    send_html_mail(
+        context,
+        email_template_name,
+        html_email_template_name,
+        recipients,
+        subject_template_name,
+    )
 
 
 # Projects
@@ -45,21 +98,13 @@ def send_project_submission_notification(project_ids):
     )
     email_template_name = ("email_templates/project_submission_notification.txt",)
     html_email_template_name = ("email_templates/project_submission_notification.html",)
-    subject = loader.render_to_string(subject_template_name, context)
-    # Email subject *must not* contain newlines
-    subject = "".join(subject.splitlines())
-    body = loader.render_to_string(email_template_name, context)
-
-    email_message = EmailMultiAlternatives(
-        subject,
-        body,
-        None,
-        bcc=recipients,
+    send_html_mail(
+        context,
+        email_template_name,
+        html_email_template_name,
+        recipients,
+        subject_template_name,
     )
-
-    html_email = loader.render_to_string(html_email_template_name, context)
-    email_message.attach_alternative(html_email, "text/html")
-    email_message.send()
 
 
 @app.task()
@@ -81,21 +126,13 @@ def send_project_recommended_notification(project_ids):
             "projects": projects,
         }
 
-        subject = loader.render_to_string(subject_template_name, context)
-        # Email subject *must not* contain newlines
-        subject = "".join(subject.splitlines())
-        body = loader.render_to_string(email_template_name, context)
-
-        email_message = EmailMultiAlternatives(
-            subject,
-            body,
-            None,
-            bcc=recipients,
+        send_html_mail(
+            context,
+            email_template_name,
+            html_email_template_name,
+            recipients,
+            subject_template_name,
         )
-
-        html_email = loader.render_to_string(html_email_template_name, context)
-        email_message.attach_alternative(html_email, "text/html")
-        email_message.send()
 
     # Notify project creators
     archived_versions = Project.objects.really_all().filter(
@@ -116,21 +153,13 @@ def send_project_recommended_notification(project_ids):
             ],
         }
 
-        subject = loader.render_to_string(subject_template_name, context)
-        # Email subject *must not* contain newlines
-        subject = "".join(subject.splitlines())
-        body = loader.render_to_string(email_template_name, context)
-
-        email_message = EmailMultiAlternatives(
-            subject,
-            body,
-            None,
-            bcc=recipients,
+        send_html_mail(
+            context,
+            email_template_name,
+            html_email_template_name,
+            recipients,
+            subject_template_name,
         )
-
-        html_email = loader.render_to_string(html_email_template_name, context)
-        email_message.attach_alternative(html_email, "text/html")
-        email_message.send()
 
 
 # Country Programme

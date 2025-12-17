@@ -39,6 +39,8 @@ const ProjectsSettings = ({
     project_submission_notifications_emails,
     project_recommendation_notifications_enabled,
     project_recommendation_notifications_emails,
+    apr_agency_submission_notifications_enabled,
+    apr_agency_submission_notifications_emails,
   } = data
 
   const [submissionEmail, setSubmissionEmail] = useState<EmailSettingsType>({
@@ -57,6 +59,12 @@ const ProjectsSettings = ({
       recommendationEmail.withNotifications &&
       submissionEmail.emailAddresses === recommendationEmail.emailAddresses,
   )
+  const [aprAgencySubmitEmail, setAprAgencySubmitEmail] =
+    useState<EmailSettingsType>({
+      withNotifications: apr_agency_submission_notifications_enabled || false,
+      emailAddresses: apr_agency_submission_notifications_emails || '',
+      errors: null,
+    })
 
   const emailOptions = useMemo(
     () => [
@@ -64,6 +72,9 @@ const ProjectsSettings = ({
         type: 'submission',
         emailSettings: submissionEmail,
         setEmailSettings: setSubmissionEmail,
+        label: 'Emails for project submission:',
+        checkboxLabel:
+          'Send email notifications for project submission to users:',
         fieldsForUpdate: {
           send_email: 'project_submission_notifications_enabled',
           notification_emails: 'project_submission_notifications_emails',
@@ -74,13 +85,28 @@ const ProjectsSettings = ({
         emailSettings: recommendationEmail,
         setEmailSettings: setRecommendationEmail,
         disabled: areSameEmails,
+        label: 'Emails for project recommendation:',
+        checkboxLabel:
+          'Send email notifications for project recommendation to users:',
         fieldsForUpdate: {
           send_email: 'project_recommendation_notifications_enabled',
           notification_emails: 'project_recommendation_notifications_emails',
         },
       },
+      {
+        type: 'APR',
+        emailSettings: aprAgencySubmitEmail,
+        setEmailSettings: setAprAgencySubmitEmail,
+        label: 'Emails for APR agency submission:',
+        checkboxLabel:
+          'Send email notifications for APR agency submission to users:',
+        fieldsForUpdate: {
+          send_email: 'apr_agency_submission_notifications_enabled',
+          notification_emails: 'apr_agency_submission_notifications_emails',
+        },
+      },
     ],
-    [submissionEmail, recommendationEmail, areSameEmails],
+    [submissionEmail, recommendationEmail, areSameEmails, aprAgencySubmitEmail],
   )
 
   const handleSameEmailsAsAbove = async () => {
@@ -215,25 +241,34 @@ const ProjectsSettings = ({
   }
 
   return emailOptions.map(
-    ({ type, emailSettings, setEmailSettings, disabled, fieldsForUpdate }) => {
+    ({
+      type,
+      emailSettings,
+      setEmailSettings,
+      disabled,
+      fieldsForUpdate,
+      label,
+      checkboxLabel,
+    }) => {
       const hasUnsavedChanges =
         (type === 'submission' &&
           submissionEmail.emailAddresses !==
             project_submission_notifications_emails) ||
         (type === 'recommendation' &&
           recommendationEmail.emailAddresses !==
-            project_recommendation_notifications_emails)
+            project_recommendation_notifications_emails) ||
+        (type === 'APR' &&
+          aprAgencySubmitEmail.emailAddresses !==
+            apr_agency_submission_notifications_emails)
       return (
         <Box key={type} className="mt-5">
           <form>
             <FormControl className="w-full" error={!!emailSettings.errors}>
-              <FormLabel className="text-[#0095D5]">
-                Emails for project {type}:
-              </FormLabel>
+              <FormLabel className="text-[#0095D5]">{label}</FormLabel>
               <FormGroup className="w-fit">
                 <FormControlLabel
                   className="text-lg"
-                  label={`Send email notifications for project ${type} to users:`}
+                  label={checkboxLabel}
                   disabled={disabled}
                   control={
                     <Checkbox

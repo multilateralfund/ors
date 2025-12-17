@@ -1,5 +1,7 @@
 import os
+from zipfile import ZipFile
 
+from constance import config
 from django.db import transaction
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
@@ -7,27 +9,18 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import RetrieveAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.generics import RetrieveAPIView, DestroyAPIView
-from rest_framework.permissions import IsAuthenticated
-from zipfile import ZipFile
 
-from core.models import (
-    AnnualProgressReport,
-    AnnualAgencyProjectReport,
-    AnnualProjectReport,
-    AnnualProjectReportFile,
-    Project,
-    Country,
-)
+from core.api.export.annual_project_report import APRExportWriter
 from core.api.filters.annual_project_reports import (
     APRProjectFilter,
     APRGlobalFilter,
     build_filtered_project_reports_queryset,
 )
-from core.api.export.annual_project_report import APRExportWriter
 from core.api.permissions import (
     HasAPRViewAccess,
     HasAPREditAccess,
@@ -48,12 +41,21 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportKickStartResponseSerializer,
     AnnualProjectReportKickStartStatusSerializer,
 )
-
 from core.api.utils import (
     get_latest_endorsed_year,
     get_unendorsed_years,
     get_previous_year_project_reports,
 )
+from core.models import (
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
+    AnnualProjectReport,
+    AnnualProjectReportFile,
+    Project,
+    Country,
+)
+from core.tasks import send_agency_submission_notification
+
 
 # pylint: disable=C0302
 
@@ -479,6 +481,13 @@ class APRStatusView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+
+            if (
+                agency_report.status
+                == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+                and config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED
+            ):
+                send_agency_submission_notification.delay(agency_report.id)
 
             return Response(
                 {

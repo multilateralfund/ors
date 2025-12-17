@@ -1,0 +1,7 @@
+{% load settings_value %}
+
+This is an automated notification to confirm that the Annual Progress Report for {{ apr.agency.name }} has been submitted.
+
+Submitting Agency: {{ apr.agency.name }}
+Date and Time of Submission: {{ apr.submitted_at|date:"j/n/Y H:i e" }}
+Report Link: {% frontend_host %}/apr/{{ apr.progress_report.year }}/mlfs/workspace/

@@ -259,6 +259,16 @@ CONSTANCE_CONFIG = {
         datetime(2024, 5, 27),
         "Default 'As Of Date' for replenishment",
     ),
+    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED": (
+        False,
+        "Enable agency submission notifications",
+        bool,
+    ),
+    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS": (
+        "",
+        "Email addresses that receive agency submission notifications (comma-separated)",
+        str,
+    ),
 }
 
 # Logging
