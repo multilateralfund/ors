@@ -1,0 +1,13 @@
+{% extends 'registration/base.html' %}
+{% load settings_value %}
+
+{% block content %}
+  <p>
+    This is an automated notification to confirm that the Annual Progress Report for {{ apr.agency.name }} has been
+    submitted.
+  </p>
+
+  <strong>Submitting Agency:</strong> {{ apr.agency.name }}<br/>
+  <strong>Date and Time of Submission:</strong> {{ apr.submitted_at|date:"d/m/Y H:i e" }}<br/>
+  <a href="{% frontend_host %}/apr/{{ apr.progress_report.year }}/mlfs/workspace/" target="_blank">Report link</a><br/>
+{% endblock %}

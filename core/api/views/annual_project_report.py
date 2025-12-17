@@ -54,6 +54,8 @@ from core.api.utils import (
     get_unendorsed_years,
     get_previous_year_project_reports,
 )
+from core.tasks import send_agency_submission_notification
+
 
 # pylint: disable=C0302
 
@@ -479,6 +481,12 @@ class APRStatusView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+
+            if (
+                agency_report.status
+                == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            ):
+                send_agency_submission_notification.delay(agency_report.id)
 
             return Response(
                 {
