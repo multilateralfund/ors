@@ -149,63 +149,63 @@ class ProjectEnterprise(models.Model):
     )
     capital_cost_approved = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Capital cost approved/allocated for the enterprise (US $)",
     )  # (ICC)
     operating_cost_approved = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Operating cost approved/allocated for enterprise (US $)",
     )  # (IOC)
     funds_disbursed = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds disbursed to the enterprise (US $)",
     )
     capital_cost_disbursed = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Capital cost disbursed to the enterprise (US $)",
     )
     operating_cost_disbursed = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Operating cost disbursed to the enterprise (US $)",
     )
     cost_effectiveness_actual = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Cost effectiveness actual (US $/kg)",
     )
     co_financing_planned = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Co-financing planned for the enterprise (US $)",
     )
     co_financing_actual = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Co-financing actual for the enterprise (US $)",
     )
     funds_transferred = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds transferred from one agency to another (US $)",
@@ -270,7 +270,7 @@ class ProjectEnterprise(models.Model):
     )
     funds_approved = models.DecimalField(
         max_digits=20,
-        decimal_places=2,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds approved/allocated for the enterprise (US $)",
