@@ -1,5 +1,4 @@
 from constance import config
-from django.conf import settings
 from django.db.models import Min, Max
 from rest_framework import status, views
 from rest_framework.response import Response
