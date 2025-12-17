@@ -1,48 +1,109 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
+import PEnterpriseDetailsSection from '../tabs/PEnterpriseDetailsSection.tsx'
 import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDetailsSection.tsx'
 import PEnterpriseFundingDetailsSection from '../tabs/PEnterpriseFundingDetailsSection.tsx'
+import PEnterpriseRemarksSection from '../tabs/PEnterpriseRemarksSection.tsx'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
-import { tableColumns } from '../../constants.ts'
-import { getFieldErrors } from '../utils.ts'
+import { enterpriseFieldsMapping } from '../constants.ts'
+import {
+  getCostEffectivenessApproved,
+  getFieldErrors,
+  getFundsApproved,
+} from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
   OptionsType,
+  ProjectTypeApi,
 } from '../../interfaces.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
+import { find, has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
-  countryId,
+  projectData,
   enterpriseStatuses,
   errors,
   ...rest
 }: PEnterpriseDataProps & {
-  countryId: number
+  projectData: ProjectTypeApi
   enterpriseStatuses?: OptionsType[]
 }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
   const filters = {
     status: ['Pending Approval', 'Approved'],
-    agencies: agency_id ? [agency_id] : null,
   }
+  const { country_id: countryId } = projectData
   const { results } = useGetEnterprises(filters, countryId)
 
-  const { enterpriseData, enterprise } = rest
-  const { overview, funding_details } = enterpriseData ?? {}
+  const { enterpriseData, setEnterpriseData, enterprise } = rest
+  const {
+    overview,
+    details,
+    substance_details,
+    substance_fields,
+    funding_details,
+    remarks,
+  } = enterpriseData ?? {}
+  const { capital_cost_approved, operating_cost_approved } =
+    funding_details ?? {}
+
+  const costEffectivenessApproved = useMemo(
+    () =>
+      getCostEffectivenessApproved(
+        substance_details,
+        capital_cost_approved,
+        operating_cost_approved,
+      )?.toString() ?? null,
+    [substance_details, capital_cost_approved, operating_cost_approved],
+  )
+
+  const fundsApproved = useMemo(
+    () =>
+      getFundsApproved(
+        capital_cost_approved,
+        operating_cost_approved,
+      )?.toString() ?? null,
+    [capital_cost_approved, operating_cost_approved],
+  )
+
+  useEffect(() => {
+    setEnterpriseData((prevData) => ({
+      ...prevData,
+      funding_details: {
+        ...prevData['funding_details'],
+        cost_effectiveness_approved: costEffectivenessApproved,
+        funds_approved: fundsApproved,
+      },
+    }))
+  }, [costEffectivenessApproved, fundsApproved])
+
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+
+  useEffect(() => {
+    const crtMeeting =
+      find(meetings, (meeting) => meeting.id === details.meeting)?.date ?? null
+
+    setEnterpriseData((prevData) => ({
+      ...prevData,
+      details: {
+        ...prevData['details'],
+        date_of_approval: crtMeeting,
+      },
+    }))
+  }, [details.meeting])
+
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
@@ -50,7 +111,10 @@ const PEnterpriseCreate = ({
   const searchErrors =
     !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
+  const substanceErrors = getFieldErrors(substance_fields, errors)
+  const detailsErrors = getFieldErrors(details, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
+  const remarksErrors = getFieldErrors(remarks, errors)
 
   const odsOdpNonFieldErrors = {
     Subtances:
@@ -68,7 +132,7 @@ const PEnterpriseCreate = ({
       const fieldLabels = uniq(
         map(fields, (errorMsgs, field) => {
           if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
-            return tableColumns[field]
+            return enterpriseFieldsMapping[field]
           }
           return null
         }),
@@ -101,7 +165,7 @@ const PEnterpriseCreate = ({
           errors={searchErrors}
         />
       ),
-      errors: formatErrors(searchErrors),
+      errors: formatErrors(searchErrors, enterpriseFieldsMapping),
     },
     {
       id: 'enterprise-overview',
@@ -119,7 +183,25 @@ const PEnterpriseCreate = ({
           errors={overviewErrors}
         />
       ),
-      errors: formatErrors(overviewErrors),
+      errors: formatErrors(overviewErrors, enterpriseFieldsMapping),
+    },
+    {
+      id: 'enterprise-details',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Details</div>
+          {hasSectionErrors(detailsErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
+      component: (
+        <PEnterpriseDetailsSection
+          {...{ projectData, ...rest }}
+          errors={detailsErrors}
+        />
+      ),
+      errors: formatErrors(detailsErrors, enterpriseFieldsMapping),
     },
     {
       id: 'enterprise-substance-details',
@@ -127,18 +209,24 @@ const PEnterpriseCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Substance details</div>
           {(formattedOdsOdpErrors.length > 0 ||
-            values(odsOdpNonFieldErrors)[0].length > 0) && (
+            values(odsOdpNonFieldErrors)[0].length > 0 ||
+            hasSectionErrors(substanceErrors)) && (
             <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
       component: (
         <PEnterpriseSubstanceDetailsSection
-          {...{ errors, ...rest }}
+          {...rest}
+          errors={substanceErrors}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
       ),
-      errors: [...formatErrors(odsOdpNonFieldErrors), ...formattedOdsOdpErrors],
+      errors: [
+        ...formatErrors(substanceErrors, enterpriseFieldsMapping),
+        ...formatErrors(odsOdpNonFieldErrors, enterpriseFieldsMapping),
+        ...formattedOdsOdpErrors,
+      ],
     },
     {
       id: 'enterprise-funding-details',
@@ -156,7 +244,20 @@ const PEnterpriseCreate = ({
           errors={fundingDetailsErrors}
         />
       ),
-      errors: formatErrors(fundingDetailsErrors),
+      errors: formatErrors(fundingDetailsErrors, enterpriseFieldsMapping),
+    },
+    {
+      id: 'enterprise-remarks',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Remarks</div>
+          {hasSectionErrors(remarksErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
+      component: <PEnterpriseRemarksSection {...rest} errors={remarksErrors} />,
+      errors: formatErrors(remarksErrors, enterpriseFieldsMapping),
     },
   ]
 

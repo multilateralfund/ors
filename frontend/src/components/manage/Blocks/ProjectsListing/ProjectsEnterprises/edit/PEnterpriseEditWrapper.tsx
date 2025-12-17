@@ -62,7 +62,7 @@ const PEnterpriseEditWrapper = () => {
         active={loading || projectLoading}
       />
       {!loading && !projectLoading && data && projectData && (
-        <PEnterpriseEdit enterprise={data} countryId={projectData.country_id} />
+        <PEnterpriseEdit enterprise={data} projectData={projectData} />
       )}
     </>
   )

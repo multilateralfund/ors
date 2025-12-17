@@ -15,13 +15,13 @@ const EnterprisesFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { countries } = useContext(ProjectsDataContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
   const { project_id } = useParams<Record<string, string>>()
   const isEnterpriseView = !project_id
 
   const initialParams = {
     status: [],
-    ...(isEnterpriseView && { country_id: [] }),
+    ...(isEnterpriseView ? { country_id: [] } : { agency_id: [] }),
   }
 
   const filterSelectedOpts = [
@@ -29,6 +29,11 @@ const EnterprisesFiltersSelectedOpts = ({
       entities: formatEntity(countries),
       entityIdentifier: 'country_id',
       isAvailable: isEnterpriseView,
+    },
+    {
+      entities: formatEntity(agencies),
+      entityIdentifier: 'agency_id',
+      isAvailable: !isEnterpriseView,
     },
     {
       entities: formatEntity(enterpriseStatuses),

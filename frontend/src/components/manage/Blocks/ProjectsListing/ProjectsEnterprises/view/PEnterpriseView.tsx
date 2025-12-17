@@ -3,8 +3,10 @@
 import { useState } from 'react'
 
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
+import PEnterpriseDetailsSection from './PEnterpriseDetailsSection'
 import PEnterpriseSubstanceDetailsSection from './PEnterpriseSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
+import PEnterpriseRemarksSection from './PEnterpriseRemarksSection'
 import { PEnterpriseType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
@@ -17,11 +19,13 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
       id: 'enterprise-overview',
       label: 'Overview',
       component: (
-        <PEnterpriseOverviewSection
-          type="project-enterprise"
-          enterprise={enterprise.enterprise}
-        />
+        <PEnterpriseOverviewSection enterprise={enterprise.enterprise} />
       ),
+    },
+    {
+      id: 'enterprise-details',
+      label: 'Details',
+      component: <PEnterpriseDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-substance-details',
@@ -32,6 +36,11 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
       id: 'enterprise-funding-details',
       label: 'Funding details',
       component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
+    },
+    {
+      id: 'enterprise-remarks',
+      label: 'Remarks',
+      component: <PEnterpriseRemarksSection {...{ enterprise }} />,
     },
   ]
 

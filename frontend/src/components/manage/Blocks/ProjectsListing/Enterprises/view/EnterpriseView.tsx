@@ -5,7 +5,7 @@ import { EnterpriseType } from '../../interfaces'
 
 const EnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => (
   <div className="relative flex flex-col rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-    <PEnterpriseOverviewSection type="enterprise" {...{ enterprise }} />
+    <PEnterpriseOverviewSection {...{ enterprise }} />
   </div>
 )
 

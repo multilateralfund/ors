@@ -3,60 +3,92 @@ import { useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
+  textFields,
+  dateFields,
+  integerFields,
+  decimalFields,
+} from '../../ProjectsEnterprises/constants'
+import {
   EnterpriseTextField,
   EnterpriseNumberField,
   EnterpriseSelectField,
-  EnterpriseTextAreaField,
+  EnterpriseDateField,
 } from '../../ProjectsEnterprises/FormHelperComponents'
+import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
 import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
 
 import { map } from 'lodash'
 
 const EnterpriseForm = (props: EnterpriseDataProps) => {
-  const { canEditEnterprise } = useContext(PermissionsContext)
-  const { countries, agencies } = useContext(ProjectsDataContext)
+  const { enterprise, enterpriseData, setEnterpriseData } = props
 
-  const textFields = ['name', 'location', 'application']
-  const numericFields = ['local_ownership', 'export_to_non_a5']
+  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { countries } = useContext(ProjectsDataContext)
+
+  const { sectors, subsectors } =
+    useGetEnterpriseFieldsOpts<EnterpriseOverview>(
+      enterpriseData,
+      setEnterpriseData,
+    )
+
   const selectFields = [
-    { fieldName: 'agencies', options: agencies },
     { fieldName: 'country', options: countries },
+    { fieldName: 'sector', options: sectors },
+    { fieldName: 'subsector', options: subsectors },
   ]
 
-  const { enterprise } = props
   const isDisabled =
     !!enterprise && (enterprise.status === 'Obsolete' || !canEditEnterprise)
 
   return (
-    <>
-      <EnterpriseTextField<EnterpriseOverview>
+    <div className="flex flex-col gap-y-2">
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
         field={textFields[0]}
         {...{ isDisabled, ...props }}
       />
-      {map(selectFields, (field) => (
-        <EnterpriseSelectField<EnterpriseOverview>
-          {...{ field, isDisabled, ...props }}
-        />
-      ))}
-      {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField<EnterpriseOverview>
-          {...{ field, isDisabled, ...props }}
-        />
-      ))}
-      <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
-        {map(numericFields, (field) => (
-          <EnterpriseNumberField<EnterpriseOverview>
+      <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>
+        field={selectFields[0]}
+        {...{ isDisabled, ...props }}
+      />
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
+        field={textFields[1]}
+        {...{ isDisabled, ...props }}
+      />
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
+        field={textFields[2]}
+        {...{ isDisabled, ...props }}
+      />
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {map(selectFields.slice(1), (field) => (
+          <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>
             {...{ field, isDisabled, ...props }}
           />
         ))}
       </div>
-      <div className="mt-6">
-        <EnterpriseTextAreaField<EnterpriseOverview>
-          field="remarks"
+      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
+        field={textFields[3]}
+        {...{ isDisabled, ...props }}
+      />
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {map(decimalFields, (field) => (
+          <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
+            dataType="decimal"
+            {...{ field, isDisabled, ...props }}
+          />
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
+        {/* <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
+          dataType="integer"
+          field={integerFields[0]}
+          {...{ isDisabled, ...props }}
+        /> */}
+        <EnterpriseDateField<EnterpriseOverview, EnterpriseOverview>
+          field={dateFields[0]}
           {...{ isDisabled, ...props }}
         />
       </div>
-    </>
+    </div>
   )
 }
 

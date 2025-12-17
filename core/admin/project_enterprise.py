@@ -19,13 +19,16 @@ class EnterpriseAdmin(admin.ModelAdmin):
         "name",
         "country__name",
         "location",
+        "stage",
+        "sector",
+        "subsector",
         "application",
     ]
     readonly_fields = [
         "code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("country", "country"),
+        AutocompleteFilterFactory("country", "country", "meeting"),
     ]
 
     def get_list_display(self, request):
@@ -43,6 +46,8 @@ class EnterpriseAdmin(admin.ModelAdmin):
 @admin.register(ProjectEnterprise)
 class ProjectEnterpriseAdmin(admin.ModelAdmin):
     list_filter = [
+        AutocompleteFilterFactory("enterprise", "enterprise"),
+        AutocompleteFilterFactory("meeting", "meeting"),
         AutocompleteFilterFactory("project", "project"),
         "status",
     ]
@@ -55,6 +60,7 @@ class ProjectEnterpriseAdmin(admin.ModelAdmin):
         exclude = [
             "ods_odp",
             "project",
+            "meeting",
         ]
         data = get_final_display_list(ProjectEnterprise, exclude)
         return data

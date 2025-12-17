@@ -1,9 +1,10 @@
 import pytest
+from datetime import date
+from decimal import Decimal
 
 from django.urls import reverse
 
 from rest_framework.test import APIClient
-
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
@@ -27,7 +28,7 @@ def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
     project_enterprise1 = ProjectEnterprise.objects.create(
-        project=project, enterprise=enterprise1
+        project=project, enterprise=enterprise1, agency=new_agency
     )
     ProjectEnterpriseOdsOdp.objects.create(
         project_enterprise=project_enterprise1, ods_substance=substance_hcfc
@@ -38,6 +39,7 @@ def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc
     project_enterprise2 = ProjectEnterprise.objects.create(
         project=project2,
         enterprise=enterprise2,
+        agency=new_agency,
     )
     ProjectEnterpriseOdsOdp.objects.create(
         project_enterprise=project_enterprise2, ods_substance=substance_hcfc
@@ -45,12 +47,75 @@ def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc
     project_enterprise3 = ProjectEnterprise.objects.create(
         project=project2,
         enterprise=enterprise3,
+        agency=new_agency,
     )
     return project_enterprise1, project_enterprise2, project_enterprise3
 
 
-class TestListProjectEnterprise(BaseTest):
+class DataTestMixin:
+
+    def _test_fields(self, response_data, model_instance, fields):
+        for field in fields:
+            model_field = model_instance._meta.get_field(field)
+            field_value = getattr(model_instance, field)
+
+            if model_field.many_to_one and field_value is not None:
+                assert response_data[field] == field_value.id
+            elif isinstance(field_value, Decimal):
+                expected = field_value
+                actual = Decimal(str(response_data[field]))
+                assert actual.quantize(expected) == expected
+            elif isinstance(field_value, date):
+                assert response_data[field] == field_value.strftime("%Y-%m-%d")
+            else:
+                assert response_data[field] == field_value
+
+
+class TestListProjectEnterprise(BaseTest, DataTestMixin):
     url = reverse("project-enterprise-list")
+
+    project_enterprise_fields_to_test = [
+        "id",
+        "capital_cost_approved",
+        "operating_cost_approved",
+        "funds_disbursed",
+        "capital_cost_disbursed",
+        "operating_cost_disbursed",
+        "cost_effectiveness_actual",
+        "co_financing_planned",
+        "co_financing_actual",
+        "funds_transferred",
+        "agency_remarks",
+        "secretariat_remarks",
+        "excom_provision",
+        "date_of_report",
+        "planned_completion_date",
+        "actual_completion_date",
+        "project_duration",
+        "project",
+        "status",
+        "impact",
+        "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
+    ]
+
+    enterprise_fields_to_test = [
+        "id",
+        "code",
+        "name",
+        "country",
+        "sector",
+        "subsector",
+        "location",
+        "stage",
+        "application",
+        "local_ownership",
+        "export_to_non_a5",
+        "status",
+        "date_of_revision",
+    ]
 
     def test_enterprise_list_permissions(
         self,
@@ -108,75 +173,94 @@ class TestListProjectEnterprise(BaseTest):
         self.client.force_authenticate(user=mlfs_admin_user)
         response = self.client.get(self.url + "?ordering=enterprise")
         assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["id"] == project_enterprise1.id
-        assert response.data[0]["project"] == project_enterprise1.project.id
-        assert response.data[0]["enterprise"]["id"] == project_enterprise1.enterprise.id
-        assert (
-            response.data[0]["enterprise"]["name"]
-            == project_enterprise1.enterprise.name
-        )
-        assert (
-            response.data[0]["enterprise"]["country"]
-            == project_enterprise1.enterprise.country.id
-        )
-        assert (
-            response.data[0]["enterprise"]["location"]
-            == project_enterprise1.enterprise.location
-        )
-        assert (
-            response.data[0]["enterprise"]["application"]
-            == project_enterprise1.enterprise.application
-        )
 
+        assert len(response.data) == 3
+        # Enterprise 1
+        self._test_fields(
+            response.data[0],
+            project_enterprise1,
+            self.project_enterprise_fields_to_test,
+        )
+        self._test_fields(
+            response.data[0]["enterprise"],
+            project_enterprise1.enterprise,
+            self.enterprise_fields_to_test,
+        )
         assert len(response.data[0]["ods_odp"]) == 2
 
-        assert response.data[1]["id"] == project_enterprise2.id
-        assert response.data[1]["project"] == project_enterprise2.project.id
-        assert response.data[1]["enterprise"]["id"] == project_enterprise2.enterprise.id
-        assert (
-            response.data[1]["enterprise"]["name"]
-            == project_enterprise2.enterprise.name
+        # Enterprise 2
+        self._test_fields(
+            response.data[1],
+            project_enterprise2,
+            self.project_enterprise_fields_to_test,
         )
-        assert (
-            response.data[1]["enterprise"]["country"]
-            == project_enterprise2.enterprise.country.id
-        )
-        assert (
-            response.data[1]["enterprise"]["location"]
-            == project_enterprise2.enterprise.location
-        )
-        assert (
-            response.data[1]["enterprise"]["application"]
-            == project_enterprise2.enterprise.application
+        self._test_fields(
+            response.data[1]["enterprise"],
+            project_enterprise2.enterprise,
+            self.enterprise_fields_to_test,
         )
         assert len(response.data[1]["ods_odp"]) == 1
 
-        assert response.data[2]["id"] == project_enterprise3.id
-        assert response.data[2]["project"] == project_enterprise3.project.id
-        assert response.data[2]["enterprise"]["id"] == project_enterprise3.enterprise.id
-        assert (
-            response.data[2]["enterprise"]["name"]
-            == project_enterprise3.enterprise.name
+        # Enterprise 3
+        self._test_fields(
+            response.data[2],
+            project_enterprise3,
+            self.project_enterprise_fields_to_test,
         )
-        assert (
-            response.data[2]["enterprise"]["country"]
-            == project_enterprise3.enterprise.country.id
-        )
-        assert (
-            response.data[2]["enterprise"]["location"]
-            == project_enterprise3.enterprise.location
-        )
-        assert (
-            response.data[2]["enterprise"]["application"]
-            == project_enterprise3.enterprise.application
+        self._test_fields(
+            response.data[2]["enterprise"],
+            project_enterprise3.enterprise,
+            self.enterprise_fields_to_test,
         )
         assert len(response.data[2]["ods_odp"]) == 0
 
 
-class TestProjectRetrieveProjectEnterprise:
+class TestProjectRetrieveProjectEnterprise(DataTestMixin):
 
     client = APIClient()
+
+    project_enterprise_fields_to_test = [
+        "id",
+        "capital_cost_approved",
+        "operating_cost_approved",
+        "funds_disbursed",
+        "capital_cost_disbursed",
+        "operating_cost_disbursed",
+        "cost_effectiveness_actual",
+        "co_financing_planned",
+        "co_financing_actual",
+        "funds_transferred",
+        "agency_remarks",
+        "secretariat_remarks",
+        "excom_provision",
+        "date_of_report",
+        "planned_completion_date",
+        "actual_completion_date",
+        "project_duration",
+        "project",
+        "status",
+        "impact",
+        "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
+    ]
+
+    enterprise_fields_to_test = [
+        "id",
+        "code",
+        "name",
+        "country",
+        "sector",
+        "subsector",
+        "location",
+        "stage",
+        "application",
+        "local_ownership",
+        "export_to_non_a5",
+        "status",
+        "date_of_revision",
+    ]
 
     def test_project_retrieve_permissions(
         self,
@@ -250,69 +334,116 @@ class TestProjectRetrieveProjectEnterprise:
         self.client.force_authenticate(user=mlfs_admin_user)
         response = self.client.get(url)
         assert response.status_code == 200
-        assert response.data["id"] == project_enterprise1.id
-        assert response.data["project"] == project_enterprise1.project.id
-        assert response.data["enterprise"]["id"] == project_enterprise1.enterprise.id
-        assert (
-            response.data["enterprise"]["name"] == project_enterprise1.enterprise.name
+        self._test_fields(
+            response.data, project_enterprise1, self.project_enterprise_fields_to_test
         )
-        assert (
-            response.data["enterprise"]["country"]
-            == project_enterprise1.enterprise.country.id
-        )
-        assert (
-            response.data["enterprise"]["location"]
-            == project_enterprise1.enterprise.location
-        )
-        assert (
-            response.data["enterprise"]["application"]
-            == project_enterprise1.enterprise.application
+        self._test_fields(
+            response.data["enterprise"],
+            project_enterprise1.enterprise,
+            self.enterprise_fields_to_test,
         )
         assert len(response.data["ods_odp"]) == 2
 
 
-class TestCreateProjectEnterprise:
+class TestCreateProjectEnterprise(DataTestMixin):
 
     client = APIClient()
     url = reverse("project-enterprise-list")
 
+    project_enterprise_fields_to_test = [
+        "capital_cost_approved",
+        "operating_cost_approved",
+        "funds_disbursed",
+        "capital_cost_disbursed",
+        "operating_cost_disbursed",
+        "cost_effectiveness_actual",
+        "co_financing_planned",
+        "co_financing_actual",
+        "funds_transferred",
+        "agency_remarks",
+        "secretariat_remarks",
+        "excom_provision",
+        "date_of_report",
+        "planned_completion_date",
+        "actual_completion_date",
+        "project_duration",
+        "project",
+        "status",
+        "impact",
+        "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
+    ]
+
+    enterprise_fields_to_test = [
+        "name",
+        "country",
+        "sector",
+        "subsector",
+        "location",
+        "stage",
+        "application",
+        "local_ownership",
+        "export_to_non_a5",
+        "status",
+        "date_of_revision",
+    ]
+
     def get_create_data(
-        self,
-        project,
-        substance,
-        blend,
-        agency,
+        self, project, substance, blend, agency, sector, subsector, meeting
     ):
         blend.composition = f"{substance.name}: 100%"
         blend.components.create(substance=substance, percentage=0.2)
         blend.save()
         return {
             "project": project.id,
+            "agency": agency.id,
             "enterprise": {
                 "name": "New Enterprise",
                 "country": project.country.id,
                 "location": "New City",
+                "stage": "New Stage",
+                "sector": sector.id,
+                "subsector": subsector.id,
                 "application": "New Application",
-                "agencies": [agency.id],
                 "local_ownership": 50.0,
                 "export_to_non_a5": 30.0,
-                "remarks": "Some remarks",
+                "date_of_revision": "2023-06-20",
             },
             "capital_cost_approved": 10000.0,
             "operating_cost_approved": 5000.0,
             "funds_disbursed": 2000.0,
+            "capital_cost_disbursed": 1500.0,
+            "operating_cost_disbursed": 500.0,
+            "cost_effectiveness_actual": 25.0,
+            "co_financing_planned": 3000.0,
+            "co_financing_actual": 1500.0,
+            "funds_transferred": 4000.0,
+            "agency_remarks": "Some remarks",
+            "secretariat_remarks": "Secretariat remarks",
+            "excom_provision": "Provision details",
+            "date_of_report": "2023-07-01",
+            "planned_completion_date": "2024-12-31",
+            "actual_completion_date": "2024-11-30",
+            "project_duration": 24,
+            "impact": 300.0,
+            "funds_approved": 20000.0,
+            "date_of_approval": "2023-01-15",
+            "meeting": meeting.id,
+            "chemical_phased_out": 2000.0,
             "ods_odp": [
                 {
                     "ods_substance": substance.id,
-                    "phase_out_mt": 10.0,
-                    "ods_replacement": "Alternative Tech 1",
-                    "ods_replacement_phase_in": 50.0,
+                    "consumption": 10.0,
+                    "selected_alternative": "Alternative Tech 1",
+                    "chemical_phased_in": 50.0,
                 },
                 {
                     "ods_blend": blend.id,
-                    "phase_out_mt": 20.0,
-                    "ods_replacement": "Alternative Tech 2",
-                    "ods_replacement_phase_in": 70.0,
+                    "consumption": 20.0,
+                    "selected_alternative": "Alternative Tech 2",
+                    "chemical_phased_in": 70.0,
                 },
             ],
         }
@@ -335,8 +466,13 @@ class TestCreateProjectEnterprise:
         agency,
         substance_hcfc,
         blend,
+        sector,
+        subsector,
+        meeting,
     ):
-        data = self.get_create_data(project, substance_hcfc, blend, agency)
+        data = self.get_create_data(
+            project, substance_hcfc, blend, agency, sector, subsector, meeting
+        )
 
         def _test_user(user, expected_status, data):
             self.client.force_authenticate(user=user)
@@ -362,40 +498,101 @@ class TestCreateProjectEnterprise:
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
-    def test_create(self, mlfs_admin_user, project, substance_hcfc, blend, agency):
+    def test_create(
+        self,
+        mlfs_admin_user,
+        project,
+        substance_hcfc,
+        blend,
+        agency,
+        sector,
+        subsector,
+        meeting,
+    ):
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_create_data(project, substance_hcfc, blend, agency)
+        data = self.get_create_data(
+            project, substance_hcfc, blend, agency, sector, subsector, meeting
+        )
         assert ProjectEnterprise.objects.all().count() == 0
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
         assert ProjectEnterprise.objects.all().count() == 1
         project_enterprise = ProjectEnterprise.objects.first()
-        assert project_enterprise.enterprise.name == "New Enterprise"
-        assert project_enterprise.enterprise.location == "New City"
-        assert project_enterprise.enterprise.application == "New Application"
-        assert project_enterprise.enterprise.local_ownership == 50.0
-        assert project_enterprise.enterprise.export_to_non_a5 == 30.0
-        assert project_enterprise.capital_cost_approved == 10000.0
-        assert project_enterprise.operating_cost_approved == 5000.0
-        assert project_enterprise.funds_disbursed == 2000.0
-        assert project_enterprise.enterprise.remarks == "Some remarks"
-        assert project_enterprise.project == project
+        self._test_fields(
+            response.data, project_enterprise, self.project_enterprise_fields_to_test
+        )
+        self._test_fields(
+            response.data["enterprise"],
+            project_enterprise.enterprise,
+            self.enterprise_fields_to_test,
+        )
+
         assert project_enterprise.ods_odp.count() == 2
         ods_odp_1 = project_enterprise.ods_odp.get(ods_substance=substance_hcfc)
-        assert ods_odp_1.phase_out_mt == 10.0
-        assert ods_odp_1.ods_replacement == "Alternative Tech 1"
-        assert ods_odp_1.ods_replacement_phase_in == 50.0
+        assert ods_odp_1.consumption == 10.0
+        assert ods_odp_1.selected_alternative == "Alternative Tech 1"
+        assert ods_odp_1.chemical_phased_in == 50.0
         ods_odp_2 = project_enterprise.ods_odp.get(ods_blend=blend)
-        assert ods_odp_2.phase_out_mt == 20.0
-        assert ods_odp_2.ods_replacement == "Alternative Tech 2"
-        assert ods_odp_2.ods_replacement_phase_in == 70.0
+        assert ods_odp_2.consumption == 20.0
+        assert ods_odp_2.selected_alternative == "Alternative Tech 2"
+        assert ods_odp_2.chemical_phased_in == 70.0
 
 
-class TestUpdateProjectEnterprise:
+class TestUpdateProjectEnterprise(DataTestMixin):
 
     client = APIClient()
 
-    def get_update_data(self, project, substance_hcfc, blend, enterprise, agency):
+    project_enterprise_fields_to_test = [
+        "capital_cost_approved",
+        "operating_cost_approved",
+        "funds_disbursed",
+        "capital_cost_disbursed",
+        "operating_cost_disbursed",
+        "cost_effectiveness_actual",
+        "co_financing_planned",
+        "co_financing_actual",
+        "funds_transferred",
+        "agency_remarks",
+        "secretariat_remarks",
+        "excom_provision",
+        "date_of_report",
+        "planned_completion_date",
+        "actual_completion_date",
+        "project_duration",
+        "project",
+        "status",
+        "impact",
+        "funds_approved",
+        "date_of_approval",
+        "meeting",
+        "chemical_phased_out",
+    ]
+
+    enterprise_fields_to_test = [
+        "name",
+        "country",
+        "sector",
+        "subsector",
+        "location",
+        "stage",
+        "application",
+        "local_ownership",
+        "export_to_non_a5",
+        "status",
+        "date_of_revision",
+    ]
+
+    def get_update_data(
+        self,
+        project,
+        substance_hcfc,
+        blend,
+        enterprise,
+        agency,
+        sector,
+        subsector,
+        meeeting,
+    ):
         ods_odp = enterprise.ods_odp.first()
         blend.composition = f"{substance_hcfc.name}: 100%"
         blend.save()
@@ -403,32 +600,53 @@ class TestUpdateProjectEnterprise:
         return {
             "id": enterprise.id,
             "project": project.id,
+            "agency": agency.id,
             "enterprise": {
                 "name": "Updated Enterprise",
                 "country": project.country.id,
                 "location": "Updated City",
-                "agencies": [agency.id],
+                "stage": "Updated Stage",
+                "sector": sector.id,
+                "subsector": subsector.id,
                 "application": "Updated Application",
                 "local_ownership": 60.0,
                 "export_to_non_a5": 40.0,
-                "remarks": "Updated remarks",
+                "date_of_revision": "2023-06-20",
             },
             "capital_cost_approved": 20000.0,
             "operating_cost_approved": 10000.0,
             "funds_disbursed": 4000.0,
+            "capital_cost_disbursed": 1500.0,
+            "operating_cost_disbursed": 500.0,
+            "cost_effectiveness_actual": 25.0,
+            "co_financing_planned": 3000.0,
+            "co_financing_actual": 1500.0,
+            "funds_transferred": 4000.0,
+            "agency_remarks": "Some remarks",
+            "secretariat_remarks": "Secretariat remarks",
+            "excom_provision": "Provision details",
+            "date_of_report": "2023-07-01",
+            "planned_completion_date": "2024-12-31",
+            "actual_completion_date": "2024-11-30",
+            "project_duration": 24,
+            "impact": 300.0,
+            "funds_approved": 20000.0,
+            "date_of_approval": "2023-01-15",
+            "meeting": meeeting.id,
+            "chemical_phased_out": 2500.0,
             "ods_odp": [
                 {
                     "ods_odp": ods_odp.id,
                     "ods_substance": substance_hcfc.id,
-                    "phase_out_mt": 15.0,
-                    "ods_replacement": "Updated Alternative Tech 1",
-                    "ods_replacement_phase_in": 50.0,
+                    "consumption": 15.0,
+                    "selected_alternative": "Updated Alternative Tech 1",
+                    "chemical_phased_in": 50.0,
                 },
                 {
                     "ods_blend": blend.id,
-                    "phase_out_mt": 25.0,
-                    "ods_replacement": "New Alternative Tech 2",
-                    "ods_replacement_phase_in": 70.0,
+                    "consumption": 25.0,
+                    "selected_alternative": "New Alternative Tech 2",
+                    "chemical_phased_in": 70.0,
                 },
             ],
         }
@@ -451,10 +669,22 @@ class TestUpdateProjectEnterprise:
         substance_hcfc,
         blend,
         agency,
+        sector,
+        subsector,
+        meeting,
     ):
         enterprise1, _, _ = _setup_enterprises
 
-        data = self.get_update_data(project, substance_hcfc, blend, enterprise1, agency)
+        data = self.get_update_data(
+            project,
+            substance_hcfc,
+            blend,
+            enterprise1,
+            agency,
+            sector,
+            subsector,
+            meeting,
+        )
 
         def _test_user(user, expected_status, enterprise, data):
             url = reverse("project-enterprise-detail", args=[enterprise.id])
@@ -492,35 +722,44 @@ class TestUpdateProjectEnterprise:
         substance_hcfc,
         blend,
         agency,
+        sector,
+        subsector,
+        meeting,
     ):
         project_enterprise1, _, _ = _setup_enterprises
         self.client.force_authenticate(user=mlfs_admin_user)
         data = self.get_update_data(
-            project, substance_hcfc, blend, project_enterprise1, agency
+            project,
+            substance_hcfc,
+            blend,
+            project_enterprise1,
+            agency,
+            sector,
+            subsector,
+            meeting,
         )
         url = reverse("project-enterprise-detail", args=[project_enterprise1.id])
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
         project_enterprise1.refresh_from_db()
-        assert project_enterprise1.enterprise.name == "Updated Enterprise"
-        assert project_enterprise1.enterprise.location == "Updated City"
-        assert project_enterprise1.enterprise.application == "Updated Application"
-        assert project_enterprise1.enterprise.local_ownership == 60.0
-        assert project_enterprise1.enterprise.export_to_non_a5 == 40.0
-        assert project_enterprise1.capital_cost_approved == 20000.0
-        assert project_enterprise1.operating_cost_approved == 10000.0
-        assert project_enterprise1.funds_disbursed == 4000.0
-        assert project_enterprise1.enterprise.remarks == "Updated remarks"
-        assert project_enterprise1.project == project
+        self._test_fields(
+            response.data, project_enterprise1, self.project_enterprise_fields_to_test
+        )
+        self._test_fields(
+            response.data["enterprise"],
+            project_enterprise1.enterprise,
+            self.enterprise_fields_to_test,
+        )
+
         assert project_enterprise1.ods_odp.count() == 2
         ods_odp_1 = project_enterprise1.ods_odp.get(ods_substance=substance_hcfc)
-        assert ods_odp_1.phase_out_mt == 15.0
-        assert ods_odp_1.ods_replacement == "Updated Alternative Tech 1"
-        assert ods_odp_1.ods_replacement_phase_in == 50.0
+        assert ods_odp_1.consumption == 15.0
+        assert ods_odp_1.selected_alternative == "Updated Alternative Tech 1"
+        assert ods_odp_1.chemical_phased_in == 50.0
         ods_odp_2 = project_enterprise1.ods_odp.get(ods_blend=blend)
-        assert ods_odp_2.phase_out_mt == 25.0
-        assert ods_odp_2.ods_replacement == "New Alternative Tech 2"
-        assert ods_odp_2.ods_replacement_phase_in == 70.0
+        assert ods_odp_2.consumption == 25.0
+        assert ods_odp_2.selected_alternative == "New Alternative Tech 2"
+        assert ods_odp_2.chemical_phased_in == 70.0
 
 
 class TestProjectEnterpriseApproval:

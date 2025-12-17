@@ -39,23 +39,6 @@ export const tableColumns: { [key: string]: string } = {
   production: 'Production',
   category: 'Category',
   decision: 'Decision meeting',
-  name: 'Name',
-  location: 'Location',
-  application: 'Application',
-  local_ownership: 'Percentage of goods exported to non-Article 5 countries',
-  export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
-  ods_substance: 'Substance baseline technology',
-  ods_blend: 'Substance baseline technology',
-  phase_out_mt: 'Substance phase out (Mt)',
-  ods_replacement: 'Replacement technology(ies)',
-  ods_replacement_phase_in: 'Replacement technology phased in (Mt)',
-  capital_cost_approved: 'Capital cost approved',
-  operating_cost_approved: 'Operating cost approved',
-  funds_disbursed: 'Funds disbursed',
-  funds_approved: 'Funds approved',
-  cost_effectiveness_approved: 'Cost effectiveness approved',
-  remarks: 'Remarks',
-  id: 'Enterprise',
   transfer_meeting: 'Transfer meeting number',
   transfer_decision: 'Transfer decision meeting',
   transfer_excom_provision: 'Transfer Excom provision',
@@ -189,31 +172,6 @@ export const viewColumnsClassName =
 
 export const exportButtonClassname =
   'cursor-pointer justify-content-center flex items-center rounded-lg border border-solid bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline'
-
-export const initialOverviewFields = {
-  name: '',
-  agencies: [],
-  country: null,
-  location: '',
-  application: '',
-  local_ownership: null,
-  export_to_non_a5: null,
-  remarks: '',
-}
-
-export const initialSubstanceDetailsFields = {
-  ods_substance: null,
-  ods_blend: null,
-  phase_out_mt: null,
-  ods_replacement: '',
-  ods_replacement_phase_in: null,
-}
-
-export const initialFundingDetailsFields = {
-  capital_cost_approved: null,
-  operating_cost_approved: null,
-  funds_disbursed: null,
-}
 
 export const enabledButtonClassname =
   'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'

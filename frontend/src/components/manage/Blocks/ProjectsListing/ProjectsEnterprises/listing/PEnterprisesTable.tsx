@@ -83,7 +83,7 @@ const PEnterprisesTable = ({
               .map(
                 ({ sort, colId }) =>
                   (sort === 'asc' ? '' : '-') +
-                  (colId === 'status'
+                  (['status', 'agency__name', 'project_type'].includes(colId)
                     ? colId
                     : 'enterprise__' + colId.split('.')[1]),
               )

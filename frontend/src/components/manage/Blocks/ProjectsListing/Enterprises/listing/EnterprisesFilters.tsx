@@ -5,7 +5,7 @@ import { useContext } from 'react'
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { tableColumns } from '../../constants'
+import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { filter, union } from 'lodash'
@@ -18,7 +18,7 @@ const EnterprisesFilters = ({
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
-  const { countries } = useContext(ProjectsDataContext)
+  const { countries, agencies } = useContext(ProjectsDataContext)
 
   const defaultProps = {
     multiple: true,
@@ -41,9 +41,9 @@ const EnterprisesFilters = ({
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {!project_id && (
+      {!project_id ? (
         <Field
-          Input={{ placeholder: tableColumns.country }}
+          Input={{ placeholder: enterpriseFieldsMapping.country }}
           options={getFilterOptions(filters, countries, 'country_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
@@ -53,6 +53,23 @@ const EnterprisesFilters = ({
             handleFilterChange({ country_id: newValue })
             handleParamsChange({
               country_id: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+        />
+      ) : (
+        <Field
+          Input={{ placeholder: enterpriseFieldsMapping.agency }}
+          options={getFilterOptions(filters, agencies, 'agency_id')}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const agency = filters.agency_id || []
+            const newValue = union(agency, value)
+
+            handleFilterChange({ agency_id: newValue })
+            handleParamsChange({
+              agency_id: newValue.map((item: any) => item.id).join(','),
               offset: 0,
             })
           }}
