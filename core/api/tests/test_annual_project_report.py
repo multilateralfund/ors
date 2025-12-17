@@ -1,6 +1,5 @@
 from datetime import datetime, date
 from io import BytesIO
-from unittest.mock import patch
 
 from constance import config
 from openpyxl import load_workbook
@@ -32,12 +31,6 @@ from core.api.tests.factories import (
 )
 
 # pylint: disable=W0221,W0613,C0302,R0913
-
-
-@pytest.fixture()
-def mock_send_agency_submission_notification():
-    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
-        yield send_mail
 
 
 @pytest.mark.django_db

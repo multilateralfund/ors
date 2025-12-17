@@ -2,6 +2,7 @@
 import pytest
 import unicodedata
 from datetime import date
+from unittest.mock import patch
 
 from django.urls import reverse
 from django.utils import timezone
@@ -1694,3 +1695,9 @@ def late_post_excom_versions_for_apr(
     )
 
     return [initial_version, later_version]
+
+
+@pytest.fixture()
+def mock_send_agency_submission_notification():
+    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
+        yield send_mail
