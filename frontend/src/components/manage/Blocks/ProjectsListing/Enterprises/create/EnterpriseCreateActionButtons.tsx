@@ -13,7 +13,6 @@ const EnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & { enterpriseData: EnterpriseOverview }) => {
@@ -37,12 +36,11 @@ const EnterpriseCreateActionButtons = ({
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
       {canEditEnterprise && (
         <SubmitButton
