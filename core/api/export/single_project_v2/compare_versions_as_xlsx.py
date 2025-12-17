@@ -33,6 +33,13 @@ SECTIONS = (
     "MYA",
 )
 
+EXCLUDE_SECTIONS = (
+    "Header",
+    "Impact",
+    "Substance Details",
+    "MYA",
+)
+
 VARIANCE_FIELDS = (
     "total_fund",
     "support_cost_psc",
@@ -57,6 +64,12 @@ def version_label(p):
     return f"Version: {p.version}: {status} (Meeting {meeting})"
 
 
+def normalise_version(p):
+    if p.version > 3:
+        return 3
+    return p.version
+
+
 class CompareVersionsWriter:
     def __init__(self, sheet, project):
         self.sheet = sheet
@@ -68,7 +81,9 @@ class CompareVersionsWriter:
         l1, l2 = version_label(p1), version_label(p2)
 
         value_headers = self.get_other_headers(
-            self.get_fields(user),
+            self.get_fields(
+                user, versions=[normalise_version(p1), normalise_version(p2)]
+            ),
             self.get_specific_information_fields(user),
         )
 
@@ -80,7 +95,8 @@ class CompareVersionsWriter:
         h_fields = [None]
         for section in SECTIONS:
             members = per_section_headers[section]
-            h_sections.extend([section] * len(members))
+            section_name = section if section != "Header" else ""
+            h_sections.extend([section_name] * len(members))
             h_fields.extend([m["headerName"] for m in members])
 
         self.sheet.append(h_sections)
@@ -92,14 +108,15 @@ class CompareVersionsWriter:
         merge_start_idx = 2
         for section in SECTIONS:
             members = per_section_headers[section]
-            merge_end_idx = merge_start_idx + len(members) - 1
-            self.sheet.merge_cells(
-                start_row=1,
-                start_column=merge_start_idx,
-                end_row=1,
-                end_column=merge_end_idx,
-            )
-            merge_start_idx = merge_end_idx + 1
+            if members:
+                merge_end_idx = merge_start_idx + len(members) - 1
+                self.sheet.merge_cells(
+                    start_row=1,
+                    start_column=merge_start_idx,
+                    end_row=1,
+                    end_column=merge_end_idx,
+                )
+                merge_start_idx = merge_end_idx + 1
 
         for section in SECTIONS:
             members = per_section_headers[section]
@@ -171,19 +188,24 @@ class CompareVersionsWriter:
             cell = self.sheet.cell(row, i)
             cell.font = Font(name=DEFAULT_FONT.name, bold=False, color="FF0000")
 
-    def get_fields(self, user):
-        return ProjectField.objects.get_visible_fields_for_user(user).exclude(
+    def get_fields(self, user, versions):
+        result = []
+        fields = ProjectField.objects.get_visible_fields_for_user(user).exclude(
             read_field_name="sort_order"
-        )
+        ).exclude(section__in=EXCLUDE_SECTIONS)
+        for f in fields:
+            if set(f.get_visible_versions()).intersection(versions):
+                result.append(f)
+        return result
 
     def get_specific_information_fields(self, user):
+        queryset = ProjectSpecificFields.objects.filter(
+            cluster=self.project.cluster,
+            type=self.project.project_type,
+            sector=self.project.sector,
+        )
         return (
-            ProjectSpecificFields.objects.filter(
-                cluster=self.project.cluster,
-                type=self.project.project_type,
-                sector=self.project.sector,
-            )
-            .first()
+            queryset.first()
             .fields.get_visible_fields_for_user(user)
             .exclude(read_field_name="sort_order")
         )
