@@ -241,6 +241,204 @@ class AnnualProjectReport(models.Model):
         verbose_name="Gender Policy for All Projects Approved from 85th Mtg",
     )
 
+    # Denormalized derived fields
+    # These are populated from Project when the APR is created
+    # or when the workspace is first accessed. They store snapshot values
+    # that (hopefully) won't change since reporting is done for historical years.
+
+    # PCR due
+    pcr_due_denorm = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="PCR Due (denormalized)",
+        help_text="Whether PCR is due (ONG to COM/FIN transition)",
+    )
+
+    # Project identification - derived from Project relationships
+    meta_code_denorm = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Meta Code (denormalized)",
+        help_text="Snapshot of project.metacode at time of reporting",
+    )
+    project_code_denorm = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        verbose_name="Project Code (denormalized)",
+        help_text="Snapshot of project.code at time of reporting",
+    )
+    legacy_code_denorm = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        verbose_name="Legacy Code (denormalized)",
+        help_text="Snapshot of project.legacy_code at time of reporting",
+    )
+    agency_name_denorm = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Agency Name (denormalized)",
+        help_text="Snapshot of project.agency.name at time of reporting",
+    )
+    cluster_name_denorm = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Cluster Name (denormalized)",
+        help_text="Snapshot of project.cluster.name at time of reporting",
+    )
+    region_name_denorm = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Region Name (denormalized)",
+        help_text="Snapshot of project.country.parent.name at time of reporting",
+    )
+    country_name_denorm = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Country Name (denormalized)",
+        help_text="Snapshot of project.country.name at time of reporting",
+    )
+    type_code_denorm = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        verbose_name="Type Code (denormalized)",
+        help_text="Snapshot of project.project_type.code at time of reporting",
+    )
+    sector_code_denorm = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        verbose_name="Sector Code (denormalized)",
+        help_text="Snapshot of project.sector.code at time of reporting",
+    )
+    project_title_denorm = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        verbose_name="Project Title (denormalized)",
+        help_text="Snapshot of project.title at time of reporting",
+    )
+
+    # Project date data - derived from version 3
+    date_approved_denorm = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date Approved (denormalized)",
+        help_text="Snapshot of project version 3 approval date",
+    )
+    date_completion_proposal_denorm = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date Completion Proposal (denormalized)",
+        help_text="Snapshot of project version 3 completion date",
+    )
+
+    # Phaseout proposals - derived from version 3
+    consumption_phased_out_odp_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Consumption ODP Proposal (denormalized)",
+        help_text="Snapshot of version 3 consumption phase out ODP",
+    )
+    consumption_phased_out_co2_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Consumption CO2 Proposal (denormalized)",
+        help_text="Snapshot of version 3 consumption phase out CO2",
+    )
+    production_phased_out_odp_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Production ODP Proposal (denormalized)",
+        help_text="Snapshot of version 3 production phase out ODP",
+    )
+    production_phased_out_co2_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Production CO2 Proposal (denormalized)",
+        help_text="Snapshot of version 3 production phase out CO2",
+    )
+
+    # Financial data - derived from project versions
+    approved_funding_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Approved Funding (denormalized)",
+        help_text="Snapshot of version 3 total_fund",
+    )
+    adjustment_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Adjustment (denormalized)",
+        help_text="Calculated adjustment from latest version vs version 3",
+    )
+    approved_funding_plus_adjustment_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Approved Funding + Adjustment (denormalized)",
+        help_text="Total approved funding including adjustments",
+    )
+    per_cent_funds_disbursed_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Percent Funds Disbursed (denormalized)",
+        help_text="Calculated percentage of funds disbursed",
+    )
+    balance_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Balance (denormalized)",
+        help_text="Calculated balance: approved_funding - funds_disbursed",
+    )
+
+    # Support costs - derived from project versions
+    support_cost_approved_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Support Cost Approved (denormalized)",
+        help_text="Snapshot of version 3 support_cost_psc",
+    )
+    support_cost_adjustment_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Support Cost Adjustment (denormalized)",
+        help_text="Calculated support cost adjustment from latest version",
+    )
+    support_cost_approved_plus_adjustment_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Support Cost + Adjustment (denormalized)",
+        help_text="Total support cost including adjustments",
+    )
+    support_cost_balance_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Support Cost Balance (denormalized)",
+        help_text="Calculated support cost balance",
+    )
+
+    # Other derived fields
+    implementation_delays_status_report_decisions_denorm = models.CharField(
+        max_length=500,
+        null=True,
+        blank=True,
+        verbose_name="Implementation Delays (denormalized)",
+        help_text="Implementation delays from status reports",
+    )
+    date_of_completion_per_agreement_or_decisions_denorm = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date Completion per Agreement (denormalized)",
+        help_text="Latest version date_completion at time of reporting",
+    )
+
     # Audit fields
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
