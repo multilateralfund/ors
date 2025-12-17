@@ -1,5 +1,8 @@
 from datetime import datetime, date
 from io import BytesIO
+from unittest.mock import patch
+
+from constance import config
 from openpyxl import load_workbook
 from zipfile import ZipFile
 
@@ -29,6 +32,12 @@ from core.api.tests.factories import (
 )
 
 # pylint: disable=W0221,W0613,C0302,R0913
+
+
+@pytest.fixture()
+def mock_send_agency_submission_notification():
+    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
+        yield send_mail
 
 
 @pytest.mark.django_db
@@ -3134,6 +3143,67 @@ class TestAPRStatusView(BaseTest):
         assert annual_agency_report.submitted_at is not None
         assert annual_agency_report.submitted_by == agency_user
         assert annual_agency_report.is_unlocked is False
+
+    def test_mail_after_agency_submission(
+        self,
+        agency_user,
+        annual_agency_report,
+        mock_send_agency_submission_notification,
+    ):
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = True
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = agency_user.email
+
+        self.client.force_authenticate(user=agency_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"] == "Report submitted successfully."
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert response.data["submitted_at"] is not None
+        assert response.data["submitted_by"] == agency_user.username
+
+        mock_send_agency_submission_notification.assert_called()
+        assert mock_send_agency_submission_notification.call_count == 1
+
+    def test_mail_not_sent_after_agency_submission_if_disabled(
+        self,
+        agency_user,
+        annual_agency_report,
+        mock_send_agency_submission_notification,
+    ):
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = False
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = agency_user.email
+
+        self.client.force_authenticate(user=agency_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"] == "Report submitted successfully."
+        assert (
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert response.data["submitted_at"] is not None
+        assert response.data["submitted_by"] == agency_user.username
+
+        mock_send_agency_submission_notification.assert_not_called()
 
     def test_mlfs_can_submit_draft_report(self, mlfs_admin_user, annual_agency_report):
         self.client.force_authenticate(user=mlfs_admin_user)

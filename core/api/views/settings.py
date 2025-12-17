@@ -104,6 +104,8 @@ class ProjectSettingsView(views.APIView):
             "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
             "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
             "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
+            "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
+            "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
         }
         return Response(project_settings)
 
@@ -120,29 +122,20 @@ class ProjectSettingsView(views.APIView):
         config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS = request.data.get(
             "project_recommendation_notifications_emails", ""
         )
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = request.data.get(
+            "apr_agency_submission_notifications_enabled", False
+        )
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
+            "apr_agency_submission_notifications_emails", ""
+        )
         return Response(
             {
                 "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
                 "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
                 "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
                 "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class FrontendSettingsView(views.APIView):
-    """
-    API endpoint for general frontend configuration settings.
-    """
-
-    def get(self, *args, **kwargs):
-        return Response(
-            {
-                "sentry": {
-                    "dsn": settings.SENTRY_DSN_FRONTEND,
-                    "environment": settings.SENTRY_ENVIRONMENT,
-                },
+                "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
+                "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
             },
             status=status.HTTP_200_OK,
         )

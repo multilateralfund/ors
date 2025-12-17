@@ -39,6 +39,8 @@ const ProjectsSettings = ({
     project_submission_notifications_emails,
     project_recommendation_notifications_enabled,
     project_recommendation_notifications_emails,
+    apr_agency_submission_notifications_enabled,
+    apr_agency_submission_notifications_emails,
   } = data
 
   const [submissionEmail, setSubmissionEmail] = useState<EmailSettingsType>({
@@ -57,6 +59,12 @@ const ProjectsSettings = ({
       recommendationEmail.withNotifications &&
       submissionEmail.emailAddresses === recommendationEmail.emailAddresses,
   )
+  const [aprAgencySubmitEmail, setAprAgencySubmitEmail] =
+    useState<EmailSettingsType>({
+      withNotifications: apr_agency_submission_notifications_enabled || false,
+      emailAddresses: apr_agency_submission_notifications_emails || '',
+      errors: null,
+    })
 
   const emailOptions = useMemo(
     () => [
@@ -79,8 +87,17 @@ const ProjectsSettings = ({
           notification_emails: 'project_recommendation_notifications_emails',
         },
       },
+      {
+        type: 'APR',
+        emailSettings: aprAgencySubmitEmail,
+        setEmailSettings: setAprAgencySubmitEmail,
+        fieldsForUpdate: {
+          send_email: 'apr_agency_submission_notifications_enabled',
+          notification_emails: 'apr_agency_submission_notifications_emails',
+        },
+      },
     ],
-    [submissionEmail, recommendationEmail, areSameEmails],
+    [submissionEmail, recommendationEmail, areSameEmails, aprAgencySubmitEmail],
   )
 
   const handleSameEmailsAsAbove = async () => {
@@ -222,7 +239,10 @@ const ProjectsSettings = ({
             project_submission_notifications_emails) ||
         (type === 'recommendation' &&
           recommendationEmail.emailAddresses !==
-            project_recommendation_notifications_emails)
+            project_recommendation_notifications_emails) ||
+        (type === 'APR' &&
+          aprAgencySubmitEmail.emailAddresses !==
+            apr_agency_submission_notifications_emails)
       return (
         <Box key={type} className="mt-5">
           <form>

@@ -53,9 +53,6 @@ def send_html_mail(
 # Annual Progress Report
 @app.task()
 def send_agency_submission_notification(agency_report_id):
-    if not config.SEND_MAIL or not config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED:
-        return
-
     recipients = config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS
     if isinstance(recipients, str):
         recipients = [recipient.strip() for recipient in recipients.split(",")]
