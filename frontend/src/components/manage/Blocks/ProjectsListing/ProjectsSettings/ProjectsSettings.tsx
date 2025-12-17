@@ -72,6 +72,9 @@ const ProjectsSettings = ({
         type: 'submission',
         emailSettings: submissionEmail,
         setEmailSettings: setSubmissionEmail,
+        label: 'Emails for project submission:',
+        checkboxLabel:
+          'Send email notifications for project submission to users:',
         fieldsForUpdate: {
           send_email: 'project_submission_notifications_enabled',
           notification_emails: 'project_submission_notifications_emails',
@@ -82,6 +85,9 @@ const ProjectsSettings = ({
         emailSettings: recommendationEmail,
         setEmailSettings: setRecommendationEmail,
         disabled: areSameEmails,
+        label: 'Emails for project recommendation:',
+        checkboxLabel:
+          'Send email notifications for project recommendation to users:',
         fieldsForUpdate: {
           send_email: 'project_recommendation_notifications_enabled',
           notification_emails: 'project_recommendation_notifications_emails',
@@ -91,6 +97,9 @@ const ProjectsSettings = ({
         type: 'APR',
         emailSettings: aprAgencySubmitEmail,
         setEmailSettings: setAprAgencySubmitEmail,
+        label: 'Emails for APR agency submission:',
+        checkboxLabel:
+          'Send email notifications for APR agency submission to users:',
         fieldsForUpdate: {
           send_email: 'apr_agency_submission_notifications_enabled',
           notification_emails: 'apr_agency_submission_notifications_emails',
@@ -232,7 +241,15 @@ const ProjectsSettings = ({
   }
 
   return emailOptions.map(
-    ({ type, emailSettings, setEmailSettings, disabled, fieldsForUpdate }) => {
+    ({
+      type,
+      emailSettings,
+      setEmailSettings,
+      disabled,
+      fieldsForUpdate,
+      label,
+      checkboxLabel,
+    }) => {
       const hasUnsavedChanges =
         (type === 'submission' &&
           submissionEmail.emailAddresses !==
@@ -247,13 +264,11 @@ const ProjectsSettings = ({
         <Box key={type} className="mt-5">
           <form>
             <FormControl className="w-full" error={!!emailSettings.errors}>
-              <FormLabel className="text-[#0095D5]">
-                Emails for project {type}:
-              </FormLabel>
+              <FormLabel className="text-[#0095D5]">{label}</FormLabel>
               <FormGroup className="w-fit">
                 <FormControlLabel
                   className="text-lg"
-                  label={`Send email notifications for project ${type} to users:`}
+                  label={checkboxLabel}
                   disabled={disabled}
                   control={
                     <Checkbox
