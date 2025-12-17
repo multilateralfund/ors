@@ -159,6 +159,7 @@ def _process_rows(df, progress_report, dry_run):
                             project=project,
                             report=agency_report,
                         )
+                        # TODO: should I populate denormalized fields here as well?
                         serializer = AnnualProjectReportUpdateSerializer(
                             instance=project_report,
                             data=data,

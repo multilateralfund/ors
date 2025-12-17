@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.db import models
 from django.utils.functional import cached_property
@@ -6,6 +8,8 @@ from core.models.utils import get_protected_storage
 from core.models.agency import Agency
 from core.models.meeting import Meeting
 from core.models.project import Project
+
+logger = logging.getLogger(__name__)
 
 # pylint: disable=R0904
 
@@ -161,6 +165,7 @@ class AnnualProjectReportFile(models.Model):
 
 
 class AnnualProjectReport(models.Model):
+    # pylint: disable=R0902
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -633,3 +638,100 @@ class AnnualProjectReport(models.Model):
     def implementation_delays_status_report_decisions(self):
         # TODO: need to ask MLFS about this field
         return ""
+
+    def populate_derived_fields(self):
+        """
+        Populate all denormalized fields from their corresponding properties.
+
+        Should be called:
+        - When creating or updating new APR records in agency workspace
+        - During data migration for existing records
+        """
+        # Only populate if we have a project
+        if not self.project_id:
+            return
+
+        # pylint: disable=W0718
+        try:
+            # Project identification fields
+            self.meta_code_denorm = self.project.metacode or ""
+            self.project_code_denorm = self.project.code or ""
+            self.legacy_code_denorm = self.project.legacy_code or ""
+
+            # Agency
+            if self.project.agency:
+                self.agency_name_denorm = self.project.agency.name
+
+            # Cluster
+            if self.project.cluster:
+                self.cluster_name_denorm = self.project.cluster.name
+
+            # Country and Region
+            if self.project.country:
+                self.country_name_denorm = self.project.country.name
+                if self.project.country.parent:
+                    self.region_name_denorm = self.project.country.parent.name
+
+            # Type and Sector
+            if self.project.project_type:
+                self.type_code_denorm = self.project.project_type.code
+
+            if self.project.sector:
+                self.sector_code_denorm = self.project.sector.code
+
+            # Project title
+            self.project_title_denorm = self.project.title or ""
+
+            # Version 3 dependent fields
+            version_3 = self.project_version_3
+            if version_3:
+                # Dates
+                self.date_approved_denorm = version_3.date_approved
+                self.date_completion_proposal_denorm = version_3.date_completion
+
+                # Phaseout proposals
+                self.consumption_phased_out_odp_proposal_denorm = (
+                    version_3.consumption_phase_out_odp
+                )
+                self.consumption_phased_out_co2_proposal_denorm = (
+                    version_3.consumption_phase_out_co2
+                )
+                self.production_phased_out_odp_proposal_denorm = (
+                    version_3.production_phase_out_odp
+                )
+                self.production_phased_out_co2_proposal_denorm = (
+                    version_3.production_phase_out_co2
+                )
+
+                # Approved funding
+                self.approved_funding_denorm = version_3.total_fund
+
+                # Support cost approved
+                self.support_cost_approved_denorm = version_3.support_cost_psc
+
+            # Computed financial fields (may depend on latest version for report year)
+            self.adjustment_denorm = self.adjustment
+            self.approved_funding_plus_adjustment_denorm = (
+                self.approved_funding_plus_adjustment
+            )
+            self.per_cent_funds_disbursed_denorm = self.per_cent_funds_disbursed
+            self.balance_denorm = self.balance
+
+            # Support cost fields
+            self.support_cost_adjustment_denorm = self.support_cost_adjustment
+            self.support_cost_approved_plus_adjustment_denorm = (
+                self.support_cost_approved_plus_adjustment
+            )
+            self.support_cost_balance_denorm = self.support_cost_balance
+
+            # Other computed fields
+            self.implementation_delays_status_report_decisions_denorm = (
+                self.implementation_delays_status_report_decisions
+            )
+            self.date_of_completion_per_agreement_or_decisions_denorm = (
+                self.date_of_completion_per_agreement_or_decisions
+            )
+            self.pcr_due_denorm = self.pcr_due
+
+        except Exception as e:
+            logger.warning(f"Error populating derived fields for APR {self.id}: {e}")
