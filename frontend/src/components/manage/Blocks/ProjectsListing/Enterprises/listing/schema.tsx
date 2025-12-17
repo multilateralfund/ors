@@ -6,9 +6,9 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
 import { formatNumberColumns } from '../../utils'
 
-import { find, isNil, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
+import { find, isNil } from 'lodash'
 import { useParams } from 'wouter'
 import dayjs from 'dayjs'
 import {
@@ -27,7 +27,7 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
     canApproveProjectEnterprise,
   } = useContext(PermissionsContext)
 
-  const { countries, agencies, sectors, subsectors } =
+  const { countries, agencies, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
 
   const isEnterprise = !project_id
@@ -55,23 +55,14 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
     params: ValueGetterParams | ITooltipParams,
     data: any,
     field: string,
+    isDirectField?: boolean,
   ) => {
-    const crtEntry = isEnterprise
-      ? params.data[field]
-      : params.data.enterprise?.[field]
+    const crtEntry =
+      isEnterprise || isDirectField
+        ? params.data[field]
+        : params.data.enterprise?.[field]
 
     return find(data, (entry) => entry.id === crtEntry)?.name
-  }
-
-  const getAgencyNames = (params: ValueGetterParams | ITooltipParams) => {
-    const crtAgencies = isEnterprise
-      ? params.data.agencies
-      : params.data.enterprise?.agencies
-
-    return map(
-      crtAgencies,
-      (crtAgency) => find(agencies, (agency) => agency.id === crtAgency)?.name,
-    ).join(', ')
   }
 
   const getFieldName = (field: string) =>
@@ -161,19 +152,6 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
         cellClass: 'ag-cell-ellipsed !pl-2.5',
         minWidth: 200,
       },
-      ...(!isEnterprise
-        ? [
-            {
-              headerName: enterpriseFieldsMapping.agencies,
-              valueGetter: (params: ValueGetterParams) =>
-                getAgencyNames(params),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getAgencyNames(params),
-              sortable: false,
-              minWidth: 200,
-            },
-          ]
-        : []),
       ...(isEnterprise
         ? [
             {
@@ -185,7 +163,24 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
                 getFieldValue(params, countries, 'country'),
             },
           ]
-        : []),
+        : [
+            {
+              headerName: enterpriseFieldsMapping.agency,
+              field: 'agency__name',
+              valueGetter: (params: ValueGetterParams) =>
+                getFieldValue(params, agencies, 'agency', true),
+              tooltipValueGetter: (params: ITooltipParams) =>
+                getFieldValue(params, agencies, 'agency', true),
+            },
+            {
+              headerName: enterpriseFieldsMapping.project_type,
+              field: 'project_type',
+              valueGetter: (params: ValueGetterParams) =>
+                getFieldValue(params, project_types, 'project_type', true),
+              tooltipValueGetter: (params: ITooltipParams) =>
+                getFieldValue(params, project_types, 'project_type', true),
+            },
+          ]),
       {
         headerName: enterpriseFieldsMapping.location,
         field: getFieldName('location'),
@@ -196,26 +191,22 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
         field: getFieldName('stage'),
         tooltipField: getFieldName('stage'),
       },
-      ...(isEnterprise
-        ? [
-            {
-              headerName: enterpriseFieldsMapping.sector,
-              field: getFieldName('sector'),
-              valueGetter: (params: ValueGetterParams) =>
-                getFieldValue(params, sectors, 'sector'),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getFieldValue(params, sectors, 'sector'),
-            },
-            {
-              headerName: enterpriseFieldsMapping.subsector,
-              field: getFieldName('subsector'),
-              valueGetter: (params: ValueGetterParams) =>
-                getFieldValue(params, subsectors, 'subsector'),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getFieldValue(params, subsectors, 'subsector'),
-            },
-          ]
-        : []),
+      {
+        headerName: enterpriseFieldsMapping.sector,
+        field: getFieldName('sector'),
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, sectors, 'sector'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, sectors, 'sector'),
+      },
+      {
+        headerName: enterpriseFieldsMapping.subsector,
+        field: getFieldName('subsector'),
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, subsectors, 'subsector'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, subsectors, 'subsector'),
+      },
       {
         headerName: enterpriseFieldsMapping.application,
         field: getFieldName('application'),
@@ -225,19 +216,19 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
         ? [
             {
               headerName: enterpriseFieldsMapping.local_ownership,
+              field: getFieldName('local_ownership'),
               valueGetter: (params: ValueGetterParams) =>
                 getDecimalValue(params, 'local_ownership'),
               tooltipValueGetter: (params: ITooltipParams) =>
                 getDecimalValue(params, 'local_ownership'),
-              sortable: false,
             },
             {
               headerName: enterpriseFieldsMapping.export_to_non_a5,
+              field: getFieldName('export_to_non_a5'),
               valueGetter: (params: ValueGetterParams) =>
                 getDecimalValue(params, 'export_to_non_a5'),
               tooltipValueGetter: (params: ITooltipParams) =>
                 getDecimalValue(params, 'export_to_non_a5'),
-              sortable: false,
             },
             //  {
             //   headerName: enterpriseFieldsMapping.revision,

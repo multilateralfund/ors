@@ -197,7 +197,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   return (
     <>
-      <div className="mb-2 flex flex-wrap gap-x-20 gap-y-2">
+      <div className="mb-2 flex flex-wrap gap-x-20 gap-y-4">
         {map(substanceDecimalFields, (field) => (
           <EnterpriseNumberField<PEnterpriseData, EnterpriseSubstanceFields>
             dataType="decimal"
@@ -216,7 +216,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
       <Divider className="my-6" />
 
-      <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
+      <div className="flex flex-col flex-wrap gap-y-4">
         {sectionData.map((substance, index) => (
           <>
             <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">

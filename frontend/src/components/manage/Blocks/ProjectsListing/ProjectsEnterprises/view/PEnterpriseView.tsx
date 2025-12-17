@@ -19,10 +19,7 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
       id: 'enterprise-overview',
       label: 'Overview',
       component: (
-        <PEnterpriseOverviewSection
-          type="project-enterprise"
-          enterprise={enterprise.enterprise}
-        />
+        <PEnterpriseOverviewSection enterprise={enterprise.enterprise} />
       ),
     },
     {

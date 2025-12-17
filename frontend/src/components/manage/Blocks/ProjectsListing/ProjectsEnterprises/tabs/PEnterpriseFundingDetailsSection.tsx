@@ -32,7 +32,7 @@ const PEnterpriseFundingDetailsSection = ({
     {
       slice: [3, 5],
       getWidth: (field: string) =>
-        field === 'funds_approved' ? 'w-[250px]' : 'w-[320px]',
+        field === 'funds_approved' ? 'w-[250px]' : 'w-[330px]',
       getPrefix: (field: string) => (field === 'funds_approved' ? '$' : ''),
       isDisabled: true,
     },

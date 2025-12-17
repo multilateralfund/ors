@@ -4,6 +4,8 @@ import { viewColumnsClassName } from '../../constants'
 import { enterpriseFieldsMapping } from '../constants'
 import { PEnterpriseType } from '../../interfaces'
 
+import { replace } from 'lodash'
+
 const PEnterpriseFundingDetailsSection = ({
   enterprise,
 }: {
@@ -20,6 +22,9 @@ const PEnterpriseFundingDetailsSection = ({
     operating_cost_approved,
   )
 
+  const formatFieldName = (fieldName: string) =>
+    replace(fieldName, ' (computed)', '')
+
   const fields = [
     [
       [
@@ -33,9 +38,12 @@ const PEnterpriseFundingDetailsSection = ({
       [enterpriseFieldsMapping.funds_disbursed, enterprise.funds_disbursed],
     ],
     [
-      [enterpriseFieldsMapping.funds_approved, funds_approved?.toString()],
       [
-        enterpriseFieldsMapping.cost_effectiveness_approved,
+        formatFieldName(enterpriseFieldsMapping.funds_approved),
+        funds_approved?.toString(),
+      ],
+      [
+        formatFieldName(enterpriseFieldsMapping.cost_effectiveness_approved),
         costEffectivenessApproved?.toString(),
       ],
     ],
