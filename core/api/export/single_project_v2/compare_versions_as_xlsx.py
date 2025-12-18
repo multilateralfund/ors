@@ -22,6 +22,7 @@ from core.api.utils import workbook_response
 from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import format_iso_date
 
+# pylint: disable=R0915
 
 SECTIONS = (
     "Cross-Cutting",
