@@ -26,7 +26,7 @@ const PEnterpriseCreateWrapper = () => {
   const { data, loading, error } = project ?? {}
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
-    overview: initialOverviewFields,
+    overview: { ...initialOverviewFields, id: null },
     details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
     substance_details: [],

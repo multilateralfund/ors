@@ -74,6 +74,16 @@ const EnterpriseEditActionButtons = ({
     }
   }
 
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
+    }
+  }
+
   const handleChangeEnterpriseStatus = (status: string) => {
     if (status === 'Obsolete') {
       setIsObsoleteWarningOpen(true)
@@ -93,6 +103,11 @@ const EnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
+        const successMessage =
+          status === 'Approved' ? 'approved' : 'marked as obsolete'
+        enqueueSnackbar(<>Enterprise was {successMessage} successfully.</>, {
+          variant: 'success',
+        })
         setLocation(`/projects-listing/enterprises/${enterprise_id}`)
       } catch (error) {
         enqueueSnackbar(
@@ -115,7 +130,7 @@ const EnterpriseEditActionButtons = ({
             className={cx('px-4 py-2 shadow-none', {
               [enabledButtonClassname]: !disabledButton,
             })}
-            onClick={editEnterprise}
+            onClick={onEditEnterprise}
             disabled={disabledButton}
             variant="contained"
             size="large"

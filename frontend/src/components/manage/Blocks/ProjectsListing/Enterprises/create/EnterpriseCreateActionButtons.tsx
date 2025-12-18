@@ -7,6 +7,7 @@ import { SubmitButton } from '../../HelperComponents'
 import { EnterpriseActionButtons, EnterpriseOverview } from '../../interfaces'
 import { api } from '@ors/helpers'
 
+import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 
 const EnterpriseCreateActionButtons = ({
@@ -31,6 +32,9 @@ const EnterpriseCreateActionButtons = ({
       })
 
       setEnterpriseId(result.id)
+      enqueueSnackbar(<>Enterprise was created successfully.</>, {
+        variant: 'success',
+      })
       setLocation(`/projects-listing/enterprises/${result.id}/edit`)
     } catch (error) {
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)

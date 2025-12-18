@@ -8,6 +8,7 @@ import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
+import { enqueueSnackbar } from 'notistack'
 import { omit } from 'lodash'
 
 const PEnterpriseCreateActionButtons = ({
@@ -53,6 +54,9 @@ const PEnterpriseCreateActionButtons = ({
       })
 
       setEnterpriseId(result.id)
+      enqueueSnackbar(<>Project enterprise was created successfully.</>, {
+        variant: 'success',
+      })
       setLocation(
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
       )

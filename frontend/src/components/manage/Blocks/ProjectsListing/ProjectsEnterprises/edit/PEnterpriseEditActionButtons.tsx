@@ -89,6 +89,16 @@ const PEnterpriseEditActionButtons = ({
     }
   }
 
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Project enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
+    }
+  }
+
   const approveProjectEnterprise = async () => {
     const canChangeStatus = canEditProjectEnterprise
       ? await editEnterprise()
@@ -100,6 +110,9 @@ const PEnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
+        enqueueSnackbar(<>Project enterprise was approved successfully.</>, {
+          variant: 'success',
+        })
         setLocation(
           `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
         )
@@ -125,7 +138,7 @@ const PEnterpriseEditActionButtons = ({
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableSubmit,
           })}
-          onClick={editEnterprise}
+          onClick={onEditEnterprise}
           disabled={disableSubmit}
           variant="contained"
           size="large"
