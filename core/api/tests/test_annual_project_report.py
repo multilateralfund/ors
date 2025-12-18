@@ -4465,3 +4465,146 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert worksheet.cell(
             first_data_row, columns["approved_funding_plus_adjustment"]
         ).value == (latest_version.total_fund)
+
+
+@pytest.mark.django_db
+class TestAPRPermissions(BaseTest):
+    def test_without_login(self, **kwargs):
+        pass
+
+    def test_apr_agency_viewer_can_view(
+        self, apr_agency_viewer_user, annual_progress_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_progress_report.year},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_apr_agency_viewer_cannot_edit(
+        self, apr_agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {"project_reports": []},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_apr_agency_inputter_can_edit(
+        self, apr_agency_inputter_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {
+                "project_reports": [
+                    {
+                        "project_code": annual_project_report.project.code,
+                        "funds_disbursed": 50000.0,
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_apr_agency_inputter_cannot_submit(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_apr_agency_submitter_can_submit(
+        self, apr_agency_submitter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_submitter_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "submitted"
+
+    def test_apr_mlfs_full_access_can_unlock(
+        self, apr_mlfs_full_access_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = reverse(
+            "apr-toggle-lock",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {"is_unlocked": True}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_unlocked"] is True
+
+    def test_apr_mlfs_full_access_can_endorse(
+        self, apr_mlfs_full_access_user, annual_progress_report, meeting_apr_same_year
+    ):
+        agency = AgencyFactory()
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = reverse("apr-endorse", kwargs={"year": annual_progress_report.year})
+        response = self.client.post(
+            url,
+            {
+                "meeting_endorsed": meeting_apr_same_year.id,
+                "date_endorsed": "2024-12-01",
+                "remarks_endorsed": "Test endorsement",
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_separate_apr_and_projects_permissions(
+        self, agency, viewer_user, apr_agency_viewer_user
+    ):
+        # User with only Projects (not APR) permissions
+        assert not viewer_user.has_perm("core.has_apr_view_access")
+
+        # And the reverse (only APR permissions)
+        assert apr_agency_viewer_user.has_perm("core.has_apr_view_access")
+        assert not apr_agency_viewer_user.has_perm("core.has_project_v2_edit_access")
