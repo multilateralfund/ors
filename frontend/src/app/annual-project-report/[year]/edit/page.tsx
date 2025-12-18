@@ -24,6 +24,8 @@ import {
   AnnualProjectReport,
 } from '@ors/app/annual-project-report/types.ts'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
 
 const TABS = [
   {
@@ -52,6 +54,10 @@ export default function APREdit() {
   const [activeTab, setActiveTab] = useState(0)
   const { canEditAPR, isMlfsUser } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>[]
+  >([])
+  const hasValidationErrors = validationErrors.length > 0
 
   const getPath = isMlfsUser
     ? `api/annual-project-report/mlfs/${year}/agencies/`
@@ -91,6 +97,12 @@ export default function APREdit() {
     rows,
     setRows,
   })
+  const { columnDefs: allColumnDefs } = useGetColumnDefs({
+    year: year!,
+    clipboardEdit: true,
+    rows,
+    setRows,
+  })
 
   if (!canEditAPR) {
     return <NotFoundPage />
@@ -112,6 +124,15 @@ export default function APREdit() {
     gridRef.current.api.forEachNode((node) => {
       allData.push(node.data)
     })
+
+    const { formErrors, hasErrors } = validateRows(allData, allColumnDefs)
+    if (hasErrors) {
+      setValidationErrors(formErrors)
+      enqueueSnackbar(<>Fix the validation errors before saving.</>, {
+        variant: 'error',
+      })
+      return
+    }
 
     try {
       const updatePath = isMlfsUser
@@ -220,43 +241,49 @@ export default function APREdit() {
               <EditTable
                 rowsVisible={100}
                 Toolbar={() => (
-                  <Alert
-                    className="flex-1 bg-mlfs-bannerColor"
-                    icon={<IoInformationCircleOutline size={24} />}
-                    severity="info"
-                  >
-                    <ul className="mt-0.5 list-inside space-y-1 pl-0">
-                      <li>
-                        Columns containing the{' '}
-                        <span className="inline-flex align-middle">
-                          <IoClipboardOutline />
-                        </span>{' '}
-                        icon allow pasting of values onto multiple rows when
-                        these values have been copied from an Excel file
-                        downloaded from this system. Follow these steps to do
-                        this:
-                        <ol className="mt-1 space-y-1 pl-4">
-                          <li>
-                            In the Excel file, select the desired cells from the
-                            second column (Project Code), and while holding down
-                            the CTRL key, continue selecting the corresponding
-                            cells from the target column where you intend to
-                            paste the data (e.g. First Disbursement Date).
-                          </li>
-                          <li>
-                            Return to this screen and click the{' '}
-                            <span className="inline-flex align-middle">
-                              <IoClipboardOutline />
-                            </span>{' '}
-                            icon from the desired header column (e.g. First
-                            Disbursement Date). The system will paste the values
-                            in the correct activities, regardless of how the
-                            Excel rows were sorted.
-                          </li>
-                        </ol>
-                      </li>
-                    </ul>
-                  </Alert>
+                  <>
+                    <Alert
+                      className="flex-1 bg-mlfs-bannerColor"
+                      icon={<IoInformationCircleOutline size={24} />}
+                      severity="info"
+                    >
+                      <ul className="mt-0.5 list-inside space-y-1 pl-0">
+                        <li>
+                          Columns containing the{' '}
+                          <span className="inline-flex align-middle">
+                            <IoClipboardOutline />
+                          </span>{' '}
+                          icon allow pasting of values onto multiple rows when
+                          these values have been copied from an Excel file
+                          downloaded from this system. Follow these steps to do
+                          this:
+                          <ol className="mt-1 space-y-1 pl-4">
+                            <li>
+                              In the Excel file, select the desired cells from
+                              the second column (Project Code), and while
+                              holding down the CTRL key, continue selecting the
+                              corresponding cells from the target column where
+                              you intend to paste the data (e.g. First
+                              Disbursement Date).
+                            </li>
+                            <li>
+                              Return to this screen and click the{' '}
+                              <span className="inline-flex align-middle">
+                                <IoClipboardOutline />
+                              </span>{' '}
+                              icon from the desired header column (e.g. First
+                              Disbursement Date). The system will paste the
+                              values in the correct activities, regardless of
+                              how the Excel rows were sorted.
+                            </li>
+                          </ol>
+                        </li>
+                      </ul>
+                    </Alert>
+                    {hasValidationErrors && (
+                      <ValidationErrors validationErrors={validationErrors} />
+                    )}
+                  </>
                 )}
                 gridRef={gridRef}
                 dataTypeDefinitions={dataTypeDefinitions}

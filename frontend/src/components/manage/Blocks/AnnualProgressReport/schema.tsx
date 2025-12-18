@@ -590,27 +590,31 @@ export default function useGetColumnDefs({
     )
   }
 
-  const columnDefs = columns.map((c) => ({
-    headerName: c.label,
-    field: c.fieldName,
-    editable: inlineEdit && c.input,
-    // Clipboard editing requires a custom header component
-    headerComponent:
-      clipboardEdit && c.input && rows && setRows
-        ? (props: IHeaderParams) => (
-            <HeaderPasteWrapper
-              field={props.column.getColDef().field!}
-              form={rows}
-              label={props.displayName}
-              setForm={setRows}
-              rowIdField="project_code"
-            />
-          )
-        : undefined,
-    cellRenderer:
-      c.input && (clipboardEdit || inlineEdit) ? CellValidation : undefined,
-    ...(c.overrideOptions ?? {}),
-  }))
+  const columnDefs = columns.map((c) => {
+    const canBeEdited = c.input && (clipboardEdit || inlineEdit)
+
+    return {
+      headerName: c.label,
+      field: c.fieldName,
+      editable: inlineEdit && c.input,
+      canBeEdited,
+      // Clipboard editing requires a custom header component
+      headerComponent:
+        clipboardEdit && c.input && rows && setRows
+          ? (props: IHeaderParams) => (
+              <HeaderPasteWrapper
+                field={props.column.getColDef().field!}
+                form={rows}
+                label={props.displayName}
+                setForm={setRows}
+                rowIdField="project_code"
+              />
+            )
+          : undefined,
+      cellRenderer: canBeEdited ? CellValidation : undefined,
+      ...(c.overrideOptions ?? {}),
+    }
+  })
 
   return {
     columnDefs,

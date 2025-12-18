@@ -63,6 +63,8 @@ import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
@@ -76,6 +78,10 @@ export default function APRMLFSWorkspace() {
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>[]
+  >([])
+  const hasValidationErrors = validationErrors.length > 0
 
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
@@ -285,6 +291,15 @@ export default function APRMLFSWorkspace() {
       allData.push(node.data)
     })
 
+    const { formErrors, hasErrors } = validateRows(allData, columnDefs)
+    if (hasErrors) {
+      setValidationErrors(formErrors)
+      enqueueSnackbar(<>Fix the validation errors before saving.</>, {
+        variant: 'error',
+      })
+      return
+    }
+
     try {
       await api(`api/annual-project-report/mlfs/${year}/bulk-update/`, {
         data: {
@@ -422,15 +437,18 @@ export default function APRMLFSWorkspace() {
           role="tabpanel"
         >
           <Alert
-            className="mb-4 bg-mlfs-bannerColor"
+            className="bg-mlfs-bannerColor"
             icon={<IoInformationCircleOutline size={24} />}
             severity="info"
           >
             Viewing project reports for all agencies. Use filters for viewing
             less reports.
           </Alert>
+          {hasValidationErrors && (
+            <ValidationErrors validationErrors={validationErrors} />
+          )}
 
-          <div className="mb-2 flex justify-between">
+          <div className="mt-4 mb-2 flex justify-between">
             {/* Filters section */}
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-wrap items-center gap-2">
