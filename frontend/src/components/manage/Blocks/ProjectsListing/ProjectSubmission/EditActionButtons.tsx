@@ -71,7 +71,6 @@ const EditActionButtons = ({
   getTrancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
-  setParams,
   postExComUpdate,
   bpData,
   filesMetaData,
@@ -84,7 +83,6 @@ const EditActionButtons = ({
   trancheErrors?: TrancheErrorType
   getTrancheErrors?: () => void
   approvalFields?: ProjectSpecificFields[]
-  setParams?: any
   postExComUpdate?: boolean
   bpData: BpDataProps
 }) => {
@@ -429,7 +427,10 @@ const EditActionButtons = ({
       }
 
       if (postExComUpdate) {
-        setParams((prev: any) => ({ ...prev }))
+        enqueueSnackbar(<>Post ExCom update was successful.</>, {
+          variant: 'success',
+        })
+        setLocation('/projects-listing/listing')
       }
 
       clearUpdatedFields()
