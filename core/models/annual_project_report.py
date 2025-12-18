@@ -520,6 +520,8 @@ class AnnualProjectReport(models.Model):
         latest_version = self.project.latest_version_for_year(self.report_year)
         if not latest_version:
             latest_version = self.project_version_3
+        if not latest_version:
+            return None
         return latest_version.date_completion
 
     @property
@@ -584,22 +586,22 @@ class AnnualProjectReport(models.Model):
 
         return latest_version.total_fund
 
-    @cached_property
+    @property
     def per_cent_funds_disbursed(self):
         if (
             self.funds_disbursed is None
-            or self.approved_funding_plus_adjustment is None
+            or self.approved_funding_plus_adjustment_denorm is None
         ):
             return None
 
-        return self.funds_disbursed / self.approved_funding_plus_adjustment
+        return self.funds_disbursed / self.approved_funding_plus_adjustment_denorm
 
-    @cached_property
+    @property
     def balance(self):
-        if self.approved_funding is None:
+        if self.approved_funding_denorm is None:
             return None
 
-        return self.approved_funding - (self.funds_disbursed or 0)
+        return self.approved_funding_denorm - (self.funds_disbursed or 0)
 
     @cached_property
     def support_cost_approved(self):
@@ -624,13 +626,13 @@ class AnnualProjectReport(models.Model):
             return self.support_cost_adjustment
         return self.support_cost_approved + (self.support_cost_adjustment or 0)
 
-    @cached_property
+    @property
     def support_cost_balance(self):
         # Support Costs Approved Funding plus Adjustments - Support Cost Disbursed
-        if self.support_cost_approved_plus_adjustment is None:
+        if self.support_cost_approved_plus_adjustment_denorm is None:
             return None
 
-        return self.support_cost_approved_plus_adjustment - (
+        return self.support_cost_approved_plus_adjustment_denorm - (
             self.support_cost_disbursed or 0
         )
 
@@ -651,87 +653,81 @@ class AnnualProjectReport(models.Model):
         if not self.project_id:
             return
 
-        # pylint: disable=W0718
-        try:
-            # Project identification fields
-            self.meta_code_denorm = self.project.metacode or ""
-            self.project_code_denorm = self.project.code or ""
-            self.legacy_code_denorm = self.project.legacy_code or ""
+        # Project identification fields
+        self.meta_code_denorm = self.project.metacode or ""
+        self.project_code_denorm = self.project.code or ""
+        self.legacy_code_denorm = self.project.legacy_code or ""
 
-            # Agency
-            if self.project.agency:
-                self.agency_name_denorm = self.project.agency.name
+        # Agency
+        if self.project.agency:
+            self.agency_name_denorm = self.project.agency.name
 
-            # Cluster
-            if self.project.cluster:
-                self.cluster_name_denorm = self.project.cluster.name
+        # Cluster
+        if self.project.cluster:
+            self.cluster_name_denorm = self.project.cluster.name
 
-            # Country and Region
-            if self.project.country:
-                self.country_name_denorm = self.project.country.name
-                if self.project.country.parent:
-                    self.region_name_denorm = self.project.country.parent.name
+        # Country and Region
+        if self.project.country:
+            self.country_name_denorm = self.project.country.name
+            if self.project.country.parent:
+                self.region_name_denorm = self.project.country.parent.name
 
-            # Type and Sector
-            if self.project.project_type:
-                self.type_code_denorm = self.project.project_type.code
+        # Type and Sector
+        if self.project.project_type:
+            self.type_code_denorm = self.project.project_type.code
 
-            if self.project.sector:
-                self.sector_code_denorm = self.project.sector.code
+        if self.project.sector:
+            self.sector_code_denorm = self.project.sector.code
 
-            # Project title
-            self.project_title_denorm = self.project.title or ""
+        # Project title
+        self.project_title_denorm = self.project.title or ""
 
-            # Version 3 dependent fields
-            version_3 = self.project_version_3
-            if version_3:
-                # Dates
-                self.date_approved_denorm = version_3.date_approved
-                self.date_completion_proposal_denorm = version_3.date_completion
+        # Version 3 dependent fields
+        version_3 = self.project_version_3
+        if version_3:
+            # Dates
+            self.date_approved_denorm = version_3.date_approved
+            self.date_completion_proposal_denorm = version_3.date_completion
 
-                # Phaseout proposals
-                self.consumption_phased_out_odp_proposal_denorm = (
-                    version_3.consumption_phase_out_odp
-                )
-                self.consumption_phased_out_co2_proposal_denorm = (
-                    version_3.consumption_phase_out_co2
-                )
-                self.production_phased_out_odp_proposal_denorm = (
-                    version_3.production_phase_out_odp
-                )
-                self.production_phased_out_co2_proposal_denorm = (
-                    version_3.production_phase_out_co2
-                )
-
-                # Approved funding
-                self.approved_funding_denorm = version_3.total_fund
-
-                # Support cost approved
-                self.support_cost_approved_denorm = version_3.support_cost_psc
-
-            # Computed financial fields (may depend on latest version for report year)
-            self.adjustment_denorm = self.adjustment
-            self.approved_funding_plus_adjustment_denorm = (
-                self.approved_funding_plus_adjustment
+            # Phaseout proposals
+            self.consumption_phased_out_odp_proposal_denorm = (
+                version_3.consumption_phase_out_odp
             )
-            self.per_cent_funds_disbursed_denorm = self.per_cent_funds_disbursed
-            self.balance_denorm = self.balance
-
-            # Support cost fields
-            self.support_cost_adjustment_denorm = self.support_cost_adjustment
-            self.support_cost_approved_plus_adjustment_denorm = (
-                self.support_cost_approved_plus_adjustment
+            self.consumption_phased_out_co2_proposal_denorm = (
+                version_3.consumption_phase_out_co2
             )
-            self.support_cost_balance_denorm = self.support_cost_balance
-
-            # Other computed fields
-            self.implementation_delays_status_report_decisions_denorm = (
-                self.implementation_delays_status_report_decisions
+            self.production_phased_out_odp_proposal_denorm = (
+                version_3.production_phase_out_odp
             )
-            self.date_of_completion_per_agreement_or_decisions_denorm = (
-                self.date_of_completion_per_agreement_or_decisions
+            self.production_phased_out_co2_proposal_denorm = (
+                version_3.production_phase_out_co2
             )
-            self.pcr_due_denorm = self.pcr_due
 
-        except Exception as e:
-            logger.warning(f"Error populating derived fields for APR {self.id}: {e}")
+            # Approved funding
+            self.approved_funding_denorm = version_3.total_fund
+
+            # Support cost approved
+            self.support_cost_approved_denorm = version_3.support_cost_psc
+
+        # Computed financial fields (may depend on latest version for report year)
+        self.adjustment_denorm = self.adjustment
+        self.approved_funding_plus_adjustment_denorm = (
+            self.approved_funding_plus_adjustment
+        )
+        self.per_cent_funds_disbursed_denorm = self.per_cent_funds_disbursed
+        self.balance_denorm = self.balance
+
+        # Support cost fields
+        self.support_cost_adjustment_denorm = self.support_cost_adjustment
+        self.support_cost_approved_plus_adjustment_denorm = (
+            self.support_cost_approved_plus_adjustment
+        )
+
+        # Other computed fields
+        self.implementation_delays_status_report_decisions_denorm = (
+            self.implementation_delays_status_report_decisions
+        )
+        self.date_of_completion_per_agreement_or_decisions_denorm = (
+            self.date_of_completion_per_agreement_or_decisions
+        )
+        self.pcr_due_denorm = self.pcr_due

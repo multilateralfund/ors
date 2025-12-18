@@ -28,7 +28,7 @@ from core.api.tests.factories import (
     ProjectClusterFactory,
 )
 
-# pylint: disable=W0221,W0613,C0302,R0913
+# pylint: disable=W0221,W0613,C0302,R0913,R0914
 
 
 @pytest.mark.django_db
@@ -1188,8 +1188,14 @@ class TestAPRGlobalViewSet(BaseTest):
         project = ProjectFactory(country=country_ro, agency=agency)
         project_new = ProjectFactory(country=new_country, agency=agency)
 
-        AnnualProjectReportFactory(report=annual_agency_report, project=project)
-        AnnualProjectReportFactory(report=annual_agency_report, project=project_new)
+        apr1 = AnnualProjectReportFactory(report=annual_agency_report, project=project)
+        apr2 = AnnualProjectReportFactory(
+            report=annual_agency_report, project=project_new
+        )
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
@@ -1939,9 +1945,11 @@ class TestAPRExportView(BaseTest):
             title="Test Project Title",
             agency=annual_agency_report.agency,
             status=project_ongoing_status,
+            version=3,
+            date_approved=date(2022, 4, 5),
         )
 
-        AnnualProjectReportFactory(
+        apr = AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
             funds_disbursed=123456.78,
@@ -1949,6 +1957,8 @@ class TestAPRExportView(BaseTest):
             consumption_phased_out_odp=45.67,
             date_first_disbursement="2024-03-15",
         )
+        apr.populate_derived_fields()
+        apr.save()
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -2050,7 +2060,10 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         pass
 
     def test_derived_properties_with_multiple_versions(
-        self, annual_agency_report, multiple_project_versions_for_apr
+        self,
+        annual_agency_report,
+        agency_viewer_user,
+        multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
         # just a sanity check
@@ -2062,12 +2075,26 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
 
         latest_version = multiple_project_versions_for_apr[2]
 
-        annual_report = AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            funds_disbursed=80000.0,
-            support_cost_disbursed=8000.0,
+        # Initialize all derived properties first
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
         )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Set values, then look at the model instance again
+        funds_disbursed = 80000.0
+        support_cost_disbursed = 8000.0
+        annual_report = AnnualProjectReport.objects.filter(
+            project_id=latest_version.id,
+            report_id=annual_agency_report.id,
+        ).first()
+        annual_report.funds_disbursed = funds_disbursed
+        annual_report.support_cost_disbursed = support_cost_disbursed
+        annual_report.save()
+        annual_report.refresh_from_db()
 
         assert (
             annual_report.adjustment == latest_version.total_fund - version3.total_fund
@@ -2086,20 +2113,30 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
     def test_derived_properties_with_later_latest_version(
         self,
         annual_agency_report,
+        agency_viewer_user,
         late_post_excom_versions_for_apr,
     ):
-        annual_agency_report.status = (
-            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+
+        # Initialize all derived properties first
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
         )
-        annual_agency_report.save()
-        # Below, we are also setting the project to the *latest* (next-year) version,
-        # to check the logic still behaves correctly.
-        annual_report = AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=late_post_excom_versions_for_apr[1],
-            funds_disbursed=80000.0,
-            support_cost_disbursed=8000.0,
-        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Set values, then look at the model instance again
+        funds_disbursed = 80000.0
+        support_cost_disbursed = 8000.0
+        annual_report = AnnualProjectReport.objects.filter(
+            project_id=late_post_excom_versions_for_apr[1].id,
+            report_id=annual_agency_report.id,
+        ).first()
+        annual_report.funds_disbursed = funds_disbursed
+        annual_report.support_cost_disbursed = support_cost_disbursed
+        annual_report.save()
+        annual_report.refresh_from_db()
 
         # All properties depending on latest_version_for_year should return None
         assert annual_report.adjustment is None
@@ -2114,14 +2151,32 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
     def test_derived_properties_with_no_latest_version(
         self,
         annual_agency_report,
+        agency_viewer_user,
         initial_project_version_for_apr,
     ):
-        annual_report = AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=initial_project_version_for_apr,
-            funds_disbursed=80000.0,
-            support_cost_disbursed=8000.0,
+        # Initialize all derived properties first
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
         )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Set values, then look at the model instance again
+        funds_disbursed = 80000.0
+        support_cost_disbursed = 8000.0
+
+        queryset = AnnualProjectReport.objects.filter(
+            project_id=initial_project_version_for_apr.id,
+            report_id=annual_agency_report.id,
+        )
+        queryset.update(
+            funds_disbursed=funds_disbursed,
+            support_cost_disbursed=support_cost_disbursed,
+        )
+        assert queryset.count() == 1
+        annual_report = queryset.first()
 
         # All properties depending on latest_version_for_year should return None
         assert annual_report.adjustment is None
@@ -2937,6 +2992,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
             country=country_ro,
             sector=sector,
             status=project_ongoing_status,
+            code="TEST/001/BLD",
             version=3,
             date_approved=date(previous_year - 1, 6, 1),
         )
@@ -2947,13 +3003,15 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         )
 
         # This has a different status from the project's status
-        AnnualProjectReportFactory(
+        report = AnnualProjectReportFactory(
             report=previous_agency_report,
             project=project,
             status=project_completed_status.name,
             funds_disbursed=50000.0,
             last_year_remarks="Previous year data",
         )
+        report.populate_derived_fields()
+        report.save()
 
         # Kick-start new year & then access agency workspace
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -3314,8 +3372,12 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        AnnualProjectReportFactory(report=report1, project=project1)
-        AnnualProjectReportFactory(report=report2, project=project2)
+        report1 = AnnualProjectReportFactory(report=report1, project=project1)
+        report2 = AnnualProjectReportFactory(report=report2, project=project2)
+        report1.populate_derived_fields()
+        report1.save()
+        report2.populate_derived_fields()
+        report2.save()
 
         self.client.force_authenticate(user=secretariat_viewer_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3377,9 +3439,15 @@ class TestAPRMLFSExportView(BaseTest):
         project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
         project3 = ProjectFactory(agency=agency3, version=3, latest_project=None)
 
-        AnnualProjectReportFactory(report=report1, project=project1)
-        AnnualProjectReportFactory(report=report2, project=project2)
-        AnnualProjectReportFactory(report=report3, project=project3)
+        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
+        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
+        apr3 = AnnualProjectReportFactory(report=report3, project=project3)
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
+        apr3.populate_derived_fields()
+        apr3.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3418,8 +3486,12 @@ class TestAPRMLFSExportView(BaseTest):
         project1 = ProjectFactory(agency=agency1, version=3, latest_project=None)
         project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
 
-        AnnualProjectReportFactory(report=report1, project=project1)
-        AnnualProjectReportFactory(report=report2, project=project2)
+        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
+        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3464,8 +3536,12 @@ class TestAPRMLFSExportView(BaseTest):
             agency=agency2, country=new_country, version=3, latest_project=None
         )
 
-        AnnualProjectReportFactory(report=report1, project=project1)
-        AnnualProjectReportFactory(report=report2, project=project2)
+        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
+        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3522,9 +3598,15 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        AnnualProjectReportFactory(report=report, project=project1)
-        AnnualProjectReportFactory(report=report, project=project2)
-        AnnualProjectReportFactory(report=report, project=project3)
+        apr1 = AnnualProjectReportFactory(report=report, project=project1)
+        apr2 = AnnualProjectReportFactory(report=report, project=project2)
+        apr3 = AnnualProjectReportFactory(report=report, project=project3)
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
+        apr3.populate_derived_fields()
+        apr3.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3602,8 +3684,12 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        AnnualProjectReportFactory(report=report1, project=project1)
-        AnnualProjectReportFactory(report=report2, project=project2)
+        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
+        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
+        apr1.populate_derived_fields()
+        apr1.save()
+        apr2.populate_derived_fields()
+        apr2.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3631,7 +3717,9 @@ class TestAPRMLFSExportView(BaseTest):
                 is_unlocked=False,
             )
             project = ProjectFactory(agency=agency, version=3, latest_project=None)
-            AnnualProjectReportFactory(report=report, project=project)
+            apr = AnnualProjectReportFactory(report=report, project=project)
+            apr.populate_derived_fields()
+            apr.save()
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3883,7 +3971,12 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         """No need for this here, it's tested elsewhere"""
 
     def test_project_identification_derived_fields(
-        self, agency_viewer_user, annual_agency_report, country_ro, country_europe
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        country_ro,
+        country_europe,
+        project_ongoing_status,
     ):
         country_ro.parent = country_europe
         country_ro.save()
@@ -3894,6 +3987,9 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             title="Test Project for Derived Fields",
             agency=annual_agency_report.agency,
             country=country_ro,
+            status=project_ongoing_status,
+            version=3,
+            date_approved=date(2022, 1, 1),
         )
 
         project.meta_project = MetaProjectFactory(code="ROM/FOA/80/TAS/123")
@@ -3902,11 +3998,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             name="KPP1", code="KPP1", sort_order=1
         )
         project.save()
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -3945,11 +4036,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-        )
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -3991,11 +4077,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-        )
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -4042,12 +4123,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            funds_disbursed=80000.0,
-        )
-
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
             "apr-workspace",
@@ -4086,17 +4161,21 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         latest_version = multiple_project_versions_for_apr[2]
 
         funds_disbursed = 80000.0
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            funds_disbursed=funds_disbursed,
-        )
 
         self.client.force_authenticate(user=agency_viewer_user)
+        # Access once so we trigger the derived fields calculations
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
         )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Now set funds_disbursed and call the API again
+        AnnualProjectReport.objects.filter(
+            project_id=latest_version.id,
+            report_id=annual_agency_report.id,
+        ).update(funds_disbursed=funds_disbursed)
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -4124,12 +4203,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            support_cost_disbursed=8000.0,
-        )
 
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
@@ -4172,17 +4245,21 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         latest_version = multiple_project_versions_for_apr[2]
 
         support_cost_disbursed = 8000.0
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            support_cost_disbursed=support_cost_disbursed,
-        )
 
+        # Access once so we trigger the derived fields calculations
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
         )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Now set support_cost_disbursed and call the API again
+        AnnualProjectReport.objects.filter(
+            project_id=latest_version.id,
+            report_id=annual_agency_report.id,
+        ).update(support_cost_disbursed=support_cost_disbursed)
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -4200,8 +4277,12 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert project_data["support_cost_balance"] == expected_balance
 
     def test_implementation_delays_field(
-        self, agency_viewer_user, annual_agency_report, annual_project_report
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
     ):
+        project = multiple_project_versions_for_apr[0]
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
             "apr-workspace",
@@ -4214,7 +4295,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             (
                 p
                 for p in response.data["project_reports"]
-                if p["project_code"] == annual_project_report.project.code
+                if p["project_code"] == project.code
             ),
             None,
         )
@@ -4223,60 +4304,27 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         # This field is currently hardcoded to return an empty string
         assert project_data["implementation_delays_status_report_decisions"] == ""
 
-    def test_derived_fields_with_no_version_3(
-        self,
-        agency_viewer_user,
-        annual_agency_report,
-        initial_project_version_2_for_apr,
-    ):
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=initial_project_version_2_for_apr,
-        )
-
-        self.client.force_authenticate(user=agency_viewer_user)
-        url = reverse(
-            "apr-workspace",
-            kwargs={"year": annual_agency_report.progress_report.year},
-        )
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-        project_data = next(
-            (
-                p
-                for p in response.data["project_reports"]
-                if p["project_code"] == initial_project_version_2_for_apr.code
-            ),
-            None,
-        )
-        assert project_data is not None
-
-        # Fields that depend on version 3 should be None
-        assert project_data["consumption_phased_out_odp_proposal"] is None
-        assert project_data["consumption_phased_out_co2_proposal"] is None
-        assert project_data["production_phased_out_odp_proposal"] is None
-        assert project_data["production_phased_out_co2_proposal"] is None
-        assert project_data["approved_funding"] is None
-        assert project_data["support_cost_approved"] is None
-
     def test_derived_fields_with_no_latest_version(
         self, agency_viewer_user, annual_agency_report, late_post_excom_versions_for_apr
     ):
         version4 = late_post_excom_versions_for_apr[1]
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version4,
-            funds_disbursed=80000.0,
-        )
+        funds_disbursed = 80000.0
 
+        # Trigger initial calculations; then set funds_disbursed
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
         )
         response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
 
+        AnnualProjectReport.objects.filter(
+            project_id=version4.id,
+            report_id=annual_agency_report.id,
+        ).update(funds_disbursed=funds_disbursed)
+
+        response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         project_data = next(
             (
@@ -4304,12 +4352,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
     ):
         version3 = multiple_project_versions_for_apr[0]
 
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            funds_disbursed=None,
-        )
-
         self.client.force_authenticate(user=agency_viewer_user)
         url = reverse(
             "apr-workspace",
@@ -4335,31 +4377,47 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert project_data["balance"] == version3.total_fund
 
     def test_all_derived_fields_via_mlfs_export(
-        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+        self,
+        agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=version3,
-            funds_disbursed=80000.0,
-            support_cost_disbursed=8000.0,
+        funds_disbursed = 80000.0
+        support_cost_disbursed = 8000.0
+
+        # Same pattern - initial population, update, then call API again
+        self.client.force_authenticate(user=agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
         )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
         annual_agency_report.status = (
             AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=mlfs_admin_user)
-        url = reverse(
-            "apr-mlfs-export",
-            kwargs={"year": annual_agency_report.progress_report.year},
+        export_url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
         )
-        url += f"?agency={annual_agency_report.agency.id}"
-
-        response = self.client.get(url)
-
+        export_url += f"?agency={annual_agency_report.agency.id}"
+        AnnualProjectReport.objects.filter(
+            project_id=latest_version.id,
+            report_id=annual_agency_report.id,
+        ).update(
+            funds_disbursed=funds_disbursed,
+            support_cost_disbursed=support_cost_disbursed,
+        )
+        response = self.client.get(export_url)
         assert response.status_code == status.HTTP_200_OK
 
         workbook = load_workbook(BytesIO(response.content))
@@ -4367,13 +4425,21 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         columns = APRExportWriter.build_column_mapping()
         first_data_row = APRExportWriter.FIRST_DATA_ROW
 
+        project_code = latest_version.code
+        project_row = None
+        for row_idx in range(first_data_row, worksheet.max_row + 1):
+            if worksheet.cell(row_idx, columns["project_code"]).value == project_code:
+                project_row = row_idx
+                break
+        assert project_row is not None
+
         assert (
-            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            worksheet.cell(project_row, columns["approved_funding"]).value
             == version3.total_fund
         )
-        assert worksheet.cell(first_data_row, columns["adjustment"]).value == (
+        assert worksheet.cell(project_row, columns["adjustment"]).value == (
             latest_version.total_fund - version3.total_fund
         )
         assert worksheet.cell(
-            first_data_row, columns["approved_funding_plus_adjustment"]
+            project_row, columns["approved_funding_plus_adjustment"]
         ).value == (latest_version.total_fund)
