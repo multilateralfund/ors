@@ -197,6 +197,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     computed_total_phase_out_odp_tonnes: string | null
     computed_total_phase_out_co2_tonnes: string | null
     transferred_from: number | null
+    editable_for_actual_fields: boolean
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
