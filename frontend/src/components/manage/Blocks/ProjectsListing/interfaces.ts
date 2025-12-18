@@ -189,6 +189,8 @@ export type ProjectTypeApi = ProjIdentifiers &
     psc_transferred: number
     transfer_meeting: string
     transfer_meeting_id: number | null
+    transfer_decision: string
+    transfer_decision_id: number | null
     transfer_excom_provision: string
     total_phase_out_metric_tonnes: string | null
     total_phase_out_odp_tonnes: string | null

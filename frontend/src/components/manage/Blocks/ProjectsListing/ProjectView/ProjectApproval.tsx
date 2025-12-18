@@ -85,6 +85,13 @@ const ProjectApproval = ({
                         project.transfer_meeting,
                       )}
                     </span>
+                  ) : fieldName === 'decision' ? (
+                    <span key="transferred_decision">
+                      {detailItem(
+                        tableColumns.transfer_decision,
+                        project.transfer_decision,
+                      )}
+                    </span>
                   ) : fieldName === 'excom_provision' ? (
                     <span
                       key="transfer_excom_provision"
