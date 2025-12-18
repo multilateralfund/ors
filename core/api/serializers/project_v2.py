@@ -540,6 +540,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    editable_for_actual_fields = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -581,6 +582,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "establishment_of_imp_exp_licensing_actual",
             "establishment_of_quota_systems_actual",
             "editable",
+            "editable_for_actual_fields",
             "ban_of_equipment_actual",
             "ban_of_substances_actual",
             "kwh_year_saved_actual",
@@ -614,6 +616,14 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         Check if the project is editable based on the user's permissions.
         """
         if obj.id in self.context.get("edit_queryset_ids", set()):
+            return True
+        return False
+
+    def get_editable_for_actual_fields(self, obj):
+        """
+        Check if the actual fields of the project are editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_actual_fields_queryset_ids", set()):
             return True
         return False
 

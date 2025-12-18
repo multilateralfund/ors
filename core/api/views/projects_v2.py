@@ -177,8 +177,15 @@ class ProjectV2ViewSet(
         projects_edit_queryset = self.filter_permissions_queryset(
             Project.objects.really_all(), results_for_edit=True
         )
+        projects_edit_for_actual_fields_queryset = self.filter_permissions_queryset(
+            Project.objects.really_all(),
+            results_for_edit_actual_fields=True,
+        )
         context["edit_queryset_ids"] = set(
             projects_edit_queryset.values_list("id", flat=True)
+        )
+        context["edit_actual_fields_queryset_ids"] = set(
+            projects_edit_for_actual_fields_queryset.values_list("id", flat=True)
         )
         cluster = self.request.data.get("cluster", None)
         if not cluster:
@@ -227,7 +234,9 @@ class ProjectV2ViewSet(
 
         return [DenyAll]
 
-    def filter_permissions_queryset(self, queryset, results_for_edit=False):
+    def filter_permissions_queryset(
+        self, queryset, results_for_edit=False, results_for_edit_actual_fields=False
+    ):
         """
         Filter the queryset based on the user's permissions.
         """
@@ -247,11 +256,18 @@ class ProjectV2ViewSet(
         if user.is_superuser:
             return queryset
 
+        if self.action == "edit_actual_fields" or results_for_edit_actual_fields:
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
+            queryset = queryset.filter(submission_status__name="Approved").exclude(
+                status__name__in=["Closed", "Transferred"]
+            )
         if self.action in ["update", "partial_update", "submit"] or results_for_edit:
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-
+            queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
             allowed_versions = set()
             limit_to_draft = False
 

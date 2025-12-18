@@ -88,7 +88,7 @@ class ProjectFileV2ViewSet(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-
+            queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
             allowed_versions = set()
             limit_to_draft = False
 
