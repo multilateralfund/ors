@@ -167,7 +167,6 @@
             "can_view_production_projects",
             "has_project_v2_view_access",
             "has_project_v2_edit_access",
-            "has_project_v2_edit_post_excom",
             "has_project_v2_draft_edit_access",
             "has_project_v2_submit_access",
             "has_project_v2_remove_association_access",

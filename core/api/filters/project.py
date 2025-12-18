@@ -179,6 +179,11 @@ class ProjectEnterpriseFilter(filters.FilterSet):
         queryset=Enterprise.objects.all(),
         widget=CSVWidget,
     )
+    agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="agency",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="enterprise__country",
         queryset=Country.objects.all(),
@@ -195,6 +200,7 @@ class ProjectEnterpriseFilter(filters.FilterSet):
             "project_id",
             "country_id",
             "status",
+            "agency_id",
         ]
 
 
@@ -212,16 +218,10 @@ class EnterpriseFilter(filters.FilterSet):
         choices=EnterpriseStatus.choices,
         widget=CSVWidget,
     )
-    agencies = filters.ModelMultipleChoiceFilter(
-        field_name="agencies",
-        queryset=Agency.objects.all(),
-        widget=CSVWidget,
-    )
 
     class Meta:
         model = Enterprise
         fields = [
             "country_id",
             "status",
-            "agencies",
         ]

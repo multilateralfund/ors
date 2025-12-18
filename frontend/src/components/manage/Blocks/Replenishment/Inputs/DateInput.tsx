@@ -44,6 +44,14 @@ export default function DateInput(props: IDateInputProps) {
     [value],
   )
 
+  const openPicker = () => {
+    const input = realInput.current
+
+    if (input?.showPicker) {
+      input.showPicker()
+    }
+  }
+
   return (
     <div className="relative flex flex-grow">
       <input
@@ -60,6 +68,7 @@ export default function DateInput(props: IDateInputProps) {
         value={value}
         tabIndex={0}
         onFocus={() => setInputMode(true)}
+        onPointerDown={() => openPicker()}
         onBlur={() => setInputMode(false)}
         onChange={onChange}
         {...rest}
@@ -76,6 +85,10 @@ export default function DateInput(props: IDateInputProps) {
         type="text"
         value={maskDate}
         onChange={() => false}
+        onPointerDown={(e) => {
+          e.preventDefault()
+          openPicker()
+        }}
         onFocus={() => setInputMode(true)}
         {...rest}
       />

@@ -1,10 +1,7 @@
 import { useContext } from 'react'
 
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { FormattedNumberInput } from '../../../Replenishment/Inputs'
-import { getFieldDefaultProps, handleChangeNumericValues } from '../utils'
-import { tableColumns } from '../../constants'
+import { EnterpriseNumberField } from '../FormHelperComponents'
 import {
   PEnterpriseDataProps,
   EnterpriseFundingDetails,
@@ -22,34 +19,65 @@ const PEnterpriseFundingDetailsSection = ({
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
   const isDisabled = !canEditProjectEnterprise
 
-  const sectionId = 'funding_details'
-  const sectionData: EnterpriseFundingDetails = enterpriseData[sectionId]
+  const sectionIdentifier = 'funding_details'
+  const sectionData = enterpriseData[sectionIdentifier]
+
+  const fields = [
+    {
+      slice: [0, 3],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+    {
+      slice: [3, 5],
+      getWidth: (field: string) =>
+        field === 'funds_approved' ? 'w-[250px]' : '',
+      getPrefix: (field: string) => (field === 'funds_approved' ? '$' : ''),
+      isDisabled: true,
+    },
+    {
+      slice: [5, 7],
+      width: 'w-[250px]',
+      getPrefix: (field: string) =>
+        field !== 'cost_effectiveness_actual' ? '$' : '',
+      isDisabled,
+    },
+    {
+      slice: [7, 9],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+    {
+      slice: [9, 11],
+      width: 'w-[250px]',
+      getPrefix: () => '$',
+      isDisabled,
+    },
+  ]
 
   return (
-    <div className="flex flex-wrap gap-x-20 gap-y-3">
-      {map(keys(sectionData), (field) => (
-        <div>
-          <Label>{tableColumns[field]} (US $)</Label>
-          <FormattedNumberInput
-            id={field}
-            disabled={isDisabled}
-            withoutDefaultValue={true}
-            prefix={'$'}
-            value={
-              (sectionData[
-                field as keyof EnterpriseFundingDetails
-              ] as string) ?? ''
-            }
-            onChange={(event) =>
-              handleChangeNumericValues<PEnterpriseData>(
-                field,
-                setEnterpriseData,
-                event,
-                sectionId,
-              )
-            }
-            {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
-          />
+    <div className="flex flex-col gap-4">
+      {fields.map(({ slice, width, getWidth, getPrefix, isDisabled }, idx) => (
+        <div key={idx} className="flex flex-wrap gap-x-20 gap-y-4">
+          {map(keys(sectionData).slice(...slice), (field) => (
+            <div key={field} className={getWidth ? getWidth(field) : width}>
+              <EnterpriseNumberField<PEnterpriseData, EnterpriseFundingDetails>
+                enterpriseData={enterpriseData.funding_details}
+                prefix={getPrefix(field)}
+                dataType="decimal"
+                {...{
+                  setEnterpriseData,
+                  sectionIdentifier,
+                  field,
+                  isDisabled,
+                  hasSubmitted,
+                  errors,
+                }}
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>

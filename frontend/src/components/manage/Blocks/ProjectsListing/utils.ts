@@ -763,15 +763,21 @@ export const getFileFromMetadata = async (fileMeta: {
   return new File([blob], fileMeta.filename, { type: contentType })
 }
 
-export const formatErrors = (errors: { [key: string]: string[] }) =>
-  Object.entries(errors)
+export const formatErrors = (
+  errors: { [key: string]: string[] },
+  fieldNames?: Record<string, string>,
+) => {
+  const crtFieldNames = fieldNames ?? tableColumns
+
+  return Object.entries(errors)
     .filter(([, errorMsgs]) => errorMsgs.length > 0)
     .flatMap(([field, errorMsgs]) =>
       errorMsgs.map((errMsg, idx) => ({
         id: `${field}-${idx}`,
-        message: `${tableColumns[field] ?? field}: ${errMsg}`,
+        message: `${crtFieldNames[field] ?? field}: ${errMsg}`,
       })),
     )
+}
 
 export const getHasNoFiles = (
   id: number,

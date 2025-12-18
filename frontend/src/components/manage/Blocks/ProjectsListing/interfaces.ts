@@ -346,19 +346,23 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type PEnterpriseType = EnterpriseFundingDetails & {
-  id: number | null
-  status: string
-  enterprise: EnterpriseType
-  ods_odp: EnterpriseSubstanceDetails[]
-  funds_approved: string | null
-  cost_effectiveness_approved: string | null
-}
+export type PEnterpriseType = EnterpriseDetails &
+  EnterpriseSubstanceFields &
+  EnterpriseFundingDetails &
+  EnterpriseRemarks & {
+    id: number | null
+    status: string
+    enterprise: EnterpriseType
+    ods_odp: EnterpriseSubstanceDetails[]
+  }
 
 export interface PEnterpriseData {
   overview: EnterpriseOverview
+  details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
+  substance_fields: EnterpriseSubstanceFields
   funding_details: EnterpriseFundingDetails
+  remarks: EnterpriseRemarks
 }
 
 export type PEnterpriseDataType = {
@@ -384,14 +388,29 @@ export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
 export interface EnterpriseOverview {
   name: string
-  agencies: number[]
   country: number | null
   location: string
+  stage: string
+  sector: number | null
+  subsector: number | null
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
-  remarks: string
+  revision: string | null
+  date_of_revision: string | null
   linkStatus?: string
+}
+
+export interface EnterpriseDetails {
+  agency: number | null
+  project_type: number | null
+  planned_completion_date: string | null
+  actual_completion_date: string | null
+  project_duration: string | null
+  date_of_approval: string | null
+  meeting: number | null
+  excom_provision: string
+  date_of_report: string | null
 }
 
 export type EnterpriseType = EnterpriseOverview & {
@@ -403,17 +422,34 @@ export type EnterpriseType = EnterpriseOverview & {
 export interface EnterpriseSubstanceDetails {
   ods_substance: number | null
   ods_blend: number | null
-  phase_out_mt: string | null
-  ods_replacement: string
-  ods_replacement_phase_in: string | null
+  consumption: string | null
+  selected_alternative: string
+  chemical_phased_in: string | null
+}
+
+export interface EnterpriseSubstanceFields {
+  chemical_phased_out: string | null
+  impact: string | null
 }
 
 export interface EnterpriseFundingDetails {
   capital_cost_approved: string | null
   operating_cost_approved: string | null
   funds_disbursed: string | null
+  funds_approved: string | null
+  cost_effectiveness_approved: string | null
+  capital_cost_disbursed: string | null
+  operating_cost_disbursed: string | null
+  cost_effectiveness_actual: string | null
+  co_financing_planned: string | null
+  co_financing_actual: string | null
+  funds_transferred: string | null
 }
 
+export interface EnterpriseRemarks {
+  agency_remarks: string
+  secretariat_remarks: string
+}
 export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void

@@ -13,7 +13,7 @@ import { useStore } from '@ors/store'
 
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { Divider } from '@mui/material'
-import { find } from 'lodash'
+import { find, map } from 'lodash'
 
 const ProjectIdentifiers = ({
   project,
@@ -70,6 +70,14 @@ const ProjectIdentifiers = ({
     [fieldHistory],
   )
 
+  const formattedHistoryDecision = map(
+    getFieldHistory('post_excom_decision'),
+    (history) => ({
+      ...history,
+      value: history.value ? history.value.number : null,
+    }),
+  )
+
   return (
     <>
       <SectionTitle>Identifiers</SectionTitle>
@@ -113,12 +121,23 @@ const ProjectIdentifiers = ({
         <div>
           <Divider className="my-6" />
           <SectionTitle>Post ExCom updates</SectionTitle>
-          <div>
-            {detailItem(
-              'Meeting',
-              project.post_excom_meeting?.toString() ?? '-',
-            )}
-            {detailItem('Decision', project.post_excom_decision?.number ?? '-')}
+          <div className="flex w-full flex-col gap-4">
+            <div className={viewColumnsClassName}>
+              {detailItem(
+                'Meeting',
+                project.post_excom_meeting?.toString() ?? '-',
+                {
+                  fieldHistory: getFieldHistory('post_excom_meeting'),
+                },
+              )}
+              {detailItem(
+                'Decision',
+                project.post_excom_decision?.number ?? '-',
+                {
+                  fieldHistory: formattedHistoryDecision,
+                },
+              )}
+            </div>
           </div>
         </div>
       ) : null}
