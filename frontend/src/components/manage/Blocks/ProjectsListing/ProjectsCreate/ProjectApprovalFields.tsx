@@ -155,9 +155,9 @@ const ProjectApprovalFields = ({
                   onChange={(_, value) =>
                     handleChangeDecision(value as DecisionOption)
                   }
-                  getOptionLabel={(option) => {
-                    return getOptionLabel(decisionOptions, option, 'value')
-                  }}
+                  getOptionLabel={(option) =>
+                    getOptionLabel(decisionOptions, option, 'value')
+                  }
                   {...{
                     ...defaultProps,
                     FieldProps: {
@@ -168,6 +168,28 @@ const ProjectApprovalFields = ({
                 />
               </div>
               <FieldErrorIndicator errors={errors} field="Decision" />
+            </div>
+          </div>
+        )}
+        {project?.status === 'Transferred' && (
+          <div>
+            <Label>{tableColumns.transfer_decision}</Label>
+            <div className="w-[16rem]">
+              <Field
+                widget="autocomplete"
+                options={[]}
+                disabled={true}
+                value={project?.transfer_decision_id}
+                getOptionLabel={(option) =>
+                  getOptionLabel(decisionOptions, option, 'value')
+                }
+                {...{
+                  ...defaultProps,
+                  FieldProps: {
+                    className: defaultProps.FieldProps.className + ' w-[16rem]',
+                  },
+                }}
+              />
             </div>
           </div>
         )}
