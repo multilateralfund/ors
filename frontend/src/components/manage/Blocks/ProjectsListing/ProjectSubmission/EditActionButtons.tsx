@@ -283,7 +283,7 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
-    if (!editable && editable_for_actual_fields) {
+    if (!editable && editable_for_actual_fields && !postExComUpdate) {
       try {
         const actualData = getActualData(
           projectData,
