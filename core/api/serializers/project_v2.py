@@ -542,8 +542,14 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
-    transfer_meeting = serializers.PrimaryKeyRelatedField(
+    transfer_meeting = serializers.SerializerMethodField()
+    transfer_meeting_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    transfer_decision = serializers.SlugField(read_only=True)
+    transfer_decision_id = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        queryset=Decision.objects.all().values_list("id", flat=True),
     )
     component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
@@ -611,6 +617,8 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "quantity_hfc_23_by_product_emitted_actual",
             "transfer_meeting",
             "transfer_meeting_id",
+            "transfer_decision",
+            "transfer_decision_id",
             "transfer_excom_provision",
             "total_phase_out_metric_tonnes",
             "total_phase_out_odp_tonnes",
@@ -644,6 +652,11 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset = obj.project_history.all().select_related("project", "user")
         serializer = ProjectHistorySerializer(queryset, many=True)
         return serializer.data
+
+    def get_transfer_meeting(self, obj):
+        if obj.transfer_meeting:
+            return obj.transfer_meeting.number
+        return None
 
     def get_versions(self, obj, with_field_data=False):
         """
@@ -1602,10 +1615,15 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.serial_number,
             new_transfer_project.metacode,
         )
+        new_transfer_project.excom_provision = self.validated_data.get(
+            "transfer_excom_provision"
+        )
         new_transfer_project.serial_number = Project.objects.get_next_serial_number(
             new_transfer_project.country.id
         )
         new_transfer_project.transferred_from = project
+        if self.validated_data.get("agency") != project.lead_agency:
+            new_transfer_project.lead_agency_submitting_on_behalf = True
         new_transfer_project.save()
 
         project.transfer_meeting = self.validated_data.get("transfer_meeting")
