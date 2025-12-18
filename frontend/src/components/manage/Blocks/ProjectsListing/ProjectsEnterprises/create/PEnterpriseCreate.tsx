@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -82,8 +80,8 @@ const PEnterpriseCreate = ({
       ...prevData,
       funding_details: {
         ...prevData['funding_details'],
-        cost_effectiveness_approved: costEffectivenessApproved,
         funds_approved: fundsApproved,
+        cost_effectiveness_approved: costEffectivenessApproved,
       },
     }))
   }, [costEffectivenessApproved, fundsApproved])
@@ -92,14 +90,14 @@ const PEnterpriseCreate = ({
   const meetings = projectSlice.meetings.data
 
   useEffect(() => {
-    const crtMeeting =
+    const meetingDate =
       find(meetings, (meeting) => meeting.id === details.meeting)?.date ?? null
 
     setEnterpriseData((prevData) => ({
       ...prevData,
       details: {
         ...prevData['details'],
-        date_of_approval: crtMeeting,
+        date_of_approval: meetingDate,
       },
     }))
   }, [details.meeting])
@@ -111,8 +109,8 @@ const PEnterpriseCreate = ({
   const searchErrors =
     !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
   const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
-  const substanceErrors = getFieldErrors(substance_fields, errors)
   const detailsErrors = getFieldErrors(details, errors)
+  const substanceErrors = getFieldErrors(substance_fields, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
   const remarksErrors = getFieldErrors(remarks, errors)
 
@@ -208,9 +206,9 @@ const PEnterpriseCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Substance details</div>
-          {(formattedOdsOdpErrors.length > 0 ||
+          {(hasSectionErrors(substanceErrors) ||
             values(odsOdpNonFieldErrors)[0].length > 0 ||
-            hasSectionErrors(substanceErrors)) && (
+            formattedOdsOdpErrors.length > 0) && (
             <SectionErrorIndicator errors={[]} />
           )}
         </div>

@@ -357,7 +357,7 @@ export type PEnterpriseType = EnterpriseDetails &
   }
 
 export interface PEnterpriseData {
-  overview: EnterpriseOverview
+  overview: EnterpriseOverview & { id: number | null; status?: string }
   details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields

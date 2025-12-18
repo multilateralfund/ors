@@ -6,8 +6,8 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FormattedNumberInput } from '../../../Replenishment/Inputs'
+import { FieldErrorIndicator, SubmitButton } from '../../HelperComponents'
 import { EnterpriseNumberField } from '../FormHelperComponents'
-import { SubmitButton } from '../../HelperComponents'
 import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
@@ -28,7 +28,7 @@ import {
   disabledClassName,
 } from '../../constants'
 
-import { find, get, isArray, isNil, isObject, map, sortBy, split } from 'lodash'
+import { find, get, isObject, map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -36,7 +36,6 @@ import cx from 'classnames'
 const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
-  hasSubmitted,
   errors,
   odsOdpErrors,
 }: PEnterpriseDataProps & {
@@ -48,7 +47,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
   const sectionIdentifier = 'substance_fields'
   const sectionId = 'substance_details'
-  const sectionData = enterpriseData[sectionId] || []
+  const substanceData = enterpriseData[sectionId] || []
 
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,
@@ -155,39 +154,6 @@ const PEnterpriseSubstanceDetailsSection = ({
     })
   }
 
-  const getIsInputDisabled = (
-    hasSubmitted: boolean,
-    errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-    field: string,
-    index?: number,
-  ) => {
-    const isError =
-      isArray(errors) && !isNil(index)
-        ? errors?.[index]?.[field]?.length > 0
-        : !isArray(errors) && errors?.[field]?.length > 0
-
-    return hasSubmitted && isError
-  }
-
-  const getErrors = (field: string, index: number) =>
-    getIsInputDisabled(hasSubmitted, odsOdpErrors, field, index)
-
-  const getFieldDefaultProps = (
-    field: string,
-    index: number,
-    isFieldDisabled: boolean,
-  ) => {
-    return {
-      ...{
-        ...defaultPropsSimpleField,
-        className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          'border-red-500': getErrors(field, index),
-          [disabledClassName]: isFieldDisabled,
-        }),
-      },
-    }
-  }
-
   const getSubstanceValue = (substance: EnterpriseSubstanceDetails) =>
     substance.ods_substance
       ? `substance_${substance.ods_substance}`
@@ -195,9 +161,16 @@ const PEnterpriseSubstanceDetailsSection = ({
         ? `blend_${substance.ods_blend}`
         : null
 
+  const getFieldDefaultProps = (isFieldDisabled: boolean) => ({
+    ...defaultPropsSimpleField,
+    className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
+      [disabledClassName]: isFieldDisabled,
+    }),
+  })
+
   return (
     <>
-      <div className="mb-2 flex flex-wrap gap-x-20 gap-y-4">
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(substanceDecimalFields, (field) => (
           <EnterpriseNumberField<PEnterpriseData, EnterpriseSubstanceFields>
             dataType="decimal"
@@ -207,7 +180,6 @@ const PEnterpriseSubstanceDetailsSection = ({
               sectionIdentifier,
               field,
               isDisabled,
-              hasSubmitted,
               errors,
             }}
           />
@@ -216,76 +188,94 @@ const PEnterpriseSubstanceDetailsSection = ({
 
       <Divider className="my-6" />
 
-      <div className="flex flex-col flex-wrap gap-y-4">
-        {sectionData.map((substance, index) => (
+      <div className="flex flex-col flex-wrap gap-y-2">
+        {substanceData.map((substance, index) => (
           <>
-            <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
+            <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
               <>
                 <div>
                   <Label>{enterpriseFieldsMapping.ods_substance}</Label>
-                  <Field
-                    widget="autocomplete"
-                    options={options}
-                    disabled={isDisabled}
-                    value={getSubstanceValue(substance)}
-                    onChange={(_, value) =>
-                      handleChangeDropdownValues(value, index)
-                    }
-                    getOptionLabel={(option: any) =>
-                      (isObject(option)
-                        ? get(option, 'label')
-                        : (find(options, { id: option }) as OptionsType)
-                            ?.label) || ''
-                    }
-                    Input={{
-                      error:
-                        getErrors('ods_substance', index) ||
-                        getErrors('ods_blend', index),
-                    }}
-                    {...defaultProps}
-                    FieldProps={{
-                      className:
-                        defaultProps.FieldProps.className + ' w-full min-w-64',
-                    }}
-                  />
+                  <div className="flex items-center">
+                    <Field
+                      widget="autocomplete"
+                      options={options}
+                      disabled={isDisabled}
+                      value={getSubstanceValue(substance)}
+                      onChange={(_, value) =>
+                        handleChangeDropdownValues(value, index)
+                      }
+                      getOptionLabel={(option: any) =>
+                        (isObject(option)
+                          ? get(option, 'label')
+                          : (find(options, { id: option }) as OptionsType)
+                              ?.label) || ''
+                      }
+                      {...defaultProps}
+                      FieldProps={{
+                        className:
+                          defaultProps.FieldProps.className +
+                          ' w-full min-w-64',
+                      }}
+                    />
+                    <FieldErrorIndicator
+                      field="ods_substance"
+                      errors={odsOdpErrors}
+                    />
+                    <FieldErrorIndicator
+                      field="ods_blend"
+                      errors={odsOdpErrors}
+                    />
+                  </div>
                 </div>
                 {map(substanceFields, (field) =>
                   field !== 'selected_alternative' ? (
                     <div>
                       <Label>{enterpriseFieldsMapping[field]}</Label>
-                      <FormattedNumberInput
-                        id={field}
-                        disabled={isDisabled}
-                        withoutDefaultValue={true}
-                        value={
-                          (substance[
-                            field as keyof EnterpriseSubstanceDetails
-                          ] as string) ?? ''
-                        }
-                        onChange={(event) =>
-                          handleChangeNumericValues(event, field, index)
-                        }
-                        {...getFieldDefaultProps(field, index, isDisabled)}
-                      />
+                      <div className="flex items-center">
+                        <FormattedNumberInput
+                          id={field}
+                          disabled={isDisabled}
+                          withoutDefaultValue={true}
+                          value={
+                            (substance[
+                              field as keyof EnterpriseSubstanceDetails
+                            ] as string) ?? ''
+                          }
+                          onChange={(event) =>
+                            handleChangeNumericValues(event, field, index)
+                          }
+                          {...getFieldDefaultProps(isDisabled)}
+                        />
+                        <FieldErrorIndicator
+                          {...{ field }}
+                          errors={odsOdpErrors}
+                        />
+                      </div>
                     </div>
                   ) : (
                     <div>
                       <Label>{enterpriseFieldsMapping[field]}</Label>
-                      <SimpleInput
-                        id={field}
-                        disabled={isDisabled}
-                        value={
-                          (substance[
-                            field as keyof EnterpriseSubstanceDetails
-                          ] as string) ?? ''
-                        }
-                        onFocus={onTextareaFocus}
-                        onChange={(event) =>
-                          handleChangeTextValues(event, field, index)
-                        }
-                        type="text"
-                        {...getFieldDefaultProps(field, index, isDisabled)}
-                      />
+                      <div className="flex items-center">
+                        <SimpleInput
+                          id={field}
+                          disabled={isDisabled}
+                          value={
+                            (substance[
+                              field as keyof EnterpriseSubstanceDetails
+                            ] as string) ?? ''
+                          }
+                          onFocus={onTextareaFocus}
+                          onChange={(event) =>
+                            handleChangeTextValues(event, field, index)
+                          }
+                          type="text"
+                          {...getFieldDefaultProps(isDisabled)}
+                        />
+                        <FieldErrorIndicator
+                          {...{ field }}
+                          errors={odsOdpErrors}
+                        />
+                      </div>
                     </div>
                   ),
                 )}
@@ -300,7 +290,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                 />
               )}
             </div>
-            {index !== sectionData.length - 1 && <Divider />}
+            {index !== substanceData.length - 1 && <Divider />}
           </>
         ))}
       </div>
@@ -308,7 +298,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         title="Add substance"
         isDisabled={isDisabled}
         onSubmit={onAddSubstance}
-        className={cx('h-8', { 'mt-6': sectionData.length > 0 })}
+        className={cx('h-8', { 'mt-6': substanceData.length > 0 })}
       />
     </>
   )

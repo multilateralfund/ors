@@ -6,7 +6,6 @@ import { handleErrors } from '../FormHelperComponents'
 import { dropDownClassName, enabledButtonClassname } from '../../constants'
 import {
   EnterpriseActionButtons,
-  EnterpriseType,
   PEnterpriseData,
   PEnterpriseType,
 } from '../../interfaces'
@@ -24,7 +23,6 @@ const PEnterpriseEditActionButtons = ({
   setEnterpriseId,
   setEnterpriseName,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & {
@@ -41,7 +39,14 @@ const PEnterpriseEditActionButtons = ({
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
 
-  const overview = enterpriseData.overview as EnterpriseType
+  const {
+    overview,
+    details,
+    substance_details,
+    substance_fields,
+    funding_details,
+    remarks,
+  } = enterpriseData
   const disableSubmit = !(overview.name && overview.id)
 
   const editEnterprise = async () => {
@@ -50,15 +55,6 @@ const PEnterpriseEditActionButtons = ({
     setOtherErrors('')
 
     try {
-      const {
-        overview,
-        details,
-        substance_details,
-        substance_fields,
-        funding_details,
-        remarks,
-      } = enterpriseData
-
       const data = {
         project: project_id,
         enterprise: omit(overview, ['status', 'linkStatus']),
@@ -90,7 +86,6 @@ const PEnterpriseEditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
@@ -120,7 +115,7 @@ const PEnterpriseEditActionButtons = ({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}`}

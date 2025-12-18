@@ -14,7 +14,6 @@ const PEnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
@@ -61,12 +60,11 @@ const PEnterpriseCreateActionButtons = ({
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}`}

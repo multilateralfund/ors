@@ -8,6 +8,7 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { FieldErrorIndicator } from '../../HelperComponents'
 import {
   EnterpriseDateField,
   EnterpriseNumberField,
@@ -31,20 +32,18 @@ const PEnterpriseDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   projectData,
-  hasSubmitted,
   errors,
 }: PEnterpriseDataProps & { projectData: ProjectTypeApi }) => {
+  const { agencies, project_types } = useContext(ProjectsDataContext)
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
   const isDisabled = !canEditProjectEnterprise
 
-  const { agencies, project_types } = useContext(ProjectsDataContext)
   const { agency_id, project_type_id, project_end_date, meeting_id } =
     projectData
+  const isMeetingDisabled = isDisabled || !!meeting_id
 
   const sectionIdentifier = 'details'
   const { details } = enterpriseData
-
-  const isMeetingDisabled = isDisabled || !!meeting_id
 
   const selectFields = [
     {
@@ -70,8 +69,8 @@ const PEnterpriseDetailsSection = ({
   }
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="flex flex-wrap gap-x-20 gap-y-4">
+    <div className="flex flex-col gap-y-2">
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields, (field) => (
           <EnterpriseSelectField<PEnterpriseData, EnterpriseDetails>
             enterpriseData={details}
@@ -80,13 +79,12 @@ const PEnterpriseDetailsSection = ({
               setEnterpriseData,
               sectionIdentifier,
               field,
-              hasSubmitted,
               errors,
             }}
           />
         ))}
       </div>
-      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-4">
+      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         {map(detailsDateFields.slice(0, 2), (field) => (
           <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
             enterpriseData={details}
@@ -99,7 +97,6 @@ const PEnterpriseDetailsSection = ({
               setEnterpriseData,
               sectionIdentifier,
               field,
-              hasSubmitted,
               errors,
             }}
           />
@@ -112,26 +109,27 @@ const PEnterpriseDetailsSection = ({
             setEnterpriseData,
             sectionIdentifier,
             isDisabled,
-            hasSubmitted,
             errors,
           }}
         />
       </div>
-      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-4">
+      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         <div className="w-40">
           <Label>{enterpriseFieldsMapping.meeting}</Label>
-          <PopoverInput
-            label={getMeetingNr(details?.meeting ?? undefined)?.toString()}
-            options={useMeetingOptions()}
-            onChange={handleChangeMeeting}
-            onClear={() => handleChangeMeeting()}
-            disabled={isMeetingDisabled}
-            clearBtnClassName="right-1"
-            className={cx('!m-0 h-10 !py-1', {
-              [disabledClassName]: isMeetingDisabled,
-            })}
-            withClear={!isMeetingDisabled}
-          />
+          <div className="flex items-center">
+            <PopoverInput
+              label={getMeetingNr(details?.meeting ?? undefined)?.toString()}
+              options={useMeetingOptions()}
+              onChange={handleChangeMeeting}
+              onClear={() => handleChangeMeeting()}
+              disabled={isMeetingDisabled}
+              clearBtnClassName="right-1"
+              className={cx('!m-0 h-10 !py-1', {
+                [disabledClassName]: isMeetingDisabled,
+              })}
+            />
+            <FieldErrorIndicator field="meeting" {...{ errors }} />
+          </div>
         </div>
         {map(detailsDateFields.slice(2), (field) => (
           <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
@@ -141,7 +139,6 @@ const PEnterpriseDetailsSection = ({
               setEnterpriseData,
               sectionIdentifier,
               field,
-              hasSubmitted,
               errors,
             }}
           />
@@ -155,7 +152,6 @@ const PEnterpriseDetailsSection = ({
             setEnterpriseData,
             sectionIdentifier,
             isDisabled,
-            hasSubmitted,
             errors,
           }}
         />
