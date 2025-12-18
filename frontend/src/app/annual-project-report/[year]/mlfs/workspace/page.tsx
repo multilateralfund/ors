@@ -282,6 +282,7 @@ export default function APRMLFSWorkspace() {
   }
 
   const saveAPR = async () => {
+    setValidationErrors([])
     if (!gridRef.current) {
       return
     }

@@ -18,7 +18,11 @@ import Button from '@mui/material/Button'
 import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
-import { IoClipboardOutline, IoInformationCircleOutline } from 'react-icons/io5'
+import {
+  IoAlertCircle,
+  IoClipboardOutline,
+  IoInformationCircleOutline,
+} from 'react-icons/io5'
 import {
   AnnualAgencyProjectReport,
   AnnualProjectReport,
@@ -92,13 +96,6 @@ export default function APREdit() {
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
-    group: TABS[activeTab].fieldsGroup,
-    clipboardEdit: true,
-    rows,
-    setRows,
-  })
-  const { columnDefs: allColumnDefs } = useGetColumnDefs({
-    year: year!,
     clipboardEdit: true,
     rows,
     setRows,
@@ -116,6 +113,7 @@ export default function APREdit() {
     : apr && (apr.status === 'draft' || apr.is_unlocked)
 
   const exportAll = async () => {
+    setValidationErrors([])
     if (!gridRef.current) {
       return
     }
@@ -125,7 +123,7 @@ export default function APREdit() {
       allData.push(node.data)
     })
 
-    const { formErrors, hasErrors } = validateRows(allData, allColumnDefs)
+    const { formErrors, hasErrors } = validateRows(allData, columnDefs)
     if (hasErrors) {
       setValidationErrors(formErrors)
       enqueueSnackbar(<>Fix the validation errors before saving.</>, {
@@ -199,10 +197,29 @@ export default function APREdit() {
             aria-label="Anual Project Report form tabs"
           >
             {TABS.map((tab, index) => {
+              const tabFields = columnDefs
+                .filter((colDef) => colDef.group === tab.fieldsGroup)
+                .map((colDef) => colDef.headerName)
+
+              const tabHasErrors = validationErrors.some((rowErrors) =>
+                tabFields.some((field) => rowErrors[field]),
+              )
+
               return (
                 <Tab
                   key={tab.fieldsGroup}
-                  label={tab.label}
+                  label={
+                    <div className="flex gap-x-2">
+                      <span>{tab.label}</span>
+                      {tabHasErrors && (
+                        <IoAlertCircle
+                          className="rounded-full bg-[#002A3C]"
+                          color="#EBFF00"
+                          size={24}
+                        />
+                      )}
+                    </div>
+                  }
                   id={`tab-${index}`}
                   aria-controls={`tabpanel-${index}`}
                 />
@@ -287,7 +304,11 @@ export default function APREdit() {
                 )}
                 gridRef={gridRef}
                 dataTypeDefinitions={dataTypeDefinitions}
-                columnDefs={columnDefs}
+                columnDefs={columnDefs.filter(
+                  (colDef) =>
+                    colDef.field === 'project_code' ||
+                    colDef.group === TABS[activeTab].fieldsGroup,
+                )}
                 defaultColDef={defaultColDef}
                 rowData={rows}
                 isDataFormatted={true}

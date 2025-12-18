@@ -70,7 +70,6 @@ interface APRTableColumn {
 }
 
 interface BaseColumnDefOptions {
-  group?: string | null
   inlineEdit?: boolean
   year: string
 }
@@ -91,7 +90,6 @@ type ColumnDefOptions = ClipboardDisabled | ClipboardEnabled
 
 export default function useGetColumnDefs({
   year,
-  group = null,
   inlineEdit = false,
   clipboardEdit = false,
   rows,
@@ -582,14 +580,7 @@ export default function useGetColumnDefs({
     },
   }
 
-  let columns = Object.values(tableColumns)
-  if (group) {
-    columns = columns.filter(
-      // Always include project code
-      (col) => col.fieldName === 'project_code' || col.group === group,
-    )
-  }
-
+  const columns = Object.values(tableColumns)
   const columnDefs = columns.map((c) => {
     const canBeEdited = c.input && (clipboardEdit || inlineEdit)
 
@@ -598,6 +589,7 @@ export default function useGetColumnDefs({
       field: c.fieldName,
       editable: inlineEdit && c.input,
       canBeEdited,
+      group: c.group,
       // Clipboard editing requires a custom header component
       headerComponent:
         clipboardEdit && c.input && rows && setRows

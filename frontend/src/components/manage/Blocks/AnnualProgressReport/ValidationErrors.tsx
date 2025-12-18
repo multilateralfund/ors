@@ -8,24 +8,20 @@ export default function ValidationErrors({
   validationErrors: Record<string, string[]>[]
 }) {
   return (
-    <Alert
-      className="flex-1"
-      icon={<IoBan size={24} />}
-      severity="warning"
-    >
+    <Alert className="flex-1" icon={<IoBan size={24} />} severity="warning">
       <ul className="m-0 p-0">
         {validationErrors.map((rowErrors, index) => {
           if (Object.keys(rowErrors).length === 0) {
-            return <></>
+            return <React.Fragment key={index}></React.Fragment>
           }
 
           return (
-            <li>
+            <li key={index}>
               Row {index + 1}
               <ul className="ml-2 pl-2">
                 {Object.entries(rowErrors).map(([header, errors]) => {
                   return (
-                    <li>
+                    <li key={header}>
                       <span className="font-bold">{header}</span>:{' '}
                       {errors.join(',')}
                     </li>
