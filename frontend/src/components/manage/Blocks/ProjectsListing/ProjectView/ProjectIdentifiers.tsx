@@ -121,21 +121,23 @@ const ProjectIdentifiers = ({
         <div>
           <Divider className="my-6" />
           <SectionTitle>Post ExCom updates</SectionTitle>
-          <div className="flex flex-col gap-y-4">
-            {detailItem(
-              'Meeting',
-              project.post_excom_meeting?.toString() ?? '-',
-              {
-                fieldHistory: getFieldHistory('post_excom_meeting'),
-              },
-            )}
-            {detailItem(
-              'Decision',
-              project.post_excom_decision?.number ?? '-',
-              {
-                fieldHistory: formattedHistoryDecision,
-              },
-            )}
+          <div className="flex w-full flex-col gap-4">
+            <div className={viewColumnsClassName}>
+              {detailItem(
+                'Meeting',
+                project.post_excom_meeting?.toString() ?? '-',
+                {
+                  fieldHistory: getFieldHistory('post_excom_meeting'),
+                },
+              )}
+              {detailItem(
+                'Decision',
+                project.post_excom_decision?.number ?? '-',
+                {
+                  fieldHistory: formattedHistoryDecision,
+                },
+              )}
+            </div>
           </div>
         </div>
       ) : null}

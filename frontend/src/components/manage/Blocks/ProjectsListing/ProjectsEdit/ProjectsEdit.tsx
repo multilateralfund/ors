@@ -59,13 +59,11 @@ import {
 const ProjectsEdit = ({
   project,
   mode,
-  setParams,
   postExComUpdate = false,
   approval = false,
 }: {
   project: ProjectTypeApi
   mode: string
-  setParams?: any
   postExComUpdate?: boolean
   approval?: boolean
 }) => {
@@ -566,7 +564,6 @@ const ProjectsEdit = ({
             mode,
             postExComUpdate,
             project,
-            setParams,
             projectData,
             projectFiles,
             files,
