@@ -18,12 +18,18 @@ import Button from '@mui/material/Button'
 import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
-import { IoClipboardOutline, IoInformationCircleOutline } from 'react-icons/io5'
+import {
+  IoAlertCircle,
+  IoClipboardOutline,
+  IoInformationCircleOutline,
+} from 'react-icons/io5'
 import {
   AnnualAgencyProjectReport,
   AnnualProjectReport,
 } from '@ors/app/annual-project-report/types.ts'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
 
 const TABS = [
   {
@@ -52,6 +58,10 @@ export default function APREdit() {
   const [activeTab, setActiveTab] = useState(0)
   const { canEditAPR, isMlfsUser } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>[]
+  >([])
+  const hasValidationErrors = validationErrors.length > 0
 
   const getPath = isMlfsUser
     ? `api/annual-project-report/mlfs/${year}/agencies/`
@@ -86,7 +96,6 @@ export default function APREdit() {
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
-    group: TABS[activeTab].fieldsGroup,
     clipboardEdit: true,
     rows,
     setRows,
@@ -104,6 +113,7 @@ export default function APREdit() {
     : apr && (apr.status === 'draft' || apr.is_unlocked)
 
   const exportAll = async () => {
+    setValidationErrors([])
     if (!gridRef.current) {
       return
     }
@@ -112,6 +122,15 @@ export default function APREdit() {
     gridRef.current.api.forEachNode((node) => {
       allData.push(node.data)
     })
+
+    const { formErrors, hasErrors } = validateRows(allData, columnDefs)
+    if (hasErrors) {
+      setValidationErrors(formErrors)
+      enqueueSnackbar(<>Fix the validation errors before saving.</>, {
+        variant: 'error',
+      })
+      return
+    }
 
     try {
       const updatePath = isMlfsUser
@@ -178,10 +197,29 @@ export default function APREdit() {
             aria-label="Anual Project Report form tabs"
           >
             {TABS.map((tab, index) => {
+              const tabFields = columnDefs
+                .filter((colDef) => colDef.group === tab.fieldsGroup)
+                .map((colDef) => colDef.headerName)
+
+              const tabHasErrors = validationErrors.some((rowErrors) =>
+                tabFields.some((field) => rowErrors[field]),
+              )
+
               return (
                 <Tab
                   key={tab.fieldsGroup}
-                  label={tab.label}
+                  label={
+                    <div className="flex gap-x-2">
+                      <span>{tab.label}</span>
+                      {tabHasErrors && (
+                        <IoAlertCircle
+                          className="rounded-full bg-[#002A3C]"
+                          color="#EBFF00"
+                          size={24}
+                        />
+                      )}
+                    </div>
+                  }
                   id={`tab-${index}`}
                   aria-controls={`tabpanel-${index}`}
                 />
@@ -220,47 +258,57 @@ export default function APREdit() {
               <EditTable
                 rowsVisible={100}
                 Toolbar={() => (
-                  <Alert
-                    className="flex-1 bg-mlfs-bannerColor"
-                    icon={<IoInformationCircleOutline size={24} />}
-                    severity="info"
-                  >
-                    <ul className="mt-0.5 list-inside space-y-1 pl-0">
-                      <li>
-                        Columns containing the{' '}
-                        <span className="inline-flex align-middle">
-                          <IoClipboardOutline />
-                        </span>{' '}
-                        icon allow pasting of values onto multiple rows when
-                        these values have been copied from an Excel file
-                        downloaded from this system. Follow these steps to do
-                        this:
-                        <ol className="mt-1 space-y-1 pl-4">
-                          <li>
-                            In the Excel file, select the desired cells from the
-                            second column (Project Code), and while holding down
-                            the CTRL key, continue selecting the corresponding
-                            cells from the target column where you intend to
-                            paste the data (e.g. First Disbursement Date).
-                          </li>
-                          <li>
-                            Return to this screen and click the{' '}
-                            <span className="inline-flex align-middle">
-                              <IoClipboardOutline />
-                            </span>{' '}
-                            icon from the desired header column (e.g. First
-                            Disbursement Date). The system will paste the values
-                            in the correct activities, regardless of how the
-                            Excel rows were sorted.
-                          </li>
-                        </ol>
-                      </li>
-                    </ul>
-                  </Alert>
+                  <>
+                    <Alert
+                      className="flex-1 bg-mlfs-bannerColor"
+                      icon={<IoInformationCircleOutline size={24} />}
+                      severity="info"
+                    >
+                      <ul className="mt-0.5 list-inside space-y-1 pl-0">
+                        <li>
+                          Columns containing the{' '}
+                          <span className="inline-flex align-middle">
+                            <IoClipboardOutline />
+                          </span>{' '}
+                          icon allow pasting of values onto multiple rows when
+                          these values have been copied from an Excel file
+                          downloaded from this system. Follow these steps to do
+                          this:
+                          <ol className="mt-1 space-y-1 pl-4">
+                            <li>
+                              In the Excel file, select the desired cells from
+                              the second column (Project Code), and while
+                              holding down the CTRL key, continue selecting the
+                              corresponding cells from the target column where
+                              you intend to paste the data (e.g. First
+                              Disbursement Date).
+                            </li>
+                            <li>
+                              Return to this screen and click the{' '}
+                              <span className="inline-flex align-middle">
+                                <IoClipboardOutline />
+                              </span>{' '}
+                              icon from the desired header column (e.g. First
+                              Disbursement Date). The system will paste the
+                              values in the correct activities, regardless of
+                              how the Excel rows were sorted.
+                            </li>
+                          </ol>
+                        </li>
+                      </ul>
+                    </Alert>
+                    {hasValidationErrors && (
+                      <ValidationErrors validationErrors={validationErrors} />
+                    )}
+                  </>
                 )}
                 gridRef={gridRef}
                 dataTypeDefinitions={dataTypeDefinitions}
-                columnDefs={columnDefs}
+                columnDefs={columnDefs.filter(
+                  (colDef) =>
+                    colDef.field === 'project_code' ||
+                    colDef.group === TABS[activeTab].fieldsGroup,
+                )}
                 defaultColDef={defaultColDef}
                 rowData={rows}
                 isDataFormatted={true}
