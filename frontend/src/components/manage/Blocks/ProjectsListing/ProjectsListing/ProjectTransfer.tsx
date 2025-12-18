@@ -4,7 +4,6 @@ import {
   SetStateAction,
   useContext,
   useMemo,
-  useState,
 } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
@@ -128,13 +127,10 @@ const ProjectTransfer = ({
     }
   }
 
-  const [localExcom, setLocalExcom] = useState(
-    projectData.transfer_excom_provision,
-  )
-  const saveLocalExcom = () =>
+  const handleChangeExcomProvision = (excom_provision: string) =>
     setProjectData((prev) => ({
       ...prev,
-      transfer_excom_provision: localExcom,
+      transfer_excom_provision: excom_provision,
     }))
 
   const handleChangeNumericValues = (
@@ -230,10 +226,9 @@ const ProjectTransfer = ({
         </Label>
         <div className="flex items-center">
           <TextareaAutosize
-            value={localExcom}
+            value={projectData.transfer_excom_provision}
             onFocus={onTextareaFocus}
-            onChange={(e) => setLocalExcom(e.target.value)}
-            onBlur={saveLocalExcom}
+            onChange={(e) => handleChangeExcomProvision(e.target.value)}
             className={cx(textAreaClassname, 'max-w-[435px]')}
             maxLength={500}
             style={STYLE}
