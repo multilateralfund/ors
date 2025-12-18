@@ -25,8 +25,8 @@ from core.api.permissions import (
     HasAPRViewAccess,
     HasAPREditAccess,
     HasAPRSubmitAccess,
-    HasMLFSViewAccess,
-    HasMLFSFullAccess,
+    HasAPRMLFSViewAccess,
+    HasAPRMLFSFullAccess,
 )
 from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
@@ -414,7 +414,7 @@ class APRFilesDownloadAllView(APIView):
     Download all files from an agency report as a ZIP archive - MLFS only.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
 
     def get(self, request, year, agency_id):
         """
@@ -586,7 +586,7 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
     On retrieve, we prefetch all related info necessary for full data display.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
     serializer_class = AnnualAgencyProjectReportReadSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = APRGlobalFilter
@@ -712,7 +712,7 @@ class APRToggleLockView(APIView):
     Request body should contain: {"is_unlocked": true} or {"is_unlocked": false}
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def post(self, request, year, agency_id):
         agency_report = get_object_or_404(
@@ -753,7 +753,7 @@ class APREndorseView(APIView):
     As a prerequisite, all agency reports must be SUBMITTED and locked.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     @staticmethod
     def _get_draft_and_submitted(progress_report):
@@ -857,7 +857,7 @@ class APRMLFSBulkUpdateView(APIView):
     Unlike the agency bulk update, this uses project report IDs for matching.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def post(self, request, year):
         """
@@ -904,7 +904,7 @@ class APRKickStartView(APIView):
     POST: kick-starts a new APR reporting cycle
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def get(self, request):
         latest_endorsed_year = get_latest_endorsed_year()
@@ -999,7 +999,7 @@ class APRMLFSExportView(APIView):
     It exports the project reports for all submitted & locked agency reports.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
 
     def get(self, request, year):
         queryset = self._get_filtered_agency_reports(year)
