@@ -249,9 +249,14 @@ class ProjectV2ViewSet(
             )
 
         if self.action in ["edit_actual_fields", "transfer"]:
-            queryset.filter(submission_status__name="Approved").exclude(
-                status__name__in=["Closed", "Transferred"]
-            )
+            queryset = queryset.filter(submission_status__name="Approved")
+        if (
+            results_for_edit
+            or results_for_edit_actual_fields
+            or self.action
+            in ["edit_actual_fields", "transfer", "update", "partial_update", "submit"]
+        ):
+            queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -260,14 +265,11 @@ class ProjectV2ViewSet(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-            queryset = queryset.filter(submission_status__name="Approved").exclude(
-                status__name__in=["Closed", "Transferred"]
-            )
+            queryset = queryset.filter(submission_status__name="Approved")
         if self.action in ["update", "partial_update", "submit"] or results_for_edit:
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-            queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
             allowed_versions = set()
             limit_to_draft = False
 

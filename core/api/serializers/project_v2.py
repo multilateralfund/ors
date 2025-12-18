@@ -185,6 +185,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
     production_control_type = serializers.SerializerMethodField()
     checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    editable_for_actual_fields = serializers.SerializerMethodField()
     post_excom_meeting = serializers.SerializerMethodField()
     post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
@@ -201,6 +202,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
         Check if the project is editable based on the user's permissions.
         """
         if obj.id in self.context.get("edit_queryset_ids", set()):
+            return True
+        return False
+
+    def get_editable_for_actual_fields(self, obj):
+        """
+        Check if the actual fields of the project are editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_actual_fields_queryset_ids", set()):
             return True
         return False
 
@@ -272,6 +281,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "description",
             "destruction_technology",
             "editable",
+            "editable_for_actual_fields",
             "ee_demonstration_project",
             "establishment_of_imp_exp_licensing",
             "establishment_of_quota_systems",
@@ -1437,7 +1447,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             cluster=self.instance.cluster,
             tranche=tranche - 1,
             submission_status__name="Approved",
-        )
+        ).exclude(status__name__in=["Transferred", "Closed"])
         if self.instance.tranche > 1 > len(previous_tranches):
             errors["tranche"] = "Project must have at least one previous tranche entry."
         for previous_tranche in previous_tranches:
