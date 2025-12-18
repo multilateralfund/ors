@@ -191,9 +191,11 @@ class CompareVersionsWriter:
 
     def get_fields(self, user, versions):
         result = []
-        fields = ProjectField.objects.get_visible_fields_for_user(user).exclude(
-            read_field_name="sort_order"
-        ).exclude(section__in=EXCLUDE_SECTIONS)
+        fields = (
+            ProjectField.objects.get_visible_fields_for_user(user)
+            .exclude(read_field_name="sort_order")
+            .exclude(section__in=EXCLUDE_SECTIONS)
+        )
         for f in fields:
             if set(f.get_visible_versions()).intersection(versions):
                 result.append(f)
