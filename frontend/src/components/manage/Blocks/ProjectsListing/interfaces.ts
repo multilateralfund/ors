@@ -9,6 +9,7 @@ export type ListingProjectData = {
   projectStatus: string
   projectMetaprojectId: number | null
   projectCode: string
+  projectEditable: boolean
 }
 export interface PListingProps {
   tableToolbar: ReactNode

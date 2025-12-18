@@ -3,7 +3,7 @@ import { useContext, useState } from 'react'
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectCard from './ProjectCard'
-import { tableColumns } from '../constants'
+import { menusDefaultProjectData, tableColumns } from '../constants'
 import { ListingProjectData } from '../interfaces'
 import { formatNumberColumns } from '../utils'
 
@@ -130,15 +130,9 @@ const getColumnDefs = (
                                 projectMetaprojectId:
                                   props.data.meta_project_id,
                                 projectCode: props.data.code,
+                                projectEditable: props.data.editable,
                               }
-                            : {
-                                projectId: null,
-                                projectTitle: '',
-                                projectSubmissionStatus: '',
-                                projectStatus: '',
-                                projectMetaprojectId: null,
-                                projectCode: '',
-                              },
+                            : menusDefaultProjectData,
                         )
                       }}
                       sx={{

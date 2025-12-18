@@ -5,8 +5,8 @@ import {
   numberDetailItem,
   viewModesHandler,
 } from './ViewHelperComponents'
+import { canViewField, getTransferFieldLabel } from '../utils'
 import { ProjectViewProps } from '../interfaces'
-import { canViewField } from '../utils'
 import {
   tableColumns,
   textAreaViewClassname,
@@ -24,8 +24,6 @@ const ProjectApproval = ({
 }: { fieldHistory: any } & ProjectViewProps) => {
   const { viewableFields } = useStore((state) => state.projectFields)
 
-  const isTransferred = !!project.transferred_from
-
   const odsFields = filter(specificFields, (field) => field.table === 'ods_odp')
 
   const getFieldHistory = useCallback(
@@ -42,12 +40,8 @@ const ProjectApproval = ({
           (field, index) => {
             const fieldName = field.write_field_name
             const upatedLabels = {
-              meeting: isTransferred
-                ? tableColumns.transfer_meeting
-                : tableColumns.meeting,
-              decision: isTransferred
-                ? tableColumns.transfer_decision
-                : tableColumns.decision,
+              meeting: getTransferFieldLabel(project, 'meeting'),
+              decision: getTransferFieldLabel(project, 'decision'),
             }
 
             const updatedField =

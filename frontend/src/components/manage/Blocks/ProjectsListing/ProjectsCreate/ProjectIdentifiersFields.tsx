@@ -414,7 +414,7 @@ const ProjectIdentifiersFields = ({
               </div>
             </div>
           </div>
-          {project?.status === 'Transferred' && (
+          {mode === 'edit' && project?.status === 'Transferred' && (
             <div>
               <Label>{tableColumns.transfer_meeting}</Label>
               <div className="flex items-center">
