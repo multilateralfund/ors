@@ -644,10 +644,11 @@ export default function useGetColumnDefs({
               <BasePasteWrapper
                 mutator={(row: any, value: any) => {
                   const field = c.fieldName
+                  // @ts-ignore
+                  const cellDataType = c.overrideOptions?.cellDataType
                   let toBeAdded = value
 
-                  // @ts-ignore
-                  if (c.overrideOptions?.cellDataType === 'dateString') {
+                  if (cellDataType === 'dateString') {
                     if (value === '') {
                       toBeAdded = null
                     } else {
@@ -659,15 +660,15 @@ export default function useGetColumnDefs({
                     }
                   }
 
-                  if (
-                    ['decimal', 'currency'].includes(
-                      // @ts-ignore
-                      c.overrideOptions?.cellDataType,
-                    )
-                  ) {
+                  if (['decimal', 'currency'].includes(cellDataType)) {
+                    // A cell becomes '' when cleared
                     if (value === '') {
                       toBeAdded = null
                     }
+                  }
+
+                  if (cellDataType === 'boolean') {
+                    toBeAdded = value.toLowerCase() === 'yes';
                   }
 
                   row[field] = toBeAdded
