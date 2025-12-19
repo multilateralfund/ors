@@ -9,9 +9,8 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import React from 'react'
-import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isObject } from 'lodash'
+import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -19,6 +18,8 @@ import {
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
+import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import dayjs from 'dayjs'
 
 export const dataTypeDefinitions: Record<
   string,
@@ -34,6 +35,13 @@ export const dataTypeDefinitions: Record<
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
     validators: [validateDate],
+    valueParser: (params) => {
+      if (isNil(params.newValue) || params.newValue === '') {
+        return null
+      }
+
+      return params.newValue
+    },
   },
   currency: {
     baseDataType: 'number',
@@ -335,6 +343,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     consumptionODPCO2Actual: {
@@ -345,6 +356,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPMTActual: {
@@ -355,6 +369,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPCO2Actual: {
@@ -365,6 +382,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     // Financial data fields
@@ -462,6 +482,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsCommitted: {
@@ -472,6 +495,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     estimatedDisbursementCurrentYear: {
@@ -482,6 +508,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostDisbursed: {
@@ -492,6 +521,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostCommitted: {
@@ -502,6 +534,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     disbursementsMadeFinalBeneficiaries: {
@@ -512,6 +547,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsAdvanced: {
@@ -522,6 +560,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     implementationDelays: {
@@ -554,6 +595,9 @@ export default function useGetColumnDefs({
         cellDataType: 'text',
         validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     remarksCurrentYear: {
@@ -566,6 +610,9 @@ export default function useGetColumnDefs({
         cellDataType: 'text',
         validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     genderPolicy: {
@@ -594,8 +641,38 @@ export default function useGetColumnDefs({
       headerComponent:
         clipboardEdit && c.input && rows && setRows
           ? (props: IHeaderParams) => (
-              <HeaderPasteWrapper
-                field={props.column.getColDef().field!}
+              <BasePasteWrapper
+                mutator={(row: any, value: any) => {
+                  const field = c.fieldName
+                  // @ts-ignore
+                  const cellDataType = c.overrideOptions?.cellDataType
+                  let toBeAdded = value
+
+                  if (cellDataType === 'dateString') {
+                    if (value === '') {
+                      toBeAdded = null
+                    } else {
+                      // Convert from Excel format to ISO
+                      const date = dayjs(value, 'DD/MM/YYYY', true)
+                      if (date.isValid()) {
+                        toBeAdded = date.format('YYYY-MM-DD')
+                      }
+                    }
+                  }
+
+                  if (['decimal', 'currency'].includes(cellDataType)) {
+                    // A cell becomes '' when cleared
+                    if (value === '') {
+                      toBeAdded = null
+                    }
+                  }
+
+                  if (cellDataType === 'boolean') {
+                    toBeAdded = value.toLowerCase() === 'yes';
+                  }
+
+                  row[field] = toBeAdded
+                }}
                 form={rows}
                 label={props.displayName}
                 setForm={setRows}
@@ -616,11 +693,6 @@ export default function useGetColumnDefs({
       minWidth: 90,
       resizable: true,
       sortable: false,
-      // Use any because it could theoretically be a colgroup definition and too
-      // much narrowing is required
-      tooltipValueGetter: (params: any) => {
-        return params.valueFormatted ?? params.value
-      },
     },
   }
 }
