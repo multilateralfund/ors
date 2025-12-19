@@ -185,6 +185,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
     production_control_type = serializers.SerializerMethodField()
     checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    editable_for_actual_fields = serializers.SerializerMethodField()
     post_excom_meeting = serializers.SerializerMethodField()
     post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
@@ -201,6 +202,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
         Check if the project is editable based on the user's permissions.
         """
         if obj.id in self.context.get("edit_queryset_ids", set()):
+            return True
+        return False
+
+    def get_editable_for_actual_fields(self, obj):
+        """
+        Check if the actual fields of the project are editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_actual_fields_queryset_ids", set()):
             return True
         return False
 
@@ -272,6 +281,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "description",
             "destruction_technology",
             "editable",
+            "editable_for_actual_fields",
             "ee_demonstration_project",
             "establishment_of_imp_exp_licensing",
             "establishment_of_quota_systems",
@@ -532,14 +542,21 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
-    transfer_meeting = serializers.PrimaryKeyRelatedField(
+    transfer_meeting = serializers.SerializerMethodField()
+    transfer_meeting_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    transfer_decision = serializers.SlugField(read_only=True)
+    transfer_decision_id = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        queryset=Decision.objects.all().values_list("id", flat=True),
     )
     component = ProjectComponentsSerializer(read_only=True)
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
+    editable_for_actual_fields = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -581,6 +598,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "establishment_of_imp_exp_licensing_actual",
             "establishment_of_quota_systems_actual",
             "editable",
+            "editable_for_actual_fields",
             "ban_of_equipment_actual",
             "ban_of_substances_actual",
             "kwh_year_saved_actual",
@@ -599,6 +617,8 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "quantity_hfc_23_by_product_emitted_actual",
             "transfer_meeting",
             "transfer_meeting_id",
+            "transfer_decision",
+            "transfer_decision_id",
             "transfer_excom_provision",
             "total_phase_out_metric_tonnes",
             "total_phase_out_odp_tonnes",
@@ -617,6 +637,14 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             return True
         return False
 
+    def get_editable_for_actual_fields(self, obj):
+        """
+        Check if the actual fields of the project are editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_actual_fields_queryset_ids", set()):
+            return True
+        return False
+
     def get_checklist_regulations_actual(self, obj):
         return obj.get_checklist_regulations_actual_display()
 
@@ -624,6 +652,11 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset = obj.project_history.all().select_related("project", "user")
         serializer = ProjectHistorySerializer(queryset, many=True)
         return serializer.data
+
+    def get_transfer_meeting(self, obj):
+        if obj.transfer_meeting:
+            return obj.transfer_meeting.number
+        return None
 
     def get_versions(self, obj, with_field_data=False):
         """
@@ -1427,7 +1460,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             cluster=self.instance.cluster,
             tranche=tranche - 1,
             submission_status__name="Approved",
-        )
+        ).exclude(status__name__in=["Transferred", "Closed"])
         if self.instance.tranche > 1 > len(previous_tranches):
             errors["tranche"] = "Project must have at least one previous tranche entry."
         for previous_tranche in previous_tranches:
@@ -1582,10 +1615,15 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.serial_number,
             new_transfer_project.metacode,
         )
+        new_transfer_project.excom_provision = self.validated_data.get(
+            "transfer_excom_provision"
+        )
         new_transfer_project.serial_number = Project.objects.get_next_serial_number(
             new_transfer_project.country.id
         )
         new_transfer_project.transferred_from = project
+        if self.validated_data.get("agency") != project.lead_agency:
+            new_transfer_project.lead_agency_submitting_on_behalf = True
         new_transfer_project.save()
 
         project.transfer_meeting = self.validated_data.get("transfer_meeting")

@@ -9,6 +9,7 @@ export type ListingProjectData = {
   projectStatus: string
   projectMetaprojectId: number | null
   projectCode: string
+  projectEditable: boolean
 }
 export interface PListingProps {
   tableToolbar: ReactNode
@@ -189,6 +190,8 @@ export type ProjectTypeApi = ProjIdentifiers &
     psc_transferred: number
     transfer_meeting: string
     transfer_meeting_id: number | null
+    transfer_decision: string
+    transfer_decision_id: number | null
     transfer_excom_provision: string
     total_phase_out_metric_tonnes: string | null
     total_phase_out_odp_tonnes: string | null
@@ -197,6 +200,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     computed_total_phase_out_odp_tonnes: string | null
     computed_total_phase_out_co2_tonnes: string | null
     transferred_from: number | null
+    editable_for_actual_fields: boolean
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi

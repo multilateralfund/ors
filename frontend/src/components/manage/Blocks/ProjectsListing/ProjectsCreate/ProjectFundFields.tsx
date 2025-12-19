@@ -18,7 +18,12 @@ const ProjectFundFields = ({
   project,
   errors = {},
   type,
-}: ProjectDataProps & { project?: ProjectTypeApi; type: string }) => {
+  mode,
+}: ProjectDataProps & {
+  project?: ProjectTypeApi
+  type: string
+  mode: string
+}) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
   const { total_fund, support_cost_psc } = crossCuttingFields
@@ -101,7 +106,7 @@ const ProjectFundFields = ({
           </div>
         </div>
       )}
-      {project?.status === 'Transferred' && (
+      {mode === 'edit' && project?.status === 'Transferred' && (
         <>
           <div>
             <Label>{tableColumns.fund_transferred}</Label>

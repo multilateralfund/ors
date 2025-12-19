@@ -118,7 +118,14 @@ const EditActionButtons = ({
     null,
   )
 
-  const { id, submission_status, version, component } = project
+  const {
+    id,
+    submission_status,
+    version,
+    component,
+    editable,
+    editable_for_actual_fields,
+  } = project
   const {
     projIdentifiers,
     bpLinking,
@@ -128,6 +135,7 @@ const EditActionButtons = ({
   } = projectData
 
   const canEditProject =
+    editable_for_actual_fields ||
     postExComUpdate ||
     (version < 3 && canUpdateProjects) ||
     (version >= 3 && canUpdateV3Projects)
@@ -274,6 +282,29 @@ const EditActionButtons = ({
     setFileErrors('')
     setOtherErrors('')
     setErrors({})
+
+    if (!editable && editable_for_actual_fields && !postExComUpdate) {
+      try {
+        const actualData = getActualData(
+          projectData,
+          setProjectData,
+          specificFields,
+          formatProjectFields(projectFields),
+        )
+        const result = await api(`api/projects/v2/${id}/edit_actual_fields/`, {
+          data: actualData,
+          method: 'PUT',
+        })
+
+        setProjectId(result.id)
+        clearUpdatedFields()
+      } catch (error) {
+        await handleErrors(error)
+      } finally {
+        setIsLoading(false)
+        return
+      }
+    }
 
     const existingFilesMetadata = filter(
       filesMetaData,
