@@ -324,7 +324,7 @@ export default function APRMLFSWorkspace() {
   const kickstartNewAPR = async () => {
     const response = await confirm({
       title: 'Kickstart new APR',
-      message: 'Are you sure you want to kickstart a new APR?',
+      message: `Are you sure you want to kickstart a new APR for the year ${kickstartAPR?.next_year}?`,
     })
 
     if (!response) {
@@ -409,14 +409,15 @@ export default function APRMLFSWorkspace() {
                 Save
               </Button>
             )}
-            {activeTab === 0 && canKickstartAPR && (
+            {activeTab === 0 && kickstartAPR && (
               <Button
-                disabled={loading}
+                disabled={loading || !canKickstartAPR}
                 variant="contained"
                 color="secondary"
                 onClick={kickstartNewAPR}
               >
-                Launch new APR
+                Launch new APR{' '}
+                {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
               </Button>
             )}
             <Button
@@ -449,7 +450,7 @@ export default function APRMLFSWorkspace() {
             <ValidationErrors validationErrors={validationErrors} />
           )}
 
-          <div className="mt-4 mb-2 flex justify-between">
+          <div className="mb-2 mt-4 flex justify-between">
             {/* Filters section */}
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-wrap items-center gap-2">
