@@ -656,6 +656,9 @@ export default function APRMLFSWorkspace() {
               noRowsOverlayComponentParams={{
                 label: 'No projects submitted by the IA/BAs yet',
               }}
+              Toolbar={() => {
+                return <div>Total rows: {allProjectReports.length ?? 0}</div>
+              }}
               rowsVisible={100}
               gridRef={gridRef}
               dataTypeDefinitions={dataTypeDefinitions}
