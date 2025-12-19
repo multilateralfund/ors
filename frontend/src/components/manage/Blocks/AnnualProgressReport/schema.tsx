@@ -10,7 +10,7 @@ import {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import React from 'react'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isObject } from 'lodash'
+import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -35,6 +35,13 @@ export const dataTypeDefinitions: Record<
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
     validators: [validateDate],
+    valueParser: (params) => {
+      if (isNil(params.newValue) || params.newValue === "") {
+        return null
+      }
+
+      return params.newValue
+    }
   },
   currency: {
     baseDataType: 'number',
@@ -606,10 +613,15 @@ export default function useGetColumnDefs({
                   const field = c.fieldName
                   let toBeAdded = value
 
-                  if (c.group === 'Date data fields') {
-                    const date = dayjs(value, 'DD/MM/YYYY', true)
-                    if (date.isValid()) {
-                      toBeAdded = date.format('YYYY-MM-DD')
+                  // @ts-ignore
+                  if (c.overrideOptions?.cellDataType === 'dateString') {
+                    if (value === '') {
+                      toBeAdded = null
+                    } else {
+                      const date = dayjs(value, 'DD/MM/YYYY', true)
+                      if (date.isValid()) {
+                        toBeAdded = date.format('YYYY-MM-DD')
+                      }
                     }
                   }
 
