@@ -29,7 +29,7 @@ import { useStore } from '@ors/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 import { TextareaAutosize } from '@mui/material'
-import { find, lowerCase, map } from 'lodash'
+import { find, map } from 'lodash'
 import cx from 'classnames'
 
 type DecisionOption = {

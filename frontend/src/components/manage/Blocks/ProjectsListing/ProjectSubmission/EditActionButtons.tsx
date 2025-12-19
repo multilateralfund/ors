@@ -291,10 +291,13 @@ const EditActionButtons = ({
           specificFields,
           formatProjectFields(projectFields),
         )
-        await api(`api/projects/v2/${id}/edit_actual_fields/`, {
+        const result = await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
         })
+
+        setProjectId(result.id)
+        clearUpdatedFields()
       } catch (error) {
         await handleErrors(error)
       } finally {
