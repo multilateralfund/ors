@@ -271,6 +271,15 @@
     {
         "name": "APR - MLFS Full Access",
         "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
             "has_apr_edit_access",
             "has_apr_submit_access",
@@ -281,6 +290,15 @@
     {
         "name": "APR - Agency Viewer",
         "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
             "can_view_only_own_agency"
         ]
@@ -288,6 +306,15 @@
     {
         "name": "APR - Agency Inputter",
         "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
             "has_apr_edit_access",
             "can_view_only_own_agency"
@@ -296,6 +323,15 @@
     {
         "name": "APR - Agency Submitter",
         "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
             "has_apr_view_access",
             "has_apr_edit_access",
             "has_apr_submit_access",
