@@ -30,6 +30,7 @@ import {
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
+import usePageTitle from '@ors/hooks/usePageTitle.ts'
 
 const TABS = [
   {
@@ -55,6 +56,7 @@ export default function APREdit() {
   const confirm = useConfirmation()
   const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
+  usePageTitle(`Edit - Annual Progress Report (${year})`)
   const [activeTab, setActiveTab] = useState(0)
   const { canEditAPR, isMlfsUser } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)

@@ -9,7 +9,6 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import React from 'react'
-import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 import { useStore } from '@ors/store.tsx'
 import { get, isEqual, isObject } from 'lodash'
 import {
@@ -19,6 +18,8 @@ import {
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
+import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import dayjs from 'dayjs'
 
 export const dataTypeDefinitions: Record<
   string,
@@ -554,6 +555,9 @@ export default function useGetColumnDefs({
         cellDataType: 'text',
         validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     remarksCurrentYear: {
@@ -566,6 +570,9 @@ export default function useGetColumnDefs({
         cellDataType: 'text',
         validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     genderPolicy: {
@@ -594,8 +601,20 @@ export default function useGetColumnDefs({
       headerComponent:
         clipboardEdit && c.input && rows && setRows
           ? (props: IHeaderParams) => (
-              <HeaderPasteWrapper
-                field={props.column.getColDef().field!}
+              <BasePasteWrapper
+                mutator={(row: any, value: any) => {
+                  const field = c.fieldName
+                  let toBeAdded = value
+
+                  if (c.group === 'Date data fields') {
+                    const date = dayjs(value, 'DD/MM/YYYY', true)
+                    if (date.isValid()) {
+                      toBeAdded = date.format('YYYY-MM-DD')
+                    }
+                  }
+
+                  row[field] = toBeAdded
+                }}
                 form={rows}
                 label={props.displayName}
                 setForm={setRows}
@@ -616,11 +635,6 @@ export default function useGetColumnDefs({
       minWidth: 90,
       resizable: true,
       sortable: false,
-      // Use any because it could theoretically be a colgroup definition and too
-      // much narrowing is required
-      tooltipValueGetter: (params: any) => {
-        return params.valueFormatted ?? params.value
-      },
     },
   }
 }
