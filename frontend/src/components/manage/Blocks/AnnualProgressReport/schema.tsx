@@ -36,12 +36,12 @@ export const dataTypeDefinitions: Record<
     dateParser: (value) => parseDate(value),
     validators: [validateDate],
     valueParser: (params) => {
-      if (isNil(params.newValue) || params.newValue === "") {
+      if (isNil(params.newValue) || params.newValue === '') {
         return null
       }
 
       return params.newValue
-    }
+    },
   },
   currency: {
     baseDataType: 'number',
@@ -343,6 +343,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     consumptionODPCO2Actual: {
@@ -353,6 +356,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPMTActual: {
@@ -363,6 +369,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPCO2Actual: {
@@ -373,6 +382,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     // Financial data fields
@@ -470,6 +482,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsCommitted: {
@@ -480,6 +495,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     estimatedDisbursementCurrentYear: {
@@ -490,6 +508,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostDisbursed: {
@@ -500,6 +521,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostCommitted: {
@@ -510,6 +534,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     disbursementsMadeFinalBeneficiaries: {
@@ -520,6 +547,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsAdvanced: {
@@ -530,6 +560,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     implementationDelays: {
@@ -618,10 +651,22 @@ export default function useGetColumnDefs({
                     if (value === '') {
                       toBeAdded = null
                     } else {
+                      // Convert from Excel format to ISO
                       const date = dayjs(value, 'DD/MM/YYYY', true)
                       if (date.isValid()) {
                         toBeAdded = date.format('YYYY-MM-DD')
                       }
+                    }
+                  }
+
+                  if (
+                    ['decimal', 'currency'].includes(
+                      // @ts-ignore
+                      c.overrideOptions?.cellDataType,
+                    )
+                  ) {
+                    if (value === '') {
+                      toBeAdded = null
                     }
                   }
 

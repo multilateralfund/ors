@@ -85,7 +85,8 @@ export function validateNumber(value: any) {
   }
 
   const n = Number(value)
-  if (isNaN(n) || !isFinite(n)) {
+  // Number("") === 0
+  if (value === '' || isNaN(n) || !isFinite(n)) {
     return 'Invalid number'
   }
 
