@@ -45,7 +45,7 @@ const ApprovalSummaryPreviewTable = (props: {
         return (
           <a
             className="text-inherit no-underline"
-            href={`/projects-listing/${params.data?.id}`}
+            href={`/projects/${params.data?.id}`}
             target={'_blank'}
           >
             {params.data?.code}

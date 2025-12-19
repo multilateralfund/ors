@@ -44,10 +44,7 @@ export const VersionsDropdown = ({
     return {
       id: id,
       label: label,
-      url:
-        idx == 0
-          ? `/projects-listing/${id}`
-          : `/projects-listing/${id}/archive/${version}`,
+      url: idx == 0 ? `/projects/${id}` : `/projects/${id}/archive/${version}`,
     }
   })
 

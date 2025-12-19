@@ -161,7 +161,7 @@ const ProjectViewButtons = ({
       if (isProjectValid) {
         setIsSubmitModalOpen(true)
       } else {
-        setLocation(`/projects-listing/${id}/edit`)
+        setLocation(`/projects/${id}/edit`)
       }
     }
   }
@@ -173,7 +173,7 @@ const ProjectViewButtons = ({
     if (isProjectValid) {
       setIsRecommendModalOpen(true)
     } else {
-      setLocation(`/projects-listing/${id}/edit`)
+      setLocation(`/projects/${id}/edit`)
     }
   }
 
@@ -241,7 +241,7 @@ const ProjectViewButtons = ({
         {editable && (
           <>
             {canEditProjects && (
-              <EditLink href={`/projects-listing/${id}/edit`}>Edit</EditLink>
+              <EditLink href={`/projects/${id}/edit`}>Edit</EditLink>
             )}
             {canSubmitProjects && isDraft && (
               <IncreaseVersionButton
@@ -282,7 +282,7 @@ const ProjectViewButtons = ({
             {canApproveProjects && isRecommended && (
               <EditLink
                 className="bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
-                href={`/projects-listing/${id}/approval`}
+                href={`/projects/${id}/approval`}
               >
                 Approval
               </EditLink>
@@ -291,7 +291,7 @@ const ProjectViewButtons = ({
         )}
         {canUpdatePostExcom &&
         getIsUpdatablePostExcom(submission_status, project_status) ? (
-          <EditLink href={`/projects-listing/${id}/post-excom-update`}>
+          <EditLink href={`/projects/${id}/post-excom-update`}>
             Update post ExCom
           </EditLink>
         ) : null}

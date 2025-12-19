@@ -39,7 +39,7 @@ const ProjectsVersionChangeWrapper = ({ mode }: { mode: string }) => {
   }, [])
 
   if (loaded && isNull(associatedProjects)) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

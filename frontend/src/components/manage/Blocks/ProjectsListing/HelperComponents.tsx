@@ -118,7 +118,7 @@ export const IncreaseVersionButton = ({
 
 export const RedirectBackButton = () => (
   <div className="w-fit">
-    <Link className="text-black no-underline" href="/projects-listing/listing">
+    <Link className="text-black no-underline" href="/projects/listing">
       <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
         <IoReturnUpBack size={18} />
         IA/BA Portal
@@ -325,7 +325,7 @@ export const RelatedProjects = ({
                 '!text-[#801F00]': hasErrors,
               },
             )}
-            href={`/projects-listing/${entry.id}${['edit', 'tranches'].includes(mode) ? '/edit' : ''}`}
+            href={`/projects/${entry.id}${['edit', 'tranches'].includes(mode) ? '/edit' : ''}`}
             target="_blank"
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}

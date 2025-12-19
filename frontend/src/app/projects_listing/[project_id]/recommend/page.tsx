@@ -15,7 +15,7 @@ export default function RecommendProject() {
     useContext(PermissionsContext)
 
   if (!canViewProjects || !canRecommendProjects) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

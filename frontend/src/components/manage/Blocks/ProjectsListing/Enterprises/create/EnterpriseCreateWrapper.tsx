@@ -25,7 +25,7 @@ const EnterpriseCreateWrapper = () => {
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
   if (!canEditEnterprise) {
-    return <Redirect to="/projects-listing/enterprises" />
+    return <Redirect to="/projects/enterprises" />
   }
 
   return (
@@ -50,7 +50,7 @@ const EnterpriseCreateWrapper = () => {
       />
       <ProjectFormFooter
         id={enterpriseId}
-        href={`/projects-listing/enterprises/${enterpriseId}`}
+        href={`/projects/enterprises/${enterpriseId}`}
         successMessage="Enterprise was created successfully."
         successRedirectMessage="View enterprise."
         {...{ nonFieldsErrors, otherErrors }}

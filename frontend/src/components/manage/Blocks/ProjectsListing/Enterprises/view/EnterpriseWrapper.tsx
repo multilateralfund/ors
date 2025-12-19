@@ -24,11 +24,11 @@ const EnterpriseWrapper = () => {
   const { data, loading, error } = enterprise
 
   if (!canViewEnterprises) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (error) {
-    return <Redirect to="/projects-listing/enterprises" />
+    return <Redirect to="/projects/enterprises" />
   }
 
   return (
@@ -51,14 +51,11 @@ const EnterpriseWrapper = () => {
                 </PageHeading>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
-                <CancelLinkButton
-                  title="Cancel"
-                  href="/projects-listing/enterprises"
-                />
+                <CancelLinkButton title="Cancel" href="/projects/enterprises" />
                 {(canEditEnterprise || canApproveEnterprise) &&
                   data.status !== 'Obsolete' && (
                     <CustomLink
-                      href={`/projects-listing/enterprises/${enterprise_id}/edit`}
+                      href={`/projects/enterprises/${enterprise_id}/edit`}
                       className="border border-solid px-4 py-2 hover:border-primary"
                       variant="contained"
                       color="secondary"

@@ -50,7 +50,7 @@ const ChangeVersionModal = ({
     if (editProject) {
       editProject(mode)
     } else {
-      setLocation(`/projects-listing/${id}/${mode}`)
+      setLocation(`/projects/${id}/${mode}`)
     }
     setIsModalOpen(false)
   }

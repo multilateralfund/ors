@@ -843,13 +843,13 @@ export const getMenus = (
       menuItems: [
         {
           title: 'Update MYA data',
-          url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
+          url: `/projects/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
           disabled:
             !canViewMetaProjects || (!!projectId && !projectMetaprojectId),
         },
         {
           title: 'Update post ExCom fields',
-          url: `/projects-listing/${projectId}/post-excom-update`,
+          url: `/projects/${projectId}/post-excom-update`,
           disabled:
             !canUpdatePostExcom ||
             !projectId ||
@@ -857,7 +857,7 @@ export const getMenus = (
         },
         {
           title: 'Update project enterprises',
-          url: `/projects-listing/projects-enterprises/${projectId}`,
+          url: `/projects/projects-enterprises/${projectId}`,
           disabled:
             !canEditProjectEnterprise ||
             !projectId ||
@@ -865,7 +865,7 @@ export const getMenus = (
         },
         {
           title: 'Manage enterprises',
-          url: `/projects-listing/enterprises`,
+          url: `/projects/enterprises`,
           disabled: !canViewEnterprises,
         },
         {

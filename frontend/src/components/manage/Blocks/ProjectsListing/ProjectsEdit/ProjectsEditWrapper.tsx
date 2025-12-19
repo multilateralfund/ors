@@ -17,7 +17,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { data, loading } = project
 
   if (project?.error) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (
@@ -34,7 +34,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
       (mode !== 'copy' && !data.editable) ||
       (mode !== 'edit' && !canUpdateProjects))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

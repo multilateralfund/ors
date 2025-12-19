@@ -98,7 +98,7 @@ export default function UpdateMyaData() {
   }, [])
 
   if (!(canViewProjects && canViewMetaProjects)) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   const columnDefs: GridOptions<MetaProjectType>['columnDefs'] = [

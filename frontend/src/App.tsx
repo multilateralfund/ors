@@ -114,7 +114,7 @@ function RedirectToSection() {
     return <Redirect to={'/business-plans'} />
   }
   if (isOnlyProjectsUser) {
-    return <Redirect to={'/projects-listing/listing'} />
+    return <Redirect to={'/projects/listing'} />
   }
   return <Redirect to={'/country-programme/reports'} />
 }
@@ -281,156 +281,156 @@ export default function App() {
         <Route path="/project-submissions/">
           <ProjectSubmissionsPage />
         </Route> */}
-        {/* <Route path="/projects/:project_id">
+        {/* <Route path="/projects-listing/:project_id">
           <ProjectsProjectPage />
         </Route>
-        <Route path="/projects">
+        <Route path="/projects-listing">
           <ProjectsPage />
         </Route> */}
-        <Route path="/projects-listing">
-          <Redirect to="/projects-listing/listing" replace />
+        <Route path="/projects">
+          <Redirect to="/projects/listing" replace />
         </Route>
-        <Route path="/projects-listing/listing">
+        <Route path="/projects/listing">
           <ProjectsDataProvider>
             <ProjectsListingPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/create">
+        <Route path="/projects/create">
           <ProjectsDataProvider>
             <ProjectsCreatePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/associate">
+        <Route path="/projects/:project_id/associate">
           <ProjectsDataProvider>
             <ProjectsAssociationPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/export/:export_type">
+        <Route path="/projects/export/:export_type">
           <ProjectsDataProvider>
             <ProjectsExportPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/approval-summary">
+        <Route path="/projects/approval-summary">
           <ProjectsDataProvider>
             <ProjectsApprovalSummaryPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/summary-of-projects">
+        <Route path="/projects/summary-of-projects">
           <ProjectsDataProvider>
             <SummaryOfProjectsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/blanket-approval-details">
+        <Route path="/projects/blanket-approval-details">
           <ProjectsDataProvider>
             <BlanketApprovalDetailsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/settings">
+        <Route path="/projects/settings">
           <ProjectsDataProvider>
             <ProjectsSettingsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/update-mya-data">
+        <Route path="/projects/update-mya-data">
           <ProjectsDataProvider>
             <ProjectsUpdateMyaDataPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/update-mya-data/:metaproject_id">
+        <Route path="/projects/update-mya-data/:metaproject_id">
           <ProjectsDataProvider>
             <ProjectsUpdateMyaDataPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises">
+        <Route path="/projects/enterprises">
           <ProjectsDataProvider>
             <EnterprisesPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/create">
+        <Route path="/projects/enterprises/create">
           <ProjectsDataProvider>
             <EnterpriseCreatePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:enterprise_id">
+        <Route path="/projects/enterprises/:enterprise_id">
           <ProjectsDataProvider>
             <EnterprisePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:enterprise_id/edit">
+        <Route path="/projects/enterprises/:enterprise_id/edit">
           <ProjectsDataProvider>
             <EnterpriseEditPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id">
+        <Route path="/projects/projects-enterprises/:project_id">
           <ProjectsDataProvider>
             <ProjectsEnterprisesPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/create">
+        <Route path="/projects/projects-enterprises/:project_id/create">
           <ProjectsDataProvider>
             <ProjectsEnterprisesCreatePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/view/:enterprise_id">
+        <Route path="/projects/projects-enterprises/:project_id/view/:enterprise_id">
           <ProjectsDataProvider>
             <ProjectsEnterprisesViewPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
+        <Route path="/projects/projects-enterprises/:project_id/edit/:enterprise_id">
           <ProjectsDataProvider>
             <ProjectsEnterprisesEditPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id">
+        <Route path="/projects/:project_id">
           <ProjectsDataProvider>
             <ProjectsListingProjectPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/archive/:version">
+        <Route path="/projects/:project_id/archive/:version">
           <ProjectsDataProvider>
             <ProjectsListingArchiveProjectPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/compare-versions">
+        <Route path="/projects/:project_id/compare-versions">
           <ProjectsDataProvider>
             <ProjectsCompareVersionsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/edit">
+        <Route path="/projects/:project_id/edit">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="edit" />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/approval">
+        <Route path="/projects/:project_id/approval">
           <ProjectsDataProvider>
             <ProjectsApprovalUpdatePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/post-excom-update">
+        <Route path="/projects/:project_id/post-excom-update">
           <ProjectsDataProvider>
             <ProjectsPostExComUpdatePage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/submit">
+        <Route path="/projects/:project_id/submit">
           <ProjectsDataProvider>
             <ProjectsSubmitPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/:project_id/recommend">
+        <Route path="/projects/:project_id/recommend">
           <ProjectsDataProvider>
             <ProjectsRecommendPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/create/:project_id/copy">
+        <Route path="/projects/create/:project_id/copy">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="copy" />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/create/:project_id/full-copy/additional-component">
+        <Route path="/projects/create/:project_id/full-copy/additional-component">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="full-link" />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/create/:project_id/partial-copy/additional-component">
+        <Route path="/projects/create/:project_id/partial-copy/additional-component">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="partial-link" />
           </ProjectsDataProvider>

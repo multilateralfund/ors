@@ -144,8 +144,8 @@ const useInternalNavSectionsIaBaPortal = () => {
           ...(canViewProjects
             ? [
                 {
-                  label: 'Projects Listing',
-                  url: '/projects-listing/listing',
+                  label: 'Projects',
+                  url: '/projects/listing',
                 },
               ]
             : []),
@@ -153,12 +153,12 @@ const useInternalNavSectionsIaBaPortal = () => {
             ? [
                 {
                   label: 'IA/BA portal settings',
-                  url: '/projects-listing/settings',
+                  url: '/projects/settings',
                 },
               ]
             : []),
         ],
-        url: '/projects-listing/listing',
+        url: '/projects/listing',
       },
     ]
       // @ts-ignore

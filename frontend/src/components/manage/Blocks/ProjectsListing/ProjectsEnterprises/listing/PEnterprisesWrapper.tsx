@@ -45,7 +45,7 @@ export default function PEnterprisesWrapper() {
     !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (
@@ -82,7 +82,7 @@ export default function PEnterprisesWrapper() {
             <div className="ml-auto mt-auto flex items-center">
               <CreateButton
                 title="Add project enterprise"
-                href={`/projects-listing/projects-enterprises/${project_id}/create`}
+                href={`/projects/projects-enterprises/${project_id}/create`}
                 className="!mb-0"
               />
             </div>

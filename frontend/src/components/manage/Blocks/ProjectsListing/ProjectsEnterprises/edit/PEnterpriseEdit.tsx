@@ -155,7 +155,7 @@ const PEnterpriseEdit = ({
       />
       <ProjectFormFooter
         id={enterpriseId}
-        href={`/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`}
+        href={`/projects/projects-enterprises/${project_id}/view/${enterpriseId}`}
         successMessage={'Project enterprise was updated successfully.'}
         successRedirectMessage="View project enterprise."
         {...{ nonFieldsErrors, otherErrors }}

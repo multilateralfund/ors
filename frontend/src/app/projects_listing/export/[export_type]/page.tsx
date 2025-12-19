@@ -26,7 +26,7 @@ export default function Projects() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   if (!canViewProjects || !['mya', 'all'].includes(export_type)) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

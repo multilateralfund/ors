@@ -80,7 +80,7 @@ const PEnterpriseEditActionButtons = ({
 
       if (isPending && overview.linkStatus === 'Approved') {
         setLocation(
-          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+          `/projects/projects-enterprises/${project_id}/view/${enterprise_id}`,
         )
       }
       return true
@@ -106,7 +106,7 @@ const PEnterpriseEditActionButtons = ({
         })
 
         setLocation(
-          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+          `/projects/projects-enterprises/${project_id}/view/${enterprise_id}`,
         )
       } catch (error) {
         enqueueSnackbar(
@@ -123,7 +123,7 @@ const PEnterpriseEditActionButtons = ({
     <div className="flex flex-wrap items-center gap-2.5">
       <CancelLinkButton
         title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}`}
+        href={`/projects/projects-enterprises/${project_id}`}
       />
       {canEditProjectEnterprise && (
         <Button

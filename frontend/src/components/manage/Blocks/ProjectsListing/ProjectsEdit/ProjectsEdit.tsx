@@ -616,7 +616,7 @@ const ProjectsEdit = ({
         />
         <ProjectFormFooter
           id={projectId}
-          href={`/projects-listing/${projectId}`}
+          href={`/projects/${projectId}`}
           successMessage={
             isEditMode
               ? 'Updated project successfully.'

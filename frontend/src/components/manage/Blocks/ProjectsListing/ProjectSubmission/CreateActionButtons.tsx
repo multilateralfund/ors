@@ -45,7 +45,7 @@ const CreateActionButtons = ({
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation('/projects-listing/listing')
+      setLocation('/projects/listing')
     }
   }
 
@@ -97,7 +97,7 @@ const CreateActionButtons = ({
         )
       }
       clearUpdatedFields()
-      setLocation(`/projects-listing/${result.id}/edit`)
+      setLocation(`/projects/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()
 

@@ -95,7 +95,7 @@ const EnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
-        setLocation(`/projects-listing/enterprises/${enterprise_id}`)
+        setLocation(`/projects/enterprises/${enterprise_id}`)
       } catch (error) {
         enqueueSnackbar(
           <>Could not change enterprise status. Please try again.</>,
@@ -111,7 +111,7 @@ const EnterpriseEditActionButtons = ({
   return (
     <>
       <div className="flex flex-wrap items-center gap-2.5">
-        <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
+        <CancelLinkButton title="Cancel" href="/projects/enterprises" />
         {canEditEnterprise && !isObsolete && (
           <Button
             className={cx('px-4 py-2 shadow-none', {

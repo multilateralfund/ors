@@ -17,7 +17,7 @@ const ProjectsAssociateWrapper = () => {
     (data &&
       (!isNull(data.latest_project) || data.submission_status !== 'Approved'))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

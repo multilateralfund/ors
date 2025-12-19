@@ -18,7 +18,7 @@ const ProjectsApprovalWrapper = () => {
         !data.editable ||
         data.submission_status !== 'Recommended'))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

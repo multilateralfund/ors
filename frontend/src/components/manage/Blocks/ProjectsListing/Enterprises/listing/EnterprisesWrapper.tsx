@@ -30,7 +30,7 @@ export default function EnterprisesWrapper() {
   const { loading, setParams } = enterprises
 
   if (!canViewEnterprises) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (
@@ -53,7 +53,7 @@ export default function EnterprisesWrapper() {
             <div className="ml-auto mt-auto flex items-center">
               <CreateButton
                 title="Create enterprise"
-                href="/projects-listing/enterprises/create"
+                href="/projects/enterprises/create"
                 className="!mb-0"
               />
             </div>

@@ -37,7 +37,7 @@ const PEnterpriseEditWrapper = () => {
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (
@@ -50,7 +50,7 @@ const PEnterpriseEditWrapper = () => {
   ) {
     return (
       <Redirect
-        to={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
+        to={`/projects/projects-enterprises/${project_id}/view/${enterprise_id}`}
       />
     )
   }

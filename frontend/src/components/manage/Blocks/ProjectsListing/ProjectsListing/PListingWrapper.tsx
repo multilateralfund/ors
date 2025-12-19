@@ -70,7 +70,7 @@ export default function PListingWrapper() {
             <CustomLink
               href={
                 projectId && projectSubmissionStatus === 'Approved'
-                  ? `/projects-listing/${projectId}/associate`
+                  ? `/projects/${projectId}/associate`
                   : null
               }
               className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
@@ -124,7 +124,7 @@ export default function PListingWrapper() {
         <div className="ml-auto mr-6 flex gap-3">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
-            href={`/projects-listing/create/${projectId}/copy`}
+            href={`/projects/create/${projectId}/copy`}
             color="secondary"
             variant="contained"
             button
@@ -176,7 +176,7 @@ export default function PListingWrapper() {
         {canUpdateProjects && (
           <CreateButton
             title="New Project Submission"
-            href="/projects-listing/create"
+            href="/projects/create"
           />
         )}
       </div>

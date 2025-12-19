@@ -57,7 +57,7 @@ const ProjectsVersionChange = ({
   const isValidStatus = mode === 'submit' ? isDraft : isSubmitted
 
   if (currentProject && !(isValidStatus && editable)) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
@@ -107,7 +107,7 @@ const ProjectsVersionChange = ({
           <div className="ml-auto mt-auto flex items-center gap-2.5">
             <CancelLinkButton
               title="Cancel"
-              href={`/projects-listing/${project_id}/edit`}
+              href={`/projects/${project_id}/edit`}
             />
           </div>
         </div>
@@ -166,12 +166,12 @@ const ProjectsVersionChange = ({
         {isSaveSuccessful && (
           <CustomLink
             className="h-9 w-fit text-nowrap px-4 py-2 text-lg uppercase"
-            href="/projects-listing/listing"
+            href="/projects/listing"
             color="secondary"
             variant="contained"
             button
           >
-            Projects listing
+            Projects
           </CustomLink>
         )}
       </Box>

@@ -95,7 +95,7 @@ export default function APRWorkspace() {
   return (
     <PageWrapper>
       {/* "~" means absolute, outside the nested context */}
-      <BackLink url="~/projects-listing" text="IA/BA Portal" />
+      <BackLink url="~/projects" text="IA/BA Portal" />
       <div className="mb-2 flex justify-between">
         <PageHeading className="flex min-w-fit items-center gap-x-2">
           {`Annual Progress Report workspace`}

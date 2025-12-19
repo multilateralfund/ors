@@ -99,7 +99,7 @@ const getColumnDefs = (
                 {canEditProjects && props.data.editable ? (
                   <Link
                     className="flex h-4 w-4 justify-center"
-                    href={`/projects-listing/${props.data.id}/edit`}
+                    href={`/projects/${props.data.id}/edit`}
                   >
                     <FiEdit size={16} />
                   </Link>
@@ -187,7 +187,7 @@ const getColumnDefs = (
                 )}
                 href={
                   canViewProjects && props.data.id
-                    ? `/projects-listing/${props.data.id}`
+                    ? `/projects/${props.data.id}`
                     : null
                 }
               >
