@@ -300,6 +300,7 @@ export default function APREdit() {
                     {hasValidationErrors && (
                       <ValidationErrors validationErrors={validationErrors} />
                     )}
+                    <div>Total rows: {rows.length ?? 0}</div>
                   </>
                 )}
                 gridRef={gridRef}

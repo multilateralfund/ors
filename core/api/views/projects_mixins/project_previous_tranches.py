@@ -39,6 +39,9 @@ class ProjectListPreviousTranchesMixin:
         This is used to get the previous tranche for the project.
         """
         project = self.get_object()
+        visible_projects_for_user = self.filter_permissions_queryset(
+            Project.objects.all(), results_for_edit_actual_fields=True
+        )
         if not request.query_params.get("tranche"):
             # If tranche is not provided, use the tranche from the project
             tranche = project.tranche
@@ -60,6 +63,7 @@ class ProjectListPreviousTranchesMixin:
                     tranche=tranche - 1,
                     submission_status__name="Approved",
                 )
+                .exclude(status__name__in=["Closed", "Transferred"])
             )
             previous_tranches = previous_tranches.select_related(
                 "agency",
@@ -76,7 +80,13 @@ class ProjectListPreviousTranchesMixin:
                 "files",
                 "subsectors__sector",
             )
-
+        if (
+            previous_tranches.count()
+            != visible_projects_for_user.filter(
+                id__in=previous_tranches.values_list("id", flat=True)
+            ).count()
+        ):
+            previous_tranches = previous_tranches.none()
         context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project

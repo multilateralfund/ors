@@ -454,7 +454,7 @@ const ProjectsEdit = ({
       if (result.length === 0) {
         setTrancheErrors({
           errorText:
-            'A new tranche cannot be created unless a previous one exists.',
+            'A new tranche cannot be created as no previous tranche exists or you are not the lead agency of the MYA.',
           isError: true,
           tranchesData: [],
           loaded: true,

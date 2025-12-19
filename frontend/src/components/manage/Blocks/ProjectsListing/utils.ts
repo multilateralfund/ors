@@ -820,6 +820,7 @@ export const getMenus = (
     projectSubmissionStatus,
     projectStatus,
     projectMetaprojectId,
+    projectEditable,
   } = projectData ?? {}
 
   return [
@@ -875,6 +876,7 @@ export const getMenus = (
           disabled:
             !canTransferProjects ||
             !projectId ||
+            !projectEditable ||
             projectSubmissionStatus !== 'Approved',
         },
       ],
@@ -1155,4 +1157,19 @@ export const onTextareaFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
     const textLength = element.value.length
     element.setSelectionRange(textLength, textLength)
   })
+}
+
+export const getTransferFieldLabel = (
+  project: ProjectTypeApi,
+  field: string,
+) => {
+  const isFromTransfer = !!project?.transferred_from
+  const formattedField = isFromTransfer ? 'transfer_' + field : field
+  const fieldLabel = tableColumns[formattedField]
+
+  if (isFromTransfer && project?.status === 'Transferred') {
+    return 'Initial ' + lowerCase(fieldLabel)
+  }
+
+  return fieldLabel
 }

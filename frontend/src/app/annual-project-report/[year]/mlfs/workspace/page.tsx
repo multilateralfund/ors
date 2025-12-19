@@ -324,7 +324,7 @@ export default function APRMLFSWorkspace() {
   const kickstartNewAPR = async () => {
     const response = await confirm({
       title: 'Kickstart new APR',
-      message: 'Are you sure you want to kickstart a new APR?',
+      message: `Are you sure you want to kickstart a new APR for the year ${kickstartAPR?.next_year}?`,
     })
 
     if (!response) {
@@ -409,14 +409,15 @@ export default function APRMLFSWorkspace() {
                 Save
               </Button>
             )}
-            {activeTab === 0 && canKickstartAPR && (
+            {activeTab === 0 && kickstartAPR && (
               <Button
-                disabled={loading}
+                disabled={loading || !canKickstartAPR}
                 variant="contained"
                 color="secondary"
                 onClick={kickstartNewAPR}
               >
-                Launch new APR
+                Launch new APR{' '}
+                {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
               </Button>
             )}
             <Button
@@ -654,6 +655,9 @@ export default function APRMLFSWorkspace() {
             <EditTable
               noRowsOverlayComponentParams={{
                 label: 'No projects submitted by the IA/BAs yet',
+              }}
+              Toolbar={() => {
+                return <div>Total rows: {allProjectReports.length ?? 0}</div>
               }}
               rowsVisible={100}
               gridRef={gridRef}

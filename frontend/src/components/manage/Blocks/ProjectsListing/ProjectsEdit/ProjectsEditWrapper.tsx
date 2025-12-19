@@ -20,6 +20,11 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
     return <Redirect to="/projects/listing" />
   }
 
+  const isEditable =
+    mode === 'edit'
+      ? data?.editable || data?.editable_for_actual_fields
+      : data?.editable
+
   if (
     data &&
     ((mode !== 'copy' &&
@@ -31,7 +36,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
           data.version >= 3 &&
           data.submission_status !== 'Recommended'))) ||
       !isNull(data.latest_project) ||
-      (mode !== 'copy' && !data.editable) ||
+      (mode !== 'copy' && !isEditable) ||
       (mode !== 'edit' && !canUpdateProjects))
   ) {
     return <Redirect to="/projects/listing" />
