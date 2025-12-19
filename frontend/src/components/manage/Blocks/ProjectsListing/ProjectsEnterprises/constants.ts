@@ -20,6 +20,7 @@ export const substanceFields = [
 
 export const enterpriseFieldsMapping: { [key: string]: string } = {
   id: 'Enterprise',
+  status: 'Status',
   code: 'Code',
   name: 'Enterprise',
   country: 'Country',

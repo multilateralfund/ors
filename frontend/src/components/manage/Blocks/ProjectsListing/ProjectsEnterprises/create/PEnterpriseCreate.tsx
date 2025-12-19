@@ -24,7 +24,7 @@ import {
 } from '../../interfaces.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
+import { find, has, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
@@ -106,9 +106,20 @@ const PEnterpriseCreate = ({
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
     ] ?? {}
-  const searchErrors =
-    !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
-  const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
+  const searchErrors = getFieldErrors(
+    pick(overview, 'id'),
+    enterpriseErrors,
+    !!enterprise,
+  )
+
+  const formattedEnterpriseErrors =
+    !!enterprise && errors?.status
+      ? { ...enterpriseErrors, status: errors.status }
+      : enterpriseErrors
+  const overviewErrors = getFieldErrors(
+    omit(overview, 'id'),
+    formattedEnterpriseErrors,
+  )
   const detailsErrors = getFieldErrors(details, errors)
   const substanceErrors = getFieldErrors(substance_fields, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
@@ -119,9 +130,10 @@ const PEnterpriseCreate = ({
       (errors?.['ods_odp'] as { non_field_errors?: string[] } | undefined)
         ?.non_field_errors || [],
   }
-  const odsOdpErrors = map(errors?.ods_odp, (odp: {}, index) =>
-    !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
-  ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
+  const odsOdpErrors = map(errors?.ods_odp, (odp: {}, index) => ({
+    ...odp,
+    id: index,
+  })).filter((odp) => !has(odp, 'non_field_errors'))
   const normalizedOdsOdpErrors = map(odsOdpErrors, (error) => omit(error, 'id'))
 
   const formattedOdsOdpErrors = map(

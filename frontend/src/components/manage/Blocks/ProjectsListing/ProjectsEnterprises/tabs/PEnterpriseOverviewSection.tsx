@@ -4,6 +4,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { FieldErrorIndicator } from '../../HelperComponents'
 import {
   EnterpriseDateField,
   EnterpriseNumberField,
@@ -74,17 +75,20 @@ const PEnterpriseOverviewSection = ({
       {!!enterprise && canApproveProjectEnterprise && (
         <div>
           <Label>Status</Label>
-          <Field
-            widget="autocomplete"
-            options={enterpriseStatuses}
-            value={overview.linkStatus}
-            disabled={
-              !canEditProjectEnterprise || enterprise.status === 'Approved'
-            }
-            onChange={(_, value) => handleChangeLinkStatus(value)}
-            disableClearable
-            {...defaultProps}
-          />
+          <div className="flex items-center">
+            <Field
+              widget="autocomplete"
+              options={enterpriseStatuses}
+              value={overview.linkStatus}
+              disabled={
+                !canEditProjectEnterprise || enterprise.status === 'Approved'
+              }
+              onChange={(_, value) => handleChangeLinkStatus(value)}
+              disableClearable
+              {...defaultProps}
+            />
+            <FieldErrorIndicator field="status" errors={rest.errors} />
+          </div>
         </div>
       )}
       <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>

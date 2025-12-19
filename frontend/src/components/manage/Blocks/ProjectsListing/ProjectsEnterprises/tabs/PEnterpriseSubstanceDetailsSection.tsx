@@ -218,12 +218,10 @@ const PEnterpriseSubstanceDetailsSection = ({
                       }}
                     />
                     <FieldErrorIndicator
-                      field="ods_substance"
-                      errors={odsOdpErrors}
-                    />
-                    <FieldErrorIndicator
-                      field="ods_blend"
-                      errors={odsOdpErrors}
+                      field={
+                        substance.ods_blend ? 'ods_blend' : 'ods_substance'
+                      }
+                      errors={odsOdpErrors[index]}
                     />
                   </div>
                 </div>
@@ -248,7 +246,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors}
+                          errors={odsOdpErrors[index]}
                         />
                       </div>
                     </div>
@@ -273,7 +271,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors}
+                          errors={odsOdpErrors[index]}
                         />
                       </div>
                     </div>
