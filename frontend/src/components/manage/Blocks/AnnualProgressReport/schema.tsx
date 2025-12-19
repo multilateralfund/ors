@@ -12,8 +12,18 @@ import React from 'react'
 import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 import { useStore } from '@ors/store.tsx'
 import { get, isEqual, isObject } from 'lodash'
+import {
+  validateDate,
+  validateNumber,
+  validateText,
+  ValidatorMixin,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
 
-export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
+export const dataTypeDefinitions: Record<
+  string,
+  DataTypeDefinition & ValidatorMixin
+> = {
   dateString: {
     baseDataType: 'dateString',
     extendsDataType: 'dateString',
@@ -23,21 +33,25 @@ export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
     valueFormatter: (params) => formatDate(params.value),
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
+    validators: [validateDate],
   },
   currency: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatUSD(params.value),
+    validators: [validateNumber],
   },
   percent: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatPercent(params.value),
+    validators: [validateNumber],
   },
   decimal: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatDecimal(params.value),
+    validators: [validateNumber],
   },
   boolean: {
     baseDataType: 'boolean',
@@ -51,11 +65,11 @@ interface APRTableColumn {
   fieldName: string
   group: string | null
   input: boolean
-  overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number]
+  overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number] &
+    ValidatorMixin
 }
 
 interface BaseColumnDefOptions {
-  group?: string | null
   inlineEdit?: boolean
   year: string
 }
@@ -76,7 +90,6 @@ type ColumnDefOptions = ClipboardDisabled | ClipboardEnabled
 
 export default function useGetColumnDefs({
   year,
-  group = null,
   inlineEdit = false,
   clipboardEdit = false,
   rows,
@@ -206,6 +219,7 @@ export default function useGetColumnDefs({
       input: true,
       overrideOptions: {
         minWidth: 160,
+        cellDataType: 'text',
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: {
           Input: { placeholder: 'Select status' },
@@ -221,6 +235,15 @@ export default function useGetColumnDefs({
             isObject(value) ? isEqual(option, value) : option.name === value,
           agFormatValue: (value: any) => value?.name || '',
         },
+        validators: [
+          (value: any) => {
+            const status = projectStatuses.find(
+              (status) => status.name === value,
+            )
+
+            return status ? null : 'Invalid status option'
+          },
+        ],
       },
     },
     firstDisbursementDate: {
@@ -527,7 +550,10 @@ export default function useGetColumnDefs({
       group: 'Narrative & Indicators Data Fields',
       input: true,
       overrideOptions: {
-        minWidth: 120,
+        minWidth: 200,
+        cellDataType: 'text',
+        validators: [validateText],
+        cellClass: 'ag-cell-ellipsed',
       },
     },
     remarksCurrentYear: {
@@ -535,6 +561,12 @@ export default function useGetColumnDefs({
       fieldName: 'current_year_remarks',
       group: 'Narrative & Indicators Data Fields',
       input: true,
+      overrideOptions: {
+        minWidth: 200,
+        cellDataType: 'text',
+        validators: [validateText],
+        cellClass: 'ag-cell-ellipsed',
+      },
     },
     genderPolicy: {
       label: 'Gender Policy for All Projects Approved from 85th Mtg (Yes/No)',
@@ -544,40 +576,37 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'boolean',
-        cellRenderer: (params: CustomCellRendererProps) => (
-          <>{params.valueFormatted}</>
-        ),
       },
     },
   }
 
-  let columns = Object.values(tableColumns)
-  if (group) {
-    columns = columns.filter(
-      // Always include project code
-      (col) => col.fieldName === 'project_code' || col.group === group,
-    )
-  }
+  const columns = Object.values(tableColumns)
+  const columnDefs = columns.map((c) => {
+    const canBeEdited = c.input && (clipboardEdit || inlineEdit)
 
-  const columnDefs = columns.map((c) => ({
-    headerName: c.label,
-    field: c.fieldName,
-    ...(c.overrideOptions ?? {}),
-    editable: inlineEdit && c.input,
-    // Clipboard editing requires a custom header component
-    headerComponent:
-      clipboardEdit && c.input && rows && setRows
-        ? (props: IHeaderParams) => (
-            <HeaderPasteWrapper
-              field={props.column.getColDef().field!}
-              form={rows}
-              label={props.displayName}
-              setForm={setRows}
-              rowIdField="project_code"
-            />
-          )
-        : undefined,
-  }))
+    return {
+      headerName: c.label,
+      field: c.fieldName,
+      editable: inlineEdit && c.input,
+      canBeEdited,
+      group: c.group,
+      // Clipboard editing requires a custom header component
+      headerComponent:
+        clipboardEdit && c.input && rows && setRows
+          ? (props: IHeaderParams) => (
+              <HeaderPasteWrapper
+                field={props.column.getColDef().field!}
+                form={rows}
+                label={props.displayName}
+                setForm={setRows}
+                rowIdField="project_code"
+              />
+            )
+          : undefined,
+      cellRenderer: canBeEdited ? CellValidation : undefined,
+      ...(c.overrideOptions ?? {}),
+    }
+  })
 
   return {
     columnDefs,
@@ -590,7 +619,7 @@ export default function useGetColumnDefs({
       // Use any because it could theoretically be a colgroup definition and too
       // much narrowing is required
       tooltipValueGetter: (params: any) => {
-        return params.colDef?.valueFormatter?.(params) ?? params.value
+        return params.valueFormatted ?? params.value
       },
     },
   }

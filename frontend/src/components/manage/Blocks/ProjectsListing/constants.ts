@@ -206,3 +206,13 @@ export const textAreaViewClassname = {
   className: 'md:whitespace-nowrap',
   fieldClassName: 'max-w-[50%]',
 }
+
+export const menusDefaultProjectData = {
+  projectId: null,
+  projectTitle: '',
+  projectSubmissionStatus: '',
+  projectStatus: '',
+  projectMetaprojectId: null,
+  projectCode: '',
+  projectEditable: false,
+}

@@ -246,6 +246,42 @@ def agency_viewer_user(agency):
 
 
 @pytest.fixture
+def apr_agency_viewer_user(agency):
+    group = Group.objects.get(name="APR - Agency Viewer")
+    user = UserFactory(username="APRAgencyViewer", agency=agency)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_agency_inputter_user(agency):
+    group = Group.objects.get(name="APR - Agency Inputter")
+    user = UserFactory(username="APRAgencyInputter", agency=agency)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_agency_submitter_user(agency):
+    group = Group.objects.get(name="APR - Agency Submitter")
+    user = UserFactory(
+        username="APRAgencySubmitter",
+        email="agency-submitter@agency.org",
+        agency=agency,
+    )
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_mlfs_full_access_user():
+    group = Group.objects.get(name="APR - MLFS Full Access")
+    user = UserFactory(username="APRMLFSFullAccess")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
 def new_country():
     return CountryFactory.create(iso3="NwC")
 

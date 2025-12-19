@@ -309,22 +309,25 @@ class HasAPRSubmitAccess(permissions.BasePermission):
         return False
 
 
-class HasMLFSViewAccess(permissions.BasePermission):
+class HasAPRMLFSViewAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.has_perm(
             "core.has_apr_view_access"
         ) and request.user.has_perm("core.can_view_all_agencies")
 
 
-class HasMLFSFullAccess(permissions.BasePermission):
+class HasAPRMLFSFullAccess(permissions.BasePermission):
     """
     Permission for MLFS Full Access users (unlock, endorse, edit all).
+    `has_apr_submit_access` covers endorsing and unlocking for MLFS users.
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            "core.has_apr_edit_access"
-        ) and request.user.has_perm("core.can_view_all_agencies")
+        return (
+            request.user.has_perm("core.has_apr_edit_access")
+            and request.user.has_perm("core.has_apr_submit_access")
+            and request.user.has_perm("core.can_view_all_agencies")
+        )
 
 
 class HasProjectV2SubmitAccess(permissions.BasePermission):

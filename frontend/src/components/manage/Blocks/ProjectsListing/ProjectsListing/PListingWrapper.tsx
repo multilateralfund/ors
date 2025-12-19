@@ -12,6 +12,7 @@ import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
 import { CancelButton, CreateButton } from '../HelperComponents'
+import { menusDefaultProjectData } from '../constants'
 import { ListingProjectData } from '../interfaces'
 import { getMenus } from '../utils'
 
@@ -34,14 +35,9 @@ export default function PListingWrapper() {
   } = useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
-  const [projectData, setProjectData] = useState<ListingProjectData>({
-    projectId: null,
-    projectTitle: '',
-    projectSubmissionStatus: '',
-    projectStatus: '',
-    projectMetaprojectId: null,
-    projectCode: '',
-  })
+  const [projectData, setProjectData] = useState<ListingProjectData>(
+    menusDefaultProjectData,
+  )
   const { projectId, projectTitle, projectSubmissionStatus } = projectData
   const [transferId, setTansferId] = useState<number>()
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
@@ -142,14 +138,7 @@ export default function PListingWrapper() {
   }
 
   const onSuccessfulTransfer = (id: number) => {
-    setProjectData({
-      projectId: null,
-      projectTitle: '',
-      projectSubmissionStatus: '',
-      projectStatus: '',
-      projectMetaprojectId: null,
-      projectCode: '',
-    })
+    setProjectData(menusDefaultProjectData)
     setTansferId(id)
   }
 

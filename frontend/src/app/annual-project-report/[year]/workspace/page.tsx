@@ -210,6 +210,9 @@ export default function APRWorkspace() {
             noRowsOverlayComponentParams={{
               label: 'No reported projects',
             }}
+            Toolbar={() => {
+              return <div>Total rows: {apr?.project_reports.length ?? 0}</div>
+            }}
             rowsVisible={100}
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={columnDefs}
