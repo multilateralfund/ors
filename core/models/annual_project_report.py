@@ -287,6 +287,7 @@ class AnnualProjectReport(models.Model):
         if hasattr(self.project, "cached_version_3_list"):
             versions = self.project.cached_version_3_list
             return versions[0] if versions else None
+
         # Fallback to the project property if cached prefetch not available
         return self.project.get_version(3)
 
@@ -300,11 +301,10 @@ class AnnualProjectReport(models.Model):
             # Combine the final version (project) with its archives
             candidates = []
 
-            # Add archives
             if self.project.cached_archive_versions_for_year:
                 candidates.extend(self.project.cached_archive_versions_for_year)
 
-            # Add the final version itself if it matches the criteria
+            # Add the final version itself if it matches the year__lte criteria
             if (
                 self.project.post_excom_decision
                 and self.project.post_excom_decision.meeting.date.year
