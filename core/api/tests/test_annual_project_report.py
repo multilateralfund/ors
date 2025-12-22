@@ -4033,7 +4033,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
         )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
@@ -4076,10 +4076,11 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
         )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
@@ -4129,7 +4130,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             funds_disbursed=80000.0,
         )
 
@@ -4173,7 +4174,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         funds_disbursed = 80000.0
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             funds_disbursed=funds_disbursed,
         )
 
@@ -4212,7 +4213,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             support_cost_disbursed=8000.0,
         )
 
@@ -4259,7 +4260,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         support_cost_disbursed = 8000.0
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             support_cost_disbursed=support_cost_disbursed,
         )
 
@@ -4275,7 +4276,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             (
                 p
                 for p in response.data["project_reports"]
-                if p["project_code"] == version3.code
+                if p["project_code"] == latest_version.code
             ),
             None,
         )
@@ -4391,10 +4392,11 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             funds_disbursed=None,
         )
 
@@ -4410,7 +4412,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             (
                 p
                 for p in response.data["project_reports"]
-                if p["project_code"] == version3.code
+                if p["project_code"] == latest_version.code
             ),
             None,
         )
