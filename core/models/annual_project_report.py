@@ -296,12 +296,34 @@ class AnnualProjectReport(models.Model):
         Get the latest version created by ExCom meeting in or before the report year,
         using cached prefetch if available.
         """
-        if hasattr(self.project, "cached_versions_for_year"):
-            return (
-                self.project.cached_versions_for_year[0]
-                if self.project.cached_versions_for_year
-                else None
-            )
+        if hasattr(self.project, "cached_archive_versions_for_year"):
+            # Combine the final version (project) with its archives
+            candidates = []
+
+            # Add archives
+            if self.project.cached_archive_versions_for_year:
+                candidates.extend(self.project.cached_archive_versions_for_year)
+
+            # Add the final version itself if it matches the criteria
+            if (
+                self.project.post_excom_decision
+                and self.project.post_excom_decision.meeting.date.year
+                <= self.report_year
+            ):
+                candidates.append(self.project)
+
+            # Sort and return the latest
+            if candidates:
+                candidates.sort(
+                    key=lambda p: (
+                        p.post_excom_decision.meeting.date,
+                        p.version,
+                    ),
+                    reverse=True,
+                )
+                return candidates[0]
+            return None
+
         # Fallback to the project property if the prefetch is not available
         return self.project.latest_version_for_year(self.report_year)
 
