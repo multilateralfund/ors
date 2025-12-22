@@ -276,7 +276,8 @@ class APRWorkspaceView(RetrieveAPIView):
                     defaults=previous_data,
                 )
 
-        return agency_report
+        # Refetch the agency report using the optimized queryset - with prefetches
+        return self.get_queryset().get(pk=agency_report.pk)
 
 
 class APRBulkUpdateView(APIView):
