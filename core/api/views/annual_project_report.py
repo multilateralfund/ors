@@ -1059,7 +1059,6 @@ class APRMLFSExportView(APIView):
                 final_id = pr.project.latest_project_id or pr.project.id
                 final_project_ids.add(final_id)
 
-            # Prefetch all archive projects for these final projects
             version_3_projects = {
                 p.latest_project_id or p.id: p
                 for p in Project.objects.really_all()
