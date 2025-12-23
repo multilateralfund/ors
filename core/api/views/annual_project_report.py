@@ -1050,14 +1050,12 @@ class APRMLFSExportView(APIView):
             # by the prefetch in self._get_filtered_agency_reports() (see below)
             all_project_reports.extend(agency_report.project_reports.all())
 
-        # Now prefetch the version data for all collected project reports at once
-        # This is more reliable than nested prefetches through agency reports
+        # Now prefetch the version data (version3, latest_version, all versions for year)
+        # for all collected project reports at once.
+        # Using dicts to handle multi-APR, multi-project data.
         if all_project_reports:
-            # Build set of final project IDs by inspecting the already-loaded projects
             final_project_ids = set()
             for pr in all_project_reports:
-                # pr.project is already loaded via select_related
-                # in build_filtered_project_reports_queryset()
                 final_id = pr.project.latest_project_id or pr.project.id
                 final_project_ids.add(final_id)
 
@@ -1108,7 +1106,7 @@ class APRMLFSExportView(APIView):
                     all_versions_for_year[project_key] = []
                 all_versions_for_year[project_key].append(p)
 
-            # Attach cached data to each project
+            # And finally "attach" the cached data to each project
             for pr in all_project_reports:
                 project_key = pr.project.latest_project_id or pr.project.id
 

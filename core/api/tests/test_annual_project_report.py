@@ -3753,6 +3753,303 @@ class TestAPRMLFSExportView(BaseTest):
         ]
         assert all(value is None or value == "" for value in row_values)
 
+    def test_derived_fields_with_multiple_versions(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert (
+            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            == version3.total_fund
+        )
+
+        expected_adjustment = latest_version.total_fund - version3.total_fund
+        assert (
+            worksheet.cell(first_data_row, columns["adjustment"]).value
+            == expected_adjustment
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["approved_funding_plus_adjustment"]
+            ).value
+            == latest_version.total_fund
+        )
+
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_approved"]).value
+            == version3.support_cost_psc
+        )
+
+        expected_sc_adjustment = (
+            latest_version.support_cost_psc - version3.support_cost_psc
+        )
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_adjustment"]).value
+            == expected_sc_adjustment
+        )
+
+    def test_derived_fields_with_archive_version_apr(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        # Create an APR pointing to version3 instead of the latest
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=75000.0,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert (
+            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            == version3.total_fund
+        )
+        expected_adjustment = latest_version.total_fund - version3.total_fund
+        assert (
+            worksheet.cell(first_data_row, columns["adjustment"]).value
+            == expected_adjustment
+        )
+
+    def test_derived_fields_with_no_version_3(
+        self,
+        mlfs_admin_user,
+        annual_agency_report,
+        initial_project_version_2_for_apr,
+    ):
+        # Derived fields should return None when there's no version 3.
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=initial_project_version_2_for_apr,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert worksheet.cell(first_data_row, columns["approved_funding"]).value is None
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_approved"]).value
+            is None
+        )
+
+    def test_derived_fields_with_no_latest_version_in_year(
+        self,
+        mlfs_admin_user,
+        annual_agency_report,
+        late_post_excom_versions_for_apr,
+    ):
+        version3 = late_post_excom_versions_for_apr[0]
+        later_version = late_post_excom_versions_for_apr[1]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=later_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        # adjustment should be None (no version in the current year)
+        assert worksheet.cell(first_data_row, columns["adjustment"]).value is None
+
+        # approved_funding_plus_adjustment should fall back to version3
+        assert (
+            worksheet.cell(
+                first_data_row, columns["approved_funding_plus_adjustment"]
+            ).value
+            == version3.total_fund
+        )
+
+    def test_phaseout_fields_from_version3(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        # All phase-out proposal fields should come from version 3
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_odp_proposal"]
+            ).value
+            == version3.consumption_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_co2_proposal"]
+            ).value
+            == version3.consumption_phase_out_co2
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_odp_proposal"]
+            ).value
+            == version3.production_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_co2_proposal"]
+            ).value
+            == version3.production_phase_out_co2
+        )
+
+    def test_date_fields_from_different_versions(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        date_approved_cell = worksheet.cell(
+            first_data_row, columns["date_approved"]
+        ).value
+        assert date_approved_cell.date() == version3.date_approved
+
+        date_completion_proposal_cell = worksheet.cell(
+            first_data_row, columns["date_completion_proposal"]
+        ).value
+        assert date_completion_proposal_cell.date() == version3.date_completion
+
+        date_completion_agreement_cell = worksheet.cell(
+            first_data_row,
+            columns["date_of_completion_per_agreement_or_decisions"],
+        ).value
+        assert date_completion_agreement_cell.date() == latest_version.date_completion
+
 
 @pytest.mark.django_db
 class TestAPRFilesDownloadAllView(BaseTest):
@@ -4431,7 +4728,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=version3,
+            project=latest_version,
             funds_disbursed=80000.0,
             support_cost_disbursed=8000.0,
         )
