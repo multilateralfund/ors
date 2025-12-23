@@ -286,7 +286,13 @@ class AnnualProjectReport(models.Model):
         """Get version 3 of the project, using cached prefetch if available."""
         if hasattr(self.project, "cached_version_3_list"):
             versions = self.project.cached_version_3_list
-            return versions[0] if versions else None
+            if versions:
+                return versions[0]
+            # If the project itself is version 3, return it
+            # TODO: can we actually directly include it in the list?
+            if self.project.version == 3:
+                return self.project
+            return None
 
         # Fallback to the project property if cached prefetch not available
         return self.project.get_version(3)
