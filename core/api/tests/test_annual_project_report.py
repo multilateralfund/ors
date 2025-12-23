@@ -405,7 +405,7 @@ class TestAPRWorkspaceView(BaseTest):
         assert project_data is not None
 
         assert project_data["support_cost_approved"] == 15000.0
-        assert project_data["support_cost_adjustment"] == None
+        assert project_data["support_cost_adjustment"] is None
         assert project_data["support_cost_approved_plus_adjustment"] == 15000.0
         assert project_data["support_cost_balance"] == 10000.0
 
