@@ -4254,7 +4254,6 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
-        version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
         support_cost_disbursed = 8000.0
