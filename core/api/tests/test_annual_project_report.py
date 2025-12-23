@@ -375,9 +375,7 @@ class TestAPRWorkspaceView(BaseTest):
             version=3,
             latest_project=None,
             support_cost_psc=15000.0,
-            date_approved=date(
-                annual_agency_report.progress_report.year - 1, 6, 15
-            ),
+            date_approved=date(annual_agency_report.progress_report.year - 1, 6, 15),
         )
 
         AnnualProjectReportFactory(
