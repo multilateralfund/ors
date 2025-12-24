@@ -314,6 +314,99 @@ class TestAPRWorkspaceView(BaseTest):
         assert "project_reports" in response.data
         assert len(response.data["project_reports"]) == 0
 
+    def test_support_cost_derived_fields(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            support_cost_disbursed=8000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        assert project_data["support_cost_approved"] == version3.support_cost_psc
+
+        expected_adjustment = (
+            latest_version.support_cost_psc - version3.support_cost_psc
+        )
+        assert project_data["support_cost_adjustment"] == expected_adjustment
+
+        assert (
+            project_data["support_cost_approved_plus_adjustment"]
+            == latest_version.support_cost_psc
+        )
+        expected_balance = latest_version.support_cost_psc - 8000.0
+        assert project_data["support_cost_balance"] == expected_balance
+
+    def test_support_cost_derived_fields_single_version(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        agency,
+        project_ongoing_status,
+    ):
+        # This project only has version 3
+        single_version = ProjectFactory(
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+            support_cost_psc=15000.0,
+            date_approved=date(annual_agency_report.progress_report.year - 1, 6, 15),
+        )
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=single_version,
+            support_cost_disbursed=5000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == single_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        assert project_data["support_cost_approved"] == 15000.0
+        assert project_data["support_cost_adjustment"] is None
+        assert project_data["support_cost_approved_plus_adjustment"] == 15000.0
+        assert project_data["support_cost_balance"] == 10000.0
+
 
 @pytest.mark.django_db
 class TestAPRBulkUpdateView(BaseTest):
