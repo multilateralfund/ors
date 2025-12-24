@@ -397,7 +397,7 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
 class MeetingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Meeting
-        django_get_or_create = ("number",)
+        django_get_or_create = ("number", "date")
 
     number = factory.Faker("random_int", min=1, max=100)
     date = factory.Faker("date")
@@ -407,6 +407,7 @@ class MeetingFactory(factory.django.DjangoModelFactory):
 class DecisionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Decision
+        django_get_or_create = ("number", "meeting")
 
     meeting = factory.SubFactory(MeetingFactory)
     number = factory.Faker("random_int", min=1, max=100)

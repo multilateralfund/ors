@@ -667,17 +667,17 @@ def rbm_measure():
 
 @pytest.fixture
 def meeting():
-    return MeetingFactory.create(number=1, date="2019-03-14", end_date="2019-03-15")
+    return MeetingFactory(number=1, date="2019-03-14", end_date="2019-03-15")
 
 
 @pytest.fixture
 def new_meeting():
-    return MeetingFactory.create(number=3, date="2020-03-14")
+    return MeetingFactory(number=3, date="2020-03-14")
 
 
 @pytest.fixture
 def decision(meeting):
-    return DecisionFactory.create(number=1, meeting=meeting)
+    return DecisionFactory(number=1, meeting=meeting)
 
 
 @pytest.fixture
@@ -1540,7 +1540,7 @@ def multiple_projects_for_apr(
 @pytest.fixture
 def multiple_meetings_apr_same_year(apr_year):
     return [
-        MeetingFactory.create(
+        MeetingFactory(
             number=10 + i,
             date=date(apr_year, i, 14),
             end_date=date(apr_year, i, 15),
@@ -1551,7 +1551,7 @@ def multiple_meetings_apr_same_year(apr_year):
 
 @pytest.fixture
 def meeting_apr_previous_year(apr_year):
-    return MeetingFactory.create(
+    return MeetingFactory(
         number=39,
         date=date(apr_year - 1, 4, 14),
         end_date=date(apr_year - 1, 4, 15),
@@ -1560,7 +1560,7 @@ def meeting_apr_previous_year(apr_year):
 
 @pytest.fixture
 def meeting_apr_same_year(apr_year):
-    return MeetingFactory.create(
+    return MeetingFactory(
         number=29,
         date=date(apr_year, 4, 14),
         end_date=date(apr_year, 4, 15),
@@ -1569,7 +1569,7 @@ def meeting_apr_same_year(apr_year):
 
 @pytest.fixture
 def meeting_apr_next_year(apr_year):
-    return MeetingFactory.create(
+    return MeetingFactory(
         number=19,
         date=date(apr_year + 1, 4, 14),
         end_date=date(apr_year + 1, 4, 15),
@@ -1579,24 +1579,24 @@ def meeting_apr_next_year(apr_year):
 @pytest.fixture
 def multiple_decisions_apr_same_year(multiple_meetings_apr_same_year):
     return [
-        DecisionFactory.create(number=10 + i, meeting=meeting)
+        DecisionFactory(number=10 + i, meeting=meeting)
         for (i, meeting) in enumerate(multiple_meetings_apr_same_year)
     ]
 
 
 @pytest.fixture
 def decision_apr_previous_year(meeting_apr_previous_year):
-    return DecisionFactory.create(number=39, meeting=meeting_apr_previous_year)
+    return DecisionFactory(number=39, meeting=meeting_apr_previous_year)
 
 
 @pytest.fixture
 def decision_apr_same_year(meeting_apr_same_year):
-    return DecisionFactory.create(number=29, meeting=meeting_apr_same_year)
+    return DecisionFactory(number=29, meeting=meeting_apr_same_year)
 
 
 @pytest.fixture
 def decision_apr_next_year(meeting_apr_next_year):
-    return DecisionFactory.create(number=19, meeting=meeting_apr_next_year)
+    return DecisionFactory(number=19, meeting=meeting_apr_next_year)
 
 
 @pytest.fixture
