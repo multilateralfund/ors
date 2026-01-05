@@ -3,6 +3,7 @@ import Button from '@mui/material/Button'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
+import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
 
 interface SubmitButtonProps {
   revalidateData: () => void
@@ -43,10 +44,7 @@ function SubmitButton({
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
