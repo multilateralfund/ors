@@ -11,14 +11,12 @@ function handleUnrecoverableError() {
   showError('An error occurred. Please try again.')
 }
 
-export async function handleActionErrors(error: unknown) {
-  if (!(error instanceof Response)) {
-    // Network errors, type errors, etc.
-    handleUnrecoverableError()
-    return
-  }
+function isRecoverableError(error: unknown): error is Response {
+  return error instanceof Response && error.status !== 500
+}
 
-  if (error.status === 500) {
+export async function handleActionErrors(error: unknown) {
+  if (!isRecoverableError(error)) {
     handleUnrecoverableError()
     return
   }
