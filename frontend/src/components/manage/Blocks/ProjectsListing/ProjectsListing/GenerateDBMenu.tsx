@@ -21,27 +21,27 @@ const GenerateDBMenu = ({
     () => [
       {
         title: 'MYA warehouse',
-        url: '/projects-listing/export/mya',
+        url: '/projects/export/mya',
         permissions: [canViewProjects],
       },
       {
         title: 'Projects warehouse',
-        url: '/projects-listing/export/all',
+        url: '/projects/export/all',
         permissions: [canViewProjects],
       },
       {
         title: 'Approval summary',
-        url: '/projects-listing/approval-summary',
+        url: '/projects/approval-summary',
         permissions: [isMlfsUser && canApproveProjects],
       },
       {
         title: 'Summary of projects',
-        url: '/projects-listing/summary-of-projects',
+        url: '/projects/summary-of-projects',
         permissions: [isMlfsUser && canApproveProjects],
       },
       {
         title: 'Blanket approval details',
-        url: '/projects-listing/blanket-approval-details',
+        url: '/projects/blanket-approval-details',
         permissions: [isMlfsUser && canViewProjects],
       },
       {
@@ -69,7 +69,7 @@ const GenerateDBMenu = ({
       {
         title: 'Compare versions',
         url: projectData.projectId
-          ? `/projects-listing/${projectData.projectId}/compare-versions`
+          ? `/projects/${projectData.projectId}/compare-versions`
           : null,
         permissions: [canViewProjects],
       },

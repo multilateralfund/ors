@@ -26,7 +26,7 @@ export default function EditProject({ mode }: { mode: string }) {
     (mode === 'edit' && !canEditProjects) ||
     (mode !== 'edit' && !canUpdateProjects)
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

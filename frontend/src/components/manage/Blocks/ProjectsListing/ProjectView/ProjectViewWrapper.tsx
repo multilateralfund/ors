@@ -60,7 +60,7 @@ const ProjectViewWrapper = () => {
   }, [cluster_id, project_type_id, sector_id])
 
   if (project?.error) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (
@@ -68,13 +68,11 @@ const ProjectViewWrapper = () => {
     latest_project &&
     (!location.includes('archive') || paramsVersion != version)
   ) {
-    return (
-      <Redirect to={`/projects-listing/${project_id}/archive/${version}`} />
-    )
+    return <Redirect to={`/projects/${project_id}/archive/${version}`} />
   }
 
   if (data && !latest_project && location.includes('archive')) {
-    return <Redirect to={`/projects-listing/${project_id}`} />
+    return <Redirect to={`/projects/${project_id}`} />
   }
 
   return (

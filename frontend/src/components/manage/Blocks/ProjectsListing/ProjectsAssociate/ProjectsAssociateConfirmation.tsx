@@ -298,7 +298,7 @@ const ProjectsAssociateConfirmation = ({
           variant: 'success',
         },
       )
-      setLocation('/projects-listing/listing')
+      setLocation('/projects/listing')
     } catch (error) {
       const errors = await error.json()
 

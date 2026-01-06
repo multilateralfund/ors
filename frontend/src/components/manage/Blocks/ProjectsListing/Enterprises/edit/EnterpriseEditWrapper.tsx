@@ -18,7 +18,7 @@ const EnterpriseEditWrapper = () => {
   const { data, loading, error } = enterprise
 
   if (!canViewEnterprises) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (
@@ -26,7 +26,7 @@ const EnterpriseEditWrapper = () => {
     data?.status === 'Obsolete' ||
     error
   ) {
-    return <Redirect to={`/projects-listing/enterprises/${enterprise_id}`} />
+    return <Redirect to={`/projects/enterprises/${enterprise_id}`} />
   }
 
   return (

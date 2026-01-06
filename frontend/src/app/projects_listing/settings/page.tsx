@@ -16,7 +16,7 @@ export default function ProjectsSettingsWrapper() {
   const { canSetProjectSettings } = useContext(PermissionsContext)
 
   if (!canSetProjectSettings) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   const { data, setParams } = useGetProjectSettings()

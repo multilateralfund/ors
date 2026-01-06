@@ -14,7 +14,7 @@ export default function PostExComUpdateProject() {
   const { canUpdatePostExcom } = useContext(PermissionsContext)
 
   if (!canUpdatePostExcom) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

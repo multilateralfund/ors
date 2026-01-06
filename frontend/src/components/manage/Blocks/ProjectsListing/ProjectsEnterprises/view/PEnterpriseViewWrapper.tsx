@@ -40,13 +40,11 @@ const PEnterpriseViewWrapper = () => {
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   if (error) {
-    return (
-      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
-    )
+    return <Redirect to={`/projects/projects-enterprises/${project_id}`} />
   }
 
   return (
@@ -71,7 +69,7 @@ const PEnterpriseViewWrapper = () => {
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
                 <CancelLinkButton
                   title="Cancel"
-                  href={`/projects-listing/projects-enterprises/${project_id}`}
+                  href={`/projects/projects-enterprises/${project_id}`}
                 />
                 {(canEditProjectEnterprise ||
                   (canApproveProjectEnterprise &&
@@ -79,7 +77,7 @@ const PEnterpriseViewWrapper = () => {
                       canEditProjectEnterprise))) && (
                   <CustomLink
                     className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                    href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
+                    href={`/projects/projects-enterprises/${project_id}/edit/${enterprise_id}`}
                     color="secondary"
                     variant="contained"
                     size="large"

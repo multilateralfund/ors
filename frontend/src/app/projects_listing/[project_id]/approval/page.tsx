@@ -14,7 +14,7 @@ export default function ProjectsApprovalUpdatePage() {
   const { canApproveProjects } = useContext(PermissionsContext)
 
   if (!canApproveProjects) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

@@ -43,13 +43,13 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
 
   const getViewUrl = (enterpriseId: number) =>
     isEnterprise
-      ? `/projects-listing/enterprises/${enterpriseId}`
-      : `/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`
+      ? `/projects/enterprises/${enterpriseId}`
+      : `/projects/projects-enterprises/${project_id}/view/${enterpriseId}`
 
   const getEditUrl = (enterpriseId: number) =>
     isEnterprise
-      ? `/projects-listing/enterprises/${enterpriseId}/edit`
-      : `/projects-listing/projects-enterprises/${project_id}/edit/${enterpriseId}`
+      ? `/projects/enterprises/${enterpriseId}/edit`
+      : `/projects/projects-enterprises/${project_id}/edit/${enterpriseId}`
 
   const getFieldValue = (
     params: ValueGetterParams | ITooltipParams,

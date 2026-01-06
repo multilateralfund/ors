@@ -26,7 +26,7 @@ const AddComponentModal = ({
           className="no-underline"
           target="_blank"
           rel="noopener noreferrer nofollow"
-          href={`/projects-listing/create/${id}/full-copy/additional-component`}
+          href={`/projects/create/${id}/full-copy/additional-component`}
         >
           <Button className="text-base" onClick={() => setIsModalOpen(false)}>
             Copy of project
@@ -38,7 +38,7 @@ const AddComponentModal = ({
           className="no-underline"
           target="_blank"
           rel="noopener noreferrer nofollow"
-          href={`/projects-listing/create/${id}/partial-copy/additional-component`}
+          href={`/projects/create/${id}/partial-copy/additional-component`}
         >
           <Button className="text-base" onClick={() => setIsModalOpen(false)}>
             Blank submission

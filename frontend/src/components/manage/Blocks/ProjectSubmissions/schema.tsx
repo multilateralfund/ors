@@ -41,7 +41,7 @@ export function usePSListingGridOptions() {
             return (
               <Link
                 className={cx(props.className)}
-                href={`/projects/${props.data.id}`}
+                href={`/projects-listing/${props.data.id}`}
               >
                 {props.value}
               </Link>
@@ -224,7 +224,9 @@ export function usePSListingGridOptions() {
             },
           },
           cellRenderer: (props: any) => {
-            const subsectorNames = props.data.subsectors?.map((s: ProjectSubSectorType) => s.name).join(",")
+            const subsectorNames = props.data.subsectors
+              ?.map((s: ProjectSubSectorType) => s.name)
+              .join(',')
             return <AgCellRenderer {...props} value={subsectorNames} />
           },
           field: 'subsectors',

@@ -450,7 +450,7 @@ const EditActionButtons = ({
       setProjectTitle(result.title)
 
       if (navigationPage) {
-        setLocation(`/projects-listing/${id}/${navigationPage}`)
+        setLocation(`/projects/${id}/${navigationPage}`)
       }
 
       if (isRecommended || isAfterApproval) {
@@ -461,7 +461,7 @@ const EditActionButtons = ({
         enqueueSnackbar(<>Post ExCom update was successful.</>, {
           variant: 'success',
         })
-        setLocation('/projects-listing/listing')
+        setLocation('/projects/listing')
       }
 
       clearUpdatedFields()
@@ -487,7 +487,7 @@ const EditActionButtons = ({
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation('/projects-listing/listing')
+      setLocation('/projects/listing')
     }
   }
 
@@ -515,7 +515,7 @@ const EditActionButtons = ({
         await api(`api/projects/v2/${id}/send_back_to_draft/`, {
           method: 'POST',
         })
-        setLocation(`/projects-listing/${id}`)
+        setLocation(`/projects/${id}`)
         enqueueSnackbar(<>Project(s) sent back to draft successfully.</>, {
           variant: 'success',
         })
@@ -539,7 +539,7 @@ const EditActionButtons = ({
         await api(`api/projects/v2/${id}/withdraw/`, {
           method: 'POST',
         })
-        setLocation(`/projects-listing/${id}`)
+        setLocation(`/projects/${id}`)
       } catch (error) {
         enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
           variant: 'error',
@@ -587,7 +587,7 @@ const EditActionButtons = ({
         await api(`api/projects/v2/${id}/${action}/`, {
           method: 'POST',
         })
-        setLocation(`/projects-listing/${id}`)
+        setLocation(`/projects/${id}`)
       } catch (error) {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',

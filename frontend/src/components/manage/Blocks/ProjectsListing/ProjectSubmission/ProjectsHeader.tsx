@@ -105,7 +105,7 @@ const ProjectsHeader = ({
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation('/projects-listing/listing')
+      setLocation('/projects/listing')
     }
   }
 

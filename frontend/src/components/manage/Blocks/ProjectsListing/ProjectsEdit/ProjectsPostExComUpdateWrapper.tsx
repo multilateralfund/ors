@@ -18,7 +18,7 @@ const ProjectsPostExComUpdateWrapper = () => {
       (!isNull(data.latest_project) ||
         !getIsUpdatablePostExcom(data.submission_status, data.status)))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects/listing" />
   }
 
   return (

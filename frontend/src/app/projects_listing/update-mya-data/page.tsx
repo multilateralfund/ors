@@ -25,7 +25,7 @@ export default function ProjectsUpdateMyaDataPage() {
             {!!metaproject_id && (
               <CancelLinkButton
                 title="All MYA data"
-                href="/projects-listing/update-mya-data"
+                href="/projects/update-mya-data"
               />
             )}
           </div>

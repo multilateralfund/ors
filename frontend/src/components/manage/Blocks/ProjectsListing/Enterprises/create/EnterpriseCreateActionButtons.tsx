@@ -32,7 +32,7 @@ const EnterpriseCreateActionButtons = ({
       })
 
       setEnterpriseId(result.id)
-      setLocation(`/projects-listing/enterprises/${result.id}/edit`)
+      setLocation(`/projects/enterprises/${result.id}/edit`)
     } catch (error) {
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
@@ -43,7 +43,7 @@ const EnterpriseCreateActionButtons = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
+      <CancelLinkButton title="Cancel" href="/projects/enterprises" />
       {canEditEnterprise && (
         <SubmitButton
           title="Create enterprise"

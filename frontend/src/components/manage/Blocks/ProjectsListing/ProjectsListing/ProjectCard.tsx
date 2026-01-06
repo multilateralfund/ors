@@ -178,7 +178,7 @@ export default function ProjectCard({
             <div className="flex gap-6">
               <Link
                 className="flex h-6 w-6 justify-center"
-                href={`/projects-listing/${id}`}
+                href={`/projects/${id}`}
               >
                 <FiEye size={24} color="white" />
               </Link>
@@ -186,7 +186,7 @@ export default function ProjectCard({
                 canEditProjects && (
                   <Link
                     className="flex h-6 w-6 justify-center"
-                    href={`/projects-listing/${id}/edit`}
+                    href={`/projects/${id}/edit`}
                   >
                     <FiEdit size={24} color="white" />
                   </Link>
