@@ -752,7 +752,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="pt-0.5 text-lg leading-none">
+                        <Typography className="text-lg leading-5">
                           {warnings.warnings[0]}
                         </Typography>
                       }
@@ -767,7 +767,7 @@ const ProjectsCreate = ({
                         <Typography className="text-lg">
                           Please make sure all the sections are valid.
                         </Typography>
-                        <Typography>
+                        <Typography component="div">
                           <div className="mt-1">
                             {errors.map((err, idx) =>
                               err ? (

@@ -30,7 +30,7 @@ const CancelWarningModal = ({
 
   return (
     <Modal
-      aria-labelledby="cancel-modal-title"
+      aria-labelledby="cancel-modal"
       open={isModalOpen}
       onClose={() => setIsModalOpen(false)}
       keepMounted
@@ -40,7 +40,7 @@ const CancelWarningModal = ({
         },
       }}
     >
-      <Box className="flex w-full max-w-lg flex-col absolute-center">
+      <Box className="flex w-full max-w-[90%] flex-col absolute-center sm:max-w-lg">
         <Typography className="mb-4 text-[20px] font-medium text-black">
           Cancel project {mode}
         </Typography>

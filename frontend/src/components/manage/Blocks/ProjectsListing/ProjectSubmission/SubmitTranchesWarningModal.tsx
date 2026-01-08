@@ -17,7 +17,7 @@ const SubmitTranchesWarningModal = ({
 
   return (
     <Modal
-      aria-labelledby="tranche-warning-modal-title"
+      aria-labelledby="tranche-warning-modal"
       open={isTrancheWarningOpen}
       onClose={() => setIsTrancheWarningOpen(false)}
       keepMounted
