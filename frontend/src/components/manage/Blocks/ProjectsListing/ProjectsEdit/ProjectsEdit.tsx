@@ -76,6 +76,13 @@ const ProjectsEdit = ({
   const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
 
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
       data,
@@ -536,8 +543,6 @@ const ProjectsEdit = ({
       debouncedGetTrancheErrors()
     }
   }, [tranche, project_id, specificFields])
-
-  const { updatedFields, addUpdatedField } = useUpdatedFields()
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,

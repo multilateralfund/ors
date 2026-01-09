@@ -21,10 +21,11 @@ const CancelWarningModal = ({
   const { clearUpdatedFields } = useUpdatedFields()
 
   const onContinue = () => {
+    clearUpdatedFields()
+
     if (onContinueAction) {
       onContinueAction()
     } else {
-      clearUpdatedFields()
       setLocation(url ?? '/projects-listing/listing')
     }
     setIsModalOpen(false)
