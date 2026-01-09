@@ -9,18 +9,24 @@ const CancelWarningModal = ({
   url,
   isModalOpen,
   setIsModalOpen,
+  onContinueAction,
 }: {
   mode: string
   url?: string
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
+  onContinueAction?: () => void
 }) => {
   const [_, setLocation] = useLocation()
   const { clearUpdatedFields } = useUpdatedFields()
 
   const onContinue = () => {
-    clearUpdatedFields()
-    setLocation(url ?? '/projects-listing/listing')
+    if (onContinueAction) {
+      onContinueAction()
+    } else {
+      clearUpdatedFields()
+      setLocation(url ?? '/projects-listing/listing')
+    }
     setIsModalOpen(false)
   }
 

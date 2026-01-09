@@ -17,7 +17,7 @@ import {
 } from './interfaces'
 import { debounce } from '@ors/helpers'
 
-import { filter, lowerCase, map, upperCase } from 'lodash'
+import { filter, isUndefined, lowerCase, map, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -116,9 +116,19 @@ export const IncreaseVersionButton = ({
   </Button>
 )
 
-export const RedirectBackButton = () => (
+export const RedirectBackButton = ({
+  src,
+  onAction,
+}: {
+  src?: string | null
+  onAction?: () => void
+}) => (
   <div className="w-fit">
-    <Link className="text-black no-underline" href="/projects-listing/listing">
+    <Link
+      className="cursor-pointer text-black no-underline"
+      href={isUndefined(src) ? '/projects-listing/listing' : src}
+      onClick={onAction}
+    >
       <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
         <IoReturnUpBack size={18} />
         IA/BA Portal
