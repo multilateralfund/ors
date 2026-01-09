@@ -17,7 +17,7 @@ import {
 } from './interfaces'
 import { debounce } from '@ors/helpers'
 
-import { filter, isUndefined, lowerCase, map, upperCase } from 'lodash'
+import { filter, lowerCase, map, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -117,16 +117,16 @@ export const IncreaseVersionButton = ({
 )
 
 export const RedirectBackButton = ({
-  src,
+  withRedirect,
   onAction,
 }: {
-  src?: string | null
+  withRedirect?: boolean
   onAction?: () => void
 }) => (
   <div className="w-fit">
     <Link
       className="cursor-pointer text-black no-underline"
-      href={isUndefined(src) ? '/projects-listing/listing' : src}
+      href={withRedirect === false ? null : '/projects-listing/listing'}
       onClick={onAction}
     >
       <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">

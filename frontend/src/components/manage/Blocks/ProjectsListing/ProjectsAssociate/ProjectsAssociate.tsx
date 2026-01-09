@@ -167,7 +167,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
         className="!fixed bg-action-disabledBackground"
         active={loading || !loadedAssociatedProjects}
       />
-      <RedirectBackButton src={null} onAction={onCancel} />
+      <RedirectBackButton withRedirect={false} onAction={onCancel} />
       <div className="flex flex-col gap-6">
         {mode === 'selection' ? (
           <ProjectsAssociateSelection
@@ -202,7 +202,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
           mode="association"
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
-          onContinueAction={!redirectOnCancel ? cancelAssociation : undefined}
+          onContinueAction={redirectOnCancel ? undefined : cancelAssociation}
         />
       )}
     </>
