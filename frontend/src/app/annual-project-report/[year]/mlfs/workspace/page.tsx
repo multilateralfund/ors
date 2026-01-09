@@ -393,7 +393,7 @@ export default function APRMLFSWorkspace() {
               aria-controls="tabpanel-submissions"
             ></Tab>
           </Tabs>
-          <div className="mb-2 flex gap-x-2">
+          <div className="mb-2 flex flex-none gap-x-2">
             {activeTab === 0 && canUpdateAPR && (
               <Button
                 disabled={loading}
