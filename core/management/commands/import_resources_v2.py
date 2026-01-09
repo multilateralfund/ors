@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from core.import_data.import_project_resources_v2 import import_project_resources_v2
+from core.import_data_v2.import_project_resources_v2 import import_project_resources_v2
 
 
 class Command(BaseCommand):
@@ -23,7 +23,9 @@ class Command(BaseCommand):
                 "import_project_type",
                 "import_sector",
                 "import_subsector",
+                "import_modules",
                 "import_project_submission_statuses",
+                "clean_up_countries",
                 "clean_up_project_statuses",
                 "import_cluster_type_sector_links",
                 "import_fields",
