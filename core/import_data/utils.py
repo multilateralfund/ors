@@ -45,6 +45,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 logger = logging.getLogger(__name__)
 
 IMPORT_RESOURCES_DIR = settings.ROOT_DIR / "import_data" / "resources"
+IMPORT_RESOURCES_V2_DIR = settings.ROOT_DIR / "import_data_v2" / "resources"
 IMPORT_PROJECTS_DIR = settings.IMPORT_DATA_DIR / "project_database"
 
 PCR_DIR_LIST = ["pcr2023", "hpmppcr2023"]
