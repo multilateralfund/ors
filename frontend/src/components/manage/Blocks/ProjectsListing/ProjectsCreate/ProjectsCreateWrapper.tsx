@@ -33,6 +33,13 @@ const ProjectsCreateWrapper = () => {
 
   const { canViewBp } = useContext(PermissionsContext)
 
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
   const {
     fetchProjectFields,
     projectFields: allFields,
@@ -134,8 +141,6 @@ const ProjectsCreateWrapper = () => {
   const onBpDataChange = (bpData: BpDataProps) => {
     setBpData(bpData)
   }
-
-  const { updatedFields, addUpdatedField } = useUpdatedFields()
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,

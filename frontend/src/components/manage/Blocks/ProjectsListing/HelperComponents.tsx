@@ -116,9 +116,19 @@ export const IncreaseVersionButton = ({
   </Button>
 )
 
-export const RedirectBackButton = () => (
+export const RedirectBackButton = ({
+  withRedirect,
+  onAction,
+}: {
+  withRedirect?: boolean
+  onAction?: () => void
+}) => (
   <div className="w-fit">
-    <Link className="text-black no-underline" href="/projects-listing/listing">
+    <Link
+      className="cursor-pointer text-black no-underline"
+      href={withRedirect === false ? null : '/projects-listing/listing'}
+      onClick={onAction}
+    >
       <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
         <IoReturnUpBack size={18} />
         IA/BA Portal

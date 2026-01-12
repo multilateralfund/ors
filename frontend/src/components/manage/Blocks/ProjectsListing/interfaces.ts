@@ -276,6 +276,11 @@ export type SetProjectData = (
   fieldName?: string,
 ) => void
 
+export type SetProjectTranferData = (
+  updater: SetStateAction<ProjectTransferData>,
+  fieldName?: string,
+) => void
+
 export interface ProjectDataProps {
   projectData: ProjectData
   setProjectData: SetProjectData
