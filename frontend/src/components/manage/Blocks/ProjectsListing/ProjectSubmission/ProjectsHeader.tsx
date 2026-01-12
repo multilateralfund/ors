@@ -2,12 +2,16 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import Link from '@ors/components/ui/Link/Link'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CreateActionButtons from './CreateActionButtons'
 import CancelWarningModal from './CancelWarningModal'
 import EditActionButtons from './EditActionButtons'
-import { PageTitle, ProjectStatusInfo, VersionsList } from '../HelperComponents'
+import {
+  PageTitle,
+  ProjectStatusInfo,
+  RedirectBackButton,
+  VersionsList,
+} from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectFile,
@@ -19,7 +23,6 @@ import {
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
-import { IoReturnUpBack } from 'react-icons/io5'
 import { CircularProgress } from '@mui/material'
 import { useLocation } from 'wouter'
 import { find } from 'lodash'
@@ -113,18 +116,7 @@ const ProjectsHeader = ({
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
-          <div className="w-fit">
-            <Link
-              className="cursor-pointer text-black no-underline"
-              onClick={onCancel}
-            >
-              <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
-                <IoReturnUpBack size={18} />
-                IA/BA Portal
-              </div>
-            </Link>
-          </div>
-
+          <RedirectBackButton withRedirect={false} onAction={onCancel} />
           <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             <PageHeading>
               {mode === 'edit' && (
