@@ -20,6 +20,8 @@ const CancelWarningModal = ({
   const [_, setLocation] = useLocation()
   const { clearUpdatedFields } = useUpdatedFields()
 
+  const additionalText = mode !== 'MYA data update' ? 'project' : ''
+
   const onContinue = () => {
     clearUpdatedFields()
 
@@ -49,11 +51,11 @@ const CancelWarningModal = ({
     >
       <Box className="flex w-full max-w-lg flex-col absolute-center">
         <Typography className="mb-4 text-[20px] font-medium text-black">
-          Cancel project {mode}
+          Cancel {additionalText} {mode}
         </Typography>
         <Typography className="mb-4 text-lg text-primary">
-          You have unsaved changes. Are you sure you want to cancel project{' '}
-          {mode}?
+          You have unsaved changes. Are you sure you want to cancel{' '}
+          {additionalText} {mode}?
         </Typography>
         <div className="ml-auto mr-2 flex flex-wrap gap-3">
           <CustomLink
