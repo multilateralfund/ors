@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
 import ProjectTransfer from './ProjectTransfer'
@@ -225,6 +226,8 @@ const ProjectTransferWrapper = ({
       setIsModalOpen(false)
     }
   }
+
+  useVisibilityChange(updatedFields.size > 0)
 
   return (
     <>
