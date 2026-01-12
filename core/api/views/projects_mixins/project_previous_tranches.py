@@ -9,7 +9,8 @@ from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import Project
 from core.models.project_metadata import ProjectSpecificFields
 
-#pylint: disable=line-too-long
+# pylint: disable=line-too-long
+
 
 class ProjectListPreviousTranchesMixin:
     @swagger_auto_schema(
