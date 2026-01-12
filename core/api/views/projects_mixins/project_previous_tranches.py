@@ -9,6 +9,7 @@ from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import Project
 from core.models.project_metadata import ProjectSpecificFields
 
+#pylint: disable=line-too-long
 
 class ProjectListPreviousTranchesMixin:
     @swagger_auto_schema(
@@ -20,66 +21,66 @@ class ProjectListPreviousTranchesMixin:
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
-                "tranche",
+                "project_id",
                 openapi.IN_QUERY,
                 description="""
-                    The new tranche number given to the project.
-                    Used to filter previous tranches.
-                    If not provided, tranche will be used from the project.
+                    The project ID to exclude from previous tranches.
                 """,
                 type=openapi.TYPE_INTEGER,
             ),
         ],
         operation_description="List previous tranches of the project.",
     )
-    @action(methods=["GET"], detail=True)
+    @action(
+        methods=["GET"],
+        detail=False,
+        filter_backends=[],
+        url_path=r"list_previous_tranches/country/(?P<country_id>\d+)/cluster/(?P<cluster_id>\d+)/tranche/(?P<tranche>\d+)",
+    )
     def list_previous_tranches(self, request, *args, **kwargs):
         """
         List previous tranches of the project.
         This is used to get the previous tranche for the project.
         """
-        project = self.get_object()
         visible_projects_for_user = self.filter_permissions_queryset(
             Project.objects.all(), results_for_edit_actual_fields=True
         )
-        if not request.query_params.get("tranche"):
-            # If tranche is not provided, use the tranche from the project
-            tranche = project.tranche
-        else:
-            tranche = request.query_params.get("tranche")
-        try:
-            tranche = int(tranche)
-        except (ValueError, TypeError):
-            previous_tranches = Project.objects.none()
-        else:
-            previous_tranches = (
-                Project.objects.all()
-                .exclude(
-                    id=project.id,
-                )
-                .filter(
-                    country=project.country,
-                    cluster=project.cluster,
-                    tranche=tranche - 1,
-                    submission_status__name="Approved",
-                )
-                .exclude(status__name__in=["Closed", "Transferred"])
+        project = None
+        if request.query_params.get("project_id"):
+            project = visible_projects_for_user.filter(
+                id=request.query_params.get("project_id")
+            ).first()
+
+        tranche = int(kwargs.get("tranche"))
+        previous_tranches = (
+            Project.objects.all()
+            .filter(
+                country=kwargs.get("country_id"),
+                cluster_id=kwargs.get("cluster_id"),
+                tranche=tranche - 1,
+                submission_status__name="Approved",
             )
-            previous_tranches = previous_tranches.select_related(
-                "agency",
-                "country",
-                "project_type",
-                "status",
-                "submission_status",
-                "sector",
-            ).prefetch_related(
-                "coop_agencies",
-                "subsectors",
-                "funds",
-                "comments",
-                "files",
-                "subsectors__sector",
+            .exclude(status__name__in=["Closed", "Transferred"])
+        )
+        if project:
+            previous_tranches = previous_tranches.exclude(
+                id=project.id,
             )
+        previous_tranches = previous_tranches.select_related(
+            "agency",
+            "country",
+            "project_type",
+            "status",
+            "submission_status",
+            "sector",
+        ).prefetch_related(
+            "coop_agencies",
+            "subsectors",
+            "funds",
+            "comments",
+            "files",
+            "subsectors__sector",
+        )
         if (
             previous_tranches.count()
             != visible_projects_for_user.filter(
