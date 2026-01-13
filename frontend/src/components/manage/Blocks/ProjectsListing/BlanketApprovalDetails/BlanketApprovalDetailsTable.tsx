@@ -146,6 +146,24 @@ const BlanketApprovalDetailsTable = (props: {
             countryEntry={countryEntry}
           />
         ))}
+        {apiData?.grand_total ? (
+          <tr>
+            <th colSpan={2} className="text-right">
+              Grand total
+            </th>
+            <th>{numberValueOrNull(apiData.grand_total.hcfc)}</th>
+            <th>{numberValueOrNull(apiData.grand_total.hfc)}</th>
+            <th className="text-right">
+              {dollarValueOrNull(apiData.grand_total.project_funding)}
+            </th>
+            <th className="text-right">
+              {dollarValueOrNull(apiData.grand_total.project_support_cost)}
+            </th>
+            <th className="text-right">
+              {dollarValueOrNull(apiData.grand_total.total)}
+            </th>
+          </tr>
+        ) : null}
       </tbody>
     </table>
   )

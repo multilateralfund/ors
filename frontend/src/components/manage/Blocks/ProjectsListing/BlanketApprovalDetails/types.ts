@@ -42,6 +42,7 @@ export type ApiBlanketApprovalDetailsCountryEntry = {
 
 export type ApiBlanketApprovalDetails = {
   total_projects: number
+  grand_total: ApiBlanketApprovalDetailsCountryEntry['country_total']
   result: ApiBlanketApprovalDetailsCountryEntry[]
 }
 export type ApiBlanketApprovalDetailsFilters = {
