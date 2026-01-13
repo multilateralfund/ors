@@ -445,7 +445,10 @@ const ProjectsEdit = ({
       const result = await api(
         `api/projects/v2/list_previous_tranches/country/${country}/cluster/${cluster}/tranche/${tranche}`,
         {
-          params: { project_id: project_id, include_validation: true },
+          params: {
+            project_id: mode === 'edit' ? project_id : undefined,
+            include_validation: true,
+          },
           withStoreCache: false,
         },
         false,
@@ -473,9 +476,9 @@ const ProjectsEdit = ({
   useEffect(() => {
     const hasTrancheField = hasSpecificField(specificFields, 'tranche')
 
-    if (mode !== 'edit' || tranche <= 1 || !hasTrancheField) {
+    if (tranche <= 1 || !hasTrancheField) {
       setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
-    } else if (isEditMode && canViewProjects) {
+    } else if (canViewProjects) {
       debouncedGetTrancheErrors()
     }
   }, [country, cluster, tranche, project_id, specificFields])
