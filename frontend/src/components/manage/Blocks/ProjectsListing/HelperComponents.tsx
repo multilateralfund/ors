@@ -438,7 +438,7 @@ export const OpenedList = ({
   data: RelatedProjectsType[]
   errorText?: string
   errorAlert?: ReactNode
-  getTrancheErrors?: () => void
+  getTrancheErrors?: () => Promise<boolean | undefined>
   loaded?: boolean
   canRefreshStatus?: boolean
   mode: string

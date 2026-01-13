@@ -7,10 +7,16 @@ import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
+import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
-import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import {
+  getDefaultValues,
+  getNonFieldErrors,
+  hasSpecificField,
+} from '../utils.ts'
+import {
+  defaultTrancheErrors,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants.ts'
@@ -22,16 +28,19 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
+  TrancheErrorType,
 } from '../interfaces.ts'
+import { api } from '@ors/helpers/index.ts'
 import { useStore } from '@ors/store.tsx'
 
+import { enqueueSnackbar } from 'notistack'
 import { debounce, groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
 
-  const { canViewBp } = useContext(PermissionsContext)
+  const { canViewProjects, canViewBp } = useContext(PermissionsContext)
 
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
@@ -108,6 +117,8 @@ const ProjectsCreateWrapper = () => {
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
+  const [trancheErrors, setTrancheErrors] =
+    useState<TrancheErrorType>(defaultTrancheErrors)
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
@@ -137,6 +148,52 @@ const ProjectsCreateWrapper = () => {
       setSpecificFieldsLoaded(true)
     }
   }, [cluster, project_type, sector])
+
+  const tranche = projectData.projectSpecificFields?.tranche ?? 0
+
+  const getTrancheErrors = async () => {
+    setTrancheErrors((prevErrors) => {
+      return { ...prevErrors, loaded: false, loading: true }
+    })
+
+    try {
+      const result = await api(
+        `api/projects/v2/list_previous_tranches/country/${country}/cluster/${cluster}/tranche/${tranche}`,
+        {
+          params: { include_validation: true },
+          withStoreCache: false,
+        },
+        false,
+      )
+
+      return useGetTrancheErrors(result, projectFields, setTrancheErrors)
+    } catch (error) {
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
+      enqueueSnackbar(
+        <>
+          An error occurred during previous tranches validation. Please try
+          again.
+        </>,
+        {
+          variant: 'error',
+        },
+      )
+
+      return true
+    }
+  }
+
+  const debouncedGetTrancheErrors = debounce(getTrancheErrors, 0)
+
+  useEffect(() => {
+    const hasTrancheField = hasSpecificField(specificFields, 'tranche')
+
+    if (tranche <= 1 || !hasTrancheField) {
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
+    } else if (canViewProjects) {
+      debouncedGetTrancheErrors()
+    }
+  }, [country, cluster, tranche, specificFields])
 
   const onBpDataChange = (bpData: BpDataProps) => {
     setBpData(bpData)
@@ -171,6 +228,8 @@ const ProjectsCreateWrapper = () => {
           setFileErrors,
           setOtherErrors,
           specificFields,
+          trancheErrors,
+          getTrancheErrors,
           specificFieldsLoaded,
           setProjectData,
           bpData,
@@ -186,6 +245,8 @@ const ProjectsCreateWrapper = () => {
           setFiles,
           errors,
           fileErrors,
+          trancheErrors,
+          getTrancheErrors,
           specificFieldsLoaded,
           bpData,
           onBpDataChange,

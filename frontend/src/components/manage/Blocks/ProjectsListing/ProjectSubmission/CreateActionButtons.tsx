@@ -5,7 +5,11 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
-import { formatProjectFields, formatSubmitData } from '../utils'
+import {
+  formatProjectFields,
+  formatSubmitData,
+  hasSpecificField,
+} from '../utils'
 import { ActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -25,6 +29,7 @@ const CreateActionButtons = ({
   setFileErrors,
   setOtherErrors,
   specificFields,
+  getTrancheErrors,
   specificFieldsLoaded,
   mode,
   filesMetaData,
@@ -54,6 +59,23 @@ const CreateActionButtons = ({
     setFileErrors('')
     setOtherErrors('')
     setErrors({})
+
+    const hasTrancheField = hasSpecificField(specificFields, 'tranche')
+
+    if (
+      hasTrancheField &&
+      (projectData.projectSpecificFields.tranche ?? 0) > 1
+    ) {
+      const trancheErrors = await getTrancheErrors()
+
+      if (trancheErrors) {
+        setIsLoading(false)
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+        return
+      }
+    }
 
     try {
       const data = formatSubmitData(
