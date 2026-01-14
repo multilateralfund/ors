@@ -40,10 +40,15 @@ def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType
         {
             "id": "title",
             "headerName": "Title",
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "description",
             "headerName": "Description",
+            "column_width": 125,
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "project_type",
