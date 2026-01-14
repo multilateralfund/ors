@@ -76,7 +76,7 @@ const ProjectOverview = ({
                     type="error"
                     content={
                       <Typography className="text-lg">
-                        Please complete the previous tranche's impact indicators
+                        Previous tranche's impact indicators must be filled in
                         before submitting this project.
                       </Typography>
                     }
