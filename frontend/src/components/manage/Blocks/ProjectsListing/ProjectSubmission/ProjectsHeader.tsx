@@ -18,7 +18,6 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectHeader,
-  TrancheErrorType,
   BpDataProps,
 } from '../interfaces'
 import { useStore } from '@ors/store'
@@ -45,8 +44,6 @@ const ProjectsHeader = ({
 }: ProjectHeader & {
   mode: string
   postExComUpdate?: boolean
-  trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
@@ -84,9 +81,7 @@ const ProjectsHeader = ({
     hasValidationErrors ||
     bpData.bpDataLoading ||
     !!find(filesMetaData, (metadata) => !metadata.type) ||
-    (mode === 'edit' &&
-      project?.submission_status !== 'Draft' &&
-      hasTrancheErrors)
+    hasTrancheErrors
 
   const isSubmitDisabled = isSaveDisabled || hasTrancheErrors
 
@@ -152,6 +147,8 @@ const ProjectsHeader = ({
                 projectData,
                 isSaveDisabled,
                 setIsLoading,
+                trancheErrors,
+                getTrancheErrors,
                 files,
                 mode,
                 specificFields,

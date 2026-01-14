@@ -67,6 +67,8 @@ const ProjectViewButtons = ({
     latest_project,
     editable,
     editable_for_actual_fields,
+    country_id,
+    cluster_id,
     tranche = 0,
   } = data
 
@@ -87,8 +89,9 @@ const ProjectViewButtons = ({
   const getTrancheWarnings = async () => {
     try {
       const result = await api(
-        `api/projects/v2/${id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
+        `api/projects/v2/list_previous_tranches/country/${country_id}/cluster/${cluster_id}/tranche/${tranche}`,
         {
+          params: { project_id: id, include_validation: true },
           withStoreCache: false,
         },
         false,
@@ -107,9 +110,8 @@ const ProjectViewButtons = ({
             return crtField && crtField.data_type !== 'boolean'
           }),
         )
-        return tranches?.find(
-          (tranche: RelatedProjectsType) => tranche?.warnings?.length > 0,
-        )
+
+        return tranches?.find((tranche: []) => tranche?.length > 0)
       }
     } catch (error) {
       enqueueSnackbar(

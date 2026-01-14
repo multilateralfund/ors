@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useContext, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -42,10 +42,12 @@ import {
   getAgencyErrorType,
   canEditField,
   getPostExcomApprovalErrors,
+  getFieldData,
+  formatOptions,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { find, groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -141,6 +143,31 @@ const ProjectsCreate = ({
   const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
+  const groupField = getFieldData(overviewFields, 'group')
+  const specificFieldsIdentifiers = 'projectSpecificFields'
+  const specificFieldsData = projectData[specificFieldsIdentifiers] || []
+
+  useEffect(() => {
+    if (groupField) {
+      const groupOptions = formatOptions(groupField, specificFieldsData)
+
+      const validData = find(
+        groupOptions,
+        (option) => option.id === specificFieldsData.group,
+      )
+
+      if (!validData) {
+        setProjectData((prevData) => ({
+          ...prevData,
+          [specificFieldsIdentifiers]: {
+            ...prevData[specificFieldsIdentifiers],
+            group: null,
+          },
+        }))
+      }
+    }
+  }, [groupField])
 
   const isCrossCuttingTabDisabled =
     areNextSectionsDisabled ||
