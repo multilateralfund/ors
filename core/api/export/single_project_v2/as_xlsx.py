@@ -54,6 +54,17 @@ class ProjectsV2ProjectExport:
             writer.sheet = sheet
             writer.write([activity_data])
 
+    def _write_transposed(self, sheet_name, headers, data):
+        # Create a temporary horizontal sheet
+        tmp_sheet = self.wb.create_sheet(f"_tmp_{sheet_name}")
+        ProjectWriter(tmp_sheet, headers).write(data)
+
+        # Create the sheet as the transposed horizontal one
+        sheet = self.add_sheet(sheet_name, Worksheet.ORIENTATION_PORTRAIT)
+        transpose_sheet(tmp_sheet, sheet)
+
+        self.wb.remove(tmp_sheet)
+
     def _write_cross_cutting_fields(
         self,
         fields_section: str,
@@ -71,18 +82,7 @@ class ProjectsV2ProjectExport:
             .exclude(read_field_name="sort_order")
         )
         if fields:
-            # Create a temporary horizontal sheet
-            tmp_sheet = self.wb.create_sheet(f"_tmp_{sheet_name}")
-            ProjectWriter(
-                tmp_sheet,
-                get_headers_cross_cutting(fields),
-            ).write(data)
-
-            # Create the sheet as the transposed horizontal one
-            sheet = self.add_sheet(sheet_name, Worksheet.ORIENTATION_PORTRAIT)
-            transpose_sheet(tmp_sheet, sheet)
-
-            self.wb.remove(tmp_sheet)
+            self._write_transposed(sheet_name, get_headers_cross_cutting(fields), data)
 
     def build_cross_cutting(self, data):
         self._write_cross_cutting_fields(
@@ -98,6 +98,7 @@ class ProjectsV2ProjectExport:
         sheet_name: Annotated[str, "max_length=31"],
         data,
         only_planned=False,
+        transposed=False,
     ):
         """
         Writes a new sheet.
@@ -113,11 +114,12 @@ class ProjectsV2ProjectExport:
             fields = fields.filter(is_actual=False)
 
         if fields:
-            sheet = self.add_sheet(sheet_name)
-            ProjectWriter(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write(data)
+            headers = get_headers_specific_information(fields)
+            if transposed:
+                self._write_transposed(sheet_name, headers, data)
+            else:
+                sheet = self.add_sheet(sheet_name)
+                ProjectWriter(sheet, headers).write(data)
 
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
@@ -150,6 +152,7 @@ class ProjectsV2ProjectExport:
                 "Impact",
                 [data],
                 only_planned=True,
+                transposed=True,
             )
 
     def build_xls(self):
