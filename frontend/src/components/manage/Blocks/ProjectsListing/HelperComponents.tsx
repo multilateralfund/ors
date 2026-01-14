@@ -365,6 +365,17 @@ export const RelatedProjects = ({
             )}
             {hasErrors && <ErrorTag />}
           </Link>
+          {mode === 'tranches' && (
+            <div
+              className={cx('ml-6 mt-1 flex items-center gap-2.5', {
+                '!text-inherit': !hasErrors,
+                '!text-[#801F00]': hasErrors,
+              })}
+            >
+              <span>Agency:</span>
+              <h4 className="m-0"> {entry.agency}</h4>
+            </div>
+          )}
           {withExtraProjectInfo ? (
             <div className="ml-6 flex flex-wrap gap-3">
               <div className="flex items-center gap-2.5">
