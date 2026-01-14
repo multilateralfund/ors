@@ -216,3 +216,11 @@ export const menusDefaultProjectData = {
   projectCode: '',
   projectEditable: false,
 }
+
+export const defaultTrancheErrors = {
+  errorText: '',
+  isError: false,
+  tranchesData: [],
+  loaded: false,
+  loading: false,
+}

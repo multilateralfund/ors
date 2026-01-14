@@ -3,6 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
 import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
@@ -34,6 +37,13 @@ const ProjectTransferWrapper = ({
   setIsModalOpen: (isOpen: boolean) => void
   onSuccess: (id: number) => void
 }) => {
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
   const [projectData, setProjectData] = useState<ProjectTransferData>(
     initialTranferedProjectData,
   )
@@ -43,6 +53,7 @@ const ProjectTransferWrapper = ({
   })
   const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
@@ -100,6 +111,23 @@ const ProjectTransferWrapper = ({
       psc_transferred: getFormattedDecimalValue(project.support_cost_psc),
     }))
   }, [])
+
+  const setProjectDataWithEditTracking = (
+    updater: React.SetStateAction<ProjectTransferData>,
+    fieldName?: string,
+  ) => {
+    setProjectData((prevData) => {
+      if (fieldName) {
+        addUpdatedField(fieldName)
+      }
+
+      return typeof updater === 'function'
+        ? (updater as (prev: ProjectTransferData) => ProjectTransferData)(
+            prevData,
+          )
+        : updater
+    })
+  }
 
   const handleErrors = async (error: any) => {
     let errors = error
@@ -182,6 +210,7 @@ const ProjectTransferWrapper = ({
       enqueueSnackbar(<>Project was transferred successfully.</>, {
         variant: 'success',
       })
+      clearUpdatedFields()
       onSuccess(data.id)
     } catch (error) {
       await handleErrors(error)
@@ -190,12 +219,21 @@ const ProjectTransferWrapper = ({
     }
   }
 
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setIsModalOpen(false)
+    }
+  }
+
+  useVisibilityChange(updatedFields.size > 0)
+
   return (
     <>
       <ProjectTransfer
         {...{
           projectData,
-          setProjectData,
           filesMetaData,
           setFilesMetaData,
           project,
@@ -204,6 +242,7 @@ const ProjectTransferWrapper = ({
           missingFileTypeErrors,
           allFileErrors,
         }}
+        setProjectData={setProjectDataWithEditTracking}
         errors={allTransferErrors}
       />
       {(nonFieldsErrors.length > 0 || otherErrors) && (
@@ -232,7 +271,7 @@ const ProjectTransferWrapper = ({
         >
           Transfer project
         </CustomLink>
-        <CancelButton onClick={() => setIsModalOpen(false)} />
+        <CancelButton onClick={onCancel} />
         {isLoading && (
           <CircularProgress
             color="inherit"
@@ -241,6 +280,14 @@ const ProjectTransferWrapper = ({
           />
         )}
       </div>
+      {isCancelModalOpen && (
+        <CancelWarningModal
+          mode="transfer"
+          isModalOpen={isCancelModalOpen}
+          setIsModalOpen={setIsCancelModalOpen}
+          onContinueAction={() => setIsModalOpen(false)}
+        />
+      )}
     </>
   )
 }
@@ -260,12 +307,7 @@ const TransferProjectModal = ({
   const { data, loading } = project
 
   return (
-    <Modal
-      aria-labelledby="transfer-modal"
-      open={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      keepMounted
-    >
+    <Modal aria-labelledby="transfer-modal" open={isModalOpen} keepMounted>
       <Box className="flex max-h-[95%] min-h-[250px] w-[80%] max-w-[1400px] flex-col rounded-2xl border-0 p-0 absolute-center 2xl:w-[60%]">
         <Typography className="mb-1 rounded-t-2xl bg-primary py-2 pl-6 text-3xl font-medium text-white">
           Transfer project {data?.code ?? data?.code_legacy}

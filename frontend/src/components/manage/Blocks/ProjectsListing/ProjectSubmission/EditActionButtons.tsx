@@ -34,7 +34,6 @@ import {
   ProjectTypeApi,
   ActionButtons,
   RelatedProjectsType,
-  TrancheErrorType,
   ProjectSpecificFields,
   BpDataProps,
   FileMetaDataType,
@@ -80,8 +79,6 @@ const EditActionButtons = ({
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
-  trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
   bpData: BpDataProps
@@ -329,10 +326,9 @@ const EditActionButtons = ({
 
     if (
       hasTrancheField &&
-      (projectData.projectSpecificFields.tranche ?? 0) > 1 &&
-      (project.submission_status !== 'Draft' || !!navigationPage)
+      (projectData.projectSpecificFields.tranche ?? 0) > 1
     ) {
-      const trancheErrors = await getTrancheErrors?.()
+      const trancheErrors = await getTrancheErrors()
 
       if (trancheErrors) {
         setIsLoading(false)
