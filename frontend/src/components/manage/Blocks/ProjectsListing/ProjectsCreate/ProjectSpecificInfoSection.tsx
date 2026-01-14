@@ -8,10 +8,11 @@ import ProjectOverview from './ProjectOverview'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
 import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { hasFields } from '../utils'
+import { getFieldData, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
+import { groupBy } from 'lodash'
 
 const ProjectSpecificInfoSection = ({
   overviewFields,
@@ -45,6 +46,12 @@ const ProjectSpecificInfoSection = ({
     substanceDetailsFields.length > 0 &&
     hasFields(projectFields, viewableFields, 'Substance Details')
 
+  const groupedFields = groupBy(substanceDetailsFields, 'table')
+  const odsOdpFields = (groupedFields.ods_odp || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
+  const odpDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+
   return (
     <>
       {canViewOverviewSection && (
@@ -66,7 +73,12 @@ const ProjectSpecificInfoSection = ({
 
       {canViewSubstanceDetailsSection && (
         <>
-          <SectionTitle>Substance Details</SectionTitle>
+          <SectionTitle>
+            {odpDisplayField || odsOdpFields.length === 0
+              ? 'Substance'
+              : 'Phase out'}{' '}
+            details
+          </SectionTitle>
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}

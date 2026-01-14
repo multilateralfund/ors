@@ -184,7 +184,7 @@ const ProjectSubstanceDetails = ({
           </div>
           {odsOdpFields.length > 0 && (
             <SubmitButton
-              title="Add phase out"
+              title={`Add ${odsDisplayField ? 'substance' : 'phase out'}`}
               onSubmit={onAddSubstance}
               className="mr-auto h-8"
             />

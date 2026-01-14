@@ -3,8 +3,13 @@ import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
 import { viewModesHandler } from './ViewHelperComponents'
 import { textAreaViewClassname, viewColumnsClassName } from '../constants'
-import { canViewField, getSectionFields, hasFields } from '../utils'
 import { ProjectViewProps } from '../interfaces'
+import {
+  canViewField,
+  getFieldData,
+  getSectionFields,
+  hasFields,
+} from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
@@ -25,6 +30,7 @@ const ProjectSpecificInfo = ({
   const odsOdpFields = (groupedFields[field] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+  const odpDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { projectFields: allFields, viewableFields } = useStore(
     (state) => state.projectFields,
@@ -88,7 +94,12 @@ const ProjectSpecificInfo = ({
 
       {canViewSubstanceDetailsSection && (
         <>
-          <SectionTitle>Substance Details</SectionTitle>
+          <SectionTitle>
+            {odpDisplayField || odsOdpFields.length === 0
+              ? 'Substance'
+              : 'Phase out'}{' '}
+            details
+          </SectionTitle>
           <div className="flex w-full flex-col gap-4">
             <div
               className={projectFields.length > 1 ? viewColumnsClassName : ''}
