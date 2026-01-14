@@ -119,7 +119,7 @@ def get_activity_data_from_json(data):
     data_as_obj = dict_as_obj(data)
     for field, handler in serializer.get_fields().items():
         if field == "chemical_detail":
-            value = "/".join(data.get("substances", []))
+            value = "/".join(map(str, data.get("substances", [])))
         elif isinstance(handler, serializers.ChoiceField):
             value = f"{data[field]}"
         elif isinstance(handler, serializers.SlugRelatedField):
