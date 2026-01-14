@@ -40,10 +40,15 @@ def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType
         {
             "id": "title",
             "headerName": "Title",
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "description",
             "headerName": "Description",
+            "column_width": 125,
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "project_type",
@@ -109,6 +114,17 @@ def get_headers_specific_information(fields: Iterable[ProjectField]):
     result = []
 
     for field in fields:
-        result.append({"id": field.read_field_name, "headerName": field.label})
+        header = {"id": field.read_field_name, "headerName": field.label}
+        field_type = field.data_type
+
+        if field_type == "boolean":
+            header["type"] = "bool"
+        elif field_type == "number":
+            header["type"] = "int"
+        elif field_type == "decimal":
+            header["type"] = "number"
+            header["align"] = "right"
+
+        result.append(header)
 
     return result
