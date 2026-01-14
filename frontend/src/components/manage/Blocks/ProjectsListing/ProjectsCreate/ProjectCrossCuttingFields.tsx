@@ -187,7 +187,9 @@ const ProjectCrossCuttingFields = ({
                       ' w-full max-w-[55rem]'
                     }
                   />
-                  <FieldErrorIndicator errors={errors} field="title" />
+                  <div className="w-8">
+                    <FieldErrorIndicator errors={errors} field="title" />
+                  </div>
                 </div>
               </div>
             )}
@@ -302,10 +304,10 @@ const ProjectCrossCuttingFields = ({
             </div>
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'subsectors') && (
-                <div>
+                <div className="flex-shrink basis-[40.25rem]">
                   <Label>{tableColumns.subsectors}</Label>
                   <div className="flex items-center">
-                    <div className="w-[40.25rem] flex-shrink">
+                    <div className="w-full">
                       <Field
                         widget="autocomplete"
                         multiple={true}

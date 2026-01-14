@@ -10,6 +10,7 @@ import {
 } from '../constants'
 import { useStore } from '@ors/store'
 
+import { omit } from 'lodash'
 import cx from 'classnames'
 
 const ProjectFundFields = ({
@@ -34,7 +35,7 @@ const ProjectFundFields = ({
 
   const getFieldDefaultProps = (field: string) => ({
     ...{
-      ...defaultPropsSimpleField,
+      ...omit(defaultPropsSimpleField, 'containerClassName'),
       className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
         [disabledClassName]:
           !canEditField(editableFields, field) ||
