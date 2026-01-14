@@ -536,8 +536,7 @@ class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
     gender_policy = factory.Faker("pybool")
 
     @factory.post_generation
-    def populate_denormalized_fields(obj, create, extracted, **kwargs):
-        """Populate denormalized fields after creation."""
+    def populate_denormalized_fields(obj, create, *args, **kwargs):
         if create:
             obj.populate_derived_fields()
             obj.save()
