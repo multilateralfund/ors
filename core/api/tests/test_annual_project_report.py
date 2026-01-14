@@ -376,6 +376,7 @@ class TestAPRWorkspaceView(BaseTest):
             latest_project=None,
             support_cost_psc=15000.0,
             date_approved=date(annual_agency_report.progress_report.year - 1, 6, 15),
+            code="TEST/SINGLE/01",
         )
 
         AnnualProjectReportFactory(
@@ -2169,7 +2170,7 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
     def test_derived_properties_with_multiple_versions(
         self,
         annual_agency_report,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
@@ -2183,7 +2184,7 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         latest_version = multiple_project_versions_for_apr[2]
 
         # Initialize all derived properties first
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -2220,12 +2221,12 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
     def test_derived_properties_with_later_latest_version(
         self,
         annual_agency_report,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         late_post_excom_versions_for_apr,
     ):
 
         # Initialize all derived properties first
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -2258,11 +2259,11 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
     def test_derived_properties_with_no_latest_version(
         self,
         annual_agency_report,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         initial_project_version_for_apr,
     ):
         # Initialize all derived properties first
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4446,7 +4447,12 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         """No need for this here, it's tested elsewhere"""
 
     def test_project_identification_derived_fields(
-        self, apr_agency_viewer_user, annual_agency_report, country_ro, country_europe, project_ongoing_status
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        country_ro,
+        country_europe,
+        project_ongoing_status,
     ):
         country_ro.parent = country_europe
         country_ro.save()
@@ -4930,7 +4936,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_all_derived_fields_via_mlfs_export(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
@@ -4948,7 +4954,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
 
         # Same pattern - initial population, update, then call API again
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
