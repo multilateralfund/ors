@@ -7,6 +7,7 @@ import { ProjectViewProps } from '../interfaces'
 import {
   canViewField,
   getFieldData,
+  getOdsOdpFields,
   getSectionFields,
   hasFields,
 } from '../utils'
@@ -27,9 +28,7 @@ const ProjectSpecificInfo = ({
 
   const groupedFields = groupBy(substanceFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = (groupedFields[field] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceFields)
   const odpDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { projectFields: allFields, viewableFields } = useStore(

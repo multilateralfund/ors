@@ -17,6 +17,7 @@ import {
   getFileFromMetadata,
   getFormattedDecimalValue,
   getNonFieldErrors,
+  getOdsOdpFields,
   hasSpecificField,
 } from '../utils'
 import {
@@ -120,9 +121,7 @@ const ProjectsEdit = ({
   const projectFields = isEditMode
     ? fieldsOfProject
     : filter(fieldsOfProject, (field) => !field.is_actual)
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(specificFields)
 
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
