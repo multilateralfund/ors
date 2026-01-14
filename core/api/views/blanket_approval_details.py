@@ -83,7 +83,6 @@ class BlanketApprovalDetailsViewset(
             "Recommended",
             "Approved",
         ],
-        version__gte=2,
     )
     permission_classes = (HasProjectV2ViewAccess,)
 
