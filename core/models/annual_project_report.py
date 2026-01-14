@@ -667,18 +667,18 @@ class AnnualProjectReport(models.Model):
     def per_cent_funds_disbursed(self):
         if (
             self.funds_disbursed is None
-            or self.approved_funding_plus_adjustment_denorm is None
+            or self.approved_funding_plus_adjustment is None
         ):
             return None
 
-        return self.funds_disbursed / self.approved_funding_plus_adjustment_denorm
+        return self.funds_disbursed / self.approved_funding_plus_adjustment
 
     @property
     def balance(self):
-        if self.approved_funding_denorm is None:
+        if self.approved_funding is None:
             return None
 
-        return self.approved_funding_denorm - (self.funds_disbursed or 0)
+        return self.approved_funding - (self.funds_disbursed or 0)
 
     @cached_property
     def support_cost_approved(self):
@@ -707,10 +707,10 @@ class AnnualProjectReport(models.Model):
     @property
     def support_cost_balance(self):
         # Support Costs Approved Funding plus Adjustments - Support Cost Disbursed
-        if self.support_cost_approved_plus_adjustment_denorm is None:
+        if self.support_cost_approved_plus_adjustment is None:
             return None
 
-        return self.support_cost_approved_plus_adjustment_denorm - (
+        return self.support_cost_approved_plus_adjustment - (
             self.support_cost_disbursed or 0
         )
 
@@ -800,6 +800,7 @@ class AnnualProjectReport(models.Model):
         self.support_cost_approved_plus_adjustment_denorm = (
             self.support_cost_approved_plus_adjustment
         )
+        self.support_cost_balance_denorm = self.support_cost_balance
 
         # Other computed fields
         self.implementation_delays_status_report_decisions_denorm = (
