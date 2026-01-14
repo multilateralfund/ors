@@ -218,7 +218,7 @@ class BlanketApprovalDetailsViewset(
     def _export_wb(self):
         wb = openpyxl.open(self._template_path)
         sheet = wb.active
-        _, data = self._extract_data()
+        _, grand_total, data = self._extract_data()
         data: list[CountryEntry] = data
 
         i = 3
@@ -274,6 +274,19 @@ class BlanketApprovalDetailsViewset(
                 ],
                 row_country_total,
             )
+
+        add_row(
+            [
+                None,
+                f"Grand total",
+                grand_total["hcfc"],
+                grand_total["hfc"],
+                grand_total["project_funding"],
+                grand_total["project_support_cost"],
+                grand_total["total"],
+            ],
+            row_country_total,
+        )
 
         sheet.delete_rows(4, 7)
 
