@@ -65,6 +65,7 @@ import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLin
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
+import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
@@ -274,10 +275,7 @@ export default function APRMLFSWorkspace() {
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
@@ -350,10 +348,7 @@ export default function APRMLFSWorkspace() {
         refetchAPRCurrentYear()
       }, 2000)
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
@@ -398,7 +393,7 @@ export default function APRMLFSWorkspace() {
               aria-controls="tabpanel-submissions"
             ></Tab>
           </Tabs>
-          <div className="mb-2 flex gap-x-2">
+          <div className="mb-2 flex flex-none gap-x-2">
             {activeTab === 0 && canUpdateAPR && (
               <Button
                 disabled={loading}

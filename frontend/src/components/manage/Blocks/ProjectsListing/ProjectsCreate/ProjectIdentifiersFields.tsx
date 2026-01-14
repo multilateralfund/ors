@@ -324,7 +324,7 @@ const ProjectIdentifiersFields = ({
             </div>
             <div>
               <Label htmlFor="postExComDecision">Decision</Label>
-              <Field<any>
+              <Field
                 widget="autocomplete"
                 options={decisionOptions}
                 value={projIdentifiers?.post_excom_decision ?? null}
@@ -508,36 +508,6 @@ const ProjectIdentifiersFields = ({
             />
           </div>
         </div>
-        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
-          <div className="flex items-center">
-            <FormControlLabel
-              className="w-fit"
-              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-              control={
-                <Checkbox
-                  checked={projIdentifiers?.lead_agency_submitting_on_behalf}
-                  disabled={
-                    isSubmitOnBehalfDisabled || !areNextSectionsDisabled
-                  }
-                  onChange={handleChangeSubmitOnBehalf}
-                  size="small"
-                  inputProps={{ tabIndex: 0 }}
-                  sx={{
-                    '&.Mui-focusVisible': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                    },
-                    color: 'black',
-                  }}
-                />
-              }
-              componentsProps={{ typography: { fontSize: '1rem', mt: 0.5 } }}
-            />
-            <FieldErrorIndicator
-              errors={errors}
-              field="lead_agency_submitting_on_behalf"
-            />
-          </div>
-        )}
         {canViewField(viewableFields, 'lead_agency') && (
           <>
             <div className="flex">
@@ -571,20 +541,50 @@ const ProjectIdentifiersFields = ({
                 </div>
               </div>
             </div>
-            {canUpdateLeadAgency && (
-              <CustomAlert
-                type="info"
-                alertClassName="mt-2 px-2 py-0"
-                content={
-                  <Typography className="text-lg leading-5">
-                    Unless submitting on behalf of a cooperating agency,
-                    selecting either the agency or the lead agency will
-                    automatically update the other.
-                  </Typography>
-                }
-              />
-            )}
           </>
+        )}
+        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
+          <div className="flex items-center">
+            <FormControlLabel
+              className="w-fit"
+              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              control={
+                <Checkbox
+                  checked={projIdentifiers?.lead_agency_submitting_on_behalf}
+                  disabled={
+                    isSubmitOnBehalfDisabled || !areNextSectionsDisabled
+                  }
+                  onChange={handleChangeSubmitOnBehalf}
+                  size="small"
+                  inputProps={{ tabIndex: 0 }}
+                  sx={{
+                    '&.Mui-focusVisible': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                    },
+                    color: 'black',
+                  }}
+                />
+              }
+              componentsProps={{ typography: { fontSize: '1rem', mt: 0.5 } }}
+            />
+            <FieldErrorIndicator
+              errors={errors}
+              field="lead_agency_submitting_on_behalf"
+            />
+          </div>
+        )}
+        {canViewField(viewableFields, 'lead_agency') && canUpdateLeadAgency && (
+          <CustomAlert
+            type="info"
+            alertClassName="mt-2 px-2 py-0"
+            content={
+              <Typography className="text-lg leading-5">
+                Unless submitting on behalf of a cooperating agency, selecting
+                either the agency or the lead agency will automatically update
+                the other.
+              </Typography>
+            }
+          />
         )}
         {hasNextButtons && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">

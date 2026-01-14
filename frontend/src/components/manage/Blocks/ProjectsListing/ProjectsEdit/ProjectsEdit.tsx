@@ -7,6 +7,7 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
@@ -26,7 +27,6 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
-  RelatedProjectsType,
   TrancheErrorType,
   BpDataProps,
   FileMetaDataType,
@@ -34,6 +34,7 @@ import {
 import {
   approvalOdsFields,
   considerationOpts,
+  defaultTrancheErrors,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
@@ -50,7 +51,6 @@ import {
   map,
   filter,
   find,
-  replace,
   isArray,
   pick,
   mapKeys,
@@ -75,6 +75,13 @@ const ProjectsEdit = ({
     useContext(PermissionsContext)
   const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -215,14 +222,6 @@ const ProjectsEdit = ({
     project.meta_project_id,
   )
   const relatedProjects = useGetRelatedProjects(project, mode, metaProjectId)
-
-  const defaultTrancheErrors = {
-    errorText: '',
-    isError: false,
-    tranchesData: [],
-    loaded: false,
-    loading: false,
-  }
 
   const [bpData, setBpData] = useState({
     hasBpData: false,
@@ -444,67 +443,20 @@ const ProjectsEdit = ({
 
     try {
       const result = await api(
-        `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
+        `api/projects/v2/list_previous_tranches/country/${country}/cluster/${cluster}/tranche/${tranche}`,
         {
+          params: {
+            project_id: mode === 'edit' ? project_id : undefined,
+            include_validation: true,
+          },
           withStoreCache: false,
         },
         false,
       )
 
-      if (result.length === 0) {
-        setTrancheErrors({
-          errorText:
-            'A new tranche cannot be created as no previous tranche exists or you are not the lead agency of the MYA.',
-          isError: true,
-          tranchesData: [],
-          loaded: true,
-          loading: false,
-        })
-
-        return true
-      } else {
-        const tranches = result.map((entry: RelatedProjectsType) => {
-          const filteredWarnings = filter(entry.warnings, (warning) => {
-            const crtField = find(
-              projectFields,
-              (field) =>
-                field.write_field_name ===
-                replace(warning.field, /_?actual_?/g, ''),
-            )
-
-            return crtField && crtField.data_type !== 'boolean'
-          })
-
-          return {
-            title: entry.title,
-            id: entry.id,
-            tranche: entry.tranche,
-            errors: entry.errors,
-            warnings: filteredWarnings,
-          }
-        })
-        const trancheError = tranches.find(
-          (tranche: RelatedProjectsType) => tranche.errors.length > 0,
-        )
-
-        setTrancheErrors({
-          errorText: trancheError ? trancheError.errors[0].message : '',
-          isError: false,
-          tranchesData: tranches,
-          loaded: true,
-          loading: false,
-        })
-
-        return !!trancheError && !!trancheError.errors[0].message
-      }
+      return useGetTrancheErrors(result, projectFields, setTrancheErrors)
     } catch (error) {
-      setTrancheErrors({
-        errorText: '',
-        isError: false,
-        tranchesData: [],
-        loaded: true,
-        loading: false,
-      })
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
       enqueueSnackbar(
         <>
           An error occurred during previous tranches validation. Please try
@@ -524,20 +476,12 @@ const ProjectsEdit = ({
   useEffect(() => {
     const hasTrancheField = hasSpecificField(specificFields, 'tranche')
 
-    if (mode !== 'edit' || tranche <= 1 || !hasTrancheField) {
-      setTrancheErrors({
-        errorText: '',
-        isError: false,
-        tranchesData: [],
-        loaded: true,
-        loading: false,
-      })
-    } else if (isEditMode && canViewProjects) {
+    if (tranche <= 1 || !hasTrancheField) {
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
+    } else if (canViewProjects) {
       debouncedGetTrancheErrors()
     }
-  }, [tranche, project_id, specificFields])
-
-  const { updatedFields, addUpdatedField } = useUpdatedFields()
+  }, [country, cluster, tranche, project_id, specificFields])
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,

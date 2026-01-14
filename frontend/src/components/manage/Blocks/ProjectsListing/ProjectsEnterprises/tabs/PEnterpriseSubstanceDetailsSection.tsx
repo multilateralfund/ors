@@ -305,7 +305,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         ))}
       </div>
       <SubmitButton
-        title="Add substance"
+        title="Add phase out"
         isDisabled={isDisabled}
         onSubmit={onAddSubstance}
         className={cx('h-8', { 'mt-6': sectionData.length > 0 })}
