@@ -6,12 +6,17 @@ export function formatDate(value: any, format = 'DD/MM/YYYY') {
     return ''
   }
 
+  // ISO to format
   return dayjs(value).format(format)
 }
 
-export function parseDate(value: string | undefined, format = 'YYYY-MM-DD') {
-  if (isNil(value)) return undefined
-  const parsed = dayjs(value, format)
+export function parseDate(value: string | undefined) {
+  if (isNil(value)) {
+    return undefined
+  }
+
+  // ISO to Date object
+  const parsed = dayjs(value)
   return parsed.isValid() ? parsed.toDate() : undefined
 }
 

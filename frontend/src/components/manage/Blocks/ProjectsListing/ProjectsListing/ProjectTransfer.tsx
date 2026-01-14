@@ -1,11 +1,4 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { ChangeEvent, useContext, useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -28,6 +21,7 @@ import {
   FileMetaDataProps,
   ProjectTransferData,
   ProjectTypeApi,
+  SetProjectTranferData,
 } from '../interfaces'
 import {
   defaultProps,
@@ -54,7 +48,7 @@ const ProjectTransfer = ({
   ...rest
 }: FileMetaDataProps & {
   projectData: ProjectTransferData
-  setProjectData: Dispatch<SetStateAction<ProjectTransferData>>
+  setProjectData: SetProjectTranferData
   project: ProjectTypeApi
   files: BpFilesObject
   setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
@@ -93,20 +87,26 @@ const ProjectTransfer = ({
   })
 
   const handleChangeAgency = (value: ApiAgency | null) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      agency: value?.id ?? null,
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        agency: value?.id ?? null,
+      }),
+      'agency',
+    )
   }
 
   const handleChangeMeeting = (meeting?: string) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      transfer_meeting: parseNumber(meeting),
-      ...(parseNumber(meeting) !== projectData.transfer_meeting
-        ? { transfer_decision: null }
-        : {}),
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        transfer_meeting: parseNumber(meeting),
+        ...(parseNumber(meeting) !== projectData.transfer_meeting
+          ? { transfer_decision: null }
+          : {}),
+      }),
+      'meeting',
+    )
     decisionsApi.setParams({ meeting_id: meeting })
     decisionsApi.setApiSettings((prev) => ({
       ...prev,
@@ -121,21 +121,24 @@ const ProjectTransfer = ({
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
       const finalVal = initialValue ? parseInt(initialValue) : null
 
-      setProjectData((prevData) => ({
-        ...prevData,
-        transfer_decision: finalVal,
-      }))
+      setProjectData(
+        (prevData) => ({
+          ...prevData,
+          transfer_decision: finalVal,
+        }),
+        'decision',
+      )
     }
   }
 
-  const [localExcom, setLocalExcom] = useState(
-    projectData.transfer_excom_provision,
-  )
-  const saveLocalExcom = () =>
-    setProjectData((prev) => ({
-      ...prev,
-      transfer_excom_provision: localExcom,
-    }))
+  const handleChangeExcomProvision = (excom_provision: string) =>
+    setProjectData(
+      (prev) => ({
+        ...prev,
+        transfer_excom_provision: excom_provision,
+      }),
+      'excom_provision',
+    )
 
   const handleChangeNumericValues = (
     event: ChangeEvent<HTMLInputElement>,
@@ -145,7 +148,7 @@ const ProjectTransfer = ({
     const value = initialValue === '' ? null : initialValue
 
     if (!isNaN(Number(value))) {
-      setProjectData((prevData) => ({ ...prevData, [field]: value }))
+      setProjectData((prevData) => ({ ...prevData, [field]: value }), field)
     } else {
       event.preventDefault()
     }
@@ -230,10 +233,9 @@ const ProjectTransfer = ({
         </Label>
         <div className="flex items-center">
           <TextareaAutosize
-            value={localExcom}
+            value={projectData.transfer_excom_provision}
             onFocus={onTextareaFocus}
-            onChange={(e) => setLocalExcom(e.target.value)}
-            onBlur={saveLocalExcom}
+            onChange={(e) => handleChangeExcomProvision(e.target.value)}
             className={cx(textAreaClassname, 'max-w-[435px]')}
             maxLength={500}
             style={STYLE}

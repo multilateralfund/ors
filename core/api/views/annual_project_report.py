@@ -2,7 +2,7 @@ import os
 from zipfile import ZipFile
 
 from constance import config
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
@@ -25,8 +25,8 @@ from core.api.permissions import (
     HasAPRViewAccess,
     HasAPREditAccess,
     HasAPRSubmitAccess,
-    HasMLFSViewAccess,
-    HasMLFSFullAccess,
+    HasAPRMLFSViewAccess,
+    HasAPRMLFSFullAccess,
 )
 from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
@@ -58,6 +58,58 @@ from core.tasks import send_agency_submission_notification
 
 
 # pylint: disable=C0302
+
+
+def get_version_3_prefetch():
+    """
+    Returns a Prefetch object for version 3 of projects.
+    Caches results in project.cached_version_3_list attribute.
+    """
+    return Prefetch(
+        "project_reports__project__archive_projects",
+        queryset=Project.objects.really_all()
+        .filter(version=3)
+        .select_related("status", "post_excom_decision__meeting"),
+        to_attr="cached_version_3_list",
+    )
+
+
+def get_latest_version_prefetch(year):
+    """
+    Returns a Prefetch object for the latest project version up to the given year.
+    Caches results in project.cached_versions_for_year attribute.
+    """
+    return Prefetch(
+        "project_reports__project__archive_projects",
+        queryset=Project.objects.really_all()
+        .filter(
+            post_excom_decision__isnull=False,
+            post_excom_decision__meeting__date__year__lte=year,
+        )
+        .select_related("status", "post_excom_decision__meeting")
+        .order_by("-post_excom_decision__meeting__date", "-version"),
+        to_attr="cached_versions_for_year",
+    )
+
+
+def get_all_versions_for_year_prefetch(year):
+    """
+    Returns a Prefetch object for all project versions during the given year.
+    Caches results in project.cached_all_versions_for_year attribute.
+    """
+    return Prefetch(
+        "project_reports__project__archive_projects",
+        queryset=Project.objects.really_all()
+        .filter(
+            models.Q(
+                post_excom_decision__isnull=False,
+                post_excom_decision__meeting__date__year=year,
+            )
+            | models.Q(post_excom_decision__isnull=True, version=3)
+        )
+        .select_related("status"),
+        to_attr="cached_all_versions_for_year",
+    )
 
 
 class APRCurrentYearView(APIView):
@@ -110,6 +162,7 @@ class APRWorkspaceView(RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        year = int(self.kwargs.get("year"))
 
         queryset = AnnualAgencyProjectReport.objects.select_related(
             "progress_report",
@@ -118,27 +171,16 @@ class APRWorkspaceView(RetrieveAPIView):
             "submitted_by",
         ).prefetch_related(
             "project_reports",
-            "project_reports__project",
             "project_reports__project__meta_project",
             "project_reports__project__agency",
+            "project_reports__project__country__parent",
             "project_reports__project__country",
             "project_reports__project__cluster",
             "project_reports__project__sector",
-            "project_reports__project__subsectors",
             "project_reports__project__project_type",
-            "project_reports__project__status",
-            "project_reports__project__meeting",
-            "project_reports__project__decision",
-            "project_reports__project__ods_odp",
-            "project_reports__project__ods_odp__ods_substance",
-            "project_reports__project__ods_odp__ods_blend",
-            # Prefetching all archive versions to avoid N+1 in pcr_due
-            Prefetch(
-                "project_reports__project__archive_projects",
-                queryset=Project.objects.really_all().select_related(
-                    "status", "post_excom_decision__meeting"
-                ),
-            ),
+            get_version_3_prefetch(),
+            get_latest_version_prefetch(year),
+            get_all_versions_for_year_prefetch(year),
             "files",
         )
 
@@ -159,7 +201,7 @@ class APRWorkspaceView(RetrieveAPIView):
         if not hasattr(user, "agency") or not user.agency:
             raise ValidationError("User is not associated with any agency.")
 
-        year = self.kwargs["year"]
+        year = int(self.kwargs["year"])
 
         # Get status filter from query params (defaults are ONG, COM)
         status_codes = self.request.query_params.get("status", "ONG,COM")
@@ -237,7 +279,8 @@ class APRWorkspaceView(RetrieveAPIView):
                     project_report.populate_derived_fields()
                     project_report.save()
 
-        return agency_report
+        # Refetch the agency report using the optimized queryset - with prefetches
+        return self.get_queryset().get(pk=agency_report.pk)
 
 
 class APRBulkUpdateView(APIView):
@@ -417,7 +460,7 @@ class APRFilesDownloadAllView(APIView):
     Download all files from an agency report as a ZIP archive - MLFS only.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
 
     def get(self, request, year, agency_id):
         """
@@ -521,21 +564,21 @@ class APRExportView(APIView):
         """
         Exports APR data to Excel according to filters.
         """
+        year = int(year)
+
         agency_report = get_object_or_404(
             AnnualAgencyProjectReport.objects.prefetch_related(
                 "project_reports",
-                "project_reports__project",
                 "project_reports__project__meta_project",
                 "project_reports__project__agency",
+                "project_reports__project__country__parent",
                 "project_reports__project__country",
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
-                "project_reports__project__subsectors",
                 "project_reports__project__project_type",
-                "project_reports__project__status",
-                "project_reports__project__ods_odp",
-                "project_reports__project__ods_odp__ods_substance",
-                "project_reports__project__ods_odp__ods_blend",
+                get_version_3_prefetch(),
+                get_latest_version_prefetch(year),
+                get_all_versions_for_year_prefetch(year),
             ),
             progress_report__year=year,
             agency_id=agency_id,
@@ -589,7 +632,7 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
     On retrieve, we prefetch all related info necessary for full data display.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
     serializer_class = AnnualAgencyProjectReportReadSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = APRGlobalFilter
@@ -689,20 +732,16 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
             )
             .prefetch_related(
                 "project_reports",
-                "project_reports__project",
                 "project_reports__project__meta_project",
                 "project_reports__project__agency",
+                "project_reports__project__country__parent",
                 "project_reports__project__country",
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
-                "project_reports__project__subsectors",
                 "project_reports__project__project_type",
-                "project_reports__project__status",
-                "project_reports__project__meeting",
-                "project_reports__project__decision",
-                "project_reports__project__ods_odp",
-                "project_reports__project__ods_odp__ods_substance",
-                "project_reports__project__ods_odp__ods_blend",
+                get_version_3_prefetch(),
+                get_latest_version_prefetch(year),
+                get_all_versions_for_year_prefetch(year),
                 "files",
             )
             .order_by("agency__name")
@@ -715,7 +754,7 @@ class APRToggleLockView(APIView):
     Request body should contain: {"is_unlocked": true} or {"is_unlocked": false}
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def post(self, request, year, agency_id):
         agency_report = get_object_or_404(
@@ -756,7 +795,7 @@ class APREndorseView(APIView):
     As a prerequisite, all agency reports must be SUBMITTED and locked.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     @staticmethod
     def _get_draft_and_submitted(progress_report):
@@ -860,7 +899,7 @@ class APRMLFSBulkUpdateView(APIView):
     Unlike the agency bulk update, this uses project report IDs for matching.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def post(self, request, year):
         """
@@ -907,7 +946,7 @@ class APRKickStartView(APIView):
     POST: kick-starts a new APR reporting cycle
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSFullAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
     def get(self, request):
         latest_endorsed_year = get_latest_endorsed_year()
@@ -1002,9 +1041,10 @@ class APRMLFSExportView(APIView):
     It exports the project reports for all submitted & locked agency reports.
     """
 
-    permission_classes = [IsAuthenticated, HasMLFSViewAccess]
+    permission_classes = [IsAuthenticated, HasAPRMLFSViewAccess]
 
     def get(self, request, year):
+        year = int(year)
         queryset = self._get_filtered_agency_reports(year)
 
         all_project_reports = []
@@ -1012,6 +1052,79 @@ class APRMLFSExportView(APIView):
             # Project reports are already filtered
             # by the prefetch in self._get_filtered_agency_reports() (see below)
             all_project_reports.extend(agency_report.project_reports.all())
+
+        # Now prefetch the version data (version3, latest_version, all versions for year)
+        # for all collected project reports at once.
+        # Using dicts to handle multi-APR, multi-project data.
+        if all_project_reports:
+            final_project_ids = set()
+            for pr in all_project_reports:
+                final_id = pr.project.latest_project_id or pr.project.id
+                final_project_ids.add(final_id)
+
+            version_3_projects = {
+                p.latest_project_id or p.id: p
+                for p in Project.objects.really_all()
+                .filter(
+                    models.Q(id__in=final_project_ids)
+                    | models.Q(latest_project_id__in=final_project_ids),
+                    version=3,
+                )
+                .select_related("status", "post_excom_decision__meeting")
+            }
+
+            latest_version_projects = {}
+            for p in (
+                Project.objects.really_all()
+                .filter(
+                    models.Q(id__in=final_project_ids)
+                    | models.Q(latest_project_id__in=final_project_ids),
+                    post_excom_decision__isnull=False,
+                    post_excom_decision__meeting__date__year__lte=year,
+                )
+                .select_related("status", "post_excom_decision__meeting")
+                .order_by("-post_excom_decision__meeting__date", "-version")
+            ):
+                project_key = p.latest_project_id or p.id
+                if project_key not in latest_version_projects:
+                    latest_version_projects[project_key] = p
+
+            all_versions_for_year = {}
+            for p in (
+                Project.objects.really_all()
+                .filter(
+                    models.Q(id__in=final_project_ids)
+                    | models.Q(latest_project_id__in=final_project_ids),
+                    models.Q(
+                        post_excom_decision__isnull=False,
+                        post_excom_decision__meeting__date__year=year,
+                    )
+                    | models.Q(post_excom_decision__isnull=True, version=3),
+                )
+                .select_related("status")
+            ):
+                project_key = p.latest_project_id or p.id
+                if project_key not in all_versions_for_year:
+                    all_versions_for_year[project_key] = []
+                all_versions_for_year[project_key].append(p)
+
+            # And finally "attach" the cached data to each project
+            for pr in all_project_reports:
+                project_key = pr.project.latest_project_id or pr.project.id
+
+                pr.project.cached_version_3_list = (
+                    [version_3_projects[project_key]]
+                    if project_key in version_3_projects
+                    else []
+                )
+                pr.project.cached_versions_for_year = (
+                    [latest_version_projects[project_key]]
+                    if project_key in latest_version_projects
+                    else []
+                )
+                pr.project.cached_all_versions_for_year = all_versions_for_year.get(
+                    project_key, []
+                )
 
         serializer = AnnualProjectReportReadSerializer(
             all_project_reports, many=True, context={"request": request}
@@ -1031,6 +1144,8 @@ class APRMLFSExportView(APIView):
 
         Returns queryset of filtered AnnualAgencyProjectReport objects.
         """
+        year = int(year)
+
         queryset = AnnualAgencyProjectReport.objects.filter(
             progress_report__year=year,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
@@ -1076,21 +1191,45 @@ class APRMLFSExportView(APIView):
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related(
-            "project",
             "project__meta_project",
             "project__agency",
+            "project__country__parent",
             "project__country",
             "project__cluster",
             "project__sector",
             "project__project_type",
-            "project__status",
-            "project__meeting",
-            "project__decision",
         ).prefetch_related(
-            "project__subsectors",
-            "project__ods_odp",
-            "project__ods_odp__ods_substance",
-            "project__ods_odp__ods_blend",
+            Prefetch(
+                "project__archive_projects",
+                queryset=Project.objects.really_all()
+                .filter(version=3)
+                .select_related("status", "post_excom_decision__meeting"),
+                to_attr="cached_version_3_list",
+            ),
+            Prefetch(
+                "project__archive_projects",
+                queryset=Project.objects.really_all()
+                .filter(
+                    post_excom_decision__isnull=False,
+                    post_excom_decision__meeting__date__year__lte=year,
+                )
+                .select_related("status", "post_excom_decision__meeting")
+                .order_by("-post_excom_decision__meeting__date", "-version"),
+                to_attr="cached_versions_for_year",
+            ),
+            Prefetch(
+                "project__archive_projects",
+                queryset=Project.objects.really_all()
+                .filter(
+                    models.Q(
+                        post_excom_decision__isnull=False,
+                        post_excom_decision__meeting__date__year=year,
+                    )
+                    | models.Q(post_excom_decision__isnull=True, version=3)
+                )
+                .select_related("status"),
+                to_attr="cached_all_versions_for_year",
+            ),
         )
 
         # Prefetch the filtered project reports and order the same as the global view

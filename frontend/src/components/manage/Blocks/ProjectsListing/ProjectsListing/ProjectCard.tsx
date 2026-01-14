@@ -182,14 +182,15 @@ export default function ProjectCard({
               >
                 <FiEye size={24} color="white" />
               </Link>
-              {editable && canEditProjects && (
-                <Link
-                  className="flex h-6 w-6 justify-center"
-                  href={`/projects-listing/${id}/edit`}
-                >
-                  <FiEdit size={24} color="white" />
-                </Link>
-              )}
+              {(editable || data?.editable_for_actual_fields) &&
+                canEditProjects && (
+                  <Link
+                    className="flex h-6 w-6 justify-center"
+                    href={`/projects-listing/${id}/edit`}
+                  >
+                    <FiEdit size={24} color="white" />
+                  </Link>
+                )}
               <Link
                 className="flex h-6 w-6 cursor-pointer justify-center"
                 href={null}

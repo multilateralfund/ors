@@ -48,11 +48,11 @@ class TestAPRCurrentYearView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_returns_unendorsed_year_when_exists(
-        self, agency_viewer_user, annual_progress_report
+        self, apr_agency_viewer_user, annual_progress_report
     ):
         AnnualProgressReportFactory(year=2022, endorsed=True)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -64,12 +64,14 @@ class TestAPRCurrentYearView(BaseTest):
         unendorsed = next(a for a in response.data["apr_list"] if not a["endorsed"])
         assert unendorsed["year"] == annual_progress_report.year
 
-    def test_returns_latest_unendorsed_when_multiple_exist(self, agency_viewer_user):
+    def test_returns_latest_unendorsed_when_multiple_exist(
+        self, apr_agency_viewer_user
+    ):
         AnnualProgressReportFactory(year=2023, endorsed=False)
         AnnualProgressReportFactory(year=2024, endorsed=False)
         AnnualProgressReportFactory(year=2022, endorsed=True)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -79,11 +81,11 @@ class TestAPRCurrentYearView(BaseTest):
         assert len(response.data["apr_list"]) == 3
 
     def test_returns_latest_endorsed_when_no_unendorsed(
-        self, agency_viewer_user, annual_progress_report_endorsed
+        self, apr_agency_viewer_user, annual_progress_report_endorsed
     ):
         AnnualProgressReportFactory(year=2022, endorsed=True)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -92,12 +94,12 @@ class TestAPRCurrentYearView(BaseTest):
         assert response.data["endorsed"] is True
         assert len(response.data["apr_list"]) == 2
 
-    def test_returns_latest_endorsed_among_multiple(self, agency_viewer_user):
+    def test_returns_latest_endorsed_among_multiple(self, apr_agency_viewer_user):
         AnnualProgressReportFactory(year=2021, endorsed=True)
         AnnualProgressReportFactory(year=2023, endorsed=True)
         AnnualProgressReportFactory(year=2022, endorsed=True)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -106,8 +108,8 @@ class TestAPRCurrentYearView(BaseTest):
         assert response.data["endorsed"] is True
         assert len(response.data["apr_list"]) == 3
 
-    def test_no_reports_exist(self, agency_viewer_user):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_no_reports_exist(self, apr_agency_viewer_user):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -116,11 +118,11 @@ class TestAPRCurrentYearView(BaseTest):
         assert response.data["endorsed"] is False
         assert len(response.data["apr_list"]) == 0
 
-    def test_uses_unendorsed_over_endorsed(self, agency_viewer_user):
+    def test_uses_unendorsed_over_endorsed(self, apr_agency_viewer_user):
         AnnualProgressReportFactory(year=2023, endorsed=False)
         AnnualProgressReportFactory(year=2024, endorsed=True)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -141,8 +143,10 @@ class TestAPRCurrentYearView(BaseTest):
         assert response.data["endorsed"] is False
         assert len(response.data["apr_list"]) == 1
 
-    def test_agency_user_can_access(self, agency_viewer_user, annual_progress_report):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_agency_user_can_access(
+        self, apr_agency_viewer_user, annual_progress_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-current-year")
         response = self.client.get(url)
 
@@ -161,14 +165,14 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_workspace_creates_agency_report(
-        self, agency_viewer_user, apr_year, agency, annual_progress_report
+        self, apr_agency_viewer_user, apr_year, agency, annual_progress_report
     ):
         """
         An agency report is created (if not existing) upon accessing the workspace view.
         Test that this is happening.
         """
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse("apr-workspace", kwargs={"year": apr_year})
         response = self.client.get(url)
@@ -187,7 +191,7 @@ class TestAPRWorkspaceView(BaseTest):
 
     def test_get_workspace_creates_project_reports(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         apr_year,
         multiple_projects_for_apr,
         annual_progress_report,
@@ -196,7 +200,7 @@ class TestAPRWorkspaceView(BaseTest):
         Project reports are created (if not existing) upon accessing the workspace view.
         Test that this is happening.
         """
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse("apr-workspace", kwargs={"year": apr_year})
         response = self.client.get(url)
@@ -217,12 +221,12 @@ class TestAPRWorkspaceView(BaseTest):
 
     def test_get_workspace_filters_by_status(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         apr_year,
         annual_progress_report,
         multiple_projects_for_apr,
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         # Only filter by completed projects
         url = reverse("apr-workspace", kwargs={"year": apr_year})
@@ -234,13 +238,13 @@ class TestAPRWorkspaceView(BaseTest):
 
     def test_get_workspace_idempotent(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         apr_year,
         annual_progress_report,
         multiple_projects_for_apr,
     ):
         """Test that multiple calls to workspace don't create duplicates."""
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-workspace", kwargs={"year": apr_year})
 
         # Call twice
@@ -262,12 +266,12 @@ class TestAPRWorkspaceView(BaseTest):
 
     def test_get_agency_report_nested_data(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_progress_report,
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         AnnualProjectReportFileFactory(report=annual_agency_report)
 
@@ -286,7 +290,7 @@ class TestAPRWorkspaceView(BaseTest):
         assert len(response.data["files"]) == 1
 
     def test_get_workspace_only_own_agency(
-        self, agency_viewer_user, annual_progress_report
+        self, apr_agency_viewer_user, annual_progress_report
     ):
         # Create report for a different agency to check it can't be accessed
         other_agency = AgencyFactory()
@@ -296,7 +300,7 @@ class TestAPRWorkspaceView(BaseTest):
             is_unlocked=False,
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse(
             "apr-workspace",
@@ -309,6 +313,99 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.status_code == status.HTTP_200_OK
         assert "project_reports" in response.data
         assert len(response.data["project_reports"]) == 0
+
+    def test_support_cost_derived_fields(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        multiple_project_versions_for_apr,
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            support_cost_disbursed=8000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == latest_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        assert project_data["support_cost_approved"] == version3.support_cost_psc
+
+        expected_adjustment = (
+            latest_version.support_cost_psc - version3.support_cost_psc
+        )
+        assert project_data["support_cost_adjustment"] == expected_adjustment
+
+        assert (
+            project_data["support_cost_approved_plus_adjustment"]
+            == latest_version.support_cost_psc
+        )
+        expected_balance = latest_version.support_cost_psc - 8000.0
+        assert project_data["support_cost_balance"] == expected_balance
+
+    def test_support_cost_derived_fields_single_version(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        agency,
+        project_ongoing_status,
+    ):
+        # This project only has version 3
+        single_version = ProjectFactory(
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+            support_cost_psc=15000.0,
+            date_approved=date(annual_agency_report.progress_report.year - 1, 6, 15),
+        )
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=single_version,
+            support_cost_disbursed=5000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == single_version.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        assert project_data["support_cost_approved"] == 15000.0
+        assert project_data["support_cost_adjustment"] is None
+        assert project_data["support_cost_approved_plus_adjustment"] == 15000.0
+        assert project_data["support_cost_balance"] == 10000.0
 
 
 @pytest.mark.django_db
@@ -327,14 +424,14 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_project_reports(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         annual_agency_report,
         multiple_projects_for_apr,
     ):
         for project in multiple_projects_for_apr[:3]:
             AnnualProjectReportFactory(report=annual_agency_report, project=project)
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         update_data = {
             "project_reports": [
@@ -365,9 +462,9 @@ class TestAPRBulkUpdateView(BaseTest):
         assert response.data["error_count"] == 0
 
     def test_bulk_update_requires_edit_permission(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse(
             "apr-update",
@@ -382,7 +479,7 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_submitted_reports(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         mlfs_admin_user,
         annual_agency_report,
         annual_project_report,
@@ -407,7 +504,7 @@ class TestAPRBulkUpdateView(BaseTest):
         )
 
         # Agency users should not be able to update, but mlfs ones should
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         response = self.client.post(url, update_data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -418,7 +515,7 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_unlocked_reports(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         annual_agency_report,
         annual_project_report,
     ):
@@ -426,7 +523,7 @@ class TestAPRBulkUpdateView(BaseTest):
         annual_agency_report.is_unlocked = True
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         update_data = {
             "project_reports": [
@@ -450,7 +547,7 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_endorsed_reports(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         mlfs_admin_user,
         annual_agency_report,
         annual_project_report,
@@ -474,7 +571,7 @@ class TestAPRBulkUpdateView(BaseTest):
             },
         )
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         response = self.client.post(url, update_data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -484,11 +581,11 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_duplicate_codes(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         update_data = {
             "project_reports": [
@@ -517,11 +614,11 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_invalid_project_code(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         update_data = {
             "project_reports": [
@@ -552,11 +649,11 @@ class TestAPRBulkUpdateView(BaseTest):
 
     def test_bulk_update_partial_fields(
         self,
-        agency_inputter_user,
+        apr_agency_inputter_user,
         annual_agency_report,
         annual_project_report,
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         # First update
         update_data = {
@@ -615,8 +712,8 @@ class TestAPRFileUploadView(BaseTest):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_upload_file(self, agency_inputter_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_inputter_user)
+    def test_upload_file(self, apr_agency_inputter_user, annual_agency_report):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         test_financial_file = SimpleUploadedFile(
             "test_report.pdf", b"file_content", content_type="application/pdf"
@@ -649,8 +746,10 @@ class TestAPRFileUploadView(BaseTest):
             report=annual_agency_report
         ).exists()
 
-    def test_upload_file_permissions(self, agency_viewer_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_upload_file_permissions(
+        self, apr_agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse(
             "apr-file-upload",
@@ -663,11 +762,13 @@ class TestAPRFileUploadView(BaseTest):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_upload_submitted_report(self, agency_inputter_user, annual_agency_report):
+    def test_upload_submitted_report(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         test_file = SimpleUploadedFile(
             "test.pdf", b"content", content_type="application/pdf"
@@ -685,7 +786,7 @@ class TestAPRFileUploadView(BaseTest):
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_upload_file_replaces_existing_annual_report(
-        self, agency_inputter_user, annual_agency_report
+        self, apr_agency_inputter_user, annual_agency_report
     ):
         # First add "existing" file to the annual agency report
         old_file = AnnualProjectReportFileFactory(
@@ -693,7 +794,7 @@ class TestAPRFileUploadView(BaseTest):
             file_type=AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT,
         )
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         # Then upload new file to check that it overwrites the old one
         new_file = SimpleUploadedFile(
@@ -723,12 +824,14 @@ class TestAPRFileUploadView(BaseTest):
         )
         assert not AnnualProjectReportFile.objects.filter(id=old_file.id).exists()
 
-    def test_upload_unlocked_report(self, agency_inputter_user, annual_agency_report):
+    def test_upload_unlocked_report(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
         annual_agency_report.status = annual_agency_report.SubmissionStatus.SUBMITTED
         annual_agency_report.is_unlocked = True
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         test_file = SimpleUploadedFile(
             "test.pdf", b"content", content_type="application/pdf"
@@ -749,7 +852,7 @@ class TestAPRFileUploadView(BaseTest):
         assert response.data["message"] == "Files uploaded successfully."
 
     def test_upload_file_to_endorsed_report(
-        self, agency_inputter_user, mlfs_admin_user, annual_agency_report
+        self, apr_agency_inputter_user, mlfs_admin_user, annual_agency_report
     ):
         annual_agency_report.progress_report.endorsed = True
         annual_agency_report.progress_report.save()
@@ -768,7 +871,7 @@ class TestAPRFileUploadView(BaseTest):
         )
 
         # Agency user cannot upload
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "endorsed" in str(response.data).lower()
@@ -780,7 +883,7 @@ class TestAPRFileUploadView(BaseTest):
         assert "endorsed" in str(response.data).lower()
 
     def test_delete_file_from_endorsed_report(
-        self, agency_inputter_user, mlfs_admin_user, annual_agency_report
+        self, apr_agency_inputter_user, mlfs_admin_user, annual_agency_report
     ):
         file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
 
@@ -796,7 +899,7 @@ class TestAPRFileUploadView(BaseTest):
             },
         )
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         response = self.client.delete(url)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "endorsed" in str(response.data).lower()
@@ -825,14 +928,14 @@ class TestAPRFileDownloadView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_user_can_download_own_file(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         file_obj = AnnualProjectReportFileFactory(
             report=annual_agency_report,
             file_name="test_report.pdf",
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-file-download",
             kwargs={
@@ -850,7 +953,7 @@ class TestAPRFileDownloadView(BaseTest):
         assert "Content-Type" in response
 
     def test_agency_user_cannot_download_other_agency_file(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         other_agency = AgencyFactory()
         other_report = AnnualAgencyProjectReportFactory(
@@ -860,7 +963,7 @@ class TestAPRFileDownloadView(BaseTest):
         )
         file_obj = AnnualProjectReportFileFactory(report=other_report)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-file-download",
             kwargs={
@@ -898,8 +1001,10 @@ class TestAPRFileDownloadView(BaseTest):
             == 'attachment; filename="mlfs_download_test.pdf"'
         )
 
-    def test_download_nonexistent_file(self, agency_viewer_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_download_nonexistent_file(
+        self, apr_agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-file-download",
             kwargs={
@@ -913,11 +1018,11 @@ class TestAPRFileDownloadView(BaseTest):
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_download_file_with_wrong_year_or_agency(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         # Wrong year
         url = reverse(
@@ -944,7 +1049,7 @@ class TestAPRFileDownloadView(BaseTest):
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_download_financial_report_file(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         file_obj = AnnualProjectReportFileFactory(
             report=annual_agency_report,
@@ -952,7 +1057,7 @@ class TestAPRFileDownloadView(BaseTest):
             file_name="financial_report_2024.pdf",
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-file-download",
             kwargs={
@@ -970,7 +1075,7 @@ class TestAPRFileDownloadView(BaseTest):
         )
 
     def test_download_supporting_document_file(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         file_obj = AnnualProjectReportFileFactory(
             report=annual_agency_report,
@@ -978,7 +1083,7 @@ class TestAPRFileDownloadView(BaseTest):
             file_name="supporting_doc.docx",
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-file-download",
             kwargs={
@@ -995,10 +1100,10 @@ class TestAPRFileDownloadView(BaseTest):
             in response["Content-Disposition"]
         )
 
-    def test_serializer_file_url(self, agency_viewer_user, annual_agency_report):
+    def test_serializer_file_url(self, apr_agency_viewer_user, annual_agency_report):
         file_obj = AnnualProjectReportFileFactory(report=annual_agency_report)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -1025,8 +1130,8 @@ class TestAPRGlobalViewSet(BaseTest):
         response = self.client.get(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_agency_user_cannot_access(self, agency_viewer_user, apr_year):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_agency_user_cannot_access(self, apr_agency_viewer_user, apr_year):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
         response = self.client.get(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -1320,14 +1425,14 @@ class TestAPRToggleLockView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_user_cannot_toggle_lock(
-        self, agency_inputter_user, annual_agency_report
+        self, apr_agency_inputter_user, annual_agency_report
     ):
         annual_agency_report.status = (
             AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         url = reverse(
             "apr-toggle-lock",
             kwargs={
@@ -1471,9 +1576,9 @@ class TestAPREndorseView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_user_cannot_endorse(
-        self, agency_inputter_user, apr_year, annual_progress_report
+        self, apr_agency_inputter_user, apr_year, annual_progress_report
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         url = reverse("apr-endorse", kwargs={"year": apr_year})
         response = self.client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -1751,9 +1856,9 @@ class TestAPREndorseView(BaseTest):
         assert response.data["remarks_endorsed"] == "Test endorsement"
 
     def test_get_endorsement_status_requires_mlfs_access(
-        self, agency_viewer_user, apr_year, annual_progress_report
+        self, apr_agency_viewer_user, apr_year, annual_progress_report
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-endorse", kwargs={"year": apr_year})
         response = self.client.get(url)
 
@@ -1772,9 +1877,9 @@ class TestAPRExportView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_user_can_export_own_report(
-        self, agency_viewer_user, annual_agency_report, annual_project_report
+        self, apr_agency_viewer_user, annual_agency_report, annual_project_report
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -1801,7 +1906,7 @@ class TestAPRExportView(BaseTest):
         assert len(response.content) > 0
 
     def test_agency_user_cannot_export_other_agency_report(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
         other_agency = AgencyFactory()
         other_report = AnnualAgencyProjectReportFactory(
@@ -1810,7 +1915,7 @@ class TestAPRExportView(BaseTest):
             is_unlocked=False,
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -1843,7 +1948,7 @@ class TestAPRExportView(BaseTest):
         assert len(response.content) > 0
 
     def test_export_with_multiple_projects(
-        self, agency_viewer_user, annual_agency_report, multiple_projects_for_apr
+        self, apr_agency_viewer_user, annual_agency_report, multiple_projects_for_apr
     ):
         for project in multiple_projects_for_apr[:3]:
             AnnualProjectReportFactory(
@@ -1852,7 +1957,7 @@ class TestAPRExportView(BaseTest):
                 funds_disbursed=10000.0,
             )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -1873,7 +1978,7 @@ class TestAPRExportView(BaseTest):
 
     def test_export_with_status_filter(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         annual_project_report,
         project_ongoing_status,
@@ -1881,7 +1986,7 @@ class TestAPRExportView(BaseTest):
         annual_project_report.project.status = project_ongoing_status
         annual_project_report.project.save(update_fields=["status"])
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -1899,8 +2004,8 @@ class TestAPRExportView(BaseTest):
         data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
         assert data_rows == 1
 
-    def test_export_empty_report(self, agency_viewer_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_export_empty_report(self, apr_agency_viewer_user, annual_agency_report):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -1926,8 +2031,8 @@ class TestAPRExportView(BaseTest):
         ]
         assert all(value is None or value == "" for value in row_values)
 
-    def test_export_nonexistent_report(self, agency_viewer_user):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_export_nonexistent_report(self, apr_agency_viewer_user):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={"year": 9999, "agency_id": 9999},
@@ -1938,7 +2043,7 @@ class TestAPRExportView(BaseTest):
 
     def test_export_data_correctness(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         project_ongoing_status,
     ):
@@ -1962,7 +2067,7 @@ class TestAPRExportView(BaseTest):
         apr.populate_derived_fields()
         apr.save()
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -2011,7 +2116,7 @@ class TestAPRExportView(BaseTest):
         assert worksheet.cell(first_data_row, country_col).value == project.country.name
 
     def test_export_null_values(
-        self, agency_viewer_user, annual_agency_report, project_ongoing_status
+        self, apr_agency_viewer_user, annual_agency_report, project_ongoing_status
     ):
         project = ProjectFactory(
             code="TEST/CODE/2024/001",
@@ -2028,7 +2133,7 @@ class TestAPRExportView(BaseTest):
             date_first_disbursement=None,
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-export",
             kwargs={
@@ -2531,9 +2636,9 @@ class TestAPRMLFSBulkUpdateView(BaseTest):
         assert "Duplicate project report IDs" in str(response.data)
 
     def test_agency_user_cannot_access_mlfs_bulk_update(
-        self, agency_inputter_user, apr_year, annual_progress_report
+        self, apr_agency_inputter_user, apr_year, annual_progress_report
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
         url = reverse("apr-mlfs-bulk-update", kwargs={"year": apr_year})
 
         data = {"project_reports": [{"id": 1, "funds_disbursed": 100000}]}
@@ -2580,8 +2685,8 @@ class TestAPRKickStartView(BaseTest):
         response = self.client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_agency_user_cannot_kick_start(self, agency_viewer_user):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_agency_user_cannot_kick_start(self, apr_agency_viewer_user):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-kick-start")
 
         response = self.client.post(url, {}, format="json")
@@ -2744,10 +2849,10 @@ class TestAPRWorkspaceAccessControl(BaseTest):
     def test_without_login(self, **kwargs):
         pass
 
-    def test_workspace_access_without_kickstart(self, agency_viewer_user, agency):
+    def test_workspace_access_without_kickstart(self, apr_agency_viewer_user, agency):
         non_existent_year = 2030
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-workspace", kwargs={"year": non_existent_year})
 
         response = self.client.get(url)
@@ -2756,7 +2861,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         assert "not been started" in str(response.data)
 
     def test_workspace_access_after_kickstart(
-        self, agency_viewer_user, agency, mlfs_admin_user
+        self, apr_agency_viewer_user, agency, mlfs_admin_user
     ):
         AnnualProgressReportFactory(year=2023, endorsed=True)
 
@@ -2765,7 +2870,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         response = self.client.post(kickstart_url, {}, format="json")
         assert response.status_code == status.HTTP_201_CREATED
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         workspace_url = reverse("apr-workspace", kwargs={"year": 2024})
 
         response = self.client.get(workspace_url)
@@ -2774,9 +2879,9 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         assert response.data["progress_report_year"] == 2024
 
     def test_workspace_creates_agency_report_after_kickstart(
-        self, agency_viewer_user, agency, annual_progress_report
+        self, apr_agency_viewer_user, agency, annual_progress_report
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-workspace", kwargs={"year": annual_progress_report.year})
 
         assert not AnnualAgencyProjectReport.objects.filter(
@@ -2790,11 +2895,11 @@ class TestAPRWorkspaceAccessControl(BaseTest):
             progress_report=annual_progress_report, agency=agency
         )
         assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
-        assert agency_report.created_by == agency_viewer_user
+        assert agency_report.created_by == apr_agency_viewer_user
 
     def test_workspace_prepopulates_from_previous_year(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         mlfs_admin_user,
         annual_progress_report_endorsed,
@@ -2818,7 +2923,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         )
 
         # Kick-start next year
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         next_year = previous_year + 1
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -2826,7 +2931,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         self.client.post(kickstart_url, {}, format="json")
 
         # Now access workspace as agency; data should be pre-populated
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
 
         response = self.client.get(workspace_url)
@@ -2845,7 +2950,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
     def test_workspace_creates_new_projects_not_in_previous_year(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         mlfs_admin_user,
         country_ro,
@@ -2875,7 +2980,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
             date_approved=date(next_year - 1, 1, 1),
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
 
         response = self.client.get(workspace_url)
@@ -2893,7 +2998,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
     def test_workspace_matches_by_project_code_and_agency(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         mlfs_admin_user,
         country_ro,
@@ -2930,7 +3035,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         response = self.client.post(kickstart_url, {}, format="json")
         next_year = response.data["year"]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
 
         response = self.client.get(workspace_url)
@@ -2946,14 +3051,14 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
     def test_workspace_no_prepopulation_if_no_previous_year(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         multiple_projects_for_apr,
     ):
         # Create "first ever" APR (no previous APR year)
         first_apr = AnnualProgressReportFactory(year=2025, endorsed=False)
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-workspace", kwargs={"year": 2025})
 
         response = self.client.get(url)
@@ -2979,7 +3084,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
     def test_workspace_uses_previous_year_status_over_project_status(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         mlfs_admin_user,
         country_ro,
@@ -3022,7 +3127,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         assert kickstart_response.status_code == status.HTTP_201_CREATED
 
         new_year = previous_year + 1
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-workspace", kwargs={"year": new_year})
         response = self.client.get(url)
 
@@ -3043,7 +3148,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
 
     def test_workspace_only_prepopulates_matching_projects(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         agency,
         mlfs_admin_user,
         country_ro,
@@ -3092,7 +3197,7 @@ class TestAPRWorkspaceAccessControl(BaseTest):
             date_approved=date(next_year - 1, 1, 1),
         )
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         workspace_url = reverse("apr-workspace", kwargs={"year": next_year})
 
         response = self.client.get(workspace_url)
@@ -3124,9 +3229,9 @@ class TestAPRStatusView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_viewer_cannot_submit(
-        self, agency_viewer_user, annual_agency_report
+        self, apr_agency_viewer_user, annual_agency_report
     ):
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
 
         url = reverse(
             "apr-status",
@@ -3140,9 +3245,9 @@ class TestAPRStatusView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_inputter_cannot_submit(
-        self, agency_inputter_user, annual_agency_report
+        self, apr_agency_inputter_user, annual_agency_report
     ):
-        self.client.force_authenticate(user=agency_inputter_user)
+        self.client.force_authenticate(user=apr_agency_inputter_user)
 
         url = reverse(
             "apr-status",
@@ -3156,7 +3261,7 @@ class TestAPRStatusView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_agency_submitter_can_submit_draft_report(
-        self, agency_user, annual_agency_report
+        self, apr_agency_submitter_user, annual_agency_report
     ):
         assert (
             annual_agency_report.status
@@ -3166,7 +3271,7 @@ class TestAPRStatusView(BaseTest):
         assert annual_agency_report.submitted_by is None
         assert annual_agency_report.is_unlocked is False
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3184,7 +3289,7 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         assert response.data["submitted_at"] is not None
-        assert response.data["submitted_by"] == agency_user.username
+        assert response.data["submitted_by"] == apr_agency_submitter_user.username
 
         annual_agency_report.refresh_from_db()
         assert (
@@ -3192,19 +3297,21 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         assert annual_agency_report.submitted_at is not None
-        assert annual_agency_report.submitted_by == agency_user
+        assert annual_agency_report.submitted_by == apr_agency_submitter_user
         assert annual_agency_report.is_unlocked is False
 
     def test_mail_after_agency_submission(
         self,
-        agency_user,
+        apr_agency_submitter_user,
         annual_agency_report,
         mock_send_agency_submission_notification,
     ):
         config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = True
-        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = agency_user.email
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = (
+            apr_agency_submitter_user.email
+        )
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
         url = reverse(
             "apr-status",
             kwargs={
@@ -3221,21 +3328,23 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         assert response.data["submitted_at"] is not None
-        assert response.data["submitted_by"] == agency_user.username
+        assert response.data["submitted_by"] == apr_agency_submitter_user.username
 
         mock_send_agency_submission_notification.assert_called()
         assert mock_send_agency_submission_notification.call_count == 1
 
     def test_mail_not_sent_after_agency_submission_if_disabled(
         self,
-        agency_user,
+        apr_agency_submitter_user,
         annual_agency_report,
         mock_send_agency_submission_notification,
     ):
         config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = False
-        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = agency_user.email
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = (
+            apr_agency_submitter_user.email
+        )
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
         url = reverse(
             "apr-status",
             kwargs={
@@ -3252,7 +3361,7 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         assert response.data["submitted_at"] is not None
-        assert response.data["submitted_by"] == agency_user.username
+        assert response.data["submitted_by"] == apr_agency_submitter_user.username
 
         mock_send_agency_submission_notification.assert_not_called()
 
@@ -3275,16 +3384,16 @@ class TestAPRStatusView(BaseTest):
         )
 
     def test_cannot_submit_already_submitted_locked_report(
-        self, agency_user, annual_agency_report
+        self, apr_agency_submitter_user, annual_agency_report
     ):
         annual_agency_report.status = (
             AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         annual_agency_report.submitted_at = timezone.now()
-        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.submitted_by = apr_agency_submitter_user
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3299,17 +3408,17 @@ class TestAPRStatusView(BaseTest):
         assert "Cannot transition" in str(response.data)
 
     def test_submit_unlocked_report_locks_it_again(
-        self, agency_user, annual_agency_report
+        self, apr_agency_submitter_user, annual_agency_report
     ):
         annual_agency_report.status = (
             AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
         annual_agency_report.submitted_at = timezone.now()
-        annual_agency_report.submitted_by = agency_user
+        annual_agency_report.submitted_by = apr_agency_submitter_user
         annual_agency_report.is_unlocked = True
         annual_agency_report.save()
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3333,8 +3442,10 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
 
-    def test_explicit_status_in_request_body(self, agency_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_user)
+    def test_explicit_status_in_request_body(
+        self, apr_agency_submitter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3355,13 +3466,15 @@ class TestAPRStatusView(BaseTest):
             == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
 
-    def test_cannot_submit_other_agency_report(self, agency_user, annual_agency_report):
+    def test_cannot_submit_other_agency_report(
+        self, apr_agency_submitter_user, annual_agency_report
+    ):
         other_agency = AgencyFactory()
         other_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_agency_report.progress_report, agency=other_agency
         )
 
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3373,8 +3486,8 @@ class TestAPRStatusView(BaseTest):
         response = self.client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_submit_nonexistent_report(self, agency_user, apr_year):
-        self.client.force_authenticate(user=agency_user)
+    def test_submit_nonexistent_report(self, apr_agency_submitter_user, apr_year):
+        self.client.force_authenticate(user=apr_agency_submitter_user)
 
         url = reverse(
             "apr-status",
@@ -3396,8 +3509,8 @@ class TestAPRMLFSExportView(BaseTest):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_agency_user_cannot_access(self, agency_viewer_user, apr_year):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_agency_user_cannot_access(self, apr_agency_viewer_user, apr_year):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
         response = self.client.get(url)
 
@@ -3821,6 +3934,303 @@ class TestAPRMLFSExportView(BaseTest):
         ]
         assert all(value is None or value == "" for value in row_values)
 
+    def test_derived_fields_with_multiple_versions(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=80000.0,
+            support_cost_disbursed=8000.0,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert (
+            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            == version3.total_fund
+        )
+
+        expected_adjustment = latest_version.total_fund - version3.total_fund
+        assert (
+            worksheet.cell(first_data_row, columns["adjustment"]).value
+            == expected_adjustment
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["approved_funding_plus_adjustment"]
+            ).value
+            == latest_version.total_fund
+        )
+
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_approved"]).value
+            == version3.support_cost_psc
+        )
+
+        expected_sc_adjustment = (
+            latest_version.support_cost_psc - version3.support_cost_psc
+        )
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_adjustment"]).value
+            == expected_sc_adjustment
+        )
+
+    def test_derived_fields_with_archive_version_apr(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        # Create an APR pointing to version3 instead of the latest
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+            funds_disbursed=75000.0,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert (
+            worksheet.cell(first_data_row, columns["approved_funding"]).value
+            == version3.total_fund
+        )
+        expected_adjustment = latest_version.total_fund - version3.total_fund
+        assert (
+            worksheet.cell(first_data_row, columns["adjustment"]).value
+            == expected_adjustment
+        )
+
+    def test_derived_fields_with_no_version_3(
+        self,
+        mlfs_admin_user,
+        annual_agency_report,
+        initial_project_version_2_for_apr,
+    ):
+        # Derived fields should return None when there's no version 3.
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=initial_project_version_2_for_apr,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        assert worksheet.cell(first_data_row, columns["approved_funding"]).value is None
+        assert (
+            worksheet.cell(first_data_row, columns["support_cost_approved"]).value
+            is None
+        )
+
+    def test_derived_fields_with_no_latest_version_in_year(
+        self,
+        mlfs_admin_user,
+        annual_agency_report,
+        late_post_excom_versions_for_apr,
+    ):
+        version3 = late_post_excom_versions_for_apr[0]
+        later_version = late_post_excom_versions_for_apr[1]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=later_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        # adjustment should be None (no version in the current year)
+        assert worksheet.cell(first_data_row, columns["adjustment"]).value is None
+
+        # approved_funding_plus_adjustment should fall back to version3
+        assert (
+            worksheet.cell(
+                first_data_row, columns["approved_funding_plus_adjustment"]
+            ).value
+            == version3.total_fund
+        )
+
+    def test_phaseout_fields_from_version3(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        # All phase-out proposal fields should come from version 3
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_odp_proposal"]
+            ).value
+            == version3.consumption_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_co2_proposal"]
+            ).value
+            == version3.consumption_phase_out_co2
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_odp_proposal"]
+            ).value
+            == version3.production_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_co2_proposal"]
+            ).value
+            == version3.production_phase_out_co2
+        )
+
+    def test_date_fields_from_different_versions(
+        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
+    ):
+        version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse(
+            "apr-mlfs-export",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        columns = APRExportWriter.build_column_mapping()
+        first_data_row = APRExportWriter.FIRST_DATA_ROW
+
+        date_approved_cell = worksheet.cell(
+            first_data_row, columns["date_approved"]
+        ).value
+        assert date_approved_cell.date() == version3.date_approved
+
+        date_completion_proposal_cell = worksheet.cell(
+            first_data_row, columns["date_completion_proposal"]
+        ).value
+        assert date_completion_proposal_cell.date() == version3.date_completion
+
+        date_completion_agreement_cell = worksheet.cell(
+            first_data_row,
+            columns["date_of_completion_per_agreement_or_decisions"],
+        ).value
+        assert date_completion_agreement_cell.date() == latest_version.date_completion
+
 
 @pytest.mark.django_db
 class TestAPRFilesDownloadAllView(BaseTest):
@@ -3833,8 +4243,10 @@ class TestAPRFilesDownloadAllView(BaseTest):
         response = self.client.get(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_agency_user_cannot_access(self, agency_viewer_user, annual_agency_report):
-        self.client.force_authenticate(user=agency_viewer_user)
+    def test_agency_user_cannot_access(
+        self, apr_agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-files-download-all",
             kwargs={
@@ -4034,12 +4446,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         """No need for this here, it's tested elsewhere"""
 
     def test_project_identification_derived_fields(
-        self,
-        agency_viewer_user,
-        annual_agency_report,
-        country_ro,
-        country_europe,
-        project_ongoing_status,
+        self, apr_agency_viewer_user, annual_agency_report, country_ro, country_europe, project_ongoing_status
     ):
         country_ro.parent = country_europe
         country_ro.save()
@@ -4062,7 +4469,12 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         project.save()
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4093,14 +4505,19 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_date_derived_fields(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4135,13 +4552,19 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_phaseout_proposal_derived_fields(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4179,14 +4602,20 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_financial_approved_and_adjustment_fields(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=80000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4216,7 +4645,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_financial_calculated_fields(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
@@ -4224,9 +4653,13 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         latest_version = multiple_project_versions_for_apr[2]
 
         funds_disbursed = 80000.0
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=funds_disbursed,
+        )
 
-        self.client.force_authenticate(user=agency_viewer_user)
-        # Access once so we trigger the derived fields calculations
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4260,14 +4693,20 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_support_cost_derived_fields(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            support_cost_disbursed=8000.0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4300,17 +4739,20 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_support_cost_balance(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
-        version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
         support_cost_disbursed = 8000.0
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            support_cost_disbursed=support_cost_disbursed,
+        )
 
-        # Access once so we trigger the derived fields calculations
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4330,7 +4772,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             (
                 p
                 for p in response.data["project_reports"]
-                if p["project_code"] == version3.code
+                if p["project_code"] == latest_version.code
             ),
             None,
         )
@@ -4341,12 +4783,12 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_implementation_delays_field(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         project = multiple_project_versions_for_apr[0]
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4367,14 +4809,54 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         # This field is currently hardcoded to return an empty string
         assert project_data["implementation_delays_status_report_decisions"] == ""
 
+    def test_derived_fields_with_no_version_3(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        initial_project_version_2_for_apr,
+    ):
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=initial_project_version_2_for_apr,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in response.data["project_reports"]
+                if p["project_code"] == initial_project_version_2_for_apr.code
+            ),
+            None,
+        )
+        assert project_data is not None
+
+        # Fields that depend on version 3 should be None
+        assert project_data["consumption_phased_out_odp_proposal"] is None
+        assert project_data["consumption_phased_out_co2_proposal"] is None
+        assert project_data["production_phased_out_odp_proposal"] is None
+        assert project_data["production_phased_out_co2_proposal"] is None
+        assert project_data["approved_funding"] is None
+        assert project_data["support_cost_approved"] is None
+
     def test_derived_fields_with_no_latest_version(
-        self, agency_viewer_user, annual_agency_report, late_post_excom_versions_for_apr
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        late_post_excom_versions_for_apr,
     ):
         version4 = late_post_excom_versions_for_apr[1]
         funds_disbursed = 80000.0
 
         # Trigger initial calculations; then set funds_disbursed
-        self.client.force_authenticate(user=agency_viewer_user)
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4409,13 +4891,20 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
     def test_null_handling_in_calculations(
         self,
-        agency_viewer_user,
+        apr_agency_viewer_user,
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
+        latest_version = multiple_project_versions_for_apr[2]
 
-        self.client.force_authenticate(user=agency_viewer_user)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=None,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
             kwargs={"year": annual_agency_report.progress_report.year},
@@ -4427,7 +4916,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             (
                 p
                 for p in response.data["project_reports"]
-                if p["project_code"] == version3.code
+                if p["project_code"] == latest_version.code
             ),
             None,
         )
@@ -4450,6 +4939,13 @@ class TestAPRDerivedFieldsAPI(BaseTest):
 
         funds_disbursed = 80000.0
         support_cost_disbursed = 8000.0
+
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=latest_version,
+            funds_disbursed=funds_disbursed,
+            support_cost_disbursed=support_cost_disbursed,
+        )
 
         # Same pattern - initial population, update, then call API again
         self.client.force_authenticate(user=agency_viewer_user)
@@ -4506,3 +5002,146 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert worksheet.cell(
             project_row, columns["approved_funding_plus_adjustment"]
         ).value == (latest_version.total_fund)
+
+
+@pytest.mark.django_db
+class TestAPRPermissions(BaseTest):
+    def test_without_login(self, **kwargs):
+        pass
+
+    def test_apr_agency_viewer_can_view(
+        self, apr_agency_viewer_user, annual_progress_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_progress_report.year},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_apr_agency_viewer_cannot_edit(
+        self, apr_agency_viewer_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {"project_reports": []},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_apr_agency_inputter_can_edit(
+        self, apr_agency_inputter_user, annual_agency_report, annual_project_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(
+            url,
+            {
+                "project_reports": [
+                    {
+                        "project_code": annual_project_report.project.code,
+                        "funds_disbursed": 50000.0,
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_apr_agency_inputter_cannot_submit(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_apr_agency_submitter_can_submit(
+        self, apr_agency_submitter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_submitter_user)
+        url = reverse(
+            "apr-status",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "submitted"
+
+    def test_apr_mlfs_full_access_can_unlock(
+        self, apr_mlfs_full_access_user, annual_agency_report
+    ):
+        annual_agency_report.status = (
+            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        annual_agency_report.save()
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = reverse(
+            "apr-toggle-lock",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency_id,
+            },
+        )
+        response = self.client.post(url, {"is_unlocked": True}, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_unlocked"] is True
+
+    def test_apr_mlfs_full_access_can_endorse(
+        self, apr_mlfs_full_access_user, annual_progress_report, meeting_apr_same_year
+    ):
+        agency = AgencyFactory()
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = reverse("apr-endorse", kwargs={"year": annual_progress_report.year})
+        response = self.client.post(
+            url,
+            {
+                "meeting_endorsed": meeting_apr_same_year.id,
+                "date_endorsed": "2024-12-01",
+                "remarks_endorsed": "Test endorsement",
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_separate_apr_and_projects_permissions(
+        self, agency, viewer_user, apr_agency_viewer_user
+    ):
+        # User with only Projects (not APR) permissions
+        assert not viewer_user.has_perm("core.has_apr_view_access")
+
+        # And the reverse (only APR permissions)
+        assert apr_agency_viewer_user.has_perm("core.has_apr_view_access")
+        assert not apr_agency_viewer_user.has_perm("core.has_project_v2_edit_access")

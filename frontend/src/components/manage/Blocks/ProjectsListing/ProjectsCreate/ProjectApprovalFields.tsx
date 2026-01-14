@@ -9,7 +9,7 @@ import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import ProjectFundFields from './ProjectFundFields'
 import { widgets } from './SpecificFieldsHelpers'
 import { STYLE } from '../../Replenishment/Inputs/constants'
-import { canEditField, canViewField } from '../utils'
+import { canEditField, canViewField, getTransferFieldLabel } from '../utils'
 import {
   ProjectData,
   ProjectSpecificFields,
@@ -48,8 +48,6 @@ const ProjectApprovalFields = ({
   ProjectTabSetters & { project?: ProjectTypeApi }) => {
   const sectionIdentifier = 'approvalFields'
   const crtSectionData = projectData[sectionIdentifier]
-
-  const isTransferred = !!project?.transferred_from
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -119,9 +117,7 @@ const ProjectApprovalFields = ({
         {canViewField(viewableFields, 'meeting') && (
           <div className="w-40">
             <Label>
-              {isTransferred
-                ? tableColumns.transfer_meeting
-                : tableColumns.meeting}
+              {getTransferFieldLabel(project as ProjectTypeApi, 'meeting')}
             </Label>
             <PopoverInput
               label={meetingNumber?.toString()}
@@ -147,9 +143,7 @@ const ProjectApprovalFields = ({
         {canViewField(viewableFields, 'decision') && (
           <div>
             <Label>
-              {isTransferred
-                ? tableColumns.transfer_decision
-                : tableColumns.decision}
+              {getTransferFieldLabel(project as ProjectTypeApi, 'decision')}
             </Label>
             <div className="flex items-center">
               <div className="w-[16rem]">
@@ -161,9 +155,9 @@ const ProjectApprovalFields = ({
                   onChange={(_, value) =>
                     handleChangeDecision(value as DecisionOption)
                   }
-                  getOptionLabel={(option) => {
-                    return getOptionLabel(decisionOptions, option, 'value')
-                  }}
+                  getOptionLabel={(option) =>
+                    getOptionLabel(decisionOptions, option, 'value')
+                  }
                   {...{
                     ...defaultProps,
                     FieldProps: {
@@ -174,6 +168,28 @@ const ProjectApprovalFields = ({
                 />
               </div>
               <FieldErrorIndicator errors={errors} field="Decision" />
+            </div>
+          </div>
+        )}
+        {project?.status === 'Transferred' && (
+          <div>
+            <Label>{tableColumns.transfer_decision}</Label>
+            <div className="w-[16rem]">
+              <Field
+                widget="autocomplete"
+                options={[]}
+                disabled={true}
+                value={project?.transfer_decision_id}
+                getOptionLabel={(option) =>
+                  getOptionLabel(decisionOptions, option, 'value')
+                }
+                {...{
+                  ...defaultProps,
+                  FieldProps: {
+                    className: defaultProps.FieldProps.className + ' w-[16rem]',
+                  },
+                }}
+              />
             </div>
           </div>
         )}
@@ -226,6 +242,7 @@ const ProjectApprovalFields = ({
       <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
         <ProjectFundFields
           {...{ projectData, setProjectData, project, errors }}
+          mode="edit"
           type="approval"
         />
       </div>

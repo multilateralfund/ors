@@ -362,7 +362,7 @@ const ProjectCrossCuttingFields = ({
             </div>
             <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
               <ProjectFundFields
-                {...{ projectData, setProjectData, project, errors }}
+                {...{ projectData, setProjectData, project, errors, mode }}
                 type="crossCutting"
               />
               {canViewField(viewableFields, 'project_start_date') && (

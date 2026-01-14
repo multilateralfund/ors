@@ -9,11 +9,22 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import React from 'react'
-import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isObject } from 'lodash'
+import { get, isEqual, isNil, isObject } from 'lodash'
+import {
+  validateDate,
+  validateNumber,
+  validateText,
+  ValidatorMixin,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
+import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import dayjs from 'dayjs'
 
-export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
+export const dataTypeDefinitions: Record<
+  string,
+  DataTypeDefinition & ValidatorMixin
+> = {
   dateString: {
     baseDataType: 'dateString',
     extendsDataType: 'dateString',
@@ -23,21 +34,32 @@ export const dataTypeDefinitions: Record<string, DataTypeDefinition> = {
     valueFormatter: (params) => formatDate(params.value),
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
+    validators: [validateDate],
+    valueParser: (params) => {
+      if (isNil(params.newValue) || params.newValue === '') {
+        return null
+      }
+
+      return params.newValue
+    },
   },
   currency: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatUSD(params.value),
+    validators: [validateNumber],
   },
   percent: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatPercent(params.value),
+    validators: [validateNumber],
   },
   decimal: {
     baseDataType: 'number',
     extendsDataType: 'number',
     valueFormatter: (params) => formatDecimal(params.value),
+    validators: [validateNumber],
   },
   boolean: {
     baseDataType: 'boolean',
@@ -51,11 +73,11 @@ interface APRTableColumn {
   fieldName: string
   group: string | null
   input: boolean
-  overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number]
+  overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number] &
+    ValidatorMixin
 }
 
 interface BaseColumnDefOptions {
-  group?: string | null
   inlineEdit?: boolean
   year: string
 }
@@ -76,7 +98,6 @@ type ColumnDefOptions = ClipboardDisabled | ClipboardEnabled
 
 export default function useGetColumnDefs({
   year,
-  group = null,
   inlineEdit = false,
   clipboardEdit = false,
   rows,
@@ -206,6 +227,7 @@ export default function useGetColumnDefs({
       input: true,
       overrideOptions: {
         minWidth: 160,
+        cellDataType: 'text',
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: {
           Input: { placeholder: 'Select status' },
@@ -221,6 +243,15 @@ export default function useGetColumnDefs({
             isObject(value) ? isEqual(option, value) : option.name === value,
           agFormatValue: (value: any) => value?.name || '',
         },
+        validators: [
+          (value: any) => {
+            const status = projectStatuses.find(
+              (status) => status.name === value,
+            )
+
+            return status ? null : 'Invalid status option'
+          },
+        ],
       },
     },
     firstDisbursementDate: {
@@ -312,6 +343,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     consumptionODPCO2Actual: {
@@ -322,6 +356,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPMTActual: {
@@ -332,6 +369,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     productionODPCO2Actual: {
@@ -342,6 +382,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     // Financial data fields
@@ -439,6 +482,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsCommitted: {
@@ -449,6 +495,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     estimatedDisbursementCurrentYear: {
@@ -459,6 +508,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostDisbursed: {
@@ -469,6 +521,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     supportCostCommitted: {
@@ -479,6 +534,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 140,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     disbursementsMadeFinalBeneficiaries: {
@@ -489,6 +547,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     fundsAdvanced: {
@@ -499,6 +560,9 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 120,
         cellDataType: 'currency',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
       },
     },
     implementationDelays: {
@@ -527,7 +591,13 @@ export default function useGetColumnDefs({
       group: 'Narrative & Indicators Data Fields',
       input: true,
       overrideOptions: {
-        minWidth: 120,
+        minWidth: 200,
+        cellDataType: 'text',
+        validators: [validateText],
+        cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     remarksCurrentYear: {
@@ -535,6 +605,15 @@ export default function useGetColumnDefs({
       fieldName: 'current_year_remarks',
       group: 'Narrative & Indicators Data Fields',
       input: true,
+      overrideOptions: {
+        minWidth: 200,
+        cellDataType: 'text',
+        validators: [validateText],
+        cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
+      },
     },
     genderPolicy: {
       label: 'Gender Policy for All Projects Approved from 85th Mtg (Yes/No)',
@@ -544,40 +623,67 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'boolean',
-        cellRenderer: (params: CustomCellRendererProps) => (
-          <>{params.valueFormatted}</>
-        ),
       },
     },
   }
 
-  let columns = Object.values(tableColumns)
-  if (group) {
-    columns = columns.filter(
-      // Always include project code
-      (col) => col.fieldName === 'project_code' || col.group === group,
-    )
-  }
+  const columns = Object.values(tableColumns)
+  const columnDefs = columns.map((c) => {
+    const canBeEdited = c.input && (clipboardEdit || inlineEdit)
 
-  const columnDefs = columns.map((c) => ({
-    headerName: c.label,
-    field: c.fieldName,
-    ...(c.overrideOptions ?? {}),
-    editable: inlineEdit && c.input,
-    // Clipboard editing requires a custom header component
-    headerComponent:
-      clipboardEdit && c.input && rows && setRows
-        ? (props: IHeaderParams) => (
-            <HeaderPasteWrapper
-              field={props.column.getColDef().field!}
-              form={rows}
-              label={props.displayName}
-              setForm={setRows}
-              rowIdField="project_code"
-            />
-          )
-        : undefined,
-  }))
+    return {
+      headerName: c.label,
+      field: c.fieldName,
+      editable: inlineEdit && c.input,
+      canBeEdited,
+      group: c.group,
+      // Clipboard editing requires a custom header component
+      headerComponent:
+        clipboardEdit && c.input && rows && setRows
+          ? (props: IHeaderParams) => (
+              <BasePasteWrapper
+                mutator={(row: any, value: any) => {
+                  const field = c.fieldName
+                  // @ts-ignore
+                  const cellDataType = c.overrideOptions?.cellDataType
+                  let toBeAdded = value
+
+                  if (cellDataType === 'dateString') {
+                    if (value === '') {
+                      toBeAdded = null
+                    } else {
+                      // Convert from Excel format to ISO
+                      const date = dayjs(value, 'DD/MM/YYYY', true)
+                      if (date.isValid()) {
+                        toBeAdded = date.format('YYYY-MM-DD')
+                      }
+                    }
+                  }
+
+                  if (['decimal', 'currency'].includes(cellDataType)) {
+                    // A cell becomes '' when cleared
+                    if (value === '') {
+                      toBeAdded = null
+                    }
+                  }
+
+                  if (cellDataType === 'boolean') {
+                    toBeAdded = value.toLowerCase() === 'yes';
+                  }
+
+                  row[field] = toBeAdded
+                }}
+                form={rows}
+                label={props.displayName}
+                setForm={setRows}
+                rowIdField="project_code"
+              />
+            )
+          : undefined,
+      cellRenderer: canBeEdited ? CellValidation : undefined,
+      ...(c.overrideOptions ?? {}),
+    }
+  })
 
   return {
     columnDefs,
@@ -587,11 +693,6 @@ export default function useGetColumnDefs({
       minWidth: 90,
       resizable: true,
       sortable: false,
-      // Use any because it could theoretically be a colgroup definition and too
-      // much narrowing is required
-      tooltipValueGetter: (params: any) => {
-        return params.colDef?.valueFormatter?.(params) ?? params.value
-      },
     },
   }
 }

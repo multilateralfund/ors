@@ -1,11 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
@@ -70,6 +63,9 @@ import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
+import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
@@ -83,6 +79,10 @@ export default function APRMLFSWorkspace() {
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string[]>[]
+  >([])
+  const hasValidationErrors = validationErrors.length > 0
 
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
@@ -275,14 +275,12 @@ export default function APRMLFSWorkspace() {
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
   const saveAPR = async () => {
+    setValidationErrors([])
     if (!gridRef.current) {
       return
     }
@@ -291,6 +289,15 @@ export default function APRMLFSWorkspace() {
     gridRef.current.api.forEachNode((node) => {
       allData.push(node.data)
     })
+
+    const { formErrors, hasErrors } = validateRows(allData, columnDefs)
+    if (hasErrors) {
+      setValidationErrors(formErrors)
+      enqueueSnackbar(<>Fix the validation errors before saving.</>, {
+        variant: 'error',
+      })
+      return
+    }
 
     try {
       await api(`api/annual-project-report/mlfs/${year}/bulk-update/`, {
@@ -315,7 +322,7 @@ export default function APRMLFSWorkspace() {
   const kickstartNewAPR = async () => {
     const response = await confirm({
       title: 'Kickstart new APR',
-      message: 'Are you sure you want to kickstart a new APR?',
+      message: `Are you sure you want to kickstart a new APR for the year ${kickstartAPR?.next_year}?`,
     })
 
     if (!response) {
@@ -341,10 +348,7 @@ export default function APRMLFSWorkspace() {
         refetchAPRCurrentYear()
       }, 2000)
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
@@ -389,7 +393,7 @@ export default function APRMLFSWorkspace() {
               aria-controls="tabpanel-submissions"
             ></Tab>
           </Tabs>
-          <div className="mb-2 flex gap-x-2">
+          <div className="mb-2 flex flex-none gap-x-2">
             {activeTab === 0 && canUpdateAPR && (
               <Button
                 disabled={loading}
@@ -400,14 +404,15 @@ export default function APRMLFSWorkspace() {
                 Save
               </Button>
             )}
-            {activeTab === 0 && canKickstartAPR && (
+            {activeTab === 0 && kickstartAPR && (
               <Button
-                disabled={loading}
+                disabled={loading || !canKickstartAPR}
                 variant="contained"
                 color="secondary"
                 onClick={kickstartNewAPR}
               >
-                Launch new APR
+                Launch new APR{' '}
+                {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
               </Button>
             )}
             <Button
@@ -429,15 +434,18 @@ export default function APRMLFSWorkspace() {
           role="tabpanel"
         >
           <Alert
-            className="mb-4 bg-mlfs-bannerColor"
+            className="bg-mlfs-bannerColor"
             icon={<IoInformationCircleOutline size={24} />}
             severity="info"
           >
             Viewing project reports for all agencies. Use filters for viewing
             less reports.
           </Alert>
+          {hasValidationErrors && (
+            <ValidationErrors validationErrors={validationErrors} />
+          )}
 
-          <div className="mb-2 flex justify-between">
+          <div className="mb-2 mt-4 flex justify-between">
             {/* Filters section */}
             <div className="flex flex-col gap-y-4">
               <div className="flex flex-wrap items-center gap-2">
@@ -642,6 +650,9 @@ export default function APRMLFSWorkspace() {
             <EditTable
               noRowsOverlayComponentParams={{
                 label: 'No projects submitted by the IA/BAs yet',
+              }}
+              Toolbar={() => {
+                return <div>Total rows: {allProjectReports.length ?? 0}</div>
               }}
               rowsVisible={100}
               gridRef={gridRef}

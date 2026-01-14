@@ -486,7 +486,71 @@ class AnnualProjectReport(models.Model):
 
     @cached_property
     def project_version_3(self):
+        """Get version 3 of the project, using cached prefetch if available."""
+        if hasattr(self.project, "cached_version_3_list"):
+            versions = self.project.cached_version_3_list
+            if versions:
+                return versions[0]
+            # If the project itself is version 3, return it
+            # TODO: can we actually directly include it in the list?
+            if self.project.version == 3:
+                return self.project
+            return None
+
+        # Fallback to the project property if cached prefetch not available
         return self.project.get_version(3)
+
+    @cached_property
+    def latest_project_version_for_year(self):
+        """
+        Get the latest version created by ExCom meeting in or before the report year,
+        using cached prefetch if available.
+        """
+        if hasattr(self.project, "cached_archive_versions_for_year"):
+            # Combine the final version (project) with its archives
+            candidates = []
+
+            if self.project.cached_archive_versions_for_year:
+                candidates.extend(self.project.cached_archive_versions_for_year)
+
+            # Add the final version itself if it matches the year__lte criteria
+            if (
+                self.project.post_excom_decision
+                and self.project.post_excom_decision.meeting.date.year
+                <= self.report_year
+            ):
+                candidates.append(self.project)
+
+            # Sort and return the latest
+            if candidates:
+                candidates.sort(
+                    key=lambda p: (
+                        p.post_excom_decision.meeting.date,
+                        p.version,
+                    ),
+                    reverse=True,
+                )
+                return candidates[0]
+            return None
+
+        # Fallback to the project property if the prefetch is not available
+        return self.project.latest_version_for_year(self.report_year)
+
+    @cached_property
+    def all_project_versions_for_year(self):
+        """
+        Get all versions created during the report year, using the cached prefetch
+        if available.
+        Returns a list of Project instances for that year.
+        """
+        if hasattr(self.project, "cached_all_versions_for_year"):
+            return self.project.cached_all_versions_for_year
+        # If the version is not available, fallback to the project property
+        return list(
+            self.project.all_versions_for_year(self.report_year).select_related(
+                "status"
+            )
+        )
 
     @property
     def pcr_due(self):
@@ -494,12 +558,25 @@ class AnnualProjectReport(models.Model):
         Returns True if project changed status from ONG to COM or FIN
         during self.report_year.
         """
-        statuses_during_year = self.project.all_versions_for_year(
-            self.report_year
-        ).values_list("status__code", flat=True)
-        previous_year_version = self.project.latest_version_for_year(
-            self.report_year - 1
-        )
+        statuses_during_year = [
+            v.status.code for v in self.all_project_versions_for_year
+        ]
+
+        # Find the latest version for previous year
+        previous_year_version = None
+        if hasattr(self.project, "cached_versions_for_year"):
+            # Use cached data to find previous year version
+            for v in self.project.cached_versions_for_year:
+                if (
+                    v.post_excom_decision
+                    and v.post_excom_decision.meeting.date.year <= self.report_year - 1
+                ):
+                    previous_year_version = v
+                    break
+        else:
+            previous_year_version = self.project.latest_version_for_year(
+                self.report_year - 1
+            )
 
         started_ong = (
             previous_year_version and previous_year_version.status.code == "ONG"
@@ -513,16 +590,14 @@ class AnnualProjectReport(models.Model):
 
     @property
     def date_approved(self):
-        return self.project_version_3.date_approved
+        return self.project_version_3.date_approved if self.project_version_3 else None
 
     @property
     def date_of_completion_per_agreement_or_decisions(self):
-        latest_version = self.project.latest_version_for_year(self.report_year)
+        latest_version = self.latest_project_version_for_year
         if not latest_version:
             latest_version = self.project_version_3
-        if not latest_version:
-            return None
-        return latest_version.date_completion
+        return latest_version.date_completion if latest_version else None
 
     @property
     def date_completion_proposal(self):
@@ -566,7 +641,8 @@ class AnnualProjectReport(models.Model):
 
     @cached_property
     def adjustment(self):
-        latest_version = self.project.latest_version_for_year(self.report_year)
+        latest_version = self.latest_project_version_for_year
+
         if not latest_version or latest_version.version <= 3:
             return None
 
@@ -578,7 +654,8 @@ class AnnualProjectReport(models.Model):
 
     @cached_property
     def approved_funding_plus_adjustment(self):
-        latest_version = self.project.latest_version_for_year(self.report_year)
+        latest_version = self.latest_project_version_for_year
+
         if not latest_version:
             if not self.project_version_3:
                 return None
@@ -612,7 +689,8 @@ class AnnualProjectReport(models.Model):
     @cached_property
     def support_cost_adjustment(self):
         # Support cost in the latest version - Support cost in version 3
-        latest_version = self.project.latest_version_for_year(self.report_year)
+        latest_version = self.latest_project_version_for_year
+
         if not latest_version or not latest_version.support_cost_psc:
             return None
 
