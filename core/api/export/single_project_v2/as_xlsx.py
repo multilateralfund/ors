@@ -18,6 +18,8 @@ from core.models import Project, ProjectField
 from core.models import ProjectSpecificFields
 from core.models import User
 
+# pylint: disable=R0913
+
 
 class ProjectWriter(BaseWriter):
     header_row_start_idx = 1

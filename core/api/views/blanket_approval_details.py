@@ -278,7 +278,7 @@ class BlanketApprovalDetailsViewset(
         add_row(
             [
                 None,
-                f"Grand total",
+                "Grand total",
                 grand_total["hcfc"],
                 grand_total["hfc"],
                 grand_total["project_funding"],
