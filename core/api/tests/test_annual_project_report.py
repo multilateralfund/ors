@@ -1296,14 +1296,8 @@ class TestAPRGlobalViewSet(BaseTest):
         project = ProjectFactory(country=country_ro, agency=agency)
         project_new = ProjectFactory(country=new_country, agency=agency)
 
-        apr1 = AnnualProjectReportFactory(report=annual_agency_report, project=project)
-        apr2 = AnnualProjectReportFactory(
-            report=annual_agency_report, project=project_new
-        )
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
+        AnnualProjectReportFactory(report=annual_agency_report, project=project)
+        AnnualProjectReportFactory(report=annual_agency_report, project=project_new)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-list", kwargs={"year": apr_year})
@@ -2057,7 +2051,7 @@ class TestAPRExportView(BaseTest):
             date_approved=date(2022, 4, 5),
         )
 
-        apr = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
             funds_disbursed=123456.78,
@@ -2065,8 +2059,6 @@ class TestAPRExportView(BaseTest):
             consumption_phased_out_odp=45.67,
             date_first_disbursement="2024-03-15",
         )
-        apr.populate_derived_fields()
-        apr.save()
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
@@ -3111,15 +3103,13 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         )
 
         # This has a different status from the project's status
-        report = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=previous_agency_report,
             project=project,
             status=project_completed_status.name,
             funds_disbursed=50000.0,
             last_year_remarks="Previous year data",
         )
-        report.populate_derived_fields()
-        report.save()
 
         # Kick-start new year & then access agency workspace
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -3551,10 +3541,6 @@ class TestAPRMLFSExportView(BaseTest):
 
         report1 = AnnualProjectReportFactory(report=report1, project=project1)
         report2 = AnnualProjectReportFactory(report=report2, project=project2)
-        report1.populate_derived_fields()
-        report1.save()
-        report2.populate_derived_fields()
-        report2.save()
 
         self.client.force_authenticate(user=secretariat_viewer_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3616,15 +3602,9 @@ class TestAPRMLFSExportView(BaseTest):
         project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
         project3 = ProjectFactory(agency=agency3, version=3, latest_project=None)
 
-        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
-        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
-        apr3 = AnnualProjectReportFactory(report=report3, project=project3)
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
-        apr3.populate_derived_fields()
-        apr3.save()
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
+        AnnualProjectReportFactory(report=report3, project=project3)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3663,12 +3643,8 @@ class TestAPRMLFSExportView(BaseTest):
         project1 = ProjectFactory(agency=agency1, version=3, latest_project=None)
         project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
 
-        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
-        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3713,12 +3689,8 @@ class TestAPRMLFSExportView(BaseTest):
             agency=agency2, country=new_country, version=3, latest_project=None
         )
 
-        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
-        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3775,15 +3747,9 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        apr1 = AnnualProjectReportFactory(report=report, project=project1)
-        apr2 = AnnualProjectReportFactory(report=report, project=project2)
-        apr3 = AnnualProjectReportFactory(report=report, project=project3)
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
-        apr3.populate_derived_fields()
-        apr3.save()
+        AnnualProjectReportFactory(report=report, project=project1)
+        AnnualProjectReportFactory(report=report, project=project2)
+        AnnualProjectReportFactory(report=report, project=project3)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3861,12 +3827,8 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        apr1 = AnnualProjectReportFactory(report=report1, project=project1)
-        apr2 = AnnualProjectReportFactory(report=report2, project=project2)
-        apr1.populate_derived_fields()
-        apr1.save()
-        apr2.populate_derived_fields()
-        apr2.save()
+        AnnualProjectReportFactory(report=report1, project=project1)
+        AnnualProjectReportFactory(report=report2, project=project2)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -3894,9 +3856,7 @@ class TestAPRMLFSExportView(BaseTest):
                 is_unlocked=False,
             )
             project = ProjectFactory(agency=agency, version=3, latest_project=None)
-            apr = AnnualProjectReportFactory(report=report, project=project)
-            apr.populate_derived_fields()
-            apr.save()
+            AnnualProjectReportFactory(report=report, project=project)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
