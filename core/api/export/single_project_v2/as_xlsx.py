@@ -97,6 +97,7 @@ class ProjectsV2ProjectExport:
         fields_section: str,
         sheet_name: Annotated[str, "max_length=31"],
         data,
+        only_planned=False,
     ):
         """
         Writes a new sheet.
@@ -108,6 +109,9 @@ class ProjectsV2ProjectExport:
             .filter(section__in=[fields_section])
             .exclude(read_field_name="sort_order")
         )
+        if only_planned:
+            fields = fields.filter(is_actual=False)
+
         if fields:
             sheet = self.add_sheet(sheet_name)
             ProjectWriter(
@@ -145,6 +149,7 @@ class ProjectsV2ProjectExport:
                 "Impact",
                 "Impact",
                 [data],
+                only_planned=True,
             )
 
     def build_xls(self):
