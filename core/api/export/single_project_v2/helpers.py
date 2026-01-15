@@ -31,7 +31,11 @@ def format_iso_date(isodate=None):
     return ""
 
 
-def format_dollar_value(value: int | float | str | Decimal, with_decimals: bool = True):
+def format_decimal(
+    value: int | float | str | Decimal,
+    with_decimals: bool = True,
+    is_currency: bool = True,
+):
     if not isinstance(value, Decimal):
         try:
             value = Decimal(value)
@@ -39,8 +43,13 @@ def format_dollar_value(value: int | float | str | Decimal, with_decimals: bool 
             return value
 
     sign = "-" if value < 0 else ""
+    currency = "$" if is_currency else ""
     value = abs(value)
-    return f"{sign}${value:,.2f}" if with_decimals else f"{sign}${value:,.0f}"
+    return (
+        f"{sign}{currency}{value:,.2f}"
+        if with_decimals
+        else f"{sign}{currency}{value:,.0f}"
+    )
 
 
 def get_blanket_consideration_value(row: dict, header: HeaderType):
@@ -93,7 +102,7 @@ get_value_or_dash = partial(
 
 get_dollar_value = partial(
     get_formatted_field_value,
-    formatters=[format_dollar_value, value_or_dash],
+    formatters=[format_decimal, value_or_dash],
 )
 
 get_date_value = partial(

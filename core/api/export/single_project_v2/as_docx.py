@@ -13,7 +13,7 @@ from docx.table import Table
 
 from core.api.export import TEMPLATE_DIR
 from core.api.export.single_project_v2.docx_headers import get_headers_metaproject
-from core.api.export.single_project_v2.helpers import format_dollar_value
+from core.api.export.single_project_v2.helpers import format_decimal
 from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
 from core.api.export.single_project_v2.xlsx_headers import (
     get_headers_specific_information,
@@ -140,9 +140,9 @@ class ProjectsV2ProjectExportDocx:
             elif p.text.startswith("Cluster:"):
                 p.add_run(data.get("cluster", {}).get("name", "-"), None)
             elif p.text.startswith("Project costs:"):
-                p.add_run(format_dollar_value(data.get("total_fund", "-")), None)
+                p.add_run(format_decimal(data.get("total_fund", "-")), None)
             elif p.text.startswith("Support costs:"):
-                p.add_run(format_dollar_value(data.get("support_cost_psc", "-")), None)
+                p.add_run(format_decimal(data.get("support_cost_psc", "-")), None)
             elif p.text.startswith("Metacode:"):
                 p.add_run(data.get("metacode", "-"), None)
             elif p.text.startswith("Code:"):
@@ -162,10 +162,13 @@ class ProjectsV2ProjectExportDocx:
         for header in headers:
             row = table.add_row()
             for c_idx, cell in enumerate(row.cells):
+                is_boolean = header.get("type") == "bool"
+                is_decimal = header.get("type") == "decimal"
                 is_dollar_value = (
-                    header.get("type") == "number" or header.get("type") == "decimal"
+                    header.get("type") == "number" or is_decimal
                 ) and header.get("cell_format")
 
+                value = data.get(header["id"])
                 if c_idx == 0:
                     cell.text = ""
                     run = cell.paragraphs[0].add_run(header["headerName"])
@@ -173,12 +176,16 @@ class ProjectsV2ProjectExportDocx:
                         run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 elif c_idx == 1 and header.get("method"):
                     cell.text = header["method"](data, header)
-                elif c_idx == 1:
-                    cell.text = str(data[header["id"]] or "")
-                if c_idx == 1 and is_dollar_value:
-                    cell.text = format_dollar_value(
-                        cell.text, with_decimals=header.get("docx_decimals", True)
+                elif c_idx == 1 and is_dollar_value:
+                    cell.text = format_decimal(
+                        value, with_decimals=header.get("docx_decimals", True)
                     )
+                elif c_idx == 1 and is_decimal:
+                    cell.text = format_decimal(value, is_currency=False)
+                elif c_idx == 1 and is_boolean:
+                    cell.text = "Yes" if value else "No"
+                elif c_idx == 1:
+                    cell.text = str(value or "")
 
     def _write_substance_table(self, _, table, data):
         for d in data:
@@ -299,14 +306,14 @@ class ProjectsV2ProjectExportDocx:
 
         if project_specific_fields_obj:
             self._write_project_specific_fields(
-                table=self.find_table("Project specific fields header"),
+                table=self.find_table("Project specific fields"),
                 fields=self._get_fields_for_section(
                     "Header", project_specific_fields_obj
                 ),
                 data=data,
             )
             self._write_project_specific_fields(
-                table=self.find_table("Substance details Page and tables"),
+                table=self.find_table("Substance details"),
                 fields=self._get_fields_for_section(
                     "Substance Details", project_specific_fields_obj
                 ),
@@ -314,7 +321,7 @@ class ProjectsV2ProjectExportDocx:
                 writer=self._write_substance_table,
             )
             self._write_project_specific_fields(
-                table=self.find_table("Impact (tabular)"),
+                table=self.find_table("Impact indicators"),
                 fields=self._get_fields_for_section(
                     "Impact",
                     project_specific_fields_obj,
