@@ -199,7 +199,12 @@ class ProjectsV2ProjectExportDocx:
                 "odp",
             ]
             for c_idx, cell in enumerate(row.cells):
-                cell.text = str(d.get(row_data[c_idx], "") or "")
+                field = row_data[c_idx]
+                value = d.get(field, "")
+                if field in ["phase_out_mt", "co2_mt", "odp"]:
+                    value = format_decimal(value)
+
+                cell.text = str(value or "")
 
     def _write_impact_target_actual(self, project, headers, table, data):
         planned_headers = {}
