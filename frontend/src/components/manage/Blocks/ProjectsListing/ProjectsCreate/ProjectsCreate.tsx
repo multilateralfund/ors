@@ -44,10 +44,11 @@ import {
   getPostExcomApprovalErrors,
   getFieldData,
   formatOptions,
+  getOdsOdpFields,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { find, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -134,10 +135,7 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const groupedFields = groupBy(substanceDetailsFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
 
   const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields, editableFields } = useStore(

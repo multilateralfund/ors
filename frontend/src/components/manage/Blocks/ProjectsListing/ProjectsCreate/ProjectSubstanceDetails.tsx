@@ -7,6 +7,7 @@ import {
   formatOptions,
   getDefaultValues,
   getFieldData,
+  getOdsOdpFields,
   hasFields,
 } from '../utils'
 import {
@@ -39,9 +40,7 @@ const ProjectSubstanceDetails = ({
 
   const groupedFields = groupBy(sectionFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = (groupedFields[field] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(sectionFields)
   const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
   const groupField = getFieldData(overviewFields, 'group')
 
@@ -184,7 +183,7 @@ const ProjectSubstanceDetails = ({
           </div>
           {odsOdpFields.length > 0 && (
             <SubmitButton
-              title="Add phase out"
+              title={`Add ${odsDisplayField ? 'substance' : 'phase out'}`}
               onSubmit={onAddSubstance}
               className="mr-auto h-8"
             />

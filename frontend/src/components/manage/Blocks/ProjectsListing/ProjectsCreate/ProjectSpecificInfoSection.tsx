@@ -8,7 +8,7 @@ import ProjectOverview from './ProjectOverview'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
 import { NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { hasFields } from '../utils'
+import { getFieldData, getOdsOdpFields, hasFields } from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
@@ -45,6 +45,9 @@ const ProjectSpecificInfoSection = ({
     substanceDetailsFields.length > 0 &&
     hasFields(projectFields, viewableFields, 'Substance Details')
 
+  const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  const odpDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+
   return (
     <>
       {canViewOverviewSection && (
@@ -66,7 +69,12 @@ const ProjectSpecificInfoSection = ({
 
       {canViewSubstanceDetailsSection && (
         <>
-          <SectionTitle>Substance Details</SectionTitle>
+          <SectionTitle>
+            {odpDisplayField || odsOdpFields.length === 0
+              ? 'Substance'
+              : 'Phase out'}{' '}
+            details
+          </SectionTitle>
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
