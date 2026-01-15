@@ -31,13 +31,16 @@ def format_iso_date(isodate=None):
     return ""
 
 
-def format_dollar_value(value: int | float | str | Decimal):
+def format_dollar_value(value: int | float | str | Decimal, with_decimals: bool = True):
     if not isinstance(value, Decimal):
         try:
             value = Decimal(value)
         except (TypeError, InvalidOperation):
             return value
-    return f"{'-' if value < 0 else ''}${abs(value):,.2f}"
+
+    sign = "-" if value < 0 else ""
+    value = abs(value)
+    return f"{sign}${value:,.2f}" if with_decimals else f"{sign}${value:,.0f}"
 
 
 def get_blanket_consideration_value(row: dict, header: HeaderType):

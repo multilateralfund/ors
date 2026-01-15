@@ -6,6 +6,7 @@ from itertools import chain
 
 import docx
 from django.http import FileResponse
+from docx.enum.text import WD_COLOR_INDEX
 from docx.oxml import CT_P
 from docx.oxml import CT_Tbl
 from docx.table import Table
@@ -166,13 +167,18 @@ class ProjectsV2ProjectExportDocx:
                 ) and header.get("cell_format")
 
                 if c_idx == 0:
-                    cell.text = header["headerName"]
+                    cell.text = ""
+                    run = cell.paragraphs[0].add_run(header["headerName"])
+                    if header.get("docx_highlight", False):
+                        run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 elif c_idx == 1 and header.get("method"):
                     cell.text = header["method"](data, header)
                 elif c_idx == 1:
                     cell.text = str(data[header["id"]] or "")
                 if c_idx == 1 and is_dollar_value:
-                    cell.text = format_dollar_value(cell.text)
+                    cell.text = format_dollar_value(
+                        cell.text, with_decimals=header.get("docx_decimals", True)
+                    )
 
     def _write_substance_table(self, _, table, data):
         for d in data:
@@ -236,13 +242,15 @@ class ProjectsV2ProjectExportDocx:
     ):
         writer = self._write_header_to_table if not writer else writer
         if data and table and fields:
-            headers = get_headers_cross_cutting(fields)
+            headers = get_headers_cross_cutting(fields, for_docx=True)
             writer(headers, table, data)
 
     def build_cross_cutting(self, data):
         self._write_project_cross_cutting_fields(
             table=self.find_table("Cross-cutting fields"),
-            fields=self._get_fields_for_section(section_name="Cross-Cutting"),
+            fields=self._get_fields_for_section(section_name="Cross-Cutting").exclude(
+                label="Description"
+            ),
             data=data,
         )
 
