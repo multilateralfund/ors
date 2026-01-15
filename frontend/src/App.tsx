@@ -57,7 +57,7 @@ import BlanketApprovalDetailsPage from '@ors/app/projects_listing/blanket-approv
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
-import ProjectsCompareVersionsPage from '@ors/app/projects_listing/[project_id]/compare-versions/page'
+import ProjectsCompareVersionsPage from '@ors/app/projects_listing/compare-versions/page'
 import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
 import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
@@ -325,6 +325,11 @@ export default function App() {
             <BlanketApprovalDetailsPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/compare-versions">
+          <ProjectsDataProvider>
+            <ProjectsCompareVersionsPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/settings">
           <ProjectsDataProvider>
             <ProjectsSettingsPage />
@@ -388,11 +393,6 @@ export default function App() {
         <Route path="/projects-listing/:project_id/archive/:version">
           <ProjectsDataProvider>
             <ProjectsListingArchiveProjectPage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/:project_id/compare-versions">
-          <ProjectsDataProvider>
-            <ProjectsCompareVersionsPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/edit">
