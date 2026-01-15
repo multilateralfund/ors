@@ -7,7 +7,6 @@ from django.db import transaction
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
 )
-
 from core.models.group import Group
 from core.models.base import Module
 from core.models.country import Country
@@ -556,7 +555,6 @@ def generate_new_cluster_type_sector_file(file_path):
     with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
         json.dump(new_data, f, indent=4)
 
-
 def import_modules():
     """
     Import modules
@@ -712,7 +710,7 @@ def import_project_resources_v2(option):
         file_path = (
             IMPORT_RESOURCES_DIR
             / "projects_v2"
-            / "project_specific_fields_15_01_2026.xlsx"
+            / "project_specific_fields_22_05_2025.xlsx"
         )
         import_project_specific_fields(file_path)
         logger.info("✔ cluster type sector fields imported")
