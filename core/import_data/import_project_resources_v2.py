@@ -513,6 +513,7 @@ def import_cluster_type_sector_links(file_path):
                     sector=sector,
                 )
 
+
 def generate_new_cluster_type_sector_file(file_path):
     """
     Generate new cluster type sector file based on the current data in the database
@@ -555,6 +556,7 @@ def generate_new_cluster_type_sector_file(file_path):
     with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
         json.dump(new_data, f, indent=4)
 
+
 def import_modules():
     """
     Import modules
@@ -569,6 +571,7 @@ def import_modules():
         Module.objects.update_or_create(
             code=module_data["code"], defaults={"name": module_data["name"]}
         )
+
 
 def import_fields(file_path):
     """

@@ -247,6 +247,7 @@ def agency_inputter_user(agency):
     user.groups.add(business_plan_viewer_group)
     return user
 
+@pytest.fixture
 def agency_viewer_user(agency):
     group = Group.objects.get(name="Projects - Agency viewer")
     user = UserFactory(username="AgencyViewerUser", agency=agency)
@@ -289,17 +290,19 @@ def apr_mlfs_full_access_user():
     user.groups.add(group)
     return user
 
-
+@pytest.fixture
 def new_country(project_module, business_plan_module):
     country = CountryFactory.create(iso3="NwC")
     country.modules.add(project_module, business_plan_module)
     return country
+
 
 @pytest.fixture
 def country_europe(project_module, business_plan_module):
     country = CountryFactory(name="Europe", location_type=Country.LocationType.REGION)
     country.modules.add(project_module, business_plan_module)
     return country
+
 
 @pytest.fixture
 def country_ro(project_module, business_plan_module):
