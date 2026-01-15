@@ -1,6 +1,7 @@
 # pylint: disable=too-many-locals
 from collections import defaultdict
 from itertools import chain
+from typing import Sequence
 
 import openpyxl
 
@@ -72,14 +73,12 @@ def normalise_version(p):
 
 
 class CompareVersionsWriter:
-    def __init__(self, sheet, project):
+    def __init__(self, sheet, candidates: Sequence[Project]):
         self.sheet = sheet
-        self.project = project
+        self.candidates = candidates
 
-    def write(self, user, projects: QuerySet[Project]):
+    def write_headers(self, user, projects: Sequence[Project]):
         p1, p2 = list(projects)
-        d1, d2 = serialize_project(p1), serialize_project(p2)
-        l1, l2 = version_label(p1), version_label(p2)
 
         value_headers = self.get_other_headers(
             self.get_fields(
@@ -119,8 +118,13 @@ class CompareVersionsWriter:
                 )
                 merge_start_idx = merge_end_idx + 1
 
-        for section in SECTIONS:
-            members = per_section_headers[section]
+        self._h_fields = h_fields
+        self._per_section_headers = per_section_headers
+
+    def write(self, user, projects: Sequence[Project]):
+        p1, p2 = list(projects)
+        d1, d2 = serialize_project(p1), serialize_project(p2)
+        l1, l2 = version_label(p1), version_label(p2)
 
         data_p1 = [l1]
         data_p2 = [l2]
@@ -131,7 +135,7 @@ class CompareVersionsWriter:
         }
 
         for section in SECTIONS:
-            members = per_section_headers[section]
+            members = self._per_section_headers[section]
             for h in members:
                 h_id = h["id"]
                 if h_id_ovr := data_remap.get(h_id):
@@ -159,12 +163,12 @@ class CompareVersionsWriter:
         for data in [data_p1, data_p2, data_variance]:
             self.sheet.append(data)
 
-        for i in range(1, len(h_fields) + 1):
+        for i in range(1, len(self._h_fields) + 1):
             self.sheet.column_dimensions[get_column_letter(i)].width = 20
 
         self.mark_variance_row(5, len(data_variance))
 
-        self.apply_number_format(per_section_headers)
+        self.apply_number_format(self._per_section_headers)
 
     def apply_number_format(self, per_section_headers):
         for section in SECTIONS:
@@ -203,9 +207,9 @@ class CompareVersionsWriter:
 
     def get_specific_information_fields(self, user):
         queryset = ProjectSpecificFields.objects.filter(
-            cluster=self.project.cluster,
-            type=self.project.project_type,
-            sector=self.project.sector,
+            cluster__in=[p.cluster for p in self.candidates],
+            type__in=[p.project_type for p in self.candidates],
+            sector__in=[p.sector for p in self.candidates],
         )
         return (
             queryset.first()
@@ -247,8 +251,7 @@ class CompareVersionsWriter:
 
         return result
 
-    def get_value(self, name, project=None):
-        project = project if project else self.project
+    def get_value(self, name, project):
         last = None
         for n in name.split("."):
             if not last:
@@ -289,13 +292,11 @@ class CompareVersionsWriter:
 
 class CompareVersionsProjectExport:
     wb: openpyxl.Workbook
-    project: Project
-    queryset: QuerySet[Project]
+    candidates: Sequence[Sequence[Project]]
 
-    def __init__(self, user, project: Project, queryset: QuerySet[Project]):
+    def __init__(self, user, candidates: Sequence[Sequence[Project]]):
         self.user = user
-        self.queryset = queryset.order_by("-date_created")
-        self.project = project
+        self.candidates = candidates
         self.setup_workbook()
 
     def setup_workbook(self):
@@ -308,6 +309,12 @@ class CompareVersionsProjectExport:
         self.sheet = sheet
 
     def export(self):
-        CompareVersionsWriter(self.sheet, self.project).write(self.user, self.queryset)
-        filename = f"Compare versions = {'_'.join([str(p.id) for p in self.queryset])}"
+        flat_candidates = list(chain(*self.candidates))
+        writer = CompareVersionsWriter(self.sheet, flat_candidates)
+        writer.write_headers(self.user, self.candidates[0])
+        for pair in self.candidates:
+            writer.write(self.user, pair)
+        filename = (
+            f"Compare versions = {'_'.join([str(p.id) for p in flat_candidates])}"
+        )
         return workbook_response(filename, self.wb)

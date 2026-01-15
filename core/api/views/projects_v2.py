@@ -38,7 +38,6 @@ from core.models.project import (
 from core.api.views.projects_mixins import (
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
-    ProjectCompareVersionsMixin,
     ProjectExportMixin,
     ProjectFileCreateMixin,
     ProjectListPreviousTranchesMixin,
@@ -134,7 +133,6 @@ class ProjectV2ViewSet(
     mixins.UpdateModelMixin,
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
-    ProjectCompareVersionsMixin,
     ProjectExportMixin,
     ProjectFileCreateMixin,
     ProjectListPreviousTranchesMixin,
