@@ -102,7 +102,7 @@ const LinkedBPTable = ({
           Business plan {bp.name} {' - '}
           <span>(Meeting: {bp.meeting_number})</span>
           {bp.decision_id ? (
-            <span>(Decision: {bp.decision_number})</span>
+            <span> (Decision: {bp.decision_number})</span>
           ) : null}
         </div>
       ) : null}
@@ -174,15 +174,13 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   useEffect(() => {
     const hasResults = formattedResults.length > 0
 
-    if (hasResults) {
-      setProjectData((prevData) => ({
-        ...prevData,
-        bpLinking: {
-          ...prevData.bpLinking,
-          isLinkedToBP: true,
-        },
-      }))
-    }
+    setProjectData((prevData) => ({
+      ...prevData,
+      bpLinking: {
+        ...prevData.bpLinking,
+        isLinkedToBP: hasResults,
+      },
+    }))
 
     onBpDataChange({
       hasBpData: hasResults,

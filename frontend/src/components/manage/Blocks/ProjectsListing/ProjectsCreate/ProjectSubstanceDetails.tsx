@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
@@ -43,6 +43,8 @@ const ProjectSubstanceDetails = ({
   const odsOdpFields = getOdsOdpFields(sectionFields)
   const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
   const groupField = getFieldData(overviewFields, 'group')
+
+  const hasPhaseOut = useRef(false)
 
   const {
     projectFields: allFields,
@@ -116,6 +118,15 @@ const ProjectSubstanceDetails = ({
     }
   }, [crtSectionData.group])
 
+  useEffect(() => {
+    const isPhaseOut = odsOdpFields.length > 0 && !odsDisplayField
+
+    if (!hasPhaseOut.current && isPhaseOut && odsOdpData.length === 0) {
+      onAddSubstance()
+      hasPhaseOut.current = true
+    }
+  }, [])
+
   return (
     <div className="flex flex-col gap-y-6">
       {projectFields.map(
@@ -166,13 +177,15 @@ const ProjectSubstanceDetails = ({
                               </span>
                             ),
                         )}
-                        <IoTrash
-                          className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                          size={16}
-                          onClick={() => {
-                            onRemoveOdsOdp(index)
-                          }}
-                        />
+                        {odsDisplayField && (
+                          <IoTrash
+                            className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                            size={16}
+                            onClick={() => {
+                              onRemoveOdsOdp(index)
+                            }}
+                          />
+                        )}
                       </div>
                       {index !== odsOdpData.length - 1 && (
                         <Divider className="my-5" />
@@ -181,9 +194,9 @@ const ProjectSubstanceDetails = ({
                   ))}
             </div>
           </div>
-          {odsOdpFields.length > 0 && (
+          {odsOdpFields.length > 0 && odsDisplayField && (
             <SubmitButton
-              title={`Add ${odsDisplayField ? 'substance' : 'phase out'}`}
+              title="Add substance"
               onSubmit={onAddSubstance}
               className="mr-auto h-8"
             />
