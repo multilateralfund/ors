@@ -54,6 +54,7 @@ class Country(models.Model):
     location_type = models.CharField(
         max_length=16, choices=LocationType.choices, default=LocationType.COUNTRY
     )
+    modules = models.ManyToManyField("core.Module", blank=True)
     import_id = models.IntegerField(null=True, blank=True)
     is_a2 = models.BooleanField(default=False)
     consumption_category = models.CharField(max_length=100, blank=True)
@@ -78,77 +79,8 @@ class Country(models.Model):
         """
         Returns a list of business plan countries.
         """
-        regions_subregions_entries = (
-            Country.objects.filter(
-                location_type__in=[
-                    Country.LocationType.REGION,
-                    Country.LocationType.SUBREGION,
-                ]
-            )
-            .exclude(
-                name__in=[
-                    "Africa",
-                    "Europe",
-                    "Asia and the Pacific",
-                    "Global",
-                    "Latin America and the Caribbean",
-                ]
-            )
-            .values_list("id", flat=True)
-        )
-        return (
-            Country.objects.filter(
-                is_a2=False,
-            )
-            .exclude(id__in=regions_subregions_entries)
-            .exclude(
-                name__in=[
-                    "Andorra",
-                    "Australia",
-                    "Austria",
-                    "Azerbaijan",
-                    "Belarus",
-                    "Belgium",
-                    "Cyprus",
-                    "Czechia",
-                    "Denmark",
-                    "European Union",
-                    "Finland",
-                    "Germany",
-                    "Greece",
-                    "Holy See",
-                    "Hungary",
-                    "Iceland",
-                    "Ireland",
-                    "Israel",
-                    "Italy",
-                    "Japan",
-                    "Latvia",
-                    "Liechtenstein",
-                    "Lithuania",
-                    "Luxembourg",
-                    "Malta",
-                    "Monaco",
-                    "Netherlands (Kingdom of the)",
-                    "New Zealand",
-                    "Norway",
-                    "Poland",
-                    "Portugal",
-                    "Republic of Korea",
-                    "Russian Federation",
-                    "San Marino",
-                    "Singapore",
-                    "Slovakia",
-                    "Slovenia",
-                    "Spain",
-                    "State of Palestine",
-                    "Sweden",
-                    "Switzerland",
-                    "Tajikistan",
-                    "United Kingdom of Great Britain and Northern Ireland",
-                    "Uzbekistan",
-                ]
-            )
+        return Country.objects.filter(
+            modules__code="BP",
         )
 
     class Meta:

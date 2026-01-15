@@ -1,4 +1,4 @@
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,attribute-defined-outside-init,unused-argument
 from collections import defaultdict
 from itertools import chain
 from typing import Sequence
@@ -10,8 +10,6 @@ from openpyxl.styles import Alignment
 from openpyxl.styles import Font
 
 from openpyxl.utils import get_column_letter
-
-from django.db.models import QuerySet
 
 from core.models import Project
 from core.models import ProjectField
