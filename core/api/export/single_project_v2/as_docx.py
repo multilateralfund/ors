@@ -179,9 +179,9 @@ class ProjectsV2ProjectExportDocx:
                 elif c_idx == 1 and is_dollar_value:
                     cell.text = format_decimal(
                         value, with_decimals=header.get("docx_decimals", True)
-                    )
+                    ) or ""
                 elif c_idx == 1 and is_decimal:
-                    cell.text = format_decimal(value, is_currency=False)
+                    cell.text = format_decimal(value, is_currency=False) or ""
                 elif c_idx == 1 and is_boolean:
                     cell.text = "Yes" if value else "No"
                 elif c_idx == 1:
