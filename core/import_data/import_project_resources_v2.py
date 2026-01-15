@@ -8,6 +8,8 @@ from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
 )
 
+from core.models.base import Module
+from core.models.country import Country
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -435,6 +437,22 @@ def import_cluster_type_sector_links(file_path):
                 )
 
 
+def import_modules():
+    """
+    Import modules
+    """
+    modules = [
+        {"name": "Projects", "code": "Projects"},
+        {"name": "Business Plans", "code": "BP"},
+        {"name": "Country Programmes", "code": "CP"},
+    ]
+
+    for module_data in modules:
+        Module.objects.update_or_create(
+            code=module_data["code"], defaults={"name": module_data["name"]}
+        )
+
+
 def import_fields(file_path):
     """
     Import project type from file
@@ -472,46 +490,118 @@ def import_fields(file_path):
         )
 
 
+def clean_up_countries():
+    """
+    Clean up country names
+    Set modules for countries
+    """
+    # clean up country names
+    country_name_corrections = {
+        "English-speaking Africa": "Region: Anglophone Africa",
+        "French-speaking Africa": "Region: Francophone Africa",
+        "Europe and Central Asia": "Region: Europe and Central Asia",
+        "Latin America and the Caribbean": "Region: Latin America and the Caribbean",
+        "Southern Latin America Network": "Region: South Latin America",
+        "South Asia": "Region: South Asia",
+        "Southeast Asia": "Region: Southeast Asia",
+        "Pacific Island Countries": "Region: Pacific Island Countries",
+        "West Asia": "Region: West Asia",
+    }
+
+    for old_name, new_name in country_name_corrections.items():
+        country = Country.objects.filter(name=old_name).first()
+        if country:
+            country.name = new_name
+            country.save()
+            logger.info(
+                f"✔ Country name for ID {country.id} updated from '{old_name}' to '{new_name}'"
+            )
+
+    # set modules for countries
+    projects_module = Module.objects.filter(code="Projects").first()
+    business_plans_module = Module.objects.filter(code="BP").first()
+    file_path = (
+        IMPORT_RESOURCES_DIR
+        / "projects_v2"
+        / "MLF_Countries_and_Regions_for_BP_Projects_modules.xlsx"
+    )
+    df = pd.read_excel(file_path).fillna("")
+
+    for _, row in df.iterrows():
+        country = Country.objects.find_by_name(row["Countries"])
+        if not country:
+            logger.warning(f"⚠️ Country '{row['Countries']}' not found")
+            continue
+        country.modules.clear()
+        country.modules.add(projects_module)
+        country.modules.add(business_plans_module)
+        country.save()
+
+
 @transaction.atomic
-def import_project_resources_v2():
+def import_project_resources_v2(option):
 
-    file_path = (
-        IMPORT_RESOURCES_DIR / "projects_v2" / "project_clusters_06_05_2025.xlsx"
-    )
-    import_project_clusters(file_path)
-    logger.info("✔ project clusters imported")
+    if option in ["all", "import_project_clusters"]:
+        file_path = (
+            IMPORT_RESOURCES_DIR / "projects_v2" / "project_clusters_06_05_2025.xlsx"
+        )
+        import_project_clusters(file_path)
+        logger.info("✔ project clusters imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbTypeOfProject_06_05_2025.json"
-    import_project_type(file_path)
-    logger.info("✔ project types imported")
+    if option in ["all", "import_project_type"]:
+        file_path = (
+            IMPORT_RESOURCES_DIR / "projects_v2" / "tbTypeOfProject_06_05_2025.json"
+        )
+        import_project_type(file_path)
+        logger.info("✔ project types imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_06_05_2025.json"
-    import_sector(file_path)
-    logger.info("✔ sectors imported")
+    if option in ["all", "import_sector"]:
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_06_05_2025.json"
+        import_sector(file_path)
+        logger.info("✔ sectors imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSubsector_06_05_2025.json"
-    import_subsector(file_path)
-    logger.info("✔ subsectors imported")
+    if option in ["all", "import_subsector"]:
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSubsector_06_05_2025.json"
+        import_subsector(file_path)
+        logger.info("✔ subsectors imported")
 
-    file_path = (
-        IMPORT_RESOURCES_DIR / "projects_v2" / "project_submission_statuses.json"
-    )
-    import_project_submission_statuses(file_path)
-    logger.info("✔ project submission statuses imported")
+    if option in ["all", "import_project_submission_statuses"]:
+        file_path = (
+            IMPORT_RESOURCES_DIR / "projects_v2" / "project_submission_statuses.json"
+        )
+        import_project_submission_statuses(file_path)
+        logger.info("✔ project submission statuses imported")
 
-    clean_up_project_statuses()
-    logger.info("✔ project statuses cleaned up")
+    if option in ["all", "clean_up_project_statuses"]:
+        clean_up_project_statuses()
+        logger.info("✔ project statuses cleaned up")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "ClusterTypeSectorLinks.json"
-    import_cluster_type_sector_links(file_path)
-    logger.info("✔ cluster type sector links imported")
+    if option in ["all", "import_cluster_type_sector_links"]:
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "ClusterTypeSectorLinks.json"
+        import_cluster_type_sector_links(file_path)
+        logger.info("✔ cluster type sector links imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_07_08_2025.json"
-    import_fields(file_path)
-    logger.info("✔ fields imported")
+    if option in ["all", "import_fields"]:
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_07_08_2025.json"
+        import_fields(file_path)
+        logger.info("✔ fields imported")
 
-    file_path = (
-        IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_22_05_2025.xlsx"
-    )
-    import_project_specific_fields(file_path)
-    logger.info("✔ cluster type sector fields imported")
+    if option in ["all", "import_project_specific_fields"]:
+        file_path = (
+            IMPORT_RESOURCES_DIR
+            / "projects_v2"
+            / "project_specific_fields_22_05_2025.xlsx"
+        )
+        import_project_specific_fields(file_path)
+        logger.info("✔ cluster type sector fields imported")
+
+    if option in ["all", "import_modules"]:
+        import_modules()
+        logger.info("✔ modules imported")
+
+    if option in [
+        "all",
+        "clean_up_countries",
+    ]:
+        clean_up_countries()
+        logger.info("✔ countries cleaned up")

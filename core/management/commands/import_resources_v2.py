@@ -19,11 +19,20 @@ class Command(BaseCommand):
             choices=[
                 "all",
                 "project_resources",
+                "import_project_clusters",
+                "import_project_type",
+                "import_sector",
+                "import_subsector",
+                "import_modules",
+                "import_project_submission_statuses",
+                "clean_up_countries",
+                "clean_up_project_statuses",
+                "import_cluster_type_sector_links",
+                "import_fields",
+                "import_project_specific_fields",
             ],
         )
 
     def handle(self, *args, **kwargs):
         resource = kwargs["resource"]
-
-        if resource in ["project_resources", "all"]:
-            import_project_resources_v2()
+        import_project_resources_v2(resource)

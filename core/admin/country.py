@@ -14,7 +14,7 @@ class CountryAdmin(admin.ModelAdmin):
         "abbr",
         "abbr_alt",
     ]
-    list_filter = ["location_type"]
+    list_filter = ["location_type", "modules"]
 
     def get_list_display(self, request):
         exclude = [
@@ -36,6 +36,7 @@ class CountryAdmin(admin.ModelAdmin):
             "ferm_gain_loss",
             "disputed_contributions",
             "finalreportsview",
+            "enterprises",
         ]
         fields = get_final_display_list(Country, exclude)
         return fields
