@@ -54,8 +54,10 @@ from core.models import CPEmission
 from core.models import CPReport
 from core.models import ProjectFile
 from core.models.adm import AdmRecordArchive
+from core.models.base import Module
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
+
 from core.utils import (
     get_meta_project_code,
     get_project_sub_code,
@@ -67,6 +69,16 @@ from core.utils import (
 @pytest.fixture
 def user():
     return UserFactory(username="FlorinSalam", email="salam@reggaeton.ta")
+
+
+@pytest.fixture
+def project_module():
+    return Module.objects.get_or_create(name="Projects", code="Projects")[0]
+
+
+@pytest.fixture
+def business_plan_module():
+    return Module.objects.get_or_create(name="Business Plans", code="BP")[0]
 
 
 @pytest.fixture
@@ -234,13 +246,17 @@ def agency_inputter_user(agency):
 
 
 @pytest.fixture
-def new_country():
-    return CountryFactory.create(iso3="NwC")
+def new_country(project_module, business_plan_module):
+    country = CountryFactory.create(iso3="NwC")
+    country.modules.add(project_module, business_plan_module)
+    return country
 
 
 @pytest.fixture
-def country_ro():
-    return CountryFactory.create(name="Romania", iso3="ROM")
+def country_ro(project_module, business_plan_module):
+    country = CountryFactory.create(name="Romania", iso3="ROM")
+    country.modules.add(project_module, business_plan_module)
+    return country
 
 
 @pytest.fixture
