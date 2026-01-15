@@ -4,22 +4,18 @@ from itertools import chain
 from typing import Sequence
 
 import openpyxl
-
 from openpyxl.styles import DEFAULT_FONT
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font
-
 from openpyxl.utils import get_column_letter
 
+from core.api.export.base import configure_sheet_print
+from core.api.export.single_project_v2.helpers import format_iso_date
+from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
+from core.api.utils import workbook_response
 from core.models import Project
 from core.models import ProjectField
 from core.models import ProjectSpecificFields
-
-from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
-
-from core.api.utils import workbook_response
-from core.api.export.base import configure_sheet_print
-from core.api.export.single_project_v2.helpers import format_iso_date
 
 # pylint: disable=R0915
 
@@ -89,25 +85,51 @@ class CompareVersionsWriter:
         for header in value_headers:
             per_section_headers[header["section"]].append(header)
 
+        per_section_merge_size = defaultdict(int)
+        per_field_merge_size = defaultdict(int)
+
         h_sections = [None]
         h_fields = [None]
+        v_fields = [None]
         for section in SECTIONS:
             members = per_section_headers[section]
             section_name = section if section != "Header" else ""
-            h_sections.extend([section_name] * len(members))
-            h_fields.extend([m["headerName"] for m in members])
+            for m in members:
+                if m["id"] in VARIANCE_FIELDS:
+                    h_sections.extend([section_name] * 3)
+                    h_fields.extend([m["headerName"]] * 3)
+                    v_fields.extend(
+                        [
+                            p1.submission_status.name,
+                            p2.submission_status.name,
+                            "Variance",
+                        ]
+                    )
+                    per_section_merge_size[section_name] += 3
+                    per_field_merge_size[m["id"]] = 3
+                else:
+                    h_sections.extend([section_name] * 2)
+                    h_fields.extend([m["headerName"]] * 2)
+                    v_fields.extend(
+                        [p1.submission_status.name, p2.submission_status.name]
+                    )
+                    per_section_merge_size[section_name] += 2
+                    per_field_merge_size[m["id"]] = 2
 
         self.sheet.append(h_sections)
         self.sheet.append(h_fields)
+        self.sheet.append(v_fields)
 
         self.mark_header_row(1, len(h_sections))
         self.mark_header_row(2, len(h_fields))
+        self.mark_header_row(3, len(v_fields))
 
         merge_start_idx = 2
+        field_merge_start_idx = 2
         for section in SECTIONS:
-            members = per_section_headers[section]
-            if members:
-                merge_end_idx = merge_start_idx + len(members) - 1
+            merge_size = per_section_merge_size[section]
+            if merge_size:
+                merge_end_idx = merge_start_idx + merge_size - 1
                 self.sheet.merge_cells(
                     start_row=1,
                     start_column=merge_start_idx,
@@ -115,6 +137,16 @@ class CompareVersionsWriter:
                     end_column=merge_end_idx,
                 )
                 merge_start_idx = merge_end_idx + 1
+            for m in per_section_headers[section]:
+                field_merge_size = per_field_merge_size[m["id"]]
+                if field_merge_size:
+                    self.sheet.merge_cells(
+                        start_row=2,
+                        start_column=field_merge_start_idx,
+                        end_row=2,
+                        end_column=field_merge_start_idx + field_merge_size - 1,
+                    )
+                    field_merge_start_idx = field_merge_start_idx + field_merge_size
 
         self._h_fields = h_fields
         self._per_section_headers = per_section_headers
@@ -122,11 +154,8 @@ class CompareVersionsWriter:
     def write(self, user, projects: Sequence[Project]):
         p1, p2 = list(projects)
         d1, d2 = serialize_project(p1), serialize_project(p2)
-        l1, l2 = version_label(p1), version_label(p2)
 
-        data_p1 = [l1]
-        data_p2 = [l2]
-        data_variance = ["Variance"]
+        data_row = [p1.final_version.id]
 
         data_remap = {
             "lead_agency": "lead_agency.name",
@@ -154,19 +183,17 @@ class CompareVersionsWriter:
                     v1 = formatter(v1)
                     v2 = formatter(v2)
 
-                data_p1.append(v1)
-                data_p2.append(v2)
-                data_variance.append(variance)
+                if h_id in VARIANCE_FIELDS:
+                    data_row.extend([v1, v2, variance])
+                else:
+                    data_row.extend([v1, v2])
 
-        for data in [data_p1, data_p2, data_variance]:
-            self.sheet.append(data)
+        self.sheet.append(data_row)
 
         for i in range(1, len(self._h_fields) + 1):
             self.sheet.column_dimensions[get_column_letter(i)].width = 20
 
-        self.mark_variance_row(5, len(data_variance))
-
-        self.apply_number_format(self._per_section_headers)
+        # self.apply_number_format(self._per_section_headers)
 
     def apply_number_format(self, per_section_headers):
         for section in SECTIONS:
