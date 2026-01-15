@@ -136,6 +136,7 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Impact'),
   ]
   const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields, editableFields } = useStore(
@@ -373,7 +374,11 @@ const ProjectsCreate = ({
           : null,
       ].filter(Boolean)
 
-      return { message: `Substance ${substanceNo} - ` + messages.join(' ') }
+      const odsOdpType = odsDisplayField
+        ? `Substance ${substanceNo}`
+        : 'Phase out'
+
+      return { message: `${odsOdpType} - ` + messages.join(' ') }
     },
   ).filter(Boolean)
 
