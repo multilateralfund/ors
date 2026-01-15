@@ -9,6 +9,8 @@ from core.import_data.utils import (
 )
 
 from core.models.group import Group
+from core.models.base import Module
+from core.models.country import Country
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -511,7 +513,6 @@ def import_cluster_type_sector_links(file_path):
                     sector=sector,
                 )
 
-
 def generate_new_cluster_type_sector_file(file_path):
     """
     Generate new cluster type sector file based on the current data in the database
@@ -554,6 +555,20 @@ def generate_new_cluster_type_sector_file(file_path):
     with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
         json.dump(new_data, f, indent=4)
 
+def import_modules():
+    """
+    Import modules
+    """
+    modules = [
+        {"name": "Projects", "code": "Projects"},
+        {"name": "Business Plans", "code": "BP"},
+        {"name": "Country Programmes", "code": "CP"},
+    ]
+
+    for module_data in modules:
+        Module.objects.update_or_create(
+            code=module_data["code"], defaults={"name": module_data["name"]}
+        )
 
 def import_fields(file_path):
     """
@@ -592,6 +607,54 @@ def import_fields(file_path):
         ProjectField.objects.update_or_create(
             import_name=field_data["import_name"], defaults=field_data
         )
+
+
+def clean_up_countries():
+    """
+    Clean up country names
+    Set modules for countries
+    """
+    # clean up country names
+    country_name_corrections = {
+        "English-speaking Africa": "Region: Anglophone Africa",
+        "French-speaking Africa": "Region: Francophone Africa",
+        "Europe and Central Asia": "Region: Europe and Central Asia",
+        "Latin America and the Caribbean": "Region: Latin America and the Caribbean",
+        "Southern Latin America Network": "Region: South Latin America",
+        "South Asia": "Region: South Asia",
+        "Southeast Asia": "Region: Southeast Asia",
+        "Pacific Island Countries": "Region: Pacific Island Countries",
+        "West Asia": "Region: West Asia",
+    }
+
+    for old_name, new_name in country_name_corrections.items():
+        country = Country.objects.filter(name=old_name).first()
+        if country:
+            country.name = new_name
+            country.save()
+            logger.info(
+                f"✔ Country name for ID {country.id} updated from '{old_name}' to '{new_name}'"
+            )
+
+    # set modules for countries
+    projects_module = Module.objects.filter(code="Projects").first()
+    business_plans_module = Module.objects.filter(code="BP").first()
+    file_path = (
+        IMPORT_RESOURCES_DIR
+        / "projects_v2"
+        / "MLF_Countries_and_Regions_for_BP_Projects_modules.xlsx"
+    )
+    df = pd.read_excel(file_path).fillna("")
+
+    for _, row in df.iterrows():
+        country = Country.objects.find_by_name(row["Countries"])
+        if not country:
+            logger.warning(f"⚠️ Country '{row['Countries']}' not found")
+            continue
+        country.modules.clear()
+        country.modules.add(projects_module)
+        country.modules.add(business_plans_module)
+        country.save()
 
 
 @transaction.atomic
@@ -660,3 +723,14 @@ def import_project_resources_v2(option):
         )
         generate_new_cluster_type_sector_file(file_path)
         logger.info("✔ new cluster type sector file generated")
+
+    if option in ["all", "import_modules"]:
+        import_modules()
+        logger.info("✔ modules imported")
+
+    if option in [
+        "all",
+        "clean_up_countries",
+    ]:
+        clean_up_countries()
+        logger.info("✔ countries cleaned up")
