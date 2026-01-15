@@ -6,7 +6,7 @@ from itertools import chain
 
 import docx
 from django.http import FileResponse
-from docx.enum.text import WD_COLOR_INDEX
+from docx.enum.text import WD_COLOR_INDEX, WD_ALIGN_PARAGRAPH
 from docx.oxml import CT_P
 from docx.oxml import CT_Tbl
 from docx.table import Table
@@ -177,9 +177,12 @@ class ProjectsV2ProjectExportDocx:
                 elif c_idx == 1 and header.get("method"):
                     cell.text = header["method"](data, header)
                 elif c_idx == 1 and is_dollar_value:
-                    cell.text = format_decimal(
-                        value, with_decimals=header.get("docx_decimals", True)
-                    ) or ""
+                    cell.text = (
+                        format_decimal(
+                            value, with_decimals=header.get("docx_decimals", True)
+                        )
+                        or ""
+                    )
                 elif c_idx == 1 and is_decimal:
                     cell.text = format_decimal(value, is_currency=False) or ""
                 elif c_idx == 1 and is_boolean:
@@ -188,19 +191,37 @@ class ProjectsV2ProjectExportDocx:
                     cell.text = str(value or "")
 
     def _write_substance_table(self, _, table, data):
-        for d in data:
+        substances = data.get("ods_odp", [])
+        data_fields = [
+            "ods_display_name",
+            "???",
+            "ods_replacement",
+        ]
+
+        for field, label in [
+            ("phase_out_mt", "Phase out MT"),
+            ("co2_mt", "Phase out CO2"),
+            ("odp", "Phase out ODP"),
+        ]:
+            has_data = any([s[field] is not None for s in substances])
+
+            if has_data:
+                data_fields.append(field)
+
+                table.add_column(70)
+                cell = table.rows[0].cells[-1]
+                cell.text = ""
+                paragraph = cell.paragraphs[0]
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                run = paragraph.add_run(label)
+                run.bold = True
+                run.underline = True
+
+        for substance in substances:
             row = table.add_row()
-            row_data = [
-                "ods_display_name",
-                "???",
-                "ods_replacement",
-                "phase_out_mt",
-                "co2_mt",
-                "odp",
-            ]
             for c_idx, cell in enumerate(row.cells):
-                field = row_data[c_idx]
-                value = d.get(field, "")
+                field = data_fields[c_idx]
+                value = substance.get(field, "")
                 if field in ["phase_out_mt", "co2_mt", "odp"]:
                     value = format_decimal(value)
 
@@ -322,7 +343,7 @@ class ProjectsV2ProjectExportDocx:
                 fields=self._get_fields_for_section(
                     "Substance Details", project_specific_fields_obj
                 ),
-                data=data.get("ods_odp", []),
+                data=data,
                 writer=self._write_substance_table,
             )
             self._write_project_specific_fields(
