@@ -132,6 +132,7 @@ class ProjectV2ViewSet(
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
     ProjectCompareVersionsMixin,
@@ -211,7 +212,7 @@ class ProjectV2ViewSet(
             "compare_versions",
         ]:
             return [HasProjectV2ViewAccess]
-        if self.action in ["create"]:
+        if self.action in ["create", "destroy"]:
             return [HasProjectV2EditAccess]
         if self.action in [
             "update",
@@ -257,6 +258,10 @@ class ProjectV2ViewSet(
             in ["edit_actual_fields", "transfer", "update", "partial_update", "submit"]
         ):
             queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
+
+        if self.action in ["destroy"]:
+            queryset = queryset.filter(submission_status__name="Draft", version=1)
+
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -266,7 +271,10 @@ class ProjectV2ViewSet(
             if not user_has_any_edit_access:
                 return queryset.none()
             queryset = queryset.filter(submission_status__name="Approved")
-        if self.action in ["update", "partial_update", "submit"] or results_for_edit:
+        if (
+            self.action in ["update", "partial_update", "submit", "destroy"]
+            or results_for_edit
+        ):
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
