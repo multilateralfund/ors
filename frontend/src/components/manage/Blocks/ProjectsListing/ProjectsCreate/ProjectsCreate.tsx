@@ -271,7 +271,6 @@ const ProjectsCreate = ({
     (editableByAdmin || project.submission_status === 'Recommended')
 
   const hasComponents =
-    mode === 'edit' &&
     !!project &&
     project.component &&
     project.component.original_project_id === project.id
