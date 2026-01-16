@@ -1,12 +1,10 @@
-'use client'
-
 import { useContext, useState } from 'react'
 
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
-import { initialOverviewFields } from '../../ProjectsEnterprises/constants.ts'
 import EnterpriseHeader from './EnterpriseHeader.tsx'
 import EnterpriseCreate from './EnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
+import { initialOverviewFields } from '../../ProjectsEnterprises/constants.ts'
 import { EnterpriseOverview } from '../../interfaces.ts'
 
 import { Redirect } from 'wouter'
@@ -18,7 +16,6 @@ const EnterpriseCreateWrapper = () => {
     initialOverviewFields,
   )
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -35,7 +32,6 @@ const EnterpriseCreateWrapper = () => {
         {...{
           enterpriseData,
           setEnterpriseId,
-          setHasSubmitted,
           setErrors,
           setOtherErrors,
         }}
@@ -44,7 +40,6 @@ const EnterpriseCreateWrapper = () => {
         {...{
           enterpriseData,
           setEnterpriseData,
-          hasSubmitted,
           errors,
         }}
       />

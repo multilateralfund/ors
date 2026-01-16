@@ -1,5 +1,3 @@
-'use client'
-
 import PEnterpriseOverviewSection from '../../ProjectsEnterprises/view/PEnterpriseOverviewSection'
 import { EnterpriseType } from '../../interfaces'
 

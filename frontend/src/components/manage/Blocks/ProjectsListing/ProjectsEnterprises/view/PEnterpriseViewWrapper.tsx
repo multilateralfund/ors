@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -35,7 +33,6 @@ const PEnterpriseViewWrapper = () => {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
-    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
@@ -68,7 +65,7 @@ const PEnterpriseViewWrapper = () => {
                   />
                 </PageHeading>
               </div>
-              <div className="mt-auto flex flex-wrap items-center gap-2.5">
+              <div className="ml-auto mt-auto flex flex-wrap items-center justify-end gap-2.5">
                 <CancelLinkButton
                   title="Cancel"
                   href={`/projects-listing/projects-enterprises/${project_id}`}

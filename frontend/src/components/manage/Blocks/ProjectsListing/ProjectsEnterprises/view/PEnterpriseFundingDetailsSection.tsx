@@ -1,5 +1,4 @@
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
-import { getCostEffectivenessApproved, getFundsApproved } from '../utils'
 import { viewColumnsClassName } from '../../constants'
 import { enterpriseFieldsMapping } from '../constants'
 import { PEnterpriseType } from '../../interfaces'
@@ -11,17 +10,6 @@ const PEnterpriseFundingDetailsSection = ({
 }: {
   enterprise: PEnterpriseType
 }) => {
-  const { ods_odp, capital_cost_approved, operating_cost_approved } = enterprise
-  const costEffectivenessApproved = getCostEffectivenessApproved(
-    ods_odp,
-    capital_cost_approved,
-    operating_cost_approved,
-  )
-  const funds_approved = getFundsApproved(
-    capital_cost_approved,
-    operating_cost_approved,
-  )
-
   const formatFieldName = (fieldName: string) =>
     replace(fieldName, ' (computed)', '')
 
@@ -40,11 +28,11 @@ const PEnterpriseFundingDetailsSection = ({
     [
       [
         formatFieldName(enterpriseFieldsMapping.funds_approved),
-        funds_approved?.toString(),
+        enterprise.funds_approved,
       ],
       [
         formatFieldName(enterpriseFieldsMapping.cost_effectiveness_approved),
-        costEffectivenessApproved?.toString(),
+        enterprise.cost_effectiveness_approved,
       ],
     ],
     [

@@ -1,5 +1,6 @@
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { FieldErrorIndicator } from '../../HelperComponents'
 import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
 import { getEntityById, getOptionLabel } from '../utils'
 import { getFormattedDecimalValue } from '../../utils'
@@ -12,11 +13,11 @@ const PEnterpriseSearch = ({
   setEnterpriseData,
   enterprises,
   enterprise,
+  errors,
 }: PEnterpriseDataProps & {
   enterprises: EnterpriseType[]
 }) => {
-  const overviewData = enterpriseData.overview as EnterpriseType
-  const enterpriseId = overviewData.id
+  const enterpriseId = enterpriseData.overview.id
 
   const customFiltering = createFilterOptions({
     stringify: (option: any) => `${option.name} ${option.code}`,
@@ -67,20 +68,23 @@ const PEnterpriseSearch = ({
   return (
     <>
       <Label>Select existing enterprise</Label>
-      <Field
-        widget="autocomplete"
-        options={enterprises}
-        value={enterpriseId}
-        disabled={!!enterprise}
-        onChange={(_, value) => {
-          onEnterpriseChange(value)
-        }}
-        getOptionLabel={(option: any) =>
-          getOptionLabel(enterprises, option, 'code')
-        }
-        filterOptions={customFiltering}
-        {...defaultProps}
-      />
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          options={enterprises}
+          value={enterpriseId}
+          disabled={!!enterprise}
+          onChange={(_, value) => {
+            onEnterpriseChange(value)
+          }}
+          getOptionLabel={(option: any) =>
+            getOptionLabel(enterprises, option, 'code')
+          }
+          filterOptions={customFiltering}
+          {...defaultProps}
+        />
+        <FieldErrorIndicator field="id" {...{ errors }} />
+      </div>
     </>
   )
 }

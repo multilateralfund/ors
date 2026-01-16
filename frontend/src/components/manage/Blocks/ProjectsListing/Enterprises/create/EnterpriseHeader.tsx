@@ -2,9 +2,9 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import EnterpriseEditActionButtons from '../edit/EnterpriseEditActionButtons'
 import EnterpriseCreateActionButtons from './EnterpriseCreateActionButtons'
+import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
 import {
   EnterpriseHeaderProps,

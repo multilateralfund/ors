@@ -368,7 +368,7 @@ export type PEnterpriseType = EnterpriseDetails &
   }
 
 export interface PEnterpriseData {
-  overview: EnterpriseOverview
+  overview: EnterpriseOverview & { id: number | null; status?: string }
   details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields
@@ -389,7 +389,6 @@ export type EnterpriseDataType = {
 }
 
 export type EnterprisesCommonProps = {
-  hasSubmitted: boolean
   errors: { [key: string]: string[] }
 }
 
@@ -463,7 +462,6 @@ export interface EnterpriseRemarks {
 }
 export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
-  setHasSubmitted: (value: boolean) => void
   setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }

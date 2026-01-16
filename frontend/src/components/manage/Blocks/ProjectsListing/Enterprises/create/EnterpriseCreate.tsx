@@ -1,5 +1,3 @@
-'use client'
-
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import EnterpriseForm from './EnterpriseForm.tsx'
 import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants.ts'

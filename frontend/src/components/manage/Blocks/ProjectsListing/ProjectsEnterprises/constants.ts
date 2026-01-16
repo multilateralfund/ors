@@ -20,6 +20,7 @@ export const substanceFields = [
 
 export const enterpriseFieldsMapping: { [key: string]: string } = {
   id: 'Enterprise',
+  status: 'Status',
   code: 'Code',
   name: 'Enterprise',
   country: 'Country',
@@ -84,10 +85,10 @@ export const initialDetailsFields = {
   planned_completion_date: null,
   actual_completion_date: null,
   project_duration: null,
-  date_of_approval: null,
   meeting: null,
+  date_of_approval: null,
+  date_of_report: dayjs().format('YYYY-MM-DD'),
   excom_provision: '',
-  date_of_report: null,
 }
 
 export const initialSubstanceFields = {

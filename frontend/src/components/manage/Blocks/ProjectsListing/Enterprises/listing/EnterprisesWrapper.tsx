@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'

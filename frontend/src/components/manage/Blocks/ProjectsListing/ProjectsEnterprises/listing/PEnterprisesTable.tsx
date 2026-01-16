@@ -1,5 +1,3 @@
-'use client'
-
 import { useRef, useState } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'

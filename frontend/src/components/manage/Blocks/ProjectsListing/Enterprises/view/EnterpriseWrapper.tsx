@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -8,8 +6,8 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import EnterpriseView from './EnterpriseView'
+import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
 import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 
@@ -50,7 +48,7 @@ const EnterpriseWrapper = () => {
                   />
                 </PageHeading>
               </div>
-              <div className="mt-auto flex flex-wrap items-center gap-2.5">
+              <div className="ml-auto mt-auto flex flex-wrap items-center justify-end gap-2.5">
                 <CancelLinkButton
                   title="Cancel"
                   href="/projects-listing/enterprises"

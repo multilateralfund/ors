@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 
 import PEnterpriseHeader from '../create/PEnterpriseHeader'
@@ -34,7 +32,7 @@ const PEnterpriseEdit = ({
   const enterpriseStatuses = useGetEnterpriseStatuses(false)
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
-    overview: initialOverviewFields,
+    overview: { ...initialOverviewFields, id: null },
     details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
     substance_details: [],
@@ -42,7 +40,6 @@ const PEnterpriseEdit = ({
     remarks: initialRemarksFields,
   })
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -137,7 +134,6 @@ const PEnterpriseEdit = ({
           enterpriseData,
           enterprise,
           setEnterpriseId,
-          setHasSubmitted,
           setErrors,
           setOtherErrors,
         }}
@@ -149,14 +145,13 @@ const PEnterpriseEdit = ({
           enterprise,
           enterpriseStatuses,
           projectData,
-          hasSubmitted,
           errors,
         }}
       />
       <ProjectFormFooter
         id={enterpriseId}
         href={`/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`}
-        successMessage={'Project enterprise was updated successfully.'}
+        successMessage="Project enterprise was updated successfully."
         successRedirectMessage="View project enterprise."
         {...{ nonFieldsErrors, otherErrors }}
       />

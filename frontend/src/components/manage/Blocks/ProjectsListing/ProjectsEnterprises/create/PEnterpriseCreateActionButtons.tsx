@@ -8,13 +8,13 @@ import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
+import { enqueueSnackbar } from 'notistack'
 import { omit } from 'lodash'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
@@ -54,6 +54,9 @@ const PEnterpriseCreateActionButtons = ({
       })
 
       setEnterpriseId(result.id)
+      enqueueSnackbar(<>Project enterprise was created successfully.</>, {
+        variant: 'success',
+      })
       setLocation(
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
       )
@@ -61,12 +64,11 @@ const PEnterpriseCreateActionButtons = ({
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}`}

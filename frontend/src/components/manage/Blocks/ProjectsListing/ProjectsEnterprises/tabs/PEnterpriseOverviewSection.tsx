@@ -4,6 +4,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { FieldErrorIndicator } from '../../HelperComponents'
 import {
   EnterpriseDateField,
   EnterpriseNumberField,
@@ -15,7 +16,6 @@ import { dateFields, decimalFields, textFields } from '../constants'
 import { defaultProps } from '../../constants'
 import {
   EnterpriseOverview,
-  EnterpriseType,
   OptionsType,
   PEnterpriseData,
   PEnterpriseDataProps,
@@ -37,11 +37,11 @@ const PEnterpriseOverviewSection = ({
 
   const { enterprise, enterpriseData, setEnterpriseData } = rest
   const { overview } = enterpriseData
-  const overviewStatus = (overview as EnterpriseType).status
+
   const isDisabled =
     !canEditProjectEnterprise ||
     enterprise?.status === 'Approved' ||
-    overviewStatus === 'Approved'
+    overview.status === 'Approved'
 
   const sectionIdentifier = 'overview'
   const { sectors, subsectors } = useGetEnterpriseFieldsOpts<PEnterpriseData>(
@@ -75,17 +75,20 @@ const PEnterpriseOverviewSection = ({
       {!!enterprise && canApproveProjectEnterprise && (
         <div>
           <Label>Status</Label>
-          <Field
-            widget="autocomplete"
-            options={enterpriseStatuses}
-            value={overview.linkStatus}
-            disabled={
-              !canEditProjectEnterprise || enterprise.status === 'Approved'
-            }
-            onChange={(_, value) => handleChangeLinkStatus(value)}
-            disableClearable
-            {...defaultProps}
-          />
+          <div className="flex items-center">
+            <Field
+              widget="autocomplete"
+              options={enterpriseStatuses}
+              value={overview.linkStatus}
+              disabled={
+                !canEditProjectEnterprise || enterprise.status === 'Approved'
+              }
+              onChange={(_, value) => handleChangeLinkStatus(value)}
+              disableClearable
+              {...defaultProps}
+            />
+            <FieldErrorIndicator field="status" errors={rest.errors} />
+          </div>
         </div>
       )}
       <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
@@ -99,16 +102,12 @@ const PEnterpriseOverviewSection = ({
         {...{ sectionIdentifier, ...rest }}
         enterpriseData={overview}
       />
-      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
-        field={textFields[1]}
-        {...{ sectionIdentifier, isDisabled, ...rest }}
-        enterpriseData={overview}
-      />
-      <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
-        field={textFields[2]}
-        {...{ sectionIdentifier, isDisabled, ...rest }}
-        enterpriseData={overview}
-      />
+      {map(textFields.slice(1, 3), (field) => (
+        <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
+          {...{ field, sectionIdentifier, isDisabled, ...rest }}
+          enterpriseData={overview}
+        />
+      ))}
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields.slice(1), (field) => (
           <EnterpriseSelectField<PEnterpriseData, EnterpriseOverview>

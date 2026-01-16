@@ -3,18 +3,18 @@ import { useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
-  textFields,
-  dateFields,
-  integerFields,
-  decimalFields,
-} from '../../ProjectsEnterprises/constants'
-import {
   EnterpriseTextField,
   EnterpriseNumberField,
   EnterpriseSelectField,
   EnterpriseDateField,
 } from '../../ProjectsEnterprises/FormHelperComponents'
 import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
+import {
+  textFields,
+  dateFields,
+  integerFields,
+  decimalFields,
+} from '../../ProjectsEnterprises/constants'
 import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
 
 import { map } from 'lodash'
@@ -24,7 +24,6 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   const { canEditEnterprise } = useContext(PermissionsContext)
   const { countries } = useContext(ProjectsDataContext)
-
   const { sectors, subsectors } =
     useGetEnterpriseFieldsOpts<EnterpriseOverview>(
       enterpriseData,
@@ -50,14 +49,11 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
         field={selectFields[0]}
         {...{ isDisabled, ...props }}
       />
-      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
-        field={textFields[1]}
-        {...{ isDisabled, ...props }}
-      />
-      <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
-        field={textFields[2]}
-        {...{ isDisabled, ...props }}
-      />
+      {map(textFields.slice(1, 3), (field) => (
+        <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
+          {...{ field, isDisabled, ...props }}
+        />
+      ))}
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields.slice(1), (field) => (
           <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>

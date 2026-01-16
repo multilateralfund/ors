@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
@@ -41,24 +39,7 @@ const EnterprisesFilters = ({
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {!project_id ? (
-        <Field
-          Input={{ placeholder: enterpriseFieldsMapping.country }}
-          options={getFilterOptions(filters, countries, 'country_id')}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const country = filters.country_id || []
-            const newValue = union(country, value)
-
-            handleFilterChange({ country_id: newValue })
-            handleParamsChange({
-              country_id: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-          {...defaultProps}
-        />
-      ) : (
+      {project_id ? (
         <Field
           Input={{ placeholder: enterpriseFieldsMapping.agency }}
           options={getFilterOptions(filters, agencies, 'agency_id')}
@@ -70,6 +51,23 @@ const EnterprisesFilters = ({
             handleFilterChange({ agency_id: newValue })
             handleParamsChange({
               agency_id: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+        />
+      ) : (
+        <Field
+          Input={{ placeholder: enterpriseFieldsMapping.country }}
+          options={getFilterOptions(filters, countries, 'country_id')}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const country = filters.country_id || []
+            const newValue = union(country, value)
+
+            handleFilterChange({ country_id: newValue })
+            handleParamsChange({
+              country_id: newValue.map((item: any) => item.id).join(','),
               offset: 0,
             })
           }}

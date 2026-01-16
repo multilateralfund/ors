@@ -29,7 +29,6 @@ const EnterpriseEditActionButtons = ({
   setEnterpriseId,
   setEnterpriseName,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & {
@@ -72,7 +71,16 @@ const EnterpriseEditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
+    }
+  }
+
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
     }
   }
 
@@ -95,6 +103,11 @@ const EnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
+        const successMessage =
+          status === 'Approved' ? 'approved' : 'marked as obsolete'
+        enqueueSnackbar(<>Enterprise was {successMessage} successfully.</>, {
+          variant: 'success',
+        })
         setLocation(`/projects-listing/enterprises/${enterprise_id}`)
       } catch (error) {
         enqueueSnackbar(
@@ -110,14 +123,14 @@ const EnterpriseEditActionButtons = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center justify-end gap-2.5">
         <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
         {canEditEnterprise && !isObsolete && (
           <Button
             className={cx('px-4 py-2 shadow-none', {
               [enabledButtonClassname]: !disabledButton,
             })}
-            onClick={editEnterprise}
+            onClick={onEditEnterprise}
             disabled={disabledButton}
             variant="contained"
             size="large"
