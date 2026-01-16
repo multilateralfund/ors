@@ -203,7 +203,7 @@ class ProjectsV2ProjectExportDocx:
             ("co2_mt", "Phase out CO2"),
             ("odp", "Phase out ODP"),
         ]:
-            has_data = any([s[field] is not None for s in substances])
+            has_data = any(s[field] is not None for s in substances)
 
             if has_data:
                 data_fields.append(field)
