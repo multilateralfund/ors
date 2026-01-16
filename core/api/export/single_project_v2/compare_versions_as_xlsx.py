@@ -333,13 +333,10 @@ class CompareVersionsProjectExport:
         self.wb = wb
         self.sheet = sheet
 
-    def export(self):
+    def export(self, filename: str):
         flat_candidates = list(chain(*self.candidates))
         writer = CompareVersionsWriter(self.sheet, flat_candidates)
         writer.write_headers(self.user, self.candidates[0])
         for pair in self.candidates:
             writer.write(self.user, pair)
-        filename = (
-            f"Compare versions = {'_'.join([str(p.id) for p in flat_candidates])}"
-        )
         return workbook_response(filename, self.wb)
