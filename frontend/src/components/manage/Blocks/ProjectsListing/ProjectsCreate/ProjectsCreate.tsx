@@ -66,6 +66,7 @@ const ProjectsCreate = ({
   mode,
   postExComUpdate = false,
   approval = false,
+  impact = false,
   files,
   projectFiles,
   errors,
@@ -93,6 +94,7 @@ const ProjectsCreate = ({
     mode: string
     postExComUpdate?: boolean
     approval?: boolean
+    impact?: boolean
     errors: { [key: string]: [] }
     fileErrors: string
     project?: ProjectTypeApi
@@ -126,7 +128,9 @@ const ProjectsCreate = ({
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
-  const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(
+    impact ? 3 : approval ? 5 : 0,
+  )
 
   const areFieldsDisabled = !canLinkToBp || currentStep < 1
   const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
@@ -192,6 +196,17 @@ const ProjectsCreate = ({
     areProjectSpecificTabsDisabled ||
     impactFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Impact')
+
+  useEffect(() => {
+    if (
+      impact &&
+      specificFieldsLoaded &&
+      (impactFields.length < 1 ||
+        !hasFields(projectFields, viewableFields, 'Impact'))
+    ) {
+      setCurrentTab(0)
+    }
+  }, [specificFieldsLoaded])
 
   const isApprovalTabDisabled =
     areNextSectionsDisabled ||

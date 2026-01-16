@@ -401,8 +401,9 @@ class ProjectsV2ProjectExportDocx:
         if not project.component:
             return []
 
-        return Project.objects.filter(component=project.component).exclude(id=project.id)
-
+        return Project.objects.filter(component=project.component).exclude(
+            id=project.id
+        )
 
     def build_components(self):
         components = self._get_project_components()
