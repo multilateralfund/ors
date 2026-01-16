@@ -64,6 +64,7 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_remove_association_access",
+            "has_project_v2_disassociate_component_access",
             "has_project_v2_recommend_projects_access",
             "has_sectors_and_subsectors_view_access",
             "is_mlfs_user"
@@ -104,6 +105,7 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_remove_association_access",
+            "has_project_v2_disassociate_component_access",
             "has_project_v2_recommend_projects_access",
             "has_sectors_and_subsectors_view_access",
             "is_mlfs_user"
@@ -255,6 +257,7 @@
             "has_project_v2_transfer_projects_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_remove_association_access",
+            "has_project_v2_disassociate_component_access",
             "has_project_v2_recommend_projects_access",
             "has_project_enterprise_approval_access",
             "has_project_enterprise_edit_access",

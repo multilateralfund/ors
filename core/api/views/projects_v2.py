@@ -16,6 +16,7 @@ from core.api.permissions import (
     HasProjectV2SubmitAccess,
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2RemoveAssociationAccess,
+    HasProjectV2DisassociateComponentAccess,
     HasProjectV2ApproveAccess,
     HasProjectV2RecommendAccess,
     HasProjectV2TransferAccess,
@@ -131,6 +132,7 @@ class ProjectV2ViewSet(
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     ProjectApproveRejectMixin,
     ProjectAssociationMixin,
     ProjectExportMixin,
@@ -209,7 +211,7 @@ class ProjectV2ViewSet(
             "compare_versions",
         ]:
             return [HasProjectV2ViewAccess]
-        if self.action in ["create"]:
+        if self.action in ["create", "destroy"]:
             return [HasProjectV2EditAccess]
         if self.action in [
             "update",
@@ -223,6 +225,8 @@ class ProjectV2ViewSet(
             return [HasProjectV2AssociateProjectsAccess]
         if self.action == "remove_association":
             return [HasProjectV2RemoveAssociationAccess]
+        if self.action == "disassociate_component":
+            return [HasProjectV2DisassociateComponentAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [HasProjectV2RecommendAccess]
         if self.action in ["approve", "reject", "edit_approval_fields"]:
@@ -255,6 +259,10 @@ class ProjectV2ViewSet(
             in ["edit_actual_fields", "transfer", "update", "partial_update", "submit"]
         ):
             queryset = queryset.exclude(status__name__in=["Closed", "Transferred"])
+
+        if self.action in ["destroy"]:
+            queryset = queryset.filter(submission_status__name="Draft", version=1)
+
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -264,7 +272,10 @@ class ProjectV2ViewSet(
             if not user_has_any_edit_access:
                 return queryset.none()
             queryset = queryset.filter(submission_status__name="Approved")
-        if self.action in ["update", "partial_update", "submit"] or results_for_edit:
+        if (
+            self.action in ["update", "partial_update", "submit", "destroy"]
+            or results_for_edit
+        ):
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
@@ -510,6 +521,21 @@ class ProjectV2ViewSet(
                 HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
             )
         return super().update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        """Delete a project"""
+        component = self.get_object()
+        response = super().destroy(request, *args, **kwargs)
+        component_projects_count = Project.objects.filter(component=component).count()
+        if component_projects_count == 0:
+            component.delete()
+        elif component_projects_count == 1:
+            # If there is only one project left in the component, remove the component
+            last_project = Project.objects.filter(component=component).first()
+            last_project.component = None
+            last_project.save()
+            component.delete()
+        return response
 
     @action(methods=["GET"], detail=True)
     def field_history(self, request, *args, **kwargs):

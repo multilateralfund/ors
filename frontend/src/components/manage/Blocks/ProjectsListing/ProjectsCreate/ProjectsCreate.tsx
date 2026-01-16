@@ -13,6 +13,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
@@ -82,6 +83,7 @@ const ProjectsCreate = ({
   setFilesMetaData,
   metaProjectId,
   setMetaProjectId,
+  setRefetchRelatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -103,6 +105,7 @@ const ProjectsCreate = ({
     onBpDataChange: (bpData: BpDataProps) => void
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
+    setRefetchRelatedProjects?: (refetch: boolean) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -266,6 +269,11 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
+
+  const hasComponents =
+    !!project &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const bpErrorMessage = 'A business plan activity should be selected.'
   const hasBpDefaultErrors =
@@ -698,6 +706,7 @@ const ProjectsCreate = ({
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
+                  setRefetchRelatedProjects,
                   setCurrentTab,
                 }}
               />
@@ -723,35 +732,42 @@ const ProjectsCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, label, disabled }) => (
-          <Tab
-            key={id}
-            id={id}
-            aria-controls={id}
-            label={label}
-            disabled={disabled}
-            classes={{
-              disabled: 'text-gray-300',
-            }}
-          />
-        ))}
-      </Tabs>
-
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label, disabled }) => (
+            <Tab
+              key={id}
+              id={id}
+              aria-controls={id}
+              label={label}
+              disabled={disabled}
+              classes={{
+                disabled: 'text-gray-300',
+              }}
+            />
+          ))}
+        </Tabs>
+        {mode === 'edit' &&
+          project?.submission_status === 'Draft' &&
+          project?.version === 1 &&
+          project?.editable && (
+            <ProjectDelete {...{ project, hasComponents }} />
+          )}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
