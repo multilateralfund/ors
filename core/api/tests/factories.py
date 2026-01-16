@@ -535,6 +535,12 @@ class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
     current_year_remarks = factory.Faker("pystr")
     gender_policy = factory.Faker("pybool")
 
+    @factory.post_generation
+    def populate_denormalized_fields(obj, create, *args, **kwargs):
+        if create:
+            obj.populate_derived_fields()
+            obj.save()
+
 
 class AnnualProjectReportFileFactory(factory.django.DjangoModelFactory):
     """Factory for AnnualProjectReportFile."""

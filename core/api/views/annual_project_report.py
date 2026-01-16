@@ -270,11 +270,14 @@ class APRWorkspaceView(RetrieveAPIView):
                 default_data = {"status": project.status.name}
                 previous_data = previous_reports_dict.get(key, default_data)
 
-                AnnualProjectReport.objects.get_or_create(
+                project_report, created = AnnualProjectReport.objects.get_or_create(
                     project=project,
                     report=agency_report,
                     defaults=previous_data,
                 )
+                if created or project_report.meta_code_denorm is None:
+                    project_report.populate_derived_fields()
+                    project_report.save()
 
         # Refetch the agency report using the optimized queryset - with prefetches
         return self.get_queryset().get(pk=agency_report.pk)
