@@ -23,6 +23,7 @@ const ProjectSpecificInfoSection = ({
   getTrancheErrors,
   nextStep,
   setCurrentTab,
+  disableV3Edit,
   ...rest
 }: ProjectDataProps &
   ProjectTabSetters &
@@ -33,6 +34,7 @@ const ProjectSpecificInfoSection = ({
     substanceDetailsErrors?: { [key: string]: string[] }
     odsOdpErrors: { [key: string]: [] }[]
     nextStep: number
+    disableV3Edit: boolean
   }) => {
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
@@ -78,7 +80,7 @@ const ProjectSpecificInfoSection = ({
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
-            {...{ odsOdpErrors, overviewFields }}
+            {...{ odsOdpErrors, overviewFields, disableV3Edit }}
             {...rest}
           />
         </>

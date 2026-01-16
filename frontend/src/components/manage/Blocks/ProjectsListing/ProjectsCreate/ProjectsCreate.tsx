@@ -284,6 +284,11 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
+  const disableV3Edit =
+    !!project &&
+    mode === 'edit' &&
+    !project.editable &&
+    project.editable_for_actual_fields
 
   const hasComponents =
     !!project &&
@@ -566,6 +571,7 @@ const ProjectsCreate = ({
             trancheErrors,
             getTrancheErrors,
             setCurrentTab,
+            disableV3Edit,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -643,6 +649,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             filesMetaData,
             setFilesMetaData,
+            disableV3Edit,
           }}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
