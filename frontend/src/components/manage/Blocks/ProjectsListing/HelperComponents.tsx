@@ -372,7 +372,7 @@ export const RelatedProjects = ({
             {hasErrors && <ErrorTag />}
             {isTranchesMode && entry.editable_for_actual_fields && (
               <EditLink
-                href={`/projects-listing/${entry.id}/edit`}
+                href={`/projects-listing/${entry.id}/impact`}
                 className="!h-6 rounded-md px-1.5 pb-1 !text-base"
                 rel="noopener noreferrer nofollow"
                 target="_blank"
