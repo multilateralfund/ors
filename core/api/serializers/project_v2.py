@@ -405,6 +405,32 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return result
 
 
+class ProjectListPreviousTranchesSerializer(ProjectListV2Serializer):
+    """
+    Serializer for previous tranches of a project.
+    Inherits from ProjectListV2Serializer.
+    """
+
+    class Meta(ProjectListV2Serializer.Meta):
+        model = Project
+        fields = [
+            "id",
+            "code",
+            "code_legacy",
+            "agency",
+            "agency_id",
+            "editable",
+            "editable_for_actual_fields",
+            "metacode",
+            "status",
+            "status_id",
+            "submission_status",
+            "submission_status_id",
+            "title",
+            "tranche",
+        ]
+
+
 class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
     """
     ProjectOdsOdpSerializer class
