@@ -385,8 +385,12 @@ class TestAPRSummaryTablesExport(BaseTest):
     ):
         """Sheet (b) should only include completed investment projects"""
         # Create investment and non-investment project types
-        inv_type = ProjectType.objects.create(name="Investment", code="INV", sort_order=1)
-        non_inv_type = ProjectType.objects.create(name="Preparation", code="PRP", sort_order=2)
+        inv_type = ProjectType.objects.create(
+            name="Investment", code="INV", sort_order=1
+        )
+        non_inv_type = ProjectType.objects.create(
+            name="Preparation", code="PRP", sort_order=2
+        )
 
         # Completed investment - should appear
         project1 = ProjectFactory(
@@ -467,8 +471,12 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert response.status_code == status.HTTP_200_OK
 
         content_disposition = response["Content-Disposition"]
-        assert f"APR_Summary_Tables_{annual_progress_report.year}" in content_disposition
-        assert apr_agency_viewer_user.agency.name.replace(" ", "_") in content_disposition
+        assert (
+            f"APR_Summary_Tables_{annual_progress_report.year}" in content_disposition
+        )
+        assert (
+            apr_agency_viewer_user.agency.name.replace(" ", "_") in content_disposition
+        )
         assert ".xlsx" in content_disposition
 
     def test_mlfs_filename_without_agency(
@@ -496,7 +504,10 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert response.status_code == status.HTTP_200_OK
 
         content_disposition = response["Content-Disposition"]
-        assert f"APR_Summary_Tables_{annual_progress_report.year}.xlsx" in content_disposition
+        assert (
+            f"APR_Summary_Tables_{annual_progress_report.year}.xlsx"
+            in content_disposition
+        )
 
     def test_includes_all_statuses_not_just_ongoing_and_completed(
         self,
