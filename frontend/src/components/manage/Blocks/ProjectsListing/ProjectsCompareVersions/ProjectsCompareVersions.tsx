@@ -160,7 +160,14 @@ const ProjectsCompareVersions = () => {
             <div className="mt-4 flex gap-x-2">
               <Link
                 button
-                disabled={!requestParams.meeting_id}
+                disabled={
+                  !(
+                    requestParams.meeting_id &&
+                    requestParams.agency_id &&
+                    requestParams.submission_status_left_id &&
+                    requestParams.submission_status_right_id
+                  )
+                }
                 size="large"
                 href={downloadUrl}
                 variant="contained"

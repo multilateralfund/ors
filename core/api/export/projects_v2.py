@@ -1,5 +1,8 @@
-from core.api.export.base import WriteOnlyBase
+from core.api.export.base import BaseWriter
+from core.api.export.single_project_v2.helpers import format_iso_date
+from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.models import BPActivity
+from core.models import MetaProject
 
 
 def export_activity_code(activity_data):
@@ -10,7 +13,9 @@ def export_activity_code(activity_data):
         return ""
 
 
-class ProjectV2Writer(WriteOnlyBase):
+class ProjectV2Writer(BaseWriter):
+    ROW_HEIGHT = 35
+    COLUMN_WIDTH = 20
     header_row_start_idx = 1
 
     def __init__(self, sheet):
@@ -106,5 +111,29 @@ class ProjectV2Writer(WriteOnlyBase):
                 "column_width": self.COLUMN_WIDTH * 5,
             },
         ]
+
+        field_map = {
+            "DecimalField": {
+                "type": "number",
+                "align": "right",
+                "cell_format": "$###,###,##0.00#############",
+            },
+            "DateTimeField": {
+                "method": lambda r, h: format_iso_date(
+                    r["meta_project_fields"][h["id"]]
+                ),
+            },
+        }
+
+        for field_name in MetaProjectFieldSerializer.Meta.fields:
+            field = getattr(MetaProject, field_name).field
+            label = getattr(field, "help_text")
+            header_def = {
+                "id": field_name,
+                "headerName": label,
+                "method": lambda r, h: r["meta_project_fields"][h["id"]],
+            }
+            header_def.update(field_map.get(field.__class__.__name__, {}))
+            headers.append(header_def)
 
         super().__init__(sheet, headers)

@@ -49,7 +49,7 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
-from core.api.serializers.meta_project import MetaProjectFieldSerializer
+from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
 from core.models import Agency
