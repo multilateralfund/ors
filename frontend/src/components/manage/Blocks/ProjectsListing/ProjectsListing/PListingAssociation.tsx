@@ -51,8 +51,9 @@ export default function PListingAssociation({
       {
         title: 'Metaproject: ' + (entry.umbrella_code ?? 'N/A'),
         isMetaproject: true,
-        total_fund: sumBy(entry.projects, 'total_fund'),
-        support_cost_psc: sumBy(entry.projects, 'support_cost_psc'),
+        total_fund: sumBy(entry.projects, 'total_fund') || undefined,
+        support_cost_psc:
+          sumBy(entry.projects, 'support_cost_psc') || undefined,
       } as any as ProjectTypeApi,
       ...(entry.projects || []),
     ]),
