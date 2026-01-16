@@ -7,6 +7,8 @@ from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
@@ -15,7 +17,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from core.api.export.annual_project_report import APRExportWriter
+from core.api.export.annual_project_report import (
+    APRExportWriter,
+    APRSummaryTablesExportWriter,
+)
 from core.api.filters.annual_project_reports import (
     APRProjectFilter,
     APRGlobalFilter,
@@ -601,25 +606,44 @@ class APRExportView(APIView):
         return writer.generate()
 
 
-class APRSummaryTablesView(APIView):
+class APRSummaryTablesExportView(APIView):
     """
-    Read-only view to generate summary tables (Annex II).
+    Export APR Summary Tables (multi-sheet with aggregations).
+    Includes *all* data regardless of UI filters, but agencies only see own projects.
     """
 
-    # TODO: implement when we receive the Annex II specifications
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
 
-    def get(self, request, year):
-        """
-        Generate summary tables for the specified year.
-        """
-        return Response(
-            {
-                "message": "Summary tables not yet implemented.",
-                "year": year,
-            },
-            status=status.HTTP_501_NOT_IMPLEMENTED,
-        )
+    @swagger_auto_schema(
+        operation_description="Export APR Summary Tables as Excel",
+        manual_parameters=[
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="APR Year",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+        ],
+        responses={200: "Excel file download"},
+    )
+    def get(self, request):
+        year = request.query_params.get("year")
+        if not year:
+            raise ValidationError({"year": "This field is required."})
+
+        try:
+            year = int(year)
+        except ValueError as exc:
+            raise ValidationError({"year": "Must be a valid year."}) from exc
+
+        # Determine agency filter based on user permissions
+        agency = None
+        if request.user.agency:
+            agency = request.user.agency
+
+        writer = APRSummaryTablesExportWriter(year=year, agency=agency)
+        return writer.generate()
 
 
 class APRGlobalViewSet(ReadOnlyModelViewSet):
