@@ -317,15 +317,18 @@ class ProjectAssociationMixin:
         component = project.component
         project.component = None
         project.save()
-        component_projects_count = Project.objects.filter(component=component).count()
-        if component_projects_count == 0:
-            component.delete()
-        elif component_projects_count == 1:
-            # If there is only one project left in the component, remove the component
-            last_project = Project.objects.filter(component=component).first()
-            last_project.component = None
-            last_project.save()
-            component.delete()
+        if component:
+            component_projects_count = Project.objects.filter(
+                component=component
+            ).count()
+            if component_projects_count == 0:
+                component.delete()
+            elif component_projects_count == 1:
+                # If there is only one project left in the component, remove the component
+                last_project = Project.objects.filter(component=component).first()
+                last_project.component = None
+                last_project.save()
+                component.delete()
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
