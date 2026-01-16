@@ -12,7 +12,7 @@ import {
 import ProjectDisassociate from '../ProjectsCreate/ProjectDisassociate'
 
 import { Divider, CircularProgress } from '@mui/material'
-import { map } from 'lodash'
+import { isNull, map } from 'lodash'
 
 const ProjectRelatedProjects = ({
   project,
@@ -30,15 +30,21 @@ const ProjectRelatedProjects = ({
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
 }) => {
-  const { canDisassociateProjects } = useContext(PermissionsContext)
+  const { canDisassociateProjects, canDisassociateComponents } =
+    useContext(PermissionsContext)
   const canRemoveAssociation =
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
     !!project.meta_project_id &&
     !!metaProjectId
 
-  //to do - to add permissions
-  const canDisassociateComponent = project.submission_status === 'Submitted'
+  const canDisassociateComponent =
+    canDisassociateComponents &&
+    isNull(project.latest_project) &&
+    project.submission_status === 'Submitted'
+
+  const hasComponents =
+    project.component && project.component.original_project_id === project.id
 
   return (
     <>
@@ -93,8 +99,11 @@ const ProjectRelatedProjects = ({
                       />
                       {index === 0 && canDisassociateComponent && (
                         <ProjectDisassociate
-                          hasComponents={true}
-                          {...{ project, setRefetchRelatedProjects }}
+                          {...{
+                            project,
+                            setRefetchRelatedProjects,
+                            hasComponents,
+                          }}
                         />
                       )}
                     </>

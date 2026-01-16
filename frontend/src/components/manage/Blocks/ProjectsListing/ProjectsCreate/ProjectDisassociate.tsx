@@ -23,9 +23,9 @@ const ProjectDisassociate = ({
     setIsLoading(true)
 
     try {
-      // await api(`api/projects/v2/${project.id}`, {
-      //   method: 'DELETE',
-      // })
+      await api(`api/projects/v2/${project.id}/disassociate_component`, {
+        method: 'POST',
+      })
 
       enqueueSnackbar(<>Project disassociated successfully.</>, {
         variant: 'success',

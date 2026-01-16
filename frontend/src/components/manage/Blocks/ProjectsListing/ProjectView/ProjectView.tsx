@@ -164,7 +164,8 @@ const ProjectView = ({
     metaProjectId,
     refetchRelatedProjects,
   )
-  const hasComponents = (relatedProjects?.[0]?.data?.projects?.length ?? 0) > 0
+  const hasComponents =
+    project.component && project.component.original_project_id === project.id
 
   const tabs = [
     {

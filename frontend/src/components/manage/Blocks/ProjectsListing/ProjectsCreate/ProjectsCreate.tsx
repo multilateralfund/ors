@@ -270,7 +270,11 @@ const ProjectsCreate = ({
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
 
-  const hasComponents = (relatedProjects?.[0]?.data?.projects?.length ?? 0) > 0
+  const hasComponents =
+    mode === 'edit' &&
+    !!project &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const bpErrorMessage = 'A business plan activity should be selected.'
   const hasBpDefaultErrors =
