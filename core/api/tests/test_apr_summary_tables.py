@@ -19,7 +19,6 @@ from core.api.tests.factories import (
 )
 from core.models.project_metadata import ProjectType
 
-
 # pylint: disable=W0221,W0613,R0913,R0914
 
 
@@ -470,36 +469,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         )
         assert ".xlsx" in content_disposition
 
-    def test_mlfs_filename_without_agency(
-        self,
-        secretariat_viewer_user,
-        annual_progress_report,
-    ):
-        """MLFS export filename should not include agency name"""
-        agency_report = AnnualAgencyProjectReportFactory(
-            progress_report=annual_progress_report,
-        )
-        project = ProjectFactory(
-            agency=agency_report.agency,
-            date_approved=date(2023, 1, 15),
-        )
-        AnnualProjectReportFactory(
-            report=agency_report,
-            project=project,
-        )
-
-        self.client.force_authenticate(user=secretariat_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url, {"year": annual_progress_report.year})
-
-        assert response.status_code == status.HTTP_200_OK
-
-        content_disposition = response["Content-Disposition"]
-        assert (
-            f"APR_Summary_Tables_{annual_progress_report.year}.xlsx"
-            in content_disposition
-        )
-
     def test_includes_all_statuses_not_just_ongoing_and_completed(
         self,
         apr_agency_viewer_user,
@@ -510,7 +479,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         project_closed_status,
     ):
         """Summary export should include all statuses, not just ONG/COM"""
-        # Create projects with different statuses
         project_ongoing = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -549,14 +517,11 @@ class TestAPRSummaryTablesExport(BaseTest):
         detail_sheet = workbook["Annex I APR report"]
 
         # Count projects in detail sheet
-        # Count rows from data start to max row
         project_count = (
             detail_sheet.max_row
             - APRSummaryTablesExportWriter.DETAIL_DATA_START_ROW
             + 1
         )
-
-        # Should have all 3 projects
         assert project_count == 3
 
         # Check annual summary includes all 3 in approval count

@@ -432,7 +432,6 @@ class APRSummaryTablesExportWriter:
     def generate(self):
         self.workbook = load_workbook(self.TEMPLATE_PATH)
 
-        # Get all APR data for this year (no status filtering)
         queryset = AnnualProjectReport.objects.filter(
             report__progress_report__year=self.year
         ).select_related(
@@ -451,26 +450,23 @@ class APRSummaryTablesExportWriter:
         # Sheet 1: Detail export (reuse existing writer logic)
         self._write_detail_sheet(queryset)
 
-        # Sheet 2 (a): Annual summary by approval year
+        # Sheet 2: (a) Annual summary by approval year
         self._write_annual_summary_sheet(queryset)
 
-        # Sheet 3 (b): Completed investment projects
+        # Sheet 3: (b) Completed investment projects
         self._write_investment_projects_sheet(queryset)
 
-        # Sheet 4 (c): Completed non-investment projects
+        # Sheet 4: (c) Completed non-investment projects
         self._write_non_investment_projects_sheet(queryset)
 
         return self._create_response()
 
     def _write_detail_sheet(self, queryset):
-        """Generate the detail sheet using existing APRExportWriter logic"""
-        # Serialize data
         project_reports_data = AnnualProjectReportReadSerializer(
             queryset, many=True
         ).data
 
-        # Create detail sheet using existing writer
-        # Pass agency name to APRExportWriter (it still uses agency_name)
+        # Create detail sheet using existing APRExportWriter
         agency_name = self.agency.name if self.agency else None
         detail_writer = APRExportWriter(
             year=self.year,
@@ -483,7 +479,7 @@ class APRSummaryTablesExportWriter:
             detail_writer.STATUS_SHEET_NAME
         )
 
-        # Generate detail content (skip workbook creation)
+        # Then Generate detail content (skipping workbook creation)
         detail_writer._remove_extra_columns()
         detail_writer._create_status_sheet()
         detail_writer._write_data_rows()
@@ -520,9 +516,7 @@ class APRSummaryTablesExportWriter:
             .values("approval_year")
             .annotate(
                 num_approvals=Count("id"),
-                num_completed=Count(
-                    "id", filter=Q(project__status__name__icontains="complet")
-                ),
+                num_completed=Count("id", filter=Q(project__status__code="COM")),
                 total_funds_disbursed=Sum("funds_disbursed"),
             )
             .order_by("approval_year")
@@ -591,7 +585,7 @@ class APRSummaryTablesExportWriter:
 
         # Filter for completed investment projects
         completed_investment = queryset.filter(
-            project__status__name__icontains="complet",
+            project__status__code="COM",
             project__project_type__code="INV",
         )
 
@@ -622,9 +616,9 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
 
         # Filter for completed non-investment projects
-        completed_non_investment = queryset.filter(
-            project__status__name__icontains="complet"
-        ).exclude(project__project_type__code="INV")
+        completed_non_investment = queryset.filter(project__status__code="COM").exclude(
+            project__project_type__code="INV"
+        )
 
         # Section 1: By Region
         self._write_aggregation_section(
@@ -929,7 +923,6 @@ class APRSummaryTablesExportWriter:
         ws.cell(row, col).number_format = "0.00"
 
     def _create_response(self):
-        """Create HTTP response with the workbook"""
         output = BytesIO()
         self.workbook.save(output)
         output.seek(0)
