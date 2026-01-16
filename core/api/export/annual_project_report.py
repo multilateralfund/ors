@@ -352,6 +352,9 @@ class APRSummaryTablesExportWriter:
     SHEET_INVESTMENT = "Annex I (b)"
     SHEET_NON_INVESTMENT = "Annex I (c)"
 
+    # Row position constants - Detail sheet
+    DETAIL_DATA_START_ROW = 3
+
     # Row position constants - Annual summary sheet
     ANNUAL_HEADER_ROW = 6
     ANNUAL_DATA_START_ROW = 7
@@ -362,10 +365,69 @@ class APRSummaryTablesExportWriter:
     CUMULATIVE_SECTOR_HEADER_ROW = 19
     CUMULATIVE_SECTOR_DATA_ROW = 20
 
+    @classmethod
+    def build_column_mapping(cls):
+        """
+        Generate column index-to-field mapping from serializer's excel_fields.
+        This ensures consistency between serializer and Excel export.
+        """
+        excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
+        # Map fields to column numbers (1-indexed)
+        return {field: idx + 1 for idx, field in enumerate(excel_fields)}
+
+    @classmethod
+    def build_annual_column_mapping(cls):
+        """Column mapping for Annual summary sheet (a)"""
+        return {
+            "approval_year": 1,
+            "num_approvals": 2,
+            "num_completed": 3,
+            "pct_completed": 4,
+            "approved_funding": 5,
+            "funds_disbursed": 6,
+            "balance": 7,
+            "sum_pct_disbursed": 8,
+        }
+
+    @classmethod
+    def build_cumulative_column_mapping(cls, include_odp_co2=False):
+        """Column mapping for Cumulative sheets (b) and (c)"""
+        mapping = {
+            "group_name": 1,
+            "num_completed": 2,
+            "approved_funding": 3,
+            "pct_disbursed": 4,
+        }
+
+        if include_odp_co2:
+            mapping.update(
+                {
+                    "consumption_odp": 5,
+                    "production_odp": 6,
+                    "consumption_co2": 7,
+                    "production_co2": 8,
+                    "avg_months_to_disbursement": 9,
+                    "avg_months_to_completion": 10,
+                    "cost_effectiveness": 11,
+                }
+            )
+        else:
+            mapping.update(
+                {
+                    "avg_months_to_disbursement": 5,
+                    "avg_months_to_completion": 6,
+                    "cost_effectiveness": 7,
+                }
+            )
+
+        return mapping
+
     def __init__(self, year, agency=None):
         self.year = year
         self.agency = agency
         self.workbook = None
+        self.column_mapping = self.build_column_mapping()
+        self.annual_column_mapping = self.build_annual_column_mapping()
 
     def generate(self):
         self.workbook = load_workbook(self.TEMPLATE_PATH)
@@ -494,9 +556,11 @@ class APRSummaryTablesExportWriter:
                     sum_pct_disbursed / count_with_pct if count_with_pct > 0 else 0
                 )
 
-                ws.cell(row, 1, item["approval_year"])
-                ws.cell(row, 2, item["num_approvals"])
-                ws.cell(row, 3, item["num_completed"])
+                # Use column mapping for consistency
+                col_map = self.annual_column_mapping
+                ws.cell(row, col_map["approval_year"], item["approval_year"])
+                ws.cell(row, col_map["num_approvals"], item["num_approvals"])
+                ws.cell(row, col_map["num_completed"], item["num_completed"])
 
                 # Calculate percentage
                 pct_completed = (
@@ -504,17 +568,19 @@ class APRSummaryTablesExportWriter:
                     if item["num_approvals"]
                     else 0
                 )
-                ws.cell(row, 4, f"{pct_completed:.0f}%")
+                ws.cell(row, col_map["pct_completed"], f"{pct_completed:.0f}%")
 
-                ws.cell(row, 5, total_approved_funding)
-                ws.cell(row, 6, item["total_funds_disbursed"] or 0)
-                ws.cell(row, 7, total_balance)
-                ws.cell(row, 8, avg_pct_disbursed)
+                ws.cell(row, col_map["approved_funding"], total_approved_funding)
+                ws.cell(
+                    row, col_map["funds_disbursed"], item["total_funds_disbursed"] or 0
+                )
+                ws.cell(row, col_map["balance"], total_balance)
+                ws.cell(row, col_map["sum_pct_disbursed"], avg_pct_disbursed)
 
                 # Format numbers
-                for col in [5, 6, 7]:
-                    ws.cell(row, col).number_format = "#,##0"
-                ws.cell(row, 8).number_format = "0"
+                for col_name in ["approved_funding", "funds_disbursed", "balance"]:
+                    ws.cell(row, col_map[col_name]).number_format = "#,##0"
+                ws.cell(row, col_map["sum_pct_disbursed"]).number_format = "0"
 
                 row += 1
 

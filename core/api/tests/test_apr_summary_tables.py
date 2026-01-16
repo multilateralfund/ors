@@ -10,6 +10,7 @@ from django.urls import reverse
 from openpyxl import load_workbook
 from rest_framework import status
 
+from core.api.export.annual_project_report import APRSummaryTablesExportWriter
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
@@ -58,8 +59,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Agency user should only see their own agency's APRs"""
-        # Create APR for user's agency
         own_project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             code="OWN/001",
@@ -69,8 +68,6 @@ class TestAPRSummaryTablesExport(BaseTest):
             report=annual_agency_report,
             project=own_project,
         )
-
-        # Create APR for different agency
         other_agency_report = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
         )
@@ -99,11 +96,12 @@ class TestAPRSummaryTablesExport(BaseTest):
         detail_sheet = workbook["Annex I APR report"]
 
         # Check that only one project is in the detail sheet
-        # Headers at row 2, data starts at row 3
-        # project_code is column 3 (index 2 in excel_fields)
         project_codes = []
-        for row in range(3, detail_sheet.max_row + 1):
-            code_cell = detail_sheet.cell(row, 3)  # project_code is column 3
+        col_map = APRSummaryTablesExportWriter.build_column_mapping()
+        for row in range(
+            APRSummaryTablesExportWriter.DETAIL_DATA_START_ROW, detail_sheet.max_row + 1
+        ):
+            code_cell = detail_sheet.cell(row, col_map["project_code"])
             if code_cell.value:
                 project_codes.append(code_cell.value)
 
@@ -116,8 +114,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         secretariat_viewer_user,
         annual_progress_report,
     ):
-        """MLFS user should see all agencies' APRs"""
-        # Create APRs for multiple agencies
         agency_report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
         )
@@ -150,13 +146,16 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert response.status_code == status.HTTP_200_OK
 
-        # Load workbook and check detail sheet has both projects
+        # Load workbook and check the detail sheet has both projects
         workbook = load_workbook(BytesIO(response.content))
         detail_sheet = workbook["Annex I APR report"]
 
         project_codes = []
-        for row in range(3, detail_sheet.max_row + 1):
-            code_cell = detail_sheet.cell(row, 3)  # project_code is column 3
+        col_map = APRSummaryTablesExportWriter.build_column_mapping()
+        for row in range(
+            APRSummaryTablesExportWriter.DETAIL_DATA_START_ROW, detail_sheet.max_row + 1
+        ):
+            code_cell = detail_sheet.cell(row, col_map["project_code"])
             if code_cell.value:
                 project_codes.append(code_cell.value)
 
@@ -170,7 +169,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Export should contain all 4 sheets"""
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -200,7 +198,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Sheet (a) should have correct headers and structure"""
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -217,10 +214,8 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet = workbook["Annex I (a)"]
 
-        # Check title
         assert sheet["A1"].value == "(a) Annual summary data"
 
-        # Check headers at row 6
         assert sheet["A6"].value == "Approval year"
         assert sheet["B6"].value == "Number of Approvals"
         assert sheet["C6"].value == "Number of completed"
@@ -238,9 +233,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         project_ongoing_status,
         project_completed_status,
     ):
-        """Sheet (a) should aggregate data by approval year"""
-        # Create projects with different approval years
-        # Create projects with version 3 for proper funding calculations
         project_2022 = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2022, 3, 15),
@@ -248,7 +240,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             version=3,
             total_fund=100000,
         )
-        _ = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project_2022,
             funds_disbursed=100000,
@@ -261,7 +253,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             version=3,
             total_fund=50000,
         )
-        _ = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project_2023_1,
             funds_disbursed=25000,
@@ -274,7 +266,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             version=3,
             total_fund=75000,
         )
-        _ = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project_2023_2,
             funds_disbursed=75000,
@@ -287,11 +279,14 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet = workbook["Annex I (a)"]
 
-        # Find 2022 row (should be first data row at row 7)
+        # Find 2022 row (should be first data row)
         year_2022_row = None
         year_2023_row = None
-        for row in range(7, sheet.max_row + 1):
-            year_val = sheet.cell(row, 1).value
+        col_map = APRSummaryTablesExportWriter.build_annual_column_mapping()
+        for row in range(
+            APRSummaryTablesExportWriter.ANNUAL_DATA_START_ROW, sheet.max_row + 1
+        ):
+            year_val = sheet.cell(row, col_map["approval_year"]).value
             if year_val == 2022:
                 year_2022_row = row
             elif year_val == 2023:
@@ -300,16 +295,21 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert year_2022_row is not None
         assert year_2023_row is not None
 
-        # Check 2022 aggregation
-        assert sheet.cell(year_2022_row, 2).value == 1  # Number of approvals
-        assert sheet.cell(year_2022_row, 3).value == 1  # Number completed
-        assert sheet.cell(year_2022_row, 5).value == 100000  # Approved funding
+        # Number of approvals
+        assert sheet.cell(year_2022_row, 2).value == 1
+        # Number completed
+        assert sheet.cell(year_2022_row, 3).value == 1
+        # Approved funding
+        assert sheet.cell(year_2022_row, 5).value == 100000
 
-        # Check 2023 aggregation
-        assert sheet.cell(year_2023_row, 2).value == 2  # Number of approvals
-        assert sheet.cell(year_2023_row, 3).value == 1  # Number completed
-        assert sheet.cell(year_2023_row, 5).value == 125000  # Total approved funding
-        assert sheet.cell(year_2023_row, 6).value == 100000  # Total disbursed
+        # Number of approvals
+        assert sheet.cell(year_2023_row, 2).value == 2
+        # Number completed
+        assert sheet.cell(year_2023_row, 3).value == 1
+        # Total approved funding
+        assert sheet.cell(year_2023_row, 5).value == 125000
+        # Total disbursed
+        assert sheet.cell(year_2023_row, 6).value == 100000
 
     def test_investment_projects_sheet_structure(
         self,
@@ -317,7 +317,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Sheet (b) should have correct structure for investment projects"""
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -334,13 +333,8 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet = workbook["Annex I (b)"]
 
-        # Check title
         assert sheet["A1"].value == "(b) Cumulative completed investment projects"
-
-        # Check Region section header at row 7
         assert "region" in sheet.cell(7, 1).value.lower()
-
-        # Check Sector section header at row 19
         assert "sector" in sheet.cell(19, 1).value.lower()
 
     def test_non_investment_projects_sheet_structure(
@@ -349,7 +343,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Sheet (c) should have correct structure for non-investment projects"""
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -366,13 +359,8 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet = workbook["Annex I (c)"]
 
-        # Check title
         assert sheet["A1"].value == "(c) Cumulative completed non-investment projects"
-
-        # Check Region section header at row 7
         assert "region" in sheet.cell(7, 1).value.lower()
-
-        # Check Sector section header at row 19
         assert "sector" in sheet.cell(19, 1).value.lower()
 
     def test_investment_projects_filtered_by_type_and_status(
@@ -383,8 +371,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         project_completed_status,
         project_ongoing_status,
     ):
-        """Sheet (b) should only include completed investment projects"""
-        # Create investment and non-investment project types
         inv_type = ProjectType.objects.create(
             name="Investment", code="INV", sort_order=1
         )
@@ -392,7 +378,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             name="Preparation", code="PRP", sort_order=2
         )
 
-        # Completed investment - should appear
+        # Completed investment project - should appear on sheet
         project1 = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -404,7 +390,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             project=project1,
         )
 
-        # Ongoing investment - should NOT appear
+        # Ongoing investment project - should *not* appear
         project2 = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 2, 15),
@@ -416,7 +402,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             project=project2,
         )
 
-        # Completed non-investment - should NOT appear
+        # Completed non-investment - should *not* appear on sheet
         project3 = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 3, 15),
@@ -435,17 +421,22 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet_b = workbook["Annex I (b)"]
 
-        # Count number of projects in region section (row 8 onwards until Grand Total)
-        # Check if there's data in the region section
+        # Count number of projects in region section (data row onwards until Grand Total)
         region_count = 0
-        for row in range(8, 19):  # Before Sector section
+        col_map = APRSummaryTablesExportWriter.build_cumulative_column_mapping(
+            include_odp_co2=True
+        )
+        for row in range(
+            APRSummaryTablesExportWriter.CUMULATIVE_REGION_DATA_ROW,
+            APRSummaryTablesExportWriter.CUMULATIVE_SECTOR_HEADER_ROW,
+        ):
             if (
-                sheet_b.cell(row, 1).value
-                and "grand total" not in str(sheet_b.cell(row, 1).value).lower()
+                sheet_b.cell(row, col_map["group_name"]).value
+                and "grand total"
+                not in str(sheet_b.cell(row, col_map["group_name"]).value).lower()
             ):
                 region_count += 1
 
-        # Should have at least one row for the region aggregation
         assert region_count > 0
 
     def test_filename_includes_year_and_agency(
@@ -558,19 +549,26 @@ class TestAPRSummaryTablesExport(BaseTest):
         detail_sheet = workbook["Annex I APR report"]
 
         # Count projects in detail sheet
-        project_count = 0
-        for row in range(3, detail_sheet.max_row + 1):
-            if detail_sheet.cell(row, 1).value:
-                project_count += 1
+        # Count rows from data start to max row
+        project_count = (
+            detail_sheet.max_row
+            - APRSummaryTablesExportWriter.DETAIL_DATA_START_ROW
+            + 1
+        )
 
         # Should have all 3 projects
         assert project_count == 3
 
         # Check annual summary includes all 3 in approval count
         annual_sheet = workbook["Annex I (a)"]
-        for row in range(7, annual_sheet.max_row + 1):
-            year_val = annual_sheet.cell(row, 1).value
+        annual_col_map = APRSummaryTablesExportWriter.build_annual_column_mapping()
+        for row in range(
+            APRSummaryTablesExportWriter.ANNUAL_DATA_START_ROW, annual_sheet.max_row + 1
+        ):
+            year_val = annual_sheet.cell(row, annual_col_map["approval_year"]).value
             if year_val == 2023:
-                num_approvals = annual_sheet.cell(row, 2).value
+                num_approvals = annual_sheet.cell(
+                    row, annual_col_map["num_approvals"]
+                ).value
                 assert num_approvals == 3
                 break
