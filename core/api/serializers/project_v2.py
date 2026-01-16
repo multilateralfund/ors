@@ -7,6 +7,7 @@ from rest_framework import serializers
 from core.api.serializers import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
+from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpCreateSerializer,
@@ -1674,12 +1675,14 @@ class ProjectExportV2Serializer(ProjectListV2Serializer):
     cluster = serializers.SlugRelatedField("name", read_only=True)
     substances_list = serializers.SerializerMethodField()
     subsectors_list = serializers.SerializerMethodField()
+    meta_project_fields = serializers.SerializerMethodField()
 
     class Meta(ProjectListV2Serializer.Meta):
         fields = ProjectListV2Serializer.Meta.fields + [
             "substances_list",
             "subsectors_list",
             "serial_number_legacy",
+            "meta_project_fields",
         ]
 
     def get_substances_list(self, obj):
@@ -1698,3 +1701,6 @@ class ProjectExportV2Serializer(ProjectListV2Serializer):
     def get_subsectors_list(self, obj):
         "subsector names separated by comma for project list export"
         return ", ".join([s.name for s in obj.subsectors.all()])
+
+    def get_meta_project_fields(self, obj):
+        return MetaProjectFieldSerializer(obj.meta_project).data
