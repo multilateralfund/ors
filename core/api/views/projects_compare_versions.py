@@ -13,17 +13,31 @@ from core.api.export.single_project_v2.compare_versions_as_xlsx import (
 )
 from core.api.filters.projects_compare_versions import ProjectsCompareVersionsFilter
 from core.api.permissions import HasProjectV2ViewAccess
+from core.models import Agency
 from core.models import Project
+from core.models import ProjectSubmissionStatus
 
 
 def get_available_values(queryset: QuerySet[Project], field_name: str):
     rel_name = f"{field_name}__name"
 
     values = (
-        queryset.order_by(rel_name).values_list(f"{field_name}_id", rel_name).distinct()
+        queryset.order_by(rel_name)
+        .values_list(
+            f"{field_name}_id",
+            rel_name,
+        )
+        .distinct()
     )
 
-    return [{"name": name, "id": pk} for pk, name in values if pk is not None]
+    return [
+        {
+            "name": name,
+            "id": pk,
+        }
+        for pk, name in values
+        if pk is not None
+    ]
 
 
 class ProjectData(TypedDict):
@@ -97,7 +111,12 @@ class ProjectsCompareVersionsViewset(
             return 0
 
         candidates = [
-            sorted(v, key=sort_by_status) for _, v in candidates.items() if len(v) > 1
+            sorted(
+                v,
+                key=sort_by_status,
+            )
+            for _, v in candidates.items()
+            if len(v) > 1
         ]
 
         return candidates
@@ -115,11 +134,33 @@ class ProjectsCompareVersionsViewset(
         queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
 
         result = {
-            "submission_status": get_available_values(queryset, "submission_status"),
-            "agency": get_available_values(queryset, "agency"),
+            "submission_status": get_available_values(
+                queryset,
+                "submission_status",
+            ),
+            "agency": get_available_values(
+                queryset,
+                "agency",
+            ),
         }
 
         return Response(result)
+
+    def build_filename(self, candidate_count: int) -> str:
+        meeting = self.request.query_params.get("meeting_id")
+
+        agency = self.request.query_params.get("agency_id")
+        agency = Agency.objects.get(id=agency)
+
+        left = int(self.request.query_params["submission_status_left_id"])
+        left = ProjectSubmissionStatus.objects.get(id=left)
+
+        right = int(self.request.query_params["submission_status_right_id"])
+        right = ProjectSubmissionStatus.objects.get(id=right)
+
+        encoded_filters = f"{meeting}-{agency}-{left.name}-{right.name}"
+        plural_count = "projects" if candidate_count > 1 else "project"
+        return f"Compare versions {encoded_filters} - {candidate_count} {plural_count}"
 
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
@@ -130,4 +171,4 @@ class ProjectsCompareVersionsViewset(
             user=request.user,
             candidates=candidates,
         )
-        return exporter.export()
+        return exporter.export(self.build_filename(len(candidates)))

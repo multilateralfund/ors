@@ -290,8 +290,8 @@ export interface ProjectDataProps {
 export interface ProjectHeader {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
-  trancheErrors: TrancheErrorType
-  getTrancheErrors: () => Promise<boolean | undefined>
+  trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => Promise<boolean | undefined>
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
   setErrors: (value: { [key: string]: [] }) => void

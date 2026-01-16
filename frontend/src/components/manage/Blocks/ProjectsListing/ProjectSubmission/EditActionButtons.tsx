@@ -326,9 +326,10 @@ const EditActionButtons = ({
 
     if (
       hasTrancheField &&
-      (projectData.projectSpecificFields.tranche ?? 0) > 1
+      (projectData.projectSpecificFields.tranche ?? 0) > 1 &&
+      (project.submission_status !== 'Draft' || !!navigationPage)
     ) {
-      const trancheErrors = await getTrancheErrors()
+      const trancheErrors = await getTrancheErrors?.()
 
       if (trancheErrors) {
         setIsLoading(false)
