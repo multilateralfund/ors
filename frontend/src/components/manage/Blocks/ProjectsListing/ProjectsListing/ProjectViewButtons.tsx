@@ -26,15 +26,15 @@ import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
 
-const EditLink = (props: any) => {
+export const EditLink = (props: any) => {
   const { children, className, ...rest } = props
   return (
     <CustomLink
       className={cx('mt-auto h-10 text-nowrap text-lg uppercase', className)}
       color="secondary"
       variant="contained"
-      {...rest}
       button
+      {...rest}
     >
       {children}
     </CustomLink>
