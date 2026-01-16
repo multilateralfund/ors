@@ -6,13 +6,14 @@ from itertools import chain
 
 import docx
 from django.http import FileResponse
+from docx.enum.text import WD_COLOR_INDEX, WD_ALIGN_PARAGRAPH
 from docx.oxml import CT_P
 from docx.oxml import CT_Tbl
 from docx.table import Table
 
 from core.api.export import TEMPLATE_DIR
 from core.api.export.single_project_v2.docx_headers import get_headers_metaproject
-from core.api.export.single_project_v2.helpers import format_dollar_value
+from core.api.export.single_project_v2.helpers import format_decimal
 from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
 from core.api.export.single_project_v2.xlsx_headers import (
     get_headers_specific_information,
@@ -108,7 +109,7 @@ class ProjectsV2ProjectExportDocx:
                     user = self.user.get_full_name() or self.user.username
                     agency = self.user.agency.name if self.user.agency else ""
                     p.text = f"Generated on {now} by {user}" + (
-                        'of "{agency}"' if agency else ""
+                        f'of "{agency}"' if agency else ""
                     )
                     p.runs[0].italic = True
 
@@ -127,17 +128,25 @@ class ProjectsV2ProjectExportDocx:
             if p.text.startswith("Project Title"):
                 p.text = self.project.title
             elif p.text.startswith("Country:"):
-                p.add_run(data.get("country", ""), None)
+                p.add_run(data.get("country", "-"), None)
             elif p.text.startswith("Agency:"):
-                p.add_run(data.get("agency", ""), None)
+                p.add_run(data.get("agency", "-"), None)
+            elif p.text.startswith("Lead Agency:"):
+                p.add_run(data.get("lead_agency", "-"), None)
+            elif p.text.startswith("Type:"):
+                p.add_run(data.get("project_type", {}).get("name", "-"), None)
+            elif p.text.startswith("Sector:"):
+                p.add_run(data.get("sector", {}).get("name", "-"), None)
             elif p.text.startswith("Cluster:"):
-                p.add_run(data.get("cluster", {}).get("name", ""), None)
-            elif p.text.startswith("Amount:"):
-                p.add_run(format_dollar_value(data.get("total_fund", "")), None)
-            elif p.text.startswith("Code:"):
-                p.add_run(data.get("code", ""), None)
+                p.add_run(data.get("cluster", {}).get("name", "-"), None)
+            elif p.text.startswith("Project costs:"):
+                p.add_run(format_decimal(data.get("total_fund", "-")), None)
+            elif p.text.startswith("Support costs:"):
+                p.add_run(format_decimal(data.get("support_cost_psc", "-")), None)
             elif p.text.startswith("Metacode:"):
-                p.add_run(data.get("metacode", ""), None)
+                p.add_run(data.get("metacode", "-"), None)
+            elif p.text.startswith("Code:"):
+                p.add_run(data.get("code", "-"), None)
 
             if p.runs:
                 for k, v in p_style.items():
@@ -153,31 +162,70 @@ class ProjectsV2ProjectExportDocx:
         for header in headers:
             row = table.add_row()
             for c_idx, cell in enumerate(row.cells):
-                is_dollar_value = header.get("type") == "number" and header.get(
-                    "cell_format"
-                )
+                is_boolean = header.get("type") == "bool"
+                is_decimal = header.get("type") == "decimal"
+                is_dollar_value = (
+                    header.get("type") == "number" or is_decimal
+                ) and header.get("cell_format")
+
+                value = data.get(header["id"])
                 if c_idx == 0:
-                    cell.text = header["headerName"]
+                    cell.text = ""
+                    run = cell.paragraphs[0].add_run(header["headerName"])
+                    if header.get("docx_highlight", False):
+                        run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 elif c_idx == 1 and header.get("method"):
                     cell.text = header["method"](data, header)
+                elif c_idx == 1 and is_dollar_value:
+                    cell.text = (
+                        format_decimal(
+                            value, with_decimals=header.get("docx_decimals", True)
+                        )
+                        or ""
+                    )
+                elif c_idx == 1 and is_decimal:
+                    cell.text = format_decimal(value, is_currency=False) or ""
+                elif c_idx == 1 and is_boolean:
+                    cell.text = "Yes" if value else "No"
                 elif c_idx == 1:
-                    cell.text = str(data[header["id"]] or "")
-                if c_idx == 1 and is_dollar_value:
-                    cell.text = format_dollar_value(cell.text)
+                    cell.text = str(value or "")
 
     def _write_substance_table(self, _, table, data):
-        for d in data:
+        substances = data.get("ods_odp", [])
+        data_fields = [
+            "ods_display_name",
+            "???",
+            "ods_replacement",
+        ]
+
+        for field, label in [
+            ("phase_out_mt", "Phase out MT"),
+            ("co2_mt", "Phase out CO2"),
+            ("odp", "Phase out ODP"),
+        ]:
+            has_data = any(s[field] is not None for s in substances)
+
+            if has_data:
+                data_fields.append(field)
+
+                table.add_column(70)
+                cell = table.rows[0].cells[-1]
+                cell.text = ""
+                paragraph = cell.paragraphs[0]
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                run = paragraph.add_run(label)
+                run.bold = True
+                run.underline = True
+
+        for substance in substances:
             row = table.add_row()
-            row_data = [
-                "ods_display_name",
-                "???",
-                "ods_replacement",
-                "phase_out_mt",
-                "co2_mt",
-                "odp",
-            ]
             for c_idx, cell in enumerate(row.cells):
-                cell.text = str(d.get(row_data[c_idx], "") or "")
+                field = data_fields[c_idx]
+                value = substance.get(field, "")
+                if field in ["phase_out_mt", "co2_mt", "odp"]:
+                    value = format_decimal(value, is_currency=False)
+
+                cell.text = str(value or "")
 
     def _write_impact_target_actual(self, project, headers, table, data):
         planned_headers = {}
@@ -227,13 +275,15 @@ class ProjectsV2ProjectExportDocx:
     ):
         writer = self._write_header_to_table if not writer else writer
         if data and table and fields:
-            headers = get_headers_cross_cutting(fields)
+            headers = get_headers_cross_cutting(fields, for_docx=True)
             writer(headers, table, data)
 
     def build_cross_cutting(self, data):
         self._write_project_cross_cutting_fields(
             table=self.find_table("Cross-cutting fields"),
-            fields=self._get_fields_for_section(section_name="Cross-Cutting"),
+            fields=self._get_fields_for_section(section_name="Cross-Cutting").exclude(
+                label="Description"
+            ),
             data=data,
         )
 
@@ -282,22 +332,22 @@ class ProjectsV2ProjectExportDocx:
 
         if project_specific_fields_obj:
             self._write_project_specific_fields(
-                table=self.find_table("Project specific fields header"),
+                table=self.find_table("Project specific fields"),
                 fields=self._get_fields_for_section(
                     "Header", project_specific_fields_obj
                 ),
                 data=data,
             )
             self._write_project_specific_fields(
-                table=self.find_table("Substance details Page and tables"),
+                table=self.find_table("Substance details"),
                 fields=self._get_fields_for_section(
                     "Substance Details", project_specific_fields_obj
                 ),
-                data=data.get("ods_odp", []),
+                data=data,
                 writer=self._write_substance_table,
             )
             self._write_project_specific_fields(
-                table=self.find_table("Impact (tabular)"),
+                table=self.find_table("Impact indicators"),
                 fields=self._get_fields_for_section(
                     "Impact",
                     project_specific_fields_obj,

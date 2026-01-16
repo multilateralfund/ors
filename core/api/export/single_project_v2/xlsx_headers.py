@@ -35,7 +35,9 @@ def get_headers_identifiers() -> List[HeaderType]:
     ]
 
 
-def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType]:
+def get_headers_cross_cutting(
+    fields: Iterable[ProjectField], for_docx: bool = False
+) -> List[HeaderType]:
     default_headers = [
         {
             "id": "title",
@@ -54,11 +56,13 @@ def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType
             "id": "project_type",
             "headerName": "Type",
             "method": lambda r, h: r[h["id"]]["name"],
+            "docx_highlight": True,
         },
         {
             "id": "sector",
             "headerName": "Sector",
             "method": lambda r, h: r[h["id"]]["name"],
+            "docx_highlight": True,
         },
         {
             "id": "subsectors",
@@ -74,17 +78,19 @@ def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType
         },
         {
             "id": "total_fund",
-            "headerName": "Project funding",
+            "headerName": "Project costs" if for_docx else "Project funding",
             "type": "number",
             "align": "right",
             "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
         },
         {
             "id": "support_cost_psc",
-            "headerName": "Project support cost",
+            "headerName": "Support costs" if for_docx else "Project support cost",
             "type": "number",
             "align": "right",
             "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
         },
         {
             "id": "project_start_date",
