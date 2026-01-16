@@ -29,9 +29,11 @@ const ProjectSubstanceDetails = ({
   overviewFields,
   errors = {},
   odsOdpErrors,
+  disableV3Edit,
 }: SpecificFieldsSectionProps & {
   overviewFields: ProjectSpecificFields[]
   odsOdpErrors: { [key: string]: [] }[]
+  disableV3Edit: boolean
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
@@ -177,7 +179,7 @@ const ProjectSubstanceDetails = ({
                               </span>
                             ),
                         )}
-                        {odsDisplayField && (
+                        {odsDisplayField && !disableV3Edit && (
                           <IoTrash
                             className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                             size={16}
@@ -194,7 +196,7 @@ const ProjectSubstanceDetails = ({
                   ))}
             </div>
           </div>
-          {odsOdpFields.length > 0 && odsDisplayField && (
+          {odsOdpFields.length > 0 && odsDisplayField && !disableV3Edit && (
             <SubmitButton
               title="Add substance"
               onSubmit={onAddSubstance}
