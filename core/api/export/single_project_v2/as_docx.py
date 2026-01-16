@@ -132,7 +132,7 @@ class ProjectsV2ProjectExportDocx:
             elif p.text.startswith("Agency:"):
                 p.add_run(data.get("agency", "-"), None)
             elif p.text.startswith("Lead Agency:"):
-                p.add_run(data.get("lead_agency", "-"), None)
+                p.add_run((data.get("lead_agency_data", None) or {}).get("name", "-"), None)
             elif p.text.startswith("Type:"):
                 p.add_run(data.get("project_type", {}).get("name", "-"), None)
             elif p.text.startswith("Sector:"):
