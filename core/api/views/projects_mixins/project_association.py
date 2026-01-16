@@ -317,7 +317,6 @@ class ProjectAssociationMixin:
         component = project.component
         project.component = None
         project.save()
-
         component_projects_count = Project.objects.filter(component=component).count()
         if component_projects_count == 0:
             component.delete()

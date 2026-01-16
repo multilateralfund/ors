@@ -522,9 +522,10 @@ class ProjectV2ViewSet(
             )
         return super().update(request, *args, **kwargs)
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         """Delete a project"""
-        component = self.get_object()
+        project = self.get_object()
+        component = project.component
         response = super().destroy(request, *args, **kwargs)
         component_projects_count = Project.objects.filter(component=component).count()
         if component_projects_count == 0:
