@@ -40,6 +40,7 @@ class ProjectWithdrawMixin:
             name="Withdrawn"
         )
         log_project_history(project, request.user, HISTORY_DESCRIPTION_WITHDRAW_V3)
+        project.component = None
         project.save()
         return Response(
             ProjectDetailsV2Serializer(project).data,
