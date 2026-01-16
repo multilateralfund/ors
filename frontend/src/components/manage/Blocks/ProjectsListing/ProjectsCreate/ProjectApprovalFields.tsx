@@ -4,11 +4,9 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
-import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import ProjectFundFields from './ProjectFundFields'
 import { widgets } from './SpecificFieldsHelpers'
-import { STYLE } from '../../Replenishment/Inputs/constants'
 import { canEditField, canViewField, getTransferFieldLabel } from '../utils'
 import {
   ProjectData,
@@ -19,16 +17,13 @@ import {
 } from '../interfaces'
 import {
   disabledClassName,
-  tableColumns,
   defaultProps,
-  textAreaClassname,
   approvalOdsFields,
 } from '../constants'
 import useApi from '@ors/hooks/useApi.ts'
 import { useStore } from '@ors/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
 
-import { TextareaAutosize } from '@mui/material'
 import { find, map } from 'lodash'
 import cx from 'classnames'
 
@@ -127,19 +122,6 @@ const ProjectApprovalFields = ({
             />
           </div>
         )}
-        {project?.status === 'Transferred' && (
-          <div className="w-40">
-            <Label>{tableColumns.transfer_meeting}</Label>
-            <PopoverInput
-              label={getMeetingNr(
-                project?.transfer_meeting_id ?? undefined,
-              )?.toString()}
-              options={[]}
-              disabled={true}
-              className={cx('!m-0 h-10 !py-1', disabledClassName)}
-            />
-          </div>
-        )}
         {canViewField(viewableFields, 'decision') && (
           <div>
             <Label>
@@ -171,28 +153,6 @@ const ProjectApprovalFields = ({
             </div>
           </div>
         )}
-        {project?.status === 'Transferred' && (
-          <div>
-            <Label>{tableColumns.transfer_decision}</Label>
-            <div className="w-[16rem]">
-              <Field
-                widget="autocomplete"
-                options={[]}
-                disabled={true}
-                value={project?.transfer_decision_id}
-                getOptionLabel={(option) =>
-                  getOptionLabel(decisionOptions, option, 'value')
-                }
-                {...{
-                  ...defaultProps,
-                  FieldProps: {
-                    className: defaultProps.FieldProps.className + ' w-[16rem]',
-                  },
-                }}
-              />
-            </div>
-          </div>
-        )}
         {sectionFields
           .filter(
             (field) =>
@@ -210,28 +170,7 @@ const ProjectApprovalFields = ({
               ? 'simpleText'
               : field.data_type
 
-            return (
-              <>
-                {approvalField(field, dataType)}
-                {field.write_field_name === 'excom_provision' &&
-                  project?.status === 'Transferred' && (
-                    <div className="w-full">
-                      <Label>
-                        {tableColumns.transfer_excom_provision} (max 500
-                        characters)
-                      </Label>
-                      <TextareaAutosize
-                        value={project?.transfer_excom_provision}
-                        disabled={true}
-                        className={cx(textAreaClassname, 'max-w-[415px]')}
-                        maxLength={500}
-                        style={STYLE}
-                        minRows={2}
-                      />
-                    </div>
-                  )}
-              </>
-            )
+            return approvalField(field, dataType)
           })}
       </div>
       <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
@@ -242,7 +181,6 @@ const ProjectApprovalFields = ({
       <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
         <ProjectFundFields
           {...{ projectData, setProjectData, project, errors }}
-          mode="edit"
           type="approval"
         />
       </div>

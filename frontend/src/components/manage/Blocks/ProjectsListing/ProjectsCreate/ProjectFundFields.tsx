@@ -10,6 +10,7 @@ import {
 } from '../constants'
 import { useStore } from '@ors/store'
 
+import { omit } from 'lodash'
 import cx from 'classnames'
 
 const ProjectFundFields = ({
@@ -18,11 +19,9 @@ const ProjectFundFields = ({
   project,
   errors = {},
   type,
-  mode,
 }: ProjectDataProps & {
   project?: ProjectTypeApi
   type: string
-  mode: string
 }) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
@@ -36,7 +35,7 @@ const ProjectFundFields = ({
 
   const getFieldDefaultProps = (field: string) => ({
     ...{
-      ...defaultPropsSimpleField,
+      ...omit(defaultPropsSimpleField, 'containerClassName'),
       className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
         [disabledClassName]:
           !canEditField(editableFields, field) ||
@@ -105,35 +104,6 @@ const ProjectFundFields = ({
             <FieldErrorIndicator errors={errors} field="support_cost_psc" />
           </div>
         </div>
-      )}
-      {mode === 'edit' && project?.status === 'Transferred' && (
-        <>
-          <div>
-            <Label>{tableColumns.fund_transferred}</Label>
-            <div className="flex items-center">
-              <FormattedNumberInput
-                id="fund_transferred"
-                value={project?.fund_transferred ?? ''}
-                prefix="$"
-                withoutDefaultValue={true}
-                disabled={true}
-                {...getFieldDefaultProps('fund_transferred')}
-              />
-              <div className="w-8" />
-            </div>
-          </div>
-          <div>
-            <Label>{tableColumns.psc_transferred}</Label>
-            <FormattedNumberInput
-              id="psc_transferred"
-              value={project?.psc_transferred ?? ''}
-              prefix="$"
-              withoutDefaultValue={true}
-              disabled={true}
-              {...getFieldDefaultProps('psc_transferred')}
-            />
-          </div>
-        </>
       )}
     </>
   )
