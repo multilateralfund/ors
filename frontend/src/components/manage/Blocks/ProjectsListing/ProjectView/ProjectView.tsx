@@ -11,6 +11,7 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import {
@@ -111,6 +112,7 @@ const ProjectView = ({
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
 
   const {
     fetchProjectFields,
@@ -156,7 +158,13 @@ const ProjectView = ({
       ) ?? [])
     : []
 
-  const relatedProjects = useGetRelatedProjects(project, 'view', metaProjectId)
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    'view',
+    metaProjectId,
+    refetchRelatedProjects,
+  )
+  const hasComponents = (relatedProjects?.[0]?.data?.projects?.length ?? 0) > 0
 
   const tabs = [
     {
@@ -262,6 +270,7 @@ const ProjectView = ({
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
+                  setRefetchRelatedProjects,
                 }}
               />
             ),
@@ -311,8 +320,13 @@ const ProjectView = ({
           ))}
         </Tabs>
         <div>
-          <div className="flex items-center justify-between gap-x-2">
+          <div className="flex items-center justify-between gap-x-4">
             <ProjectDownloads project={project} />
+            {project.submission_status === 'Draft' &&
+              project.version === 1 &&
+              project.editable && (
+                <ProjectDelete {...{ project, hasComponents }} />
+              )}
           </div>
         </div>
       </div>

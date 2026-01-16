@@ -9,6 +9,7 @@ import {
   ProjectTypeApi,
   RelatedProjectsSectionType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import ProjectDisassociate from '../ProjectsCreate/ProjectDisassociate'
 
 import { Divider, CircularProgress } from '@mui/material'
 import { map } from 'lodash'
@@ -19,12 +20,14 @@ const ProjectRelatedProjects = ({
   setCurrentTab,
   metaProjectId,
   setMetaProjectId,
+  setRefetchRelatedProjects,
   canDisassociate,
 }: ProjectTabSetters & {
   project: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
 }) => {
   const { canDisassociateProjects } = useContext(PermissionsContext)
@@ -33,6 +36,9 @@ const ProjectRelatedProjects = ({
     (project.editable || canDisassociate) &&
     !!project.meta_project_id &&
     !!metaProjectId
+
+  //to do - to add permissions
+  const canDisassociateComponent = project.submission_status === 'Submitted'
 
   return (
     <>
@@ -77,13 +83,21 @@ const ProjectRelatedProjects = ({
                 )}
                 {loaded ? (
                   crtData && crtData.length > 0 ? (
-                    <RelatedProjects
-                      data={crtData}
-                      isLoaded={true}
-                      withExtraProjectInfo={true}
-                      canRefreshStatus={false}
-                      mode="view"
-                    />
+                    <>
+                      <RelatedProjects
+                        data={crtData}
+                        isLoaded={true}
+                        withExtraProjectInfo={true}
+                        canRefreshStatus={false}
+                        mode="view"
+                      />
+                      {index === 0 && canDisassociateComponent && (
+                        <ProjectDisassociate
+                          hasComponents={true}
+                          {...{ project, setRefetchRelatedProjects }}
+                        />
+                      )}
+                    </>
                   ) : (
                     <div className="mb-3 text-lg italic">{noResultsText}</div>
                   )

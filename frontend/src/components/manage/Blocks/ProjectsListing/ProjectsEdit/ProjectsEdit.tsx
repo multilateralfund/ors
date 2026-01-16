@@ -214,7 +214,14 @@ const ProjectsEdit = ({
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
-  const relatedProjects = useGetRelatedProjects(project, mode, metaProjectId)
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
+
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    mode,
+    metaProjectId,
+    refetchRelatedProjects,
+  )
 
   const defaultTrancheErrors = {
     errorText: '',
@@ -606,6 +613,7 @@ const ProjectsEdit = ({
             setFilesMetaData,
             metaProjectId,
             setMetaProjectId,
+            setRefetchRelatedProjects,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={
