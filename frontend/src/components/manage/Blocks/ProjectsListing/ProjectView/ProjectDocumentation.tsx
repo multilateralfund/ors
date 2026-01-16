@@ -30,7 +30,7 @@ const ProjectDocumentation = ({
     isNextButtonDisabled?: boolean
     errors?: Array<{ id: number; message: string } | null>
     allFileErrors?: { message: string }[]
-    disableV3Edit: boolean
+    disableV3Edit?: boolean
   }) => {
   return (
     <>
