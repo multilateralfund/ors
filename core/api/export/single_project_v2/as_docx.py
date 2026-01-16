@@ -223,7 +223,7 @@ class ProjectsV2ProjectExportDocx:
                 field = data_fields[c_idx]
                 value = substance.get(field, "")
                 if field in ["phase_out_mt", "co2_mt", "odp"]:
-                    value = format_decimal(value)
+                    value = format_decimal(value, is_currency=False)
 
                 cell.text = str(value or "")
 
