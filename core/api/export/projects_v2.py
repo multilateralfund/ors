@@ -1,4 +1,13 @@
 from core.api.export.base import WriteOnlyBase
+from core.models import BPActivity
+
+
+def export_activity_code(activity_data):
+    try:
+        activity = BPActivity.objects.get(id=activity_data["id"])
+        return activity.get_display_internal_id
+    except BPActivity.DoesNotExist:
+        return ""
 
 
 class ProjectV2Writer(WriteOnlyBase):
@@ -28,6 +37,13 @@ class ProjectV2Writer(WriteOnlyBase):
             {
                 "id": "metaproject_category",
                 "headerName": "Metaproject category",
+            },
+            {
+                "id": "bp_activity",
+                "headerName": "BP activity",
+                "method": lambda r, h: (
+                    export_activity_code(r[h["id"]]) if r[h["id"]] else ""
+                ),
             },
             {
                 "id": "project_type",
