@@ -522,6 +522,21 @@ class ProjectV2ViewSet(
             )
         return super().update(request, *args, **kwargs)
 
+    def delete(self, request, *args, **kwargs):
+        """Delete a project"""
+        component = self.get_object()
+        response = super().destroy(request, *args, **kwargs)
+        component_projects_count = Project.objects.filter(component=component).count()
+        if component_projects_count == 0:
+            component.delete()
+        elif component_projects_count == 1:
+            # If there is only one project left in the component, remove the component
+            last_project = Project.objects.filter(component=component).first()
+            last_project.component = None
+            last_project.save()
+            component.delete()
+        return response
+
     @action(methods=["GET"], detail=True)
     def field_history(self, request, *args, **kwargs):
         project = self.get_object()
