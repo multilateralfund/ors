@@ -637,7 +637,6 @@ class APRSummaryTablesExportView(APIView):
         except ValueError as exc:
             raise ValidationError({"year": "Must be a valid year."}) from exc
 
-        # Determine agency filter based on user permissions
         agency = None
         if request.user.agency:
             agency = request.user.agency
