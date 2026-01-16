@@ -395,6 +395,32 @@ class ProjectsV2ProjectExportDocx:
             data=metaproject_data,
         )
 
+    def _get_project_components(self):
+        project = self.project
+
+        if not project.component:
+            return []
+
+        return Project.objects.filter(component=project.component).exclude(id=project.id)
+
+
+    def build_components(self):
+        components = self._get_project_components()
+        table = self.find_table("Other components of the project")
+
+        if not table or not components:
+            return
+
+        for component in components:
+            row = table.add_row()
+            row_data = [
+                component.code,
+                component.title,
+                getattr(component.agency, "name", ""),
+            ]
+            for cell, d in zip(row.cells, row_data, strict=True):
+                cell.text = str(d or "")
+
     def remove_page_breaks(self):
         # Iterate through all paragraphs
         for paragraph in self.doc.paragraphs:
@@ -423,6 +449,7 @@ class ProjectsV2ProjectExportDocx:
         self.build_specific_information(data)
         self.build_impact_previous_tranches()
         self.build_mya()
+        self.build_components()
 
         self.remove_page_breaks()
         self.remove_empty_tables()
