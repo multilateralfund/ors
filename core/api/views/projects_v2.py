@@ -528,7 +528,9 @@ class ProjectV2ViewSet(
         component = project.component
         response = super().destroy(request, *args, **kwargs)
         if component:
-            component_projects_count = Project.objects.filter(component=component).count()
+            component_projects_count = Project.objects.filter(
+                component=component
+            ).count()
             if component_projects_count == 0:
                 component.delete()
             elif component_projects_count == 1:
