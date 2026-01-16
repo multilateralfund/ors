@@ -208,7 +208,15 @@ class ProjectAssociationMixin:
         project = self.get_object()
         project_filters = Q()
         if project.meta_project:
-            project_filters &= Q(meta_project=project.meta_project)
+            if project.component:
+                # If the project has a component, some of the components might not
+                # be approved, thus they would not have the meta project set.
+                project_filters &= Q(
+                    Q(meta_project=project.meta_project)
+                    | Q(component=project.component)
+                )
+            else:
+                project_filters &= Q(meta_project=project.meta_project)
         elif project.component is not None:
             project_filters &= Q(component=project.component)
         else:

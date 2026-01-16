@@ -5,6 +5,7 @@ import Field from '@ors/components/manage/Form/Field.tsx'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import { EditLink } from './ProjectsListing/ProjectViewButtons'
 import {
   HeaderTag,
   VersionsDropdown,
@@ -322,6 +323,7 @@ export const RelatedProjects = ({
   <div className="flex flex-col">
     {map(data, (entry, index) => {
       const hasErrors = entry.errors.length > 0
+      const isTranchesMode = mode === 'tranches'
 
       return (
         <div key={entry.id} className={cx({ 'py-3': withExtraProjectInfo })}>
@@ -335,7 +337,11 @@ export const RelatedProjects = ({
                 '!text-[#801F00]': hasErrors,
               },
             )}
-            href={`/projects-listing/${entry.id}${['edit', 'tranches'].includes(mode) ? '/edit' : ''}`}
+            href={
+              !isTranchesMode
+                ? `/projects-listing/${entry.id}${mode === 'edit' ? '/edit' : ''}`
+                : null
+            }
             target="_blank"
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
@@ -345,7 +351,7 @@ export const RelatedProjects = ({
                 size={16}
                 className="min-h-[16px] min-w-[16px]"
               />
-              {mode === 'tranches' && entry.tranche ? (
+              {isTranchesMode && entry.tranche ? (
                 <div className="flex gap-1">
                   {entry.title}
                   <div className="font-medium">(tranche {entry.tranche})</div>
@@ -364,17 +370,36 @@ export const RelatedProjects = ({
               </div>
             )}
             {hasErrors && <ErrorTag />}
+            {isTranchesMode && entry.editable_for_actual_fields && (
+              <EditLink
+                href={`/projects-listing/${entry.id}/edit`}
+                className="!h-6 rounded-md px-1.5 pb-1 !text-base"
+                rel="noopener noreferrer nofollow"
+                target="_blank"
+                component="a"
+              >
+                Edit indicators
+              </EditLink>
+            )}
           </Link>
-          {mode === 'tranches' && (
-            <div
-              className={cx('ml-6 mt-1 flex items-center gap-2.5', {
-                '!text-inherit': !hasErrors,
-                '!text-[#801F00]': hasErrors,
-              })}
-            >
-              <span>Agency:</span>
-              <h4 className="m-0"> {entry.agency}</h4>
-            </div>
+          {isTranchesMode && (
+            <>
+              <div
+                className={cx('ml-6 mt-1 flex items-center gap-2.5', {
+                  '!text-inherit': !hasErrors,
+                  '!text-[#801F00]': hasErrors,
+                })}
+              >
+                <span>Agency:</span>
+                <h4 className="m-0"> {entry.agency}</h4>
+              </div>
+              {hasErrors && !entry.editable_for_actual_fields && (
+                <h4 className="m-0 ml-6 mt-0.5">
+                  Please contact {entry.agency} to fill in the actual indicators
+                  before submitting this project.
+                </h4>
+              )}
+            </>
           )}
           {withExtraProjectInfo ? (
             <div className="ml-6 flex flex-wrap gap-3">

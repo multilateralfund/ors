@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from core.api.serializers.project_v2 import ProjectListV2Serializer
+from core.api.serializers.project_v2 import ProjectListPreviousTranchesSerializer
 from core.models.project import Project
 from core.models.project_metadata import ProjectSpecificFields
 
@@ -82,19 +82,12 @@ class ProjectListPreviousTranchesMixin:
             "files",
             "subsectors__sector",
         )
-        if (
-            previous_tranches.count()
-            != visible_projects_for_user.filter(
-                id__in=previous_tranches.values_list("id", flat=True)
-            ).count()
-        ):
-            previous_tranches = previous_tranches.none()
         context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
             data = []
             for previous_tranche in previous_tranches:
-                serializer_data = ProjectListV2Serializer(
+                serializer_data = ProjectListPreviousTranchesSerializer(
                     previous_tranche, context=context
                 ).data
                 warnings = []
@@ -135,6 +128,8 @@ class ProjectListPreviousTranchesMixin:
                 data.append(serializer_data)
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            ProjectListV2Serializer(previous_tranches, many=True, context=context).data,
+            ProjectListPreviousTranchesSerializer(
+                previous_tranches, many=True, context=context
+            ).data,
             status=status.HTTP_200_OK,
         )
