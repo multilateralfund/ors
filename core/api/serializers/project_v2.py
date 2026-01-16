@@ -4,6 +4,7 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.serializers import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
 from core.api.serializers.project import (
@@ -549,6 +550,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     ProjectSerializer class
     """
 
+    lead_agency_data = AgencySerializer(source="lead_agency", read_only=True)
     ods_odp = ProjectV2OdsOdpListSerializer(many=True, read_only=True)
     computed_total_phase_out_metric_tonnes = serializers.SerializerMethodField()
     computed_total_phase_out_odp_tonnes = serializers.SerializerMethodField()
@@ -593,6 +595,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "category",
             "cluster_id",
             "lead_agency",
+            "lead_agency_data",
             "latest_file",
             "latest_project",
             "meta_project",
