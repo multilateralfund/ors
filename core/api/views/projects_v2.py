@@ -16,6 +16,7 @@ from core.api.permissions import (
     HasProjectV2SubmitAccess,
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2RemoveAssociationAccess,
+    HasProjectV2DisassociateComponentAccess,
     HasProjectV2ApproveAccess,
     HasProjectV2RecommendAccess,
     HasProjectV2TransferAccess,
@@ -224,6 +225,8 @@ class ProjectV2ViewSet(
             return [HasProjectV2AssociateProjectsAccess]
         if self.action == "remove_association":
             return [HasProjectV2RemoveAssociationAccess]
+        if self.action == "disassociate_component":
+            return [HasProjectV2DisassociateComponentAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [HasProjectV2RecommendAccess]
         if self.action in ["approve", "reject", "edit_approval_fields"]:

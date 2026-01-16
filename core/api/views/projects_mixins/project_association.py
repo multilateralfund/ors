@@ -277,3 +277,38 @@ class ProjectAssociationMixin:
             ).data,
             status=status.HTTP_200_OK,
         )
+
+    @swagger_auto_schema(
+        operation_description="""
+            Disassociate a project from the component group.
+        """,
+    )
+    @action(methods=["POST"], detail=True)
+    def disassociate_component(self, request, *args, **kwargs):
+        """
+        Disassociate a project from the component group.
+        Only available for projects that have the submission status "Submitted" and have a component assigned.
+        The object has to be the latest version of the project.
+        """
+        project = self.get_object()
+        if (
+            project.submission_status.name != "Submitted"
+            or project.latest_project is not None
+        ):
+            return Response(
+                {
+                    "error": "Disassociation is only available for latest submitted projects."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not project.component:
+            return Response(
+                {"error": "Project is not associated with any component group."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        project.component = None
+        project.save()
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
