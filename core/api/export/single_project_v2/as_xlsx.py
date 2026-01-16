@@ -1,8 +1,9 @@
 from typing import Annotated
 
 import openpyxl
+from openpyxl.worksheet.worksheet import Worksheet
 
-from core.api.export.base import BaseWriter
+from core.api.export.base import BaseWriter, transpose_sheet
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BPActivitiesWriter
 from core.api.export.single_project_v2.xlsx_headers import get_headers_cross_cutting
@@ -16,6 +17,8 @@ from core.api.utils import workbook_response
 from core.models import Project, ProjectField
 from core.models import ProjectSpecificFields
 from core.models import User
+
+# pylint: disable=R0913
 
 
 class ProjectWriter(BaseWriter):
@@ -53,6 +56,17 @@ class ProjectsV2ProjectExport:
             writer.sheet = sheet
             writer.write([activity_data])
 
+    def _write_transposed(self, sheet_name, headers, data):
+        # Create a temporary horizontal sheet
+        tmp_sheet = self.wb.create_sheet(f"_tmp_{sheet_name}")
+        ProjectWriter(tmp_sheet, headers).write(data)
+
+        # Create the sheet as the transposed horizontal one
+        sheet = self.add_sheet(sheet_name, Worksheet.ORIENTATION_PORTRAIT)
+        transpose_sheet(tmp_sheet, sheet)
+
+        self.wb.remove(tmp_sheet)
+
     def _write_cross_cutting_fields(
         self,
         fields_section: str,
@@ -70,11 +84,7 @@ class ProjectsV2ProjectExport:
             .exclude(read_field_name="sort_order")
         )
         if fields:
-            sheet = self.add_sheet(sheet_name)
-            ProjectWriter(
-                sheet,
-                get_headers_cross_cutting(fields),
-            ).write(data)
+            self._write_transposed(sheet_name, get_headers_cross_cutting(fields), data)
 
     def build_cross_cutting(self, data):
         self._write_cross_cutting_fields(
@@ -89,23 +99,29 @@ class ProjectsV2ProjectExport:
         fields_section: str,
         sheet_name: Annotated[str, "max_length=31"],
         data,
+        only_planned=False,
+        transposed=False,
     ):
         """
         Writes a new sheet.
 
-        :param sheet_name: The sheet name should not exceed 31 characters, this is as Excel constraint.
+        :param sheet_name: The sheet name should not exceed 31 characters, this is an Excel constraint.
         """
         fields = (
             fields_obj.fields.get_visible_fields_for_user(self.user)
             .filter(section__in=[fields_section])
             .exclude(read_field_name="sort_order")
         )
+        if only_planned:
+            fields = fields.filter(is_actual=False)
+
         if fields:
-            sheet = self.add_sheet(sheet_name)
-            ProjectWriter(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write(data)
+            headers = get_headers_specific_information(fields)
+            if transposed:
+                self._write_transposed(sheet_name, headers, data)
+            else:
+                sheet = self.add_sheet(sheet_name)
+                ProjectWriter(sheet, headers).write(data)
 
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
@@ -137,6 +153,8 @@ class ProjectsV2ProjectExport:
                 "Impact",
                 "Impact",
                 [data],
+                only_planned=True,
+                transposed=True,
             )
 
     def build_xls(self):
@@ -147,9 +165,9 @@ class ProjectsV2ProjectExport:
         self.build_cross_cutting(data)
         self.build_specific_information(data)
 
-    def add_sheet(self, name):
+    def add_sheet(self, name, orientation=Worksheet.ORIENTATION_LANDSCAPE):
         sheet = self.wb.create_sheet(name)
-        configure_sheet_print(sheet, "landscape")
+        configure_sheet_print(sheet, orientation)
         return sheet
 
     def export_xls(self):

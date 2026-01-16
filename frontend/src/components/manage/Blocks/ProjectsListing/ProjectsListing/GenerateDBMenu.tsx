@@ -45,6 +45,11 @@ const GenerateDBMenu = ({
         permissions: [isMlfsUser && canViewProjects],
       },
       {
+        title: 'Compare versions',
+        url: '/projects-listing/compare-versions',
+        permissions: [canViewProjects],
+      },
+      {
         title: 'Enterprise warehouse',
         url: null,
         permissions: [isMlfsUser && canViewProjects],
@@ -64,13 +69,6 @@ const GenerateDBMenu = ({
             evt.preventDefault()
           }
         },
-        permissions: [canViewProjects],
-      },
-      {
-        title: 'Compare versions',
-        url: projectData.projectId
-          ? `/projects-listing/${projectData.projectId}/compare-versions`
-          : null,
         permissions: [canViewProjects],
       },
     ],

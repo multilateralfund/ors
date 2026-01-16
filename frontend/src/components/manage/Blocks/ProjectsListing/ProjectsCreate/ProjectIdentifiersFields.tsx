@@ -526,6 +526,31 @@ const ProjectIdentifiersFields = ({
             />
           </div>
         </div>
+        {canViewField(viewableFields, 'lead_agency') && (
+          <>
+            <Label>{tableColumns.lead_agency}</Label>
+            <div className="flex items-center">
+              <div className="w-[23rem] flex-shrink">
+                <Field
+                  widget="autocomplete"
+                  options={agencies}
+                  value={projIdentifiers?.lead_agency}
+                  onChange={(_, value) => {
+                    handleChangeLeadAgency(value)
+
+                    if (!projIdentifiers.lead_agency_submitting_on_behalf) {
+                      handleChangeAgency(value)
+                    }
+                  }}
+                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                  disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
+                  {...firstColFieldsProps}
+                />
+              </div>
+              <FieldErrorIndicator errors={errors} field="lead_agency" />
+            </div>
+          </>
+        )}
         {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
           <div className="flex items-center">
             <FormControlLabel
@@ -556,43 +581,18 @@ const ProjectIdentifiersFields = ({
             />
           </div>
         )}
-        {canViewField(viewableFields, 'lead_agency') && (
-          <>
-            <Label>{tableColumns.lead_agency}</Label>
-            <div className="flex items-center">
-              <div className="w-[23rem] flex-shrink">
-                <Field
-                  widget="autocomplete"
-                  options={agencies}
-                  value={projIdentifiers?.lead_agency}
-                  onChange={(_, value) => {
-                    handleChangeLeadAgency(value)
-
-                    if (!projIdentifiers.lead_agency_submitting_on_behalf) {
-                      handleChangeAgency(value)
-                    }
-                  }}
-                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                  disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
-                  {...firstColFieldsProps}
-                />
-              </div>
-              <FieldErrorIndicator errors={errors} field="lead_agency" />
-            </div>
-            {canUpdateLeadAgency && (
-              <CustomAlert
-                type="info"
-                alertClassName="mt-2 px-2 py-0"
-                content={
-                  <Typography className="text-lg leading-5">
-                    Unless submitting on behalf of a cooperating agency,
-                    selecting either the agency or the lead agency will
-                    automatically update the other.
-                  </Typography>
-                }
-              />
-            )}
-          </>
+        {canViewField(viewableFields, 'lead_agency') && canUpdateLeadAgency && (
+          <CustomAlert
+            type="info"
+            alertClassName="mt-2 px-2 py-0"
+            content={
+              <Typography className="text-lg leading-5">
+                Unless submitting on behalf of a cooperating agency, selecting
+                either the agency or the lead agency will automatically update
+                the other.
+              </Typography>
+            }
+          />
         )}
         {hasNextButtons && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
