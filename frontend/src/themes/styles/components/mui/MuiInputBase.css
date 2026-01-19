@@ -87,3 +87,12 @@ textarea {
     }
   }
 }
+
+.BPListUpload.actual_field {
+  .MuiInputBase-root,
+  .MuiAutocomplete-inputRoot,
+  .MuiAutocomplete-clearIndicator,
+  .MuiAutocomplete-clearIndicator:hover {
+    @apply bg-mlfs-bannerColor;
+  }
+}
