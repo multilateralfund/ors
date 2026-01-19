@@ -628,20 +628,11 @@ class APRSummaryTablesExportView(APIView):
         responses={200: "Excel file download"},
     )
     def get(self, request):
-        year = request.query_params.get("year")
-        if not year:
-            raise ValidationError({"year": "This field is required."})
-
-        try:
-            year = int(year)
-        except ValueError as exc:
-            raise ValidationError({"year": "Must be a valid year."}) from exc
-
         agency = None
         if request.user.agency:
             agency = request.user.agency
 
-        writer = APRSummaryTablesExportWriter(year=year, agency=agency)
+        writer = APRSummaryTablesExportWriter(agency=agency)
         return writer.generate()
 
 

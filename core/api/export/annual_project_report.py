@@ -1,12 +1,12 @@
 from copy import copy
+from collections import defaultdict
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from io import BytesIO
 
 from django.conf import settings
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import ExtractYear
+from django.db.models import Count, Sum
 from django.http import HttpResponse
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill
@@ -91,9 +91,10 @@ class APRExportWriter:
         # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
-    def __init__(self, year, agency_name=None, project_reports_data=None):
+    def __init__(self, year=None, agency_name=None, project_reports_data=None):
         """
-        If agency_name is None, the report includes all agencies
+        If agency_name is None, the report includes all agencies.
+        If year is None, it's a cumulative report for all years.
         """
         self.year = year
         self.agency_name = agency_name
@@ -323,10 +324,16 @@ class APRExportWriter:
             safe_agency_name = "".join(
                 c for c in self.agency_name if c.isalnum() or c in (" ", "-", "_")
             ).strip()
-            filename = f"APR_{self.year}_{safe_agency_name}.xlsx"
+            if self.year:
+                filename = f"APR_{self.year}_{safe_agency_name}.xlsx"
+            else:
+                filename = "APR_Cumulative_{safe_agency_name}.xlsx"
         else:
             # This is a multi-agency report (for MLFS to edit)
-            filename = f"APR_{self.year}_All_Agencies.xlsx"
+            if self.year:
+                filename = f"APR_{self.year}_All_Agencies.xlsx"
+            else:
+                filename = "APR_Cumulative_All_Agencies.xlsx"
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -347,7 +354,7 @@ class APRSummaryTablesExportWriter:
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRSummaryTables.xlsx"
     )
 
-    SHEET_DETAIL = "Annex I APR report"
+    SHEET_DETAIL = "Annex I APR report "
     SHEET_ANNUAL = "Annex I (a)"
     SHEET_INVESTMENT = "Annex I (b)"
     SHEET_NON_INVESTMENT = "Annex I (c)"
@@ -422,19 +429,14 @@ class APRSummaryTablesExportWriter:
 
         return mapping
 
-    def __init__(self, year, agency=None):
-        self.year = year
+    def __init__(self, agency=None):
         self.agency = agency
         self.workbook = None
         self.column_mapping = self.build_column_mapping()
         self.annual_column_mapping = self.build_annual_column_mapping()
 
-    def generate(self):
-        self.workbook = load_workbook(self.TEMPLATE_PATH)
-
-        queryset = AnnualProjectReport.objects.filter(
-            report__progress_report__year=self.year
-        ).select_related(
+        # Get all APR data (cumulative, no year filtering)
+        queryset = AnnualProjectReport.objects.all().select_related(
             "project",
             "project__agency",
             "project__country",
@@ -446,32 +448,45 @@ class APRSummaryTablesExportWriter:
 
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
+        self.queryset = queryset
+
+        self.serialized_data = AnnualProjectReportReadSerializer(
+            self.queryset, many=True
+        ).data
+
+    def generate(self):
+        self.workbook = load_workbook(self.TEMPLATE_PATH)
 
         # Sheet 1: Detail export (reuse existing writer logic)
-        self._write_detail_sheet(queryset)
+        self._write_detail_sheet()
 
         # Sheet 2: (a) Annual summary by approval year
-        self._write_annual_summary_sheet(queryset)
+        self._write_annual_summary_sheet()
 
         # Sheet 3: (b) Completed investment projects
-        self._write_investment_projects_sheet(queryset)
+        self._write_investment_projects_sheet()
 
         # Sheet 4: (c) Completed non-investment projects
-        self._write_non_investment_projects_sheet(queryset)
+        self._write_non_investment_projects_sheet()
 
         return self._create_response()
 
-    def _write_detail_sheet(self, queryset):
-        project_reports_data = AnnualProjectReportReadSerializer(
-            queryset, many=True
-        ).data
+    def _write_detail_sheet(self):
+        """Generate the detail sheet using existing APRExportWriter logic"""
+        # Remove existing detail sheet from template if it exists
+        if self.SHEET_DETAIL in self.workbook.sheetnames:
+            del self.workbook[self.SHEET_DETAIL]
+
+        # Also remove status sheet if it exists
+        if APRExportWriter.STATUS_SHEET_NAME in self.workbook.sheetnames:
+            del self.workbook[APRExportWriter.STATUS_SHEET_NAME]
 
         # Create detail sheet using existing APRExportWriter
         agency_name = self.agency.name if self.agency else None
         detail_writer = APRExportWriter(
-            year=self.year,
+            year=None,
             agency_name=agency_name,
-            project_reports_data=project_reports_data,
+            project_reports_data=self.serialized_data,
         )
         detail_writer.workbook = self.workbook
         detail_writer.worksheet = self.workbook.create_sheet(self.SHEET_DETAIL)
@@ -486,7 +501,7 @@ class APRSummaryTablesExportWriter:
         detail_writer._apply_cell_formatting()
         detail_writer._apply_data_validation()
 
-    def _write_annual_summary_sheet(self, queryset):
+    def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
         ws = self.workbook[self.SHEET_ANNUAL]
 
@@ -510,81 +525,77 @@ class APRSummaryTablesExportWriter:
                 start_color="B4C7E7", end_color="B4C7E7", fill_type="solid"
             )
 
-        # Aggregate by approval year
-        aggregated = (
-            queryset.annotate(approval_year=ExtractYear("project__date_approved"))
-            .values("approval_year")
-            .annotate(
-                num_approvals=Count("id"),
-                num_completed=Count("id", filter=Q(project__status__code="COM")),
-                total_funds_disbursed=Sum("funds_disbursed"),
-            )
-            .order_by("approval_year")
-        )
+        # Group serialized data by approval year
+        year_data = defaultdict(list)
+        for item in self.serialized_data:
+            date_approved = item.get("date_approved")
+            if date_approved:
+                # Parse date and extract year
+                if isinstance(date_approved, str):
+                    try:
+                        year = datetime.fromisoformat(
+                            date_approved.replace("Z", "+00:00")
+                        ).year
+                    except (ValueError, AttributeError):
+                        continue
+                else:
+                    continue
+                year_data[year].append(item)
 
-        # Write data rows - calculate approved funding and balance manually
+        # Process each year
         row = self.ANNUAL_DATA_START_ROW
-        for item in aggregated:
-            if item["approval_year"]:
-                # Get projects for this year to calculate derived fields
-                year_projects = queryset.filter(
-                    project__date_approved__year=item["approval_year"]
-                )
+        for approval_year in sorted(year_data.keys()):
+            year_projects = year_data[approval_year]
 
-                # Calculate totals manually since we can't aggregate cached_properties
-                total_approved_funding = 0
-                total_balance = 0
-                sum_pct_disbursed = 0
-                count_with_pct = 0
+            num_approvals = len(year_projects)
+            num_completed = sum(1 for p in year_projects if p.get("status") == "COM")
 
-                for apr in year_projects:
-                    if apr.approved_funding_plus_adjustment:
-                        total_approved_funding += apr.approved_funding_plus_adjustment
-                    if apr.balance is not None:
-                        total_balance += apr.balance
-                    if apr.per_cent_funds_disbursed is not None:
-                        sum_pct_disbursed += apr.per_cent_funds_disbursed * 100
-                        count_with_pct += 1
+            # Calculate totals from serialized data
+            total_approved_funding = sum(
+                p.get("approved_funding_plus_adjustment") or 0 for p in year_projects
+            )
+            total_balance = sum(p.get("balance") or 0 for p in year_projects)
+            total_funds_disbursed = sum(
+                p.get("funds_disbursed") or 0 for p in year_projects
+            )
 
-                avg_pct_disbursed = (
-                    sum_pct_disbursed / count_with_pct if count_with_pct > 0 else 0
-                )
+            pct_values = [
+                p.get("per_cent_funds_disbursed") * 100
+                for p in year_projects
+                if p.get("per_cent_funds_disbursed") is not None
+            ]
+            avg_pct_disbursed = sum(pct_values) / len(pct_values) if pct_values else 0
 
-                # Use column mapping for consistency
-                col_map = self.annual_column_mapping
-                ws.cell(row, col_map["approval_year"], item["approval_year"])
-                ws.cell(row, col_map["num_approvals"], item["num_approvals"])
-                ws.cell(row, col_map["num_completed"], item["num_completed"])
+            col_map = self.annual_column_mapping
+            ws.cell(row, col_map["approval_year"], approval_year)
+            ws.cell(row, col_map["num_approvals"], num_approvals)
+            ws.cell(row, col_map["num_completed"], num_completed)
 
-                # Calculate percentage
-                pct_completed = (
-                    (item["num_completed"] / item["num_approvals"] * 100)
-                    if item["num_approvals"]
-                    else 0
-                )
-                ws.cell(row, col_map["pct_completed"], f"{pct_completed:.0f}%")
+            # Calculate percentage
+            pct_completed = (
+                (num_completed / num_approvals * 100) if num_approvals else 0
+            )
+            ws.cell(row, col_map["pct_completed"], f"{pct_completed:.0f}%")
 
-                ws.cell(row, col_map["approved_funding"], total_approved_funding)
-                ws.cell(
-                    row, col_map["funds_disbursed"], item["total_funds_disbursed"] or 0
-                )
-                ws.cell(row, col_map["balance"], total_balance)
-                ws.cell(row, col_map["sum_pct_disbursed"], avg_pct_disbursed)
+            ws.cell(row, col_map["approved_funding"], total_approved_funding)
+            ws.cell(row, col_map["funds_disbursed"], total_funds_disbursed)
+            ws.cell(row, col_map["balance"], total_balance)
+            ws.cell(row, col_map["sum_pct_disbursed"], avg_pct_disbursed)
 
-                # Format numbers
-                for col_name in ["approved_funding", "funds_disbursed", "balance"]:
-                    ws.cell(row, col_map[col_name]).number_format = "#,##0"
-                ws.cell(row, col_map["sum_pct_disbursed"]).number_format = "0"
+            # Format numbers
+            for col_name in ["approved_funding", "funds_disbursed", "balance"]:
+                ws.cell(row, col_map[col_name]).number_format = "#,##0"
+            ws.cell(row, col_map["sum_pct_disbursed"]).number_format = "0"
 
-                row += 1
+            row += 1
 
-    def _write_investment_projects_sheet(self, queryset):
+    def _write_investment_projects_sheet(self):
         """Sheet (b): Cumulative completed investment projects by region and sector"""
 
         ws = self.workbook[self.SHEET_INVESTMENT]
 
         # Filter for completed investment projects
-        completed_investment = queryset.filter(
+        completed_investment = self.queryset.filter(
             project__status__code="COM",
             project__project_type__code="INV",
         )
@@ -611,14 +622,14 @@ class APRSummaryTablesExportWriter:
             write_headers=True,
         )
 
-    def _write_non_investment_projects_sheet(self, queryset):
+    def _write_non_investment_projects_sheet(self):
         """Sheet (c): Cumulative completed non-investment projects by region and sector"""
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
 
         # Filter for completed non-investment projects
-        completed_non_investment = queryset.filter(project__status__code="COM").exclude(
-            project__project_type__code="INV"
-        )
+        completed_non_investment = self.queryset.filter(
+            project__status__code="COM"
+        ).exclude(project__project_type__code="INV")
 
         # Section 1: By Region
         self._write_aggregation_section(
@@ -923,11 +934,12 @@ class APRSummaryTablesExportWriter:
         ws.cell(row, col).number_format = "0.00"
 
     def _create_response(self):
+        """Create HTTP response with the workbook"""
         output = BytesIO()
         self.workbook.save(output)
         output.seek(0)
 
-        filename = f"APR_Summary_Tables_{self.year}"
+        filename = "APR_Summary_Tables_Cumulative"
         if self.agency:
             filename += f"_{self.agency.name.replace(' ', '_')}"
         filename += ".xlsx"
