@@ -6,10 +6,9 @@ import {
   ProjectSpecificFields,
   ViewModesHandler,
 } from '../interfaces'
-import { formatDecimalValue } from '@ors/helpers'
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
-import { capitalize, find, isBoolean, isNil } from 'lodash'
+import { capitalize, find, isBoolean } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -18,6 +17,7 @@ export type detailItemExtra = {
   classNames?: DetailItemClassname
   fieldHistory?: ProjectFieldHistoryValue[]
   isDisabledImpactField?: boolean
+  isActual?: boolean
 }
 
 const getIsDisabledImpactField = (
@@ -35,6 +35,7 @@ export const detailItem = (
     classNames,
     fieldHistory = [],
     isDisabledImpactField,
+    isActual,
   } = extra ?? {}
   const {
     containerClassName = '',
@@ -52,6 +53,7 @@ export const detailItem = (
     <span
       className={cx('flex gap-2', containerClassName, {
         italic: isDisabledImpactField,
+        'font-medium': isActual,
       })}
     >
       <span className={cx(detailClassname, className)}>
@@ -69,6 +71,7 @@ export const numberDetailItem = (
   dataType: string,
   fieldHistory?: detailItemExtra['fieldHistory'],
   isDisabledImpactField?: boolean,
+  isActual?: boolean,
 ) =>
   fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
     <FieldHistoryIndicator
@@ -79,6 +82,7 @@ export const numberDetailItem = (
     <span
       className={cx('flex gap-2', {
         italic: isDisabledImpactField,
+        'font-medium': isActual,
       })}
     >
       <span>
@@ -96,6 +100,7 @@ export const booleanDetailItem = (
   fieldHistory?: detailItemExtra['fieldHistory'],
   className?: string,
   isDisabledImpactField?: boolean,
+  isActual?: boolean,
 ) =>
   fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
     <FieldHistoryIndicator
@@ -107,6 +112,7 @@ export const booleanDetailItem = (
     <span
       className={cx('flex gap-2', className, {
         italic: isDisabledImpactField,
+        'font-medium': isActual,
       })}
     >
       <span>
@@ -155,6 +161,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       field.data_type,
       fieldHistory,
       isDisabledImpactField,
+      field.is_actual,
     )
   },
   decimal: (data, field, _, fieldHistory, hasActualFields) => {
@@ -169,6 +176,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       field.data_type,
       fieldHistory,
       isDisabledImpactField,
+      field.is_actual,
     )
   },
   drop_down: (data, field, _, fieldHistory, hasActualFields) => {
@@ -185,6 +193,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
     return detailItem(field.label, formattedValue, {
       fieldHistory,
       isDisabledImpactField,
+      isActual: field.is_actual,
     })
   },
   boolean: (data, field, _, fieldHistory, hasActualFields) => {
@@ -201,6 +210,7 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
       fieldHistory,
       className,
       isDisabledImpactField,
+      field.is_actual,
     )
   },
   date: (data, field, _, fieldHistory) =>
