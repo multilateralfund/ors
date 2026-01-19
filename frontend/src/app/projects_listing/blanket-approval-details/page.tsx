@@ -13,7 +13,7 @@ import { Redirect } from 'wouter'
 import BlanketApprovalDetails from '@ors/components/manage/Blocks/ProjectsListing/BlanketApprovalDetails/BlanketApprovalDetails.tsx'
 
 export default function Projects() {
-  usePageTitle('Summary of projects')
+  usePageTitle('Blanket approval details')
 
   const { canViewProjects } = useContext(PermissionsContext)
 

@@ -186,6 +186,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_disassociate_component_access",
+        "permission_name": "Has project v2 disassociate component access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_project_v2_recommend_projects_access",
         "permission_name": "Has project v2 recommend projects access",
         "app_label": "core",

@@ -18,7 +18,6 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectHeader,
-  TrancheErrorType,
   BpDataProps,
 } from '../interfaces'
 import { useStore } from '@ors/store'
@@ -45,8 +44,6 @@ const ProjectsHeader = ({
 }: ProjectHeader & {
   mode: string
   postExComUpdate?: boolean
-  trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]

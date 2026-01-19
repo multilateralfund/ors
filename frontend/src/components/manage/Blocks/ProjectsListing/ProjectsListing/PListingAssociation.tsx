@@ -10,7 +10,7 @@ import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { PListingProps, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
-import { flatMap } from 'lodash'
+import { flatMap, sumBy } from 'lodash'
 
 export default function PListingAssociation({
   tableToolbar,
@@ -44,12 +44,16 @@ export default function PListingAssociation({
       projects: formattedProjects,
     }
   })
+
   const projects = {
     ...projectsAssociation,
     results: flatMap(formattedResults, (entry) => [
       {
         title: 'Metaproject: ' + (entry.umbrella_code ?? 'N/A'),
         isMetaproject: true,
+        total_fund: sumBy(entry.projects, 'total_fund') || undefined,
+        support_cost_psc:
+          sumBy(entry.projects, 'support_cost_psc') || undefined,
       } as any as ProjectTypeApi,
       ...(entry.projects || []),
     ]),

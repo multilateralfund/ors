@@ -152,7 +152,7 @@ export function FilesViewer(props: ProjectDocs) {
                       setExportConfirmModalType('word-export')
                     }}
                   >
-                    Download project template
+                    Download project summary
                   </a>
                   <a
                     className={cx(

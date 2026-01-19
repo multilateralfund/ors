@@ -11,6 +11,7 @@ const useGetRelatedProjects = (
   project: ProjectTypeApi,
   mode: string,
   metaProjectId: number | null,
+  refetchRelatedProjects: boolean,
 ) => {
   const [componentAssociation, setComponentAssociation] =
     useState<AssociatedProjectsType>({
@@ -71,7 +72,7 @@ const useGetRelatedProjects = (
     ) {
       debouncedGetAssociatedProjects()
     }
-  }, [metaProjectId])
+  }, [metaProjectId, refetchRelatedProjects])
 
   return relatedProjects
 }

@@ -3,7 +3,6 @@ import pytest
 from django.urls import reverse
 from decimal import Decimal
 from rest_framework.test import APIClient
-
 from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 
 from core.api.tests.base import BaseTest
@@ -1052,6 +1051,47 @@ class TestProjectsV2Update:
         assert response.data["ad_hoc_pcr"] is False
         assert response.data["date_approved"] == meeting.end_date
         assert response.data["project_end_date"] == data["date_completion"]
+
+    @pytest.mark.parametrize(
+        "test_user,expected_response_status",
+        [
+            (None, 403),
+            ("user", 403),
+            ("viewer_user", 403),
+            ("agency_user", 204),
+            ("agency_inputter_user", 204),
+            ("secretariat_viewer_user", 403),
+            ("secretariat_v1_v2_edit_access_user", 204),
+            ("secretariat_production_v1_v2_edit_access_user", 204),
+            ("secretariat_v3_edit_access_user", 403),
+            ("secretariat_production_v3_edit_access_user", 403),
+            ("mlfs_admin_user", 204),
+            ("admin_user", 204),
+        ],
+    )
+    def test_delete_project_permissions(
+        self,
+        project,
+        user,
+        test_user,
+        expected_response_status,
+        project_submitted_status,
+        request,
+    ):
+        url = reverse("project-v2-detail", args=(project.id,))
+        if test_user:
+            user = request.getfixturevalue(test_user)
+        else:
+            user = None
+
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(url)
+        assert response.status_code == expected_response_status
+        project.submission_status = project_submitted_status
+        project.save()
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(url)
+        assert response.status_code in [403, 404]  # cannot delete submitted projects
 
 
 class TestProjectFiles:

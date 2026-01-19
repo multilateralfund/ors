@@ -65,6 +65,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canDisassociateProjects = user_permissions.includes(
     'has_project_v2_remove_association_access',
   )
+  const canDisassociateComponents = user_permissions.includes(
+    'has_project_v2_disassociate_component_access',
+  )
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
@@ -160,6 +163,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canApproveProjects,
         canAssociateProjects,
         canDisassociateProjects,
+        canDisassociateComponents,
         canEditProjects,
         canEditApprovedProjects,
         canViewProductionProjects,

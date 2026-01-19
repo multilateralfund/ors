@@ -9,9 +9,10 @@ import {
   ProjectTypeApi,
   RelatedProjectsSectionType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import ProjectDisassociate from '../ProjectsCreate/ProjectDisassociate'
 
 import { Divider, CircularProgress } from '@mui/material'
-import { map } from 'lodash'
+import { isNull, map } from 'lodash'
 
 const ProjectRelatedProjects = ({
   project,
@@ -19,20 +20,31 @@ const ProjectRelatedProjects = ({
   setCurrentTab,
   metaProjectId,
   setMetaProjectId,
+  setRefetchRelatedProjects,
   canDisassociate,
 }: ProjectTabSetters & {
   project: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
 }) => {
-  const { canDisassociateProjects } = useContext(PermissionsContext)
+  const { canDisassociateProjects, canDisassociateComponents } =
+    useContext(PermissionsContext)
   const canRemoveAssociation =
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
     !!project.meta_project_id &&
     !!metaProjectId
+
+  const canDisassociateComponent =
+    canDisassociateComponents &&
+    isNull(project.latest_project) &&
+    project.submission_status === 'Submitted'
+
+  const hasComponents =
+    project.component && project.component.original_project_id === project.id
 
   return (
     <>
@@ -77,13 +89,24 @@ const ProjectRelatedProjects = ({
                 )}
                 {loaded ? (
                   crtData && crtData.length > 0 ? (
-                    <RelatedProjects
-                      data={crtData}
-                      isLoaded={true}
-                      withExtraProjectInfo={true}
-                      canRefreshStatus={false}
-                      mode="view"
-                    />
+                    <>
+                      <RelatedProjects
+                        data={crtData}
+                        isLoaded={true}
+                        withExtraProjectInfo={true}
+                        canRefreshStatus={false}
+                        mode="view"
+                      />
+                      {index === 0 && canDisassociateComponent && (
+                        <ProjectDisassociate
+                          {...{
+                            project,
+                            setRefetchRelatedProjects,
+                            hasComponents,
+                          }}
+                        />
+                      )}
+                    </>
                   ) : (
                     <div className="mb-3 text-lg italic">{noResultsText}</div>
                   )

@@ -14,7 +14,7 @@ class CountryAdmin(admin.ModelAdmin):
         "abbr",
         "abbr_alt",
     ]
-    list_filter = ["location_type"]
+    list_filter = ["location_type", "modules"]
 
     def get_list_display(self, request):
         exclude = [

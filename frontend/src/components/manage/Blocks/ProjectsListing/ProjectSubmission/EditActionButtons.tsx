@@ -34,7 +34,6 @@ import {
   ProjectTypeApi,
   ActionButtons,
   RelatedProjectsType,
-  TrancheErrorType,
   ProjectSpecificFields,
   BpDataProps,
   FileMetaDataType,
@@ -80,8 +79,6 @@ const EditActionButtons = ({
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
-  trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
   bpData: BpDataProps
