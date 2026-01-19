@@ -127,7 +127,7 @@ def get_headers_specific_information(fields: Iterable[ProjectField]):
             header["type"] = "bool"
         elif field_type == "number":
             header["type"] = "int"
-        elif field_type == "decimal" or field_type == "decimal-money":
+        elif field_type in ["decimal", "decimal-money"]:
             header["type"] = "number"
             header["align"] = "right"
 
