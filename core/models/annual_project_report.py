@@ -390,18 +390,6 @@ class AnnualProjectReport(models.Model):
         verbose_name="Approved Funding + Adjustment (denormalized)",
         help_text="Total approved funding including adjustments",
     )
-    per_cent_funds_disbursed_denorm = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Percent Funds Disbursed (denormalized)",
-        help_text="Calculated percentage of funds disbursed",
-    )
-    balance_denorm = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Balance (denormalized)",
-        help_text="Calculated balance: approved_funding - funds_disbursed",
-    )
 
     # Support costs - derived from project versions
     support_cost_approved_denorm = models.FloatField(
@@ -421,12 +409,6 @@ class AnnualProjectReport(models.Model):
         blank=True,
         verbose_name="Support Cost + Adjustment (denormalized)",
         help_text="Total support cost including adjustments",
-    )
-    support_cost_balance_denorm = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="Support Cost Balance (denormalized)",
-        help_text="Calculated support cost balance",
     )
 
     # Other derived fields
@@ -792,15 +774,11 @@ class AnnualProjectReport(models.Model):
         self.approved_funding_plus_adjustment_denorm = (
             self.approved_funding_plus_adjustment
         )
-        self.per_cent_funds_disbursed_denorm = self.per_cent_funds_disbursed
-        self.balance_denorm = self.balance
 
-        # Support cost fields
         self.support_cost_adjustment_denorm = self.support_cost_adjustment
         self.support_cost_approved_plus_adjustment_denorm = (
             self.support_cost_approved_plus_adjustment
         )
-        self.support_cost_balance_denorm = self.support_cost_balance
 
         # Other computed fields
         self.implementation_delays_status_report_decisions_denorm = (

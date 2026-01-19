@@ -100,12 +100,8 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         read_only=True,
         allow_null=True,
     )
-    per_cent_funds_disbursed = serializers.FloatField(
-        source="per_cent_funds_disbursed_denorm", read_only=True, allow_null=True
-    )
-    balance = serializers.FloatField(
-        source="balance_denorm", read_only=True, allow_null=True
-    )
+    per_cent_funds_disbursed = serializers.FloatField(read_only=True, allow_null=True)
+    balance = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - derived (2)
     support_cost_approved = serializers.FloatField(
@@ -123,9 +119,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         read_only=True,
         allow_null=True,
     )
-    support_cost_balance = serializers.FloatField(
-        source="support_cost_balance_denorm", read_only=True, allow_null=True
-    )
+    support_cost_balance = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - input
     funds_disbursed = serializers.FloatField(allow_null=True)
