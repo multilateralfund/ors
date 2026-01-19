@@ -736,7 +736,7 @@ urlpatterns = [
         name="apr-export",
     ),
     path(
-        "annual-project-reports/summary-tables/export/",
+        "annual-project-report/summary-tables/export/",
         APRSummaryTablesExportView.as_view(),
         name="apr-summary-tables-export",
     ),
