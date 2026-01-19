@@ -266,9 +266,10 @@ class CompareVersionsWriter:
                 "section": f.section,
                 "headerName": f.label,
             }
-            if f.data_type == "decimal":
+            if f.data_type == "decimal-money":
                 h_def["cell_format"] = "$###,###,##0.00#############"
-
+            elif f.data_type == "decimal":
+                h_def["cell_format"] = "###,###,##0.00#############"
             elif f.data_type == "date":
                 h_def["formatter"] = format_iso_date
             result.append(h_def)
