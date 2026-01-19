@@ -266,6 +266,24 @@ const getColumnDefs = (
             minimumFractionDigits: 2,
           }),
       },
+      ...(mode === 'association-listing'
+        ? [
+            {
+              headerName: tableColumns.support_cost_psc,
+              field: 'support_cost_psc',
+              minWidth: 120,
+              valueGetter: (params: ValueGetterParams) =>
+                !isNil(params.data.support_cost_psc)
+                  ? '$' + formatNumberColumns(params, 'support_cost_psc')
+                  : '',
+              tooltipValueGetter: (params: ITooltipParams) =>
+                formatNumberColumns(params, 'support_cost_psc', {
+                  maximumFractionDigits: 10,
+                  minimumFractionDigits: 2,
+                }),
+            },
+          ]
+        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

@@ -62,11 +62,13 @@ const ProjectsEdit = ({
   mode,
   postExComUpdate = false,
   approval = false,
+  impact = false,
 }: {
   project: ProjectTypeApi
   mode: string
   postExComUpdate?: boolean
   approval?: boolean
+  impact?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -220,7 +222,14 @@ const ProjectsEdit = ({
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
-  const relatedProjects = useGetRelatedProjects(project, mode, metaProjectId)
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
+
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    mode,
+    metaProjectId,
+    refetchRelatedProjects,
+  )
 
   const [bpData, setBpData] = useState({
     hasBpData: false,
@@ -306,7 +315,7 @@ const ProjectsEdit = ({
   }, [])
 
   useEffect(() => {
-    if (!approval && canViewBp && country && agency && cluster) {
+    if (!approval && !impact && canViewBp && country && agency && cluster) {
       setBpData({
         hasBpData: false,
         bpDataLoading: true,
@@ -532,6 +541,7 @@ const ProjectsEdit = ({
             mode,
             postExComUpdate,
             approval,
+            impact,
             specificFields,
             project,
             files,
@@ -549,6 +559,7 @@ const ProjectsEdit = ({
             setFilesMetaData,
             metaProjectId,
             setMetaProjectId,
+            setRefetchRelatedProjects,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

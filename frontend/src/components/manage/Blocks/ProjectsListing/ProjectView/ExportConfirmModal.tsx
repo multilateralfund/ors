@@ -15,7 +15,7 @@ const ExportConfirmModal = ({
   setModalType: (type: string | null) => void
 }) => {
   const isWordExport = mode === 'word-export'
-  const title = isWordExport ? 'Download project template' : 'Download Excel'
+  const title = isWordExport ? 'Download project summary' : 'Download Excel'
 
   const closeModal = () => {
     setModalType(null)
@@ -48,7 +48,7 @@ const ExportConfirmModal = ({
               )}
               onClick={closeModal}
             >
-              Download project template
+              Download project summary
             </a>
           ) : (
             <a
