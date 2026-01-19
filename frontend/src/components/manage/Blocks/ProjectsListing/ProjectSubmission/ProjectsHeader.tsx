@@ -81,7 +81,9 @@ const ProjectsHeader = ({
     hasValidationErrors ||
     bpData.bpDataLoading ||
     !!find(filesMetaData, (metadata) => !metadata.type) ||
-    hasTrancheErrors
+    (mode === 'edit' &&
+      project?.submission_status !== 'Draft' &&
+      hasTrancheErrors)
 
   const isSubmitDisabled = isSaveDisabled || hasTrancheErrors
 
@@ -147,8 +149,6 @@ const ProjectsHeader = ({
                 projectData,
                 isSaveDisabled,
                 setIsLoading,
-                trancheErrors,
-                getTrancheErrors,
                 files,
                 mode,
                 specificFields,

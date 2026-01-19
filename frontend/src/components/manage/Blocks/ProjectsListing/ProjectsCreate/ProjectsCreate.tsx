@@ -13,6 +13,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
@@ -44,10 +45,11 @@ import {
   getPostExcomApprovalErrors,
   getFieldData,
   formatOptions,
+  getOdsOdpFields,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { find, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -64,6 +66,7 @@ const ProjectsCreate = ({
   mode,
   postExComUpdate = false,
   approval = false,
+  impact = false,
   files,
   projectFiles,
   errors,
@@ -81,6 +84,7 @@ const ProjectsCreate = ({
   setFilesMetaData,
   metaProjectId,
   setMetaProjectId,
+  setRefetchRelatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -90,6 +94,7 @@ const ProjectsCreate = ({
     mode: string
     postExComUpdate?: boolean
     approval?: boolean
+    impact?: boolean
     errors: { [key: string]: [] }
     fileErrors: string
     project?: ProjectTypeApi
@@ -102,6 +107,7 @@ const ProjectsCreate = ({
     onBpDataChange: (bpData: BpDataProps) => void
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
+    setRefetchRelatedProjects?: (refetch: boolean) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -122,7 +128,9 @@ const ProjectsCreate = ({
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
-  const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(
+    impact ? 3 : approval ? 5 : 0,
+  )
 
   const areFieldsDisabled = !canLinkToBp || currentStep < 1
   const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
@@ -134,10 +142,8 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const groupedFields = groupBy(substanceDetailsFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields, editableFields } = useStore(
@@ -190,6 +196,17 @@ const ProjectsCreate = ({
     areProjectSpecificTabsDisabled ||
     impactFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Impact')
+
+  useEffect(() => {
+    if (
+      impact &&
+      specificFieldsLoaded &&
+      (impactFields.length < 1 ||
+        !hasFields(projectFields, viewableFields, 'Impact'))
+    ) {
+      setCurrentTab(0)
+    }
+  }, [specificFieldsLoaded])
 
   const isApprovalTabDisabled =
     areNextSectionsDisabled ||
@@ -267,6 +284,16 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
+  const disableV3Edit =
+    !!project &&
+    mode === 'edit' &&
+    !project.editable &&
+    project.editable_for_actual_fields
+
+  const hasComponents =
+    !!project &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const bpErrorMessage = 'A business plan activity should be selected.'
   const hasBpDefaultErrors =
@@ -375,7 +402,11 @@ const ProjectsCreate = ({
           : null,
       ].filter(Boolean)
 
-      return { message: `Substance ${substanceNo} - ` + messages.join(' ') }
+      const odsOdpType = odsDisplayField
+        ? `Substance ${substanceNo}`
+        : 'Phase out'
+
+      return { message: `${odsOdpType} - ` + messages.join(' ') }
     },
   ).filter(Boolean)
 
@@ -540,6 +571,7 @@ const ProjectsCreate = ({
             trancheErrors,
             getTrancheErrors,
             setCurrentTab,
+            disableV3Edit,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -617,6 +649,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             filesMetaData,
             setFilesMetaData,
+            disableV3Edit,
           }}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
@@ -695,6 +728,7 @@ const ProjectsCreate = ({
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
+                  setRefetchRelatedProjects,
                   setCurrentTab,
                 }}
               />
@@ -720,35 +754,42 @@ const ProjectsCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, label, disabled }) => (
-          <Tab
-            key={id}
-            id={id}
-            aria-controls={id}
-            label={label}
-            disabled={disabled}
-            classes={{
-              disabled: 'text-gray-300',
-            }}
-          />
-        ))}
-      </Tabs>
-
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label, disabled }) => (
+            <Tab
+              key={id}
+              id={id}
+              aria-controls={id}
+              label={label}
+              disabled={disabled}
+              classes={{
+                disabled: 'text-gray-300',
+              }}
+            />
+          ))}
+        </Tabs>
+        {mode === 'edit' &&
+          project?.submission_status === 'Draft' &&
+          project?.version === 1 &&
+          project?.editable && (
+            <ProjectDelete {...{ project, hasComponents }} />
+          )}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)

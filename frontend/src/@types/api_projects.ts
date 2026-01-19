@@ -161,6 +161,7 @@ export type ProjectType = {
   support_cost_psc: any
   technology: any
   title: string
+  total_fund: any
   total_fund_approved: any
   total_fund_transferred: any
   total_grant: any

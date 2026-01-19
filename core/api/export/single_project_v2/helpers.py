@@ -31,13 +31,25 @@ def format_iso_date(isodate=None):
     return ""
 
 
-def format_dollar_value(value: int | float | str | Decimal):
+def format_decimal(
+    value: int | float | str | Decimal,
+    with_decimals: bool = True,
+    is_currency: bool = True,
+):
     if not isinstance(value, Decimal):
         try:
             value = Decimal(value)
         except (TypeError, InvalidOperation):
             return value
-    return f"{'-' if value < 0 else ''}${abs(value):,.2f}"
+
+    sign = "-" if value < 0 else ""
+    currency = "$" if is_currency else ""
+    value = abs(value)
+    return (
+        f"{sign}{currency}{value:,.2f}"
+        if with_decimals
+        else f"{sign}{currency}{value:,.0f}"
+    )
 
 
 def get_blanket_consideration_value(row: dict, header: HeaderType):
@@ -90,7 +102,7 @@ get_value_or_dash = partial(
 
 get_dollar_value = partial(
     get_formatted_field_value,
-    formatters=[format_dollar_value, value_or_dash],
+    formatters=[format_decimal, value_or_dash],
 )
 
 get_date_value = partial(
@@ -119,7 +131,7 @@ def get_activity_data_from_json(data):
     data_as_obj = dict_as_obj(data)
     for field, handler in serializer.get_fields().items():
         if field == "chemical_detail":
-            value = "/".join(data.get("substances", []))
+            value = "/".join(map(str, data.get("substances", [])))
         elif isinstance(handler, serializers.ChoiceField):
             value = f"{data[field]}"
         elif isinstance(handler, serializers.SlugRelatedField):
