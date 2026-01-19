@@ -89,7 +89,6 @@ class CompareVersionsWriter:
                     variance = abs(v2 - v1)
                 except TypeError:
                     pass
-
             data_row.extend([v1, v2, variance])
 
         self.sheet.append(data_row)

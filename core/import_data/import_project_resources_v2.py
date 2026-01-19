@@ -415,9 +415,9 @@ def import_project_specific_fields(file_path):
             if field_name in FIELDS_WITH_ACTUAL_VALUES
         ]
         field_names_excluding_mya.extend(actual_field_names)
-        project_fields = ProjectField.objects.exclude(section="MYA").filter(
-            import_name__in=field_names_excluding_mya
-        )
+        project_fields = ProjectField.objects.exclude(
+            section__in=["MYA", "N/A"]
+        ).filter(import_name__in=field_names_excluding_mya)
 
         missing_fields = set(field_names_excluding_mya) - set(
             project_fields.values_list("import_name", flat=True)
@@ -436,9 +436,10 @@ def import_project_specific_fields(file_path):
             if row[field_index] != ""
         ]
         project_fields = ProjectField.objects.filter(
-            import_name__in=mya_field_names, section="MYA"
+            import_name__in=mya_field_names, section__in=["MYA", "N/A"]
         )
-        missing_fields = set(mya_field_names) - set(
+
+        missing_fields = set(missing_fields) - set(
             project_fields.values_list("import_name", flat=True)
         )
         for missing_field in missing_fields:
@@ -608,7 +609,9 @@ def import_fields(file_path):
         }
 
         ProjectField.objects.update_or_create(
-            import_name=field_data["import_name"], defaults=field_data
+            import_name=field_data["import_name"],
+            table=field_data["table"],
+            defaults=field_data,
         )
 
 
