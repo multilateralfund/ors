@@ -9,6 +9,7 @@ import { IoInformationCircleOutline, IoTrash } from 'react-icons/io5'
 import { api } from '@ors/helpers'
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { APRFile } from '@ors/app/annual-project-report/types.ts'
+import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
 
 interface UploadDocumentsModalProps {
   isModalOpen: boolean
@@ -286,10 +287,7 @@ function FileView({
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 

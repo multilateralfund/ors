@@ -33,7 +33,7 @@ const FileInput = (props: BpFileInput) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      if (!!mode && mode !== 'transfer') {
+      if (!!mode) {
         addUpdatedField('files')
       }
 

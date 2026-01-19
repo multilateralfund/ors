@@ -397,9 +397,8 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
 class MeetingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Meeting
-        django_get_or_create = ("number",)
 
-    number = factory.Faker("random_int", min=1, max=100)
+    number = factory.Sequence(lambda n: n + 1)
     date = factory.Faker("date")
     status = Meeting.MeetingStatus.COMPLETED
 

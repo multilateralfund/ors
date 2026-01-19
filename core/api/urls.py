@@ -65,6 +65,7 @@ from core.api.views.cp_archive import (
     CPReportVersionsListView,
 )
 from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
+from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
 from core.api.views.projects_metadata import (
     ProjectClusterTypeSectorAssociationView,
     ProjectFieldView,
@@ -176,6 +177,11 @@ router.register(
     "blanket-approval-details",
     BlanketApprovalDetailsViewset,
     basename="blanket-approval-details",
+)
+router.register(
+    "compare-versions",
+    ProjectsCompareVersionsViewset,
+    basename="compare-versions",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register(

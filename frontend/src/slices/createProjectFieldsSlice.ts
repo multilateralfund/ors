@@ -51,9 +51,19 @@ export const createProjectFieldsSlice = ({
               return false
             }
 
-            const isFieldNotV3Editable = ['bp_activity'].includes(
-              write_field_name,
-            )
+            const isFieldNotV3Editable = [
+              'bp_activity',
+              'blanket_or_individual_consideration',
+            ].includes(write_field_name)
+
+            if (
+              mode === 'edit' &&
+              submissionStatus === 'Approved' &&
+              !isPostExcom &&
+              !canEditAll
+            ) {
+              return is_actual
+            }
 
             if (!isFieldNotV3Editable) {
               if (
@@ -93,7 +103,9 @@ export const createProjectFieldsSlice = ({
               section !== 'Impact' || !isAfterApproval || is_actual
             const isDraftEditable =
               submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
-            const isEditableByStatus = submissionStatus !== 'Withdrawn'
+            const isEditableByStatus =
+              write_field_name !== 'bp_activity' ||
+              submissionStatus !== 'Withdrawn'
             const canEditField =
               isEditableInVersion &&
               isFieldEditable &&

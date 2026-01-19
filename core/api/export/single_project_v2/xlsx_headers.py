@@ -35,25 +35,34 @@ def get_headers_identifiers() -> List[HeaderType]:
     ]
 
 
-def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType]:
+def get_headers_cross_cutting(
+    fields: Iterable[ProjectField], for_docx: bool = False
+) -> List[HeaderType]:
     default_headers = [
         {
             "id": "title",
             "headerName": "Title",
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "description",
             "headerName": "Description",
+            "column_width": 125,
+            "can_be_clipped": True,
+            "vertical_align": "top",
         },
         {
             "id": "project_type",
             "headerName": "Type",
             "method": lambda r, h: r[h["id"]]["name"],
+            "docx_highlight": True,
         },
         {
             "id": "sector",
             "headerName": "Sector",
             "method": lambda r, h: r[h["id"]]["name"],
+            "docx_highlight": True,
         },
         {
             "id": "subsectors",
@@ -69,17 +78,19 @@ def get_headers_cross_cutting(fields: Iterable[ProjectField]) -> List[HeaderType
         },
         {
             "id": "total_fund",
-            "headerName": "Project funding",
+            "headerName": "Project costs" if for_docx else "Project funding",
             "type": "number",
             "align": "right",
             "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
         },
         {
             "id": "support_cost_psc",
-            "headerName": "Project support cost",
+            "headerName": "Support costs" if for_docx else "Project support cost",
             "type": "number",
             "align": "right",
             "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
         },
         {
             "id": "project_start_date",
@@ -109,6 +120,17 @@ def get_headers_specific_information(fields: Iterable[ProjectField]):
     result = []
 
     for field in fields:
-        result.append({"id": field.read_field_name, "headerName": field.label})
+        header = {"id": field.read_field_name, "headerName": field.label}
+        field_type = field.data_type
+
+        if field_type == "boolean":
+            header["type"] = "bool"
+        elif field_type == "number":
+            header["type"] = "int"
+        elif field_type == "decimal":
+            header["type"] = "number"
+            header["align"] = "right"
+
+        result.append(header)
 
     return result

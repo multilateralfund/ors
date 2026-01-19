@@ -75,9 +75,8 @@ export function validateDate(value: any) {
     return null
   }
 
-  return dayjs(value).isValid()
-    ? null
-    : 'Invalid date, use the DD/MM/YYYY format'
+  // Check valid ISO date string
+  return dayjs(value).isValid() ? null : `Invalid date: ${value}`
 }
 
 export function validateNumber(value: any) {
@@ -86,7 +85,8 @@ export function validateNumber(value: any) {
   }
 
   const n = Number(value)
-  if (isNaN(n) || !isFinite(n)) {
+  // Number("") === 0
+  if (value === '' || isNaN(n) || !isFinite(n)) {
     return 'Invalid number'
   }
 

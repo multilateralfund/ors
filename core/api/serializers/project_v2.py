@@ -4,8 +4,10 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.serializers import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.meeting import DecisionSerializer
+from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpCreateSerializer,
@@ -405,6 +407,32 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return result
 
 
+class ProjectListPreviousTranchesSerializer(ProjectListV2Serializer):
+    """
+    Serializer for previous tranches of a project.
+    Inherits from ProjectListV2Serializer.
+    """
+
+    class Meta(ProjectListV2Serializer.Meta):
+        model = Project
+        fields = [
+            "id",
+            "code",
+            "code_legacy",
+            "agency",
+            "agency_id",
+            "editable",
+            "editable_for_actual_fields",
+            "metacode",
+            "status",
+            "status_id",
+            "submission_status",
+            "submission_status_id",
+            "title",
+            "tranche",
+        ]
+
+
 class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
     """
     ProjectOdsOdpSerializer class
@@ -523,6 +551,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     ProjectSerializer class
     """
 
+    lead_agency_data = AgencySerializer(source="lead_agency", read_only=True)
     ods_odp = ProjectV2OdsOdpListSerializer(many=True, read_only=True)
     computed_total_phase_out_metric_tonnes = serializers.SerializerMethodField()
     computed_total_phase_out_odp_tonnes = serializers.SerializerMethodField()
@@ -567,6 +596,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "category",
             "cluster_id",
             "lead_agency",
+            "lead_agency_data",
             "latest_file",
             "latest_project",
             "meta_project",
@@ -1645,12 +1675,14 @@ class ProjectExportV2Serializer(ProjectListV2Serializer):
     cluster = serializers.SlugRelatedField("name", read_only=True)
     substances_list = serializers.SerializerMethodField()
     subsectors_list = serializers.SerializerMethodField()
+    meta_project_fields = serializers.SerializerMethodField()
 
     class Meta(ProjectListV2Serializer.Meta):
         fields = ProjectListV2Serializer.Meta.fields + [
             "substances_list",
             "subsectors_list",
             "serial_number_legacy",
+            "meta_project_fields",
         ]
 
     def get_substances_list(self, obj):
@@ -1669,3 +1701,6 @@ class ProjectExportV2Serializer(ProjectListV2Serializer):
     def get_subsectors_list(self, obj):
         "subsector names separated by comma for project list export"
         return ", ".join([s.name for s in obj.subsectors.all()])
+
+    def get_meta_project_fields(self, obj):
+        return MetaProjectFieldSerializer(obj.meta_project).data
