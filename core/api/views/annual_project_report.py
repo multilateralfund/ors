@@ -576,9 +576,6 @@ class APRExportView(APIView):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
             ),
             progress_report__year=year,
             agency_id=agency_id,
@@ -739,9 +736,6 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
                 "files",
             )
             .order_by("agency__name")
