@@ -142,8 +142,9 @@ class CompareVersionsProjectExport:
 
     def export(self, filename: str):
         flat_candidates = list(chain(*self.candidates))
-        writer = CompareVersionsWriter(self.sheet, flat_candidates)
-        writer.write_headers(self.candidates[0])
-        for pair in self.candidates:
-            writer.write(pair)
+        if self.candidates:
+            writer = CompareVersionsWriter(self.sheet, flat_candidates)
+            writer.write_headers(self.candidates[0])
+            for pair in self.candidates:
+                writer.write(pair)
         return workbook_response(filename, self.wb)
