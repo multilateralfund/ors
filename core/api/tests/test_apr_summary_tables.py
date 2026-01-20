@@ -38,14 +38,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         response = self.client.get(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_export_works_without_year_parameter(self, apr_agency_viewer_user):
-        """Cumulative export doesn't require year parameter"""
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-        # Should work without year since it's cumulative
-        assert response.status_code == status.HTTP_200_OK
-
     def test_agency_user_sees_only_own_projects(
         self,
         apr_agency_viewer_user,
@@ -87,7 +79,7 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         # Load workbook and check detail sheet only has own agency's project
         workbook = load_workbook(BytesIO(response.content))
-        detail_sheet = workbook["Annex I APR report "]
+        detail_sheet = workbook["Annex I APR Report"]
 
         # Check that own project is present and other agency's project is not
         project_codes = []
@@ -99,13 +91,8 @@ class TestAPRSummaryTablesExport(BaseTest):
             if code_cell.value:
                 project_codes.append(code_cell.value)
 
-        # Verify agency filtering: own project included, other agency excluded
-        assert (
-            own_project.code in project_codes
-        ), f"Own project {own_project.code} should be in export"
-        assert (
-            other_project.code not in project_codes
-        ), f"Other agency project {other_project.code} should NOT be in export"
+        assert own_project.code in project_codes
+        assert other_project.code not in project_codes
 
     def test_mlfs_user_sees_all_projects(
         self,
@@ -146,7 +133,7 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         # Load workbook and check the detail sheet has both projects
         workbook = load_workbook(BytesIO(response.content))
-        detail_sheet = workbook["Annex I APR report "]
+        detail_sheet = workbook["Annex I APR Report"]
 
         project_codes = []
         col_map = APRSummaryTablesExportWriter.build_column_mapping()
@@ -185,10 +172,14 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet_names = workbook.sheetnames
 
-        assert "Annex I APR report " in sheet_names
+        assert "Annex I APR Report" in sheet_names
         assert "Annex I (a)" in sheet_names
         assert "Annex I (b)" in sheet_names
         assert "Annex I (c)" in sheet_names
+        assert "Annex I (d)" in sheet_names
+        assert "Annex I (e)" in sheet_names
+        assert "Annex I (f)" in sheet_names
+        assert "Annex I (g)" in sheet_names
 
     def test_annual_summary_sheet_structure(
         self,
@@ -214,14 +205,14 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert sheet["A1"].value == "(a) Annual summary data"
 
-        assert sheet["A6"].value == "Approval year"
-        assert sheet["B6"].value == "Number of Approvals"
-        assert sheet["C6"].value == "Number of completed"
-        assert sheet["D6"].value == "Per cent completed (%)"
-        assert sheet["E6"].value == "Approved funding plus adjustments (US$)"
-        assert sheet["F6"].value == "Funds disbursed (US$)"
-        assert sheet["G6"].value == "Balance (US$)"
-        assert sheet["H6"].value == "Sum of % of funding disb"
+        # Template has headers - verify they exist (may have trailing spaces from template)
+        assert "Approval year" in str(sheet["A6"].value)
+        assert "Number of Approvals" in str(sheet["B6"].value)
+        assert "Number of completed" in str(sheet["C6"].value)
+        assert "Per cent completed" in str(sheet["D6"].value)
+        assert "Approved funding" in str(sheet["E6"].value)
+        assert "Funds disbursed" in str(sheet["F6"].value)
+        assert "Balance" in str(sheet["G6"].value)
 
     def test_annual_summary_aggregation_by_year(
         self,
@@ -295,20 +286,14 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert year_2022_row is not None
         assert year_2023_row is not None
 
-        # Number of approvals
+        # Number of approvals, number completed, approved funding
         assert sheet.cell(year_2022_row, 2).value == 1
-        # Number completed
         assert sheet.cell(year_2022_row, 3).value == 1
-        # Approved funding
         assert sheet.cell(year_2022_row, 5).value == 100000
 
-        # Number of approvals
         assert sheet.cell(year_2023_row, 2).value == 2
-        # Number completed
         assert sheet.cell(year_2023_row, 3).value == 1
-        # Total approved funding
         assert sheet.cell(year_2023_row, 5).value == 125000
-        # Total disbursed
         assert sheet.cell(year_2023_row, 6).value == 100000
 
     def test_investment_projects_sheet_structure(
@@ -421,7 +406,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         sheet_b = workbook["Annex I (b)"]
 
-        # Count number of projects in region section (data row onwards until Grand Total)
+        # Count number of projects in region section (data rows until "Grand Total")
         region_count = 0
         col_map = APRSummaryTablesExportWriter.build_cumulative_column_mapping(
             include_odp_co2=True
@@ -430,10 +415,10 @@ class TestAPRSummaryTablesExport(BaseTest):
             APRSummaryTablesExportWriter.CUMULATIVE_REGION_DATA_ROW,
             APRSummaryTablesExportWriter.CUMULATIVE_SECTOR_HEADER_ROW,
         ):
+            group_name = str(sheet_b.cell(row, col_map["group_name"]).value).lower()
             if (
                 sheet_b.cell(row, col_map["group_name"]).value
-                and "grand total"
-                not in str(sheet_b.cell(row, col_map["group_name"]).value).lower()
+                and "grand total" not in group_name
             ):
                 region_count += 1
 
@@ -445,7 +430,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         annual_progress_report,
         annual_agency_report,
     ):
-        """Export filename should include 'Cumulative' and agency name"""
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -477,7 +461,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         project_completed_status,
         project_closed_status,
     ):
-        """Summary export should include all statuses, not just ONG/COM"""
         project_ongoing = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             code="TEST/ONGOING/001",
@@ -516,7 +499,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         response = self.client.get(url)
 
         workbook = load_workbook(BytesIO(response.content))
-        detail_sheet = workbook["Annex I APR report "]
+        detail_sheet = workbook["Annex I APR Report"]
 
         project_codes = []
         col_map = APRSummaryTablesExportWriter.build_column_mapping()

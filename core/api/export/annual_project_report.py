@@ -6,17 +6,17 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.conf import settings
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.http import HttpResponse
 from openpyxl import load_workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from core.api.serializers.annual_project_report import AnnualProjectReportReadSerializer
 from core.models import AnnualProjectReport, ProjectStatus
 
-# pylint: disable=R0902,R0911,R0913,R0914,R0915,W0212
+# pylint: disable=R0902,R0911,R0913,R0914,R0915,R1705,W0212,C0302
 
 
 class APRExportWriter:
@@ -354,10 +354,14 @@ class APRSummaryTablesExportWriter:
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRSummaryTables.xlsx"
     )
 
-    SHEET_DETAIL = "Annex I APR report "
+    SHEET_DETAIL = "Annex I APR Report"
     SHEET_ANNUAL = "Annex I (a)"
     SHEET_INVESTMENT = "Annex I (b)"
     SHEET_NON_INVESTMENT = "Annex I (c)"
+    SHEET_PREPARATION = "Annex I (d)"
+    SHEET_ONGOING_INVESTMENT = "Annex I (e)"
+    SHEET_ONGOING_NON_INVESTMENT = "Annex I (f)"
+    SHEET_ONGOING_PREPARATION = "Annex I (g)"
 
     # Row position constants - Detail sheet
     DETAIL_DATA_START_ROW = 3
@@ -372,6 +376,30 @@ class APRSummaryTablesExportWriter:
     CUMULATIVE_SECTOR_HEADER_ROW = 19
     CUMULATIVE_SECTOR_DATA_ROW = 20
 
+    # Row position constants - Sheet (d) Preparation projects
+    PREPARATION_REGION_HEADER_ROW = 7
+    PREPARATION_REGION_DATA_ROW = 8
+    PREPARATION_SECTOR_HEADER_ROW = 19
+    PREPARATION_SECTOR_DATA_ROW = 20
+
+    # Row position constants - Sheet (e) Ongoing investment projects
+    ONGOING_REGION_HEADER_ROW = 7
+    ONGOING_REGION_DATA_ROW = 8
+    ONGOING_SECTOR_HEADER_ROW = 19
+    ONGOING_SECTOR_DATA_ROW = 20
+
+    # Row position constants - Sheet (f) Ongoing non-investment projects
+    ONGOING_NON_INV_REGION_HEADER_ROW = 7
+    ONGOING_NON_INV_REGION_DATA_ROW = 8
+    ONGOING_NON_INV_SECTOR_HEADER_ROW = 19
+    ONGOING_NON_INV_SECTOR_DATA_ROW = 20
+
+    # Row position constants - Sheet (g) Ongoing preparation projects
+    ONGOING_PREP_REGION_HEADER_ROW = 7
+    ONGOING_PREP_REGION_DATA_ROW = 8
+    ONGOING_PREP_SECTOR_HEADER_ROW = 19
+    ONGOING_PREP_SECTOR_DATA_ROW = 20
+
     @classmethod
     def build_column_mapping(cls):
         """
@@ -379,7 +407,6 @@ class APRSummaryTablesExportWriter:
         This ensures consistency between serializer and Excel export.
         """
         excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
-        # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
     @classmethod
@@ -429,13 +456,72 @@ class APRSummaryTablesExportWriter:
 
         return mapping
 
+    @classmethod
+    def build_preparation_column_mapping(cls):
+        """Column mapping for Sheet (d) - Preparation projects"""
+        return {
+            "group_name": 1,
+            "num_completed": 2,
+            "approved_funding": 3,
+            "pct_disbursed": 4,
+            "avg_months_to_disbursement": 5,
+            "avg_months_to_completion": 6,
+        }
+
+    @classmethod
+    def build_ongoing_investment_column_mapping(cls):
+        """Column mapping for Sheet (e) - Ongoing investment projects"""
+        return {
+            "group_name": 1,
+            "num_projects": 2,
+            "approved_funding": 3,
+            "funds_disbursed": 4,
+            "pct_disbursed": 5,
+            "num_disbursing": 6,
+            "pct_disbursing": 7,
+            "avg_months_to_disbursement": 8,
+            "avg_months_to_completion": 9,
+            "avg_delay": 10,
+            "cost_effectiveness": 11,
+        }
+
+    @classmethod
+    def build_ongoing_non_investment_column_mapping(cls):
+        """Column mapping for Sheet (f) - Ongoing non-investment projects"""
+        return {
+            "group_name": 1,
+            "num_projects": 2,
+            "approved_funding": 3,
+            "funds_disbursed": 4,
+            "pct_disbursed": 5,
+            "num_disbursing": 6,
+            "pct_disbursing": 7,
+            "avg_months_to_disbursement": 8,
+            "avg_months_to_completion": 9,
+            "avg_delay": 10,
+        }
+
+    @classmethod
+    def build_ongoing_preparation_column_mapping(cls):
+        """Column mapping for Sheet (g) - Ongoing preparation projects"""
+        return {
+            "group_name": 1,
+            "num_projects": 2,
+            "approved_funding": 3,
+            "funds_disbursed": 4,
+            "pct_disbursed": 5,
+            "avg_months_to_disbursement": 6,
+            "avg_months_to_completion": 7,
+            "avg_delay": 8,
+        }
+
     def __init__(self, agency=None):
         self.agency = agency
         self.workbook = None
         self.column_mapping = self.build_column_mapping()
         self.annual_column_mapping = self.build_annual_column_mapping()
 
-        # Get all APR data (cumulative, no year filtering)
+        # Get all APR data
         queryset = AnnualProjectReport.objects.all().select_related(
             "project",
             "project__agency",
@@ -469,17 +555,31 @@ class APRSummaryTablesExportWriter:
         # Sheet 4: (c) Completed non-investment projects
         self._write_non_investment_projects_sheet()
 
+        # Sheet 5: (d) Completed preparation projects
+        self._write_preparation_activities_sheet()
+
+        # Sheet 6: (e) Ongoing/Completed investment projects
+        self._write_ongoing_investment_sheet()
+
+        # Sheet 7: (f) Ongoing/Completed non-investment projects
+        self._write_ongoing_non_investment_sheet()
+
+        # Sheet 8: (g) Ongoing/Completed preparation projects
+        self._write_ongoing_preparation_sheet()
+
         return self._create_response()
 
     def _write_detail_sheet(self):
         """Generate the detail sheet using existing APRExportWriter logic"""
-        # Remove existing detail sheet from template if it exists
-        if self.SHEET_DETAIL in self.workbook.sheetnames:
-            del self.workbook[self.SHEET_DETAIL]
+        # Use the existing detail sheet from template
+        if self.SHEET_DETAIL not in self.workbook.sheetnames:
+            # Fallback: create it if somehow missing
+            detail_worksheet = self.workbook.create_sheet(self.SHEET_DETAIL)
+        else:
+            detail_worksheet = self.workbook[self.SHEET_DETAIL]
 
-        # Also remove status sheet if it exists
-        if APRExportWriter.STATUS_SHEET_NAME in self.workbook.sheetnames:
-            del self.workbook[APRExportWriter.STATUS_SHEET_NAME]
+        # Clear any template data from the detail sheet (keep headers at row 2, clear from row 3)
+        self._clear_template_data_rows(detail_worksheet, 3)
 
         # Create detail sheet using existing APRExportWriter
         agency_name = self.agency.name if self.agency else None
@@ -489,41 +589,42 @@ class APRSummaryTablesExportWriter:
             project_reports_data=self.serialized_data,
         )
         detail_writer.workbook = self.workbook
-        detail_writer.worksheet = self.workbook.create_sheet(self.SHEET_DETAIL)
+        detail_writer.worksheet = detail_worksheet
+
+        # Create a temporary status sheet for validation
         detail_writer.status_worksheet = self.workbook.create_sheet(
             detail_writer.STATUS_SHEET_NAME
         )
 
-        # Then Generate detail content (skipping workbook creation)
-        detail_writer._remove_extra_columns()
+        # Generate detail content (skipping workbook creation and extra column removal)
+        # Don't call _remove_extra_columns since template already has correct structure
         detail_writer._create_status_sheet()
         detail_writer._write_data_rows()
         detail_writer._apply_cell_formatting()
         detail_writer._apply_data_validation()
 
+        # Remove the Status Values sheet as it's not needed in summary export
+        if detail_writer.STATUS_SHEET_NAME in self.workbook.sheetnames:
+            del self.workbook[detail_writer.STATUS_SHEET_NAME]
+
+    def _clear_template_data_rows(self, ws, start_row, end_row=None):
+        """
+        Clear any template/sample data from the worksheet by setting cell values to None.
+        Does *not* delete rows as it would shift row numbers; just clears the contents;
+        it keeps headers intact
+        """
+        if end_row is None:
+            end_row = ws.max_row
+
+        for row in range(start_row, end_row + 1):
+            for col in range(1, ws.max_column + 1):
+                ws.cell(row, col).value = None
+
     def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
         ws = self.workbook[self.SHEET_ANNUAL]
 
-        # Write headers at the specified row
-        headers = [
-            ("A", "Approval year"),
-            ("B", "Number of Approvals"),
-            ("C", "Number of completed"),
-            ("D", "Per cent completed (%)"),
-            ("E", "Approved funding plus adjustments (US$)"),
-            ("F", "Funds disbursed (US$)"),
-            ("G", "Balance (US$)"),
-            ("H", "Sum of % of funding disb"),
-        ]
-
-        for col_letter, value in headers:
-            cell = f"{col_letter}{self.ANNUAL_HEADER_ROW}"
-            ws[cell] = value
-            ws[cell].font = Font(bold=True)
-            ws[cell].fill = PatternFill(
-                start_color="B4C7E7", end_color="B4C7E7", fill_type="solid"
-            )
+        self._clear_template_data_rows(ws, self.ANNUAL_DATA_START_ROW)
 
         # Group serialized data by approval year
         year_data = defaultdict(list)
@@ -571,7 +672,7 @@ class APRSummaryTablesExportWriter:
             ws.cell(row, col_map["num_approvals"], num_approvals)
             ws.cell(row, col_map["num_completed"], num_completed)
 
-            # Calculate percentage
+            # Calculate percentages
             pct_completed = (
                 (num_completed / num_approvals * 100) if num_approvals else 0
             )
@@ -594,126 +695,289 @@ class APRSummaryTablesExportWriter:
 
         ws = self.workbook[self.SHEET_INVESTMENT]
 
-        # Filter for completed investment projects
+        # Clear template data for region & sector section (rows 8-18 and then 20+)
+        self._clear_template_data_rows(
+            ws, self.CUMULATIVE_REGION_DATA_ROW, self.CUMULATIVE_SECTOR_HEADER_ROW - 1
+        )
+        self._clear_template_data_rows(ws, self.CUMULATIVE_SECTOR_DATA_ROW)
+
         completed_investment = self.queryset.filter(
             project__status__code="COM",
             project__project_type__code="INV",
         )
 
-        # Section 1: By Region
+        # Section 1: by Region
         self._write_aggregation_section(
             ws,
             completed_investment,
-            "region",
             start_row=self.CUMULATIVE_REGION_HEADER_ROW,
             group_field="project__country__parent__name",
             include_odp_co2=True,
-            write_headers=True,
         )
 
-        # Section 2: By Sector
+        # Section 2: by Sector
         self._write_aggregation_section(
             ws,
             completed_investment,
-            "sector",
             start_row=self.CUMULATIVE_SECTOR_HEADER_ROW,
             group_field="project__sector__code",
             include_odp_co2=True,
-            write_headers=True,
         )
 
     def _write_non_investment_projects_sheet(self):
         """Sheet (c): Cumulative completed non-investment projects by region and sector"""
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
 
-        # Filter for completed non-investment projects
+        # Clear template data for region & sector sections
+        self._clear_template_data_rows(
+            ws, self.CUMULATIVE_REGION_DATA_ROW, self.CUMULATIVE_SECTOR_HEADER_ROW - 1
+        )
+        self._clear_template_data_rows(ws, self.CUMULATIVE_SECTOR_DATA_ROW)
+
         completed_non_investment = self.queryset.filter(
             project__status__code="COM"
         ).exclude(project__project_type__code="INV")
 
-        # Section 1: By Region
+        # Section 1: by Region
         self._write_aggregation_section(
             ws,
             completed_non_investment,
-            "region",
             start_row=self.CUMULATIVE_REGION_HEADER_ROW,
             group_field="project__country__parent__name",
             include_odp_co2=False,
-            write_headers=True,
         )
 
-        # Section 2: By Sector
+        # Section 2: by Sector
         self._write_aggregation_section(
             ws,
             completed_non_investment,
-            "sector",
             start_row=self.CUMULATIVE_SECTOR_HEADER_ROW,
             group_field="project__sector__code",
             include_odp_co2=False,
-            write_headers=True,
         )
+
+    def _write_preparation_activities_sheet(self):
+        """Sheet (d): Cumulative completed project preparation activities by region and sector"""
+        ws = self.workbook[self.SHEET_PREPARATION]
+
+        self._clear_template_data_rows(
+            ws, self.PREPARATION_REGION_DATA_ROW, self.PREPARATION_SECTOR_HEADER_ROW - 1
+        )
+        self._clear_template_data_rows(ws, self.PREPARATION_SECTOR_DATA_ROW)
+
+        completed_preparation = self.queryset.filter(
+            project__status__code="COM",
+            project__project_type__code="PRP",
+        )
+
+        # Section 1: by Region
+        self._write_aggregation_section(
+            ws,
+            completed_preparation,
+            start_row=self.PREPARATION_REGION_HEADER_ROW,
+            group_field="project__country__parent__name",
+            include_odp_co2=False,
+        )
+
+        # Section 2: by Sector
+        self._write_aggregation_section(
+            ws,
+            completed_preparation,
+            start_row=self.PREPARATION_SECTOR_HEADER_ROW,
+            group_field="project__sector__code",
+            include_odp_co2=False,
+        )
+
+    def _write_ongoing_investment_sheet(self):
+        """Sheet (e): Cumulative ongoing investment projects by region and sector"""
+        ws = self.workbook[self.SHEET_ONGOING_INVESTMENT]
+
+        self._clear_template_data_rows(
+            ws, self.ONGOING_REGION_DATA_ROW, self.ONGOING_SECTOR_HEADER_ROW - 1
+        )
+        self._clear_template_data_rows(ws, self.ONGOING_SECTOR_DATA_ROW)
+
+        ongoing_investment = self.queryset.filter(
+            Q(project__status__code="COM") | Q(project__status__code="ONG"),
+            project__project_type__code="INV",
+        )
+
+        # Section 1: by Region
+        self._write_aggregation_section(
+            ws,
+            ongoing_investment,
+            start_row=self.ONGOING_REGION_HEADER_ROW,
+            group_field="project__country__parent__name",
+            include_odp_co2=True,
+            sheet_type="ongoing_investment",
+        )
+
+        # Section 2: by Sector
+        self._write_aggregation_section(
+            ws,
+            ongoing_investment,
+            start_row=self.ONGOING_SECTOR_HEADER_ROW,
+            group_field="project__sector__code",
+            include_odp_co2=True,
+            sheet_type="ongoing_investment",
+        )
+
+    def _write_ongoing_non_investment_sheet(self):
+        """Sheet (f): Cumulative ongoing non-investment projects by region and sector"""
+        ws = self.workbook[self.SHEET_ONGOING_NON_INVESTMENT]
+
+        self._clear_template_data_rows(
+            ws,
+            self.ONGOING_NON_INV_REGION_DATA_ROW,
+            self.ONGOING_NON_INV_SECTOR_HEADER_ROW - 1,
+        )
+        self._clear_template_data_rows(ws, self.ONGOING_NON_INV_SECTOR_DATA_ROW)
+
+        ongoing_non_investment = self.queryset.filter(
+            Q(project__status__code="COM") | Q(project__status__code="ONG")
+        ).exclude(project__project_type__code="INV")
+
+        # Section 1: by Region
+        self._write_aggregation_section(
+            ws,
+            ongoing_non_investment,
+            start_row=self.ONGOING_NON_INV_REGION_HEADER_ROW,
+            group_field="project__country__parent__name",
+            include_odp_co2=False,
+            sheet_type="ongoing_non_investment",
+        )
+
+        # Section 2: by Sector
+        self._write_aggregation_section(
+            ws,
+            ongoing_non_investment,
+            start_row=self.ONGOING_NON_INV_SECTOR_HEADER_ROW,
+            group_field="project__sector__code",
+            include_odp_co2=False,
+            sheet_type="ongoing_non_investment",
+        )
+
+    def _write_ongoing_preparation_sheet(self):
+        """Sheet (g): Cumulative ongoing preparation projects by region and sector"""
+        ws = self.workbook[self.SHEET_ONGOING_PREPARATION]
+
+        self._clear_template_data_rows(
+            ws,
+            self.ONGOING_PREP_REGION_DATA_ROW,
+            self.ONGOING_PREP_SECTOR_HEADER_ROW - 1,
+        )
+        self._clear_template_data_rows(ws, self.ONGOING_PREP_SECTOR_DATA_ROW)
+
+        ongoing_preparation = self.queryset.filter(
+            Q(project__status__code="COM") | Q(project__status__code="ONG"),
+            project__project_type__code="PRP",
+        )
+
+        # Section 1: by Region
+        self._write_aggregation_section(
+            ws,
+            ongoing_preparation,
+            start_row=self.ONGOING_PREP_REGION_HEADER_ROW,
+            group_field="project__country__parent__name",
+            include_odp_co2=False,
+            sheet_type="ongoing_preparation",
+        )
+
+        # Section 2: by Sector
+        self._write_aggregation_section(
+            ws,
+            ongoing_preparation,
+            start_row=self.ONGOING_PREP_SECTOR_HEADER_ROW,
+            group_field="project__sector__code",
+            include_odp_co2=False,
+            sheet_type="ongoing_preparation",
+        )
+
+    def _get_column_specs(self, sheet_type, include_odp_co2):
+        if sheet_type == "ongoing_investment":
+            return [
+                ("num_projects", None),
+                ("total_approved_funding", "#,##0"),
+                ("total_funds_disbursed", "#,##0"),
+                ("avg_pct_disbursed", "0"),
+                ("num_disbursing", None),
+                ("pct_disbursing", "0"),
+                ("avg_months_to_disbursement", "0"),
+                ("avg_months_to_completion", "0"),
+                ("avg_delay", "0"),
+                ("cost_effectiveness", "0.00"),
+            ]
+        elif sheet_type == "ongoing_non_investment":
+            return [
+                ("num_projects", None),
+                ("total_approved_funding", "#,##0"),
+                ("total_funds_disbursed", "#,##0"),
+                ("avg_pct_disbursed", "0"),
+                ("num_disbursing", None),
+                ("pct_disbursing", "0"),
+                ("avg_months_to_disbursement", "0"),
+                ("avg_months_to_completion", "0"),
+                ("avg_delay", "0"),
+            ]
+        elif sheet_type == "ongoing_preparation":
+            return [
+                ("num_projects", None),
+                ("total_approved_funding", "#,##0"),
+                ("total_funds_disbursed", "#,##0"),
+                ("avg_pct_disbursed", "0"),
+                ("avg_months_to_disbursement", "0"),
+                ("avg_months_to_completion", "0"),
+                ("avg_delay", "0"),
+            ]
+        else:
+            specs = [
+                ("num_completed", None),
+                ("total_approved_funding", "#,##0"),
+                ("avg_pct_disbursed", "0"),
+            ]
+            if include_odp_co2:
+                specs.extend(
+                    [
+                        ("total_consumption_odp", None),
+                        ("total_production_odp", None),
+                        ("total_consumption_co2", None),
+                        ("total_production_co2", None),
+                    ]
+                )
+            specs.extend(
+                [
+                    ("avg_months_to_disbursement", "0"),
+                    ("avg_months_to_completion", "0"),
+                    ("cost_effectiveness", "0.00"),
+                ]
+            )
+            return specs
 
     def _write_aggregation_section(
         self,
         ws,
         queryset,
-        dimension,
         start_row,
         group_field,
         include_odp_co2,
-        write_headers=False,
+        sheet_type="cumulative",
     ):
-        """Write one aggregation section (region or sector) with headers and data"""
-        # Write section headers (only if not using template)
-        if write_headers:
-            header_row = start_row
-            ws.cell(header_row, 1, dimension.capitalize()).font = Font(
-                bold=True, italic=True
-            )
-            ws.cell(header_row, 1).fill = PatternFill(
-                start_color="D9E1F2", end_color="D9E1F2", fill_type="solid"
-            )
+        """
+        Write one aggregation section's data (region or sector) to the template
+        """
+        # Template has headers at start_row
+        data_start_row = start_row + 1
 
-            col = 2
-            base_headers = [
-                "Number of completed",
-                "Approved funding plus adjustments (US$)",
-                "Per cent of funds disbursed (%)",
-            ]
-
-            if include_odp_co2:
-                base_headers.extend(
-                    [
-                        "Consumption Phased Out (ODP/MT)",
-                        "Production Phased Out (ODP/MT)",
-                        "Consumption Phased Out (CO2-eq)",
-                        "Production Phased Out (CO2-eq)",
-                    ]
-                )
-
-            base_headers.extend(
-                [
-                    "Average number of months from approval to first disbursement",
-                    "Average number of months from approval to completion",
-                    "Cost effectiveness to fund (US$/kg.)",
-                ]
-            )
-
-            for header in base_headers:
-                ws.cell(header_row, col, header).font = Font(bold=True)
-                ws.cell(header_row, col).fill = PatternFill(
-                    start_color="8EA9DB", end_color="8EA9DB", fill_type="solid"
-                )
-                col += 1
-
-            # Data starts one row after headers
-            data_start_row = start_row + 1
+        # Aggregating the data for the "Grand Total" row
+        if sheet_type in [
+            "ongoing_investment",
+            "ongoing_non_investment",
+            "ongoing_preparation",
+        ]:
+            # Sheets (e), (f), (g) count all projects, not just completed
+            annotations = {"num_projects": Count("id")}
         else:
-            # Template has headers, start data immediately at start_row
-            data_start_row = start_row
-
-        # Aggregate data
-        annotations = {"num_completed": Count("id")}
+            annotations = {"num_completed": Count("id")}
 
         if include_odp_co2:
             annotations.update(
@@ -735,12 +999,12 @@ class APRSummaryTablesExportWriter:
             # Get projects for this group to calculate derived fields
             group_projects = queryset.filter(**{group_field: item[group_field]})
 
-            # Calculate total approved funding manually
             total_approved_funding = sum(
                 apr.approved_funding_plus_adjustment or 0 for apr in group_projects
             )
-
-            # Calculate average percent disbursed manually
+            total_funds_disbursed = sum(
+                apr.funds_disbursed or 0 for apr in group_projects
+            )
             pct_values = [
                 apr.per_cent_funds_disbursed * 100
                 for apr in group_projects
@@ -751,76 +1015,90 @@ class APRSummaryTablesExportWriter:
             avg_months_to_disbursement = self._calculate_avg_months(
                 group_projects, "project__date_approved", "date_first_disbursement"
             )
-            avg_months_to_completion = self._calculate_avg_months(
-                group_projects, "project__date_approved", "date_actual_completion"
-            )
+
+            # For ongoing projects (sheets e, f, g), use date_planned_completion instead of date_actual_completion
+            if sheet_type in [
+                "ongoing_investment",
+                "ongoing_non_investment",
+                "ongoing_preparation",
+            ]:
+                avg_months_to_completion = self._calculate_avg_months(
+                    group_projects, "project__date_approved", "date_planned_completion"
+                )
+                # Calculate average delay (planned completion - approval)
+                avg_delay = self._calculate_avg_months(
+                    group_projects, "project__date_approved", "date_planned_completion"
+                )
+                # Calculate disbursing metrics
+                num_disbursing = sum(
+                    1
+                    for apr in group_projects
+                    if apr.funds_disbursed and apr.funds_disbursed > 0
+                )
+                total_projects = group_projects.count()
+                pct_disbursing = (
+                    (num_disbursing / total_projects * 100) if total_projects > 0 else 0
+                )
+            else:
+                avg_months_to_completion = self._calculate_avg_months(
+                    group_projects, "project__date_approved", "date_actual_completion"
+                )
+                avg_delay = None
+                num_disbursing = None
+                pct_disbursing = None
 
             # Cost effectiveness (funding / consumption ODP in kg)
             cost_effectiveness = None
-            if include_odp_co2 and item["total_consumption_odp"]:
+            if include_odp_co2 and item.get("total_consumption_odp"):
+                # total_consumption_odp is in MT, converting to kg
                 cost_effectiveness = total_approved_funding / (
                     item["total_consumption_odp"] * 1000
                 )
 
-            data_with_averages.append(
-                {
-                    **item,
-                    "total_approved_funding": total_approved_funding,
-                    "avg_pct_disbursed": avg_pct_disbursed,
-                    "avg_months_to_disbursement": avg_months_to_disbursement,
-                    "avg_months_to_completion": avg_months_to_completion,
-                    "cost_effectiveness": cost_effectiveness,
-                }
-            )
+            result_item = {
+                **item,
+                "total_approved_funding": total_approved_funding,
+                "total_funds_disbursed": total_funds_disbursed,
+                "avg_pct_disbursed": avg_pct_disbursed,
+                "avg_months_to_disbursement": avg_months_to_disbursement,
+                "avg_months_to_completion": avg_months_to_completion,
+                "cost_effectiveness": cost_effectiveness,
+            }
+
+            if sheet_type in [
+                "ongoing_investment",
+                "ongoing_non_investment",
+                "ongoing_preparation",
+            ]:
+                result_item.update(
+                    {
+                        "num_disbursing": num_disbursing,
+                        "pct_disbursing": pct_disbursing,
+                        "avg_delay": avg_delay,
+                    }
+                )
+
+            data_with_averages.append(result_item)
 
         # Write data rows
+        column_specs = self._get_column_specs(sheet_type, include_odp_co2)
         row = data_start_row
         for item in data_with_averages:
             group_name = item[group_field] or "Unknown"
             ws.cell(row, 1, group_name)
 
             col = 2
-            ws.cell(row, col, item["num_completed"])
-            col += 1
-
-            ws.cell(row, col, item["total_approved_funding"] or 0)
-            ws.cell(row, col).number_format = "#,##0"
-            col += 1
-
-            ws.cell(row, col, item["avg_pct_disbursed"] or 0)
-            ws.cell(row, col).number_format = "0"
-            col += 1
-
-            if include_odp_co2:
-                for odp_co2_val in [
-                    item["total_consumption_odp"],
-                    item["total_production_odp"],
-                    item["total_consumption_co2"],
-                    item["total_production_co2"],
-                ]:
-                    ws.cell(row, col, odp_co2_val or 0)
-                    ws.cell(row, col).number_format = "#,##0"
-                    col += 1
-
-            ws.cell(row, col, item["avg_months_to_disbursement"])
-            ws.cell(row, col).number_format = "0"
-            col += 1
-
-            ws.cell(row, col, item["avg_months_to_completion"])
-            ws.cell(row, col).number_format = "0"
-            col += 1
-
-            ws.cell(row, col, item["cost_effectiveness"])
-            ws.cell(row, col).number_format = "0.00"
-            col += 1
+            for field_name, number_format in column_specs:
+                cell = ws.cell(row, col, item.get(field_name) or 0)
+                if number_format:
+                    cell.number_format = number_format
+                col += 1
 
             row += 1
 
-        # Write Grand Total row (ungrouped aggregation)
-        self._write_grand_total_row(ws, queryset, row, include_odp_co2)
+        self._write_grand_total_row(ws, queryset, row, include_odp_co2, sheet_type)
 
     def _calculate_avg_months(self, queryset, start_date_field, end_date_field):
-        """Calculate average months between two date fields"""
         projects = (
             queryset.select_related("project")
             .exclude(**{f"{start_date_field}__isnull": True})
@@ -853,29 +1131,17 @@ class APRSummaryTablesExportWriter:
 
         return total_months / count if count > 0 else 0
 
-    def _write_grand_total_row(self, ws, queryset, row, include_odp_co2):
-        """Write Grand Total row with ungrouped aggregation"""
-        # Calculate totals across all groups
-        annotations = {"num_completed": Count("id")}
+    def _write_grand_total_row(
+        self, ws, queryset, row, include_odp_co2, sheet_type="cumulative"
+    ):
+        ws.cell(row, 1, "Grand Total").font = Font(bold=True)
 
-        if include_odp_co2:
-            annotations.update(
-                {
-                    "total_consumption_odp": Sum("consumption_phased_out_odp"),
-                    "total_production_odp": Sum("production_phased_out_odp"),
-                    "total_consumption_co2": Sum("consumption_phased_out_co2"),
-                    "total_production_co2": Sum("production_phased_out_co2"),
-                }
-            )
-
-        totals = queryset.aggregate(**annotations)
-
-        # Calculate total approved funding manually
+        total_count = queryset.count()
         total_approved_funding = sum(
             apr.approved_funding_plus_adjustment or 0 for apr in queryset
         )
+        total_funds_disbursed = sum(apr.funds_disbursed or 0 for apr in queryset)
 
-        # Calculate average percent disbursed manually
         pct_values = [
             apr.per_cent_funds_disbursed * 100
             for apr in queryset
@@ -886,52 +1152,83 @@ class APRSummaryTablesExportWriter:
         avg_months_to_disbursement = self._calculate_avg_months(
             queryset, "project__date_approved", "date_first_disbursement"
         )
-        avg_months_to_completion = self._calculate_avg_months(
-            queryset, "project__date_approved", "date_actual_completion"
-        )
 
-        cost_effectiveness = None
-        if include_odp_co2 and totals["total_consumption_odp"]:
-            cost_effectiveness = total_approved_funding / (
-                totals["total_consumption_odp"] * 1000
+        num_disbursing = 0
+        pct_disbursing = 0
+        avg_delay = 0
+
+        if sheet_type in [
+            "ongoing_investment",
+            "ongoing_non_investment",
+            "ongoing_preparation",
+        ]:
+            avg_months_to_completion = self._calculate_avg_months(
+                queryset, "project__date_approved", "date_planned_completion"
+            )
+            avg_delay = self._calculate_avg_months(
+                queryset, "project__date_approved", "date_planned_completion"
+            )
+            num_disbursing = sum(
+                1 for apr in queryset if apr.funds_disbursed and apr.funds_disbursed > 0
+            )
+            pct_disbursing = (
+                (num_disbursing / total_count * 100) if total_count > 0 else 0
+            )
+        else:
+            avg_months_to_completion = self._calculate_avg_months(
+                queryset, "project__date_approved", "date_actual_completion"
             )
 
-        # Write Grand Total row
-        ws.cell(row, 1, "Grand Total").font = Font(bold=True)
-
-        col = 2
-        ws.cell(row, col, totals["num_completed"])
-        col += 1
-
-        ws.cell(row, col, total_approved_funding)
-        ws.cell(row, col).number_format = "#,##0"
-        col += 1
-
-        ws.cell(row, col, avg_pct_disbursed or 0)
-        ws.cell(row, col).number_format = "0"
-        col += 1
+        total_consumption_odp = 0
+        total_production_odp = 0
+        total_consumption_co2 = 0
+        total_production_co2 = 0
+        cost_effectiveness = 0
 
         if include_odp_co2:
-            for odp_co2_val in [
-                totals["total_consumption_odp"],
-                totals["total_production_odp"],
-                totals["total_consumption_co2"],
-                totals["total_production_co2"],
-            ]:
-                ws.cell(row, col, odp_co2_val or 0)
-                ws.cell(row, col).number_format = "#,##0"
-                col += 1
+            total_consumption_odp = sum(
+                apr.consumption_phased_out_odp or 0 for apr in queryset
+            )
+            total_production_odp = sum(
+                apr.production_phased_out_odp or 0 for apr in queryset
+            )
+            total_consumption_co2 = sum(
+                apr.consumption_phased_out_co2 or 0 for apr in queryset
+            )
+            total_production_co2 = sum(
+                apr.production_phased_out_co2 or 0 for apr in queryset
+            )
+            cost_effectiveness = (
+                total_approved_funding / (total_consumption_odp * 1000)
+                if total_consumption_odp
+                else 0
+            )
 
-        ws.cell(row, col, avg_months_to_disbursement)
-        ws.cell(row, col).number_format = "0"
-        col += 1
+        grand_total_data = {
+            "num_projects": total_count,
+            "num_completed": total_count,
+            "total_approved_funding": total_approved_funding,
+            "total_funds_disbursed": total_funds_disbursed,
+            "avg_pct_disbursed": avg_pct_disbursed,
+            "num_disbursing": num_disbursing,
+            "pct_disbursing": pct_disbursing,
+            "avg_months_to_disbursement": avg_months_to_disbursement,
+            "avg_months_to_completion": avg_months_to_completion,
+            "avg_delay": avg_delay,
+            "total_consumption_odp": total_consumption_odp,
+            "total_production_odp": total_production_odp,
+            "total_consumption_co2": total_consumption_co2,
+            "total_production_co2": total_production_co2,
+            "cost_effectiveness": cost_effectiveness,
+        }
 
-        ws.cell(row, col, avg_months_to_completion)
-        ws.cell(row, col).number_format = "0"
-        col += 1
-
-        ws.cell(row, col, cost_effectiveness)
-        ws.cell(row, col).number_format = "0.00"
+        column_specs = self._get_column_specs(sheet_type, include_odp_co2)
+        col = 2
+        for field_name, number_format in column_specs:
+            cell = ws.cell(row, col, grand_total_data.get(field_name) or 0)
+            if number_format:
+                cell.number_format = number_format
+            col += 1
 
     def _create_response(self):
         """Create HTTP response with the workbook"""
