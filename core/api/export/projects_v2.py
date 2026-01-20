@@ -4,6 +4,8 @@ from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.models import BPActivity
 from core.models import MetaProject
 
+# pylint: disable=no-member
+
 
 def export_activity_code(activity_data):
     try:

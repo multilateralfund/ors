@@ -15,6 +15,8 @@ import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/Project
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
+import { getFormattedDecimalValue } from '../utils'
+import { nonMonetaryFields } from './constants'
 
 import { useSnackbar } from 'notistack'
 import { values } from 'lodash'
@@ -64,7 +66,11 @@ export const MetaProjectEdit = (props: {
     const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
     for (const key of Object.keys(fd)) {
-      result[key] = fd[key as keyof MetaProjectFieldData].value
+      const fdEntry = fd[key as keyof MetaProjectFieldData]
+      result[key] =
+        fdEntry.type === 'DecimalField'
+          ? getFormattedDecimalValue(fdEntry.value as string)
+          : fdEntry.value
     }
 
     return result
@@ -160,7 +166,7 @@ export const MetaProjectEdit = (props: {
             id={fd.name}
             className="!m-0 h-10 w-full !border-gray-400 p-2.5"
             withoutDefaultValue={true}
-            prefix={'$'}
+            prefix={!nonMonetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
             onChange={changeSimpleInput(fd.name, { numeric: true })}
           />

@@ -22,30 +22,34 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     """
 
     # PCR due - later-added derived field
-    pcr_due = serializers.BooleanField(read_only=True)
+    pcr_due = serializers.BooleanField(source="pcr_due_denorm", read_only=True)
 
     # Project identification - derived fields
-    meta_code = serializers.CharField(source="meta_project_code", read_only=True)
-    project_code = serializers.CharField(source="project.code", read_only=True)
-    legacy_code = serializers.CharField(source="project.legacy_code", read_only=True)
+    meta_code = serializers.CharField(source="meta_code_denorm", read_only=True)
+    project_code = serializers.CharField(source="project_code_denorm", read_only=True)
+    legacy_code = serializers.CharField(source="legacy_code_denorm", read_only=True)
     agency_name = serializers.CharField(
-        source="project.agency.name", read_only=True, allow_null=True
+        source="agency_name_denorm", read_only=True, allow_null=True
     )
     # TODO: is it ok to use cluster.name below? or should it be cluster.code?
     cluster_name = serializers.CharField(
-        source="project.cluster.name", read_only=True, allow_null=True
+        source="cluster_name_denorm", read_only=True, allow_null=True
     )
     region_name = serializers.CharField(
-        source="project.country.parent.name", read_only=True, allow_null=True
+        source="region_name_denorm", read_only=True, allow_null=True
     )
-    country_name = serializers.CharField(source="project.country.name", read_only=True)
-    type_code = serializers.CharField(source="project_type", read_only=True)
-    sector_code = serializers.CharField(source="project_sector", read_only=True)
-    project_title = serializers.CharField(source="project.title", read_only=True)
+    country_name = serializers.CharField(source="country_name_denorm", read_only=True)
+    type_code = serializers.CharField(source="type_code_denorm", read_only=True)
+    sector_code = serializers.CharField(source="sector_code_denorm", read_only=True)
+    project_title = serializers.CharField(source="project_title_denorm", read_only=True)
 
     # Project date data fields - derived
-    date_approved = serializers.DateField(read_only=True, allow_null=True)
-    date_completion_proposal = serializers.DateField(read_only=True, allow_null=True)
+    date_approved = serializers.DateField(
+        source="date_approved_denorm", read_only=True, allow_null=True
+    )
+    date_completion_proposal = serializers.DateField(
+        source="date_completion_proposal_denorm", read_only=True, allow_null=True
+    )
 
     # Project date data fields - input
     status = serializers.CharField(allow_blank=True)
@@ -56,16 +60,24 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Phaseout data fields - derived
     consumption_phased_out_odp_proposal = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="consumption_phased_out_odp_proposal_denorm",
+        read_only=True,
+        allow_null=True,
     )
     consumption_phased_out_co2_proposal = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="consumption_phased_out_co2_proposal_denorm",
+        read_only=True,
+        allow_null=True,
     )
     production_phased_out_odp_proposal = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="production_phased_out_odp_proposal_denorm",
+        read_only=True,
+        allow_null=True,
     )
     production_phased_out_co2_proposal = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="production_phased_out_co2_proposal_denorm",
+        read_only=True,
+        allow_null=True,
     )
 
     # Phaseout data fields - input
@@ -75,26 +87,37 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     production_phased_out_co2 = serializers.FloatField(allow_null=True)
 
     # Financial data fields - derived
-    approved_funding = serializers.FloatField(read_only=True, allow_null=True)
-    adjustment = serializers.FloatField(read_only=True, allow_null=True)
+    approved_funding = serializers.FloatField(
+        source="approved_funding_denorm", read_only=True, allow_null=True
+    )
+    adjustment = serializers.FloatField(
+        source="adjustment_denorm", read_only=True, allow_null=True
+    )
 
     # Financial data fields - calculated
     approved_funding_plus_adjustment = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="approved_funding_plus_adjustment_denorm",
+        read_only=True,
+        allow_null=True,
     )
     per_cent_funds_disbursed = serializers.FloatField(read_only=True, allow_null=True)
     balance = serializers.FloatField(read_only=True, allow_null=True)
 
     # Financial data fields - derived (2)
     support_cost_approved = serializers.FloatField(
+        source="support_cost_approved_denorm",
         read_only=True,
         allow_null=True,
     )
-    support_cost_adjustment = serializers.FloatField(read_only=True, allow_null=True)
+    support_cost_adjustment = serializers.FloatField(
+        source="support_cost_adjustment_denorm", read_only=True, allow_null=True
+    )
 
     # Financial data fields - calculated (2)
     support_cost_approved_plus_adjustment = serializers.FloatField(
-        read_only=True, allow_null=True
+        source="support_cost_approved_plus_adjustment_denorm",
+        read_only=True,
+        allow_null=True,
     )
     support_cost_balance = serializers.FloatField(read_only=True, allow_null=True)
 
@@ -111,10 +134,15 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Project financial data fields - derived (3)
     implementation_delays_status_report_decisions = serializers.CharField(
-        allow_null=True, allow_blank=True, read_only=True
+        source="implementation_delays_status_report_decisions_denorm",
+        allow_null=True,
+        allow_blank=True,
+        read_only=True,
     )
     date_of_completion_per_agreement_or_decisions = serializers.DateField(
-        read_only=True, allow_null=True
+        source="date_of_completion_per_agreement_or_decisions_denorm",
+        read_only=True,
+        allow_null=True,
     )
 
     # Narrative and indicator data fields - input

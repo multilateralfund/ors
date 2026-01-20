@@ -270,11 +270,14 @@ class APRWorkspaceView(RetrieveAPIView):
                 default_data = {"status": project.status.name}
                 previous_data = previous_reports_dict.get(key, default_data)
 
-                AnnualProjectReport.objects.get_or_create(
+                project_report, created = AnnualProjectReport.objects.get_or_create(
                     project=project,
                     report=agency_report,
                     defaults=previous_data,
                 )
+                if created or project_report.meta_code_denorm is None:
+                    project_report.populate_derived_fields()
+                    project_report.save()
 
         # Refetch the agency report using the optimized queryset - with prefetches
         return self.get_queryset().get(pk=agency_report.pk)
@@ -573,9 +576,6 @@ class APRExportView(APIView):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
             ),
             progress_report__year=year,
             agency_id=agency_id,
@@ -736,9 +736,6 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
                 "files",
             )
             .order_by("agency__name")

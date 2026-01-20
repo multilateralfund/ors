@@ -140,6 +140,7 @@ def _process_rows(df, progress_report, dry_run):
                 with transaction.atomic():
                     if project_report:
                         # Project report already existing, just update it
+                        # (including derived fields!)
                         serializer = AnnualProjectReportUpdateSerializer(
                             instance=project_report,
                             data=data,
@@ -147,6 +148,8 @@ def _process_rows(df, progress_report, dry_run):
                         )
                         if serializer.is_valid():
                             serializer.save()
+                            project_report.populate_derived_fields()
+                            project_report.save()
                             stats["updated"] += 1
                         else:
                             logger.info(
@@ -166,6 +169,8 @@ def _process_rows(df, progress_report, dry_run):
                         )
                         if serializer.is_valid():
                             serializer.save()
+                            project_report.populate_derived_fields()
+                            project_report.save()
                             stats["created"] += 1
                         else:
                             logger.info(
