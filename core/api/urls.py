@@ -153,7 +153,7 @@ from core.api.views.annual_project_report import (
     APRFilesDownloadAllView,
     APRStatusView,
     APRExportView,
-    APRSummaryTablesView,
+    APRSummaryTablesExportView,
     APRGlobalViewSet,
     APRToggleLockView,
     APREndorseView,
@@ -742,6 +742,11 @@ urlpatterns = [
         name="apr-export",
     ),
     path(
+        "annual-project-report/summary-tables/export/",
+        APRSummaryTablesExportView.as_view(),
+        name="apr-summary-tables-export",
+    ),
+    path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
         APRBulkUpdateView.as_view(),
         name="apr-update",
@@ -775,11 +780,6 @@ urlpatterns = [
         "annual-project-report/<int:year>/agency/<int:agency_id>/status/",
         APRStatusView.as_view(),
         name="apr-status",
-    ),
-    path(
-        "annual-project-report/<int:year>/summary/",
-        APRSummaryTablesView.as_view(),
-        name="apr-summary",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",

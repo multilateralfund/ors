@@ -200,7 +200,13 @@ export default function APRWorkspace() {
             >
               Update APR
             </Link>
-            <Button variant="text" startIcon={<FiTable size={18} />} disabled>
+            <Button
+              variant="text"
+              startIcon={<FiTable size={18} />}
+              href={formatApiUrl(
+                `api/annual-project-report/summary-tables/export/`,
+              )}
+            >
               Generate summary tables
             </Button>
           </div>
