@@ -135,7 +135,7 @@ class ApprovalSummarySerializer(serializers.BaseSerializer):
 
     def to_representation(self, projects: QuerySet[Project]):
         bilateral_cooperation = ApprovalSummaryBilateralCooperationSerializer(
-            projects
+            projects.filter(agency__agency_type="National")
         ).data
         investment_project = ApprovalSummaryInvestmentProjectSerializer(projects).data
         work_programme_amendment = ApprovalSummaryWorkProgrammeAmendmentSerializer(
