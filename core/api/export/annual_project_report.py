@@ -570,16 +570,9 @@ class APRSummaryTablesExportWriter:
         return self._create_response()
 
     def _write_detail_sheet(self):
-        """Generate the detail sheet using existing APRExportWriter logic"""
-        # Use the existing detail sheet from template
-        if self.SHEET_DETAIL not in self.workbook.sheetnames:
-            # Fallback: create it if somehow missing
-            detail_worksheet = self.workbook.create_sheet(self.SHEET_DETAIL)
-        else:
-            detail_worksheet = self.workbook[self.SHEET_DETAIL]
+        detail_worksheet = self.workbook[self.SHEET_DETAIL]
 
-        # Clear any template data from the detail sheet (keep headers at row 2, clear from row 3)
-        self._clear_template_data_rows(detail_worksheet, 3)
+        self._clear_template_data_rows(detail_worksheet, self.DETAIL_DATA_START_ROW)
 
         # Create detail sheet using existing APRExportWriter
         agency_name = self.agency.name if self.agency else None
@@ -596,22 +589,19 @@ class APRSummaryTablesExportWriter:
             detail_writer.STATUS_SHEET_NAME
         )
 
-        # Generate detail content (skipping workbook creation and extra column removal)
-        # Don't call _remove_extra_columns since template already has correct structure
         detail_writer._create_status_sheet()
         detail_writer._write_data_rows()
         detail_writer._apply_cell_formatting()
         detail_writer._apply_data_validation()
 
-        # Remove the Status Values sheet as it's not needed in summary export
+        # Remove the Status Values sheet as it's not needed in the actual export
         if detail_writer.STATUS_SHEET_NAME in self.workbook.sheetnames:
             del self.workbook[detail_writer.STATUS_SHEET_NAME]
 
     def _clear_template_data_rows(self, ws, start_row, end_row=None):
         """
-        Clear any template/sample data from the worksheet by setting cell values to None.
-        Does *not* delete rows as it would shift row numbers; just clears the contents;
-        it keeps headers intact
+        Clear any template/sample data from the worksheet.
+        Does *not* delete rows as this would shift row numbers; just clears contents
         """
         if end_row is None:
             end_row = ws.max_row
@@ -1016,7 +1006,8 @@ class APRSummaryTablesExportWriter:
                 group_projects, "project__date_approved", "date_first_disbursement"
             )
 
-            # For ongoing projects (sheets e, f, g), use date_planned_completion instead of date_actual_completion
+            # For ongoing projects (sheets e, f, g) use date_planned_completion
+            # instead of date_actual_completion.
             if sheet_type in [
                 "ongoing_investment",
                 "ongoing_non_investment",
