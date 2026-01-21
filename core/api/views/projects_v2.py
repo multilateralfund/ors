@@ -457,7 +457,9 @@ class ProjectV2ViewSet(
         queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
         result = {
             "country": get_available_values(queryset, "country"),
-            "agency": get_available_values(queryset, "agency"),
+            "agency": get_available_values(
+                queryset, "agency", ("agency__agency_type", "agency__name")
+            ),
             "cluster": get_available_values(queryset, "cluster"),
             "project_type": get_available_values(queryset, "project_type"),
             "sector": get_available_values(queryset, "sector"),
