@@ -54,7 +54,7 @@ const EditActionModals = ({
   <>
     {isCancelModalOpen && setIsCancelModalOpen && (
       <CancelWarningModal
-        mode="editing"
+        mode="project editing"
         isModalOpen={isCancelModalOpen}
         setIsModalOpen={setIsCancelModalOpen}
       />

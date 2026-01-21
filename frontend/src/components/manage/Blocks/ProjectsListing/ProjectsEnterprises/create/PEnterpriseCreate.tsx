@@ -106,16 +106,16 @@ const PEnterpriseCreate = ({
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
     ] ?? {}
+  const formattedEnterpriseErrors =
+    !!enterprise && errors?.status
+      ? { ...enterpriseErrors, status: errors.status }
+      : enterpriseErrors
+
   const searchErrors = getFieldErrors(
     pick(overview, 'id'),
     enterpriseErrors,
     !!enterprise,
   )
-
-  const formattedEnterpriseErrors =
-    !!enterprise && errors?.status
-      ? { ...enterpriseErrors, status: errors.status }
-      : enterpriseErrors
   const overviewErrors = getFieldErrors(
     omit(overview, 'id'),
     formattedEnterpriseErrors,

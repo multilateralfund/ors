@@ -1,56 +1,66 @@
-import { ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { ChangeEvent } from 'react'
 
-import { EnterpriseOverview, EnterpriseSubstanceDetails } from '../interfaces'
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
+import {
+  EnterpriseOverview,
+  EnterpriseSubstanceDetails,
+  SetEnterpriseData,
+} from '../interfaces'
 
 import { find, get, isNil, isObject, keys, sumBy } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  setEnterpriseData: SetEnterpriseData<T>,
   value: any,
   sectionIdentifier?: keyof T | null,
 ) => {
   const formattedValue = value?.id ?? null
 
-  setEnterpriseData((prev) => ({
-    ...prev,
-    ...(sectionIdentifier
-      ? {
-          [sectionIdentifier]: {
-            ...prev[sectionIdentifier],
+  setEnterpriseData(
+    (prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: formattedValue,
+            },
+          }
+        : {
             [field]: formattedValue,
-          },
-        }
-      : {
-          [field]: formattedValue,
-        }),
-  }))
+          }),
+    }),
+    field,
+  )
 }
 
 export const handleChangeTextValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  setEnterpriseData: SetEnterpriseData<T>,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   sectionIdentifier?: keyof T | null,
 ) => {
-  setEnterpriseData((prev) => ({
-    ...prev,
-    ...(sectionIdentifier
-      ? {
-          [sectionIdentifier]: {
-            ...prev[sectionIdentifier],
-            [field]: event.target.value,
-          },
-        }
-      : { [field]: event.target.value }),
-  }))
+  setEnterpriseData(
+    (prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: event.target.value,
+            },
+          }
+        : { [field]: event.target.value }),
+    }),
+    field,
+  )
 }
 
 export const handleChangeIntegerValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  setEnterpriseData: SetEnterpriseData<T>,
   event: ChangeEvent<HTMLInputElement>,
   sectionIdentifier?: keyof T | null,
 ) => {
@@ -59,17 +69,20 @@ export const handleChangeIntegerValues = <T>(
   if (value === '' || !isNaN(parseInt(value))) {
     const finalVal = value ? parseInt(value) : null
 
-    setEnterpriseData((prev) => ({
-      ...prev,
-      ...(sectionIdentifier
-        ? {
-            [sectionIdentifier]: {
-              ...prev[sectionIdentifier],
-              [field]: finalVal,
-            },
-          }
-        : { [field]: finalVal }),
-    }))
+    setEnterpriseData(
+      (prev) => ({
+        ...prev,
+        ...(sectionIdentifier
+          ? {
+              [sectionIdentifier]: {
+                ...prev[sectionIdentifier],
+                [field]: finalVal,
+              },
+            }
+          : { [field]: finalVal }),
+      }),
+      field,
+    )
   } else {
     event.preventDefault()
   }
@@ -77,7 +90,7 @@ export const handleChangeIntegerValues = <T>(
 
 export const handleChangeDecimalValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  setEnterpriseData: SetEnterpriseData<T>,
   event: ChangeEvent<HTMLInputElement>,
   sectionIdentifier?: keyof T | null,
 ) => {
@@ -85,17 +98,20 @@ export const handleChangeDecimalValues = <T>(
   const value = initialValue === '' ? null : initialValue
 
   if (!isNaN(Number(value))) {
-    setEnterpriseData((prev) => ({
-      ...prev,
-      ...(sectionIdentifier
-        ? {
-            [sectionIdentifier]: {
-              ...prev[sectionIdentifier],
-              [field]: value,
-            },
-          }
-        : { [field]: value }),
-    }))
+    setEnterpriseData(
+      (prev) => ({
+        ...prev,
+        ...(sectionIdentifier
+          ? {
+              [sectionIdentifier]: {
+                ...prev[sectionIdentifier],
+                [field]: value,
+              },
+            }
+          : { [field]: value }),
+      }),
+      field,
+    )
   } else {
     event.preventDefault()
   }
@@ -103,23 +119,26 @@ export const handleChangeDecimalValues = <T>(
 
 export const handleChangeDateValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  setEnterpriseData: SetEnterpriseData<T>,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   sectionIdentifier?: keyof T | null,
 ) => {
   const formattedVal = event.target.value || null
 
-  setEnterpriseData((prev) => ({
-    ...prev,
-    ...(sectionIdentifier
-      ? {
-          [sectionIdentifier]: {
-            ...prev[sectionIdentifier],
-            [field]: formattedVal,
-          },
-        }
-      : { [field]: formattedVal }),
-  }))
+  setEnterpriseData(
+    (prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: formattedVal,
+            },
+          }
+        : { [field]: formattedVal }),
+    }),
+    field,
+  )
 }
 
 export const getFieldDefaultProps = (isFieldDisabled: boolean = false) => {

@@ -199,7 +199,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
       </div>
       {isCancelModalOpen && (
         <CancelWarningModal
-          mode="association"
+          mode="project association"
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
           onContinueAction={redirectOnCancel ? undefined : cancelAssociation}

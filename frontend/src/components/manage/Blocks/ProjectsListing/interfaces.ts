@@ -1,5 +1,5 @@
-import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { ProjectType } from '@ors/types/api_projects'
 
 export type ListingProjectData = {
@@ -271,6 +271,11 @@ export interface ProjectTransferData {
   psc_transferred: string | null
 }
 
+export type SetEnterpriseData<T> = (
+  updater: SetStateAction<T>,
+  fieldName?: string,
+) => void
+
 export type SetProjectData = (
   updater: SetStateAction<ProjectData>,
   fieldName?: string,
@@ -384,7 +389,7 @@ export type PEnterpriseDataType = {
 
 export type EnterpriseDataType = {
   enterpriseData: EnterpriseOverview
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+  setEnterpriseData: SetEnterpriseData<EnterpriseOverview>
   enterprise?: EnterpriseType
 }
 
