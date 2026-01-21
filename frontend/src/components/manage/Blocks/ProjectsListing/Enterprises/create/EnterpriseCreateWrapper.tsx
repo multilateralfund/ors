@@ -1,25 +1,16 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import EnterpriseHeader from './EnterpriseHeader.tsx'
 import EnterpriseCreate from './EnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { initialOverviewFields } from '../../ProjectsEnterprises/constants.ts'
 import { EnterpriseOverview } from '../../interfaces.ts'
-import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 
 import { Redirect } from 'wouter'
 
 const EnterpriseCreateWrapper = () => {
   const { canEditEnterprise } = useContext(PermissionsContext)
-
-  const { updatedFields, addUpdatedField, clearUpdatedFields } =
-    useUpdatedFields()
-
-  useEffect(() => {
-    clearUpdatedFields()
-  }, [])
 
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>(
     initialOverviewFields,
@@ -33,25 +24,6 @@ const EnterpriseCreateWrapper = () => {
   if (!canEditEnterprise) {
     return <Redirect to="/projects-listing/enterprises" />
   }
-
-  const setEnterpriseDataWithEditTracking = (
-    updater: React.SetStateAction<EnterpriseOverview>,
-    fieldName?: string,
-  ) => {
-    setEnterpriseData((prevData) => {
-      if (fieldName) {
-        addUpdatedField(fieldName)
-      }
-
-      return typeof updater === 'function'
-        ? (updater as (prev: EnterpriseOverview) => EnterpriseOverview)(
-            prevData,
-          )
-        : updater
-    })
-  }
-
-  useVisibilityChange(updatedFields.size > 0)
 
   return (
     <>
@@ -67,9 +39,9 @@ const EnterpriseCreateWrapper = () => {
       <EnterpriseCreate
         {...{
           enterpriseData,
+          setEnterpriseData,
           errors,
         }}
-        setEnterpriseData={setEnterpriseDataWithEditTracking}
       />
       <ProjectFormFooter
         id={enterpriseId}

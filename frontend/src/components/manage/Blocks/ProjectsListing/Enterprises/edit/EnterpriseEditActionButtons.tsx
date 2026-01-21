@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { DropDownButtonProps, DropDownMenuProps } from '../../HelperComponents'
 import { handleErrors } from '../../ProjectsEnterprises/FormHelperComponents'
@@ -38,6 +38,7 @@ const EnterpriseEditActionButtons = ({
 }) => {
   const { enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const { canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
@@ -63,6 +64,7 @@ const EnterpriseEditActionButtons = ({
 
       setEnterpriseId(result.id)
       setEnterpriseName(result.name)
+      clearUpdatedFields()
 
       return true
     } catch (error) {
@@ -123,8 +125,7 @@ const EnterpriseEditActionButtons = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-end gap-2.5">
-        <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
+      <>
         {canEditEnterprise && !isObsolete && (
           <Button
             className={cx('px-4 py-2 shadow-none', {
@@ -174,7 +175,7 @@ const EnterpriseEditActionButtons = ({
               </Dropdown.Item>
             </Dropdown>
           ))}
-      </div>
+      </>
       {isObsoleteWarningOpen && (
         <ChangeStatusModal
           isModalOpen={isObsoleteWarningOpen}
