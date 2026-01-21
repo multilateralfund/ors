@@ -1,6 +1,16 @@
 from django_filters import rest_framework as filters
+from django_filters.widgets import CSVWidget
 
+from core.models import Agency
+from core.models import Country
 from core.models import Project
+from core.models import ProjectCluster
+from core.models import ProjectSector
+from core.models import ProjectType
+
+
+class NumberInFilter(filters.BaseInFilter, filters.NumberFilter):
+    pass
 
 
 class SummaryOfProjectsFilter(filters.FilterSet):
@@ -20,32 +30,42 @@ class SummaryOfProjectsFilter(filters.FilterSet):
         lookup_expr="iexact",
     )
 
-    cluster_id = filters.BaseInFilter(
+    cluster_id = filters.ModelMultipleChoiceFilter(
         field_name="cluster",
-        lookup_expr="in",
+        queryset=ProjectCluster.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by cluster. Multiple values can be separated by comma.",
     )
 
-    project_type_id = filters.BaseInFilter(
+    project_type_id = filters.ModelMultipleChoiceFilter(
         field_name="project_type",
-        lookup_expr="in",
+        queryset=ProjectType.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by project type. Multiple values can be separated by comma.",
     )
 
-    country_id = filters.BaseInFilter(
+    country_id = filters.ModelMultipleChoiceFilter(
         field_name="country",
-        lookup_expr="in",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by country. Multiple values can be separated by comma.",
     )
 
-    sector_id = filters.BaseInFilter(
+    sector_id = filters.ModelMultipleChoiceFilter(
         field_name="sector",
-        lookup_expr="in",
+        queryset=ProjectSector.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by sector. Multiple values can be separated by comma.",
     )
 
-    agency_id = filters.BaseInFilter(
+    agency_id = filters.ModelMultipleChoiceFilter(
         field_name="agency",
-        lookup_expr="in",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by agency. Multiple values can be separated by comma.",
     )
 
-    tranche = filters.NumberFilter()
+    tranche = NumberInFilter(field_name="tranche", lookup_expr="in")
 
     class Meta:
         model = Project
