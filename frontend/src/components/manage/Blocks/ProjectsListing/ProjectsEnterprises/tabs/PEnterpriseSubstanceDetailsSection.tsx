@@ -80,7 +80,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         ...prevData,
         [sectionId]: updatedData,
       }
-    })
+    }, 'substance')
   }
 
   const handleChangeTextValues = (
@@ -102,7 +102,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         ...prevData,
         [sectionId]: updatedData,
       }
-    })
+    }, field)
   }
 
   const handleChangeNumericValues = (
@@ -126,7 +126,7 @@ const PEnterpriseSubstanceDetailsSection = ({
           ...prevData,
           [sectionId]: updatedData,
         }
-      })
+      }, field)
     } else {
       event.preventDefault()
     }
@@ -140,7 +140,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         ...prevData,
         [sectionId]: [...sectionData, initialSubstanceDetailsFields],
       }
-    })
+    }, 'add-substance')
   }
 
   const onRemoveSubstance = (index: number) => {
@@ -151,7 +151,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         ...prevData,
         [sectionId]: sectionData.filter((_, idx) => idx !== index),
       }
-    })
+    }, 'remove-substance')
   }
 
   const getSubstanceValue = (substance: EnterpriseSubstanceDetails) =>

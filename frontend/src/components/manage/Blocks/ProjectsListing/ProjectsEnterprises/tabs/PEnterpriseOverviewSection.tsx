@@ -61,13 +61,16 @@ const PEnterpriseOverviewSection = ({
   ]
 
   const handleChangeLinkStatus = (value: any) => {
-    setEnterpriseData((prev) => ({
-      ...prev,
-      [sectionIdentifier]: {
-        ...prev[sectionIdentifier],
-        linkStatus: value.id,
-      },
-    }))
+    setEnterpriseData(
+      (prev) => ({
+        ...prev,
+        [sectionIdentifier]: {
+          ...prev[sectionIdentifier],
+          linkStatus: value.id,
+        },
+      }),
+      'link-status',
+    )
   }
 
   return (

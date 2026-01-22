@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { handleErrors } from '../FormHelperComponents'
 import { dropDownClassName, enabledButtonClassname } from '../../constants'
@@ -32,6 +32,7 @@ const PEnterpriseEditActionButtons = ({
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
@@ -73,6 +74,7 @@ const PEnterpriseEditActionButtons = ({
 
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)
+      clearUpdatedFields()
 
       if (isPending && overview.linkStatus === 'Approved') {
         setLocation(
@@ -128,11 +130,7 @@ const PEnterpriseEditActionButtons = ({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2.5">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}`}
-      />
+    <>
       {canEditProjectEnterprise && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -157,7 +155,7 @@ const PEnterpriseEditActionButtons = ({
           Approve project enterprise
         </Button>
       )}
-    </div>
+    </>
   )
 }
 

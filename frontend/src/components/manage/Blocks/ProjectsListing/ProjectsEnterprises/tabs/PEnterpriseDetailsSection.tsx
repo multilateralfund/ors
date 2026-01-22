@@ -59,13 +59,16 @@ const PEnterpriseDetailsSection = ({
   ]
 
   const handleChangeMeeting = (meeting?: string) => {
-    setEnterpriseData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        meeting: parseNumber(meeting),
-      },
-    }))
+    setEnterpriseData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          meeting: parseNumber(meeting),
+        },
+      }),
+      'meeting',
+    )
   }
 
   return (

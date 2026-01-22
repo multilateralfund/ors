@@ -383,7 +383,7 @@ export interface PEnterpriseData {
 
 export type PEnterpriseDataType = {
   enterpriseData: PEnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>
+  setEnterpriseData: SetEnterpriseData<PEnterpriseData>
   enterprise?: PEnterpriseType
 }
 

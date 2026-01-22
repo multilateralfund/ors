@@ -2,9 +2,10 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import EnterpriseCancelButton from '../../Enterprises/create/EnterpriseCancelButton'
 import PEnterpriseEditActionButtons from '../edit/PEnterpriseEditActionButtons'
 import PEnterpriseCreateActionButtons from './PEnterpriseCreateActionButtons'
-import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { PageTitle } from '../../HelperComponents'
 import { EnterpriseStatus } from '../FormHelperComponents'
 import {
   PEnterpriseData,
@@ -35,7 +36,11 @@ const PEnterpriseHeader = ({
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
-          <RedirectBackButton />
+          <EnterpriseCancelButton
+            type="project enterprise"
+            mode="redirect"
+            isEdit={isEdit}
+          />
           <PageHeading>
             {isEdit ? (
               <PageTitle
@@ -53,13 +58,20 @@ const PEnterpriseHeader = ({
             'mt-auto': mode === 'add',
           })}
         >
-          {mode === 'add' ? (
-            <PEnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
-          ) : (
-            <PEnterpriseEditActionButtons
-              {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <EnterpriseCancelButton
+              type="project enterprise"
+              mode="cancel"
+              isEdit={isEdit}
             />
-          )}
+            {mode === 'add' ? (
+              <PEnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
+            ) : (
+              <PEnterpriseEditActionButtons
+                {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
+              />
+            )}
+          </div>
           {isLoading && (
             <CircularProgress color="inherit" size="30px" className="ml-1.5" />
           )}

@@ -30,38 +30,44 @@ const PEnterpriseSearch = ({
       const crtEnterprise = getEntityById(enterprises, enterpriseId)
 
       if (crtEnterprise) {
-        setEnterpriseData((prevData) => ({
-          ...prevData,
-          overview: {
-            id: enterpriseId,
-            status: crtEnterprise.status,
-            name: crtEnterprise.name,
-            country: crtEnterprise.country,
-            location: crtEnterprise.location,
-            stage: crtEnterprise.stage,
-            sector: crtEnterprise.sector,
-            subsector: crtEnterprise.subsector,
-            application: crtEnterprise.application,
-            local_ownership: getFormattedDecimalValue(
-              crtEnterprise.local_ownership,
-            ),
-            export_to_non_a5: getFormattedDecimalValue(
-              crtEnterprise.export_to_non_a5,
-            ),
-            revision: crtEnterprise.revision,
-            date_of_revision: crtEnterprise.date_of_revision,
-          },
-        }))
+        setEnterpriseData(
+          (prevData) => ({
+            ...prevData,
+            overview: {
+              id: enterpriseId,
+              status: crtEnterprise.status,
+              name: crtEnterprise.name,
+              country: crtEnterprise.country,
+              location: crtEnterprise.location,
+              stage: crtEnterprise.stage,
+              sector: crtEnterprise.sector,
+              subsector: crtEnterprise.subsector,
+              application: crtEnterprise.application,
+              local_ownership: getFormattedDecimalValue(
+                crtEnterprise.local_ownership,
+              ),
+              export_to_non_a5: getFormattedDecimalValue(
+                crtEnterprise.export_to_non_a5,
+              ),
+              revision: crtEnterprise.revision,
+              date_of_revision: crtEnterprise.date_of_revision,
+            },
+          }),
+          'search',
+        )
       }
     } else {
-      setEnterpriseData((prevData) => ({
-        ...prevData,
-        overview: {
-          ...prevData['overview'],
-          id: null,
-          status: '',
-        },
-      }))
+      setEnterpriseData(
+        (prevData) => ({
+          ...prevData,
+          overview: {
+            ...prevData['overview'],
+            id: null,
+            status: '',
+          },
+        }),
+        'search',
+      )
     }
   }
 

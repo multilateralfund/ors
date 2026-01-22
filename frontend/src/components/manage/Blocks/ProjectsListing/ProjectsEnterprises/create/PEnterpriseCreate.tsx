@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
 import PEnterpriseDetailsSection from '../tabs/PEnterpriseDetailsSection.tsx'
@@ -21,7 +22,9 @@ import {
   EnterpriseSubstanceDetails,
   OptionsType,
   ProjectTypeApi,
+  PEnterpriseData,
 } from '../../interfaces.ts'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { useStore } from '@ors/store.tsx'
 
 import { find, has, map, omit, pick, uniq, values } from 'lodash'
@@ -36,6 +39,9 @@ const PEnterpriseCreate = ({
   projectData: ProjectTypeApi
   enterpriseStatuses?: OptionsType[]
 }) => {
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const filters = {
@@ -101,6 +107,27 @@ const PEnterpriseCreate = ({
       },
     }))
   }, [details.meeting])
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
+  const setEnterpriseDataWithEditTracking = (
+    updater: React.SetStateAction<PEnterpriseData>,
+    fieldName?: string,
+  ) => {
+    setEnterpriseData((prevData) => {
+      if (fieldName) {
+        addUpdatedField(fieldName)
+      }
+
+      return typeof updater === 'function'
+        ? (updater as (prev: PEnterpriseData) => PEnterpriseData)(prevData)
+        : updater
+    })
+  }
+
+  useVisibilityChange(updatedFields.size > 0)
 
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
@@ -172,6 +199,7 @@ const PEnterpriseCreate = ({
           key={JSON.stringify(results)}
           enterprises={results}
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={searchErrors}
         />
       ),
@@ -190,6 +218,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseOverviewSection
           {...{ countryId, enterpriseStatuses, ...rest }}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={overviewErrors}
         />
       ),
@@ -208,6 +237,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseDetailsSection
           {...{ projectData, ...rest }}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={detailsErrors}
         />
       ),
@@ -228,6 +258,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseSubstanceDetailsSection
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={substanceErrors}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
@@ -251,6 +282,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseFundingDetailsSection
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={fundingDetailsErrors}
         />
       ),
@@ -266,7 +298,13 @@ const PEnterpriseCreate = ({
           )}
         </div>
       ),
-      component: <PEnterpriseRemarksSection {...rest} errors={remarksErrors} />,
+      component: (
+        <PEnterpriseRemarksSection
+          {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
+          errors={remarksErrors}
+        />
+      ),
       errors: formatErrors(remarksErrors, enterpriseFieldsMapping),
     },
   ]
