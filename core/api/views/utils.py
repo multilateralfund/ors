@@ -71,11 +71,16 @@ def log_project_history(project, request_user, description):
     )
 
 
-def get_available_values(queryset: QuerySet, field_name: str):
+def get_available_values(queryset: QuerySet, field_name: str, order_by: tuple = ()):
     rel_name = f"{field_name}__name"
 
+    if not order_by:
+        order_by = (rel_name,)
+
     values = (
-        queryset.order_by(rel_name).values_list(f"{field_name}_id", rel_name).distinct()
+        queryset.order_by(*order_by)
+        .values_list(f"{field_name}_id", rel_name)
+        .distinct()
     )
 
     return [{"name": name, "id": pk} for pk, name in values if pk is not None]
