@@ -1,7 +1,8 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ChangeStatusModal from '../../Enterprises/edit/ChangeStatusModal'
 import { handleErrors } from '../FormHelperComponents'
 import { dropDownClassName, enabledButtonClassname } from '../../constants'
 import {
@@ -36,6 +37,8 @@ const PEnterpriseEditActionButtons = ({
 
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
+
+  const [modalType, setModalType] = useState<string | null>(null)
 
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
@@ -127,6 +130,7 @@ const PEnterpriseEditActionButtons = ({
         )
       }
     }
+    setModalType(null)
   }
 
   return (
@@ -147,13 +151,21 @@ const PEnterpriseEditActionButtons = ({
       {isPending && canApproveProjectEnterprise && (
         <Button
           className={cx({ [dropDownClassName]: !disableSubmit })}
-          onClick={approveProjectEnterprise}
+          onClick={() => setModalType('Approved')}
           disabled={disableSubmit}
           variant="contained"
           size="large"
         >
           Approve project enterprise
         </Button>
+      )}
+      {!!modalType && (
+        <ChangeStatusModal
+          type="project enterprise"
+          modalType={modalType}
+          setIsModalOpen={setModalType}
+          onAction={approveProjectEnterprise}
+        />
       )}
     </>
   )
