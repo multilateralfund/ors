@@ -159,7 +159,7 @@ class ProjectsCompareVersionsViewset(
         right = ProjectSubmissionStatus.objects.get(id=right)
 
         encoded_filters = f"{meeting}-{agency}-{left.name}-{right.name}"
-        plural_count = "projects" if candidate_count > 1 else "project"
+        plural_count = "project" if candidate_count == 1 else "projects"
         return f"Compare versions {encoded_filters} - {candidate_count} {plural_count}"
 
     @action(methods=["GET"], detail=False)

@@ -137,7 +137,7 @@ const ProjectsHeader = ({
         </div>
         {isCancelModalOpen && (
           <CancelWarningModal
-            mode={mode === 'edit' ? 'editing' : 'creation'}
+            mode={`project ${mode === 'edit' ? 'editing' : 'creation'}`}
             isModalOpen={isCancelModalOpen}
             setIsModalOpen={setIsCancelModalOpen}
           />

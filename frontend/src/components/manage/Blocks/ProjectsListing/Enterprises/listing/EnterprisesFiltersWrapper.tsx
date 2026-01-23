@@ -1,5 +1,3 @@
-'use client'
-
 import EnterprisesFilters from './EnterprisesFilters'
 import EnterprisesFiltersSelectedOpts from './EnterprisesFiltersSelectedOpts'
 import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'

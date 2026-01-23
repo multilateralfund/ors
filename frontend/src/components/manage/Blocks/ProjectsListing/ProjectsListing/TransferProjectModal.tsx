@@ -282,7 +282,7 @@ const ProjectTransferWrapper = ({
       </div>
       {isCancelModalOpen && (
         <CancelWarningModal
-          mode="transfer"
+          mode="project transfer"
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
           onContinueAction={() => setIsModalOpen(false)}

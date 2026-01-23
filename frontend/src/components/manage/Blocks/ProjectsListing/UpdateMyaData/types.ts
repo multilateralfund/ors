@@ -10,7 +10,7 @@ import { ApiAgency } from '@ors/types/api_agencies.ts'
 
 export type MetaProjectFieldData = Record<
   string,
-  { value: number | string | null; label: string; order: number }
+  { value: number | string | null; label: string; order: number; type: string }
 >
 
 export type MetaProjectDetailType = {

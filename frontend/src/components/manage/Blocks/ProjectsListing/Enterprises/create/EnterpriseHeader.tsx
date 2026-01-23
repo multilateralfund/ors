@@ -2,10 +2,11 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import EnterpriseEditActionButtons from '../edit/EnterpriseEditActionButtons'
 import EnterpriseCreateActionButtons from './EnterpriseCreateActionButtons'
-import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import EnterpriseCancelButton from './EnterpriseCancelButton'
+import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
+import { PageTitle } from '../../HelperComponents'
 import {
   EnterpriseHeaderProps,
   EnterpriseOverview,
@@ -33,7 +34,11 @@ const EnterpriseHeader = ({
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
-          <RedirectBackButton />
+          <EnterpriseCancelButton
+            type="enterprise"
+            mode="redirect"
+            isEdit={isEdit}
+          />
           <PageHeading>
             {isEdit ? (
               <PageTitle
@@ -51,13 +56,20 @@ const EnterpriseHeader = ({
             'mt-auto': mode === 'add',
           })}
         >
-          {mode === 'add' ? (
-            <EnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
-          ) : (
-            <EnterpriseEditActionButtons
-              {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
+          <div className="flex flex-wrap items-center justify-end gap-2.5">
+            <EnterpriseCancelButton
+              type="enterprise"
+              mode="cancel"
+              isEdit={isEdit}
             />
-          )}
+            {mode === 'add' ? (
+              <EnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
+            ) : (
+              <EnterpriseEditActionButtons
+                {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
+              />
+            )}
+          </div>
           {isLoading && (
             <CircularProgress color="inherit" size="30px" className="ml-1.5" />
           )}

@@ -82,6 +82,7 @@ export default function FieldHistoryIndicator({
               label,
               value,
               idx >= firstDifferentIndex,
+              fieldName.includes('(actual)'),
               extraPropsMap[formattedDataType],
             )}
           </span>
@@ -97,20 +98,33 @@ const historyViewModesHandler: Record<
     label: string,
     value: string,
     isTitleItalic: boolean,
+    isActual: boolean,
     extraProps: ExtraPropsType,
   ) => React.ReactNode
 > = {
-  text: (label, value, isTitleItalic, extraProps) =>
+  text: (label, value, isTitleItalic, isActual, extraProps) =>
     extraProps.type === 'text'
-      ? detailItem(label, value, isTitleItalic, extraProps.extra)
+      ? detailItem(label, value, isTitleItalic, isActual, extraProps.extra)
       : null,
-  number: (label, value, isTitleItalic, extraProps) =>
+  number: (label, value, isTitleItalic, isActual, extraProps) =>
     extraProps.type === 'number'
-      ? numberDetailItem(label, value, isTitleItalic, extraProps.dataType)
+      ? numberDetailItem(
+          label,
+          value,
+          isTitleItalic,
+          isActual,
+          extraProps.dataType,
+        )
       : null,
-  other: (label, value, isTitleItalic, extraProps) =>
+  other: (label, value, isTitleItalic, isActual, extraProps) =>
     extraProps.type === 'other'
-      ? otherDetailItem(label, value, isTitleItalic, extraProps.className)
+      ? otherDetailItem(
+          label,
+          value,
+          isTitleItalic,
+          isActual,
+          extraProps.className,
+        )
       : null,
 }
 
@@ -118,6 +132,7 @@ const detailItem = (
   label: string,
   value: string,
   isTitleItalic: boolean,
+  isActual: boolean,
   extra?: detailItemExtra,
 ) => {
   const { detailClassname, classNames } = extra ?? {}
@@ -131,6 +146,7 @@ const detailItem = (
     <span
       className={cx('flex gap-2', containerClassName, {
         italic: isTitleItalic,
+        'font-medium': isActual,
       })}
     >
       <span className={cx(detailClassname, className)}>{label}</span>
@@ -143,9 +159,15 @@ const numberDetailItem = (
   label: string,
   value: string,
   isTitleItalic: boolean,
+  isActual: boolean,
   dataType: string,
 ) => (
-  <span className={cx('flex gap-2', { italic: isTitleItalic })}>
+  <span
+    className={cx('flex gap-2', {
+      italic: isTitleItalic,
+      'font-medium': isActual,
+    })}
+  >
     <span>{label}</span>
     <h4 className="m-0">
       {getFormattedNumericValue(value, dataType === 'decimal' ? 2 : 0)}
@@ -157,9 +179,15 @@ const otherDetailItem = (
   label: string,
   value: string,
   isTitleItalic: boolean,
+  isActual: boolean,
   className?: string,
 ) => (
-  <span className={cx('flex gap-2', className, { italic: isTitleItalic })}>
+  <span
+    className={cx('flex gap-2', className, {
+      italic: isTitleItalic,
+      'font-medium': isActual,
+    })}
+  >
     <span>{label}</span>
     <h4 className="m-0">{value}</h4>
   </span>

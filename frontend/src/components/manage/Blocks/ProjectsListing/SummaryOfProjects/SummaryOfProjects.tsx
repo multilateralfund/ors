@@ -139,13 +139,7 @@ const SummaryOfProjects = () => {
           >
             Remove row
           </Button>
-          <Link
-            button
-            disabled={!rows.filter((row) => row.text).length}
-            size="large"
-            href={downloadUrl}
-            variant="contained"
-          >
+          <Link button size="large" href={downloadUrl} variant="contained">
             Download summary
           </Link>
         </div>

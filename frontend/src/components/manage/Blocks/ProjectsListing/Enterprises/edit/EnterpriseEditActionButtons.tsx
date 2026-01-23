@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { DropDownButtonProps, DropDownMenuProps } from '../../HelperComponents'
 import { handleErrors } from '../../ProjectsEnterprises/FormHelperComponents'
@@ -29,7 +29,6 @@ const EnterpriseEditActionButtons = ({
   setEnterpriseId,
   setEnterpriseName,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & {
@@ -39,11 +38,12 @@ const EnterpriseEditActionButtons = ({
 }) => {
   const { enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const { canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
 
-  const [isObsoleteWarningOpen, setIsObsoleteWarningOpen] = useState(false)
+  const [modalType, setModalType] = useState<string | null>(null)
 
   const { status = '' } = enterprise ?? {}
   const isApproved = status === 'Approved'
@@ -64,6 +64,7 @@ const EnterpriseEditActionButtons = ({
 
       setEnterpriseId(result.id)
       setEnterpriseName(result.name)
+      clearUpdatedFields()
 
       return true
     } catch (error) {
@@ -72,15 +73,16 @@ const EnterpriseEditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
-  const handleChangeEnterpriseStatus = (status: string) => {
-    if (status === 'Obsolete') {
-      setIsObsoleteWarningOpen(true)
-    } else {
-      changeEnterpriseStatus(status)
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
     }
   }
 
@@ -95,6 +97,11 @@ const EnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
+        const successMessage =
+          status === 'Approved' ? 'approved' : 'marked as obsolete'
+        enqueueSnackbar(<>Enterprise was {successMessage} successfully.</>, {
+          variant: 'success',
+        })
         setLocation(`/projects-listing/enterprises/${enterprise_id}`)
       } catch (error) {
         enqueueSnackbar(
@@ -105,19 +112,18 @@ const EnterpriseEditActionButtons = ({
         )
       }
     }
-    setIsObsoleteWarningOpen(false)
+    setModalType(null)
   }
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
+      <>
         {canEditEnterprise && !isObsolete && (
           <Button
             className={cx('px-4 py-2 shadow-none', {
               [enabledButtonClassname]: !disabledButton,
             })}
-            onClick={editEnterprise}
+            onClick={onEditEnterprise}
             disabled={disabledButton}
             variant="contained"
             size="large"
@@ -130,7 +136,7 @@ const EnterpriseEditActionButtons = ({
           (isApproved ? (
             <Button
               className={cx({ [dropDownClassName]: !disabledButton })}
-              onClick={() => handleChangeEnterpriseStatus('Obsolete')}
+              onClick={() => setModalType('Obsolete')}
               disabled={disabledButton}
               variant="contained"
               size="large"
@@ -147,7 +153,7 @@ const EnterpriseEditActionButtons = ({
               <Dropdown.Item
                 disabled={disabledButton}
                 className={cx(dropdownItemClassname, 'text-primary')}
-                onClick={() => handleChangeEnterpriseStatus('Approved')}
+                onClick={() => setModalType('Approved')}
               >
                 Approve enterprise
               </Dropdown.Item>
@@ -155,17 +161,18 @@ const EnterpriseEditActionButtons = ({
               <Dropdown.Item
                 disabled={disabledButton}
                 className={cx(dropdownItemClassname, 'text-red-900')}
-                onClick={() => handleChangeEnterpriseStatus('Obsolete')}
+                onClick={() => setModalType('Obsolete')}
               >
                 Mark enterprise as obsolete
               </Dropdown.Item>
             </Dropdown>
           ))}
-      </div>
-      {isObsoleteWarningOpen && (
+      </>
+      {!!modalType && (
         <ChangeStatusModal
-          isModalOpen={isObsoleteWarningOpen}
-          setIsModalOpen={setIsObsoleteWarningOpen}
+          type="enterprise"
+          modalType={modalType}
+          setIsModalOpen={setModalType}
           onAction={changeEnterpriseStatus}
         />
       )}

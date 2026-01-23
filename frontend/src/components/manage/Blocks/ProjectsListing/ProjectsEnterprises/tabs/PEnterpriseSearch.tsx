@@ -1,5 +1,6 @@
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { FieldErrorIndicator } from '../../HelperComponents'
 import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
 import { getEntityById, getOptionLabel } from '../utils'
 import { getFormattedDecimalValue } from '../../utils'
@@ -12,11 +13,11 @@ const PEnterpriseSearch = ({
   setEnterpriseData,
   enterprises,
   enterprise,
+  errors,
 }: PEnterpriseDataProps & {
   enterprises: EnterpriseType[]
 }) => {
-  const overviewData = enterpriseData.overview as EnterpriseType
-  const enterpriseId = overviewData.id
+  const enterpriseId = enterpriseData.overview.id
 
   const customFiltering = createFilterOptions({
     stringify: (option: any) => `${option.name} ${option.code}`,
@@ -29,58 +30,67 @@ const PEnterpriseSearch = ({
       const crtEnterprise = getEntityById(enterprises, enterpriseId)
 
       if (crtEnterprise) {
-        setEnterpriseData((prevData) => ({
-          ...prevData,
-          overview: {
-            id: enterpriseId,
-            status: crtEnterprise.status,
-            name: crtEnterprise.name,
-            country: crtEnterprise.country,
-            location: crtEnterprise.location,
-            stage: crtEnterprise.stage,
-            sector: crtEnterprise.sector,
-            subsector: crtEnterprise.subsector,
-            application: crtEnterprise.application,
-            local_ownership: getFormattedDecimalValue(
-              crtEnterprise.local_ownership,
-            ),
-            export_to_non_a5: getFormattedDecimalValue(
-              crtEnterprise.export_to_non_a5,
-            ),
-            revision: crtEnterprise.revision,
-            date_of_revision: crtEnterprise.date_of_revision,
-          },
-        }))
+        setEnterpriseData(
+          (prevData) => ({
+            ...prevData,
+            overview: {
+              id: enterpriseId,
+              status: crtEnterprise.status,
+              name: crtEnterprise.name,
+              country: crtEnterprise.country,
+              location: crtEnterprise.location,
+              stage: crtEnterprise.stage,
+              sector: crtEnterprise.sector,
+              subsector: crtEnterprise.subsector,
+              application: crtEnterprise.application,
+              local_ownership: getFormattedDecimalValue(
+                crtEnterprise.local_ownership,
+              ),
+              export_to_non_a5: getFormattedDecimalValue(
+                crtEnterprise.export_to_non_a5,
+              ),
+              revision: crtEnterprise.revision,
+              date_of_revision: crtEnterprise.date_of_revision,
+            },
+          }),
+          'search',
+        )
       }
     } else {
-      setEnterpriseData((prevData) => ({
-        ...prevData,
-        overview: {
-          ...prevData['overview'],
-          id: null,
-          status: '',
-        },
-      }))
+      setEnterpriseData(
+        (prevData) => ({
+          ...prevData,
+          overview: {
+            ...prevData['overview'],
+            id: null,
+            status: '',
+          },
+        }),
+        'search',
+      )
     }
   }
 
   return (
     <>
       <Label>Select existing enterprise</Label>
-      <Field
-        widget="autocomplete"
-        options={enterprises}
-        value={enterpriseId}
-        disabled={!!enterprise}
-        onChange={(_, value) => {
-          onEnterpriseChange(value)
-        }}
-        getOptionLabel={(option: any) =>
-          getOptionLabel(enterprises, option, 'code')
-        }
-        filterOptions={customFiltering}
-        {...defaultProps}
-      />
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          options={enterprises}
+          value={enterpriseId}
+          disabled={!!enterprise}
+          onChange={(_, value) => {
+            onEnterpriseChange(value)
+          }}
+          getOptionLabel={(option: any) =>
+            getOptionLabel(enterprises, option, 'code')
+          }
+          filterOptions={customFiltering}
+          {...defaultProps}
+        />
+        <FieldErrorIndicator field="id" {...{ errors }} />
+      </div>
     </>
   )
 }

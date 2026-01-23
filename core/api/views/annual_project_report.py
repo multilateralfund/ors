@@ -7,6 +7,8 @@ from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
@@ -15,7 +17,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from core.api.export.annual_project_report import APRExportWriter
+from core.api.export.annual_project_report import (
+    APRExportWriter,
+    APRSummaryTablesExportWriter,
+)
 from core.api.filters.annual_project_reports import (
     APRProjectFilter,
     APRGlobalFilter,
@@ -270,11 +275,14 @@ class APRWorkspaceView(RetrieveAPIView):
                 default_data = {"status": project.status.name}
                 previous_data = previous_reports_dict.get(key, default_data)
 
-                AnnualProjectReport.objects.get_or_create(
+                project_report, created = AnnualProjectReport.objects.get_or_create(
                     project=project,
                     report=agency_report,
                     defaults=previous_data,
                 )
+                if created or project_report.meta_code_denorm is None:
+                    project_report.populate_derived_fields()
+                    project_report.save()
 
         # Refetch the agency report using the optimized queryset - with prefetches
         return self.get_queryset().get(pk=agency_report.pk)
@@ -573,9 +581,6 @@ class APRExportView(APIView):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
             ),
             progress_report__year=year,
             agency_id=agency_id,
@@ -601,25 +606,34 @@ class APRExportView(APIView):
         return writer.generate()
 
 
-class APRSummaryTablesView(APIView):
+class APRSummaryTablesExportView(APIView):
     """
-    Read-only view to generate summary tables (Annex II).
+    Export APR Summary Tables (multi-sheet with aggregations).
+    Includes *all* data regardless of UI filters, but agencies only see own projects.
     """
 
-    # TODO: implement when we receive the Annex II specifications
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasAPRViewAccess]
 
-    def get(self, request, year):
-        """
-        Generate summary tables for the specified year.
-        """
-        return Response(
-            {
-                "message": "Summary tables not yet implemented.",
-                "year": year,
-            },
-            status=status.HTTP_501_NOT_IMPLEMENTED,
-        )
+    @swagger_auto_schema(
+        operation_description="Export APR Summary Tables as Excel",
+        manual_parameters=[
+            openapi.Parameter(
+                "year",
+                openapi.IN_QUERY,
+                description="APR Year",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+        ],
+        responses={200: "Excel file download"},
+    )
+    def get(self, request):
+        agency = None
+        if request.user.agency:
+            agency = request.user.agency
+
+        writer = APRSummaryTablesExportWriter(agency=agency)
+        return writer.generate()
 
 
 class APRGlobalViewSet(ReadOnlyModelViewSet):
@@ -736,9 +750,6 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
                 "project_reports__project__cluster",
                 "project_reports__project__sector",
                 "project_reports__project__project_type",
-                get_version_3_prefetch(),
-                get_latest_version_prefetch(year),
-                get_all_versions_for_year_prefetch(year),
                 "files",
             )
             .order_by("agency__name")

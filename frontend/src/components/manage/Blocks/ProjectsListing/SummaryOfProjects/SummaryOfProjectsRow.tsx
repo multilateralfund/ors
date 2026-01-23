@@ -79,21 +79,24 @@ const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
 
   const getRowFilterOptions = useCallback(
     (name: keyof ApiSummaryOfProjectsFilters) => {
-      const initial = initialRowFiltersRef.current?.[name] ?? []
-      const currentIds = (rowFilters?.[name] ?? []).map((v) => v.id)
-      return initial
-        .map((o) => ({ ...o, disabled: !currentIds.includes(o.id) }))
-        .sort((a, b) => {
-          if (a.disabled && b.disabled) {
-            return 0
-          } else if (a.disabled) {
-            return 1
-          } else {
-            return -1
-          }
-        })
+      return initialRowFiltersRef.current?.[name] ?? []
+      // const initial = initialRowFiltersRef.current?.[name] ?? []
+      // const currentIds = (rowFilters?.[name] ?? []).map((v) => v.id)
+      // return initial.map((o) => ({
+      //   ...o,
+      //   disabled: !currentIds.includes(o.id),
+      // }))
+      // .sort((a, b) => {
+      //   if (a.disabled && b.disabled) {
+      //     return 0
+      //   } else if (a.disabled) {
+      //     return -1
+      //   } else {
+      //     return 1
+      //   }
+      // })
     },
-    [rowFilters],
+    [],
   )
 
   const updateText: ChangeEventHandler<HTMLTextAreaElement> = (evt) => {
