@@ -399,7 +399,8 @@ export type EnterprisesCommonProps = {
 
 export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
 
-export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
+export type EnterpriseDataProps = EnterpriseDataType &
+  EnterprisesCommonProps & { mode: string }
 
 export interface EnterpriseOverview {
   name: string

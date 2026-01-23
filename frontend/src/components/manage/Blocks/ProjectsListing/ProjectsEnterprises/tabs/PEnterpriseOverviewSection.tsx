@@ -24,10 +24,12 @@ import {
 import { map } from 'lodash'
 
 const PEnterpriseOverviewSection = ({
+  mode,
   countryId,
   enterpriseStatuses,
   ...rest
 }: PEnterpriseDataProps & {
+  mode: string
   countryId: number | null
   enterpriseStatuses?: OptionsType[]
 }) => {
@@ -45,6 +47,7 @@ const PEnterpriseOverviewSection = ({
 
   const sectionIdentifier = 'overview'
   const { sectors, subsectors } = useGetEnterpriseFieldsOpts<PEnterpriseData>(
+    mode,
     overview,
     setEnterpriseData,
     sectionIdentifier,

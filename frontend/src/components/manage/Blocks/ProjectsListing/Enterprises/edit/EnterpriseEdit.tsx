@@ -47,6 +47,7 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         }}
       />
       <EnterpriseCreate
+        mode="edit"
         {...{
           enterpriseData,
           setEnterpriseData,

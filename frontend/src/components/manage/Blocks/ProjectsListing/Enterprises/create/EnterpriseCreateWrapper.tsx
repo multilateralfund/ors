@@ -37,6 +37,7 @@ const EnterpriseCreateWrapper = () => {
         }}
       />
       <EnterpriseCreate
+        mode="add"
         {...{
           enterpriseData,
           setEnterpriseData,

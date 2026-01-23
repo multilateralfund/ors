@@ -83,6 +83,7 @@ const PEnterpriseCreateWrapper = () => {
             }}
           />
           <PEnterpriseCreate
+            mode="add"
             projectData={data}
             {...{
               enterpriseData,

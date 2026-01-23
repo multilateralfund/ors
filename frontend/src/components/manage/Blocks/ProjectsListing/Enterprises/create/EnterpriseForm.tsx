@@ -20,12 +20,13 @@ import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
 import { map } from 'lodash'
 
 const EnterpriseForm = (props: EnterpriseDataProps) => {
-  const { enterprise, enterpriseData, setEnterpriseData } = props
+  const { mode, enterprise, enterpriseData, setEnterpriseData } = props
 
   const { canEditEnterprise } = useContext(PermissionsContext)
   const { countries } = useContext(ProjectsDataContext)
   const { sectors, subsectors } =
     useGetEnterpriseFieldsOpts<EnterpriseOverview>(
+      mode,
       enterpriseData,
       setEnterpriseData,
     )

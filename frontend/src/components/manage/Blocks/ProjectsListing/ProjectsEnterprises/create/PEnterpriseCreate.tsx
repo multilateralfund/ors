@@ -33,9 +33,11 @@ import { Tabs, Tab, Typography } from '@mui/material'
 const PEnterpriseCreate = ({
   projectData,
   enterpriseStatuses,
+  mode,
   errors,
   ...rest
 }: PEnterpriseDataProps & {
+  mode: string
   projectData: ProjectTypeApi
   enterpriseStatuses?: OptionsType[]
 }) => {
@@ -217,7 +219,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseOverviewSection
-          {...{ countryId, enterpriseStatuses, ...rest }}
+          {...{ mode, countryId, enterpriseStatuses, ...rest }}
           setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={overviewErrors}
         />

@@ -139,6 +139,7 @@ const PEnterpriseEdit = ({
         }}
       />
       <PEnterpriseCreate
+        mode="edit"
         {...{
           enterpriseData,
           setEnterpriseData,
