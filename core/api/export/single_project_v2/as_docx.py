@@ -126,29 +126,30 @@ class ProjectsV2ProjectExportDocx:
                     p_style[k] = getattr(p.runs[0], k, False)
 
             if p.text.startswith("Project Title"):
-                p.text = self.project.title
+                p.text = self.project.title or ""
             elif p.text.startswith("Country:"):
-                p.add_run(data.get("country", "-"), None)
+                p.add_run(data.get("country", "") or "", None)
             elif p.text.startswith("Agency:"):
-                p.add_run(data.get("agency", "-"), None)
+                p.add_run(data.get("agency", "") or "", None)
             elif p.text.startswith("Lead Agency:"):
                 p.add_run(
-                    (data.get("lead_agency_data", None) or {}).get("name", "-"), None
+                    (data.get("lead_agency_data", None) or {}).get("name", "") or "",
+                    None,
                 )
             elif p.text.startswith("Type:"):
-                p.add_run(data.get("project_type", {}).get("name", "-"), None)
+                p.add_run(data.get("project_type", {}).get("name", "") or "", None)
             elif p.text.startswith("Sector:"):
-                p.add_run(data.get("sector", {}).get("name", "-"), None)
+                p.add_run(data.get("sector", {}).get("name", "") or "", None)
             elif p.text.startswith("Cluster:"):
-                p.add_run(data.get("cluster", {}).get("name", "-"), None)
+                p.add_run(data.get("cluster", {}).get("name", "") or "", None)
             elif p.text.startswith("Project costs:"):
-                p.add_run(format_decimal(data.get("total_fund", "-")), None)
+                p.add_run(format_decimal(data.get("total_fund", "")) or "", None)
             elif p.text.startswith("Support costs:"):
-                p.add_run(format_decimal(data.get("support_cost_psc", "-")), None)
+                p.add_run(format_decimal(data.get("support_cost_psc", "")) or "", None)
             elif p.text.startswith("Metacode:"):
-                p.add_run(data.get("metacode", "-"), None)
+                p.add_run(data.get("metacode", "") or "", None)
             elif p.text.startswith("Code:"):
-                p.add_run(data.get("code", "-"), None)
+                p.add_run(data.get("code", "") or "", None)
 
             if p.runs:
                 for k, v in p_style.items():
@@ -158,7 +159,7 @@ class ProjectsV2ProjectExportDocx:
             "Project Description:", exclude_from_cleanup=True
         )
         if description_table:
-            description_table.cell(0, 0).text = data.get("description", "")
+            description_table.cell(0, 0).text = data.get("description", "") or ""
 
     def _write_header_to_table(self, headers, table, data):
         for header in headers:
