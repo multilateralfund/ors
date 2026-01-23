@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { handleErrors } from '../FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
@@ -8,18 +8,19 @@ import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
+import { enqueueSnackbar } from 'notistack'
 import { omit } from 'lodash'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
   const [_, setLocation] = useLocation()
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const { project_id } = useParams<Record<string, string>>()
 
@@ -54,6 +55,10 @@ const PEnterpriseCreateActionButtons = ({
       })
 
       setEnterpriseId(result.id)
+      enqueueSnackbar(<>Project enterprise was created successfully.</>, {
+        variant: 'success',
+      })
+      clearUpdatedFields()
       setLocation(
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
       )
@@ -61,25 +66,18 @@ const PEnterpriseCreateActionButtons = ({
       await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}`}
+    canEditProjectEnterprise && (
+      <SubmitButton
+        title="Create project enterprise"
+        isDisabled={!enterpriseData.overview.name}
+        onSubmit={createEnterprise}
+        className="!py-2"
       />
-      {canEditProjectEnterprise && (
-        <SubmitButton
-          title="Create project enterprise"
-          isDisabled={!enterpriseData.overview.name}
-          onSubmit={createEnterprise}
-          className="!py-2"
-        />
-      )}
-    </div>
+    )
   )
 }
 

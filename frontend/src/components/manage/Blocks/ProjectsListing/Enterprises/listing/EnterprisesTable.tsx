@@ -1,5 +1,3 @@
-'use client'
-
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'

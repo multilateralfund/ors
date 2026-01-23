@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -42,7 +40,6 @@ export default function PEnterprisesWrapper() {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
-    !canEditProjectEnterprise ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />

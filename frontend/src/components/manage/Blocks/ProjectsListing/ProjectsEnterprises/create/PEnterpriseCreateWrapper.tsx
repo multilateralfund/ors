@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useEffect, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading.tsx'
@@ -28,7 +26,7 @@ const PEnterpriseCreateWrapper = () => {
   const { data, loading, error } = project ?? {}
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
-    overview: initialOverviewFields,
+    overview: { ...initialOverviewFields, id: null },
     details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
     substance_details: [],
@@ -36,7 +34,6 @@ const PEnterpriseCreateWrapper = () => {
     remarks: initialRemarksFields,
   })
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -81,17 +78,16 @@ const PEnterpriseCreateWrapper = () => {
             {...{
               enterpriseData,
               setEnterpriseId,
-              setHasSubmitted,
               setErrors,
               setOtherErrors,
             }}
           />
           <PEnterpriseCreate
+            mode="add"
             projectData={data}
             {...{
               enterpriseData,
               setEnterpriseData,
-              hasSubmitted,
               errors,
             }}
           />

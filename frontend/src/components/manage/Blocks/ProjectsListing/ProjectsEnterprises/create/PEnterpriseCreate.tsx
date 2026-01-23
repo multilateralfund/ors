@@ -1,9 +1,8 @@
-'use client'
-
 import { useEffect, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
 import PEnterpriseDetailsSection from '../tabs/PEnterpriseDetailsSection.tsx'
@@ -23,21 +22,28 @@ import {
   EnterpriseSubstanceDetails,
   OptionsType,
   ProjectTypeApi,
+  PEnterpriseData,
 } from '../../interfaces.ts'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
+import { find, has, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
   projectData,
   enterpriseStatuses,
+  mode,
   errors,
   ...rest
 }: PEnterpriseDataProps & {
+  mode: string
   projectData: ProjectTypeApi
   enterpriseStatuses?: OptionsType[]
 }) => {
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const filters = {
@@ -82,8 +88,8 @@ const PEnterpriseCreate = ({
       ...prevData,
       funding_details: {
         ...prevData['funding_details'],
-        cost_effectiveness_approved: costEffectivenessApproved,
         funds_approved: fundsApproved,
+        cost_effectiveness_approved: costEffectivenessApproved,
       },
     }))
   }, [costEffectivenessApproved, fundsApproved])
@@ -92,27 +98,59 @@ const PEnterpriseCreate = ({
   const meetings = projectSlice.meetings.data
 
   useEffect(() => {
-    const crtMeeting =
+    const meetingDate =
       find(meetings, (meeting) => meeting.id === details.meeting)?.date ?? null
 
     setEnterpriseData((prevData) => ({
       ...prevData,
       details: {
         ...prevData['details'],
-        date_of_approval: crtMeeting,
+        date_of_approval: meetingDate,
       },
     }))
   }, [details.meeting])
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
+  const setEnterpriseDataWithEditTracking = (
+    updater: React.SetStateAction<PEnterpriseData>,
+    fieldName?: string,
+  ) => {
+    setEnterpriseData((prevData) => {
+      if (fieldName) {
+        addUpdatedField(fieldName)
+      }
+
+      return typeof updater === 'function'
+        ? (updater as (prev: PEnterpriseData) => PEnterpriseData)(prevData)
+        : updater
+    })
+  }
+
+  useVisibilityChange(updatedFields.size > 0)
 
   const enterpriseErrors =
     (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
       'enterprise'
     ] ?? {}
-  const searchErrors =
-    !!enterprise && getFieldErrors(pick(overview, 'id'), enterpriseErrors, true)
-  const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
-  const substanceErrors = getFieldErrors(substance_fields, errors)
+  const formattedEnterpriseErrors =
+    !!enterprise && errors?.status
+      ? { ...enterpriseErrors, status: errors.status }
+      : enterpriseErrors
+
+  const searchErrors = getFieldErrors(
+    pick(overview, 'id'),
+    enterpriseErrors,
+    !!enterprise,
+  )
+  const overviewErrors = getFieldErrors(
+    omit(overview, 'id'),
+    formattedEnterpriseErrors,
+  )
   const detailsErrors = getFieldErrors(details, errors)
+  const substanceErrors = getFieldErrors(substance_fields, errors)
   const fundingDetailsErrors = getFieldErrors(funding_details, errors)
   const remarksErrors = getFieldErrors(remarks, errors)
 
@@ -121,9 +159,10 @@ const PEnterpriseCreate = ({
       (errors?.['ods_odp'] as { non_field_errors?: string[] } | undefined)
         ?.non_field_errors || [],
   }
-  const odsOdpErrors = map(errors?.ods_odp, (odp: {}, index) =>
-    !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
-  ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
+  const odsOdpErrors = map(errors?.ods_odp, (odp: {}, index) => ({
+    ...odp,
+    id: index,
+  })).filter((odp) => !has(odp, 'non_field_errors'))
   const normalizedOdsOdpErrors = map(odsOdpErrors, (error) => omit(error, 'id'))
 
   const formattedOdsOdpErrors = map(
@@ -162,6 +201,7 @@ const PEnterpriseCreate = ({
           key={JSON.stringify(results)}
           enterprises={results}
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={searchErrors}
         />
       ),
@@ -179,7 +219,8 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseOverviewSection
-          {...{ countryId, enterpriseStatuses, ...rest }}
+          {...{ mode, countryId, enterpriseStatuses, ...rest }}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={overviewErrors}
         />
       ),
@@ -198,6 +239,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseDetailsSection
           {...{ projectData, ...rest }}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={detailsErrors}
         />
       ),
@@ -208,9 +250,9 @@ const PEnterpriseCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Substance details</div>
-          {(formattedOdsOdpErrors.length > 0 ||
+          {(hasSectionErrors(substanceErrors) ||
             values(odsOdpNonFieldErrors)[0].length > 0 ||
-            hasSectionErrors(substanceErrors)) && (
+            formattedOdsOdpErrors.length > 0) && (
             <SectionErrorIndicator errors={[]} />
           )}
         </div>
@@ -218,6 +260,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseSubstanceDetailsSection
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={substanceErrors}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
@@ -241,6 +284,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseFundingDetailsSection
           {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
           errors={fundingDetailsErrors}
         />
       ),
@@ -256,7 +300,13 @@ const PEnterpriseCreate = ({
           )}
         </div>
       ),
-      component: <PEnterpriseRemarksSection {...rest} errors={remarksErrors} />,
+      component: (
+        <PEnterpriseRemarksSection
+          {...rest}
+          setEnterpriseData={setEnterpriseDataWithEditTracking}
+          errors={remarksErrors}
+        />
+      ),
       errors: formatErrors(remarksErrors, enterpriseFieldsMapping),
     },
   ]

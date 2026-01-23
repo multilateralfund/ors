@@ -457,11 +457,7 @@ const DesktopHeaderNavigation = ({
                                   </ListItem>
                                   {isCancelModalOpen && !!crtUrl && (
                                     <CancelWarningModal
-                                      mode={
-                                        location.includes('/edit')
-                                          ? 'editing'
-                                          : 'creation'
-                                      }
+                                      mode="current action"
                                       url={crtUrl}
                                       isModalOpen={isCancelModalOpen}
                                       setIsModalOpen={setIsCancelModalOpen}
@@ -687,11 +683,7 @@ const MobileHeaderNavigation = ({
                                             </ListItem>
                                             {isCancelModalOpen && !!crtUrl && (
                                               <CancelWarningModal
-                                                mode={
-                                                  location.includes('/edit')
-                                                    ? 'editing'
-                                                    : 'creation'
-                                                }
+                                                mode="current action"
                                                 url={crtUrl}
                                                 isModalOpen={isCancelModalOpen}
                                                 setIsModalOpen={
