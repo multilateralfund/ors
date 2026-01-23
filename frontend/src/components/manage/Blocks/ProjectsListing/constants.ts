@@ -66,7 +66,8 @@ export const textAreaClassname =
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-full min-w-64',
+      className:
+        defaultProps.FieldProps.className + ' w-full min-w-56 md:min-w-64',
     },
   },
   ods_type: {

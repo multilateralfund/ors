@@ -119,7 +119,7 @@ const ProjectCrossCuttingFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[17rem]',
+      className: defaultProps.FieldProps.className + ' w-full',
     },
   }
   const defaultPropsDateInput = {
@@ -232,7 +232,7 @@ const ProjectCrossCuttingFields = ({
           <div className="flex flex-col gap-y-2">
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'project_type') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.type}</Label>
                   <div className="flex items-center">
                     <Field
@@ -264,7 +264,7 @@ const ProjectCrossCuttingFields = ({
                       }
                       {...sectionDefaultProps}
                     />
-                    <div className="w-5">
+                    <div className="w-8">
                       <FieldErrorIndicator
                         errors={errors}
                         field="project_type"
@@ -274,7 +274,7 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
               {canViewField(viewableFields, 'sector') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.sector}</Label>
                   <div className="flex items-center">
                     <Field
@@ -297,7 +297,9 @@ const ProjectCrossCuttingFields = ({
                       }
                       {...sectionDefaultProps}
                     />
-                    <FieldErrorIndicator errors={errors} field="sector" />
+                    <div className="w-8">
+                      <FieldErrorIndicator errors={errors} field="sector" />
+                    </div>
                   </div>
                 </div>
               )}
