@@ -54,7 +54,7 @@ const CancelWarningModal = ({
         <Typography className="mb-4 text-lg text-primary">
           You have unsaved changes. Are you sure you want to cancel {mode}?
         </Typography>
-        <div className="ml-auto mr-2 flex flex-wrap gap-3">
+        <div className="mr-2 flex flex-wrap justify-end gap-3">
           <CustomLink
             className="h-8 px-4 py-2 text-lg uppercase"
             href={null}

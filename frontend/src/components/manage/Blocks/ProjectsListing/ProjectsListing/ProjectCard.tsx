@@ -160,7 +160,7 @@ export default function ProjectCard({
 
   return (
     <Modal
-      aria-labelledby="change-status-modal-title"
+      aria-labelledby="change-status-modal"
       open={isModalOpen}
       onClose={() => setIsModalOpen(null)}
       disableScrollLock

@@ -101,12 +101,12 @@ export default function PListingWrapper() {
 
   const copyProjectModal = (
     <Modal
-      aria-labelledby="copy-modal-title"
+      aria-labelledby="copy-modal"
       open={isCopyModalOpen}
       onClose={() => setIsCopyModalOpen(false)}
       keepMounted
     >
-      <Box className="flex w-full max-w-lg flex-col px-0 absolute-center">
+      <Box className="flex w-full max-w-[90%] flex-col px-0 absolute-center md:max-w-lg">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Copy project
         </Typography>
@@ -117,7 +117,7 @@ export default function PListingWrapper() {
           </span>
           <span className="text-lg font-semibold">{projectTitle}</span>
         </div>
-        <div className="ml-auto mr-6 flex gap-3">
+        <div className="mr-6 flex justify-end gap-3">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
             href={`/projects-listing/create/${projectId}/copy`}

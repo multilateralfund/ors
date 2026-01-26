@@ -259,9 +259,9 @@ const ProjectTransferWrapper = ({
           }
         />
       )}
-      <div className="ml-auto mr-6 mt-auto flex flex-wrap gap-3">
+      <div className="mr-6 mt-auto flex flex-wrap justify-end gap-3">
         <CustomLink
-          className="h-10 px-4 py-2 text-lg uppercase"
+          className="px-4 py-2 text-lg uppercase"
           onClick={transferProject}
           disabled={disableTransfer}
           href={null}

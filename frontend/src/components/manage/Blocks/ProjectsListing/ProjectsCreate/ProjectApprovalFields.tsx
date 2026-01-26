@@ -123,12 +123,12 @@ const ProjectApprovalFields = ({
           </div>
         )}
         {canViewField(viewableFields, 'decision') && (
-          <div>
+          <div className="flex-shrink basis-[16rem]">
             <Label>
               {getTransferFieldLabel(project as ProjectTypeApi, 'decision')}
             </Label>
             <div className="flex items-center">
-              <div className="w-[16rem]">
+              <div className="w-full">
                 <Field<any>
                   widget="autocomplete"
                   options={decisionOptions}
@@ -143,13 +143,14 @@ const ProjectApprovalFields = ({
                   {...{
                     ...defaultProps,
                     FieldProps: {
-                      className:
-                        defaultProps.FieldProps.className + ' w-[16rem]',
+                      className: defaultProps.FieldProps.className + ' w-full',
                     },
                   }}
                 />
               </div>
-              <FieldErrorIndicator errors={errors} field="Decision" />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="Decision" />
+              </div>
             </div>
           </div>
         )}
