@@ -63,6 +63,29 @@ class SummaryOfProjectsViewSet(
         projects: QuerySet[Project] = self.filter_queryset(self.get_queryset())
         return Response(self._extract_data(projects))
 
+    def get_totals(self, params: dict):
+        queryset: QuerySet[Project] = self.get_queryset()
+        project_ids = set()
+
+        for query in params:
+            project_filter = self.filterset_class(query["params"], queryset)
+            ids = project_filter.qs.values_list("id", flat=True)
+            project_ids.update(ids)
+
+        total_filtered_projects = Project.objects.filter(id__in=project_ids)
+        return self._extract_data(total_filtered_projects)
+
+    @action(methods=["GET"], detail=False)
+    def totals(self, request, *args, **kwargs):
+        params: str = request.query_params.get("row_data")
+        result = {}
+
+        if params:
+            params: dict = json.loads(base64.b64decode(params).decode())
+            result = self.get_totals(params)
+
+        return JsonResponse(result)
+
     @action(methods=["GET"], detail=False)
     def filters(self, request, *args, **kwargs):
         queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
@@ -108,12 +131,6 @@ class SummaryOfProjectsViewSet(
         sheet = wb.active
         sheet.title = "Summary of projects"
 
-        total = {
-            "text": "Total",
-            "projects_count": 0,
-            "amounts_recommended": 0,
-        }
-
         row_data = []
 
         for query in params:
@@ -121,12 +138,11 @@ class SummaryOfProjectsViewSet(
             filtered_projects = project_filter.qs
             data = self._extract_data(filtered_projects)
             data["text"] = query["text"]
-
-            for key in (k for k in total if k != "text"):
-                total[key] += data.get(key, 0)
-
             row_data.append(data)
 
+        total = {"text": "Total"}
+
+        total.update(self.get_totals(params))
         row_data.append(total)
 
         SummaryOfProjectsWriter(sheet).write(row_data)
