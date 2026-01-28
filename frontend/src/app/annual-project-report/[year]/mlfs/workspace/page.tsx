@@ -50,10 +50,8 @@ import {
   FiUnlock,
 } from 'react-icons/fi'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
-import {
-  useAPRCurrentYear,
-  useConfirmation,
-} from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { useAPRCurrentYear } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
 import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'

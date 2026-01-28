@@ -27,7 +27,7 @@ import {
   AnnualAgencyProjectReport,
   AnnualProjectReport,
 } from '@ors/app/annual-project-report/types.ts'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'

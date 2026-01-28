@@ -87,6 +87,7 @@ import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspa
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
+import ConfirmationProvider from '@ors/contexts/ConfirmationProvider.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -441,23 +442,25 @@ export default function App() {
             <ProjectsEditPage mode="partial-link" />
           </ProjectsDataProvider>
         </Route>
-        {/* APR routes */}
-        <Route path="/apr" nest>
-          <APRProvider>
-            <Route path="/">
-              <AprRedirect />
-            </Route>
-            <Route path="/:year/workspace">
-              <APRWorkspace />
-            </Route>
-            <Route path="/:year/edit">
-              <APREdit />
-            </Route>
-            <Route path="/:year/mlfs/workspace">
-              <APRMLFSWorkspace />
-            </Route>
-          </APRProvider>
-        </Route>
+        <ConfirmationProvider>
+          {/* APR routes */}
+          <Route path="/apr" nest>
+            <APRProvider>
+              <Route path="/">
+                <AprRedirect />
+              </Route>
+              <Route path="/:year/workspace">
+                <APRWorkspace />
+              </Route>
+              <Route path="/:year/edit">
+                <APREdit />
+              </Route>
+              <Route path="/:year/mlfs/workspace">
+                <APRMLFSWorkspace />
+              </Route>
+            </APRProvider>
+          </Route>
+        </ConfirmationProvider>
         <Route>
           <NotFoundPage />
         </Route>

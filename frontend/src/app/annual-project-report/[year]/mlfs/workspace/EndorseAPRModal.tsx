@@ -10,7 +10,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 import { api } from '@ors/helpers'
 import cx from 'classnames'
 import { AnnualProgressReport } from '@ors/app/annual-project-report/types.ts'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import dayjs from 'dayjs'
 import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
 
