@@ -20,9 +20,8 @@ import useApi from '@ors/hooks/useApi.ts'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
-import useGetColumnDefs, {
-  dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import useGetColumnDefs from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/dataTypes.ts'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import {
   INITIAL_PARAMS_MLFS,

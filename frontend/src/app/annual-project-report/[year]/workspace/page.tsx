@@ -10,9 +10,8 @@ import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
-import useGetColumnDefs, {
-  dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import useGetColumnDefs from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/dataTypes.ts'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/UploadDocumentsModal.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { union } from 'lodash'

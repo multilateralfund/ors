@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { isNil } from 'lodash'
-import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/dataTypes.ts'
 
 type Validator = (value: any, row: any) => string | null
 export type ValidatorMixin = {

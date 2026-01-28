@@ -10,9 +10,8 @@ import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import { useStore } from '@ors/store.tsx'
 import cx from 'classnames'
 import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
-import useGetColumnDefs, {
-  dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import useGetColumnDefs from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/dataTypes.ts'
 import { AgGridReact } from 'ag-grid-react'
 import Button from '@mui/material/Button'
 import { api } from '@ors/helpers'
