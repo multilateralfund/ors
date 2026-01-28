@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { ConfirmOptions } from '@ors/contexts/AnnualProjectReport/ConfirmDialog.tsx'
+import { ConfirmOptions } from '@ors/contexts/ConfirmDialog.tsx'
 import { UseApiReturn } from '@ors/hooks/useApi.ts'
 import { AnnualProgressReportCurrentYear } from '@ors/app/annual-project-report/types.ts'
 

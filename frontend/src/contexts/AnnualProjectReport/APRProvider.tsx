@@ -2,7 +2,7 @@ import { APRContext } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { PropsWithChildren, useCallback, useContext, useState } from 'react'
 import ConfirmDialog, {
   ConfirmOptions,
-} from '@ors/contexts/AnnualProjectReport/ConfirmDialog.tsx'
+} from '@ors/contexts/ConfirmDialog.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { AnnualProgressReportCurrentYear } from '@ors/app/annual-project-report/types.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
