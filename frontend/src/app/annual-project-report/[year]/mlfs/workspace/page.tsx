@@ -19,15 +19,15 @@ import NotFoundPage from '@ors/app/not-found'
 import useApi from '@ors/hooks/useApi.ts'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
-import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
+import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
 import useGetColumnDefs, {
   dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import {
   INITIAL_PARAMS_MLFS,
   MANDATORY_STATUSES,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/constants.ts'
 import { union } from 'lodash'
 import { useStore } from '@ors/store.tsx'
 import Tab from '@mui/material/Tab/Tab'
@@ -49,21 +49,21 @@ import {
   FiTable,
   FiUnlock,
 } from 'react-icons/fi'
-import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import { formatDate } from '@ors/components/manage/Blocks/ProjectReport/utils.ts'
 import { useAPRCurrentYear } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
 import EndorseAprModal from '@ors/app/annual-project-report/[year]/mlfs/workspace/EndorseAPRModal.tsx'
-import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
+import StatusFilter from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/StatusFilter.tsx'
 import MlfsLink from '@ors/components/ui/Link/Link.tsx'
 import EditTable from '@ors/components/manage/Form/EditTable.tsx'
 import { AgGridReact } from 'ag-grid-react'
-import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
-import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
-import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
-import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
-import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
+import BackLink from '@ors/components/manage/Blocks/ProjectReport/BackLink.tsx'
+import AprYearDropdown from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/AprYearDropdown.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/ValidationErrors.tsx'
+import { handleActionErrors } from '@ors/components/manage/Blocks/ProjectReport/errors.ts'
 
 export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()

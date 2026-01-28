@@ -12,25 +12,25 @@ import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
   dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
-import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import UploadDocumentsModal from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/UploadDocumentsModal.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { union } from 'lodash'
 import {
   INITIAL_PARAMS,
   MANDATORY_STATUSES,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
-import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/constants.ts'
+import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
-import SubmitButton from '@ors/components/manage/Blocks/AnnualProgressReport/SubmitButton.tsx'
+import SubmitButton from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/SubmitButton.tsx'
 import {
   AnnualAgencyProjectReport,
   Filter,
 } from '@ors/app/annual-project-report/types.ts'
-import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
-import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
-import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
+import StatusFilter from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/StatusFilter.tsx'
+import BackLink from '@ors/components/manage/Blocks/ProjectReport/BackLink.tsx'
+import AprYearDropdown from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/AprYearDropdown.tsx'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =

@@ -8,7 +8,7 @@ import { enqueueSnackbar } from 'notistack'
 import { IoInformationCircleOutline, IoTrash } from 'react-icons/io5'
 import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import { APRFile } from '@ors/app/annual-project-report/types.ts'
-import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
+import { handleActionErrors } from '@ors/components/manage/Blocks/ProjectReport/errors.ts'
 
 interface UploadDocumentsModalProps {
   isModalOpen: boolean

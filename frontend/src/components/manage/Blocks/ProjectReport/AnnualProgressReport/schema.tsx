@@ -7,7 +7,7 @@ import {
   formatPercent,
   formatUSD,
   parseDate,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+} from '@ors/components/manage/Blocks/ProjectReport/utils.ts'
 import React from 'react'
 import { useStore } from '@ors/store.tsx'
 import { get, isEqual, isNil, isObject } from 'lodash'
@@ -16,8 +16,8 @@ import {
   validateNumber,
   validateText,
   ValidatorMixin,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
-import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/validation.tsx'
+import CellValidation from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/CellValidation.tsx'
 import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
 import dayjs from 'dayjs'
 

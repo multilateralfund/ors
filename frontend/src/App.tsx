@@ -86,7 +86,7 @@ import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.t
 import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspace/page.tsx'
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
-import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
+import AprRedirect from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/AprRedirect.tsx'
 import ConfirmationProvider from '@ors/contexts/ConfirmationProvider.tsx'
 import PCRView from '@ors/app/project-completion-report/view/page.tsx'
 

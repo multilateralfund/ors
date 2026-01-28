@@ -1,4 +1,4 @@
-import { validateField } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
+import { validateField } from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/validation.tsx'
 import CellValidationAlert from '@ors/components/manage/AgWidgets/CellValidationWidget/CellValidationAlert.tsx'
 import cx from 'classnames'
 import React from 'react'

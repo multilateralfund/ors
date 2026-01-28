@@ -12,7 +12,7 @@ import cx from 'classnames'
 import { AnnualProgressReport } from '@ors/app/annual-project-report/types.ts'
 import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import dayjs from 'dayjs'
-import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
+import { handleActionErrors } from '@ors/components/manage/Blocks/ProjectReport/errors.ts'
 
 const REMARKS_LIMIT = 400
 
