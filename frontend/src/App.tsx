@@ -88,6 +88,7 @@ import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
 import ConfirmationProvider from '@ors/contexts/ConfirmationProvider.tsx'
+import PCRView from '@ors/app/project-completion-report/view/page.tsx'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -459,6 +460,10 @@ export default function App() {
                 <APRMLFSWorkspace />
               </Route>
             </APRProvider>
+          </Route>
+          {/* PCR routes */}
+          <Route path="/pcr" nest>
+            <PCRView />
           </Route>
         </ConfirmationProvider>
         <Route>
