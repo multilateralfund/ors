@@ -10,3 +10,4 @@ from .cp_usage import *
 from .usage import *
 from .replenishment import *
 from .annual_project_report import *
+from .project_completion_report import *

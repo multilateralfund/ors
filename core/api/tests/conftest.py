@@ -54,6 +54,23 @@ from core.api.tests.factories import (
     AnnualProgressReportFactory,
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFactory,
+    ProjectCompletionReportFactory,
+    PCRAgencyReportFactory,
+    PCRProjectActivityFactory,
+    PCROverallAssessmentFactory,
+    PCRCommentFactory,
+    PCRCauseOfDelayFactory,
+    PCRLessonLearnedFactory,
+    PCRRecommendationFactory,
+    PCRGenderMainstreamingFactory,
+    PCRSDGContributionFactory,
+)
+from core.models.project_complition_report import (
+    ProjectCompletionReport,
+    PCRAgencyReport,
+    PCRProjectElement,
+    PCRGenderPhase,
+    PCRSDG,
 )
 from core.models import Country
 from core.models import BPActivity
@@ -801,6 +818,7 @@ def project(
         title="Karma to Burn",
         country=country_ro,
         agency=agency,
+        lead_agency=agency,
         project_type=project_type,
         status=project_status,
         submission_status=project_draft_status,
@@ -1754,3 +1772,228 @@ def late_post_excom_versions_for_apr(
 def mock_send_agency_submission_notification():
     with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
         yield send_mail
+
+
+@pytest.fixture
+def pcr_agency_viewer_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Viewer")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_agency_inputter_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Inputter")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_agency_submitter_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Submitter")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_mlfs_full_access_user():
+    user = UserFactory()
+    group = Group.objects.get(name="PCR - MLFS Full Access")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_factory():
+    return ProjectCompletionReportFactory
+
+
+@pytest.fixture
+def agency_report_factory():
+    return PCRAgencyReportFactory
+
+
+@pytest.fixture
+def pcr_with_data(pcr_agency_inputter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.DRAFT,
+        created_by=pcr_agency_inputter_user,
+    )
+
+    PCRAgencyReport.objects.create(
+        pcr=pcr,
+        agency=agency,
+        is_lead_agency=True,
+        status=PCRAgencyReport.ReportStatus.DRAFT,
+    )
+
+    return pcr
+
+
+@pytest.fixture
+def pcr_submitted(pcr_agency_submitter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.SUBMITTED,
+        created_by=pcr_agency_submitter_user,
+        submitter=pcr_agency_submitter_user,
+    )
+
+    PCRAgencyReport.objects.create(
+        pcr=pcr,
+        agency=agency,
+        is_lead_agency=True,
+        status=PCRAgencyReport.ReportStatus.SUBMITTED,
+    )
+
+    return pcr
+
+
+@pytest.fixture
+def pcr_all_reports_submitted(pcr_agency_submitter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.DRAFT,
+        created_by=pcr_agency_submitter_user,
+    )
+
+    PCRAgencyReport.objects.create(
+        pcr=pcr,
+        agency=agency,
+        is_lead_agency=True,
+        status=PCRAgencyReport.ReportStatus.SUBMITTED,
+    )
+
+    return pcr
+
+
+@pytest.fixture
+def pcr_agency_report(pcr_with_data, agency):
+    return pcr_with_data.agency_reports.filter(agency=agency).first()
+
+
+@pytest.fixture
+def pcr_agency_report_submitted(pcr_submitted, agency):
+    return pcr_submitted.agency_reports.filter(agency=agency).first()
+
+
+@pytest.fixture
+def pcr_agency_report_other_agency(pcr_with_data, pcr_agency_other):
+    return PCRAgencyReport.objects.create(
+        pcr=pcr_with_data,
+        agency=pcr_agency_other,
+        is_lead_agency=False,
+        status=PCRAgencyReport.ReportStatus.DRAFT,
+    )
+
+
+@pytest.fixture
+def pcr_project_other_agency(
+    country_ro, sector, pcr_agency_other, project_ongoing_status
+):
+    project = ProjectFactory(
+        agency=pcr_agency_other,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        code="OTHER/AGENCY/01",
+    )
+    return project
+
+
+@pytest.fixture
+def pcr_agency_other():
+    return AgencyFactory(name="Other Agency", code="OTHER")
+
+
+@pytest.fixture
+def pcr_project_element():
+    # TODO: this is hack-ish, see if it can be done better!
+    elements = PCRProjectElement.objects.all()
+    if elements.exists():
+        return elements.first()
+    return PCRProjectElement.objects.create(
+        code="DESIGN",
+        name="Project Design",
+        sort_order=1,
+    )
+
+
+@pytest.fixture
+def pcr_gender_phase():
+    phases = PCRGenderPhase.objects.all()
+    if phases.exists():
+        return phases.first()
+    return PCRGenderPhase.objects.create(
+        code="PHASE1",
+        name="Phase 1",
+        sort_order=1,
+    )
+
+
+@pytest.fixture
+def pcr_sdg():
+    sdgs = PCRSDG.objects.all()
+    if sdgs.exists():
+        return sdgs.first()
+    return PCRSDG.objects.create(
+        code="SDG01",
+        number=1,
+        name="No Poverty",
+    )
+
+
+@pytest.fixture
+def pcr_project_activity(pcr_agency_report):
+    return PCRProjectActivityFactory(agency_report=pcr_agency_report)
+
+
+@pytest.fixture
+def pcr_overall_assessment(pcr_agency_report):
+    return PCROverallAssessmentFactory(agency_report=pcr_agency_report)
+
+
+@pytest.fixture
+def pcr_comment(pcr_agency_report):
+    return PCRCommentFactory(agency_report=pcr_agency_report)
+
+
+@pytest.fixture
+def pcr_cause_of_delay(pcr_agency_report, pcr_project_element):
+    return PCRCauseOfDelayFactory(
+        agency_report=pcr_agency_report,
+        project_element=pcr_project_element,
+    )
+
+
+@pytest.fixture
+def pcr_lesson_learned(pcr_agency_report, pcr_project_element):
+    return PCRLessonLearnedFactory(
+        agency_report=pcr_agency_report,
+        project_element=pcr_project_element,
+    )
+
+
+@pytest.fixture
+def pcr_recommendation(pcr_agency_report):
+    return PCRRecommendationFactory(agency_report=pcr_agency_report)
+
+
+@pytest.fixture
+def pcr_gender_mainstreaming(pcr_agency_report, pcr_gender_phase):
+    return PCRGenderMainstreamingFactory(
+        agency_report=pcr_agency_report,
+        phase=pcr_gender_phase,
+    )
+
+
+@pytest.fixture
+def pcr_sdg_contrib(pcr_agency_report, pcr_sdg):
+    return PCRSDGContributionFactory(
+        agency_report=pcr_agency_report,
+        sdg=pcr_sdg,
+    )

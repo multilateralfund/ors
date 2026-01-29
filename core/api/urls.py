@@ -161,6 +161,31 @@ from core.api.views.annual_project_report import (
     APRKickStartView,
     APRMLFSExportView,
 )
+from core.api.views.project_completion_report import (
+    PCRAgencyReportDetailView,
+    PCRAgencyReportStatusUpdateView,
+    PCRCauseOfDelayView,
+    PCRCommentCreateView,
+    PCRCommentUpdateView,
+    PCRDetailView,
+    PCRGenderMainstreamingView,
+    PCRLessonLearnedView,
+    PCRListView,
+    PCROverallAssessmentUpdateView,
+    PCRProjectActivityCreateView,
+    PCRProjectActivityUpdateView,
+    PCRRecommendationCreateView,
+    PCRRecommendationUpdateView,
+    PCRReferenceDataView,
+    PCRSDGContributionView,
+    PCRSupportingEvidenceDeleteView,
+    PCRSupportingEvidenceUploadView,
+    PCRSubmitView,
+    PCRToggleLockView,
+    PCRTrancheDataUpdateView,
+    PCRUpdateView,
+    PCRWorkspaceView,
+)
 
 router = routers.SimpleRouter()
 router.register(
@@ -800,6 +825,153 @@ urlpatterns = [
         "annual-project-report/mlfs/<int:year>/export/",
         APRMLFSExportView.as_view(),
         name="apr-mlfs-export",
+    ),
+    # Project Completion Reports (PCR)
+    path(
+        "project-completion-report/reference-data/",
+        PCRReferenceDataView.as_view(),
+        name="pcr-reference-data",
+    ),
+    path(
+        "project-completion-report/workspace/",
+        PCRWorkspaceView.as_view(),
+        name="pcr-workspace",
+    ),
+    path(
+        "project-completion-report/list/",
+        PCRListView.as_view(),
+        name="pcr-list",
+    ),
+    path(
+        "project-completion-report/<int:pk>/",
+        PCRDetailView.as_view(),
+        name="pcr-detail",
+    ),
+    path(
+        "project-completion-report/<int:pk>/update/",
+        PCRUpdateView.as_view(),
+        name="pcr-update",
+    ),
+    path(
+        "project-completion-report/<int:pk>/submit/",
+        PCRSubmitView.as_view(),
+        name="pcr-submit",
+    ),
+    # Agency Report endpoints
+    path(
+        "project-completion-report/agency-report/<int:pk>/",
+        PCRAgencyReportDetailView.as_view(),
+        name="pcr-agency-report-detail",
+    ),
+    path(
+        "project-completion-report/agency-report/<int:pk>/status/",
+        PCRAgencyReportStatusUpdateView.as_view(),
+        name="pcr-agency-report-status",
+    ),
+    path(
+        "project-completion-report/agency-report/<int:pk>/toggle-lock/",
+        PCRToggleLockView.as_view(),
+        name="pcr-agency-report-toggle-lock",
+    ),
+    # Section 2: Project Activities
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/activities/",
+        PCRProjectActivityCreateView.as_view(),
+        name="pcr-activity-create",
+    ),
+    path(
+        "project-completion-report/activity/<int:pk>/",
+        PCRProjectActivityUpdateView.as_view(),
+        name="pcr-activity-update",
+    ),
+    # Section 2: Overall Assessment
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/overall-assessment/",
+        PCROverallAssessmentUpdateView.as_view(),
+        name="pcr-overall-assessment-update",
+    ),
+    # Comments (can be on agency report or PCR)
+    path(
+        "project-completion-report/comments/",
+        PCRCommentCreateView.as_view(),
+        name="pcr-comment-create",
+    ),
+    path(
+        "project-completion-report/comment/<int:pk>/",
+        PCRCommentUpdateView.as_view(),
+        name="pcr-comment-update",
+    ),
+    # Section 3: Causes of Delay
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/causes-of-delay/",
+        PCRCauseOfDelayView.as_view(),
+        name="pcr-cause-of-delay-create",
+    ),
+    path(
+        "project-completion-report/cause-of-delay/<int:pk>/",
+        PCRCauseOfDelayView.as_view(),
+        name="pcr-cause-of-delay-update",
+    ),
+    # Section 4: Lessons Learned
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/lessons-learned/",
+        PCRLessonLearnedView.as_view(),
+        name="pcr-lesson-learned-create",
+    ),
+    path(
+        "project-completion-report/lesson-learned/<int:pk>/",
+        PCRLessonLearnedView.as_view(),
+        name="pcr-lesson-learned-update",
+    ),
+    # Section 4: Recommendations (can be on agency report or PCR)
+    path(
+        "project-completion-report/recommendations/",
+        PCRRecommendationCreateView.as_view(),
+        name="pcr-recommendation-create",
+    ),
+    path(
+        "project-completion-report/recommendation/<int:pk>/",
+        PCRRecommendationUpdateView.as_view(),
+        name="pcr-recommendation-update",
+    ),
+    # Section 5: Gender Mainstreaming
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/gender-mainstreaming/",
+        PCRGenderMainstreamingView.as_view(),
+        name="pcr-gender-mainstreaming-create",
+    ),
+    path(
+        "project-completion-report/gender-mainstreaming/<int:pk>/",
+        PCRGenderMainstreamingView.as_view(),
+        name="pcr-gender-mainstreaming-update",
+    ),
+    # Section 6: SDG Contributions
+    path(
+        "project-completion-report/agency-report/<int:agency_report_id>/sdg-contributions/",
+        PCRSDGContributionView.as_view(),
+        name="pcr-sdg-contribution-create",
+    ),
+    path(
+        "project-completion-report/sdg-contribution/<int:pk>/",
+        PCRSDGContributionView.as_view(),
+        name="pcr-sdg-contribution-update",
+    ),
+    # Section 7: Tranche Data
+    path(
+        "project-completion-report/tranche-data/<int:pk>/",
+        PCRTrancheDataUpdateView.as_view(),
+        name="pcr-tranche-data-update",
+    ),
+    # Section 8: Supporting Evidence
+    path(
+        "project-completion-report/supporting-evidence/upload/",
+        PCRSupportingEvidenceUploadView.as_view(),
+        name="pcr-supporting-evidence-upload",
+    ),
+    path(
+        "project-completion-report/supporting-evidence/<int:pk>/",
+        PCRSupportingEvidenceDeleteView.as_view(),
+        name="pcr-supporting-evidence-delete",
     ),
     # User permissions
     path(
