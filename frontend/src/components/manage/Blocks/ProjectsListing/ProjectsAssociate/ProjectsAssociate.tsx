@@ -43,6 +43,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
 
   const updatedFilters = {
     ...filters,
+    limit: 50,
     submission_status_id: project.submission_status_id,
     country_id: project.country_id,
     status_id: onGoingStatus?.id,

@@ -36,7 +36,7 @@ import useApi from '@ors/hooks/useApi'
 
 import { Divider, TextareaAutosize } from '@mui/material'
 import { BsFilesAlt } from 'react-icons/bs'
-import { filter, map } from 'lodash'
+import { filter, map, omit } from 'lodash'
 import cx from 'classnames'
 
 const ProjectTransfer = ({
@@ -82,7 +82,7 @@ const ProjectTransfer = ({
     FieldProps: {
       className:
         defaultProps.FieldProps.className +
-        (field === 'agency' ? ' max-w-40 w-40' : ' w-[16rem]'),
+        (field === 'agency' ? ' max-w-40 w-40' : ' w-full'),
     },
   })
 
@@ -156,7 +156,7 @@ const ProjectTransfer = ({
 
   const numberFieldDefaultProps = {
     ...{
-      ...defaultPropsSimpleField,
+      ...omit(defaultPropsSimpleField, 'containerClassName'),
       className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1'),
     },
   }
@@ -207,22 +207,29 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div>
+          <div className="flex-shrink basis-[16rem]">
             <Label htmlFor="decision">{tableColumns.transfer_decision}</Label>
             <div className="flex items-center">
-              <Field
-                widget="autocomplete"
-                options={decisionOptions}
-                value={projectData.transfer_decision ?? null}
-                onChange={(_, value) =>
-                  handleChangeDecision(value as DecisionOption)
-                }
-                getOptionLabel={(option) =>
-                  getOptionLabel(decisionOptions, option, 'value')
-                }
-                {...fieldDefaultProps('decision')}
-              />
-              <FieldErrorIndicator errors={errors} field="transfer_decision" />
+              <div className="w-full">
+                <Field
+                  widget="autocomplete"
+                  options={decisionOptions}
+                  value={projectData.transfer_decision ?? null}
+                  onChange={(_, value) =>
+                    handleChangeDecision(value as DecisionOption)
+                  }
+                  getOptionLabel={(option) =>
+                    getOptionLabel(decisionOptions, option, 'value')
+                  }
+                  {...fieldDefaultProps('decision')}
+                />
+              </div>
+              <div className="w-8">
+                <FieldErrorIndicator
+                  errors={errors}
+                  field="transfer_decision"
+                />
+              </div>
             </div>
           </div>
         </div>

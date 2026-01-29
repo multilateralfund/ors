@@ -305,12 +305,19 @@ const TransferProjectModal = ({
 }) => {
   const project = useGetProject(id.toString())
   const { data, loading } = project
+  const projectCode = data?.code ?? data?.code_legacy
 
   return (
     <Modal aria-labelledby="transfer-modal" open={isModalOpen} keepMounted>
       <Box className="flex max-h-[95%] min-h-[250px] w-[80%] max-w-[1400px] flex-col rounded-2xl border-0 p-0 absolute-center 2xl:w-[60%]">
-        <Typography className="mb-1 rounded-t-2xl bg-primary py-2 pl-6 text-3xl font-medium text-white">
-          Transfer project {data?.code ?? data?.code_legacy}
+        <Typography className="mb-1 flex flex-wrap gap-2 rounded-t-2xl bg-primary px-6 py-2 text-3xl font-medium text-white">
+          Transfer project
+          <div
+            className="overflow-hidden text-ellipsis whitespace-nowrap"
+            title={projectCode}
+          >
+            {projectCode}
+          </div>
         </Typography>
         <Loading
           className="!fixed bg-action-disabledBackground"
