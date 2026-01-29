@@ -11,16 +11,16 @@ const AddComponentModal = ({
   setIsModalOpen: (isOpen: boolean) => void
 }) => (
   <Modal
-    aria-labelledby="add-component-modal-title"
+    aria-labelledby="add-component-modal"
     open={isModalOpen}
     onClose={() => setIsModalOpen(false)}
     keepMounted
   >
-    <Box className="flex w-full max-w-lg flex-col absolute-center">
+    <Box className="flex w-full max-w-[90%] flex-col absolute-center md:max-w-lg">
       <Typography className="mb-4 text-xl">
         Start from a copy of this project or from a blank submission?
       </Typography>
-      <div className="ml-auto flex gap-1">
+      <div className="flex flex-wrap justify-end gap-1">
         <Link
           component="a"
           className="no-underline"
@@ -32,7 +32,6 @@ const AddComponentModal = ({
             Copy of project
           </Button>
         </Link>
-
         <Link
           component="a"
           className="no-underline"

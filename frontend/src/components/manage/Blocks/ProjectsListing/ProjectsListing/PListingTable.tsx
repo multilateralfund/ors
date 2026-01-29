@@ -20,6 +20,7 @@ export type PListingTableProps = {
   setAssociationIds?: (data: number[]) => void
   enablePagination?: boolean
   sortable?: boolean
+  setOffset?: (offset: number) => void
 }
 
 const PListingTable = ({
@@ -32,6 +33,7 @@ const PListingTable = ({
   setAssociationIds,
   enablePagination,
   sortable,
+  setOffset,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -90,10 +92,14 @@ const PListingTable = ({
           agTextCellRenderer: undefined,
         }}
         onPaginationChanged={({ page, rowsPerPage }) => {
-          setParams({
-            limit: rowsPerPage,
-            offset: page * rowsPerPage,
-          })
+          if (setOffset) {
+            setOffset(page * rowsPerPage)
+          } else {
+            setParams({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }
         }}
         onSortChanged={({ api }) => {
           const ordering = api

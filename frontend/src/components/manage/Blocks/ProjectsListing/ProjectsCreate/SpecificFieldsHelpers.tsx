@@ -398,7 +398,8 @@ export const TextAreaWidget = <T,>(
             )
           }
           className={cx(textAreaClassname, 'max-w-[415px]', {
-            '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
+            '!min-h-[27px] !w-auto !min-w-56 !pb-1.5 md:!min-w-72':
+              isOdsReplacement,
           })}
           maxLength={nrChars}
           style={STYLE}
@@ -481,7 +482,10 @@ const NumberWidget = <T,>(
               index,
             )
           }
-          {...getFieldDefaultProps(editableFields, field)}
+          {...omit(
+            getFieldDefaultProps(editableFields, field),
+            'containerClassName',
+          )}
         />
         <div
           className={cx({

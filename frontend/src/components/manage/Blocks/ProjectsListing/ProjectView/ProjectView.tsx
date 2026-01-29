@@ -125,6 +125,11 @@ const ProjectView = ({
     (state) => state.projectFieldHistory,
   )
 
+  const canDeleteProject =
+    project.submission_status === 'Draft' &&
+    project.version === 1 &&
+    project.editable
+
   useEffect(() => {
     fetchFieldHistory(project.id)
   }, [fetchFieldHistory, JSON.stringify(project)])
@@ -291,7 +296,11 @@ const ProjectView = ({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div
+        className={cx('flex items-center justify-between', {
+          'flex-col-reverse sm:flex-row': canDeleteProject,
+        })}
+      >
         <Tabs
           aria-label="view-project"
           value={activeTab}
@@ -320,14 +329,12 @@ const ProjectView = ({
             />
           ))}
         </Tabs>
-        <div>
+        <div className={cx({ 'mb-1 ml-auto sm:mb-0': canDeleteProject })}>
           <div className="flex items-center justify-between gap-x-4">
             <ProjectDownloads project={project} />
-            {project.submission_status === 'Draft' &&
-              project.version === 1 &&
-              project.editable && (
-                <ProjectDelete {...{ project, hasComponents }} />
-              )}
+            {canDeleteProject && (
+              <ProjectDelete {...{ project, hasComponents }} />
+            )}
           </div>
         </div>
       </div>

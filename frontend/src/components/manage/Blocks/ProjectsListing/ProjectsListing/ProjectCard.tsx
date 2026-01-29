@@ -158,24 +158,34 @@ export default function ProjectCard({
   const { id, title, submission_status, code, code_legacy, editable } = project
   const { data, loading } = useGetProject(id.toString())
 
+  const isApproved = submission_status === 'Approved'
+  const projectCode = code ?? code_legacy
+
   return (
     <Modal
-      aria-labelledby="change-status-modal-title"
+      aria-labelledby="change-status-modal"
       open={isModalOpen}
       onClose={() => setIsModalOpen(null)}
       disableScrollLock
       keepMounted
     >
-      <Box className="flex min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
+      <Box className="flex max-h-[95%] min-h-[250px] w-[80%] max-w-[1400px] flex-col overflow-y-auto rounded-2xl border border-solid border-primary bg-primary p-0 absolute-center 2xl:w-[60%]">
         <div>
           <div className="mx-6 mt-4 flex flex-wrap justify-between gap-x-10 gap-y-3">
-            <PageHeading className="max-w-[85%] !text-[28px] text-white">
-              {title}
-              {submission_status === 'Approved'
-                ? `, ${code ?? code_legacy}`
-                : ''}
+            <PageHeading className="flex max-w-[85%] flex-wrap gap-2 !text-[28px] text-white">
+              <div>
+                {title} {isApproved && ','}
+              </div>
+              {isApproved && (
+                <div
+                  className="overflow-hidden text-ellipsis whitespace-nowrap"
+                  title={projectCode}
+                >
+                  {projectCode}
+                </div>
+              )}
             </PageHeading>
-            <div className="flex gap-6">
+            <div className="flex items-center gap-6">
               <Link
                 className="flex h-6 w-6 justify-center"
                 href={`/projects-listing/${id}`}

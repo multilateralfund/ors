@@ -24,7 +24,7 @@ const ProjectDeleteModal = ({
     open={showWarning}
     onClose={() => setShowWarning(false)}
   >
-    <Box className="flex w-full max-w-xl flex-col absolute-center">
+    <Box className="flex w-full max-w-[90%] flex-col absolute-center md:max-w-xl">
       <Typography className="mb-4 text-[20px] font-medium text-black">
         {capitalize(mode)} project
       </Typography>
@@ -34,7 +34,7 @@ const ProjectDeleteModal = ({
           : ''}
         Are you sure you want to {mode} the project?
       </Typography>
-      <div className="ml-auto mr-3 flex flex-wrap gap-3">
+      <div className="mr-3 flex flex-wrap justify-end gap-3">
         <CustomLink
           className="h-10 px-4 py-2 text-lg uppercase"
           onClick={onOk}

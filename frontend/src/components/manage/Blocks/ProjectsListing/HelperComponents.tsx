@@ -352,7 +352,7 @@ export const RelatedProjects = ({
                 className="min-h-[16px] min-w-[16px]"
               />
               {isTranchesMode && entry.tranche ? (
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1">
                   {entry.title}
                   <div className="font-medium">(tranche {entry.tranche})</div>
                 </div>

@@ -206,6 +206,7 @@ const ProjectsAssociateConfirmation = ({
   })
   const [errors, setErrors] = useState(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [offset, setOffset] = useState(0)
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
     loaded: false,
@@ -229,13 +230,16 @@ const ProjectsAssociateConfirmation = ({
     debouncedGetAssociatedProjects()
   }, [])
 
-  const projects = useMemo(
-    () => ({
+  const projects = useMemo(() => {
+    const projectsPerPage = 50
+    const projectsToAssociate = [...crtProjects, ...associatedProjects]
+
+    return {
       ...projectsAssociation,
-      results: [...crtProjects, ...associatedProjects],
-    }),
-    [projectsAssociation, crtProjects, associatedProjects],
-  )
+      results: projectsToAssociate.slice(offset, offset + projectsPerPage),
+      count: projectsToAssociate.length,
+    }
+  }, [projectsAssociation, crtProjects, associatedProjects, offset])
 
   const isOriginalProjIndiv = !crtProjects[0].meta_project_id
   const isAssociatedProjIndiv =
@@ -416,8 +420,8 @@ const ProjectsAssociateConfirmation = ({
         <PListingTable
           mode="association"
           filters={initialFilters}
-          enablePagination={false}
-          {...{ projects, associationIds }}
+          enablePagination={true}
+          {...{ projects, associationIds, setOffset }}
         />
       </form>
       {errors && (
