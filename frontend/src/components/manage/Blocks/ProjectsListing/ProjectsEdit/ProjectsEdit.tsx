@@ -7,6 +7,7 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -229,6 +230,10 @@ const ProjectsEdit = ({
     mode,
     metaProjectId,
     refetchRelatedProjects,
+  )
+
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    project.meta_project_id,
   )
 
   const [bpData, setBpData] = useState({
@@ -560,6 +565,7 @@ const ProjectsEdit = ({
             metaProjectId,
             setMetaProjectId,
             setRefetchRelatedProjects,
+            metaprojectData,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

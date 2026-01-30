@@ -31,7 +31,7 @@ import {
   Typography,
 } from '@mui/material'
 
-const orderFieldData = (fd: MetaProjectFieldData) => {
+export const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
 
   for (const key of Object.keys(fd)) {

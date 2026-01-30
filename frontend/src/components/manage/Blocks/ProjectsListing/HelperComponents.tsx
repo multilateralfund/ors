@@ -326,13 +326,13 @@ export const RelatedProjects = ({
       const isTranchesMode = mode === 'tranches'
 
       return (
-        <div key={entry.id} className={cx({ 'py-3': withExtraProjectInfo })}>
+        <div key={entry.id} className={cx({ 'py-4': withExtraProjectInfo })}>
           <Link
             component="a"
             className={cx(
               'flex w-fit flex-wrap items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
-                'pb-2.5': withExtraProjectInfo,
+                'pb-1.5': withExtraProjectInfo,
                 '!text-inherit': !hasErrors,
                 '!text-[#801F00]': hasErrors,
               },
@@ -351,7 +351,7 @@ export const RelatedProjects = ({
                 size={16}
                 className="min-h-[16px] min-w-[16px]"
               />
-              {isTranchesMode && entry.tranche ? (
+              {(isTranchesMode || withExtraProjectInfo) && entry.tranche ? (
                 <div className="flex flex-wrap gap-1">
                   {entry.title}
                   <div className="font-medium">(tranche {entry.tranche})</div>

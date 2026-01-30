@@ -16,6 +16,7 @@ import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
+import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -85,6 +86,7 @@ const ProjectsCreate = ({
   metaProjectId,
   setMetaProjectId,
   setRefetchRelatedProjects,
+  metaprojectData,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -108,6 +110,7 @@ const ProjectsCreate = ({
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
     setRefetchRelatedProjects?: (refetch: boolean) => void
+    metaprojectData?: MetaProjectDetailType | null
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -730,6 +733,7 @@ const ProjectsCreate = ({
                   setMetaProjectId,
                   setRefetchRelatedProjects,
                   setCurrentTab,
+                  metaprojectData,
                 }}
               />
             ),
