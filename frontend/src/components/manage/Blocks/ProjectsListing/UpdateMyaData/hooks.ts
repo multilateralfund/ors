@@ -20,7 +20,10 @@ export const useGetMetaProjects = (
 
   return { ...rest, ...results }
 }
-export const useGetMetaProjectDetails = (pk?: number) => {
+export const useGetMetaProjectDetails = (
+  pk?: number,
+  mode: string = 'edit',
+) => {
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
 
   const fetchData = (pk: number) => {
@@ -36,7 +39,7 @@ export const useGetMetaProjectDetails = (pk?: number) => {
   }, [pk])
 
   useEffect(() => {
-    if (pk) {
+    if (pk && mode === 'edit') {
       fetchData(pk)
     }
   }, [pk])

@@ -234,6 +234,7 @@ const ProjectsEdit = ({
 
   const { data: metaprojectData } = useGetMetaProjectDetails(
     project.meta_project_id,
+    mode,
   )
 
   const [bpData, setBpData] = useState({
