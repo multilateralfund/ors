@@ -14,6 +14,7 @@ import ProjectRelatedProjects from './ProjectRelatedProjects'
 import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import {
   filterApprovalFields,
   getIsUpdatablePostExcom,
@@ -169,6 +170,11 @@ const ProjectView = ({
     metaProjectId,
     refetchRelatedProjects,
   )
+
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    project.meta_project_id,
+  )
+
   const hasComponents =
     project.component && project.component.original_project_id === project.id
 
@@ -277,6 +283,7 @@ const ProjectView = ({
                   metaProjectId,
                   setMetaProjectId,
                   setRefetchRelatedProjects,
+                  metaprojectData,
                 }}
               />
             ),
