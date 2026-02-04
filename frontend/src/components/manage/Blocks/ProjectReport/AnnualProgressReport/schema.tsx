@@ -1,72 +1,15 @@
 import { AgGridReactProps, CustomCellRendererProps } from 'ag-grid-react'
-import { DataTypeDefinition, IHeaderParams } from 'ag-grid-community'
-import {
-  formatBoolean,
-  formatDate,
-  formatDecimal,
-  formatPercent,
-  formatUSD,
-  parseDate,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import { IHeaderParams } from 'ag-grid-community'
 import React from 'react'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isNil, isObject } from 'lodash'
+import { get, isEqual, isObject } from 'lodash'
 import {
-  validateDate,
-  validateNumber,
   validateText,
   ValidatorMixin,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
-import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
+} from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/validation.tsx'
+import CellValidation from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/CellValidation.tsx'
 import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
 import dayjs from 'dayjs'
-
-export const dataTypeDefinitions: Record<
-  string,
-  DataTypeDefinition & ValidatorMixin
-> = {
-  dateString: {
-    baseDataType: 'dateString',
-    extendsDataType: 'dateString',
-    // From date picker to our ISO format (YYYY-MM-DD)
-    dateFormatter: (value) => formatDate(value, 'YYYY-MM-DD'),
-    // Format value to UI format (DD/MM/YYYY)
-    valueFormatter: (params) => formatDate(params.value),
-    // Parse to date from ISO format
-    dateParser: (value) => parseDate(value),
-    validators: [validateDate],
-    valueParser: (params) => {
-      if (isNil(params.newValue) || params.newValue === '') {
-        return null
-      }
-
-      return params.newValue
-    },
-  },
-  currency: {
-    baseDataType: 'number',
-    extendsDataType: 'number',
-    valueFormatter: (params) => formatUSD(params.value),
-    validators: [validateNumber],
-  },
-  percent: {
-    baseDataType: 'number',
-    extendsDataType: 'number',
-    valueFormatter: (params) => formatPercent(params.value),
-    validators: [validateNumber],
-  },
-  decimal: {
-    baseDataType: 'number',
-    extendsDataType: 'number',
-    valueFormatter: (params) => formatDecimal(params.value),
-    validators: [validateNumber],
-  },
-  boolean: {
-    baseDataType: 'boolean',
-    extendsDataType: 'boolean',
-    valueFormatter: (params) => formatBoolean(params.value),
-  },
-}
 
 interface APRTableColumn {
   label: string
@@ -668,7 +611,7 @@ export default function useGetColumnDefs({
                   }
 
                   if (cellDataType === 'boolean') {
-                    toBeAdded = value.toLowerCase() === 'yes';
+                    toBeAdded = value.toLowerCase() === 'yes'
                   }
 
                   row[field] = toBeAdded
