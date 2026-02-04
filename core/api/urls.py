@@ -169,6 +169,7 @@ from core.api.views.project_completion_report import (
     PCRGenderMainstreamingView,
     PCRLessonLearnedView,
     PCRListView,
+    PCRLockUnlockView,
     PCROverallAssessmentUpdateView,
     PCRProjectActivityCreateView,
     PCRProjectActivityUpdateView,
@@ -853,6 +854,11 @@ urlpatterns = [
         "project-completion-report/<int:pk>/submit/",
         PCRSubmitView.as_view(),
         name="pcr-submit",
+    ),
+    path(
+        "project-completion-report/<int:pk>/toggle-lock/",
+        PCRLockUnlockView.as_view(),
+        name="pcr-toggle-lock",
     ),
     # Section 2: Project Activities
     path(

@@ -349,11 +349,14 @@ class PCRUpdateView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pk)
         self.check_object_permissions(request, pcr)
 
-        if pcr.status == ProjectCompletionReport.Status.SUBMITTED:
-            if not request.user.has_perm("core.can_view_all_agencies"):
-                raise ValidationError(
-                    "Cannot edit submitted PCR. Only MLFS can unlock."
-                )
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = ProjectCompletionReportWriteSerializer(
             pcr, data=request.data, partial=True
@@ -379,6 +382,15 @@ class PCRProjectActivityCreateView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRProjectActivitySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -398,6 +410,15 @@ class PCRProjectActivityUpdateView(APIView):
             pk=pk,
         )
         self.check_object_permissions(request, activity.pcr)
+
+        # Check if PCR is editable
+        if (
+            activity.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not activity.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRProjectActivitySerializer(
             activity, data=request.data, partial=True
@@ -430,6 +451,15 @@ class PCROverallAssessmentUpdateView(APIView):
     def post(self, request, pcr_id):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
+
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         # Get or create the overall assessment (should be only one per PCR)
         try:
@@ -473,6 +503,15 @@ class PCRCommentCreateView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRCommentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -489,6 +528,15 @@ class PCRCommentUpdateView(APIView):
     def patch(self, request, pk):
         comment = get_object_or_404(PCRComment.objects.select_related("pcr"), pk=pk)
         self.check_object_permissions(request, comment.pcr)
+
+        # Check if PCR is editable
+        if (
+            comment.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not comment.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRCommentSerializer(comment, data=request.data, partial=True)
         if serializer.is_valid():
@@ -517,6 +565,15 @@ class PCRCauseOfDelayView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRCauseOfDelayWriteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -528,6 +585,15 @@ class PCRCauseOfDelayView(APIView):
     def patch(self, request, pk):
         cause = get_object_or_404(PCRCauseOfDelay.objects.select_related("pcr"), pk=pk)
         self.check_object_permissions(request, cause.pcr)
+
+        # Check if PCR is editable
+        if (
+            cause.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not cause.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRCauseOfDelayWriteSerializer(
             cause, data=request.data, partial=True
@@ -559,6 +625,15 @@ class PCRLessonLearnedView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRLessonLearnedWriteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -572,6 +647,15 @@ class PCRLessonLearnedView(APIView):
             PCRLessonLearned.objects.select_related("pcr"), pk=pk
         )
         self.check_object_permissions(request, lesson.pcr)
+
+        # Check if PCR is editable
+        if (
+            lesson.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not lesson.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRLessonLearnedWriteSerializer(
             lesson, data=request.data, partial=True
@@ -610,6 +694,15 @@ class PCRRecommendationCreateView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRRecommendationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -628,6 +721,15 @@ class PCRRecommendationUpdateView(APIView):
             PCRRecommendation.objects.select_related("pcr"), pk=pk
         )
         self.check_object_permissions(request, recommendation.pcr)
+
+        # Check if PCR is editable
+        if (
+            recommendation.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not recommendation.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRRecommendationSerializer(
             recommendation, data=request.data, partial=True
@@ -660,6 +762,15 @@ class PCRGenderMainstreamingView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRGenderMainstreamingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -672,6 +783,15 @@ class PCRGenderMainstreamingView(APIView):
             PCRGenderMainstreaming.objects.select_related("pcr"), pk=pk
         )
         self.check_object_permissions(request, gender.pcr)
+
+        # Check if PCR is editable
+        if (
+            gender.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not gender.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRGenderMainstreamingSerializer(
             gender, data=request.data, partial=True
@@ -704,6 +824,15 @@ class PCRSDGContributionView(APIView):
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
 
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
+
         serializer = PCRSDGContributionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(pcr=pcr)
@@ -716,6 +845,15 @@ class PCRSDGContributionView(APIView):
             PCRSDGContribution.objects.select_related("pcr"), pk=pk
         )
         self.check_object_permissions(request, sdg_contrib.pcr)
+
+        # Check if PCR is editable
+        if (
+            sdg_contrib.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not sdg_contrib.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRSDGContributionSerializer(
             sdg_contrib, data=request.data, partial=True
@@ -752,9 +890,13 @@ class PCRTrancheDataUpdateView(APIView):
         self.check_object_permissions(request, tranche.pcr)
 
         # Check if PCR is editable
-        if tranche.pcr.status == ProjectCompletionReport.Status.SUBMITTED:
-            if not request.user.has_perm("core.can_view_all_agencies"):
-                raise ValidationError("Cannot edit submitted PCR.")
+        if (
+            tranche.pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not tranche.pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRTrancheDataWriteSerializer(
             tranche, data=request.data, partial=True
@@ -785,6 +927,15 @@ class PCRSupportingEvidenceUploadView(APIView):
 
         pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
         self.check_object_permissions(request, pcr)
+
+        # Check if PCR is editable
+        if (
+            pcr.status == ProjectCompletionReport.Status.SUBMITTED
+            and not pcr.is_unlocked
+        ):
+            raise ValidationError(
+                "Cannot edit submitted PCR. Please request MLFS to unlock it first."
+            )
 
         serializer = PCRSupportingEvidenceSerializer(
             data=request.data, context={"request": request}
@@ -830,6 +981,7 @@ class PCRSubmitView(APIView):
         # Update PCR status and submission dates
         pcr.status = ProjectCompletionReport.Status.SUBMITTED
         pcr.submitter = user
+        pcr.is_unlocked = False  # Lock on submit/resubmit
 
         # Track first and last submission dates
         submission_dt = timezone.now()
@@ -845,3 +997,40 @@ class PCRSubmitView(APIView):
             pcr, context={"request": request}
         )
         return Response(serializer.data)
+
+
+class PCRLockUnlockView(APIView):
+    """
+    Toggle lock/unlock for a submitted PCR (MLFS only).
+    Request body should contain: {"is_unlocked": true} or {"is_unlocked": false}
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        # Only MLFS users can lock/unlock
+        if not request.user.has_perm("core.can_view_all_agencies"):
+            raise ValidationError("Only MLFS users can lock/unlock PCRs.")
+
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pk)
+
+        # Only submitted PCRs can be locked/unlocked
+        if pcr.status != ProjectCompletionReport.Status.SUBMITTED:
+            raise ValidationError("Can only lock/unlock SUBMITTED PCRs.")
+
+        is_unlocked = request.data.get("is_unlocked")
+        if is_unlocked is None:
+            raise ValidationError("Field 'is_unlocked' is required (true or false).")
+
+        pcr.is_unlocked = bool(is_unlocked)
+        pcr.save(update_fields=["is_unlocked", "date_updated"])
+
+        action = "unlocked" if is_unlocked else "locked"
+        return Response(
+            {
+                "message": f"PCR {action} successfully.",
+                "is_unlocked": pcr.is_unlocked,
+                "status": pcr.status,
+            },
+            status=status.HTTP_200_OK,
+        )

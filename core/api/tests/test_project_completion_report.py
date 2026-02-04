@@ -216,6 +216,10 @@ class TestPCRUpdateView(BaseTest):
     def test_cannot_update_submitted_pcr_as_agency(
         self, pcr_agency_inputter_user, pcr_submitted
     ):
+        # Lock the PCR (submitted PCRs are locked after submission)
+        pcr_submitted.is_unlocked = False
+        pcr_submitted.save()
+
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse("pcr-update", kwargs={"pk": pcr_submitted.id})
 
@@ -727,3 +731,127 @@ class TestPCRSupportingEvidence(BaseTest):
 
         # Permission checks happen before queryset filtering
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+class TestPCRLockUnlock(BaseTest):
+    def test_without_login(self, pcr_with_data):
+        self.client.force_authenticate(user=None)
+        url = reverse("pcr-toggle-lock", kwargs={"pk": pcr_with_data.id})
+        response = self.client.post(url, {"is_unlocked": True}, format="json")
+        assert response.status_code == 403
+
+    def test_submit_locks_pcr(self, pcr_agency_submitter_user, pcr_with_data):
+        self.client.force_authenticate(user=pcr_agency_submitter_user)
+
+        pcr_with_data.is_unlocked = True
+        pcr_with_data.save(update_fields=["is_unlocked"])
+        assert pcr_with_data.status == ProjectCompletionReport.Status.DRAFT
+
+        url = reverse("pcr-submit", kwargs={"pk": pcr_with_data.id})
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        # Verify PCR is now locked
+        pcr_with_data.refresh_from_db()
+        assert pcr_with_data.is_unlocked is False
+        assert pcr_with_data.status == ProjectCompletionReport.Status.SUBMITTED
+
+    def test_mlfs_can_unlock_pcr(self, mlfs_admin_user, pcr_with_data):
+        pcr_with_data.status = ProjectCompletionReport.Status.SUBMITTED
+        pcr_with_data.is_unlocked = False
+        pcr_with_data.save()
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("pcr-toggle-lock", kwargs={"pk": pcr_with_data.id})
+
+        data = {"is_unlocked": True}
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_unlocked"] is True
+        assert response.data["message"] == "PCR unlocked successfully."
+
+        pcr_with_data.refresh_from_db()
+        assert pcr_with_data.is_unlocked is True
+
+    def test_agency_cannot_unlock_pcr(self, pcr_agency_inputter_user, pcr_with_data):
+        pcr_with_data.status = ProjectCompletionReport.Status.SUBMITTED
+        pcr_with_data.is_unlocked = False
+        pcr_with_data.save()
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-toggle-lock", kwargs={"pk": pcr_with_data.id})
+
+        data = {"is_unlocked": True}
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Only MLFS users can lock/unlock" in str(response.data)
+
+    def test_cannot_edit_locked_pcr(self, pcr_agency_inputter_user, pcr_with_data):
+        pcr_with_data.status = ProjectCompletionReport.Status.SUBMITTED
+        pcr_with_data.is_unlocked = False
+        pcr_with_data.save()
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+
+        # Try to update the PCR overview
+        url = reverse("pcr-update", kwargs={"pk": pcr_with_data.id})
+        data = {"financial_figures_status": "final"}
+        response = self.client.patch(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Cannot edit submitted PCR" in str(response.data)
+
+    def test_can_edit_unlocked_pcr(
+        self, pcr_agency_inputter_user, pcr_agency_submitter_user, pcr_with_data
+    ):
+        pcr_with_data.status = ProjectCompletionReport.Status.SUBMITTED
+        pcr_with_data.is_unlocked = True
+        pcr_with_data.save()
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+
+        # Try to update the PCR overview
+        url = reverse("pcr-update", kwargs={"pk": pcr_with_data.id})
+        data = {"financial_figures_status": "final"}
+        response = self.client.patch(url, data, format="json")
+
+        if response.status_code != status.HTTP_200_OK:
+            print(f"Response data: {response.data}")
+        assert response.status_code == status.HTTP_200_OK
+
+        # Re-submit with submitter user (inputter doesn't have permission)
+        self.client.force_authenticate(user=pcr_agency_submitter_user)
+        url = reverse("pcr-submit", kwargs={"pk": pcr_with_data.id})
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+
+        pcr_with_data.refresh_from_db()
+        assert pcr_with_data.is_unlocked is False
+        assert pcr_with_data.status == ProjectCompletionReport.Status.SUBMITTED
+        assert pcr_with_data.last_submission_date is not None
+
+    def test_cannot_create_activity_on_locked_pcr(
+        self, pcr_agency_inputter_user, pcr_with_data
+    ):
+        """Test that activities cannot be created on locked PCRs"""
+        pcr_with_data.status = ProjectCompletionReport.Status.SUBMITTED
+        pcr_with_data.is_unlocked = False
+        pcr_with_data.save()
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-activity-create", kwargs={"pcr_id": pcr_with_data.id})
+
+        data = {
+            "project_type": "INV",
+            "sector": "FOA",
+            "activity_type": "EQUIPMENT",
+        }
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Cannot edit submitted PCR" in str(response.data)

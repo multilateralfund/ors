@@ -348,6 +348,7 @@ class HasPCRViewAccess(permissions.BasePermission):
             - PCRs where their agency is involved through tranches
             - PCRs for projects where their agency is lead or executing agency
         """
+        # TODO: is this assumption about tranches correct?
         # Get the PCR (handle both direct and nested objects)
         if hasattr(obj, "pcr"):
             # PCR-related object (activity, delay, etc.)

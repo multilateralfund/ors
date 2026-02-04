@@ -258,6 +258,10 @@ class ProjectCompletionReport(models.Model):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.DRAFT
     )
+    is_unlocked = models.BooleanField(
+        default=False,
+        help_text="When True, agency can edit even when status is SUBMITTED",
+    )
 
     # Section 1.6: User Input Fields
     submitter = models.ForeignKey(

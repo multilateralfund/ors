@@ -523,6 +523,7 @@ class ProjectCompletionReportReadSerializer(serializers.ModelSerializer):
             # Status
             "status",
             "status_display",
+            "is_unlocked",
             # Overview fields (Section 1.6)
             "submitter",
             "submitter_name",
@@ -610,6 +611,7 @@ class ProjectCompletionReportListSerializer(serializers.ModelSerializer):
             "country_name",
             "status",
             "status_display",
+            "is_unlocked",
             "financial_figures_status",
             "submitter",
             "submitter_name",
@@ -670,17 +672,35 @@ class ProjectCompletionReportWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Ensure either meta_project or project is set, but not both"""
-        meta_project = attrs.get("meta_project")
-        project = attrs.get("project")
+        # On partial update (PATCH), attrs may not contain these fields
+        # Only validate if we're creating or explicitly updating project/meta_project
+        if self.instance is None:  # Creating new PCR
+            meta_project = attrs.get("meta_project")
+            project = attrs.get("project")
 
-        if not meta_project and not project:
-            raise serializers.ValidationError(
-                "Either meta_project or project must be provided"
-            )
+            if not meta_project and not project:
+                raise serializers.ValidationError(
+                    "Either meta_project or project must be provided"
+                )
 
-        if meta_project and project:
-            raise serializers.ValidationError(
-                "Cannot set both meta_project and project"
-            )
+            if meta_project and project:
+                raise serializers.ValidationError(
+                    "Cannot set both meta_project and project"
+                )
+        else:  # Updating existing PCR
+            # Only validate if either field is being changed
+            if "meta_project" in attrs or "project" in attrs:
+                meta_project = attrs.get("meta_project", self.instance.meta_project)
+                project = attrs.get("project", self.instance.project)
+
+                if not meta_project and not project:
+                    raise serializers.ValidationError(
+                        "Either meta_project or project must be provided"
+                    )
+
+                if meta_project and project:
+                    raise serializers.ValidationError(
+                        "Cannot set both meta_project and project"
+                    )
 
         return attrs
