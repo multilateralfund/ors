@@ -9,7 +9,6 @@ from rest_framework import serializers
 from core.models.project_complition_report import (
     DelayCategory,
     LearnedLessonCategory,
-    PCRAgencyReport,
     PCRAlternativeTechnology,
     PCRCauseOfDelay,
     PCRCauseOfDelayCategory,
@@ -458,78 +457,12 @@ class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.file.url)
         return None
 
-
-# PCR Agency Report
-
-
-class PCRAgencyReportReadSerializer(serializers.ModelSerializer):
-    """Read serializer for PCR agency report with all nested data"""
-
-    agency_name = serializers.CharField(source="agency.name", read_only=True)
-    status_display = serializers.CharField(source="get_status_display", read_only=True)
-
-    # Nested data
-    activities = PCRProjectActivitySerializer(many=True, read_only=True)
-    overall_assessment = PCROverallAssessmentSerializer(read_only=True)
-    comments = PCRCommentSerializer(many=True, read_only=True)
-    causes_of_delay = PCRCauseOfDelayReadSerializer(many=True, read_only=True)
-    lessons_learned = PCRLessonLearnedReadSerializer(many=True, read_only=True)
-    recommendations = PCRRecommendationSerializer(many=True, read_only=True)
-    gender_mainstreaming = PCRGenderMainstreamingSerializer(many=True, read_only=True)
-    sdg_contributions = PCRSDGContributionSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = PCRAgencyReport
-        fields = [
-            "id",
-            "agency",
-            "agency_name",
-            "status",
-            "status_display",
-            "is_lead_agency",
-            "is_unlocked",
-            # Financial summary
-            "funding_approved",
-            "funding_disbursed",
-            "funding_returned",
-            # Nested sections
-            "activities",
-            "overall_assessment",
-            "comments",
-            "causes_of_delay",
-            "lessons_learned",
-            "recommendations",
-            "gender_mainstreaming",
-            "sdg_contributions",
-            # Audit
-            "date_created",
-            "date_updated",
-            "date_submitted",
-        ]
-
-
-class PCRAgencyReportSummarySerializer(serializers.ModelSerializer):
-    """Summary serializer for agency report (used in lists)"""
-
-    agency_name = serializers.CharField(source="agency.name", read_only=True)
-    status_display = serializers.CharField(source="get_status_display", read_only=True)
-
-    class Meta:
-        model = PCRAgencyReport
-        fields = [
-            "id",
-            "agency",
-            "agency_name",
-            "status",
-            "status_display",
-            "is_lead_agency",
-            "is_unlocked",
-            "funding_approved",
-            "funding_disbursed",
-            "funding_returned",
-            "date_updated",
-            "date_submitted",
-        ]
+    def create(self, validated_data):
+        """Set uploaded_by to current user"""
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["uploaded_by"] = request.user
+        return super().create(validated_data)
 
 
 # Project Completion Reports
@@ -558,7 +491,12 @@ class ProjectCompletionReportReadSerializer(serializers.ModelSerializer):
     )
 
     # Nested data
-    agency_reports = PCRAgencyReportSummarySerializer(many=True, read_only=True)
+    activities = PCRProjectActivitySerializer(many=True, read_only=True)
+    overall_assessments = PCROverallAssessmentSerializer(many=True, read_only=True)
+    causes_of_delay = PCRCauseOfDelayReadSerializer(many=True, read_only=True)
+    lessons_learned = PCRLessonLearnedReadSerializer(many=True, read_only=True)
+    gender_mainstreaming = PCRGenderMainstreamingSerializer(many=True, read_only=True)
+    sdg_contributions = PCRSDGContributionSerializer(many=True, read_only=True)
     tranches = PCRTrancheDataReadSerializer(many=True, read_only=True)
     comments = PCRCommentSerializer(many=True, read_only=True)
     recommendations = PCRRecommendationSerializer(many=True, read_only=True)
@@ -614,7 +552,12 @@ class ProjectCompletionReportReadSerializer(serializers.ModelSerializer):
             "total_funding_disbursed",
             "total_funding_returned",
             # Nested data
-            "agency_reports",
+            "activities",
+            "overall_assessments",
+            "causes_of_delay",
+            "lessons_learned",
+            "gender_mainstreaming",
+            "sdg_contributions",
             "tranches",
             "comments",
             "recommendations",
@@ -701,8 +644,9 @@ class ProjectCompletionReportListSerializer(serializers.ModelSerializer):
         return None
 
     def get_lead_agency_name(self, obj):
-        lead_report = obj.agency_reports.filter(is_lead_agency=True).first()
-        return lead_report.agency.name if lead_report else None
+        # Get lead agency from the first tranche
+        first_tranche = obj.tranches.first()
+        return first_tranche.agency.name if first_tranche else None
 
 
 class ProjectCompletionReportWriteSerializer(serializers.ModelSerializer):

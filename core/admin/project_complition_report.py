@@ -22,7 +22,6 @@ from core.models.project_complition_report import (
     PCRGenderPhase,
     # Core PCR models
     ProjectCompletionReport,
-    PCRAgencyReport,
     # Section models
     PCRProjectActivity,
     PCROverallAssessment,
@@ -119,14 +118,6 @@ class PCRGenderPhaseAdmin(admin.ModelAdmin):
     ordering = ["sort_order"]
 
 
-class PCRAgencyReportInline(admin.TabularInline):
-    model = PCRAgencyReport
-    extra = 0
-    fields = ["agency", "is_lead_agency", "status", "is_unlocked"]
-    readonly_fields = ["funding_approved", "funding_disbursed", "funding_returned"]
-    can_delete = False
-
-
 class PCRTrancheDataInline(admin.TabularInline):
     model = PCRTrancheData
     extra = 0
@@ -171,7 +162,7 @@ class ProjectCompletionReportAdmin(admin.ModelAdmin):
         "submitter",
         "last_submission_date",
     ]
-    inlines = [PCRAgencyReportInline, PCRTrancheDataInline]
+    inlines = [PCRTrancheDataInline]
 
     fieldsets = (
         ("Project Link", {"fields": ("meta_project", "project")}),
@@ -232,56 +223,26 @@ class ProjectCompletionReportAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(PCRAgencyReport)
-class PCRAgencyReportAdmin(admin.ModelAdmin):
-    search_fields = ["id"]
-    list_filter = [
-        "status",
-        "is_lead_agency",
-        "is_unlocked",
-        AutocompleteFilterFactory("pcr", "pcr"),
-        AutocompleteFilterFactory("agency", "agency"),
-    ]
-    autocomplete_fields = ["pcr", "agency", "created_by", "last_modified_by"]
-    readonly_fields = [
-        "date_created",
-        "date_updated",
-        "date_submitted",
-        "funding_approved",
-        "funding_disbursed",
-        "funding_returned",
-    ]
-    list_display = [
-        "pcr",
-        "agency",
-        "is_lead_agency",
-        "status",
-        "is_unlocked",
-        "funding_approved",
-        "funding_disbursed",
-    ]
-
-
 @admin.register(PCRProjectActivity)
 class PCRProjectActivityAdmin(admin.ModelAdmin):
     search_fields = ["activity_type"]
     list_filter = [
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
         "project_type",
         "sector",
     ]
-    autocomplete_fields = ["agency_report", "created_by"]
-    list_display = ["agency_report", "project_type", "sector", "date_created"]
+    autocomplete_fields = ["pcr", "created_by"]
+    list_display = ["pcr", "project_type", "sector", "date_created"]
 
 
 @admin.register(PCROverallAssessment)
 class PCROverallAssessmentAdmin(admin.ModelAdmin):
     list_filter = [
         "rating",
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
     ]
-    autocomplete_fields = ["agency_report", "created_by"]
-    list_display = ["agency_report", "rating", "date_created"]
+    autocomplete_fields = ["pcr", "created_by"]
+    list_display = ["pcr", "rating", "date_created"]
 
 
 @admin.register(PCRComment)
@@ -292,7 +253,7 @@ class PCRCommentAdmin(admin.ModelAdmin):
         "entity_type",
         AutocompleteFilterFactory("pcr", "pcr"),
     ]
-    autocomplete_fields = ["pcr", "agency_report", "created_by"]
+    autocomplete_fields = ["pcr", "created_by"]
     list_display = ["pcr", "section", "entity_type", "date_created"]
 
 
@@ -300,11 +261,11 @@ class PCRCommentAdmin(admin.ModelAdmin):
 class PCRCauseOfDelayAdmin(admin.ModelAdmin):
     search_fields = ["description"]
     list_filter = [
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
         AutocompleteFilterFactory("project_element", "project_element"),
     ]
-    autocomplete_fields = ["agency_report", "project_element", "created_by"]
-    list_display = ["agency_report", "project_element", "date_created"]
+    autocomplete_fields = ["pcr", "project_element", "created_by"]
+    list_display = ["pcr", "project_element", "date_created"]
 
 
 @admin.register(PCRCauseOfDelayCategory)
@@ -321,11 +282,11 @@ class PCRCauseOfDelayCategoryAdmin(admin.ModelAdmin):
 class PCRLessonLearnedAdmin(admin.ModelAdmin):
     search_fields = ["description"]
     list_filter = [
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
         AutocompleteFilterFactory("project_element", "project_element"),
     ]
-    autocomplete_fields = ["agency_report", "project_element", "created_by"]
-    list_display = ["agency_report", "project_element", "date_created"]
+    autocomplete_fields = ["pcr", "project_element", "created_by"]
+    list_display = ["pcr", "project_element", "date_created"]
 
 
 @admin.register(PCRLessonLearnedCategory)
@@ -344,30 +305,30 @@ class PCRRecommendationAdmin(admin.ModelAdmin):
     list_filter = [
         AutocompleteFilterFactory("pcr", "pcr"),
     ]
-    autocomplete_fields = ["pcr", "agency_report", "created_by"]
-    list_display = ["pcr", "agency_report", "date_created"]
+    autocomplete_fields = ["pcr", "created_by"]
+    list_display = ["pcr", "date_created"]
 
 
 @admin.register(PCRGenderMainstreaming)
 class PCRGenderMainstreamingAdmin(admin.ModelAdmin):
     list_filter = [
         "indicator_met",
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
         AutocompleteFilterFactory("phase", "phase"),
     ]
-    autocomplete_fields = ["agency_report", "phase", "created_by"]
-    list_display = ["agency_report", "phase", "indicator_met", "date_created"]
+    autocomplete_fields = ["pcr", "phase", "created_by"]
+    list_display = ["pcr", "phase", "indicator_met", "date_created"]
 
 
 @admin.register(PCRSDGContribution)
 class PCRSDGContributionAdmin(admin.ModelAdmin):
     search_fields = ["description"]
     list_filter = [
-        AutocompleteFilterFactory("agency_report", "agency_report"),
+        AutocompleteFilterFactory("pcr", "pcr"),
         AutocompleteFilterFactory("sdg", "sdg"),
     ]
-    autocomplete_fields = ["agency_report", "sdg", "created_by"]
-    list_display = ["agency_report", "sdg", "date_created"]
+    autocomplete_fields = ["pcr", "sdg", "created_by"]
+    list_display = ["pcr", "sdg", "date_created"]
 
 
 @admin.register(PCRTrancheData)

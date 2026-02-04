@@ -55,7 +55,6 @@ from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFactory,
     ProjectCompletionReportFactory,
-    PCRAgencyReportFactory,
     PCRProjectActivityFactory,
     PCROverallAssessmentFactory,
     PCRCommentFactory,
@@ -67,7 +66,6 @@ from core.api.tests.factories import (
 )
 from core.models.project_complition_report import (
     ProjectCompletionReport,
-    PCRAgencyReport,
     PCRProjectElement,
     PCRGenderPhase,
     PCRSDG,
@@ -1812,25 +1810,12 @@ def pcr_factory():
 
 
 @pytest.fixture
-def agency_report_factory():
-    return PCRAgencyReportFactory
-
-
-@pytest.fixture
 def pcr_with_data(pcr_agency_inputter_user, project, agency):
     pcr = ProjectCompletionReport.objects.create(
         project=project,
         status=ProjectCompletionReport.Status.DRAFT,
         created_by=pcr_agency_inputter_user,
     )
-
-    PCRAgencyReport.objects.create(
-        pcr=pcr,
-        agency=agency,
-        is_lead_agency=True,
-        status=PCRAgencyReport.ReportStatus.DRAFT,
-    )
-
     return pcr
 
 
@@ -1842,14 +1827,6 @@ def pcr_submitted(pcr_agency_submitter_user, project, agency):
         created_by=pcr_agency_submitter_user,
         submitter=pcr_agency_submitter_user,
     )
-
-    PCRAgencyReport.objects.create(
-        pcr=pcr,
-        agency=agency,
-        is_lead_agency=True,
-        status=PCRAgencyReport.ReportStatus.SUBMITTED,
-    )
-
     return pcr
 
 
@@ -1860,35 +1837,7 @@ def pcr_all_reports_submitted(pcr_agency_submitter_user, project, agency):
         status=ProjectCompletionReport.Status.DRAFT,
         created_by=pcr_agency_submitter_user,
     )
-
-    PCRAgencyReport.objects.create(
-        pcr=pcr,
-        agency=agency,
-        is_lead_agency=True,
-        status=PCRAgencyReport.ReportStatus.SUBMITTED,
-    )
-
     return pcr
-
-
-@pytest.fixture
-def pcr_agency_report(pcr_with_data, agency):
-    return pcr_with_data.agency_reports.filter(agency=agency).first()
-
-
-@pytest.fixture
-def pcr_agency_report_submitted(pcr_submitted, agency):
-    return pcr_submitted.agency_reports.filter(agency=agency).first()
-
-
-@pytest.fixture
-def pcr_agency_report_other_agency(pcr_with_data, pcr_agency_other):
-    return PCRAgencyReport.objects.create(
-        pcr=pcr_with_data,
-        agency=pcr_agency_other,
-        is_lead_agency=False,
-        status=PCRAgencyReport.ReportStatus.DRAFT,
-    )
 
 
 @pytest.fixture
@@ -1948,52 +1897,52 @@ def pcr_sdg():
 
 
 @pytest.fixture
-def pcr_project_activity(pcr_agency_report):
-    return PCRProjectActivityFactory(agency_report=pcr_agency_report)
+def pcr_project_activity(pcr_with_data):
+    return PCRProjectActivityFactory(pcr=pcr_with_data)
 
 
 @pytest.fixture
-def pcr_overall_assessment(pcr_agency_report):
-    return PCROverallAssessmentFactory(agency_report=pcr_agency_report)
+def pcr_overall_assessment(pcr_with_data):
+    return PCROverallAssessmentFactory(pcr=pcr_with_data)
 
 
 @pytest.fixture
-def pcr_comment(pcr_agency_report):
-    return PCRCommentFactory(agency_report=pcr_agency_report)
+def pcr_comment(pcr_with_data):
+    return PCRCommentFactory(pcr=pcr_with_data)
 
 
 @pytest.fixture
-def pcr_cause_of_delay(pcr_agency_report, pcr_project_element):
+def pcr_cause_of_delay(pcr_with_data, pcr_project_element):
     return PCRCauseOfDelayFactory(
-        agency_report=pcr_agency_report,
+        pcr=pcr_with_data,
         project_element=pcr_project_element,
     )
 
 
 @pytest.fixture
-def pcr_lesson_learned(pcr_agency_report, pcr_project_element):
+def pcr_lesson_learned(pcr_with_data, pcr_project_element):
     return PCRLessonLearnedFactory(
-        agency_report=pcr_agency_report,
+        pcr=pcr_with_data,
         project_element=pcr_project_element,
     )
 
 
 @pytest.fixture
-def pcr_recommendation(pcr_agency_report):
-    return PCRRecommendationFactory(agency_report=pcr_agency_report)
+def pcr_recommendation(pcr_with_data):
+    return PCRRecommendationFactory(pcr=pcr_with_data)
 
 
 @pytest.fixture
-def pcr_gender_mainstreaming(pcr_agency_report, pcr_gender_phase):
+def pcr_gender_mainstreaming(pcr_with_data, pcr_gender_phase):
     return PCRGenderMainstreamingFactory(
-        agency_report=pcr_agency_report,
+        pcr=pcr_with_data,
         phase=pcr_gender_phase,
     )
 
 
 @pytest.fixture
-def pcr_sdg_contrib(pcr_agency_report, pcr_sdg):
+def pcr_sdg_contrib(pcr_with_data, pcr_sdg):
     return PCRSDGContributionFactory(
-        agency_report=pcr_agency_report,
+        pcr=pcr_with_data,
         sdg=pcr_sdg,
     )

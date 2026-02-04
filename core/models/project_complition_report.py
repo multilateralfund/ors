@@ -502,125 +502,17 @@ class ProjectCompletionReport(models.Model):
         )
 
 
-class PCRAgencyReport(models.Model):
-    """
-    Agency-specific section of a PCR.
-    Similar to AnnualAgencyProjectReport in APR system.
-
-    Each agency involved in a project can contribute data,
-    but only the Lead Agency can submit the report.
-    """
-
-    class ReportStatus(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        SUBMITTED = "submitted", "Submitted"
-
-    pcr = models.ForeignKey(
-        ProjectCompletionReport, on_delete=models.CASCADE, related_name="agency_reports"
-    )
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
-
-    # Status - only relevant for Lead Agency
-    status = models.CharField(
-        max_length=20,
-        choices=ReportStatus.choices,
-        default=ReportStatus.DRAFT,
-        help_text="Status of this agency's section (Lead Agency only)",
-    )
-    is_lead_agency = models.BooleanField(
-        default=False, help_text="True if this is the lead agency for the project"
-    )
-    is_unlocked = models.BooleanField(
-        default=False, help_text="MLFS can unlock submitted reports for corrections"
-    )
-
-    # Financial summary for this agency (aggregated from tranches)
-    funding_approved = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="MLF funding approved for this agency (US$)",
-    )
-    funding_disbursed = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="MLF funding disbursed by this agency (US$)",
-    )
-    funding_returned = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="MLF funding returned (Approved - Disbursed)",
-    )
-
-    # Audit fields
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="created_pcr_agency_reports",
-        null=True,
-        blank=True,
-    )
-    last_modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="modified_pcr_agency_reports",
-        null=True,
-        blank=True,
-    )
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    date_submitted = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        verbose_name = "PCR Agency Report"
-        verbose_name_plural = "PCR Agency Reports"
-        unique_together = [["pcr", "agency"]]
-
-    def __str__(self):
-        return f"{self.pcr} - {self.agency.name}"
-
-    @property
-    def can_edit(self):
-        """Check if this agency report can be edited"""
-        if self.is_lead_agency:
-            return self.status == self.ReportStatus.DRAFT or self.is_unlocked
-        # Cooperating agencies can edit while PCR is draft
-        return self.pcr.is_draft
-
-    def update_financial_summary(self):
-        """Update financial summary from tranches for this agency"""
-        tranches = self.pcr.tranches.filter(agency=self.agency)
-        aggregates = tranches.aggregate(
-            approved=Sum("funds_approved"),
-            disbursed=Sum("funds_disbursed"),
-        )
-
-        self.funding_approved = aggregates["approved"]
-        self.funding_disbursed = aggregates["disbursed"]
-        if self.funding_approved and self.funding_disbursed:
-            self.funding_returned = self.funding_approved - self.funding_disbursed
-
-        self.save(
-            update_fields=["funding_approved", "funding_disbursed", "funding_returned"]
-        )
-
-
 # Section 2 - Project Results
 
 
 class PCRProjectActivity(models.Model):
     """
     Section 2.1: Implementation Effectiveness - Achievement of Activity Output
-    Multi-entry per agency.
+    Multi-entry per PCR.
     """
 
-    agency_report = models.ForeignKey(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="activities"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport, on_delete=models.CASCADE, related_name="activities"
     )
 
     # Pre-filled from project data
@@ -658,13 +550,13 @@ class PCRProjectActivity(models.Model):
         ordering = ["date_created"]
 
     def __str__(self):
-        return f"{self.agency_report} - {self.activity_type[:50]}"
+        return f"{self.pcr} - {self.activity_type[:50]}"
 
 
 class PCROverallAssessment(models.Model):
     """
     Section 2.2: Overall Assessment - Achievement of Project Objective
-    One per agency.
+    Multiple assessments allowed per PCR.
     """
 
     class Rating(models.TextChoices):
@@ -677,8 +569,10 @@ class PCROverallAssessment(models.Model):
         UNSATISFACTORY = "unsatisfactory", "Unsatisfactory"
         OTHER = "other", "Other, please specify"
 
-    agency_report = models.OneToOneField(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="overall_assessment"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport,
+        on_delete=models.CASCADE,
+        related_name="overall_assessments",
     )
 
     rating = models.CharField(
@@ -709,7 +603,7 @@ class PCROverallAssessment(models.Model):
         verbose_name_plural = "PCR Overall Assessments"
 
     def __str__(self):
-        return f"{self.agency_report} - {self.get_rating_display()}"
+        return f"{self.pcr} - {self.get_rating_display()}"
 
 
 class PCRComment(models.Model):
@@ -743,16 +637,6 @@ class PCRComment(models.Model):
         ProjectCompletionReport,
         on_delete=models.CASCADE,
         related_name="comments",
-        null=True,
-        blank=True,
-    )
-    agency_report = models.ForeignKey(
-        PCRAgencyReport,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="comments",
-        help_text="Optional - link to specific agency report",
     )
 
     section = models.CharField(
@@ -799,11 +683,13 @@ class PCRComment(models.Model):
 class PCRCauseOfDelay(models.Model):
     """
     Section 3: Causes of Delays and Action Taken
-    Multi-entry per agency with multi-select categories.
+    Multi-entry per PCR with multi-select categories.
     """
 
-    agency_report = models.ForeignKey(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="causes_of_delay"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport,
+        on_delete=models.CASCADE,
+        related_name="causes_of_delay",
     )
 
     project_element = models.ForeignKey(
@@ -833,7 +719,7 @@ class PCRCauseOfDelay(models.Model):
         ordering = ["date_created"]
 
     def __str__(self):
-        return f"{self.agency_report} - {self.project_element}"
+        return f"{self.pcr} - {self.project_element}"
 
 
 class PCRCauseOfDelayCategory(models.Model):
@@ -865,11 +751,13 @@ class PCRCauseOfDelayCategory(models.Model):
 class PCRLessonLearned(models.Model):
     """
     Section 4: Lessons Learned
-    Multi-entry per agency with multi-select categories.
+    Multi-entry per PCR with multi-select categories.
     """
 
-    agency_report = models.ForeignKey(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="lessons_learned"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport,
+        on_delete=models.CASCADE,
+        related_name="lessons_learned",
     )
 
     project_element = models.ForeignKey(
@@ -899,7 +787,7 @@ class PCRLessonLearned(models.Model):
         ordering = ["date_created"]
 
     def __str__(self):
-        return f"{self.agency_report} - {self.project_element}"
+        return f"{self.pcr} - {self.project_element}"
 
 
 class PCRLessonLearnedCategory(models.Model):
@@ -934,16 +822,6 @@ class PCRRecommendation(models.Model):
         ProjectCompletionReport,
         on_delete=models.CASCADE,
         related_name="recommendations",
-        null=True,
-        blank=True,
-    )
-    agency_report = models.ForeignKey(
-        PCRAgencyReport,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="recommendations",
-        help_text="Optional - link to specific agency",
     )
 
     recommendation_text = models.TextField(
@@ -982,8 +860,10 @@ class PCRGenderMainstreaming(models.Model):
     Pre-filled from progress reports with qualitative description.
     """
 
-    agency_report = models.ForeignKey(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="gender_mainstreaming"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport,
+        on_delete=models.CASCADE,
+        related_name="gender_mainstreaming",
     )
 
     phase = models.ForeignKey(
@@ -1014,10 +894,10 @@ class PCRGenderMainstreaming(models.Model):
     class Meta:
         verbose_name = "PCR Gender Mainstreaming"
         verbose_name_plural = "PCR Gender Mainstreaming"
-        unique_together = [["agency_report", "phase"]]
+        unique_together = [["pcr", "phase"]]
 
     def __str__(self):
-        return f"{self.agency_report} - {self.phase}"
+        return f"{self.pcr} - {self.phase}"
 
 
 # Section 6 - SDG Contributions
@@ -1026,11 +906,13 @@ class PCRGenderMainstreaming(models.Model):
 class PCRSDGContribution(models.Model):
     """
     Section 6: Contribution to Sustainable Development Goals
-    Optional, multi-entry per agency.
+    Optional, multi-entry per PCR.
     """
 
-    agency_report = models.ForeignKey(
-        PCRAgencyReport, on_delete=models.CASCADE, related_name="sdg_contributions"
+    pcr = models.ForeignKey(
+        ProjectCompletionReport,
+        on_delete=models.CASCADE,
+        related_name="sdg_contributions",
     )
 
     sdg = models.ForeignKey(PCRSDG, on_delete=models.PROTECT, help_text="SDG goal")
@@ -1056,7 +938,7 @@ class PCRSDGContribution(models.Model):
         ordering = ["sdg__number"]
 
     def __str__(self):
-        return f"{self.agency_report} - {self.sdg}"
+        return f"{self.pcr} - {self.sdg}"
 
 
 # Section 7 - Tranches

@@ -3,13 +3,14 @@ Unit tests for Project Completion Report (PCR) API endpoints.
 """
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.urls import reverse
 from rest_framework import status
 
+from core.api.tests.factories import PCRSupportingEvidenceFactory
 from core.api.tests.base import BaseTest
 from core.models.project_complition_report import (
-    PCRAgencyReport,
     PCRCauseOfDelay,
     PCRComment,
     PCRGenderMainstreaming,
@@ -19,6 +20,7 @@ from core.models.project_complition_report import (
     PCRRecommendation,
     PCRSDGContribution,
     ProjectCompletionReport,
+    PCRSupportingEvidence,
 )
 
 # pylint: disable=W0221,W0613,C0302,R0913,R0914
@@ -94,9 +96,6 @@ class TestPCRWorkspaceView(BaseTest):
         pcr = ProjectCompletionReport.objects.first()
         assert pcr.project == project
         assert pcr.status == ProjectCompletionReport.Status.DRAFT
-
-        # Should have created agency reports
-        assert pcr.agency_reports.count() >= 1
 
         # Should have created tranche data
         assert pcr.tranches.count() >= 1
@@ -182,7 +181,8 @@ class TestPCRDetailView(BaseTest):
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == pcr_with_data.id
-        assert "agency_reports" in response.data
+        assert "activities" in response.data
+        assert "overall_assessments" in response.data
         assert "tranches" in response.data
         assert "comments" in response.data
 
@@ -228,19 +228,15 @@ class TestPCRUpdateView(BaseTest):
 @pytest.mark.django_db
 class TestPCRProjectActivityView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
-        url = reverse(
-            "pcr-activity-create", kwargs={"agency_report_id": pcr_agency_report.id}
-        )
+        url = reverse("pcr-activity-create", kwargs={"pcr_id": pcr_with_data.id})
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
-    def test_create_activity(self, pcr_agency_inputter_user, pcr_agency_report):
+    def test_create_activity(self, pcr_agency_inputter_user, pcr_with_data):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
-        url = reverse(
-            "pcr-activity-create", kwargs={"agency_report_id": pcr_agency_report.id}
-        )
+        url = reverse("pcr-activity-create", kwargs={"pcr_id": pcr_with_data.id})
 
         data = {
             "project_type": "INV",
@@ -276,12 +272,12 @@ class TestPCRProjectActivityView(BaseTest):
         assert PCRProjectActivity.objects.count() == 0
 
     def test_cannot_edit_submitted_report(
-        self, pcr_agency_inputter_user, pcr_agency_report_submitted
+        self, pcr_agency_inputter_user, pcr_submitted
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-activity-create",
-            kwargs={"agency_report_id": pcr_agency_report_submitted.id},
+            kwargs={"pcr_id": pcr_submitted.id},
         )
 
         data = {"project_type": "INV"}
@@ -293,22 +289,20 @@ class TestPCRProjectActivityView(BaseTest):
 @pytest.mark.django_db
 class TestPCROverallAssessmentUpdate(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse(
             "pcr-overall-assessment-update",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
-    def test_create_overall_assessment(
-        self, pcr_agency_inputter_user, pcr_agency_report
-    ):
+    def test_create_overall_assessment(self, pcr_agency_inputter_user, pcr_with_data):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-overall-assessment-update",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {
@@ -322,12 +316,12 @@ class TestPCROverallAssessmentUpdate(BaseTest):
         assert PCROverallAssessment.objects.count() == 1
 
     def test_update_existing_assessment(
-        self, pcr_agency_inputter_user, pcr_agency_report, pcr_overall_assessment
+        self, pcr_agency_inputter_user, pcr_with_data, pcr_overall_assessment
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-overall-assessment-update",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {"rating": "highly_satisfactory"}
@@ -342,20 +336,18 @@ class TestPCROverallAssessmentUpdate(BaseTest):
 @pytest.mark.django_db
 class TestPCRCommentView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse("pcr-comment-create")
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
-    def test_create_comment_on_agency_report(
-        self, pcr_agency_inputter_user, pcr_agency_report
-    ):
+    def test_create_comment_on_pcr(self, pcr_agency_inputter_user, pcr_with_data):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse("pcr-comment-create")
 
         data = {
-            "agency_report_id": pcr_agency_report.id,
+            "pcr_id": pcr_with_data.id,
             "section": "project_results",
             "entity_type": "secretariat",
             "comment_text": "Test pcr_comment",
@@ -365,21 +357,6 @@ class TestPCRCommentView(BaseTest):
 
         assert response.status_code == status.HTTP_201_CREATED
         assert PCRComment.objects.count() == 1
-
-    def test_create_comment_on_pcr(self, pcr_agency_inputter_user, pcr_with_data):
-        self.client.force_authenticate(user=pcr_agency_inputter_user)
-        url = reverse("pcr-comment-create")
-
-        data = {
-            "pcr_id": pcr_with_data.id,
-            "section": "overview",
-            "entity_type": "secretariat",
-            "comment_text": "Main PCR pcr_comment",
-        }
-
-        response = self.client.post(url, data, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED
 
     def test_update_comment(self, pcr_agency_inputter_user, pcr_comment):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
@@ -404,22 +381,22 @@ class TestPCRCommentView(BaseTest):
 @pytest.mark.django_db
 class TestPCRCauseOfDelayView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse(
             "pcr-cause-of-delay-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
     def test_create_cause_of_delay(
-        self, pcr_agency_inputter_user, pcr_agency_report, pcr_project_element
+        self, pcr_agency_inputter_user, pcr_with_data, pcr_project_element
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-cause-of-delay-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {
@@ -456,22 +433,22 @@ class TestPCRCauseOfDelayView(BaseTest):
 @pytest.mark.django_db
 class TestPCRLessonLearnedView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse(
             "pcr-lesson-learned-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
     def test_create_lesson_learned(
-        self, pcr_agency_inputter_user, pcr_agency_report, pcr_project_element
+        self, pcr_agency_inputter_user, pcr_with_data, pcr_project_element
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-lesson-learned-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {
@@ -507,20 +484,20 @@ class TestPCRLessonLearnedView(BaseTest):
 @pytest.mark.django_db
 class TestPCRRecommendationView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse("pcr-recommendation-create")
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
-    def test_create_recommendation_on_agency_report(
-        self, pcr_agency_inputter_user, pcr_agency_report
+    def test_create_recommendation_on_pcr(
+        self, pcr_agency_inputter_user, pcr_with_data
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse("pcr-recommendation-create")
 
         data = {
-            "agency_report_id": pcr_agency_report.id,
+            "pcr_id": pcr_with_data.id,
             "recommendation_text": "Recommendation text",
         }
 
@@ -551,22 +528,22 @@ class TestPCRRecommendationView(BaseTest):
 @pytest.mark.django_db
 class TestPCRGenderMainstreamingView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse(
             "pcr-gender-mainstreaming-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
     def test_create_gender_mainstreaming(
-        self, pcr_agency_inputter_user, pcr_agency_report, pcr_gender_phase
+        self, pcr_agency_inputter_user, pcr_with_data, pcr_gender_phase
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-gender-mainstreaming-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {
@@ -612,22 +589,22 @@ class TestPCRGenderMainstreamingView(BaseTest):
 @pytest.mark.django_db
 class TestPCRSDGContributionView(BaseTest):
 
-    def test_without_login(self, pcr_agency_report):
+    def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
         url = reverse(
             "pcr-sdg-contribution-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
     def test_create_sdg_contribution(
-        self, pcr_agency_inputter_user, pcr_agency_report, pcr_sdg
+        self, pcr_agency_inputter_user, pcr_with_data, pcr_sdg
     ):
         self.client.force_authenticate(user=pcr_agency_inputter_user)
         url = reverse(
             "pcr-sdg-contribution-create",
-            kwargs={"agency_report_id": pcr_agency_report.id},
+            kwargs={"pcr_id": pcr_with_data.id},
         )
 
         data = {
@@ -660,84 +637,6 @@ class TestPCRSDGContributionView(BaseTest):
 
 
 @pytest.mark.django_db
-class TestPCRAgencyReportStatusUpdate(BaseTest):
-
-    def test_without_login(self, pcr_agency_report):
-        self.client.force_authenticate(user=None)
-        url = reverse("pcr-agency-report-status", kwargs={"pk": pcr_agency_report.id})
-        response = self.client.post(url, {}, format="json")
-        assert response.status_code == 403
-
-    def test_submit_agency_report(self, pcr_agency_submitter_user, pcr_agency_report):
-        self.client.force_authenticate(user=pcr_agency_submitter_user)
-        url = reverse("pcr-agency-report-status", kwargs={"pk": pcr_agency_report.id})
-
-        data = {
-            "status": "submitted",
-            "date_submitted": "2026-01-15",
-        }
-
-        response = self.client.post(url, data, format="json")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["status"] == "submitted"
-
-        pcr_agency_report.refresh_from_db()
-        assert pcr_agency_report.status == PCRAgencyReport.ReportStatus.SUBMITTED
-
-    def test_cannot_submit_other_agency_report(
-        self, pcr_agency_submitter_user, pcr_agency_report_other_agency
-    ):
-        self.client.force_authenticate(user=pcr_agency_submitter_user)
-        url = reverse(
-            "pcr-agency-report-status", kwargs={"pk": pcr_agency_report_other_agency.id}
-        )
-
-        data = {"status": "SUBMITTED"}
-        response = self.client.post(url, data, format="json")
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@pytest.mark.django_db
-class TestPCRToggleLock(BaseTest):
-    def test_without_login(self, pcr_agency_report):
-        self.client.force_authenticate(user=None)
-        url = reverse(
-            "pcr-agency-report-toggle-lock", kwargs={"pk": pcr_agency_report.id}
-        )
-        response = self.client.post(url, {}, format="json")
-        assert response.status_code == 403
-
-    def test_mlfs_can_unlock_report(self, mlfs_admin_user, pcr_agency_report_submitted):
-        self.client.force_authenticate(user=mlfs_admin_user)
-        url = reverse(
-            "pcr-agency-report-toggle-lock",
-            kwargs={"pk": pcr_agency_report_submitted.id},
-        )
-
-        response = self.client.post(url)
-
-        assert response.status_code == status.HTTP_200_OK
-
-        pcr_agency_report_submitted.refresh_from_db()
-        assert pcr_agency_report_submitted.is_unlocked is True
-
-    def test_agency_user_cannot_unlock(
-        self, pcr_agency_viewer_user, pcr_agency_report_submitted
-    ):
-        self.client.force_authenticate(user=pcr_agency_viewer_user)
-        url = reverse(
-            "pcr-agency-report-toggle-lock",
-            kwargs={"pk": pcr_agency_report_submitted.id},
-        )
-
-        response = self.client.post(url)
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@pytest.mark.django_db
 class TestPCRSubmit(BaseTest):
     def test_without_login(self, pcr_with_data):
         self.client.force_authenticate(user=None)
@@ -745,30 +644,86 @@ class TestPCRSubmit(BaseTest):
         response = self.client.post(url, {}, format="json")
         assert response.status_code == 403
 
-    def test_lead_agency_can_submit_pcr(
-        self, pcr_agency_submitter_user, pcr_all_reports_submitted
-    ):
-        self.client.force_authenticate(user=pcr_agency_submitter_user)
-        url = reverse("pcr-submit", kwargs={"pk": pcr_all_reports_submitted.id})
-
-        data = {}
-        response = self.client.post(url, data, format="json")
-
-        assert response.status_code == status.HTTP_200_OK
-
-        pcr_all_reports_submitted.refresh_from_db()
-        assert (
-            pcr_all_reports_submitted.status == ProjectCompletionReport.Status.SUBMITTED
-        )
-
-    def test_cannot_submit_with_pending_agency_reports(
-        self, pcr_agency_submitter_user, pcr_with_data
-    ):
+    def test_lead_agency_can_submit_pcr(self, pcr_agency_submitter_user, pcr_with_data):
         self.client.force_authenticate(user=pcr_agency_submitter_user)
         url = reverse("pcr-submit", kwargs={"pk": pcr_with_data.id})
 
         data = {}
         response = self.client.post(url, data, format="json")
 
+        assert response.status_code == status.HTTP_200_OK
+
+        pcr_with_data.refresh_from_db()
+        assert pcr_with_data.status == ProjectCompletionReport.Status.SUBMITTED
+
+
+@pytest.mark.django_db
+class TestPCRSupportingEvidence(BaseTest):
+    def test_without_login(self):
+        self.client.force_authenticate(user=None)
+        url = reverse("pcr-supporting-evidence-upload")
+        response = self.client.post(url, {}, format="json")
+        assert response.status_code == 403
+
+    def test_upload_supporting_evidence(
+        self, pcr_agency_inputter_user, pcr_with_data, tmp_path
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-supporting-evidence-upload")
+
+        # Create a simple test file
+        test_file = SimpleUploadedFile(
+            "test_evidence.pdf", b"file_content", content_type="application/pdf"
+        )
+
+        data = {
+            "pcr_id": pcr_with_data.id,
+            "description": "Test supporting evidence",
+            "related_section": "overview",
+            "file": test_file,
+        }
+
+        response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["description"] == "Test supporting evidence"
+        assert "file" in response.data
+
+        # Check that it was saved
+        assert PCRSupportingEvidence.objects.filter(pcr=pcr_with_data).count() == 1
+
+    def test_upload_without_pcr_id(self, pcr_agency_inputter_user):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-supporting-evidence-upload")
+
+        data = {"description": "Test evidence"}
+
+        response = self.client.post(url, data, format="json")
+
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "All agency reports must be submitted" in str(response.data)
+
+    def test_delete_supporting_evidence(self, pcr_agency_inputter_user, pcr_with_data):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+
+        # Create evidence
+        evidence = PCRSupportingEvidenceFactory(pcr=pcr_with_data)
+
+        url = reverse("pcr-supporting-evidence-delete", kwargs={"pk": evidence.id})
+        response = self.client.delete(url)
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not PCRSupportingEvidence.objects.filter(id=evidence.id).exists()
+
+    def test_agency_user_cannot_delete_other_agency_evidence(
+        self, pcr_agency_inputter_user, pcr_project_other_agency, pcr_factory
+    ):
+        # Create PCR for another agency
+        other_pcr = pcr_factory(project=pcr_project_other_agency)
+        evidence = PCRSupportingEvidenceFactory(pcr=other_pcr)
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-supporting-evidence-delete", kwargs={"pk": evidence.id})
+        response = self.client.delete(url)
+
+        # Permission checks happen before queryset filtering
+        assert response.status_code == status.HTTP_403_FORBIDDEN

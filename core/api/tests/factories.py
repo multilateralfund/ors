@@ -17,7 +17,6 @@ from core.models import (
     AnnualProgressReport,
     AnnualAgencyProjectReport,
     AnnualProjectReportFile,
-    PCRAgencyReport,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -864,34 +863,12 @@ class ProjectCompletionReportFactory(factory.django.DjangoModelFactory):
     status = "DRAFT"
     created_by = factory.SubFactory(UserFactory)
 
-    @factory.post_generation
-    def create_agency_report(obj, create, *args, **kwargs):
-        """We automatically create an agency report for the project's agency"""
-        if not create:
-            return
-        if obj.project and obj.project.agency:
-            PCRAgencyReport.objects.get_or_create(
-                pcr=obj,
-                agency=obj.project.agency,
-                defaults={"is_lead_agency": True, "status": "DRAFT"},
-            )
-
-
-class PCRAgencyReportFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = "core.PCRAgencyReport"
-
-    pcr = factory.SubFactory(ProjectCompletionReportFactory)
-    agency = factory.SubFactory(AgencyFactory)
-    status = "DRAFT"
-    is_lead_agency = False
-
 
 class PCRProjectActivityFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRProjectActivity"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     project_type = "INV"
     sector = "FOA"
     activity_type = "EQUIPMENT"
@@ -901,7 +878,7 @@ class PCROverallAssessmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCROverallAssessment"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     rating = "SATISFACTORY"
 
 
@@ -909,7 +886,7 @@ class PCRCommentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRComment"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     section = "ACTIVITIES"
     comment_text = factory.Faker("pystr", max_chars=500)
 
@@ -918,7 +895,7 @@ class PCRCauseOfDelayFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRCauseOfDelay"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     description = factory.Faker("pystr", max_chars=500)
 
 
@@ -926,7 +903,7 @@ class PCRLessonLearnedFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRLessonLearned"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     description = factory.Faker("pystr", max_chars=500)
 
 
@@ -934,7 +911,7 @@ class PCRRecommendationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRRecommendation"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     recommendation_text = factory.Faker("pystr", max_chars=500)
 
 
@@ -942,7 +919,7 @@ class PCRGenderMainstreamingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRGenderMainstreaming"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     indicator_met = True
 
 
@@ -950,5 +927,16 @@ class PCRSDGContributionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = "core.PCRSDGContribution"
 
-    agency_report = factory.SubFactory(PCRAgencyReportFactory)
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
     description = factory.Faker("pystr", max_chars=500)
+
+
+class PCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRSupportingEvidence"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    description = factory.Faker("pystr", max_chars=200)
+    related_section = "overview"
+    file = factory.django.FileField(filename="test_evidence.pdf")
+    uploaded_by = factory.SubFactory(UserFactory)

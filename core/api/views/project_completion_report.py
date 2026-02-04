@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -18,8 +19,6 @@ from core.api.serializers.project_completion_report import (
     PCRGenderPhaseSerializer,
     PCRProjectElementSerializer,
     PCRSDGSerializer,
-    PCRAgencyReportReadSerializer,
-    PCRAgencyReportSummarySerializer,
     ProjectCompletionReportListSerializer,
     ProjectCompletionReportReadSerializer,
     ProjectCompletionReportWriteSerializer,
@@ -41,7 +40,6 @@ from core.models import Project, MetaProject
 from core.models.project_complition_report import (
     DelayCategory,
     LearnedLessonCategory,
-    PCRAgencyReport,
     PCRCauseOfDelay,
     PCRComment,
     PCRGenderMainstreaming,
@@ -67,7 +65,8 @@ from core.models.project_complition_report import (
 
 class PCRReferenceDataView(APIView):
     """
-    Returns all reference data needed for PCR forms.
+    Returns all "static" reference data needed for PCR forms:
+    category names, project elements etc.
     """
 
     permission_classes = [IsAuthenticated]
@@ -101,9 +100,6 @@ class PCRReferenceDataView(APIView):
 class PCRWorkspaceView(APIView):
     """
     Retrieves or creates PCR workspace for a specific project or meta-project.
-
-    For multi-agency projects, creates/returns PCR with agency reports.
-    For single-agency projects, creates/returns PCR with agency reports.
 
     Query params:
     - project_id: ID of project to create PCR for
@@ -153,8 +149,6 @@ class PCRWorkspaceView(APIView):
                 },
             )
 
-            involved_agencies = [project.agency] if project.agency else []
-
         else:
             meta_project = get_object_or_404(
                 MetaProject.objects.prefetch_related("projects__agency"),
@@ -182,10 +176,6 @@ class PCRWorkspaceView(APIView):
                 },
             )
 
-        # Create agency reports if newly created or if none exist
-        if created or pcr.agency_reports.count() == 0:
-            self._create_agency_reports(pcr, involved_agencies, user)
-
         # Create tranche data if newly created or if none exist
         if created or pcr.tranches.count() == 0:
             self._create_tranche_data(pcr, project, meta_project)
@@ -200,25 +190,22 @@ class PCRWorkspaceView(APIView):
                 "created_by",
             )
             .prefetch_related(
-                "agency_reports__agency",
-                "agency_reports__activities",
-                "agency_reports__overall_assessment",
-                "agency_reports__comments",
-                "agency_reports__causes_of_delay__project_element",
-                "agency_reports__causes_of_delay__categories__category",
-                "agency_reports__lessons_learned__project_element",
-                "agency_reports__lessons_learned__categories__category",
-                "agency_reports__recommendations",
-                "agency_reports__gender_mainstreaming__phase",
-                "agency_reports__sdg_contributions__sdg",
+                "activities",
+                "overall_assessments",
+                "comments",
+                "causes_of_delay__project_element",
+                "causes_of_delay__categories__category",
+                "lessons_learned__project_element",
+                "lessons_learned__categories__category",
+                "recommendations",
+                "gender_mainstreaming__phase",
+                "sdg_contributions__sdg",
                 "tranches__agency",
                 "tranches__technologies__substance_from",
                 "tranches__technologies__substance_to",
                 "tranches__enterprises",
                 "tranches__trainees",
                 "tranches__equipment_disposals",
-                "comments",
-                "recommendations",
                 "supporting_evidence",
             )
             .get(pk=pcr.pk)
@@ -228,26 +215,6 @@ class PCRWorkspaceView(APIView):
             pcr, context={"request": request}
         )
         return Response(serializer.data)
-
-    def _create_agency_reports(self, pcr, agencies, user):
-        """Create agency reports for all involved agencies"""
-        # Determine lead agency (first agency or user's agency)
-        lead_agency = None
-        if hasattr(user, "agency") and user.agency in agencies:
-            lead_agency = user.agency
-        elif agencies:
-            lead_agency = agencies[0]
-
-        for agency in agencies:
-            is_lead = agency == lead_agency
-            PCRAgencyReport.objects.get_or_create(
-                pcr=pcr,
-                agency=agency,
-                defaults={
-                    "is_lead_agency": is_lead,
-                    "status": PCRAgencyReport.ReportStatus.DRAFT,
-                },
-            )
 
     def _create_tranche_data(self, pcr, project, meta_project):
         """
@@ -289,13 +256,21 @@ class PCRListView(ListAPIView):
             "project__agency",
             "meta_project",
             "submitter",
-        ).prefetch_related("agency_reports__agency")
+        ).prefetch_related("tranches__agency")
 
         # Filter by user's agency if not MLFS
         if not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
+                # Agency user sees PCRs where their agency is involved via:
+                # 1. Tranches
+                # 2. Project's agency (for IND projects)
+                # 3. Project's lead_agency (for IND projects)
+                # 4. Meta project's lead_agency (for MYA projects)
                 queryset = queryset.filter(
-                    agency_reports__agency=user.agency
+                    Q(tranches__agency=user.agency)
+                    | Q(project__agency=user.agency)
+                    | Q(project__lead_agency=user.agency)
+                    | Q(meta_project__lead_agency=user.agency)
                 ).distinct()
             else:
                 queryset = queryset.none()
@@ -329,32 +304,33 @@ class PCRDetailView(RetrieveAPIView):
             "submitter",
             "created_by",
         ).prefetch_related(
-            "agency_reports__agency",
-            "agency_reports__activities",
-            "agency_reports__overall_assessment",
-            "agency_reports__comments",
-            "agency_reports__causes_of_delay__project_element",
-            "agency_reports__causes_of_delay__categories__category",
-            "agency_reports__lessons_learned__project_element",
-            "agency_reports__lessons_learned__categories__category",
-            "agency_reports__recommendations",
-            "agency_reports__gender_mainstreaming__phase",
-            "agency_reports__sdg_contributions__sdg",
+            "activities",
+            "overall_assessments",
+            "comments",
+            "causes_of_delay__project_element",
+            "causes_of_delay__categories__category",
+            "lessons_learned__project_element",
+            "lessons_learned__categories__category",
+            "recommendations",
+            "gender_mainstreaming__phase",
+            "sdg_contributions__sdg",
             "tranches__agency",
             "tranches__technologies__substance_from",
             "tranches__technologies__substance_to",
             "tranches__enterprises",
             "tranches__trainees",
             "tranches__equipment_disposals",
-            "comments",
-            "recommendations",
             "supporting_evidence",
         )
 
         if not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
+                # Agency user sees PCRs where their agency is involved
                 queryset = queryset.filter(
-                    agency_reports__agency=user.agency
+                    Q(tranches__agency=user.agency)
+                    | Q(project__agency=user.agency)
+                    | Q(project__lead_agency=user.agency)
+                    | Q(meta_project__lead_agency=user.agency)
                 ).distinct()
             else:
                 queryset = queryset.none()
@@ -394,130 +370,18 @@ class PCRUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Agency reports
-
-
-class PCRAgencyReportDetailView(RetrieveAPIView):
-    """
-    Retrieve a specific agency report with all sections.
-    """
-
-    permission_classes = [HasPCRViewAccess]
-    serializer_class = PCRAgencyReportReadSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = PCRAgencyReport.objects.select_related(
-            "pcr__project",
-            "pcr__meta_project",
-            "agency",
-        ).prefetch_related(
-            "activities",
-            "overall_assessment",
-            "comments",
-            "causes_of_delay__project_element",
-            "causes_of_delay__categories__category",
-            "lessons_learned__project_element",
-            "lessons_learned__categories__category",
-            "recommendations",
-            "gender_mainstreaming__phase",
-            "sdg_contributions__sdg",
-        )
-
-        if not user.has_perm("core.can_view_all_agencies"):
-            if hasattr(user, "agency") and user.agency:
-                queryset = queryset.filter(agency=user.agency)
-            else:
-                queryset = queryset.none()
-
-        return queryset
-
-
-class PCRAgencyReportStatusUpdateView(APIView):
-    permission_classes = [HasPCRSubmitAccess]
-
-    def post(self, request, pk):
-        user = request.user
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=pk
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        new_status = request.data.get("status")
-        if not new_status:
-            raise ValidationError("Status is required.")
-
-        # TODO: here (and below) we should also take locked/unlocked into account
-        current = agency_report.status
-        if (
-            new_status == PCRAgencyReport.ReportStatus.SUBMITTED
-            and current == PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            agency_report.status = new_status
-            submission_date = timezone.now()
-            agency_report.date_submitted = submission_date
-            agency_report.save()
-
-            # Update financial summary
-            agency_report.update_financial_summary()
-
-            # Check if all agency reports are submitted and update PCR status
-            pcr = agency_report.pcr
-            all_submitted = all(
-                ar.status == PCRAgencyReport.ReportStatus.SUBMITTED
-                for ar in pcr.agency_reports.all()
-            )
-            if all_submitted and pcr.status == ProjectCompletionReport.Status.DRAFT:
-                pcr.status = ProjectCompletionReport.Status.SUBMITTED
-                pcr.submitter = user
-
-                # Track submission dates
-                if not pcr.first_submission_date:
-                    pcr.first_submission_date = submission_date
-                pcr.last_submission_date = submission_date
-                pcr.save()
-
-                # Update aggregations
-                pcr.update_aggregations()
-
-        elif new_status == current:
-            # No change, just pass
-            pass
-        else:
-            raise ValidationError(
-                f"Invalid status transition from {current} to {new_status}."
-            )
-
-        serializer = PCRAgencyReportSummarySerializer(agency_report)
-        return Response(serializer.data)
-
-
-# Section 2 - Project activities
-
-
 class PCRProjectActivityCreateView(APIView):
-    """Create a project activity for an agency report"""
+    """Create a project activity for a PCR"""
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        # Check if editable
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
         serializer = PCRProjectActivitySerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agency_report=agency_report)
+            serializer.save(pcr=pcr)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -530,20 +394,10 @@ class PCRProjectActivityUpdateView(APIView):
 
     def patch(self, request, pk):
         activity = get_object_or_404(
-            PCRProjectActivity.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
+            PCRProjectActivity.objects.select_related("pcr"),
             pk=pk,
         )
-
-        agency_report = activity.agency_report
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, activity.pcr)
 
         serializer = PCRProjectActivitySerializer(
             activity, data=request.data, partial=True
@@ -556,20 +410,10 @@ class PCRProjectActivityUpdateView(APIView):
 
     def delete(self, request, pk):
         activity = get_object_or_404(
-            PCRProjectActivity.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
+            PCRProjectActivity.objects.select_related("pcr"),
             pk=pk,
         )
-
-        agency_report = activity.agency_report
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, activity.pcr)
 
         activity.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -579,37 +423,35 @@ class PCRProjectActivityUpdateView(APIView):
 
 
 class PCROverallAssessmentUpdateView(APIView):
-    """Create or update overall assessment for an agency report"""
+    """Create or update overall assessment for a PCR"""
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
-
-        # Get or create overall assessment
-        assessment, created = PCROverallAssessment.objects.get_or_create(
-            agency_report=agency_report
-        )
-
-        serializer = PCROverallAssessmentSerializer(
-            assessment, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK if not created else status.HTTP_201_CREATED,
+        # Get or create the overall assessment (should be only one per PCR)
+        try:
+            assessment = pcr.overall_assessments.get()
+            serializer = PCROverallAssessmentSerializer(
+                assessment, data=request.data, partial=True
             )
+            status_code = status.HTTP_200_OK
+        except PCROverallAssessment.DoesNotExist:
+            serializer = PCROverallAssessmentSerializer(data=request.data)
+            status_code = status.HTTP_201_CREATED
+        except PCROverallAssessment.MultipleObjectsReturned:
+            # Handle edge case - use the most recent one
+            assessment = pcr.overall_assessments.order_by("-date_created").first()
+            serializer = PCROverallAssessmentSerializer(
+                assessment, data=request.data, partial=True
+            )
+            status_code = status.HTTP_200_OK
+
+        if serializer.is_valid():
+            serializer.save(pcr=pcr)
+            return Response(serializer.data, status=status_code)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -618,44 +460,23 @@ class PCROverallAssessmentUpdateView(APIView):
 
 
 class PCRCommentCreateView(APIView):
-    """Create a comment on either agency report or main PCR"""
+    """Create a comment on a PCR"""
 
     permission_classes = [HasPCREditAccess]
 
     def post(self, request):
-        # Determine if this is for agency report or PCR
-        agency_report_id = request.data.get("agency_report_id")
         pcr_id = request.data.get("pcr_id")
 
-        if agency_report_id:
-            agency_report = get_object_or_404(
-                PCRAgencyReport.objects.select_related("pcr"), pk=agency_report_id
-            )
+        if not pcr_id:
+            raise ValidationError("pcr_id is required.")
 
-            self.check_object_permissions(request, agency_report.pcr)
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
-            if (
-                not agency_report.is_unlocked
-                and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-            ):
-                raise ValidationError("Cannot edit submitted report unless unlocked.")
-
-            serializer = PCRCommentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(agency_report=agency_report)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        elif pcr_id:
-            pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
-
-            self.check_object_permissions(request, pcr)
-
-            serializer = PCRCommentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(pcr=pcr)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            raise ValidationError("Either agency_report_id or pcr_id is required.")
+        serializer = PCRCommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(pcr=pcr)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -666,12 +487,8 @@ class PCRCommentUpdateView(APIView):
     permission_classes = [HasPCREditAccess]
 
     def patch(self, request, pk):
-        comment = get_object_or_404(
-            PCRComment.objects.select_related("agency_report__pcr", "pcr"), pk=pk
-        )
-
-        pcr = comment.agency_report.pcr if comment.agency_report else comment.pcr
-        self.check_object_permissions(request, pcr)
+        comment = get_object_or_404(PCRComment.objects.select_related("pcr"), pk=pk)
+        self.check_object_permissions(request, comment.pcr)
 
         serializer = PCRCommentSerializer(comment, data=request.data, partial=True)
         if serializer.is_valid():
@@ -681,12 +498,8 @@ class PCRCommentUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        comment = get_object_or_404(
-            PCRComment.objects.select_related("agency_report__pcr", "pcr"), pk=pk
-        )
-
-        pcr = comment.agency_report.pcr if comment.agency_report else comment.pcr
-        self.check_object_permissions(request, pcr)
+        comment = get_object_or_404(PCRComment.objects.select_related("pcr"), pk=pk)
+        self.check_object_permissions(request, comment.pcr)
 
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -700,42 +513,21 @@ class PCRCauseOfDelayView(APIView):
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
         serializer = PCRCauseOfDelayWriteSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agency_report=agency_report)
+            serializer.save(pcr=pcr)
             read_serializer = PCRCauseOfDelayReadSerializer(serializer.instance)
             return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
-        cause = get_object_or_404(
-            PCRCauseOfDelay.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
-        )
-
-        self.check_object_permissions(request, cause.agency_report.pcr)
-
-        if (
-            not cause.agency_report.is_unlocked
-            and cause.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        cause = get_object_or_404(PCRCauseOfDelay.objects.select_related("pcr"), pk=pk)
+        self.check_object_permissions(request, cause.pcr)
 
         serializer = PCRCauseOfDelayWriteSerializer(
             cause, data=request.data, partial=True
@@ -748,20 +540,8 @@ class PCRCauseOfDelayView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        cause = get_object_or_404(
-            PCRCauseOfDelay.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
-        )
-
-        self.check_object_permissions(request, cause.agency_report.pcr)
-
-        if (
-            not cause.agency_report.is_unlocked
-            and cause.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        cause = get_object_or_404(PCRCauseOfDelay.objects.select_related("pcr"), pk=pk)
+        self.check_object_permissions(request, cause.pcr)
 
         cause.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -775,22 +555,13 @@ class PCRLessonLearnedView(APIView):
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
         serializer = PCRLessonLearnedWriteSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agency_report=agency_report)
+            serializer.save(pcr=pcr)
             read_serializer = PCRLessonLearnedReadSerializer(serializer.instance)
             return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -798,19 +569,9 @@ class PCRLessonLearnedView(APIView):
 
     def patch(self, request, pk):
         lesson = get_object_or_404(
-            PCRLessonLearned.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRLessonLearned.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, lesson.agency_report.pcr)
-
-        if (
-            not lesson.agency_report.is_unlocked
-            and lesson.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, lesson.pcr)
 
         serializer = PCRLessonLearnedWriteSerializer(
             lesson, data=request.data, partial=True
@@ -824,19 +585,9 @@ class PCRLessonLearnedView(APIView):
 
     def delete(self, request, pk):
         lesson = get_object_or_404(
-            PCRLessonLearned.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRLessonLearned.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, lesson.agency_report.pcr)
-
-        if (
-            not lesson.agency_report.is_unlocked
-            and lesson.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, lesson.pcr)
 
         lesson.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -846,43 +597,23 @@ class PCRLessonLearnedView(APIView):
 
 
 class PCRRecommendationCreateView(APIView):
-    """Create a recommendation (can be on agency report or main PCR)"""
+    """Create a recommendation"""
 
     permission_classes = [HasPCREditAccess]
 
     def post(self, request):
-        agency_report_id = request.data.get("agency_report_id")
         pcr_id = request.data.get("pcr_id")
 
-        if agency_report_id:
-            agency_report = get_object_or_404(
-                PCRAgencyReport.objects.select_related("pcr"), pk=agency_report_id
-            )
+        if not pcr_id:
+            raise ValidationError("pcr_id is required.")
 
-            self.check_object_permissions(request, agency_report.pcr)
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
-            if (
-                not agency_report.is_unlocked
-                and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-            ):
-                raise ValidationError("Cannot edit submitted report unless unlocked.")
-
-            serializer = PCRRecommendationSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(agency_report=agency_report)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        elif pcr_id:
-            pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
-
-            self.check_object_permissions(request, pcr)
-
-            serializer = PCRRecommendationSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(pcr=pcr)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            raise ValidationError("Either agency_report_id or pcr_id is required.")
+        serializer = PCRRecommendationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(pcr=pcr)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -894,15 +625,9 @@ class PCRRecommendationUpdateView(APIView):
 
     def patch(self, request, pk):
         recommendation = get_object_or_404(
-            PCRRecommendation.objects.select_related("agency_report__pcr", "pcr"), pk=pk
+            PCRRecommendation.objects.select_related("pcr"), pk=pk
         )
-
-        pcr = (
-            recommendation.agency_report.pcr
-            if recommendation.agency_report
-            else recommendation.pcr
-        )
-        self.check_object_permissions(request, pcr)
+        self.check_object_permissions(request, recommendation.pcr)
 
         serializer = PCRRecommendationSerializer(
             recommendation, data=request.data, partial=True
@@ -915,15 +640,9 @@ class PCRRecommendationUpdateView(APIView):
 
     def delete(self, request, pk):
         recommendation = get_object_or_404(
-            PCRRecommendation.objects.select_related("agency_report__pcr", "pcr"), pk=pk
+            PCRRecommendation.objects.select_related("pcr"), pk=pk
         )
-
-        pcr = (
-            recommendation.agency_report.pcr
-            if recommendation.agency_report
-            else recommendation.pcr
-        )
-        self.check_object_permissions(request, pcr)
+        self.check_object_permissions(request, recommendation.pcr)
 
         recommendation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -937,41 +656,22 @@ class PCRGenderMainstreamingView(APIView):
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
         serializer = PCRGenderMainstreamingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agency_report=agency_report)
+            serializer.save(pcr=pcr)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
         gender = get_object_or_404(
-            PCRGenderMainstreaming.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRGenderMainstreaming.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, gender.agency_report.pcr)
-
-        if (
-            not gender.agency_report.is_unlocked
-            and gender.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, gender.pcr)
 
         serializer = PCRGenderMainstreamingSerializer(
             gender, data=request.data, partial=True
@@ -984,19 +684,9 @@ class PCRGenderMainstreamingView(APIView):
 
     def delete(self, request, pk):
         gender = get_object_or_404(
-            PCRGenderMainstreaming.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRGenderMainstreaming.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, gender.agency_report.pcr)
-
-        if (
-            not gender.agency_report.is_unlocked
-            and gender.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, gender.pcr)
 
         gender.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -1010,41 +700,22 @@ class PCRSDGContributionView(APIView):
 
     permission_classes = [HasPCREditAccess]
 
-    def post(self, request, agency_report_id):
-        agency_report = get_object_or_404(
-            PCRAgencyReport.objects.select_related("agency", "pcr"), pk=agency_report_id
-        )
-
-        self.check_object_permissions(request, agency_report.pcr)
-
-        if (
-            not agency_report.is_unlocked
-            and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+    def post(self, request, pcr_id):
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
         serializer = PCRSDGContributionSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(agency_report=agency_report)
+            serializer.save(pcr=pcr)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
         sdg_contrib = get_object_or_404(
-            PCRSDGContribution.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRSDGContribution.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, sdg_contrib.agency_report.pcr)
-
-        if (
-            not sdg_contrib.agency_report.is_unlocked
-            and sdg_contrib.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, sdg_contrib.pcr)
 
         serializer = PCRSDGContributionSerializer(
             sdg_contrib, data=request.data, partial=True
@@ -1057,19 +728,9 @@ class PCRSDGContributionView(APIView):
 
     def delete(self, request, pk):
         sdg_contrib = get_object_or_404(
-            PCRSDGContribution.objects.select_related(
-                "agency_report__agency", "agency_report__pcr"
-            ),
-            pk=pk,
+            PCRSDGContribution.objects.select_related("pcr"), pk=pk
         )
-
-        self.check_object_permissions(request, sdg_contrib.agency_report.pcr)
-
-        if (
-            not sdg_contrib.agency_report.is_unlocked
-            and sdg_contrib.agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-        ):
-            raise ValidationError("Cannot edit submitted report unless unlocked.")
+        self.check_object_permissions(request, sdg_contrib.pcr)
 
         sdg_contrib.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -1117,45 +778,20 @@ class PCRSupportingEvidenceUploadView(APIView):
     permission_classes = [HasPCREditAccess]
 
     def post(self, request):
-        # Get PCR or agency report
         pcr_id = request.data.get("pcr_id")
-        agency_report_id = request.data.get("agency_report_id")
 
-        if pcr_id:
-            pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        if not pcr_id:
+            raise ValidationError("pcr_id is required.")
 
-            self.check_object_permissions(request, pcr)
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pcr_id)
+        self.check_object_permissions(request, pcr)
 
-            serializer = PCRSupportingEvidenceSerializer(
-                data=request.data, context={"request": request}
-            )
-            if serializer.is_valid():
-                serializer.save(pcr=pcr)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        elif agency_report_id:
-            agency_report = get_object_or_404(
-                PCRAgencyReport.objects.select_related("pcr"), pk=agency_report_id
-            )
-
-            self.check_object_permissions(request, agency_report.pcr)
-
-            if (
-                not agency_report.is_unlocked
-                and agency_report.status != PCRAgencyReport.ReportStatus.DRAFT
-            ):
-                raise ValidationError(
-                    "Cannot upload to submitted report unless unlocked."
-                )
-
-            serializer = PCRSupportingEvidenceSerializer(
-                data=request.data, context={"request": request}
-            )
-            if serializer.is_valid():
-                serializer.save(agency_report=agency_report)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            raise ValidationError("Either pcr_id or agency_report_id is required.")
+        serializer = PCRSupportingEvidenceSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save(pcr=pcr)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1164,11 +800,10 @@ class PCRSupportingEvidenceDeleteView(DestroyAPIView):
     """Delete supporting evidence file"""
 
     permission_classes = [HasPCREditAccess]
-    queryset = PCRSupportingEvidence.objects.select_related("agency_report__pcr", "pcr")
+    queryset = PCRSupportingEvidence.objects.select_related("pcr")
 
     def perform_destroy(self, instance):
-        pcr = instance.agency_report.pcr if instance.agency_report else instance.pcr
-        self.check_object_permissions(self.request, pcr)
+        self.check_object_permissions(self.request, instance.pcr)
 
         # Delete the file and database record
         if instance.file:
@@ -1179,56 +814,18 @@ class PCRSupportingEvidenceDeleteView(DestroyAPIView):
 # Lock/Unlock views
 
 
-class PCRToggleLockView(APIView):
-    """
-    Toggle lock status for an agency report (MLFS only).
-    Allows MLFS to unlock submitted reports for editing.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
-        user = request.user
-
-        # Only MLFS users can unlock
-        if not user.has_perm("core.can_view_all_agencies"):
-            raise ValidationError("Only MLFS users can unlock agency reports.")
-
-        agency_report = get_object_or_404(PCRAgencyReport, pk=pk)
-
-        # Toggle the lock
-        agency_report.is_unlocked = not agency_report.is_unlocked
-        agency_report.save()
-
-        serializer = PCRAgencyReportSummarySerializer(agency_report)
-        return Response(serializer.data)
-
-
 class PCRSubmitView(APIView):
     """
     Submit the entire PCR (lead agency only).
-    All agency reports must be submitted first.
     """
 
     permission_classes = [HasPCRSubmitAccess]
 
     def post(self, request, pk):
         user = request.user
-        pcr = get_object_or_404(
-            ProjectCompletionReport.objects.prefetch_related("agency_reports"), pk=pk
-        )
+        pcr = get_object_or_404(ProjectCompletionReport, pk=pk)
 
         self.check_object_permissions(request, pcr)
-
-        # Check all agency reports are submitted
-        all_submitted = all(
-            ar.status == PCRAgencyReport.ReportStatus.SUBMITTED
-            for ar in pcr.agency_reports.all()
-        )
-        if not all_submitted:
-            raise ValidationError(
-                "All agency reports must be submitted before submitting the PCR."
-            )
 
         # Update PCR status and submission dates
         pcr.status = ProjectCompletionReport.Status.SUBMITTED

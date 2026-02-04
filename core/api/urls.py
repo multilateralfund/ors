@@ -162,8 +162,6 @@ from core.api.views.annual_project_report import (
     APRMLFSExportView,
 )
 from core.api.views.project_completion_report import (
-    PCRAgencyReportDetailView,
-    PCRAgencyReportStatusUpdateView,
     PCRCauseOfDelayView,
     PCRCommentCreateView,
     PCRCommentUpdateView,
@@ -181,7 +179,6 @@ from core.api.views.project_completion_report import (
     PCRSupportingEvidenceDeleteView,
     PCRSupportingEvidenceUploadView,
     PCRSubmitView,
-    PCRToggleLockView,
     PCRTrancheDataUpdateView,
     PCRUpdateView,
     PCRWorkspaceView,
@@ -857,25 +854,9 @@ urlpatterns = [
         PCRSubmitView.as_view(),
         name="pcr-submit",
     ),
-    # Agency Report endpoints
-    path(
-        "project-completion-report/agency-report/<int:pk>/",
-        PCRAgencyReportDetailView.as_view(),
-        name="pcr-agency-report-detail",
-    ),
-    path(
-        "project-completion-report/agency-report/<int:pk>/status/",
-        PCRAgencyReportStatusUpdateView.as_view(),
-        name="pcr-agency-report-status",
-    ),
-    path(
-        "project-completion-report/agency-report/<int:pk>/toggle-lock/",
-        PCRToggleLockView.as_view(),
-        name="pcr-agency-report-toggle-lock",
-    ),
     # Section 2: Project Activities
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/activities/",
+        "project-completion-report/<int:pcr_id>/activities/",
         PCRProjectActivityCreateView.as_view(),
         name="pcr-activity-create",
     ),
@@ -886,7 +867,7 @@ urlpatterns = [
     ),
     # Section 2: Overall Assessment
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/overall-assessment/",
+        "project-completion-report/<int:pcr_id>/overall-assessment/",
         PCROverallAssessmentUpdateView.as_view(),
         name="pcr-overall-assessment-update",
     ),
@@ -903,7 +884,7 @@ urlpatterns = [
     ),
     # Section 3: Causes of Delay
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/causes-of-delay/",
+        "project-completion-report/<int:pcr_id>/causes-of-delay/",
         PCRCauseOfDelayView.as_view(),
         name="pcr-cause-of-delay-create",
     ),
@@ -914,7 +895,7 @@ urlpatterns = [
     ),
     # Section 4: Lessons Learned
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/lessons-learned/",
+        "project-completion-report/<int:pcr_id>/lessons-learned/",
         PCRLessonLearnedView.as_view(),
         name="pcr-lesson-learned-create",
     ),
@@ -936,7 +917,7 @@ urlpatterns = [
     ),
     # Section 5: Gender Mainstreaming
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/gender-mainstreaming/",
+        "project-completion-report/<int:pcr_id>/gender-mainstreaming/",
         PCRGenderMainstreamingView.as_view(),
         name="pcr-gender-mainstreaming-create",
     ),
@@ -947,7 +928,7 @@ urlpatterns = [
     ),
     # Section 6: SDG Contributions
     path(
-        "project-completion-report/agency-report/<int:agency_report_id>/sdg-contributions/",
+        "project-completion-report/<int:pcr_id>/sdg-contributions/",
         PCRSDGContributionView.as_view(),
         name="pcr-sdg-contribution-create",
     ),
