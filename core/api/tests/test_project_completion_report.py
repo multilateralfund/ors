@@ -60,69 +60,122 @@ class TestPCRReferenceDataView(BaseTest):
 @pytest.mark.django_db
 class TestPCRWorkspaceView(BaseTest):
 
-    def test_without_login(self, project):
+    def test_without_login(self):
         self.client.force_authenticate(user=None)
         url = reverse("pcr-workspace")
-        response = self.client.get(url, {"project_id": project.id})
+        response = self.client.get(url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_missing_project_and_meta_project(self, user):
-        self.client.force_authenticate(user=user)
+    def test_agency_user_sees_draft_pcrs(
+        self, pcr_agency_viewer_user, project, pcr_factory
+    ):
+        pcr1 = pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+        pcr2 = pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+
+        self.client.force_authenticate(user=pcr_agency_viewer_user)
         url = reverse("pcr-workspace")
         response = self.client.get(url)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Either project_id or meta_project_id" in str(response.data)
-
-    def test_both_project_and_meta_project(self, user, project, meta_project):
-        self.client.force_authenticate(user=user)
-        url = reverse("pcr-workspace")
-        response = self.client.get(
-            url, {"project_id": project.id, "meta_project_id": meta_project.id}
-        )
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_creates_pcr_for_project(self, pcr_agency_inputter_user, project):
-        self.client.force_authenticate(user=pcr_agency_inputter_user)
-        url = reverse("pcr-workspace")
-
-        # Verify PCR doesn't exist yet
-        assert ProjectCompletionReport.objects.count() == 0
-
-        response = self.client.get(url, {"project_id": project.id})
 
         assert response.status_code == status.HTTP_200_OK
-        assert ProjectCompletionReport.objects.count() == 1
+        assert len(response.data) == 2
+        pcr_ids = {item["id"] for item in response.data}
+        assert pcr_ids == {pcr1.id, pcr2.id}
 
-        pcr = ProjectCompletionReport.objects.first()
-        assert pcr.project == project
-        assert pcr.status == ProjectCompletionReport.Status.DRAFT
-
-        # Should have created tranche data
-        assert pcr.tranches.count() >= 1
-
-    def test_returns_existing_pcr(self, pcr_agency_viewer_user, project):
-        self.client.force_authenticate(user=pcr_agency_viewer_user)
-        url = reverse("pcr-workspace")
-
-        # First call creates PCR
-        response1 = self.client.get(url, {"project_id": project.id})
-        pcr_id_1 = response1.data["id"]
-
-        # Second call returns same PCR
-        response2 = self.client.get(url, {"project_id": project.id})
-        pcr_id_2 = response2.data["id"]
-
-        assert pcr_id_1 == pcr_id_2
-        assert ProjectCompletionReport.objects.count() == 1
-
-    def test_agency_user_cannot_access_other_agency_project(
-        self, pcr_agency_viewer_user, pcr_project_other_agency
+    def test_agency_user_sees_unlocked_submitted_pcrs(
+        self, pcr_agency_viewer_user, project, pcr_factory
     ):
+        pcr1 = pcr_factory(
+            project=project,
+            status=ProjectCompletionReport.Status.SUBMITTED,
+            is_unlocked=True,
+        )
+        pcr_factory(
+            project=project,
+            status=ProjectCompletionReport.Status.SUBMITTED,
+            is_unlocked=False,
+        )
+
         self.client.force_authenticate(user=pcr_agency_viewer_user)
         url = reverse("pcr-workspace")
+        response = self.client.get(url)
 
-        response = self.client.get(url, {"project_id": pcr_project_other_agency.id})
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == pcr1.id
+
+    def test_agency_user_does_not_see_locked_submitted_pcrs(
+        self, pcr_agency_viewer_user, project, pcr_factory
+    ):
+        pcr_factory(
+            project=project,
+            status=ProjectCompletionReport.Status.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        self.client.force_authenticate(user=pcr_agency_viewer_user)
+        url = reverse("pcr-workspace")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 0
+
+    def test_agency_user_does_not_see_other_agency_pcrs(
+        self, pcr_agency_viewer_user, project, pcr_project_other_agency, pcr_factory
+    ):
+        pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+        pcr_factory(
+            project=pcr_project_other_agency,
+            status=ProjectCompletionReport.Status.DRAFT,
+        )
+
+        self.client.force_authenticate(user=pcr_agency_viewer_user)
+        url = reverse("pcr-workspace")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+
+    def test_mlfs_user_sees_only_submitted_pcrs(
+        self, mlfs_admin_user, project, pcr_factory
+    ):
+        pcr1 = pcr_factory(
+            project=project,
+            status=ProjectCompletionReport.Status.SUBMITTED,
+            is_unlocked=False,
+        )
+        pcr2 = pcr_factory(
+            project=project,
+            status=ProjectCompletionReport.Status.SUBMITTED,
+            is_unlocked=True,
+        )
+        pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("pcr-workspace")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 2
+        pcr_ids = {item["id"] for item in response.data}
+        assert pcr_ids == {pcr1.id, pcr2.id}
+
+    def test_ordered_by_most_recently_updated(
+        self, pcr_agency_viewer_user, project, pcr_factory
+    ):
+        pcr1 = pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+        pcr2 = pcr_factory(project=project, status=ProjectCompletionReport.Status.DRAFT)
+
+        pcr1.all_goals_achieved = True
+        pcr1.save()
+
+        self.client.force_authenticate(user=pcr_agency_viewer_user)
+        url = reverse("pcr-workspace")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 2
+        assert response.data[0]["id"] == pcr1.id
+        assert response.data[1]["id"] == pcr2.id
 
 
 @pytest.mark.django_db

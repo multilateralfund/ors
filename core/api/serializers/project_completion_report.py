@@ -458,7 +458,6 @@ class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
-        """Set uploaded_by to current user"""
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["uploaded_by"] = request.user
@@ -636,7 +635,7 @@ class ProjectCompletionReportListSerializer(serializers.ModelSerializer):
             return obj.project.country.name if obj.project.country else None
         if obj.meta_project:
             # TODO: check this is the right approach to get the country
-            # (i.e. used elsewhere as well)
+            # (it's used elsewhere as well)
             first_project = obj.meta_project.projects.first()
             return (
                 first_project.country.name
@@ -672,9 +671,9 @@ class ProjectCompletionReportWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Ensure either meta_project or project is set, but not both"""
-        # On partial update (PATCH), attrs may not contain these fields
+        # On partial updates, attrs may not contain these fields
         # Only validate if we're creating or explicitly updating project/meta_project
-        if self.instance is None:  # Creating new PCR
+        if self.instance is None:
             meta_project = attrs.get("meta_project")
             project = attrs.get("project")
 
@@ -687,8 +686,8 @@ class ProjectCompletionReportWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "Cannot set both meta_project and project"
                 )
-        else:  # Updating existing PCR
-            # Only validate if either field is being changed
+        else:
+            # Updating existing PCR, only validate if either field is being changed
             if "meta_project" in attrs or "project" in attrs:
                 meta_project = attrs.get("meta_project", self.instance.meta_project)
                 project = attrs.get("project", self.instance.project)

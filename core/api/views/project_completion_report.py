@@ -36,7 +36,6 @@ from core.api.serializers.project_completion_report import (
     PCRLessonLearnedWriteSerializer,
     PCRTrancheDataWriteSerializer,
 )
-from core.models import Project, MetaProject
 from core.models.project_complition_report import (
     DelayCategory,
     LearnedLessonCategory,
@@ -97,145 +96,48 @@ class PCRReferenceDataView(APIView):
 # PCR Workspace
 
 
-class PCRWorkspaceView(APIView):
+class PCRWorkspaceView(ListAPIView):
     """
-    Retrieves or creates PCR workspace for a specific project or meta-project.
+    Returns active PCRs for the current user.
 
-    Query params:
-    - project_id: ID of project to create PCR for
-    - meta_project_id: ID of meta-project to create PCR for (use one or the other)
+    For agencies: Returns PCRs in DRAFT status or (SUBMITTED but unlocked).
+    For MLFS: Returns all SUBMITTED PCRs, regardless of locked status.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPCRViewAccess]
+    serializer_class = ProjectCompletionReportListSerializer
 
-    def get(self, request):
-        """
-        Get or create PCR for a project or meta-project.
-        """
-        user = request.user
-        project_id = request.query_params.get("project_id")
-        meta_project_id = request.query_params.get("meta_project_id")
+    def get_queryset(self):
+        user = self.request.user
+        queryset = ProjectCompletionReport.objects.select_related(
+            "project__country",
+            "project__agency",
+            "meta_project",
+            "submitter",
+        ).prefetch_related("tranches__agency")
 
-        if not project_id and not meta_project_id:
-            raise ValidationError(
-                "Either project_id or meta_project_id must be provided."
-            )
+        if not user.has_perm("core.can_view_all_agencies"):
+            if hasattr(user, "agency") and user.agency:
+                queryset = queryset.filter(
+                    Q(tranches__agency=user.agency)
+                    | Q(project__agency=user.agency)
+                    | Q(project__lead_agency=user.agency)
+                    | Q(meta_project__lead_agency=user.agency)
+                ).distinct()
+            else:
+                queryset = queryset.none()
 
-        if project_id and meta_project_id:
-            raise ValidationError(
-                "Only one of project_id or meta_project_id should be provided."
-            )
-
-        if project_id:
-            project = get_object_or_404(
-                Project.objects.select_related(
-                    "agency", "country", "sector", "project_type"
-                ),
-                pk=project_id,
-            )
-            meta_project = None
-
-            if not user.has_perm("core.can_view_all_agencies"):
-                if not hasattr(user, "agency") or user.agency != project.agency:
-                    raise ValidationError(
-                        "You do not have permission to access this project."
-                    )
-
-            pcr, created = ProjectCompletionReport.objects.get_or_create(
-                project=project,
-                defaults={
-                    "status": ProjectCompletionReport.Status.DRAFT,
-                    "created_by": user,
-                },
-            )
-
-        else:
-            meta_project = get_object_or_404(
-                MetaProject.objects.prefetch_related("projects__agency"),
-                pk=meta_project_id,
-            )
-            project = None
-
-            involved_agencies = set()
-            for proj in meta_project.projects.all():
-                if proj.agency:
-                    involved_agencies.add(proj.agency)
-            involved_agencies = list(involved_agencies)
-
-            if not user.has_perm("core.can_view_all_agencies"):
-                if not hasattr(user, "agency") or user.agency not in involved_agencies:
-                    raise ValidationError(
-                        "You do not have permission to access this meta-project."
-                    )
-
-            pcr, created = ProjectCompletionReport.objects.get_or_create(
-                meta_project=meta_project,
-                defaults={
-                    "status": ProjectCompletionReport.Status.DRAFT,
-                    "created_by": user,
-                },
-            )
-
-        # Create tranche data if newly created or if none exist
-        if created or pcr.tranches.count() == 0:
-            self._create_tranche_data(pcr, project, meta_project)
-
-        # Fetch with optimized queryset
-        pcr = (
-            ProjectCompletionReport.objects.select_related(
-                "project__country",
-                "project__agency",
-                "meta_project",
-                "submitter",
-                "created_by",
-            )
-            .prefetch_related(
-                "activities",
-                "overall_assessments",
-                "comments",
-                "causes_of_delay__project_element",
-                "causes_of_delay__categories__category",
-                "lessons_learned__project_element",
-                "lessons_learned__categories__category",
-                "recommendations",
-                "gender_mainstreaming__phase",
-                "sdg_contributions__sdg",
-                "tranches__agency",
-                "tranches__technologies__substance_from",
-                "tranches__technologies__substance_to",
-                "tranches__enterprises",
-                "tranches__trainees",
-                "tranches__equipment_disposals",
-                "supporting_evidence",
-            )
-            .get(pk=pcr.pk)
-        )
-
-        serializer = ProjectCompletionReportReadSerializer(
-            pcr, context={"request": request}
-        )
-        return Response(serializer.data)
-
-    def _create_tranche_data(self, pcr, project, meta_project):
-        """
-        Create tranche data entries from project(s).
-
-        For single project: create one entry per unique (project, agency) combination.
-        For meta-project: create entries for all child projects.
-        """
-        if project:
-            # Single project - create tranche data for the agency
-            if project.agency:
-                PCRTrancheData.create_from_project(
-                    pcr=pcr, project=project, agency=project.agency
+            queryset = queryset.filter(
+                Q(status=ProjectCompletionReport.Status.DRAFT)
+                | Q(
+                    status=ProjectCompletionReport.Status.SUBMITTED,
+                    is_unlocked=True,
                 )
-        elif meta_project:
-            # Meta-project - create tranche data for all child projects
-            for child_project in meta_project.projects.all():
-                if child_project.agency:
-                    PCRTrancheData.create_from_project(
-                        pcr=pcr, project=child_project, agency=child_project.agency
-                    )
+            )
+        else:
+            queryset = queryset.filter(status=ProjectCompletionReport.Status.SUBMITTED)
+
+        return queryset.order_by("-date_updated")
 
 
 # PCR List/Create/Delete/Update
@@ -967,7 +869,7 @@ class PCRSupportingEvidenceDeleteView(DestroyAPIView):
 
 class PCRSubmitView(APIView):
     """
-    Submit the entire PCR (lead agency only).
+    Submit the entire PCR (can be done by lead agency only).
     """
 
     permission_classes = [HasPCRSubmitAccess]
@@ -981,7 +883,7 @@ class PCRSubmitView(APIView):
         # Update PCR status and submission dates
         pcr.status = ProjectCompletionReport.Status.SUBMITTED
         pcr.submitter = user
-        pcr.is_unlocked = False  # Lock on submit/resubmit
+        pcr.is_unlocked = False
 
         # Track first and last submission dates
         submission_dt = timezone.now()
@@ -990,7 +892,6 @@ class PCRSubmitView(APIView):
         pcr.last_submission_date = submission_dt
         pcr.save()
 
-        # Update aggregations
         pcr.update_aggregations()
 
         serializer = ProjectCompletionReportReadSerializer(
