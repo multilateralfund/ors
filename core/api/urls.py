@@ -165,6 +165,7 @@ from core.api.views.project_completion_report import (
     PCRCauseOfDelayView,
     PCRCommentCreateView,
     PCRCommentUpdateView,
+    PCRCreateView,
     PCRDetailView,
     PCRGenderMainstreamingView,
     PCRLessonLearnedView,
@@ -839,6 +840,11 @@ urlpatterns = [
         "project-completion-report/list/",
         PCRListView.as_view(),
         name="pcr-list",
+    ),
+    path(
+        "project-completion-report/create/",
+        PCRCreateView.as_view(),
+        name="pcr-create",
     ),
     path(
         "project-completion-report/<int:pk>/",

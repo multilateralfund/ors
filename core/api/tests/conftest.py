@@ -1946,3 +1946,115 @@ def pcr_sdg_contrib(pcr_with_data, pcr_sdg):
         pcr=pcr_with_data,
         sdg=pcr_sdg,
     )
+
+
+@pytest.fixture
+def project_type_ins():
+    return ProjectTypeFactory.create(
+        name="Institutional Strengthening", code="INS", sort_order=100
+    )
+
+
+@pytest.fixture
+def project_ins(
+    country_ro,
+    agency,
+    project_type_ins,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+):
+    return ProjectFactory.create(
+        title="Strenghten Them Institutions Project",
+        country=country_ro,
+        agency=agency,
+        lead_agency=agency,
+        project_type=project_type_ins,
+        status=project_status,
+        submission_status=project_draft_status,
+        sector=sector,
+        meeting=meeting,
+        code="INS/TEST/01",
+    )
+
+
+@pytest.fixture
+def meta_project_with_projects(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+    project_cluster_kpp,
+):
+    """
+    MYA meta_project with multiple projects (for PCR create tests).
+    """
+    meta_project = MetaProjectFactory.create(
+        type="Multi-year agreement",
+        lead_agency=agency,
+        country=country_ro,
+    )
+    # Create 3 projects under this meta_project
+    for i in range(3):
+        ProjectFactory.create(
+            meta_project=meta_project,
+            title=f"MYA Project {i+1}",
+            country=country_ro,
+            agency=agency,
+            lead_agency=agency,
+            project_type=project_type,
+            status=project_status,
+            submission_status=project_draft_status,
+            sector=sector,
+            meeting=meeting,
+            cluster=project_cluster_kpp,
+            tranche=i + 1,
+            code=f"MYA/TEST/{i+1:02d}",
+            total_fund=100000 * (i + 1),
+        )
+    return meta_project
+
+
+@pytest.fixture
+def meta_project_empty(country_ro, agency):
+    return MetaProjectFactory.create(
+        type="Multi-year agreement",
+        lead_agency=agency,
+        country=country_ro,
+    )
+
+
+@pytest.fixture
+def project_with_data(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+    project_cluster_kpp,
+):
+    """Project with populated data fields, used for testing PCR data pre-population."""
+
+    return ProjectFactory.create(
+        title="Project with data",
+        country=country_ro,
+        agency=agency,
+        lead_agency=agency,
+        project_type=project_type,
+        status=project_status,
+        submission_status=project_draft_status,
+        sector=sector,
+        meeting=meeting,
+        cluster=project_cluster_kpp,
+        code="FULL/DATA/01",
+        total_fund=500000.50,
+        date_approved=date(2020, 1, 15),
+        date_completion=date(2023, 6, 30),
+        tranche=1,
+    )

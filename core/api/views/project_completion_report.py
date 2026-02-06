@@ -1,4 +1,6 @@
-from django.db.models import Q
+from datetime import date
+
+from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -13,6 +15,7 @@ from core.api.permissions import (
     HasPCREditAccess,
     HasPCRSubmitAccess,
 )
+from core.models.project import MetaProject, Project, ProjectOdsOdp
 from core.api.serializers.project_completion_report import (
     DelayCategorySerializer,
     LearnedLessonCategorySerializer,
@@ -57,6 +60,10 @@ from core.models.project_complition_report import (
 
 
 # pylint: disable=C0302
+
+
+# Project types that do not require PCR
+PCR_EXCLUDED_PROJECT_TYPES = {"INS", "PRP", "TAS"}
 
 
 # Reference Data
@@ -189,9 +196,205 @@ class PCRListView(ListAPIView):
         return queryset.order_by("-date_created")
 
 
+class PCRCreateView(APIView):
+    """
+    Create a new PCR for a project (IND) or meta_project (MYA).
+
+    It is unclear what happens with all possible project types.
+
+    Request body should contain one of:
+    - project_id: ID of the project (for IND projects)
+    - meta_project_id: ID of the meta_project (for MYA projects)
+    """
+
+    permission_classes = [HasPCREditAccess]
+
+    def post(self, request):
+        user = request.user
+        project_id = request.data.get("project_id")
+        meta_project_id = request.data.get("meta_project_id")
+
+        # Validate exactly one of project_id or meta_project_id is provided
+        if project_id and meta_project_id:
+            raise ValidationError(
+                "Only one of project_id or meta_project_id should be provided."
+            )
+        if not project_id and not meta_project_id:
+            raise ValidationError("Either project_id or meta_project_id is required.")
+
+        project = None
+        meta_project = None
+        projects_for_tranches = []
+
+        if project_id:
+            project = get_object_or_404(Project, pk=project_id)
+
+            if (
+                project.project_type
+                and project.project_type.code in PCR_EXCLUDED_PROJECT_TYPES
+            ):
+                raise ValidationError(
+                    f"Projects of type '{project.project_type.name}' do not require a PCR."
+                )
+
+            if not user.has_perm("core.can_view_all_agencies"):
+                user_agency = getattr(user, "agency", None)
+                if not user_agency:
+                    raise ValidationError("User has no agency assigned.")
+                # TODO: understand what else besides agency/lead_agency is relevant!
+                if user_agency not in (project.agency, project.lead_agency):
+                    raise ValidationError(
+                        "You do not have permission to create a PCR for this project."
+                    )
+
+            if ProjectCompletionReport.objects.filter(project=project).exists():
+                raise ValidationError(
+                    f"A PCR already exists for project {project.code}."
+                )
+
+            projects_for_tranches = [project]
+
+        else:
+            meta_project = get_object_or_404(MetaProject, pk=meta_project_id)
+
+            if not user.has_perm("core.can_view_all_agencies"):
+                user_agency = getattr(user, "agency", None)
+                if not user_agency:
+                    raise ValidationError("User has no agency assigned.")
+                if meta_project.lead_agency != user_agency:
+                    raise ValidationError(
+                        "You do not have permission to create PCR for this meta project."
+                    )
+
+            if ProjectCompletionReport.objects.filter(
+                meta_project=meta_project
+            ).exists():
+                raise ValidationError(
+                    f"A PCR already exists for meta project {meta_project.umbrella_code}."
+                )
+
+            projects_for_tranches = list(meta_project.projects.all())
+            if not projects_for_tranches:
+                raise ValidationError("No projects found under this meta project.")
+
+        # Now finally create the PCR for what the user selected
+        pcr = ProjectCompletionReport.objects.create(
+            project=project,
+            meta_project=meta_project,
+            status=ProjectCompletionReport.Status.DRAFT,
+            created_by=user,
+        )
+
+        self._create_tranche_data(pcr, projects_for_tranches, user)
+        # Update aggregations after creating tranches
+        pcr.update_aggregations()
+
+        serializer = ProjectCompletionReportReadSerializer(
+            pcr, context={"request": request}
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def _create_tranche_data(self, pcr, projects, user):
+        """
+        Create PCRTrancheData entries for each project with pre-populated fields.
+
+        Pre-filled from project master data:
+        - Project code
+        - Type
+        - Sector
+        - Agency
+        - Tranche number
+        - Date approved
+        - Actual date of completion
+        - Funds approved
+        - ODP phase-out (approved/actual)
+        - HFC phase-down (approved/actual)
+        """
+        for project in projects:
+            # Determine agency (prefer lead_agency, fall back to agency)
+            agency = project.lead_agency or project.agency
+
+            # Get pre-filled values from project data
+            project_code = project.code or ""
+            project_type = str(project.project_type) if project.project_type else ""
+            sector = str(project.sector) if project.sector else ""
+            tranche_number = project.tranche
+            date_approved = project.date_approved or date.today()
+            actual_date_completion = project.date_completion
+            funds_approved = project.total_fund or 0
+
+            # Calculate ODP/HFC from project data if available
+            odp_approved = self._get_project_odp_approved(project)
+            odp_actual = self._get_project_odp_actual(project)
+            hfc_approved = self._get_project_hfc_approved(project)
+            hfc_actual = self._get_project_hfc_actual(project)
+
+            # Get planned completion date if available
+            planned_completion = (
+                getattr(project, "date_comp_revised", None)
+                or getattr(project, "date_completion", None)
+                or date.today()
+            )
+
+            PCRTrancheData.objects.create(
+                pcr=pcr,
+                project=project,
+                agency=agency,
+                project_code=project_code,
+                project_type=project_type,
+                sector=sector,
+                tranche_number=tranche_number,
+                date_approved=date_approved,
+                actual_date_completion=actual_date_completion,
+                funds_approved=funds_approved,
+                odp_phaseout_approved=odp_approved,
+                odp_phaseout_actual=odp_actual,
+                hfc_phasedown_approved=hfc_approved,
+                hfc_phasedown_actual=hfc_actual,
+                funds_disbursed=0,
+                planned_completion_date=planned_completion,
+                created_by=user,
+            )
+
+    def _get_project_odp_approved(self, project):
+        # Try to get from project's impact/substance fields
+        if hasattr(project, "ods_in_inventory_odp"):
+            return project.ods_in_inventory_odp
+        if hasattr(project, "impact"):
+            return project.impact
+
+        agg = ProjectOdsOdp.objects.filter(project=project).aggregate(
+            total=Sum("odp_value")
+        )
+        return agg.get("total")
+
+    def _get_project_odp_actual(self, project):
+        # TODO: should probably refactor latest_apr to be a model method!
+        latest_apr = project.annual_reports.order_by(
+            "-report__progress_report__year"
+        ).first()
+        if latest_apr and latest_apr.consumption_phased_out_odp is not None:
+            return latest_apr.consumption_phased_out_odp
+        return None
+
+    def _get_project_hfc_approved(self, project):
+        """Get HFC phase-down approved from project or related data."""
+        if hasattr(project, "hfc_co2_eq"):
+            return project.hfc_co2_eq
+        return None
+
+    def _get_project_hfc_actual(self, project):
+        latest_apr = project.annual_reports.order_by(
+            "-report__progress_report__year"
+        ).first()
+        if latest_apr and latest_apr.consumption_phased_out_co2 is not None:
+            return latest_apr.consumption_phased_out_co2
+        return None
+
+
 class PCRDetailView(RetrieveAPIView):
     """
-    Retrieve a specific PCR with all details.
+    Retrieve a specific PCR with all nested related data included.
     """
 
     permission_classes = [HasPCRViewAccess]
@@ -227,7 +430,7 @@ class PCRDetailView(RetrieveAPIView):
 
         if not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
-                # Agency user sees PCRs where their agency is involved
+                # TODO: should really factor this out in a manager method
                 queryset = queryset.filter(
                     Q(tranches__agency=user.agency)
                     | Q(project__agency=user.agency)
@@ -252,6 +455,7 @@ class PCRUpdateView(APIView):
         self.check_object_permissions(request, pcr)
 
         # Check if PCR is editable
+        # TODO: this check keeps repeating, maybe we can turn it into a method
         if (
             pcr.status == ProjectCompletionReport.Status.SUBMITTED
             and not pcr.is_unlocked

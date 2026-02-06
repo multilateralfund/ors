@@ -1,6 +1,4 @@
-"""
-Unit tests for Project Completion Report (PCR) API endpoints.
-"""
+from decimal import Decimal
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -8,7 +6,10 @@ from django.core.management import call_command
 from django.urls import reverse
 from rest_framework import status
 
-from core.api.tests.factories import PCRSupportingEvidenceFactory
+from core.api.tests.factories import (
+    PCRSupportingEvidenceFactory,
+    AnnualProjectReportFactory,
+)
 from core.api.tests.base import BaseTest
 from core.models.project_complition_report import (
     PCRCauseOfDelay,
@@ -216,6 +217,227 @@ class TestPCRListView(BaseTest):
 
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 2
+
+
+@pytest.mark.django_db
+class TestPCRCreateView(BaseTest):
+    def test_without_login(self, project):
+        self.client.force_authenticate(user=None)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id})
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_viewer_cannot_create_pcr(self, pcr_agency_viewer_user, project):
+        self.client.force_authenticate(user=pcr_agency_viewer_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_create_pcr_for_ind_project(self, pcr_agency_inputter_user, project):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["project"] == project.id
+        assert response.data["meta_project"] is None
+        assert response.data["status"] == "draft"
+
+        assert ProjectCompletionReport.objects.filter(project=project).exists()
+
+    def test_create_pcr_populates_tranche_data(self, pcr_agency_inputter_user, project):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        assert len(response.data["tranches"]) == 1
+        tranche = response.data["tranches"][0]
+
+        expected_code = project.code or ""
+        assert tranche["project_code"] == expected_code
+
+        assert tranche["agency"] == project.agency.id
+
+    def test_create_pcr_for_mya_meta_project(
+        self, pcr_agency_inputter_user, meta_project_with_projects
+    ):
+        meta_project = meta_project_with_projects
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url, {"meta_project_id": meta_project.id}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["meta_project"] == meta_project.id
+        assert response.data["project"] is None
+        assert response.data["status"] == "draft"
+
+        # Verify that tranche data was created for all projects
+        assert len(response.data["tranches"]) == meta_project.projects.count()
+
+    def test_create_pcr_requires_project_or_meta_project(
+        self, pcr_agency_inputter_user
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Either project_id or meta_project_id is required" in str(response.data)
+
+    def test_create_pcr_cannot_specify_both(
+        self, pcr_agency_inputter_user, project, meta_project_with_projects
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url,
+            {
+                "project_id": project.id,
+                "meta_project_id": meta_project_with_projects.id,
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "Only one of" in str(response.data)
+
+    def test_create_pcr_duplicate_project_fails(
+        self, pcr_agency_inputter_user, project, pcr_factory
+    ):
+        pcr_factory(project=project)
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "already exists" in str(response.data)
+
+    def test_create_pcr_duplicate_meta_project_fails(
+        self, pcr_agency_inputter_user, meta_project_with_projects, pcr_factory
+    ):
+        meta_project = meta_project_with_projects
+        pcr_factory(meta_project=meta_project, project=None)
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url, {"meta_project_id": meta_project.id}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "already exists" in str(response.data)
+
+    def test_create_pcr_other_agency_project_denied(
+        self, pcr_agency_inputter_user, pcr_project_other_agency
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url, {"project_id": pcr_project_other_agency.id}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "do not have permission" in str(response.data)
+
+    def test_create_pcr_mlfs_can_create_any(
+        self, pcr_mlfs_full_access_user, pcr_project_other_agency
+    ):
+        self.client.force_authenticate(user=pcr_mlfs_full_access_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url, {"project_id": pcr_project_other_agency.id}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_create_pcr_excluded_project_type_fails(
+        self, pcr_agency_inputter_user, project_ins
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project_ins.id}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "do not require a PCR" in str(response.data)
+
+    def test_create_pcr_populates_prefilled_fields(
+        self, pcr_agency_inputter_user, project_with_data
+    ):
+        project = project_with_data
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        # Check tranche data pre-population
+        tranche = response.data["tranches"][0]
+        assert tranche["project_code"] == project.code
+        if project.project_type:
+            assert project.project_type.name in tranche["project_type"]
+        if project.sector:
+            assert project.sector.name in tranche["sector"]
+        if project.date_approved:
+            assert tranche["date_approved"] == str(project.date_approved)
+        if project.total_fund:
+            assert float(tranche["funds_approved"]) == project.total_fund
+
+    def test_create_pcr_empty_meta_project_fails(
+        self, pcr_agency_inputter_user, meta_project_empty
+    ):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(
+            url, {"meta_project_id": meta_project_empty.id}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "No projects found" in str(response.data)
+
+    def test_create_pcr_project_not_found(self, pcr_agency_inputter_user):
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": 99999}, format="json")
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_decimal_fields_serialized_correctly(
+        self,
+        pcr_agency_inputter_user,
+        project,
+        apr_year,
+        annual_progress_report,
+        annual_agency_report,
+    ):
+        project.agency = pcr_agency_inputter_user.agency
+        project.save()
+
+        AnnualProjectReportFactory(
+            project=project,
+            report=annual_agency_report,
+            consumption_phased_out_odp=123.4567,
+            consumption_phased_out_co2=987.6543,
+        )
+
+        self.client.force_authenticate(user=pcr_agency_inputter_user)
+        url = reverse("pcr-create")
+        response = self.client.post(url, {"project_id": project.id}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        tranche = response.data["tranches"][0]
+
+        # Check that Decimal fields are returned as strings
+        assert isinstance(tranche["odp_phaseout_actual"], str)
+        assert isinstance(tranche["hfc_phasedown_actual"], str)
+
+        # Check that the actual values from APR are used
+        assert Decimal(tranche["odp_phaseout_actual"]) == Decimal("123.4567")
+        assert Decimal(tranche["hfc_phasedown_actual"]) == Decimal("987.6543")
 
 
 @pytest.mark.django_db
