@@ -415,6 +415,8 @@ class TestPCRCreateView(BaseTest):
         annual_agency_report,
     ):
         project.agency = pcr_agency_inputter_user.agency
+        project.total_phase_out_odp_tonnes = Decimal("234.5678")
+        project.total_phase_out_co2_tonnes = Decimal("876.5432")
         project.save()
 
         AnnualProjectReportFactory(
@@ -431,12 +433,14 @@ class TestPCRCreateView(BaseTest):
         assert response.status_code == status.HTTP_201_CREATED
         tranche = response.data["tranches"][0]
 
-        # Check that Decimal fields are returned as strings
+        assert isinstance(tranche["odp_phaseout_approved"], str)
         assert isinstance(tranche["odp_phaseout_actual"], str)
+        assert isinstance(tranche["hfc_phasedown_approved"], str)
         assert isinstance(tranche["hfc_phasedown_actual"], str)
 
-        # Check that the actual values from APR are used
+        assert Decimal(tranche["odp_phaseout_approved"]) == Decimal("234.5678")
         assert Decimal(tranche["odp_phaseout_actual"]) == Decimal("123.4567")
+        assert Decimal(tranche["hfc_phasedown_approved"]) == Decimal("876.5432")
         assert Decimal(tranche["hfc_phasedown_actual"]) == Decimal("987.6543")
 
 

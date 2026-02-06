@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.db.models import Q, Sum
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -15,7 +15,7 @@ from core.api.permissions import (
     HasPCREditAccess,
     HasPCRSubmitAccess,
 )
-from core.models.project import MetaProject, Project, ProjectOdsOdp
+from core.models.project import MetaProject, Project
 from core.api.serializers.project_completion_report import (
     DelayCategorySerializer,
     LearnedLessonCategorySerializer,
@@ -357,19 +357,9 @@ class PCRCreateView(APIView):
             )
 
     def _get_project_odp_approved(self, project):
-        # Try to get from project's impact/substance fields
-        if hasattr(project, "ods_in_inventory_odp"):
-            return project.ods_in_inventory_odp
-        if hasattr(project, "impact"):
-            return project.impact
-
-        agg = ProjectOdsOdp.objects.filter(project=project).aggregate(
-            total=Sum("odp_value")
-        )
-        return agg.get("total")
+        return project.total_phase_out_odp_tonnes
 
     def _get_project_odp_actual(self, project):
-        # TODO: should probably refactor latest_apr to be a model method!
         latest_apr = project.annual_reports.order_by(
             "-report__progress_report__year"
         ).first()
@@ -378,10 +368,7 @@ class PCRCreateView(APIView):
         return None
 
     def _get_project_hfc_approved(self, project):
-        """Get HFC phase-down approved from project or related data."""
-        if hasattr(project, "hfc_co2_eq"):
-            return project.hfc_co2_eq
-        return None
+        return project.total_phase_out_co2_tonnes
 
     def _get_project_hfc_actual(self, project):
         latest_apr = project.annual_reports.order_by(
