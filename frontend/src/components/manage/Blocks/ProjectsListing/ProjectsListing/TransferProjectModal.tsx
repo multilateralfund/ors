@@ -107,6 +107,7 @@ const ProjectTransferWrapper = ({
   useEffect(() => {
     setProjectData((prevData) => ({
       ...prevData,
+      lead_agency: project.lead_agency,
       fund_transferred: getFormattedDecimalValue(project.total_fund),
       psc_transferred: getFormattedDecimalValue(project.support_cost_psc),
     }))

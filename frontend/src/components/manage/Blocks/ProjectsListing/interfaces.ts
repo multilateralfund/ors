@@ -264,6 +264,7 @@ export interface ProjectData {
 
 export interface ProjectTransferData {
   agency: number | null
+  lead_agency: number | null
   transfer_meeting: number | null
   transfer_decision: number | null
   transfer_excom_provision: string

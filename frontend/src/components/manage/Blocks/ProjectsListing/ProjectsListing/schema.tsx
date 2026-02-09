@@ -130,7 +130,9 @@ const getColumnDefs = (
                                 projectMetaprojectId:
                                   props.data.meta_project_id,
                                 projectCode: props.data.code,
-                                projectEditable: props.data.editable,
+                                projectEditable:
+                                  props.data.editable ||
+                                  props.data.editable_for_actual_fields,
                               }
                             : menusDefaultProjectData,
                         )
