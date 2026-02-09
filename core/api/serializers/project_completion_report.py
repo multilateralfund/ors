@@ -1,9 +1,3 @@
-"""
-Project Completion Report (PCR) Serializers
-
-Following APR pattern with read/write serializer separation.
-"""
-
 from rest_framework import serializers
 
 from core.models.project_complition_report import (

@@ -14,7 +14,7 @@ from core.import_data.utils import (
 from core.models.project import MetaProject
 from core.models.project_complition_report import (
     DelayCategory,
-    PCRDelayExplanation,
+    PCRDelayExplanationLegacy,
 )
 
 
@@ -60,9 +60,9 @@ def parse_file(file_path, category_dict, agency_dict):
             "source_file": file_path,
         }
 
-        explanations.append(PCRDelayExplanation(**explanation_data))
+        explanations.append(PCRDelayExplanationLegacy(**explanation_data))
 
-    PCRDelayExplanation.objects.bulk_create(explanations, batch_size=1000)
+    PCRDelayExplanationLegacy.objects.bulk_create(explanations, batch_size=1000)
 
 
 @transaction.atomic
@@ -79,6 +79,6 @@ def import_pcr_delay_explanations():
         agency_dict = get_agency_dict(file_path)
 
         file_path = db_dir_path / database_name / "PCR53.json"
-        delete_old_data(PCRDelayExplanation, file_path)
+        delete_old_data(PCRDelayExplanationLegacy, file_path)
         parse_file(file_path, category_dict, agency_dict)
         logger.info(f"✔ pcr delay explanations from {database_name} imported")

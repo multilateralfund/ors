@@ -1,10 +1,3 @@
-"""
-Django Admin for Project Completion Report models.
-
-Includes admin for both legacy models (for backward compatibility)
-and new PCR models.
-"""
-
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
@@ -42,7 +35,7 @@ from core.models.project_complition_report import (
 )
 
 
-# Legacy model admins (kept for backward compatibility)
+# Legacy model admins, kept for backward compatibility and possible data import
 
 
 @admin.register(PCRSector)
