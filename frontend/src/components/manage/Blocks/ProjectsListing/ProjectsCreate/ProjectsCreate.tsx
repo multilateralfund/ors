@@ -290,6 +290,7 @@ const ProjectsCreate = ({
   const disableV3Edit =
     !!project &&
     mode === 'edit' &&
+    !postExComUpdate &&
     !project.editable &&
     project.editable_for_actual_fields
 
