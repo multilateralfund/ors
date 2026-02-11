@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { getMeetingNr } from '../../Utils/utilFunctions'
 import {
   approvalOdsFields,
   approvalToOdsMap,
@@ -1177,3 +1178,7 @@ export const getOdsOdpFields = (specificFields: ProjectSpecificFields[]) => {
     (field) => field.read_field_name !== 'sort_order',
   )
 }
+
+export const getPostExcomMeetingErrors = (projIdentifiers: ProjIdentifiers) =>
+  (getMeetingNr(projIdentifiers.post_excom_meeting ?? undefined) ?? 0) <
+  (getMeetingNr(projIdentifiers.meeting ?? undefined) ?? 0)
