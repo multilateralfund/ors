@@ -1,6 +1,9 @@
 from rest_framework import permissions
 
 
+# pylint: disable=R0911
+
+
 class HasReplenishmentViewPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.has_perm("core.has_replenishment_view_access")
@@ -326,6 +329,184 @@ class HasAPRMLFSFullAccess(permissions.BasePermission):
         return (
             request.user.has_perm("core.has_apr_edit_access")
             and request.user.has_perm("core.has_apr_submit_access")
+            and request.user.has_perm("core.can_view_all_agencies")
+        )
+
+
+class HasPCRViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view PCR data.
+        Works on all PCR-related objects.
+        """
+        return request.user.has_perm("core.has_pcr_view_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can access the PCR.
+        Agency users can only access:
+            - PCRs where their agency is involved through tranches
+            - PCRs for projects where their agency is lead or executing agency
+        """
+        # TODO: is this assumption about tranches correct?
+        # Get the PCR (handle both direct and nested objects)
+        if hasattr(obj, "pcr"):
+            # PCR-related object (activity, delay, etc.)
+            pcr = obj.pcr
+        elif hasattr(obj, "tranches"):
+            # ProjectCompletionReport itself
+            pcr = obj
+        else:
+            # Other PCR-related objects
+            return False
+
+        # MLFS users can access all PCRs
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        # Agency users can only access their own agency's data
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            user_agency_id = request.user.agency_id
+
+            # Check if user's agency is involved through tranches
+            if pcr.tranches.filter(agency_id=user_agency_id).exists():
+                return True
+
+            # Check if user's agency is the project's lead or executing agency (IND projects)
+            if pcr.project:
+                if pcr.project.lead_agency_id == user_agency_id:
+                    return True
+                if (
+                    hasattr(pcr.project, "agency")
+                    and pcr.project.agency_id == user_agency_id
+                ):
+                    return True
+
+            # Check if user's agency is the meta_project's lead agency (MYA projects)
+            if pcr.meta_project and pcr.meta_project.lead_agency_id == user_agency_id:
+                return True
+
+        return False
+
+
+class HasPCREditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit Project Completion Reports.
+        """
+        return request.user.has_perm("core.has_pcr_edit_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can edit the PCR.
+        """
+        # Get the PCR (handle both direct and nested objects)
+        if hasattr(obj, "pcr"):
+            # PCR-related object (activity, delay, etc.)
+            pcr = obj.pcr
+        elif hasattr(obj, "tranches"):
+            # ProjectCompletionReport itself
+            pcr = obj
+        else:
+            # Other PCR-related objects
+            return False
+
+        # MLFS users can access all PCRs
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        # Agency users can only access their own agency's data
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            user_agency_id = request.user.agency_id
+
+            # Check if user's agency is involved through tranches
+            if pcr.tranches.filter(agency_id=user_agency_id).exists():
+                return True
+
+            # Check if user's agency is the project's lead or executing agency (IND projects)
+            if pcr.project:
+                if pcr.project.lead_agency_id == user_agency_id:
+                    return True
+                if (
+                    hasattr(pcr.project, "agency")
+                    and pcr.project.agency_id == user_agency_id
+                ):
+                    return True
+
+            # Check if user's agency is the meta_project's lead agency (MYA projects)
+            if pcr.meta_project and pcr.meta_project.lead_agency_id == user_agency_id:
+                return True
+
+        return False
+
+
+class HasPCRSubmitAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm("core.has_pcr_submit_access")
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can submit specific PCR.
+        Agency users can only submit their own agency's reports.
+        """
+        if hasattr(obj, "pcr"):
+            pcr = obj.pcr
+        else:
+            pcr = obj
+
+        # MLFS users can submit/manage all PCRs
+        if request.user.has_perm("core.can_view_all_agencies"):
+            return True
+
+        if request.user.has_perm("core.can_view_only_own_agency"):
+            if not hasattr(request.user, "agency") or not request.user.agency:
+                return False
+
+            user_agency_id = request.user.agency_id
+
+            # Check if user's agency is involved through tranches
+            if pcr.tranches.filter(agency_id=user_agency_id).exists():
+                return True
+
+            # Check if user's agency is the project's lead or executing agency (IND projects)
+            if pcr.project:
+                if pcr.project.lead_agency_id == user_agency_id:
+                    return True
+                if (
+                    hasattr(pcr.project, "agency")
+                    and pcr.project.agency_id == user_agency_id
+                ):
+                    return True
+
+            # Check if user's agency is the meta_project's lead agency (MYA projects)
+            if pcr.meta_project and pcr.meta_project.lead_agency_id == user_agency_id:
+                return True
+
+        return False
+
+
+class HasPCRMLFSViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "core.has_pcr_view_access"
+        ) and request.user.has_perm("core.can_view_all_agencies")
+
+
+class HasPCRMLFSFullAccess(permissions.BasePermission):
+    """
+    Permission for MLFS users with full PCR access (unlock, edit all).
+    """
+
+    def has_permission(self, request, view):
+        return (
+            request.user.has_perm("core.has_pcr_edit_access")
+            and request.user.has_perm("core.has_pcr_submit_access")
             and request.user.has_perm("core.can_view_all_agencies")
         )
 

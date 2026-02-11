@@ -54,6 +54,21 @@ from core.api.tests.factories import (
     AnnualProgressReportFactory,
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFactory,
+    ProjectCompletionReportFactory,
+    PCRProjectActivityFactory,
+    PCROverallAssessmentFactory,
+    PCRCommentFactory,
+    PCRCauseOfDelayFactory,
+    PCRLessonLearnedFactory,
+    PCRRecommendationFactory,
+    PCRGenderMainstreamingFactory,
+    PCRSDGContributionFactory,
+)
+from core.models.project_complition_report import (
+    ProjectCompletionReport,
+    PCRProjectElement,
+    PCRGenderPhase,
+    PCRSDG,
 )
 from core.models import Country
 from core.models import BPActivity
@@ -801,6 +816,7 @@ def project(
         title="Karma to Burn",
         country=country_ro,
         agency=agency,
+        lead_agency=agency,
         project_type=project_type,
         status=project_status,
         submission_status=project_draft_status,
@@ -1754,3 +1770,291 @@ def late_post_excom_versions_for_apr(
 def mock_send_agency_submission_notification():
     with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
         yield send_mail
+
+
+@pytest.fixture
+def pcr_agency_viewer_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Viewer")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_agency_inputter_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Inputter")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_agency_submitter_user(agency):
+    user = UserFactory(agency=agency)
+    group = Group.objects.get(name="PCR - Agency Submitter")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_mlfs_full_access_user():
+    user = UserFactory()
+    group = Group.objects.get(name="PCR - MLFS Full Access")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def pcr_factory():
+    return ProjectCompletionReportFactory
+
+
+@pytest.fixture
+def pcr_with_data(pcr_agency_inputter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.DRAFT,
+        created_by=pcr_agency_inputter_user,
+    )
+    return pcr
+
+
+@pytest.fixture
+def pcr_submitted(pcr_agency_submitter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.SUBMITTED,
+        created_by=pcr_agency_submitter_user,
+        submitter=pcr_agency_submitter_user,
+    )
+    return pcr
+
+
+@pytest.fixture
+def pcr_all_reports_submitted(pcr_agency_submitter_user, project, agency):
+    pcr = ProjectCompletionReport.objects.create(
+        project=project,
+        status=ProjectCompletionReport.Status.DRAFT,
+        created_by=pcr_agency_submitter_user,
+    )
+    return pcr
+
+
+@pytest.fixture
+def pcr_project_other_agency(
+    country_ro, sector, pcr_agency_other, project_ongoing_status
+):
+    project = ProjectFactory(
+        agency=pcr_agency_other,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        code="OTHER/AGENCY/01",
+    )
+    return project
+
+
+@pytest.fixture
+def pcr_agency_other():
+    return AgencyFactory(name="Other Agency", code="OTHER")
+
+
+@pytest.fixture
+def pcr_project_element():
+    # TODO: this is hack-ish, see if it can be done better!
+    elements = PCRProjectElement.objects.all()
+    if elements.exists():
+        return elements.first()
+    return PCRProjectElement.objects.create(
+        code="DESIGN",
+        name="Project Design",
+        sort_order=1,
+    )
+
+
+@pytest.fixture
+def pcr_gender_phase():
+    phases = PCRGenderPhase.objects.all()
+    if phases.exists():
+        return phases.first()
+    return PCRGenderPhase.objects.create(
+        code="PHASE1",
+        name="Phase 1",
+        sort_order=1,
+    )
+
+
+@pytest.fixture
+def pcr_sdg():
+    sdgs = PCRSDG.objects.all()
+    if sdgs.exists():
+        return sdgs.first()
+    return PCRSDG.objects.create(
+        code="SDG01",
+        number=1,
+        name="No Poverty",
+    )
+
+
+@pytest.fixture
+def pcr_project_activity(pcr_with_data):
+    return PCRProjectActivityFactory(pcr=pcr_with_data)
+
+
+@pytest.fixture
+def pcr_overall_assessment(pcr_with_data):
+    return PCROverallAssessmentFactory(pcr=pcr_with_data)
+
+
+@pytest.fixture
+def pcr_comment(pcr_with_data):
+    return PCRCommentFactory(pcr=pcr_with_data)
+
+
+@pytest.fixture
+def pcr_cause_of_delay(pcr_with_data, pcr_project_element):
+    return PCRCauseOfDelayFactory(
+        pcr=pcr_with_data,
+        project_element=pcr_project_element,
+    )
+
+
+@pytest.fixture
+def pcr_lesson_learned(pcr_with_data, pcr_project_element):
+    return PCRLessonLearnedFactory(
+        pcr=pcr_with_data,
+        project_element=pcr_project_element,
+    )
+
+
+@pytest.fixture
+def pcr_recommendation(pcr_with_data):
+    return PCRRecommendationFactory(pcr=pcr_with_data)
+
+
+@pytest.fixture
+def pcr_gender_mainstreaming(pcr_with_data, pcr_gender_phase):
+    return PCRGenderMainstreamingFactory(
+        pcr=pcr_with_data,
+        phase=pcr_gender_phase,
+    )
+
+
+@pytest.fixture
+def pcr_sdg_contrib(pcr_with_data, pcr_sdg):
+    return PCRSDGContributionFactory(
+        pcr=pcr_with_data,
+        sdg=pcr_sdg,
+    )
+
+
+@pytest.fixture
+def project_type_ins():
+    return ProjectTypeFactory.create(
+        name="Institutional Strengthening", code="INS", sort_order=100
+    )
+
+
+@pytest.fixture
+def project_ins(
+    country_ro,
+    agency,
+    project_type_ins,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+):
+    return ProjectFactory.create(
+        title="Strenghten Them Institutions Project",
+        country=country_ro,
+        agency=agency,
+        lead_agency=agency,
+        project_type=project_type_ins,
+        status=project_status,
+        submission_status=project_draft_status,
+        sector=sector,
+        meeting=meeting,
+        code="INS/TEST/01",
+    )
+
+
+@pytest.fixture
+def meta_project_with_projects(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+    project_cluster_kpp,
+):
+    """
+    MYA meta_project with multiple projects (for PCR create tests).
+    """
+    meta_project = MetaProjectFactory.create(
+        type="Multi-year agreement",
+        lead_agency=agency,
+        country=country_ro,
+    )
+    # Create 3 projects under this meta_project
+    for i in range(3):
+        ProjectFactory.create(
+            meta_project=meta_project,
+            title=f"MYA Project {i+1}",
+            country=country_ro,
+            agency=agency,
+            lead_agency=agency,
+            project_type=project_type,
+            status=project_status,
+            submission_status=project_draft_status,
+            sector=sector,
+            meeting=meeting,
+            cluster=project_cluster_kpp,
+            tranche=i + 1,
+            code=f"MYA/TEST/{i+1:02d}",
+            total_fund=100000 * (i + 1),
+        )
+    return meta_project
+
+
+@pytest.fixture
+def meta_project_empty(country_ro, agency):
+    return MetaProjectFactory.create(
+        type="Multi-year agreement",
+        lead_agency=agency,
+        country=country_ro,
+    )
+
+
+@pytest.fixture
+def project_with_data(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    project_draft_status,
+    sector,
+    meeting,
+    project_cluster_kpp,
+):
+    """Project with populated data fields, used for testing PCR data pre-population."""
+
+    return ProjectFactory.create(
+        title="Project with data",
+        country=country_ro,
+        agency=agency,
+        lead_agency=agency,
+        project_type=project_type,
+        status=project_status,
+        submission_status=project_draft_status,
+        sector=sector,
+        meeting=meeting,
+        cluster=project_cluster_kpp,
+        code="FULL/DATA/01",
+        total_fund=500000.50,
+        date_approved=date(2020, 1, 15),
+        date_completion=date(2023, 6, 30),
+        tranche=1,
+    )

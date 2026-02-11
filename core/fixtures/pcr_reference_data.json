@@ -1,0 +1,282 @@
+[
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 1,
+    "fields": {
+      "code": "design_preparation",
+      "name": "Project design and preparation",
+      "description": "Issues related to project planning, design, and preparation phases",
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 2,
+    "fields": {
+      "code": "implementation",
+      "name": "Project implementation (including training and capacity building – data collection and availability)",
+      "description": "Issues during project execution, training, and capacity building",
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 3,
+    "fields": {
+      "code": "funding_procurement",
+      "name": "Funding and procurement",
+      "description": "Issues related to funding processes and procurement activities",
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 4,
+    "fields": {
+      "code": "sustainability",
+      "name": "Sustainability of Montreal Protocol achievements",
+      "description": "Issues affecting the long-term sustainability of project outcomes",
+      "sort_order": 4
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 5,
+    "fields": {
+      "code": "institutional",
+      "name": "Institutional framework, policy & regulations",
+      "description": "Issues related to institutional structures, policies, and regulatory frameworks",
+      "sort_order": 5
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 6,
+    "fields": {
+      "code": "exogenous",
+      "name": "Exogenous factors",
+      "description": "External factors beyond project control (natural disasters, political instability, pandemics, etc.)",
+      "sort_order": 6
+    }
+  },
+  {
+    "model": "core.pcrprojectelement",
+    "pk": 7,
+    "fields": {
+      "code": "technology",
+      "name": "Technology, innovation and markets",
+      "description": "Issues related to technology, innovation, and market factors",
+      "sort_order": 7
+    }
+  },
+  {
+    "model": "core.pcrgenderphase",
+    "pk": 1,
+    "fields": {
+      "code": "preparation",
+      "name": "Project preparation",
+      "description": "Gender considerations during project preparation phase",
+      "sort_order": 1
+    }
+  },
+  {
+    "model": "core.pcrgenderphase",
+    "pk": 2,
+    "fields": {
+      "code": "formulation",
+      "name": "Planning/Formulation",
+      "description": "Gender considerations during planning and formulation phase",
+      "sort_order": 2
+    }
+  },
+  {
+    "model": "core.pcrgenderphase",
+    "pk": 3,
+    "fields": {
+      "code": "implementation",
+      "name": "Implementation",
+      "description": "Gender considerations during project implementation",
+      "sort_order": 3
+    }
+  },
+  {
+    "model": "core.pcrgenderphase",
+    "pk": 4,
+    "fields": {
+      "code": "monitoring",
+      "name": "Monitoring and Reporting",
+      "description": "Gender considerations during monitoring and reporting phases",
+      "sort_order": 4
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 1,
+    "fields": {
+      "code": "goal_1",
+      "number": 1,
+      "name": "No poverty",
+      "description": "End poverty in all its forms everywhere"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 2,
+    "fields": {
+      "code": "goal_2",
+      "number": 2,
+      "name": "Zero hunger",
+      "description": "End hunger, achieve food security and improved nutrition and promote sustainable agriculture"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 3,
+    "fields": {
+      "code": "goal_3",
+      "number": 3,
+      "name": "Good health and well being",
+      "description": "Ensure healthy lives and promote well-being for all at all ages"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 4,
+    "fields": {
+      "code": "goal_4",
+      "number": 4,
+      "name": "Quality education",
+      "description": "Ensure inclusive and equitable quality education and promote lifelong learning opportunities for all"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 5,
+    "fields": {
+      "code": "goal_5",
+      "number": 5,
+      "name": "Gender equality",
+      "description": "Achieve gender equality and empower all women and girls"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 6,
+    "fields": {
+      "code": "goal_6",
+      "number": 6,
+      "name": "Clean water and sanitation",
+      "description": "Ensure availability and sustainable management of water and sanitation for all"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 7,
+    "fields": {
+      "code": "goal_7",
+      "number": 7,
+      "name": "Affordable and clean energy",
+      "description": "Ensure access to affordable, reliable, sustainable and modern energy for all"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 8,
+    "fields": {
+      "code": "goal_8",
+      "number": 8,
+      "name": "Decent work and economic growth",
+      "description": "Promote sustained, inclusive and sustainable economic growth, full and productive employment and decent work for all"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 9,
+    "fields": {
+      "code": "goal_9",
+      "number": 9,
+      "name": "Industry, Innovation and Infrastructure",
+      "description": "Build resilient infrastructure, promote inclusive and sustainable industrialization and foster innovation"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 10,
+    "fields": {
+      "code": "goal_10",
+      "number": 10,
+      "name": "Reduced Inequalities",
+      "description": "Reduce inequality within and among countries"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 11,
+    "fields": {
+      "code": "goal_11",
+      "number": 11,
+      "name": "Sustainable cities and communities",
+      "description": "Make cities and human settlements inclusive, safe, resilient and sustainable"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 12,
+    "fields": {
+      "code": "goal_12",
+      "number": 12,
+      "name": "Responsible consumption and production",
+      "description": "Ensure sustainable consumption and production patterns"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 13,
+    "fields": {
+      "code": "goal_13",
+      "number": 13,
+      "name": "Climate action",
+      "description": "Take urgent action to combat climate change and its impacts"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 14,
+    "fields": {
+      "code": "goal_14",
+      "number": 14,
+      "name": "Life below water",
+      "description": "Conserve and sustainably use the oceans, seas and marine resources for sustainable development"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 15,
+    "fields": {
+      "code": "goal_15",
+      "number": 15,
+      "name": "Life on land",
+      "description": "Protect, restore and promote sustainable use of terrestrial ecosystems, sustainably manage forests, combat desertification, and halt and reverse land degradation and halt biodiversity loss"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 16,
+    "fields": {
+      "code": "goal_16",
+      "number": 16,
+      "name": "Peace, justice and strong institutions",
+      "description": "Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels"
+    }
+  },
+  {
+    "model": "core.pcrsdg",
+    "pk": 17,
+    "fields": {
+      "code": "goal_17",
+      "number": 17,
+      "name": "Partnerships for the goals",
+      "description": "Strengthen the means of implementation and revitalize the Global Partnership for Sustainable Development"
+    }
+  }
+]

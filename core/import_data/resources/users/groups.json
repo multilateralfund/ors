@@ -88,7 +88,6 @@
             "has_sectors_and_subsectors_view_access",
             "is_mlfs_user"
         ]
-
     },
     {
         "name": "Projects - MLFS Submission V1/V2 Production",
@@ -268,6 +267,9 @@
             "has_apr_view_access",
             "has_apr_edit_access",
             "has_apr_submit_access",
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "has_pcr_submit_access",
             "is_mlfs_user"
         ]
     },
@@ -338,6 +340,76 @@
             "has_apr_view_access",
             "has_apr_edit_access",
             "has_apr_submit_access",
+            "can_view_only_own_agency"
+        ]
+    },
+    {
+        "name": "PCR - MLFS Full Access",
+        "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "has_pcr_submit_access",
+            "can_view_all_agencies",
+            "is_mlfs_user"
+        ]
+    },
+    {
+        "name": "PCR - Agency Viewer",
+        "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
+            "has_pcr_view_access",
+            "can_view_only_own_agency"
+        ]
+    },
+    {
+        "name": "PCR - Agency Inputter",
+        "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "can_view_only_own_agency"
+        ]
+    },
+    {
+        "name": "PCR - Agency Submitter",
+        "permissions": [
+            "has_business_plan_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_production_projects",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access",
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "has_pcr_submit_access",
             "can_view_only_own_agency"
         ]
     }

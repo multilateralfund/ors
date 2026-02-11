@@ -11,7 +11,7 @@ from core.import_data.utils import (
 )
 
 from core.models.project import MetaProject
-from core.models.project_complition_report import PCRActivity, PCRSector
+from core.models.project_complition_report import PCRActivityLegacy, PCRSector
 
 
 logger = logging.getLogger(__name__)
@@ -109,9 +109,9 @@ def parse_file(file_path, sectors_dict):
             "source_file": file_path,
         }
 
-        activities.append(PCRActivity(**activity_data))
+        activities.append(PCRActivityLegacy(**activity_data))
 
-    PCRActivity.objects.bulk_create(activities, batch_size=1000)
+    PCRActivityLegacy.objects.bulk_create(activities, batch_size=1000)
 
 
 @transaction.atomic
@@ -124,6 +124,6 @@ def import_pcr_activities():
         sectors_dict = import_activity_sectors(file_path)
 
         file_path = db_dir_path / database_name / "PCRActivity.json"
-        delete_old_data(PCRActivity, file_path)
+        delete_old_data(PCRActivityLegacy, file_path)
         parse_file(file_path, sectors_dict)
         logger.info(f"✔ pcr activities from {database_name} imported")
