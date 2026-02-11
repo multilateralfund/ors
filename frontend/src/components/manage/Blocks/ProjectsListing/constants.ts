@@ -32,6 +32,7 @@ export const tableColumns: { [key: string]: string } = {
   blanket_or_individual_consideration:
     'Blanket approval/Individual consideration',
   meeting: 'Meeting number',
+  post_excom_meeting: 'Post ExCom meeting',
   description: 'Description',
   bp_activity: 'BP activity',
   project_type: 'Project type',

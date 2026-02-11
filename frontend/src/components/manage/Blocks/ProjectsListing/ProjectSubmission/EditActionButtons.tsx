@@ -26,6 +26,7 @@ import {
   getDefaultImpactErrors,
   getHasNoFiles,
   getPostExcomApprovalErrors,
+  getPostExcomMeetingErrors,
   getSpecificFieldsErrors,
   hasSectionErrors,
   hasSpecificField,
@@ -240,6 +241,8 @@ const EditActionButtons = ({
       ? hasImpactErrors
       : disableSubmit
 
+  const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
+
   const disableUpdate =
     !specificFieldsLoaded ||
     (project.version >= 3 || isWithdrawn
@@ -250,6 +253,7 @@ const EditActionButtons = ({
         projIdentifiers.post_excom_meeting &&
         projIdentifiers.post_excom_decision
       ) ||
+        hasPostExcomMeetingErrors ||
         hasSectionErrors(postExcomApprovalErrors)))
 
   const disableApprovalActions =
