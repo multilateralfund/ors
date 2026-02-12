@@ -96,9 +96,7 @@ const getColumnDefs = (
           <div className="flex items-center gap-1 p-2">
             {mode !== 'association' && (
               <>
-                {canEditProjects &&
-                (props.data.editable ||
-                  props.data.editable_for_actual_fields) ? (
+                {canEditProjects && props.data.editable ? (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}
@@ -130,7 +128,9 @@ const getColumnDefs = (
                                 projectMetaprojectId:
                                   props.data.meta_project_id,
                                 projectCode: props.data.code,
-                                projectEditable: props.data.editable,
+                                projectEditable:
+                                  props.data.editable ||
+                                  props.data.editable_for_actual_fields,
                               }
                             : menusDefaultProjectData,
                         )
