@@ -66,7 +66,6 @@ const ProjectViewButtons = ({
     status: project_status,
     latest_project,
     editable,
-    editable_for_actual_fields,
     country_id,
     cluster_id,
     tranche = 0,
@@ -241,7 +240,7 @@ const ProjectViewButtons = ({
   return (
     isNull(latest_project) && (
       <div className="ml-auto flex flex-wrap justify-end gap-3">
-        {(editable || editable_for_actual_fields) && (
+        {editable && (
           <>
             {canEditProjects && (
               <EditLink href={`/projects-listing/${id}/edit`}>Edit</EditLink>
