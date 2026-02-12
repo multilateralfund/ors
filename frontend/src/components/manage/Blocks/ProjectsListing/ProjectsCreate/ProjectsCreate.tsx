@@ -47,6 +47,7 @@ import {
   getFieldData,
   formatOptions,
   getOdsOdpFields,
+  getPostExcomMeetingErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -225,6 +226,16 @@ const ProjectsCreate = ({
   )
   const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
 
+  const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
+  const postExcomMeetingErrors = {
+    post_excom_meeting:
+      postExComUpdate &&
+      !!projIdentifiers.post_excom_meeting &&
+      hasPostExcomMeetingErrors
+        ? ['Cannot be earlier than the original approval meeting.']
+        : [],
+  }
+
   const bpErrors = useMemo(
     () =>
       Object.fromEntries(
@@ -290,6 +301,7 @@ const ProjectsCreate = ({
   const disableV3Edit =
     !!project &&
     mode === 'edit' &&
+    !postExComUpdate &&
     !project.editable &&
     project.editable_for_actual_fields
 
@@ -458,6 +470,7 @@ const ProjectsCreate = ({
                     projIdentifiers.post_excom_meeting &&
                     projIdentifiers.post_excom_decision
                   )) ||
+                hasSectionErrors(postExcomMeetingErrors) ||
                 hasBpDefaultErrors ||
                 hasSectionErrors(bpErrors)) && (
                 <SectionErrorIndicator errors={[]} />
@@ -482,12 +495,16 @@ const ProjectsCreate = ({
           }}
           areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
-          errors={projIdentifiersErrors}
+          errors={{ ...projIdentifiersErrors, ...postExcomMeetingErrors }}
           bpErrors={allBpErrors}
         />
       ),
       errors: [
-        ...formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
+        ...formatErrors({
+          ...projIdentifiersErrors,
+          ...postExcomMeetingErrors,
+          ...bpErrors,
+        }),
         ...(!!agencyErrorType
           ? [
               {

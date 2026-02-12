@@ -308,19 +308,27 @@ const ProjectIdentifiersFields = ({
             Update Project fields following Executive Committee
           </SectionTitle>
           <div className="flex flex-wrap gap-x-20 gap-y-3">
-            <div className="w-32">
+            <div>
               <Label>Meeting</Label>
-              <PopoverInput
-                label={getMeetingNr(
-                  projIdentifiers?.post_excom_meeting ?? undefined,
-                )?.toString()}
-                options={useMeetingOptions()}
-                onChange={handleChangePostExComMeeting}
-                onClear={() => handleChangePostExComMeeting()}
-                clearBtnClassName="right-1"
-                withClear={true}
-                className="!m-0 h-10 !py-1"
-              />
+              <div className="flex items-center">
+                <div className="w-32">
+                  <PopoverInput
+                    label={getMeetingNr(
+                      projIdentifiers?.post_excom_meeting ?? undefined,
+                    )?.toString()}
+                    options={useMeetingOptions()}
+                    onChange={handleChangePostExComMeeting}
+                    onClear={() => handleChangePostExComMeeting()}
+                    clearBtnClassName="right-1"
+                    withClear={true}
+                    className="!m-0 h-10 !py-1"
+                  />
+                </div>
+                <FieldErrorIndicator
+                  errors={errors}
+                  field="post_excom_meeting"
+                />
+              </div>
             </div>
             <div>
               <Label htmlFor="postExComDecision">Decision</Label>

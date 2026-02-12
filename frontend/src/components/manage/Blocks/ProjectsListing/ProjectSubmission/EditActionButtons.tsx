@@ -23,8 +23,10 @@ import {
   getActualData,
   getApprovalErrors,
   getCrossCuttingErrors,
+  getDefaultImpactErrors,
   getHasNoFiles,
   getPostExcomApprovalErrors,
+  getPostExcomMeetingErrors,
   getSpecificFieldsErrors,
   hasSectionErrors,
   hasSpecificField,
@@ -217,6 +219,14 @@ const EditActionButtons = ({
     (isRecommended &&
       dayjs(approvalData.date_completion).isBefore(dayjs(), 'day'))
 
+  const defaultImpactErrors = getDefaultImpactErrors(
+    projectSpecificFields,
+    specificFields,
+  )
+  const hasImpactErrors = Object.values(defaultImpactErrors).some(
+    (errors) => errors.length > 0,
+  )
+
   const disableSubmit =
     !specificFieldsLoaded ||
     isSubmitDisabled ||
@@ -225,14 +235,25 @@ const EditActionButtons = ({
       canEditField(editableFields, 'bp_activity') &&
       bpData.hasBpData &&
       !bpLinking.bpId)
+
+  const disableUpdateForAgencies =
+    editable_for_actual_fields && !editable && !postExComUpdate
+      ? hasImpactErrors
+      : disableSubmit
+
+  const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
+
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version >= 3 || isWithdrawn ? disableSubmit : isSaveDisabled) ||
+    (project.version >= 3 || isWithdrawn
+      ? disableUpdateForAgencies
+      : isSaveDisabled) ||
     (postExComUpdate &&
       (!(
         projIdentifiers.post_excom_meeting &&
         projIdentifiers.post_excom_decision
       ) ||
+        hasPostExcomMeetingErrors ||
         hasSectionErrors(postExcomApprovalErrors)))
 
   const disableApprovalActions =
