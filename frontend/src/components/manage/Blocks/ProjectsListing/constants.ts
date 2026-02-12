@@ -105,6 +105,7 @@ export const initialCrossCuttingFields = {
 
 export const initialTranferedProjectData = {
   agency: null,
+  lead_agency: null,
   transfer_meeting: null,
   transfer_decision: null,
   transfer_excom_provision: '',
