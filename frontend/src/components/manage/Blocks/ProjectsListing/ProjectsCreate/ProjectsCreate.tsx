@@ -311,12 +311,12 @@ const ProjectsCreate = ({
     project.component.original_project_id === project.id
 
   const bpErrorMessage = 'A business plan activity should be selected.'
+  const shouldValidateBp =
+    canViewBp && mode === 'edit' && canEditField(editableFields, 'bp_activity')
+
   const hasBpDefaultErrors =
-    canViewBp &&
-    mode === 'edit' &&
-    canEditField(editableFields, 'bp_activity') &&
-    bpData.hasBpData &&
-    !bpLinking.bpId
+    shouldValidateBp && bpData.hasBpData && !bpLinking.bpId
+
   const allBpErrors = hasBpDefaultErrors
     ? {
         ...bpErrors,

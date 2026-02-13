@@ -78,7 +78,7 @@ const ProjectIdentifiersFields = ({
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
     (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
-    (isV3Project && hasNoLeadAgency)
+    (isV3ProjectEditable && !postExComUpdate && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -96,7 +96,7 @@ const ProjectIdentifiersFields = ({
     (isV3Project && !!project?.agency_id) ||
     !canEditField(editableFields, 'agency')
   const isClusterDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    (isV3Project && (postExComUpdate || !!project?.cluster_id)) ||
     !specificFieldsLoaded ||
     !canEditField(editableFields, 'cluster')
   const isProductionDisabled =

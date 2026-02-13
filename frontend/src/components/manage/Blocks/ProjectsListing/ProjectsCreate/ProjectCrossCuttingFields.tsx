@@ -132,6 +132,11 @@ const ProjectCrossCuttingFields = ({
     sector
   )
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
+  const isStartDateDisabled =
+    (mode === 'edit' &&
+      submission_status === 'Approved' &&
+      (postExComUpdate || !!project?.project_start_date)) ||
+    !canEditField(editableFields, 'project_start_date')
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setProjectData(
@@ -258,7 +263,9 @@ const ProjectCrossCuttingFields = ({
                         getOptionLabel(projectTypes, option)
                       }
                       disabled={
-                        (isV3Project && !!project?.project_type_id) ||
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.project_type_id && !!project_type))) ||
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'project_type')
                       }
@@ -291,7 +298,9 @@ const ProjectCrossCuttingFields = ({
                         getOptionLabel(sectors, option)
                       }
                       disabled={
-                        (isV3Project && !!project?.sector_id) ||
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.sector_id && !!sector))) ||
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'sector')
                       }
@@ -384,19 +393,10 @@ const ProjectCrossCuttingFields = ({
                           sectionIdentifier,
                         )
                       }
-                      disabled={
-                        (mode === 'edit' &&
-                          submission_status === 'Approved' &&
-                          !!project?.project_start_date) ||
-                        !canEditField(editableFields, 'project_start_date')
-                      }
+                      disabled={isStartDateDisabled}
                       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                       className={cx(defaultPropsDateInput.className, {
-                        [disabledClassName]:
-                          (mode === 'edit' &&
-                            submission_status === 'Approved' &&
-                            !!project_start_date) ||
-                          !canEditField(editableFields, 'project_start_date'),
+                        [disabledClassName]: isStartDateDisabled,
                       })}
                     />
                     <div className="w-8">

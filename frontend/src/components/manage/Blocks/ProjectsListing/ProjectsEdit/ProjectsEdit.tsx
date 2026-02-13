@@ -167,10 +167,15 @@ const ProjectsEdit = ({
     }
   }, [allFields, setViewableFields, setEditableFields])
 
-  const approvalFields =
-    isVersion3 && isArray(allFields)
-      ? allFields.filter((field) => filterApprovalFields(specificFields, field))
-      : []
+  const approvalFields = useMemo(
+    () =>
+      isVersion3 && isArray(allFields)
+        ? allFields.filter((field) =>
+            filterApprovalFields(specificFields, field),
+          )
+        : [],
+    [allFields, specificFields],
+  )
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -405,7 +410,7 @@ const ProjectsEdit = ({
         approvalFieldsValuesLoaded.current = true
       }
     }
-  }, [approvalFields, approvalFieldsValuesLoaded])
+  }, [approvalFields])
 
   useEffect(() => {
     if (!fieldsValuesLoaded.current && specificFields.length > 0) {
