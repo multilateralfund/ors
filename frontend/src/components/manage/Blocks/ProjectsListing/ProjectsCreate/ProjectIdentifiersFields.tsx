@@ -78,7 +78,7 @@ const ProjectIdentifiersFields = ({
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
     (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
-    (isV3Project && hasNoLeadAgency)
+    (isV3ProjectEditable && !postExComUpdate && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -93,14 +93,18 @@ const ProjectIdentifiersFields = ({
   const isMeetingDisabled = !(canEditMeeting && areNextSectionsDisabled)
 
   const isAgencyDisabled =
-    (isV3Project && !!project?.agency_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.agency_id) ||
     !canEditField(editableFields, 'agency')
+
   const isClusterDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !specificFieldsLoaded ||
     !canEditField(editableFields, 'cluster')
   const isProductionDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !canViewProductionProjects ||
     !isNull(
       getClusterDetails(clusters, projIdentifiers.cluster, 'production'),
