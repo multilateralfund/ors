@@ -269,7 +269,9 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
-        category: !shouldEmptyCluster ? project.cluster?.category : null,
+        category: !shouldEmptyCluster
+          ? (project.cluster?.category ?? null)
+          : null,
         post_excom_meeting:
           mode === 'edit' ? project.post_excom_meeting_id : null,
         post_excom_decision:

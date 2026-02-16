@@ -93,14 +93,18 @@ const ProjectIdentifiersFields = ({
   const isMeetingDisabled = !(canEditMeeting && areNextSectionsDisabled)
 
   const isAgencyDisabled =
-    (isV3Project && !!project?.agency_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.agency_id) ||
     !canEditField(editableFields, 'agency')
+
   const isClusterDisabled =
-    (isV3Project && (postExComUpdate || !!project?.cluster_id)) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !specificFieldsLoaded ||
     !canEditField(editableFields, 'cluster')
   const isProductionDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !canViewProductionProjects ||
     !isNull(
       getClusterDetails(clusters, projIdentifiers.cluster, 'production'),
