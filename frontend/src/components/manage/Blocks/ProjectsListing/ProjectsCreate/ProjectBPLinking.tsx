@@ -3,7 +3,12 @@ import { ChangeEvent } from 'react'
 import LinkedBPTableWrapper from './LinkedBPTable'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
-import { ProjectDataProps, ProjectTabSetters, BpDataProps } from '../interfaces'
+import {
+  ProjectDataProps,
+  ProjectTabSetters,
+  BpDataProps,
+  ProjectTypeApi,
+} from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 import cx from 'classnames'
@@ -17,6 +22,7 @@ const ProjectBPLinking = ({
   bpData,
   onBpDataChange,
   bpErrors,
+  project,
 }: ProjectDataProps &
   ProjectTabSetters & {
     isSectionDisabled: boolean
@@ -24,6 +30,7 @@ const ProjectBPLinking = ({
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
     bpErrors: { [key: string]: string[] }
+    project?: ProjectTypeApi
   }) => {
   const { country, agency, cluster } = projectData.projIdentifiers
   const { isLinkedToBP } = projectData.bpLinking
@@ -77,7 +84,13 @@ const ProjectBPLinking = ({
         />
         {country && agency && cluster && (
           <LinkedBPTableWrapper
-            {...{ projectData, setProjectData, bpData, onBpDataChange }}
+            {...{
+              projectData,
+              setProjectData,
+              bpData,
+              onBpDataChange,
+              project,
+            }}
           />
         )}
       </div>

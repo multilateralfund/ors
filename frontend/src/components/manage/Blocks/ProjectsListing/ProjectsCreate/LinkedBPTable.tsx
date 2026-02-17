@@ -10,6 +10,7 @@ import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/us
 import {
   ProjectDataProps,
   BpDataProps,
+  ProjectTypeApi,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { ApiBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
@@ -22,14 +23,22 @@ const LinkedBPTableWrapper = (
   props: ProjectDataProps & {
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
+    project?: ProjectTypeApi
   },
 ) => {
+  const { project } = props
+
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
+  const crtBpYearStart = project?.bp_activity?.business_plan?.year_start
+
   const latestEndorsedBpPeriod = find(
     periodOptions,
-    ({ status = [] }) => status.length > 0 && status.includes('Endorsed'),
+    ({ year_start, status = [] }) =>
+      crtBpYearStart
+        ? crtBpYearStart === year_start
+        : status.length > 0 && status.includes('Endorsed'),
   )
 
   if (yearRanges && yearRanges.length > 0 && !latestEndorsedBpPeriod) {
