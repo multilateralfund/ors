@@ -586,9 +586,7 @@ const ProjectsEdit = ({
           id={projectId}
           href={`/projects-listing/${projectId}`}
           successMessage={
-            isEditMode
-              ? 'Updated project successfully.'
-              : 'Submission was successful.'
+            (isEditMode ? 'Updated' : 'Created') + ' project successfully.'
           }
           successRedirectMessage="View project."
           {...{ nonFieldsErrors, otherErrors }}
