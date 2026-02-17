@@ -493,6 +493,16 @@ const EditActionButtons = ({
     }
   }
 
+  const onEditProject = async () => {
+    const updatedSuccessfully = await editProject()
+
+    if (updatedSuccessfully) {
+      enqueueSnackbar(<>Updated project successfully.</>, {
+        variant: 'success',
+      })
+    }
+  }
+
   const onSubmitProject = () => {
     if (showSubmitTranchesWarningModal) {
       setIsTrancheWarningOpen(true)
@@ -558,6 +568,10 @@ const EditActionButtons = ({
           method: 'POST',
         })
         setLocation(`/projects-listing/${id}`)
+
+        enqueueSnackbar(<>Project withdrawn successfully.</>, {
+          variant: 'success',
+        })
       } catch (error) {
         enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
           variant: 'error',
@@ -626,9 +640,7 @@ const EditActionButtons = ({
           })}
           size="large"
           variant="contained"
-          onClick={() => {
-            editProject()
-          }}
+          onClick={onEditProject}
           disabled={disableUpdate}
         >
           Update project
