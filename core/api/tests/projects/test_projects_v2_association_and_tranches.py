@@ -50,7 +50,14 @@ class TestProjectListPreviousTranches:
         def _test_user_permissions(user, expected_response_status):
             self.client.force_authenticate(user=user)
             response = self.client.get(
-                reverse("project-v2-list-previous-tranches", args=(project.id,))
+                reverse(
+                    "project-v2-list-previous-tranches",
+                    args=(
+                        project.country.id,
+                        project.cluster.id,
+                        project.tranche,
+                    ),
+                )
             )
             assert response.status_code == expected_response_status
             return response.data
@@ -58,7 +65,14 @@ class TestProjectListPreviousTranches:
         # test with unauthenticated user
         self.client.force_authenticate(user=None)
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         viewer_user.agency = agency_user.agency
         viewer_user.save()
@@ -87,17 +101,31 @@ class TestProjectListPreviousTranches:
         self._prepare_projects(project, project2, project_approved_status)
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 1
         assert response.data[0]["id"] == project2.id
         assert response.data[0]["tranche"] == 1
 
-        # test with tranche query parameter
+        # test without project_id
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
-            {"tranche": 2},
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
+            {"project_id": project.id},
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 1
@@ -108,7 +136,14 @@ class TestProjectListPreviousTranches:
         project2.country = new_country
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
@@ -118,7 +153,14 @@ class TestProjectListPreviousTranches:
         project2.country = project.country
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
@@ -128,7 +170,14 @@ class TestProjectListPreviousTranches:
         project2.tranche = 1
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
@@ -186,7 +235,14 @@ class TestProjectListPreviousTranches:
         project_specific_fields.fields.add(field1, field2, field3)
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
             {"include_validation": "true"},
         )
         assert response.status_code == 200, response.data
@@ -210,7 +266,14 @@ class TestProjectListPreviousTranches:
         project2.save()
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
             {"include_validation": "true"},
         )
         assert response.status_code == 200, response.data

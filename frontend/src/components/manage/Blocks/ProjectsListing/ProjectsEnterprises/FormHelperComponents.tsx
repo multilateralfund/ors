@@ -1,23 +1,21 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { DateInput, FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
-import { EnterprisesCommonProps } from '../interfaces'
+import { FieldErrorIndicator } from '../HelperComponents'
+import { EnterprisesCommonProps, SetEnterpriseData } from '../interfaces'
 import { enterpriseFieldsMapping } from './constants'
+import { onTextareaFocus } from '../utils'
 import {
   getFieldDefaultProps,
-  getIsInputInvalid,
   handleChangeIntegerValues,
   handleChangeDecimalValues,
   handleChangeSelectValues,
   handleChangeTextValues,
   handleChangeDateValues,
 } from '../ProjectsEnterprises/utils'
-import { onTextareaFocus } from '../utils'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -31,7 +29,7 @@ import dayjs from 'dayjs'
 
 type PEnterpriseFieldsProps<T, K> = EnterprisesCommonProps & {
   enterpriseData: K
-  setEnterpriseData: Dispatch<SetStateAction<T>>
+  setEnterpriseData: SetEnterpriseData<T>
   field: string
   sectionIdentifier?: keyof T
   isDisabled: boolean
@@ -43,31 +41,33 @@ export const EnterpriseTextField = <T, K>({
   field,
   sectionIdentifier,
   isDisabled,
-  hasSubmitted,
   errors,
 }: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
-    <SimpleInput
-      id={field}
-      disabled={isDisabled}
-      value={enterpriseData[field as keyof K]}
-      onFocus={onTextareaFocus}
-      onChange={(event) =>
-        handleChangeTextValues<T>(
-          field,
-          setEnterpriseData,
-          event,
-          sectionIdentifier,
-        )
-      }
-      type="text"
-      {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
-      containerClassName={cx(
-        defaultPropsSimpleField.containerClassName,
-        field !== 'stage' && ' w-full max-w-[41rem]',
-      )}
-    />
+    <div className="flex items-center">
+      <SimpleInput
+        id={field}
+        disabled={isDisabled}
+        value={enterpriseData[field as keyof K]}
+        onFocus={onTextareaFocus}
+        onChange={(event) =>
+          handleChangeTextValues<T>(
+            field,
+            setEnterpriseData,
+            event,
+            sectionIdentifier,
+          )
+        }
+        type="text"
+        {...getFieldDefaultProps(isDisabled)}
+        containerClassName={cx(
+          defaultPropsSimpleField.containerClassName,
+          field !== 'stage' && ' w-full max-w-[41rem]',
+        )}
+      />
+      <FieldErrorIndicator {...{ field, errors }} />
+    </div>
   </div>
 )
 
@@ -79,7 +79,6 @@ export const EnterpriseNumberField = <T, K>({
   prefix,
   sectionIdentifier,
   isDisabled,
-  hasSubmitted,
   errors,
 }: PEnterpriseFieldsProps<T, K> & { dataType: string; prefix?: string }) => {
   const isInteger = dataType === 'integer'
@@ -87,30 +86,33 @@ export const EnterpriseNumberField = <T, K>({
   return (
     <div>
       <Label>{enterpriseFieldsMapping[field]}</Label>
-      <FormattedNumberInput
-        id={field}
-        disabled={isDisabled}
-        withoutDefaultValue={true}
-        decimalDigits={isInteger ? 0 : 2}
-        prefix={prefix}
-        value={(enterpriseData[field as keyof K] as string) ?? ''}
-        onChange={(event) =>
-          isInteger
-            ? handleChangeIntegerValues<T>(
-                field,
-                setEnterpriseData,
-                event,
-                sectionIdentifier,
-              )
-            : handleChangeDecimalValues<T>(
-                field,
-                setEnterpriseData,
-                event,
-                sectionIdentifier,
-              )
-        }
-        {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
-      />
+      <div className="flex items-center">
+        <FormattedNumberInput
+          id={field}
+          disabled={isDisabled}
+          withoutDefaultValue={true}
+          decimalDigits={isInteger ? 0 : 2}
+          prefix={prefix}
+          value={(enterpriseData[field as keyof K] as string) ?? ''}
+          onChange={(event) =>
+            isInteger
+              ? handleChangeIntegerValues<T>(
+                  field,
+                  setEnterpriseData,
+                  event,
+                  sectionIdentifier,
+                )
+              : handleChangeDecimalValues<T>(
+                  field,
+                  setEnterpriseData,
+                  event,
+                  sectionIdentifier,
+                )
+          }
+          {...getFieldDefaultProps(isDisabled)}
+        />
+        <FieldErrorIndicator {...{ field, errors }} />
+      </div>
     </div>
   )
 }
@@ -121,11 +123,10 @@ export const EnterpriseSelectField = <T, K>({
   field,
   sectionIdentifier,
   isDisabled,
-  hasSubmitted,
   errors,
 }: EnterprisesCommonProps & {
   enterpriseData: K
-  setEnterpriseData: Dispatch<SetStateAction<T>>
+  setEnterpriseData: SetEnterpriseData<T>
   field: { fieldName: string; options: any }
   sectionIdentifier?: keyof T
   isDisabled: boolean
@@ -135,29 +136,29 @@ export const EnterpriseSelectField = <T, K>({
   return (
     <div>
       <Label>{enterpriseFieldsMapping[fieldName]}</Label>
-      <Field
-        widget="autocomplete"
-        disabled={isDisabled}
-        options={options}
-        value={enterpriseData[fieldName as keyof K]}
-        onChange={(_, value) =>
-          handleChangeSelectValues<T>(
-            fieldName,
-            setEnterpriseData,
-            value,
-            sectionIdentifier,
-          )
-        }
-        getOptionLabel={(option) => getOptionLabel(options, option)}
-        Input={{
-          error: getIsInputInvalid(hasSubmitted, errors[fieldName]),
-        }}
-        {...defaultProps}
-        FieldProps={{
-          ...defaultProps.FieldProps,
-          className: defaultProps.FieldProps.className + ' w-[18rem]',
-        }}
-      />
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          disabled={isDisabled}
+          options={options}
+          value={enterpriseData[fieldName as keyof K]}
+          onChange={(_, value) =>
+            handleChangeSelectValues<T>(
+              fieldName,
+              setEnterpriseData,
+              value,
+              sectionIdentifier,
+            )
+          }
+          getOptionLabel={(option) => getOptionLabel(options, option)}
+          {...defaultProps}
+          FieldProps={{
+            ...defaultProps.FieldProps,
+            className: defaultProps.FieldProps.className + ' w-[18rem]',
+          }}
+        />
+        <FieldErrorIndicator field={fieldName} {...{ errors }} />
+      </div>
     </div>
   )
 }
@@ -168,30 +169,30 @@ export const EnterpriseTextAreaField = <T, K>({
   field,
   sectionIdentifier,
   isDisabled,
-  hasSubmitted,
   errors,
 }: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]} (max 500 characters)</Label>
-    <TextareaAutosize
-      disabled={isDisabled}
-      value={enterpriseData[field as keyof K] as string}
-      onFocus={onTextareaFocus}
-      onChange={(event) =>
-        handleChangeTextValues<T>(
-          field,
-          setEnterpriseData,
-          event,
-          sectionIdentifier,
-        )
-      }
-      className={cx(textAreaClassname + ' max-w-[45rem]', {
-        'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
-      })}
-      maxLength={500}
-      style={STYLE}
-      minRows={5}
-    />
+    <div className="flex items-center">
+      <TextareaAutosize
+        disabled={isDisabled}
+        value={enterpriseData[field as keyof K] as string}
+        onFocus={onTextareaFocus}
+        onChange={(event) =>
+          handleChangeTextValues<T>(
+            field,
+            setEnterpriseData,
+            event,
+            sectionIdentifier,
+          )
+        }
+        className={cx(textAreaClassname, 'max-w-[45rem]')}
+        maxLength={500}
+        style={STYLE}
+        minRows={5}
+      />
+      <FieldErrorIndicator {...{ field, errors }} />
+    </div>
   </div>
 )
 
@@ -201,26 +202,28 @@ export const EnterpriseDateField = <T, K>({
   field,
   sectionIdentifier,
   isDisabled,
-  hasSubmitted,
   errors,
 }: PEnterpriseFieldsProps<T, K>) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
-    <DateInput
-      id={field}
-      value={enterpriseData[field as keyof K] as string}
-      disabled={isDisabled}
-      formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-      onChange={(event) =>
-        handleChangeDateValues<T>(
-          field,
-          setEnterpriseData,
-          event,
-          sectionIdentifier,
-        )
-      }
-      {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
-    />
+    <div className="flex items-center">
+      <DateInput
+        id={field}
+        value={enterpriseData[field as keyof K] as string}
+        disabled={isDisabled}
+        formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+        onChange={(event) =>
+          handleChangeDateValues<T>(
+            field,
+            setEnterpriseData,
+            event,
+            sectionIdentifier,
+          )
+        }
+        {...getFieldDefaultProps(isDisabled)}
+      />
+      <FieldErrorIndicator {...{ field, errors }} />
+    </div>
   </div>
 )
 

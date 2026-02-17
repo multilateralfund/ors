@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
+import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
+import { RedirectBackButton } from '../HelperComponents'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { useGetProjects } from '../hooks/useGetProjects'
@@ -13,10 +16,12 @@ import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 import { useStore } from '@ors/store'
 
+import { useLocation, useParams } from 'wouter'
 import { debounce, find, map } from 'lodash'
-import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
+  const [_, setLocation] = useLocation()
+
   const { project_id } = useParams<Record<string, string>>()
 
   const initialProjectsAssociation = useRef<ReturnType<
@@ -33,9 +38,12 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     ...initialFilters,
     status_id: [onGoingStatus],
   })
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [redirectOnCancel, setRedirectOnCancel] = useState(false)
 
   const updatedFilters = {
     ...filters,
+    limit: 50,
     submission_status_id: project.submission_status_id,
     country_id: project.country_id,
     status_id: onGoingStatus?.id,
@@ -132,12 +140,35 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     projectFilters.setParams(currentParams)
   }
 
+  const onCancelAssociation = () => {
+    if (associationIds.length > 0) {
+      if (mode === 'selection') {
+        setRedirectOnCancel(true)
+      }
+      setIsCancelModalOpen(true)
+    } else {
+      cancelAssociation()
+    }
+  }
+
+  useVisibilityChange(associationIds.length > 0)
+
+  const onCancel = () => {
+    if (associationIds.length > 0) {
+      setRedirectOnCancel(true)
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={loading || !loadedAssociatedProjects}
       />
+      <RedirectBackButton withRedirect={false} onAction={onCancel} />
       <div className="flex flex-col gap-6">
         {mode === 'selection' ? (
           <ProjectsAssociateSelection
@@ -160,13 +191,21 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
               >
             }
             crtProjects={crtProjectsConfirmation}
+            cancelAssociation={onCancelAssociation}
             {...{
               associationIds,
-              cancelAssociation,
             }}
           />
         )}
       </div>
+      {isCancelModalOpen && (
+        <CancelWarningModal
+          mode="project association"
+          isModalOpen={isCancelModalOpen}
+          setIsModalOpen={setIsCancelModalOpen}
+          onContinueAction={redirectOnCancel ? undefined : cancelAssociation}
+        />
+      )}
     </>
   )
 }

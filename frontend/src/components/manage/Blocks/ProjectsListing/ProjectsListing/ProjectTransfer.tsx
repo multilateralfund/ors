@@ -1,10 +1,4 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useMemo,
-} from 'react'
+import { ChangeEvent, useContext, useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -27,6 +21,7 @@ import {
   FileMetaDataProps,
   ProjectTransferData,
   ProjectTypeApi,
+  SetProjectTranferData,
 } from '../interfaces'
 import {
   defaultProps,
@@ -41,7 +36,7 @@ import useApi from '@ors/hooks/useApi'
 
 import { Divider, TextareaAutosize } from '@mui/material'
 import { BsFilesAlt } from 'react-icons/bs'
-import { filter, map } from 'lodash'
+import { filter, map, omit } from 'lodash'
 import cx from 'classnames'
 
 const ProjectTransfer = ({
@@ -53,7 +48,7 @@ const ProjectTransfer = ({
   ...rest
 }: FileMetaDataProps & {
   projectData: ProjectTransferData
-  setProjectData: Dispatch<SetStateAction<ProjectTransferData>>
+  setProjectData: SetProjectTranferData
   project: ProjectTypeApi
   files: BpFilesObject
   setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
@@ -87,25 +82,31 @@ const ProjectTransfer = ({
     FieldProps: {
       className:
         defaultProps.FieldProps.className +
-        (field === 'agency' ? ' max-w-40 w-40' : ' w-[16rem]'),
+        (field === 'agency' ? ' max-w-40 w-40' : ' w-full'),
     },
   })
 
   const handleChangeAgency = (value: ApiAgency | null) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      agency: value?.id ?? null,
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        agency: value?.id ?? null,
+      }),
+      'agency',
+    )
   }
 
   const handleChangeMeeting = (meeting?: string) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      transfer_meeting: parseNumber(meeting),
-      ...(parseNumber(meeting) !== projectData.transfer_meeting
-        ? { transfer_decision: null }
-        : {}),
-    }))
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        transfer_meeting: parseNumber(meeting),
+        ...(parseNumber(meeting) !== projectData.transfer_meeting
+          ? { transfer_decision: null }
+          : {}),
+      }),
+      'meeting',
+    )
     decisionsApi.setParams({ meeting_id: meeting })
     decisionsApi.setApiSettings((prev) => ({
       ...prev,
@@ -120,18 +121,24 @@ const ProjectTransfer = ({
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
       const finalVal = initialValue ? parseInt(initialValue) : null
 
-      setProjectData((prevData) => ({
-        ...prevData,
-        transfer_decision: finalVal,
-      }))
+      setProjectData(
+        (prevData) => ({
+          ...prevData,
+          transfer_decision: finalVal,
+        }),
+        'decision',
+      )
     }
   }
 
   const handleChangeExcomProvision = (excom_provision: string) =>
-    setProjectData((prev) => ({
-      ...prev,
-      transfer_excom_provision: excom_provision,
-    }))
+    setProjectData(
+      (prev) => ({
+        ...prev,
+        transfer_excom_provision: excom_provision,
+      }),
+      'excom_provision',
+    )
 
   const handleChangeNumericValues = (
     event: ChangeEvent<HTMLInputElement>,
@@ -141,7 +148,7 @@ const ProjectTransfer = ({
     const value = initialValue === '' ? null : initialValue
 
     if (!isNaN(Number(value))) {
-      setProjectData((prevData) => ({ ...prevData, [field]: value }))
+      setProjectData((prevData) => ({ ...prevData, [field]: value }), field)
     } else {
       event.preventDefault()
     }
@@ -149,7 +156,7 @@ const ProjectTransfer = ({
 
   const numberFieldDefaultProps = {
     ...{
-      ...defaultPropsSimpleField,
+      ...omit(defaultPropsSimpleField, 'containerClassName'),
       className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1'),
     },
   }
@@ -200,22 +207,29 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div>
+          <div className="flex-shrink basis-[16rem]">
             <Label htmlFor="decision">{tableColumns.transfer_decision}</Label>
             <div className="flex items-center">
-              <Field
-                widget="autocomplete"
-                options={decisionOptions}
-                value={projectData.transfer_decision ?? null}
-                onChange={(_, value) =>
-                  handleChangeDecision(value as DecisionOption)
-                }
-                getOptionLabel={(option) =>
-                  getOptionLabel(decisionOptions, option, 'value')
-                }
-                {...fieldDefaultProps('decision')}
-              />
-              <FieldErrorIndicator errors={errors} field="transfer_decision" />
+              <div className="w-full">
+                <Field
+                  widget="autocomplete"
+                  options={decisionOptions}
+                  value={projectData.transfer_decision ?? null}
+                  onChange={(_, value) =>
+                    handleChangeDecision(value as DecisionOption)
+                  }
+                  getOptionLabel={(option) =>
+                    getOptionLabel(decisionOptions, option, 'value')
+                  }
+                  {...fieldDefaultProps('decision')}
+                />
+              </div>
+              <div className="w-8">
+                <FieldErrorIndicator
+                  errors={errors}
+                  field="transfer_decision"
+                />
+              </div>
             </div>
           </div>
         </div>

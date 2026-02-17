@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -32,7 +30,6 @@ const PEnterpriseEditWrapper = () => {
   if (
     !canViewProjects ||
     !canViewEnterprises ||
-    !canEditProjectEnterprise ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))

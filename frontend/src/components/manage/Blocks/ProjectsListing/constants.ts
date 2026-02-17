@@ -32,6 +32,7 @@ export const tableColumns: { [key: string]: string } = {
   blanket_or_individual_consideration:
     'Blanket approval/Individual consideration',
   meeting: 'Meeting number',
+  post_excom_meeting: 'Post ExCom meeting',
   description: 'Description',
   bp_activity: 'BP activity',
   project_type: 'Project type',
@@ -66,7 +67,8 @@ export const textAreaClassname =
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-full min-w-64',
+      className:
+        defaultProps.FieldProps.className + ' w-full min-w-56 md:min-w-64',
     },
   },
   ods_type: {
@@ -215,4 +217,12 @@ export const menusDefaultProjectData = {
   projectMetaprojectId: null,
   projectCode: '',
   projectEditable: false,
+}
+
+export const defaultTrancheErrors = {
+  errorText: '',
+  isError: false,
+  tranchesData: [],
+  loaded: false,
+  loading: false,
 }

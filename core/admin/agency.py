@@ -13,6 +13,7 @@ class AgencyAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "annual_project_reports",
+            "project_enterprises",
             "bpactivity",
             "bpfile",
             "coop_projects",

@@ -65,6 +65,7 @@ from core.api.views.cp_archive import (
     CPReportVersionsListView,
 )
 from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
+from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
 from core.api.views.projects_metadata import (
     ProjectClusterTypeSectorAssociationView,
     ProjectFieldView,
@@ -152,7 +153,7 @@ from core.api.views.annual_project_report import (
     APRFilesDownloadAllView,
     APRStatusView,
     APRExportView,
-    APRSummaryTablesView,
+    APRSummaryTablesExportView,
     APRGlobalViewSet,
     APRToggleLockView,
     APREndorseView,
@@ -176,6 +177,11 @@ router.register(
     "blanket-approval-details",
     BlanketApprovalDetailsViewset,
     basename="blanket-approval-details",
+)
+router.register(
+    "compare-versions",
+    ProjectsCompareVersionsViewset,
+    basename="compare-versions",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register(
@@ -736,6 +742,11 @@ urlpatterns = [
         name="apr-export",
     ),
     path(
+        "annual-project-report/summary-tables/export/",
+        APRSummaryTablesExportView.as_view(),
+        name="apr-summary-tables-export",
+    ),
+    path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
         APRBulkUpdateView.as_view(),
         name="apr-update",
@@ -769,11 +780,6 @@ urlpatterns = [
         "annual-project-report/<int:year>/agency/<int:agency_id>/status/",
         APRStatusView.as_view(),
         name="apr-status",
-    ),
-    path(
-        "annual-project-report/<int:year>/summary/",
-        APRSummaryTablesView.as_view(),
-        name="apr-summary",
     ),
     path(
         "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",

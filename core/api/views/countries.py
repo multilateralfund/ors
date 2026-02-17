@@ -31,7 +31,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
         )
 
         if values_exclusive_for == "projects":
-            queryset = queryset.filter(
+            queryset = Country.objects.filter(
                 modules__code="Projects",
             )
         elif values_exclusive_for == "business_plan":

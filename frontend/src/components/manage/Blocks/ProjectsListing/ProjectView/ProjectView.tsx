@@ -11,8 +11,10 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import {
   filterApprovalFields,
   getIsUpdatablePostExcom,
@@ -111,6 +113,7 @@ const ProjectView = ({
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
 
   const {
     fetchProjectFields,
@@ -122,6 +125,11 @@ const ProjectView = ({
   const { fieldHistory, fetchFieldHistory } = useStore(
     (state) => state.projectFieldHistory,
   )
+
+  const canDeleteProject =
+    project.submission_status === 'Draft' &&
+    project.version === 1 &&
+    project.editable
 
   useEffect(() => {
     fetchFieldHistory(project.id)
@@ -156,7 +164,19 @@ const ProjectView = ({
       ) ?? [])
     : []
 
-  const relatedProjects = useGetRelatedProjects(project, 'view', metaProjectId)
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    'view',
+    metaProjectId,
+    refetchRelatedProjects,
+  )
+
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    project.meta_project_id,
+  )
+
+  const hasComponents =
+    project.component && project.component.original_project_id === project.id
 
   const tabs = [
     {
@@ -262,6 +282,8 @@ const ProjectView = ({
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
+                  setRefetchRelatedProjects,
+                  metaprojectData,
                 }}
               />
             ),
@@ -281,7 +303,11 @@ const ProjectView = ({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div
+        className={cx('flex items-center justify-between', {
+          'flex-col-reverse sm:flex-row': canDeleteProject,
+        })}
+      >
         <Tabs
           aria-label="view-project"
           value={activeTab}
@@ -310,9 +336,12 @@ const ProjectView = ({
             />
           ))}
         </Tabs>
-        <div>
-          <div className="flex items-center justify-between gap-x-2">
+        <div className={cx({ 'mb-1 ml-auto sm:mb-0': canDeleteProject })}>
+          <div className="flex items-center justify-between gap-x-4">
             <ProjectDownloads project={project} />
+            {canDeleteProject && (
+              <ProjectDelete {...{ project, hasComponents }} />
+            )}
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ from core.models.base import Module
 
 
 @admin.register(Module)
-class AgencyAdmin(admin.ModelAdmin):
+class ModuleAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]

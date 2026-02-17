@@ -14,7 +14,6 @@ import { map } from 'lodash'
 const PEnterpriseRemarksSection = ({
   enterpriseData,
   setEnterpriseData,
-  hasSubmitted,
   errors,
 }: PEnterpriseDataProps) => {
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
@@ -23,7 +22,7 @@ const PEnterpriseRemarksSection = ({
   const sectionIdentifier = 'remarks'
 
   return (
-    <div className="flex max-w-[41rem] flex-col gap-y-4">
+    <div className="flex max-w-[41rem] flex-col gap-y-2">
       {map(remarksFields, (field) => (
         <EnterpriseTextAreaField<PEnterpriseData, EnterpriseRemarks>
           enterpriseData={enterpriseData.remarks}
@@ -32,7 +31,6 @@ const PEnterpriseRemarksSection = ({
             sectionIdentifier,
             field,
             isDisabled,
-            hasSubmitted,
             errors,
           }}
         />

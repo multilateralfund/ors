@@ -139,7 +139,7 @@ const CreateActionButtons = ({
       )}
       {isCancelModalOpen && (
         <CancelWarningModal
-          mode="creation"
+          mode="project creation"
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
         />

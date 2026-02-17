@@ -54,11 +54,11 @@ def get_choice_value(choices, project, header):
     return ""
 
 
-def get_value_fk(_f, project, header):
+def get_value_fk(_f, project, header, attr_name="name"):
     value = get_field_value(project, header)
     if value:
         try:
-            return value.name
+            return getattr(value, attr_name)
         except AttributeError:
             return str(value)
     return ""
@@ -106,6 +106,10 @@ class ProjectsV2DumpWriter:
             elif isinstance(f, ForeignKey):
                 if f.name == "component":
                     yield self._field_header(f, get_value_component_field)
+                elif f.name == "bp_activity":
+                    yield self._field_header(
+                        f, partial(get_value_fk, f, attr_name="get_display_internal_id")
+                    )
                 else:
                     yield self._field_header(f, partial(get_value_fk, f))
             elif isinstance(f, ManyToManyField):
@@ -151,8 +155,7 @@ class ProjectsV2Dump:
         )
 
     @lru_cache
-    @staticmethod
-    def get_valid_fields():
+    def get_valid_fields(self):
         non_reverse = (
             f for f in Project._meta.get_fields() if not isinstance(f, ForeignObjectRel)
         )

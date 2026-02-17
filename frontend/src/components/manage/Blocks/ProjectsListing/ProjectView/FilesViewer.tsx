@@ -138,7 +138,7 @@ export function FilesViewer(props: ProjectDocs) {
         )}
         {mode === 'edit' && (
           <>
-            <div className="mt-5 flex gap-4">
+            <div className="mt-5 flex flex-wrap gap-4">
               {['Draft', 'Submitted', 'Recommended'].includes(
                 project?.submission_status ?? '',
               ) && (
@@ -152,7 +152,7 @@ export function FilesViewer(props: ProjectDocs) {
                       setExportConfirmModalType('word-export')
                     }}
                   >
-                    Download project template
+                    Download project summary
                   </a>
                   <a
                     className={cx(
@@ -206,7 +206,7 @@ export function FilesViewer(props: ProjectDocs) {
                   <div
                     key={index}
                     className={cx('flex flex-wrap items-end gap-2', {
-                      'gap-4': mode !== 'view',
+                      'gap-x-4': mode !== 'view',
                     })}
                   >
                     <a
@@ -228,7 +228,7 @@ export function FilesViewer(props: ProjectDocs) {
                       </span>
                     </a>
                     {filesMetaData ? (
-                      <div className="w-[290px]">
+                      <div className="flex-shrink basis-[290px]">
                         <Label className="!mb-0.5 !text-[15px]">Type</Label>
                         <div className="flex items-center">
                           <Field

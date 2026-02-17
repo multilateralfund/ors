@@ -26,15 +26,15 @@ import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
 
-const EditLink = (props: any) => {
+export const EditLink = (props: any) => {
   const { children, className, ...rest } = props
   return (
     <CustomLink
       className={cx('mt-auto h-10 text-nowrap text-lg uppercase', className)}
       color="secondary"
       variant="contained"
-      {...rest}
       button
+      {...rest}
     >
       {children}
     </CustomLink>
@@ -66,7 +66,8 @@ const ProjectViewButtons = ({
     status: project_status,
     latest_project,
     editable,
-    editable_for_actual_fields,
+    country_id,
+    cluster_id,
     tranche = 0,
   } = data
 
@@ -87,8 +88,9 @@ const ProjectViewButtons = ({
   const getTrancheWarnings = async () => {
     try {
       const result = await api(
-        `api/projects/v2/${id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
+        `api/projects/v2/list_previous_tranches/country/${country_id}/cluster/${cluster_id}/tranche/${tranche}`,
         {
+          params: { project_id: id, include_validation: true },
           withStoreCache: false,
         },
         false,
@@ -107,9 +109,8 @@ const ProjectViewButtons = ({
             return crtField && crtField.data_type !== 'boolean'
           }),
         )
-        return tranches?.find(
-          (tranche: RelatedProjectsType) => tranche?.warnings?.length > 0,
-        )
+
+        return tranches?.find((tranche: []) => tranche?.length > 0)
       }
     } catch (error) {
       enqueueSnackbar(
@@ -239,7 +240,7 @@ const ProjectViewButtons = ({
   return (
     isNull(latest_project) && (
       <div className="ml-auto flex flex-wrap justify-end gap-3">
-        {(editable || editable_for_actual_fields) && (
+        {editable && (
           <>
             {canEditProjects && (
               <EditLink href={`/projects-listing/${id}/edit`}>Edit</EditLink>

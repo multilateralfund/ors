@@ -1,5 +1,5 @@
-import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { ProjectType } from '@ors/types/api_projects'
 
 export type ListingProjectData = {
@@ -271,8 +271,18 @@ export interface ProjectTransferData {
   psc_transferred: string | null
 }
 
+export type SetEnterpriseData<T> = (
+  updater: SetStateAction<T>,
+  fieldName?: string,
+) => void
+
 export type SetProjectData = (
   updater: SetStateAction<ProjectData>,
+  fieldName?: string,
+) => void
+
+export type SetProjectTranferData = (
+  updater: SetStateAction<ProjectTransferData>,
   fieldName?: string,
 ) => void
 
@@ -285,6 +295,8 @@ export interface ProjectDataProps {
 export interface ProjectHeader {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
+  trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => Promise<boolean | undefined>
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
   setErrors: (value: { [key: string]: [] }) => void
@@ -328,7 +340,7 @@ export type TrancheErrorType = {
 
 export type TrancheErrors = {
   trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
+  getTrancheErrors?: () => Promise<boolean | undefined>
 }
 
 export type RelatedProjectsType = ProjectTypeApi & {
@@ -361,7 +373,7 @@ export type PEnterpriseType = EnterpriseDetails &
   }
 
 export interface PEnterpriseData {
-  overview: EnterpriseOverview
+  overview: EnterpriseOverview & { id: number | null; status?: string }
   details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields
@@ -371,24 +383,24 @@ export interface PEnterpriseData {
 
 export type PEnterpriseDataType = {
   enterpriseData: PEnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>
+  setEnterpriseData: SetEnterpriseData<PEnterpriseData>
   enterprise?: PEnterpriseType
 }
 
 export type EnterpriseDataType = {
   enterpriseData: EnterpriseOverview
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+  setEnterpriseData: SetEnterpriseData<EnterpriseOverview>
   enterprise?: EnterpriseType
 }
 
 export type EnterprisesCommonProps = {
-  hasSubmitted: boolean
   errors: { [key: string]: string[] }
 }
 
 export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
 
-export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
+export type EnterpriseDataProps = EnterpriseDataType &
+  EnterprisesCommonProps & { mode: string }
 
 export interface EnterpriseOverview {
   name: string
@@ -456,7 +468,6 @@ export interface EnterpriseRemarks {
 }
 export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
-  setHasSubmitted: (value: boolean) => void
   setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }

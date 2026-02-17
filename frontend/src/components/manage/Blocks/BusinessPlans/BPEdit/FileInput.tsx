@@ -33,7 +33,7 @@ const FileInput = (props: BpFileInput) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      if (!!mode && mode !== 'transfer') {
+      if (!!mode) {
         addUpdatedField('files')
       }
 
@@ -73,7 +73,10 @@ const FileInput = (props: BpFileInput) => {
     <div className="flex flex-col">
       {label && <p className="mb-2.5 mt-0 text-xl">{label}</p>}
       <TextField
-        className={cx({ 'md:w-[612px]': label })}
+        className={cx({
+          'md:w-[612px]': label && mode !== 'transfer',
+          'xl:w-[612px]': mode === 'transfer',
+        })}
         type="text"
         value={
           value ??

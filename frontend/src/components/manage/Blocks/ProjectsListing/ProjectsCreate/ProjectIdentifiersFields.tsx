@@ -78,7 +78,7 @@ const ProjectIdentifiersFields = ({
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
     (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
-    (isV3Project && hasNoLeadAgency)
+    (isV3ProjectEditable && !postExComUpdate && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -93,14 +93,18 @@ const ProjectIdentifiersFields = ({
   const isMeetingDisabled = !(canEditMeeting && areNextSectionsDisabled)
 
   const isAgencyDisabled =
-    (isV3Project && !!project?.agency_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.agency_id) ||
     !canEditField(editableFields, 'agency')
+
   const isClusterDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !specificFieldsLoaded ||
     !canEditField(editableFields, 'cluster')
   const isProductionDisabled =
-    (isV3Project && !!project?.cluster_id) ||
+    postExComUpdate ||
+    (isV3ProjectEditable && !!project?.cluster_id) ||
     !canViewProductionProjects ||
     !isNull(
       getClusterDetails(clusters, projIdentifiers.cluster, 'production'),
@@ -143,7 +147,7 @@ const ProjectIdentifiersFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[16rem]',
+      className: defaultProps.FieldProps.className + ' flex-grow max-w-[16rem]',
     },
   }
 
@@ -307,57 +311,59 @@ const ProjectIdentifiersFields = ({
           <SectionTitle>
             Update Project fields following Executive Committee
           </SectionTitle>
-          <div className="flex flex-col gap-y-2">
-            <div className="flex flex-wrap gap-x-20 gap-y-3">
-              <div className="w-32">
-                <Label>Meeting</Label>
-                <PopoverInput
-                  label={getMeetingNr(
-                    projIdentifiers?.post_excom_meeting ?? undefined,
-                  )?.toString()}
-                  options={useMeetingOptions()}
-                  onChange={handleChangePostExComMeeting}
-                  onClear={() => handleChangePostExComMeeting()}
-                  clearBtnClassName="right-1"
-                  withClear={true}
-                  className="!m-0 h-10 !py-1"
-                />
-              </div>
-              <div className="w-[16rem]">
-                <Label htmlFor="postExComDecision">Decision</Label>
-                <Field<any>
-                  widget="autocomplete"
-                  options={decisionOptions}
-                  value={projIdentifiers?.post_excom_decision ?? null}
-                  onChange={(_, value) =>
-                    handleChangePostExComDecision(value as DecisionOption)
-                  }
-                  getOptionLabel={(option) => {
-                    return getOptionLabel(decisionOptions, option, 'value')
-                  }}
-                  {...sectionDefaultProps}
-                />
-              </div>
-              {!(
-                projIdentifiers?.post_excom_meeting &&
-                projIdentifiers?.post_excom_decision
-              ) && (
-                <div className="flex items-end">
-                  <div className="flex h-10 items-center">
-                    <CustomAlert
-                      type="error"
-                      content={
-                        <>
-                          <Typography className="text-lg">
-                            These fields are mandatory.
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </div>
+          <div className="flex flex-wrap gap-x-20 gap-y-3">
+            <div>
+              <Label>Meeting</Label>
+              <div className="flex items-center">
+                <div className="w-32">
+                  <PopoverInput
+                    label={getMeetingNr(
+                      projIdentifiers?.post_excom_meeting ?? undefined,
+                    )?.toString()}
+                    options={useMeetingOptions()}
+                    onChange={handleChangePostExComMeeting}
+                    onClear={() => handleChangePostExComMeeting()}
+                    clearBtnClassName="right-1"
+                    withClear={true}
+                    className="!m-0 h-10 !py-1"
+                  />
                 </div>
-              )}
+                <FieldErrorIndicator
+                  errors={errors}
+                  field="post_excom_meeting"
+                />
+              </div>
             </div>
+            <div>
+              <Label htmlFor="postExComDecision">Decision</Label>
+              <Field
+                widget="autocomplete"
+                options={decisionOptions}
+                value={projIdentifiers?.post_excom_decision ?? null}
+                onChange={(_, value) =>
+                  handleChangePostExComDecision(value as DecisionOption)
+                }
+                getOptionLabel={(option) => {
+                  return getOptionLabel(decisionOptions, option, 'value')
+                }}
+                {...sectionDefaultProps}
+              />
+            </div>
+            {!(
+              projIdentifiers?.post_excom_meeting &&
+              projIdentifiers?.post_excom_decision
+            ) && (
+              <div className="mt-3 flex items-end">
+                <CustomAlert
+                  type="error"
+                  content={
+                    <Typography className="text-lg">
+                      These fields are mandatory.
+                    </Typography>
+                  }
+                />
+              </div>
+            )}
           </div>
           <br />
         </div>
@@ -368,10 +374,10 @@ const ProjectIdentifiersFields = ({
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'country') && (
-            <div>
+            <div className="flex-shrink basis-[25rem]">
               <Label>{tableColumns.country}</Label>
               <div className="flex items-center">
-                <div className="w-[23rem] flex-shrink">
+                <div className="w-full">
                   <Field
                     widget="autocomplete"
                     options={countries}
@@ -414,57 +420,45 @@ const ProjectIdentifiersFields = ({
               </div>
             </div>
           </div>
-          {mode === 'edit' && project?.status === 'Transferred' && (
-            <div>
-              <Label>{tableColumns.transfer_meeting}</Label>
-              <div className="flex items-center">
-                <div className="w-32">
-                  <PopoverInput
-                    label={getMeetingNr(
-                      project?.transfer_meeting_id ?? undefined,
-                    )?.toString()}
-                    options={[]}
-                    disabled={true}
-                    className={cx('!m-0 h-10 !py-1', disabledClassName)}
-                  />
-                </div>
-                <div className="w-8" />
-              </div>
-            </div>
-          )}
           {canViewField(viewableFields, 'agency') && (
-            <div>
+            <div className="flex-shrink basis-[18rem]">
               <Label>{tableColumns.agency}</Label>
               <div className="flex items-center">
-                <Field
-                  widget="autocomplete"
-                  options={agencies}
-                  value={projIdentifiers?.agency}
-                  onChange={(_, value) => {
-                    handleChangeAgency(value)
+                <div className="flex w-full">
+                  <Field
+                    widget="autocomplete"
+                    options={agencies}
+                    value={projIdentifiers?.agency}
+                    onChange={(_, value) => {
+                      handleChangeAgency(value)
 
-                    if (
-                      canUpdateLeadAgency &&
-                      !projIdentifiers.lead_agency_submitting_on_behalf
-                    ) {
-                      handleChangeLeadAgency(value)
+                      if (
+                        canUpdateLeadAgency &&
+                        !projIdentifiers.lead_agency_submitting_on_behalf
+                      ) {
+                        handleChangeLeadAgency(value)
+                      }
+                    }}
+                    getOptionLabel={(option) =>
+                      getOptionLabel(agencies, option)
                     }
-                  }}
-                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                  disabled={isAgencyDisabled || !areNextSectionsDisabled}
-                  {...sectionDefaultProps}
-                />
-                <FieldErrorIndicator errors={errors} field="agency" />
+                    disabled={isAgencyDisabled || !areNextSectionsDisabled}
+                    {...sectionDefaultProps}
+                  />
+                </div>
+                <div className="w-8">
+                  <FieldErrorIndicator errors={errors} field="agency" />
+                </div>
               </div>
             </div>
           )}
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'cluster') && (
-            <div>
+            <div className="flex-shrink basis-[25rem]">
               <Label>{tableColumns.cluster}</Label>
               <div className="flex items-center">
-                <div className="w-[23rem] flex-shrink">
+                <div className="w-full">
                   <Field
                     widget="autocomplete"
                     options={clusters}
@@ -526,6 +520,41 @@ const ProjectIdentifiersFields = ({
             />
           </div>
         </div>
+        {canViewField(viewableFields, 'lead_agency') && (
+          <>
+            <div className="flex">
+              <div className="flex-shrink basis-[25rem]">
+                <Label>{tableColumns.lead_agency}</Label>
+                <div className="flex items-center">
+                  <div className="w-full">
+                    <Field
+                      widget="autocomplete"
+                      options={agencies}
+                      value={projIdentifiers?.lead_agency}
+                      onChange={(_, value) => {
+                        handleChangeLeadAgency(value)
+
+                        if (!projIdentifiers.lead_agency_submitting_on_behalf) {
+                          handleChangeAgency(value)
+                        }
+                      }}
+                      getOptionLabel={(option) =>
+                        getOptionLabel(agencies, option)
+                      }
+                      disabled={
+                        isLeadAgencyDisabled || !areNextSectionsDisabled
+                      }
+                      {...firstColFieldsProps}
+                    />
+                  </div>
+                  <div className="w-8">
+                    <FieldErrorIndicator errors={errors} field="lead_agency" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
         {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
           <div className="flex items-center">
             <FormControlLabel
@@ -556,43 +585,18 @@ const ProjectIdentifiersFields = ({
             />
           </div>
         )}
-        {canViewField(viewableFields, 'lead_agency') && (
-          <>
-            <Label>{tableColumns.lead_agency}</Label>
-            <div className="flex items-center">
-              <div className="w-[23rem] flex-shrink">
-                <Field
-                  widget="autocomplete"
-                  options={agencies}
-                  value={projIdentifiers?.lead_agency}
-                  onChange={(_, value) => {
-                    handleChangeLeadAgency(value)
-
-                    if (!projIdentifiers.lead_agency_submitting_on_behalf) {
-                      handleChangeAgency(value)
-                    }
-                  }}
-                  getOptionLabel={(option) => getOptionLabel(agencies, option)}
-                  disabled={isLeadAgencyDisabled || !areNextSectionsDisabled}
-                  {...firstColFieldsProps}
-                />
-              </div>
-              <FieldErrorIndicator errors={errors} field="lead_agency" />
-            </div>
-            {canUpdateLeadAgency && (
-              <CustomAlert
-                type="info"
-                alertClassName="mt-2 px-2 py-0"
-                content={
-                  <Typography className="text-lg leading-5">
-                    Unless submitting on behalf of a cooperating agency,
-                    selecting either the agency or the lead agency will
-                    automatically update the other.
-                  </Typography>
-                }
-              />
-            )}
-          </>
+        {canViewField(viewableFields, 'lead_agency') && canUpdateLeadAgency && (
+          <CustomAlert
+            type="info"
+            alertClassName="mt-2 px-2 py-0"
+            content={
+              <Typography className="text-lg leading-5">
+                Unless submitting on behalf of a cooperating agency, selecting
+                either the agency or the lead agency will automatically update
+                the other.
+              </Typography>
+            }
+          />
         )}
         {hasNextButtons && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">

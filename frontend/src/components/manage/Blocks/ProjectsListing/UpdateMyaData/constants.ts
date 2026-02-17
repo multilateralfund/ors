@@ -1,4 +1,4 @@
-export const MT_PER_PAGE = 10
+export const MT_PER_PAGE = 50
 export const initialFilters = {
   search: '',
   country_id: [],
@@ -13,3 +13,11 @@ export const initialParams = {
   cluster_id: [],
   limit: MT_PER_PAGE,
 }
+
+export const nonMonetaryFields = [
+  'phase_out_odp',
+  'phase_out_mt',
+  'targets',
+  'starting_point',
+  'baseline',
+]

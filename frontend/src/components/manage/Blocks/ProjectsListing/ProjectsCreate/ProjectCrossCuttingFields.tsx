@@ -119,7 +119,7 @@ const ProjectCrossCuttingFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[17rem]',
+      className: defaultProps.FieldProps.className + ' w-full',
     },
   }
   const defaultPropsDateInput = {
@@ -132,6 +132,11 @@ const ProjectCrossCuttingFields = ({
     sector
   )
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
+  const isStartDateDisabled =
+    (mode === 'edit' &&
+      submission_status === 'Approved' &&
+      (postExComUpdate || !!project?.project_start_date)) ||
+    !canEditField(editableFields, 'project_start_date')
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setProjectData(
@@ -187,7 +192,9 @@ const ProjectCrossCuttingFields = ({
                       ' w-full max-w-[55rem]'
                     }
                   />
-                  <FieldErrorIndicator errors={errors} field="title" />
+                  <div className="w-8">
+                    <FieldErrorIndicator errors={errors} field="title" />
+                  </div>
                 </div>
               </div>
             )}
@@ -230,7 +237,7 @@ const ProjectCrossCuttingFields = ({
           <div className="flex flex-col gap-y-2">
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'project_type') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.type}</Label>
                   <div className="flex items-center">
                     <Field
@@ -256,13 +263,15 @@ const ProjectCrossCuttingFields = ({
                         getOptionLabel(projectTypes, option)
                       }
                       disabled={
-                        (isV3Project && !!project?.project_type_id) ||
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.project_type_id && !!project_type))) ||
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'project_type')
                       }
                       {...sectionDefaultProps}
                     />
-                    <div className="w-5">
+                    <div className="w-8">
                       <FieldErrorIndicator
                         errors={errors}
                         field="project_type"
@@ -272,7 +281,7 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
               {canViewField(viewableFields, 'sector') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.sector}</Label>
                   <div className="flex items-center">
                     <Field
@@ -289,23 +298,27 @@ const ProjectCrossCuttingFields = ({
                         getOptionLabel(sectors, option)
                       }
                       disabled={
-                        (isV3Project && !!project?.sector_id) ||
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.sector_id && !!sector))) ||
                         !specificFieldsLoaded ||
                         !canEditField(editableFields, 'sector')
                       }
                       {...sectionDefaultProps}
                     />
-                    <FieldErrorIndicator errors={errors} field="sector" />
+                    <div className="w-8">
+                      <FieldErrorIndicator errors={errors} field="sector" />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'subsectors') && (
-                <div>
+                <div className="flex-shrink basis-[40.25rem]">
                   <Label>{tableColumns.subsectors}</Label>
                   <div className="flex items-center">
-                    <div className="w-[40.25rem] flex-shrink">
+                    <div className="w-full">
                       <Field
                         widget="autocomplete"
                         multiple={true}
@@ -362,7 +375,7 @@ const ProjectCrossCuttingFields = ({
             </div>
             <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
               <ProjectFundFields
-                {...{ projectData, setProjectData, project, errors, mode }}
+                {...{ projectData, setProjectData, project, errors }}
                 type="crossCutting"
               />
               {canViewField(viewableFields, 'project_start_date') && (
@@ -380,19 +393,10 @@ const ProjectCrossCuttingFields = ({
                           sectionIdentifier,
                         )
                       }
-                      disabled={
-                        (mode === 'edit' &&
-                          submission_status === 'Approved' &&
-                          !!project?.project_start_date) ||
-                        !canEditField(editableFields, 'project_start_date')
-                      }
+                      disabled={isStartDateDisabled}
                       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                       className={cx(defaultPropsDateInput.className, {
-                        [disabledClassName]:
-                          (mode === 'edit' &&
-                            submission_status === 'Approved' &&
-                            !!project_start_date) ||
-                          !canEditField(editableFields, 'project_start_date'),
+                        [disabledClassName]: isStartDateDisabled,
                       })}
                     />
                     <div className="w-8">
@@ -478,8 +482,6 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(considerationOpts, option, 'value')
                     }
                     disabled={
-                      (isV3Project &&
-                        !!project?.blanket_or_individual_consideration) ||
                       !canEditField(
                         editableFields,
                         'blanket_or_individual_consideration',

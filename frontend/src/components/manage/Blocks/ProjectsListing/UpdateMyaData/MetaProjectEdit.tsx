@@ -1,16 +1,26 @@
+import { useCallback, useEffect, useState } from 'react'
+
 import {
   MetaProjectDetailType,
   MetaProjectFieldData,
 } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
-import { useSnackbar } from 'notistack'
 import { api, getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects.ts'
-import { useCallback, useEffect, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable.tsx'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
+import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
+import { getFormattedDecimalValue } from '../utils'
+import { nonMonetaryFields } from './constants'
+
+import { useSnackbar } from 'notistack'
+import { values } from 'lodash'
+import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
   Button,
@@ -20,12 +30,8 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable.tsx'
-import { values } from 'lodash'
 
-import cx from 'classnames'
-
-const orderFieldData = (fd: MetaProjectFieldData) => {
+export const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
 
   for (const key of Object.keys(fd)) {
@@ -42,6 +48,15 @@ export const MetaProjectEdit = (props: {
 }) => {
   const { mp, refreshMetaProjectDetails, onCancel } = props
 
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
+
+  useVisibilityChange(updatedFields.size > 0)
+
   const { enqueueSnackbar } = useSnackbar()
 
   const projects = getResults<ProjectType>(mp?.projects ?? [])
@@ -51,12 +66,17 @@ export const MetaProjectEdit = (props: {
     const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
     for (const key of Object.keys(fd)) {
-      result[key] = fd[key as keyof MetaProjectFieldData].value
+      const fdEntry = fd[key as keyof MetaProjectFieldData]
+      result[key] =
+        fdEntry.type === 'DecimalField'
+          ? getFormattedDecimalValue(fdEntry.value as string)
+          : fdEntry.value
     }
 
     return result
   }, [mp])
 
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [form, setForm] = useState(loadInitialState)
 
   useEffect(() => {
@@ -75,6 +95,7 @@ export const MetaProjectEdit = (props: {
       })
       refreshMetaProjectDetails()
       enqueueSnackbar('Saved!', { variant: 'success' })
+      clearUpdatedFields()
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
@@ -98,6 +119,8 @@ export const MetaProjectEdit = (props: {
     (name: string, opts?: { numeric?: boolean }) => {
       return (evt: any) => {
         setForm((prev) => {
+          addUpdatedField(name)
+
           let newValue = evt.target.value || null
           if (opts?.numeric && isNaN(Number(newValue))) {
             newValue = prev[name]
@@ -143,7 +166,7 @@ export const MetaProjectEdit = (props: {
             id={fd.name}
             className="!m-0 h-10 w-full !border-gray-400 p-2.5"
             withoutDefaultValue={true}
-            prefix={'$'}
+            prefix={!nonMonetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
             onChange={changeSimpleInput(fd.name, { numeric: true })}
           />
@@ -197,45 +220,65 @@ export const MetaProjectEdit = (props: {
     })
   }
 
+  const onCancelUpdate = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      onCancel()
+    }
+  }
+
   return (
-    <Dialog open={!!mp?.id} onClose={onCancel} fullWidth={true} maxWidth={'xl'}>
-      <DialogTitle>
-        MYA: {mp?.umbrella_code}, Lead agency: {mp?.lead_agency?.name || '-'}
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="h6">Projects under this MYA</Typography>
-        <PListingTable
-          mode="listing"
-          projects={projects as any}
-          filters={{}}
-          enablePagination={false}
+    <>
+      <Dialog open={!!mp?.id} fullWidth={true} maxWidth={'xl'}>
+        <DialogTitle>
+          MYA: {mp?.umbrella_code}, Lead agency: {mp?.lead_agency?.name || '-'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="h6">Projects under this MYA</Typography>
+          <PListingTable
+            mode="listing"
+            projects={projects as any}
+            filters={{}}
+            enablePagination={false}
+          />
+          <Typography variant="h6">Details</Typography>
+          <div className="flex gap-x-8">
+            <div className="flex-grow">
+              {renderFieldData(
+                fieldData.slice(0, Math.ceil(fieldData.length / 2)),
+              )}
+            </div>
+            <div className="flex-grow">
+              {renderFieldData(
+                fieldData.slice(Math.ceil(fieldData.length / 2)),
+              )}
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className="hover:bg-white hover:text-primary"
+            onClick={onCancelUpdate}
+          >
+            Close
+          </Button>
+          <Button
+            className="bg-primary text-white hover:text-mlfs-hlYellow"
+            onClick={handleSave}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {isCancelModalOpen && (
+        <CancelWarningModal
+          mode="MYA data update"
+          isModalOpen={isCancelModalOpen}
+          setIsModalOpen={setIsCancelModalOpen}
+          onContinueAction={onCancel}
         />
-        <Typography variant="h6">Details</Typography>
-        <div className="flex gap-x-8">
-          <div className="flex-grow">
-            {renderFieldData(
-              fieldData.slice(0, Math.ceil(fieldData.length / 2)),
-            )}
-          </div>
-          <div className="flex-grow">
-            {renderFieldData(fieldData.slice(Math.ceil(fieldData.length / 2)))}
-          </div>
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          className="hover:bg-white hover:text-primary"
-          onClick={onCancel}
-        >
-          Close
-        </Button>
-        <Button
-          className="bg-primary text-white hover:text-mlfs-hlYellow"
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+      )}
+    </>
   )
 }

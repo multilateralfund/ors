@@ -1,12 +1,12 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ChangeStatusModal from '../../Enterprises/edit/ChangeStatusModal'
 import { handleErrors } from '../FormHelperComponents'
 import { dropDownClassName, enabledButtonClassname } from '../../constants'
 import {
   EnterpriseActionButtons,
-  EnterpriseType,
   PEnterpriseData,
   PEnterpriseType,
 } from '../../interfaces'
@@ -24,7 +24,6 @@ const PEnterpriseEditActionButtons = ({
   setEnterpriseId,
   setEnterpriseName,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & {
@@ -34,14 +33,24 @@ const PEnterpriseEditActionButtons = ({
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
   const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
 
+  const [modalType, setModalType] = useState<string | null>(null)
+
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
 
-  const overview = enterpriseData.overview as EnterpriseType
+  const {
+    overview,
+    details,
+    substance_details,
+    substance_fields,
+    funding_details,
+    remarks,
+  } = enterpriseData
   const disableSubmit = !(overview.name && overview.id)
 
   const editEnterprise = async () => {
@@ -50,15 +59,6 @@ const PEnterpriseEditActionButtons = ({
     setOtherErrors('')
 
     try {
-      const {
-        overview,
-        details,
-        substance_details,
-        substance_fields,
-        funding_details,
-        remarks,
-      } = enterpriseData
-
       const data = {
         project: project_id,
         enterprise: omit(overview, ['status', 'linkStatus']),
@@ -77,6 +77,7 @@ const PEnterpriseEditActionButtons = ({
 
       setEnterpriseId(result.id)
       setEnterpriseName(result.enterprise.name)
+      clearUpdatedFields()
 
       if (isPending && overview.linkStatus === 'Approved') {
         setLocation(
@@ -90,7 +91,16 @@ const PEnterpriseEditActionButtons = ({
       return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
+    }
+  }
+
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Project enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
     }
   }
 
@@ -105,6 +115,9 @@ const PEnterpriseEditActionButtons = ({
           method: 'POST',
         })
 
+        enqueueSnackbar(<>Project enterprise was approved successfully.</>, {
+          variant: 'success',
+        })
         setLocation(
           `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
         )
@@ -117,20 +130,17 @@ const PEnterpriseEditActionButtons = ({
         )
       }
     }
+    setModalType(null)
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}`}
-      />
+    <>
       {canEditProjectEnterprise && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableSubmit,
           })}
-          onClick={editEnterprise}
+          onClick={onEditEnterprise}
           disabled={disableSubmit}
           variant="contained"
           size="large"
@@ -141,7 +151,7 @@ const PEnterpriseEditActionButtons = ({
       {isPending && canApproveProjectEnterprise && (
         <Button
           className={cx({ [dropDownClassName]: !disableSubmit })}
-          onClick={approveProjectEnterprise}
+          onClick={() => setModalType('Approved')}
           disabled={disableSubmit}
           variant="contained"
           size="large"
@@ -149,7 +159,15 @@ const PEnterpriseEditActionButtons = ({
           Approve project enterprise
         </Button>
       )}
-    </div>
+      {!!modalType && (
+        <ChangeStatusModal
+          type="project enterprise"
+          modalType={modalType}
+          setIsModalOpen={setModalType}
+          onAction={approveProjectEnterprise}
+        />
+      )}
+    </>
   )
 }
 

@@ -73,4 +73,14 @@
       @apply bg-white text-primary;
     }
   }
+
+  &:has(.MuiTabScrollButton-root) {
+    .MuiTab-root:first-child {
+      @apply ml-0;
+    }
+  }
+
+  .MuiTabScrollButton-root {
+    @apply text-gray-400;
+  }
 }

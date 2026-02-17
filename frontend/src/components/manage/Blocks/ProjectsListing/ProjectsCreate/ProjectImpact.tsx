@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { NavigationButton } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canViewField } from '../utils'
@@ -25,27 +27,28 @@ const ProjectImpact = ({
   )
 
   const ImpactFields = (fields: ProjectSpecificFields[]) =>
-    fields.map(
-      (field) =>
-        canViewField(viewableFields, field.write_field_name) &&
-        widgets[field.data_type]<ProjectData>(
-          projectData,
-          setProjectData,
-          field,
-          errors,
-          editableFields,
-        ),
-    )
+    fields.map((field, i) => (
+      <React.Fragment key={i}>
+        {canViewField(viewableFields, field.write_field_name) &&
+          widgets[field.data_type]<ProjectData>(
+            projectData,
+            setProjectData,
+            field,
+            errors,
+            editableFields,
+          )}
+      </React.Fragment>
+    ))
 
   return (
     <>
-      <div className="flex w-3/4 grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
+      <div className="grid w-3/4 grid-cols-1 flex-wrap gap-x-20 gap-y-2 md:grid-cols-2">
         {find(sectionFields, (field) => field.is_actual)
           ? chunk(sectionFields, 2).map((group, i) => (
               <div
                 key={i}
                 className={cx('flex flex-col gap-y-2', {
-                  'col-span-2 w-full': group[0].data_type === 'boolean',
+                  'w-full md:col-span-2': group[0].data_type === 'boolean',
                 })}
               >
                 {ImpactFields(group)}

@@ -61,9 +61,9 @@ from core.models import CPEmission
 from core.models import CPReport
 from core.models import ProjectFile, ProjectOdsOdp
 from core.models.adm import AdmRecordArchive
+from core.models.base import Module
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-from core.models.base import Module
 from core.utils import get_project_sub_code
 
 # pylint: disable=C0302,W0613
@@ -80,6 +80,16 @@ def project_module():
 @pytest.fixture
 def business_plan_module():
     return Module.objects.get_or_create(name="Business Plans", code="BP")[0]
+
+@pytest.fixture
+def project_module():
+    return Module.objects.get_or_create(name="Projects", code="Projects")[0]
+
+
+@pytest.fixture
+def business_plan_module():
+    return Module.objects.get_or_create(name="Business Plans", code="BP")[0]
+
 
 @pytest.fixture
 def secretariat_user():

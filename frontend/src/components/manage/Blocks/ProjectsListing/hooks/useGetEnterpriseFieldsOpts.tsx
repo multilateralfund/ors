@@ -5,35 +5,42 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'
 
-import { debounce, find, sortBy } from 'lodash'
+import { debounce, filter, find, sortBy } from 'lodash'
 
 const useGetEnterpriseFieldsOpts = <T,>(
+  mode: string,
   enterpriseData: EnterpriseOverview,
   setEnterpriseData: Dispatch<SetStateAction<T>>,
   sectionIdentifier?: keyof T | null,
 ) => {
   const { sector, subsector } = enterpriseData
 
-  const [sectors, setSectors] = useState<ProjectSectorType[]>([])
+  const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
+  const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
+  const sectors = mode === 'edit' ? sectorsOpts : crtSectorsOpts
+
   const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
     [],
   )
-  const subsectors = sortBy(subsectorsOpts, 'id')
+  const crtSubsectorsOpts = filter(subsectorsOpts, (opt) => !opt.obsolete)
+  const unsortedSsubsectors =
+    mode === 'edit' ? subsectorsOpts : crtSubsectorsOpts
+  const subsectors = sortBy(unsortedSsubsectors, 'id')
 
   const fetchProjectSectors = async () => {
     try {
       const res = await api(
         'api/project-sector/',
         {
-          params: { include_obsoletes: false },
+          params: { include_obsoletes: true },
           withStoreCache: true,
         },
         false,
       )
-      setSectors(res || [])
+      setSectorsOpts(res || [])
     } catch (e) {
       console.error('Error at loading sectors')
-      setSectors([])
+      setSectorsOpts([])
     }
   }
 
@@ -50,7 +57,7 @@ const useGetEnterpriseFieldsOpts = <T,>(
         {
           params: {
             sector_id: sector,
-            include_obsoletes: false,
+            include_obsoletes: true,
           },
           withStoreCache: true,
         },

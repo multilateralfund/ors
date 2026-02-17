@@ -67,7 +67,7 @@ const ChangeVersionModal = ({
         onClose={() => setIsModalOpen(false)}
         keepMounted
       >
-        <Box className="flex w-full max-w-lg flex-col px-0 absolute-center md:max-w-2xl">
+        <Box className="flex w-full max-w-[90%] flex-col px-0 absolute-center md:max-w-2xl">
           <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
             {capitalize(mode)} project
           </Typography>
@@ -94,7 +94,7 @@ const ChangeVersionModal = ({
                 : `Are you sure there are no other components or associated projects which need to be ${formatText('ed')} together with this one?`}
             </span>
           </div>
-          <div className="ml-auto mr-6 flex flex-wrap gap-3">
+          <div className="mr-6 flex flex-wrap justify-end gap-3">
             <CustomLink
               className="h-10 px-4 py-2 text-lg uppercase"
               onClick={onEditProject}

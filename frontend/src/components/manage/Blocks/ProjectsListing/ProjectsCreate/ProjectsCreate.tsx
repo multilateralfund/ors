@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useContext, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -13,8 +13,10 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
+import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -42,10 +44,14 @@ import {
   getAgencyErrorType,
   canEditField,
   getPostExcomApprovalErrors,
+  getFieldData,
+  formatOptions,
+  getOdsOdpFields,
+  getPostExcomMeetingErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { find, has, isEmpty, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -62,6 +68,7 @@ const ProjectsCreate = ({
   mode,
   postExComUpdate = false,
   approval = false,
+  impact = false,
   files,
   projectFiles,
   errors,
@@ -79,6 +86,8 @@ const ProjectsCreate = ({
   setFilesMetaData,
   metaProjectId,
   setMetaProjectId,
+  setRefetchRelatedProjects,
+  metaprojectData,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -88,6 +97,7 @@ const ProjectsCreate = ({
     mode: string
     postExComUpdate?: boolean
     approval?: boolean
+    impact?: boolean
     errors: { [key: string]: [] }
     fileErrors: string
     project?: ProjectTypeApi
@@ -100,6 +110,8 @@ const ProjectsCreate = ({
     onBpDataChange: (bpData: BpDataProps) => void
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
+    setRefetchRelatedProjects?: (refetch: boolean) => void
+    metaprojectData?: MetaProjectDetailType | null
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -120,7 +132,9 @@ const ProjectsCreate = ({
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
-  const [currentTab, setCurrentTab] = useState<number>(approval ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(
+    impact ? 3 : approval ? 5 : 0,
+  )
 
   const areFieldsDisabled = !canLinkToBp || currentStep < 1
   const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
@@ -132,15 +146,38 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const groupedFields = groupBy(substanceDetailsFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
+  const groupField = getFieldData(overviewFields, 'group')
+  const specificFieldsIdentifiers = 'projectSpecificFields'
+  const specificFieldsData = projectData[specificFieldsIdentifiers] || []
+
+  useEffect(() => {
+    if (groupField) {
+      const groupOptions = formatOptions(groupField, specificFieldsData)
+
+      const validData = find(
+        groupOptions,
+        (option) => option.id === specificFieldsData.group,
+      )
+
+      if (!validData) {
+        setProjectData((prevData) => ({
+          ...prevData,
+          [specificFieldsIdentifiers]: {
+            ...prevData[specificFieldsIdentifiers],
+            group: null,
+          },
+        }))
+      }
+    }
+  }, [groupField])
 
   const isCrossCuttingTabDisabled =
     areNextSectionsDisabled ||
@@ -164,6 +201,17 @@ const ProjectsCreate = ({
     impactFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Impact')
 
+  useEffect(() => {
+    if (
+      impact &&
+      specificFieldsLoaded &&
+      (impactFields.length < 1 ||
+        !hasFields(projectFields, viewableFields, 'Impact'))
+    ) {
+      setCurrentTab(0)
+    }
+  }, [specificFieldsLoaded])
+
   const isApprovalTabDisabled =
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
@@ -177,6 +225,16 @@ const ProjectsCreate = ({
     [projIdentifiers, errors],
   )
   const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
+
+  const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
+  const postExcomMeetingErrors = {
+    post_excom_meeting:
+      postExComUpdate &&
+      !!projIdentifiers.post_excom_meeting &&
+      hasPostExcomMeetingErrors
+        ? ['Cannot be earlier than the original approval meeting.']
+        : [],
+  }
 
   const bpErrors = useMemo(
     () =>
@@ -240,14 +298,25 @@ const ProjectsCreate = ({
   const isV3ProjectEditable =
     hasV3EditPermissions &&
     (editableByAdmin || project.submission_status === 'Recommended')
+  const disableV3Edit =
+    !!project &&
+    mode === 'edit' &&
+    !postExComUpdate &&
+    !project.editable &&
+    project.editable_for_actual_fields
+
+  const hasComponents =
+    !!project &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const bpErrorMessage = 'A business plan activity should be selected.'
+  const shouldValidateBp =
+    canViewBp && mode === 'edit' && canEditField(editableFields, 'bp_activity')
+
   const hasBpDefaultErrors =
-    canViewBp &&
-    mode === 'edit' &&
-    canEditField(editableFields, 'bp_activity') &&
-    bpData.hasBpData &&
-    !bpLinking.bpId
+    shouldValidateBp && bpData.hasBpData && !bpLinking.bpId
+
   const allBpErrors = hasBpDefaultErrors
     ? {
         ...bpErrors,
@@ -348,7 +417,11 @@ const ProjectsCreate = ({
           : null,
       ].filter(Boolean)
 
-      return { message: `Substance ${substanceNo} - ` + messages.join(' ') }
+      const odsOdpType = odsDisplayField
+        ? `Substance ${substanceNo}`
+        : 'Phase out'
+
+      return { message: `${odsOdpType} - ` + messages.join(' ') }
     },
   ).filter(Boolean)
 
@@ -397,6 +470,7 @@ const ProjectsCreate = ({
                     projIdentifiers.post_excom_meeting &&
                     projIdentifiers.post_excom_decision
                   )) ||
+                hasSectionErrors(postExcomMeetingErrors) ||
                 hasBpDefaultErrors ||
                 hasSectionErrors(bpErrors)) && (
                 <SectionErrorIndicator errors={[]} />
@@ -421,12 +495,16 @@ const ProjectsCreate = ({
           }}
           areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
-          errors={projIdentifiersErrors}
+          errors={{ ...projIdentifiersErrors, ...postExcomMeetingErrors }}
           bpErrors={allBpErrors}
         />
       ),
       errors: [
-        ...formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
+        ...formatErrors({
+          ...projIdentifiersErrors,
+          ...postExcomMeetingErrors,
+          ...bpErrors,
+        }),
         ...(!!agencyErrorType
           ? [
               {
@@ -513,6 +591,7 @@ const ProjectsCreate = ({
             trancheErrors,
             getTrancheErrors,
             setCurrentTab,
+            disableV3Edit,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -590,6 +669,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             filesMetaData,
             setFilesMetaData,
+            disableV3Edit,
           }}
           nextStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
@@ -668,7 +748,9 @@ const ProjectsCreate = ({
                   relatedProjects,
                   metaProjectId,
                   setMetaProjectId,
+                  setRefetchRelatedProjects,
                   setCurrentTab,
+                  metaprojectData,
                 }}
               />
             ),
@@ -693,35 +775,42 @@ const ProjectsCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, label, disabled }) => (
-          <Tab
-            key={id}
-            id={id}
-            aria-controls={id}
-            label={label}
-            disabled={disabled}
-            classes={{
-              disabled: 'text-gray-300',
-            }}
-          />
-        ))}
-      </Tabs>
-
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label, disabled }) => (
+            <Tab
+              key={id}
+              id={id}
+              aria-controls={id}
+              label={label}
+              disabled={disabled}
+              classes={{
+                disabled: 'text-gray-300',
+              }}
+            />
+          ))}
+        </Tabs>
+        {mode === 'edit' &&
+          project?.submission_status === 'Draft' &&
+          project?.version === 1 &&
+          project?.editable && (
+            <ProjectDelete {...{ project, hasComponents }} />
+          )}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
@@ -752,7 +841,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="pt-0.5 text-lg leading-none">
+                        <Typography className="text-lg leading-5">
                           {warnings.warnings[0]}
                         </Typography>
                       }
@@ -767,7 +856,7 @@ const ProjectsCreate = ({
                         <Typography className="text-lg">
                           Please make sure all the sections are valid.
                         </Typography>
-                        <Typography>
+                        <Typography component="div">
                           <div className="mt-1">
                             {errors.map((err, idx) =>
                               err ? (

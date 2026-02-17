@@ -430,9 +430,8 @@ const DesktopHeaderNavigation = ({
                                 isInternal && updatedFields.size > 0
 
                               return (
-                                <>
+                                <div key={subMenuItem.label}>
                                   <ListItem
-                                    key={subMenuItem.label}
                                     className={cx(
                                       'last:rounded-0 cursor-pointer text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
                                       {
@@ -458,17 +457,13 @@ const DesktopHeaderNavigation = ({
                                   </ListItem>
                                   {isCancelModalOpen && !!crtUrl && (
                                     <CancelWarningModal
-                                      mode={
-                                        location.includes('/edit')
-                                          ? 'editing'
-                                          : 'creation'
-                                      }
+                                      mode="current action"
                                       url={crtUrl}
                                       isModalOpen={isCancelModalOpen}
                                       setIsModalOpen={setIsCancelModalOpen}
                                     />
                                   )}
-                                </>
+                                </div>
                               )
                             })}
                         </List>
@@ -660,9 +655,8 @@ const MobileHeaderNavigation = ({
                                           isInternal && updatedFields.size > 0
 
                                         return (
-                                          <>
+                                          <div key={subMenuItem.label}>
                                             <ListItem
-                                              key={subMenuItem.label}
                                               className={cx(
                                                 'block cursor-pointer py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
                                                 {
@@ -689,11 +683,7 @@ const MobileHeaderNavigation = ({
                                             </ListItem>
                                             {isCancelModalOpen && !!crtUrl && (
                                               <CancelWarningModal
-                                                mode={
-                                                  location.includes('/edit')
-                                                    ? 'editing'
-                                                    : 'creation'
-                                                }
+                                                mode="current action"
                                                 url={crtUrl}
                                                 isModalOpen={isCancelModalOpen}
                                                 setIsModalOpen={
@@ -701,7 +691,7 @@ const MobileHeaderNavigation = ({
                                                 }
                                               />
                                             )}
-                                          </>
+                                          </div>
                                         )
                                       })}
                                   </List>

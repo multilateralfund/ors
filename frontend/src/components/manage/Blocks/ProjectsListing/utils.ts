@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { getMeetingNr } from '../../Utils/utilFunctions'
 import {
   approvalOdsFields,
   approvalToOdsMap,
@@ -1133,10 +1134,7 @@ export const filterApprovalFields = (
   specificFields: ProjectSpecificFields[],
   field: ProjectSpecificFields,
 ) => {
-  const groupedFields = groupBy(specificFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(specificFields)
   const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
 
   const mappedField = approvalToOdsMap[field.write_field_name]
@@ -1173,3 +1171,14 @@ export const getTransferFieldLabel = (
 
   return fieldLabel
 }
+
+export const getOdsOdpFields = (specificFields: ProjectSpecificFields[]) => {
+  const groupedFields = groupBy(specificFields, 'table')
+  return (groupedFields['ods_odp'] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
+}
+
+export const getPostExcomMeetingErrors = (projIdentifiers: ProjIdentifiers) =>
+  (getMeetingNr(projIdentifiers.post_excom_meeting ?? undefined) ?? 0) <
+  (getMeetingNr(projIdentifiers.meeting ?? undefined) ?? 0)

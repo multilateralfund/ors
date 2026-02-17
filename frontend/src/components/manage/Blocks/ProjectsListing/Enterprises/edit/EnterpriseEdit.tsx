@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 
 import EnterpriseHeader from '../create/EnterpriseHeader'
@@ -14,7 +12,6 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
     initialOverviewFields,
   )
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -45,24 +42,23 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
           enterpriseData,
           enterprise,
           setEnterpriseId,
-          setHasSubmitted,
           setErrors,
           setOtherErrors,
         }}
       />
       <EnterpriseCreate
+        mode="edit"
         {...{
           enterpriseData,
           setEnterpriseData,
           enterprise,
-          hasSubmitted,
           errors,
         }}
       />
       <ProjectFormFooter
         id={enterpriseId}
         href={`/projects-listing/enterprises/${enterpriseId}`}
-        successMessage={'Enterprise was updated successfully.'}
+        successMessage="Enterprise was updated successfully."
         successRedirectMessage="View enterprise."
         {...{ nonFieldsErrors, otherErrors }}
       />

@@ -54,6 +54,7 @@ const getFieldDefaultProps = (
         'w-[125px]': isOdp,
         [disabledClassName]: !canEditField(editableFields, fieldName),
         '!flex-grow-0': field.data_type === 'date',
+        '!bg-mlfs-bannerColor': field.is_actual,
       }),
       containerClassName: cx(defaultPropsSimpleField.containerClassName, {
         'w-[125px]': isOdp,
@@ -230,6 +231,7 @@ export const AutocompleteWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div
@@ -237,7 +239,12 @@ export const AutocompleteWidget = <T,>(
         'justify-between': field.table !== 'ods_odp',
       })}
     >
-      <Label className={cx({ italic: isDisabledImpactField })}>
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
         {field.label} {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
       <div className="flex items-center">
@@ -275,7 +282,11 @@ export const AutocompleteWidget = <T,>(
           {...(field.section === 'Impact'
             ? {
                 FieldProps: {
-                  className: defaultProps.FieldProps.className + ' !w-40',
+                  className: cx(
+                    defaultProps.FieldProps.className,
+                    '!w-40',
+                    isPlannedImpactField && 'actual_field',
+                  ),
                 },
               }
             : {})}
@@ -387,7 +398,8 @@ export const TextAreaWidget = <T,>(
             )
           }
           className={cx(textAreaClassname, 'max-w-[415px]', {
-            '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
+            '!min-h-[27px] !w-auto !min-w-56 !pb-1.5 md:!min-w-72':
+              isOdsReplacement,
           })}
           maxLength={nrChars}
           style={STYLE}
@@ -435,6 +447,7 @@ const NumberWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div
@@ -443,7 +456,12 @@ const NumberWidget = <T,>(
           field.table !== 'ods_odp' || field.section === 'Approval',
       })}
     >
-      <Label className={cx({ italic: isDisabledImpactField })}>
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>
@@ -464,7 +482,10 @@ const NumberWidget = <T,>(
               index,
             )
           }
-          {...getFieldDefaultProps(editableFields, field)}
+          {...omit(
+            getFieldDefaultProps(editableFields, field),
+            'containerClassName',
+          )}
         />
         <div
           className={cx({
@@ -500,10 +521,16 @@ const BooleanWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div className="col-span-full flex w-full">
-      <Label className={cx({ italic: isDisabledImpactField })}>
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
         {field.label}
         {isDisabledImpactField ? ' (planned)' : ''}
       </Label>

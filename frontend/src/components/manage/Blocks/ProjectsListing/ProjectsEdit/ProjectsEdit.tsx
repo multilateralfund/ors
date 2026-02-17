@@ -7,6 +7,8 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
+import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
@@ -16,6 +18,7 @@ import {
   getFileFromMetadata,
   getFormattedDecimalValue,
   getNonFieldErrors,
+  getOdsOdpFields,
   hasSpecificField,
 } from '../utils'
 import {
@@ -26,7 +29,6 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
-  RelatedProjectsType,
   TrancheErrorType,
   BpDataProps,
   FileMetaDataType,
@@ -34,6 +36,7 @@ import {
 import {
   approvalOdsFields,
   considerationOpts,
+  defaultTrancheErrors,
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
@@ -50,7 +53,6 @@ import {
   map,
   filter,
   find,
-  replace,
   isArray,
   pick,
   mapKeys,
@@ -61,11 +63,13 @@ const ProjectsEdit = ({
   mode,
   postExComUpdate = false,
   approval = false,
+  impact = false,
 }: {
   project: ProjectTypeApi
   mode: string
   postExComUpdate?: boolean
   approval?: boolean
+  impact?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -75,6 +79,13 @@ const ProjectsEdit = ({
     useContext(PermissionsContext)
   const { countries, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+
+  const { updatedFields, addUpdatedField, clearUpdatedFields } =
+    useUpdatedFields()
+
+  useEffect(() => {
+    clearUpdatedFields()
+  }, [])
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -113,9 +124,7 @@ const ProjectsEdit = ({
   const projectFields = isEditMode
     ? fieldsOfProject
     : filter(fieldsOfProject, (field) => !field.is_actual)
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(specificFields)
 
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
@@ -158,10 +167,15 @@ const ProjectsEdit = ({
     }
   }, [allFields, setViewableFields, setEditableFields])
 
-  const approvalFields =
-    isVersion3 && isArray(allFields)
-      ? allFields.filter((field) => filterApprovalFields(specificFields, field))
-      : []
+  const approvalFields = useMemo(
+    () =>
+      isVersion3 && isArray(allFields)
+        ? allFields.filter((field) =>
+            filterApprovalFields(specificFields, field),
+          )
+        : [],
+    [allFields, specificFields],
+  )
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -214,15 +228,19 @@ const ProjectsEdit = ({
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
-  const relatedProjects = useGetRelatedProjects(project, mode, metaProjectId)
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
 
-  const defaultTrancheErrors = {
-    errorText: '',
-    isError: false,
-    tranchesData: [],
-    loaded: false,
-    loading: false,
-  }
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    mode,
+    metaProjectId,
+    refetchRelatedProjects,
+  )
+
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    project.meta_project_id,
+    mode,
+  )
 
   const [bpData, setBpData] = useState({
     hasBpData: false,
@@ -251,7 +269,9 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
-        category: !shouldEmptyCluster ? project.cluster?.category : null,
+        category: !shouldEmptyCluster
+          ? (project.cluster?.category ?? null)
+          : null,
         post_excom_meeting:
           mode === 'edit' ? project.post_excom_meeting_id : null,
         post_excom_decision:
@@ -308,7 +328,7 @@ const ProjectsEdit = ({
   }, [])
 
   useEffect(() => {
-    if (!approval && canViewBp && country && agency && cluster) {
+    if (!approval && !impact && canViewBp && country && agency && cluster) {
       setBpData({
         hasBpData: false,
         bpDataLoading: true,
@@ -392,7 +412,7 @@ const ProjectsEdit = ({
         approvalFieldsValuesLoaded.current = true
       }
     }
-  }, [approvalFields, approvalFieldsValuesLoaded])
+  }, [approvalFields])
 
   useEffect(() => {
     if (!fieldsValuesLoaded.current && specificFields.length > 0) {
@@ -444,67 +464,20 @@ const ProjectsEdit = ({
 
     try {
       const result = await api(
-        `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
+        `api/projects/v2/list_previous_tranches/country/${country}/cluster/${cluster}/tranche/${tranche}`,
         {
+          params: {
+            project_id: mode === 'edit' ? project_id : undefined,
+            include_validation: true,
+          },
           withStoreCache: false,
         },
         false,
       )
 
-      if (result.length === 0) {
-        setTrancheErrors({
-          errorText:
-            'A new tranche cannot be created as no previous tranche exists or you are not the lead agency of the MYA.',
-          isError: true,
-          tranchesData: [],
-          loaded: true,
-          loading: false,
-        })
-
-        return true
-      } else {
-        const tranches = result.map((entry: RelatedProjectsType) => {
-          const filteredWarnings = filter(entry.warnings, (warning) => {
-            const crtField = find(
-              projectFields,
-              (field) =>
-                field.write_field_name ===
-                replace(warning.field, /_?actual_?/g, ''),
-            )
-
-            return crtField && crtField.data_type !== 'boolean'
-          })
-
-          return {
-            title: entry.title,
-            id: entry.id,
-            tranche: entry.tranche,
-            errors: entry.errors,
-            warnings: filteredWarnings,
-          }
-        })
-        const trancheError = tranches.find(
-          (tranche: RelatedProjectsType) => tranche.errors.length > 0,
-        )
-
-        setTrancheErrors({
-          errorText: trancheError ? trancheError.errors[0].message : '',
-          isError: false,
-          tranchesData: tranches,
-          loaded: true,
-          loading: false,
-        })
-
-        return !!trancheError && !!trancheError.errors[0].message
-      }
+      return useGetTrancheErrors(result, projectFields, setTrancheErrors)
     } catch (error) {
-      setTrancheErrors({
-        errorText: '',
-        isError: false,
-        tranchesData: [],
-        loaded: true,
-        loading: false,
-      })
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
       enqueueSnackbar(
         <>
           An error occurred during previous tranches validation. Please try
@@ -524,20 +497,12 @@ const ProjectsEdit = ({
   useEffect(() => {
     const hasTrancheField = hasSpecificField(specificFields, 'tranche')
 
-    if (mode !== 'edit' || tranche <= 1 || !hasTrancheField) {
-      setTrancheErrors({
-        errorText: '',
-        isError: false,
-        tranchesData: [],
-        loaded: true,
-        loading: false,
-      })
-    } else if (isEditMode && canViewProjects) {
+    if (tranche <= 1 || !hasTrancheField) {
+      setTrancheErrors({ ...defaultTrancheErrors, loaded: true })
+    } else if (canViewProjects) {
       debouncedGetTrancheErrors()
     }
-  }, [tranche, project_id, specificFields])
-
-  const { updatedFields, addUpdatedField } = useUpdatedFields()
+  }, [country, cluster, tranche, project_id, specificFields])
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
@@ -589,6 +554,7 @@ const ProjectsEdit = ({
             mode,
             postExComUpdate,
             approval,
+            impact,
             specificFields,
             project,
             files,
@@ -606,6 +572,8 @@ const ProjectsEdit = ({
             setFilesMetaData,
             metaProjectId,
             setMetaProjectId,
+            setRefetchRelatedProjects,
+            metaprojectData,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

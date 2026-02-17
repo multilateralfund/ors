@@ -13,7 +13,6 @@ import { keys, map } from 'lodash'
 const PEnterpriseFundingDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
-  hasSubmitted,
   errors = {},
 }: PEnterpriseDataProps) => {
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
@@ -58,9 +57,9 @@ const PEnterpriseFundingDetailsSection = ({
   ]
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       {fields.map(({ slice, width, getWidth, getPrefix, isDisabled }, idx) => (
-        <div key={idx} className="flex flex-wrap gap-x-20 gap-y-4">
+        <div key={idx} className="flex flex-wrap gap-x-20 gap-y-2">
           {map(keys(sectionData).slice(...slice), (field) => (
             <div key={field} className={getWidth ? getWidth(field) : width}>
               <EnterpriseNumberField<PEnterpriseData, EnterpriseFundingDetails>
@@ -72,7 +71,6 @@ const PEnterpriseFundingDetailsSection = ({
                   sectionIdentifier,
                   field,
                   isDisabled,
-                  hasSubmitted,
                   errors,
                 }}
               />

@@ -82,7 +82,7 @@ class BlanketApprovalDetailsViewset(
         submission_status__name__in=[
             "Recommended",
             "Approved",
-        ]
+        ],
     )
     permission_classes = (HasProjectV2ViewAccess,)
 
@@ -98,11 +98,18 @@ class BlanketApprovalDetailsViewset(
 
         per_country = {}
         total_projects = 0
+        grand_total = {
+            "hcfc": 0.0,
+            "hfc": 0.0,
+            "project_funding": 0.0,
+            "project_support_cost": 0.0,
+            "total": 0.0,
+        }
 
         filtered_projects: Iterable[ProjectData] = queryset.values(  # type: ignore[assignment]
             project_id=F("id"),
             project_title=F("title"),
-            project_description=F("description"),
+            project_description=F("excom_provision"),
             agency_name=F("agency__name"),
             country_pk=F("country"),
             country_name=F("country__name"),
@@ -169,12 +176,20 @@ class BlanketApprovalDetailsViewset(
                     "country_total": country_total,
                 }
             )
+            for key, v in country_total.items():
+                grand_total[key] += v
 
-        return total_projects, result
+        return total_projects, grand_total, result
 
     def list(self, request, *args, **kwargs):
-        total_projects, result = self._extract_data()
-        return JsonResponse({"total_projects": total_projects, "result": result})
+        total_projects, grand_total, result = self._extract_data()
+        return JsonResponse(
+            {
+                "total_projects": total_projects,
+                "grand_total": grand_total,
+                "result": result,
+            }
+        )
 
     @action(methods=["GET"], detail=False)
     def filters(self, request, *args, **kwargs):
@@ -203,7 +218,7 @@ class BlanketApprovalDetailsViewset(
     def _export_wb(self):
         wb = openpyxl.open(self._template_path)
         sheet = wb.active
-        _, data = self._extract_data()
+        _, grand_total, data = self._extract_data()
         data: list[CountryEntry] = data
 
         i = 3
@@ -259,6 +274,19 @@ class BlanketApprovalDetailsViewset(
                 ],
                 row_country_total,
             )
+
+        add_row(
+            [
+                None,
+                "Grand total",
+                grand_total["hcfc"],
+                grand_total["hfc"],
+                grand_total["project_funding"],
+                grand_total["project_support_cost"],
+                grand_total["total"],
+            ],
+            row_country_total,
+        )
 
         sheet.delete_rows(4, 7)
 

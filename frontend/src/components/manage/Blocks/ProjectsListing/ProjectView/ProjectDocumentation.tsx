@@ -16,6 +16,7 @@ const ProjectDocumentation = ({
   nextStep,
   hasNextStep,
   isNextButtonDisabled,
+  disableV3Edit,
   ...rest
 }: ProjectFiles &
   ProjectTabSetters &
@@ -29,6 +30,7 @@ const ProjectDocumentation = ({
     isNextButtonDisabled?: boolean
     errors?: Array<{ id: number; message: string } | null>
     allFileErrors?: { message: string }[]
+    disableV3Edit?: boolean
   }) => {
   return (
     <>
@@ -38,7 +40,7 @@ const ProjectDocumentation = ({
           bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
 
-        {mode !== 'view' && (
+        {mode !== 'view' && !disableV3Edit && (
           <FileInput
             {...rest}
             extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
