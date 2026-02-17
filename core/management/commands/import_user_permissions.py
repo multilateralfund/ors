@@ -5,9 +5,7 @@ from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import BaseCommand
 
-from core.import_data.utils import (
-    IMPORT_RESOURCES_DIR,
-)
+from core.import_data.utils import IMPORT_RESOURCES_V2_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -91,11 +89,11 @@ class Command(BaseCommand):
             logger.info("✔ permissions cleaned up")
 
         if actions in ["all", "import_permissions"]:
-            file_path = IMPORT_RESOURCES_DIR / "users" / "permissions.json"
+            file_path = IMPORT_RESOURCES_V2_DIR / "users" / "permissions.json"
             import_permissions(file_path)
             logger.info("✔ permissions imported")
 
         if actions in ["all", "import_user_groups"]:
-            file_path = IMPORT_RESOURCES_DIR / "users" / "groups.json"
+            file_path = IMPORT_RESOURCES_V2_DIR / "users" / "groups.json"
             import_user_groups(file_path)
             logger.info("✔ user groups imported")

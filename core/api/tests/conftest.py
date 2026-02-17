@@ -85,6 +85,16 @@ def business_plan_module():
 
 
 @pytest.fixture
+def project_module():
+    return Module.objects.get_or_create(name="Projects", code="Projects")[0]
+
+
+@pytest.fixture
+def business_plan_module():
+    return Module.objects.get_or_create(name="Business Plans", code="BP")[0]
+
+
+@pytest.fixture
 def secretariat_user():
     secretariat_group = Group.objects.get(name="CP - Secretariat")
     business_plan_editor_group = Group.objects.get(name="BP - Editor")

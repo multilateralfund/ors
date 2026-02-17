@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from core.import_data.import_project_resources_v2 import import_project_resources_v2
+from core.import_data_v2.import_project_resources_v2 import import_project_resources_v2
 
 
 class Command(BaseCommand):
