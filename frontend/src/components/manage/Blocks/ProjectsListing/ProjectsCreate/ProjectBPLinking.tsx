@@ -20,9 +20,8 @@ const ProjectBPLinking = ({
   isNextButtonDisabled,
   setCurrentTab,
   bpData,
-  onBpDataChange,
   bpErrors,
-  project,
+  ...rest
 }: ProjectDataProps &
   ProjectTabSetters & {
     isSectionDisabled: boolean
@@ -31,6 +30,7 @@ const ProjectBPLinking = ({
     onBpDataChange: (bpData: BpDataProps) => void
     bpErrors: { [key: string]: string[] }
     project?: ProjectTypeApi
+    mode: string
   }) => {
   const { country, agency, cluster } = projectData.projIdentifiers
   const { isLinkedToBP } = projectData.bpLinking
@@ -88,8 +88,7 @@ const ProjectBPLinking = ({
               projectData,
               setProjectData,
               bpData,
-              onBpDataChange,
-              project,
+              ...rest,
             }}
           />
         )}
