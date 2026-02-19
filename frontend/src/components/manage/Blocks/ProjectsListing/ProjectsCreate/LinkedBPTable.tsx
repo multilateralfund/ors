@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useContext, useEffect, useMemo, useRef } from 'react'
 
 import type { ApiAgency } from '@ors/@types/api_agencies'
 import type { Country } from '@ors/@types/store'
@@ -7,10 +7,13 @@ import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   ProjectDataProps,
   BpDataProps,
+  ProjectTypeApi,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { canEditField } from '../utils'
 import { ApiBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
 
@@ -22,14 +25,24 @@ const LinkedBPTableWrapper = (
   props: ProjectDataProps & {
     bpData: BpDataProps
     onBpDataChange: (bpData: BpDataProps) => void
+    project?: ProjectTypeApi
+    mode: string
   },
 ) => {
+  const { project, mode } = props
+
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
+  const crtBpYearStart =
+    mode === 'edit' && project?.bp_activity?.business_plan?.year_start
+
   const latestEndorsedBpPeriod = find(
     periodOptions,
-    ({ status = [] }) => status.length > 0 && status.includes('Endorsed'),
+    ({ year_start, status = [] }) =>
+      crtBpYearStart
+        ? crtBpYearStart === year_start
+        : status.length > 0 && status.includes('Endorsed'),
   )
 
   if (yearRanges && yearRanges.length > 0 && !latestEndorsedBpPeriod) {
@@ -142,6 +155,10 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const { results, ...restActivities } = activities
   const { bpId, isLinkedToBP } = projectData.bpLinking
 
+  const { canViewBp } = useContext(PermissionsContext)
+  const { editableFields } = useStore((state) => state.projectFields)
+  const canEditBp = canViewBp && canEditField(editableFields, 'bp_activity')
+
   const formattedResults = useMemo(
     () =>
       map(results, (activity) => ({
@@ -173,23 +190,24 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
 
   useEffect(() => {
     const hasResults = formattedResults.length > 0
+    const crtIsLinkedToBP = canEditBp ? hasResults : isLinkedToBP
 
     setProjectData((prevData) => ({
       ...prevData,
       bpLinking: {
         ...prevData.bpLinking,
-        isLinkedToBP: hasResults,
+        isLinkedToBP: crtIsLinkedToBP,
       },
     }))
 
     onBpDataChange({
-      hasBpData: hasResults,
+      hasBpData: crtIsLinkedToBP,
       bpDataLoading: !areActivitiesLoaded,
     })
   }, [areActivitiesLoaded])
 
   useEffect(() => {
-    if (formattedResults.length === 1 && isLinkedToBP) {
+    if (canEditBp && formattedResults.length === 1 && isLinkedToBP) {
       setProjectData((prevData) => {
         const { bpLinking } = prevData
 
