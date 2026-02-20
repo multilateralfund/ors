@@ -555,6 +555,7 @@ def generate_new_cluster_type_sector_file(file_path):
     with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
         json.dump(new_data, f, indent=4)
 
+
 def import_modules():
     """
     Import modules

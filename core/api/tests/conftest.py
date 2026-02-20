@@ -65,6 +65,7 @@ from core.models.base import Module
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import get_project_sub_code
+
 # pylint: disable=C0302,W0613
 
 
@@ -303,6 +304,7 @@ def country_europe(project_module, business_plan_module):
     country = CountryFactory(name="Europe", location_type=Country.LocationType.REGION)
     country.modules.add(project_module, business_plan_module)
     return country
+
 
 @pytest.fixture
 def country_ro(project_module, business_plan_module):
