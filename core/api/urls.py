@@ -3,6 +3,8 @@ from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from core.api.views import MetaProjectClusterListView
+from core.api.views import MetaProjectLeadAgencyListView
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
@@ -37,6 +39,7 @@ from core.api.views import (
     UserPermissionsView,
 )
 from core.api.views.agency import AgencyListView, BusinessPlanAgencyListView
+from core.api.views.blanket_approval_details import BlanketApprovalDetailsViewset
 from core.api.views.bp_export import BPActivityExportView
 from core.api.views.business_plan import (
     BPChemicalTypeListView,
@@ -61,6 +64,8 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
+from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
 from core.api.views.projects_metadata import (
     ProjectClusterTypeSectorAssociationView,
     ProjectFieldView,
@@ -96,6 +101,9 @@ from core.api.views.cp_resources import CPResourcesView
 from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
+    MetaProjectCountryListView,
+    MetaProjectMyaListView,
+    MetaProjectMyaDetailsViewSet,
     ProjectClusterListView,
     ProjectSpecificFieldsListView,
     ProjectOdsOdpViewSet,
@@ -119,20 +127,68 @@ from core.api.views.projects_v2 import (
     ProjectProductionControlTypeView,
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
-    ProjectV2FileView,
-    ProjectV2FileIncludePreviousVersionsView,
-    ProjectFilesDownloadView,
+)
+from core.api.views.project_v2_files import (
+    FileTypeView,
+    ProjectFileV2ViewSet,
     ProjectFilesValidationView,
 )
 from core.api.views.project_associations import ProjectAssociationViewSet
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
-from core.api.views.settings import ProjectSettingsView, SettingsView
+from core.api.views.settings import (
+    ProjectSettingsView,
+    SettingsView,
+)
+from core.api.views.summary_of_projects import SummaryOfProjectsViewSet
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
+from core.api.views.annual_project_report import (
+    APRCurrentYearView,
+    APRWorkspaceView,
+    APRBulkUpdateView,
+    APRFileUploadView,
+    APRFileDownloadView,
+    APRFileDeleteView,
+    APRFilesDownloadAllView,
+    APRStatusView,
+    APRExportView,
+    APRSummaryTablesExportView,
+    APRGlobalViewSet,
+    APRToggleLockView,
+    APREndorseView,
+    APRMLFSBulkUpdateView,
+    APRKickStartView,
+    APRMLFSExportView,
+)
 
 router = routers.SimpleRouter()
+router.register(
+    "projects-approval-summary",
+    ProjectApprovalSummaryViewSet,
+    basename="projects-approval-summary",
+)
+router.register(
+    "summary-of-projects",
+    SummaryOfProjectsViewSet,
+    basename="summary-of-projects",
+)
+router.register(
+    "blanket-approval-details",
+    BlanketApprovalDetailsViewset,
+    basename="blanket-approval-details",
+)
+router.register(
+    "compare-versions",
+    ProjectsCompareVersionsViewset,
+    basename="compare-versions",
+)
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
+router.register(
+    r"projects/v2/(?P<project_id>\d+)/project-files",
+    ProjectFileV2ViewSet,
+    basename="project-file-v2",
+)
 router.register("projects", ProjectViewSet, basename="project")
 router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"
@@ -215,7 +271,11 @@ router.register(
     StatusOfTheFundFileViewSet,
     basename="replenishment-status-files",
 )
-
+router.register(
+    r"annual-project-report/mlfs/(?P<year>\d+)/agencies",
+    APRGlobalViewSet,
+    basename="apr-mlfs",
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -436,9 +496,39 @@ urlpatterns = [
         name="countries-list",
     ),
     path(
+        "file-types/",
+        FileTypeView.as_view(),
+        name="file-type-list",
+    ),
+    path(
         "meta-projects/",
         MetaProjectListView.as_view(),
         name="meta-project-list",
+    ),
+    path(
+        "meta-projects/countries/",
+        MetaProjectCountryListView.as_view(),
+        name="meta-project-country-list",
+    ),
+    path(
+        "meta-projects/clusters/",
+        MetaProjectClusterListView.as_view(),
+        name="meta-project-cluster-list",
+    ),
+    path(
+        "meta-projects/lead-agencies/",
+        MetaProjectLeadAgencyListView.as_view(),
+        name="meta-project-lead-agency-list",
+    ),
+    path(
+        "meta-projects-for-mya-update/",
+        MetaProjectMyaListView.as_view(),
+        name="meta-projects-for-mya-update",
+    ),
+    path(
+        "meta-projects/<int:pk>/",
+        MetaProjectMyaDetailsViewSet.as_view({"get": "retrieve", "put": "update"}),
+        name="meta-project-view",
     ),
     path(
         "project-statuses/",
@@ -509,21 +599,6 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
-    ),
-    path(
-        "project/<int:project_id>/files/v2/",
-        ProjectV2FileView.as_view(),
-        name="project-files-v2",
-    ),
-    path(
-        "project/<int:project_id>/files/include_previous_versions/v2/",
-        ProjectV2FileIncludePreviousVersionsView.as_view(),
-        name="project-v2-file-include-previous-versions",
-    ),
-    path(
-        "project/<int:project_id>/files/<int:id>/download/v2/",
-        ProjectFilesDownloadView.as_view(),
-        name="project-files-v2-download",
     ),
     path(
         "project/files/validate/",
@@ -650,6 +725,83 @@ urlpatterns = [
         ConsolidatedInputDataExportView.as_view(),
         name="replenishment-input-data-export",
     ),
+    # Annual Project Reports
+    path(
+        "annual-project-report/current-year/",
+        APRCurrentYearView.as_view(),
+        name="apr-current-year",
+    ),
+    path(
+        "annual-project-report/<int:year>/workspace/",
+        APRWorkspaceView.as_view(),
+        name="apr-workspace",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/export/",
+        APRExportView.as_view(),
+        name="apr-export",
+    ),
+    path(
+        "annual-project-report/summary-tables/export/",
+        APRSummaryTablesExportView.as_view(),
+        name="apr-summary-tables-export",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/update/",
+        APRBulkUpdateView.as_view(),
+        name="apr-update",
+    ),
+    path(
+        "annual-project-report/mlfs/<int:year>/bulk-update/",
+        APRMLFSBulkUpdateView.as_view(),
+        name="apr-mlfs-bulk-update",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/upload/",
+        APRFileUploadView.as_view(),
+        name="apr-file-upload",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/download/",
+        APRFileDownloadView.as_view(),
+        name="apr-file-download",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/<int:pk>/",
+        APRFileDeleteView.as_view(),
+        name="apr-file-delete",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/files/download-all/",
+        APRFilesDownloadAllView.as_view(),
+        name="apr-files-download-all",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/status/",
+        APRStatusView.as_view(),
+        name="apr-status",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/toggle-lock/",
+        APRToggleLockView.as_view(),
+        name="apr-toggle-lock",
+    ),
+    path(
+        "annual-project-report/<int:year>/endorse/",
+        APREndorseView.as_view(),
+        name="apr-endorse",
+    ),
+    path(
+        "annual-project-report/kick-start/",
+        APRKickStartView.as_view(),
+        name="apr-kick-start",
+    ),
+    path(
+        "annual-project-report/mlfs/<int:year>/export/",
+        APRMLFSExportView.as_view(),
+        name="apr-mlfs-export",
+    ),
+    # User permissions
     path(
         "user/permissions/",
         UserPermissionsView.as_view(),

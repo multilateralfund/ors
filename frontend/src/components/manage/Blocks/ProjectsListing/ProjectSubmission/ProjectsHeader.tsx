@@ -2,7 +2,9 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CreateActionButtons from './CreateActionButtons'
+import CancelWarningModal from './CancelWarningModal'
 import EditActionButtons from './EditActionButtons'
 import {
   PageTitle,
@@ -16,32 +18,47 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectHeader,
-  TrancheErrorType,
+  BpDataProps,
 } from '../interfaces'
+import { useStore } from '@ors/store'
 
 import { CircularProgress } from '@mui/material'
-import dayjs from 'dayjs'
+import { useLocation } from 'wouter'
+import { find } from 'lodash'
 
 const ProjectsHeader = ({
   projectData,
   mode,
+  postExComUpdate = false,
   project,
   files,
   setProjectFiles = () => {},
   trancheErrors,
+  getTrancheErrors,
   specificFields,
   approvalFields,
+  bpData,
+  filesMetaData,
+  loadedFiles,
   ...rest
 }: ProjectHeader & {
   mode: string
-  trancheErrors?: TrancheErrorType
+  postExComUpdate?: boolean
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
+  bpData: BpDataProps
+  loadedFiles?: boolean
 }) => {
+  const [_, setLocation] = useLocation()
+
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
+  const { updatedFields } = useUpdatedFields()
+
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
-  const { project_start_date, project_end_date } = crossCuttingFields
 
   const defaultImpactErrors = getDefaultImpactErrors(
     projectSpecificFields,
@@ -53,19 +70,29 @@ const ProjectsHeader = ({
   const hasMissingRequiredFields = getIsSaveDisabled(
     projIdentifiers,
     crossCuttingFields,
+    agency_id,
   )
-  const isSaveDisabled =
-    hasMissingRequiredFields ||
-    dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
-    hasValidationErrors
+  const hasTrancheErrors =
+    !!trancheErrors?.errorText || !!trancheErrors?.loading
 
-  const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
+  const isSaveDisabled =
+    (mode !== 'add' && !loadedFiles) ||
+    hasMissingRequiredFields ||
+    hasValidationErrors ||
+    bpData.bpDataLoading ||
+    !!find(filesMetaData, (metadata) => !metadata.type) ||
+    (mode === 'edit' &&
+      project?.submission_status !== 'Draft' &&
+      hasTrancheErrors)
+
+  const isSubmitDisabled = isSaveDisabled || hasTrancheErrors
 
   const [projectTitle, setProjectTitle] = useState<string>(
     project?.title ?? 'N/A',
   )
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const pageTitleExtraInfo =
     mode === 'copy'
@@ -74,16 +101,26 @@ const ProjectsHeader = ({
         ? `(component of ${projectTitle ?? 'New project'})`
         : ''
 
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
+
   return (
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
-          <RedirectBackButton />
+          <RedirectBackButton withRedirect={false} onAction={onCancel} />
           <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             <PageHeading>
               {mode === 'edit' && (
                 <PageTitle
-                  pageTitle="Edit project"
+                  pageTitle={
+                    postExComUpdate ? 'Post ExCom update' : 'Edit project'
+                  }
                   projectTitle={projectTitle}
                   project={project as ProjectTypeApi}
                 />
@@ -98,6 +135,13 @@ const ProjectsHeader = ({
             )}
           </div>
         </div>
+        {isCancelModalOpen && (
+          <CancelWarningModal
+            mode={`project ${mode === 'edit' ? 'editing' : 'creation'}`}
+            isModalOpen={isCancelModalOpen}
+            setIsModalOpen={setIsCancelModalOpen}
+          />
+        )}
         <div className="ml-auto mt-auto flex items-center gap-2.5">
           {mode !== 'edit' ? (
             <CreateActionButtons
@@ -108,6 +152,7 @@ const ProjectsHeader = ({
                 files,
                 mode,
                 specificFields,
+                filesMetaData,
               }}
               {...rest}
             />
@@ -123,8 +168,12 @@ const ProjectsHeader = ({
                 setProjectFiles,
                 setProjectTitle,
                 trancheErrors,
+                getTrancheErrors,
                 specificFields,
                 approvalFields,
+                postExComUpdate,
+                bpData,
+                filesMetaData,
               }}
               {...rest}
             />

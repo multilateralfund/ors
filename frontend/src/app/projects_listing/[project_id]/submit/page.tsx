@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import ProjectsSubmitWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsSubmit/ProjectsSubmitWrapper'
+import ProjectsVersionChangeWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsVersionChange/ProjectsVersionChangeWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
@@ -19,7 +19,7 @@ export default function SubmitProject() {
 
   return (
     <PageWrapper>
-      <ProjectsSubmitWrapper key={project_id} />
+      <ProjectsVersionChangeWrapper key={project_id} mode="submit" />
     </PageWrapper>
   )
 }

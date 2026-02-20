@@ -1,7 +1,7 @@
 import { useStore } from '@ors/store'
 import { find, reverse } from 'lodash'
 
-export const getMeetingOptions = () => {
+export const useMeetingOptions = () => {
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
   const formattedMeetings = meetings?.map((meeting: any) => ({

@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -13,7 +11,7 @@ import { isNull } from 'lodash'
 const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -25,15 +23,18 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   if (
     data &&
     ((mode !== 'copy' &&
-      ((['Withdrawn', 'Not approved'].includes(data.submission_status) &&
-        (mode !== 'edit' || !canEditApprovedProjects)) ||
+      ((['Withdrawn', 'Not approved', 'Approved'].includes(
+        data.submission_status,
+      ) &&
+        mode !== 'edit') ||
         (mode !== 'edit' &&
-          data.version === 3 &&
+          data.version >= 3 &&
           data.submission_status !== 'Recommended'))) ||
       !isNull(data.latest_project) ||
-      (mode !== 'copy' && !data.editable))
+      (mode !== 'copy' && !data?.editable) ||
+      (mode !== 'edit' && !canUpdateProjects))
   ) {
-    return <Redirect to={`/projects-listing/${project_id}`} />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

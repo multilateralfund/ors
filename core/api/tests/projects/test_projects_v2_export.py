@@ -1,5 +1,6 @@
 import io
 from http import HTTPStatus
+from itertools import chain
 
 import openpyxl
 import pytest
@@ -11,8 +12,8 @@ from rest_framework.response import Response
 
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
-from core.api.views.project_v2_export import get_activity_data_from_instance
-from core.api.views.project_v2_export import get_activity_data_from_json
+from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
+from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
@@ -24,7 +25,11 @@ pytestmark = pytest.mark.django_db
 
 def validate_docx_export(project: Project, user: User, response: FileResponse):
     assert response.status_code == HTTPStatus.OK
-    assert response.filename == f"{project.id}.docx"
+    try:
+        file_name = project.code.replace("/", "_")
+    except AttributeError:
+        file_name = f"project_{project.id}"
+    assert response.filename == f"{file_name}.docx"
     assert (
         response.headers["Content-Type"]
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -43,13 +48,29 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
             project.agency.name,
             project.cluster.name,
             project.total_fund,
-            project.description,
         ]
         if x
     ]
     result = [False for v in to_find]
 
-    for p in doc.paragraphs:
+    paragraphs_to_check = chain(
+        doc.sections[0].first_page_footer.paragraphs,
+        doc.sections[0].even_page_footer.paragraphs,
+        doc.sections[0].footer.paragraphs,
+        doc.paragraphs,
+    )
+
+    found_description = False
+    for t in doc.tables:
+        if len(t.rows) and len(t.columns) == 1:
+            if t.cell(0, 0).text == project.description:
+                found_description = True
+
+    assert (
+        found_description
+    ), f"Could not locate description ({project.description}) in output."
+
+    for p in paragraphs_to_check:
         for i, v in enumerate(to_find):
             if result[i] is False:
                 if v in p.text:
@@ -203,13 +224,23 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: Response = self.client.get(self.url, {"project_id": project.id})
         assert response.status_code == HTTPStatus.FORBIDDEN, response.data
 
-    def test_export_projects_agency_submitter(self, project, agency_inputter_user):
+    def test_export_projects_agency_submitter(
+        self, project, agency_inputter_user, project_approved_status
+    ):
+        # Set submission status to approved to have the project code shown in the export
+        project.submission_status = project_approved_status
+        project.save()
         self.client.force_authenticate(user=agency_inputter_user)
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
 
-    def test_export_projects_secretariat(self, project, secretariat_viewer_user):
+    def test_export_projects_secretariat(
+        self, project, secretariat_viewer_user, project_approved_status
+    ):
+        # Set submission status to approved to have the project code shown in the export
+        project.submission_status = project_approved_status
+        project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK

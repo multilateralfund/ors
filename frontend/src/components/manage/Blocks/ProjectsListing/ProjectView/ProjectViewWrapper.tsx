@@ -1,12 +1,11 @@
 'use client'
 
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectViewButtons from '../ProjectsListing/ProjectViewButtons'
 import ProjectView from './ProjectView'
 import {
   PageTitle,
@@ -14,33 +13,22 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
+import { useGetProject } from '../hooks/useGetProject'
 import { ProjectSpecificFields } from '../interfaces'
 
 import { Redirect, useLocation, useParams } from 'wouter'
-import { isNull } from 'lodash'
 
 const ProjectViewWrapper = () => {
   const { project_id, version: paramsVersion } =
     useParams<Record<string, string>>()
   const [location] = useLocation()
 
-  const { canEditProjects, canEditApprovedProjects } =
-    useContext(PermissionsContext)
-
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const {
-    cluster_id,
-    project_type_id,
-    sector_id,
-    submission_status,
-    latest_project,
-    version,
-    editable,
-  } = data || {}
+  const { cluster_id, project_type_id, sector_id, latest_project, version } =
+    data || {}
 
   const { files: projectFiles, loadedFiles } = useGetProjectFiles(
     parseInt(project_id),
@@ -98,7 +86,7 @@ const ProjectViewWrapper = () => {
       {!loading && data && (
         <>
           <HeaderTitle>
-            <div className="flex flex-wrap justify-between gap-3">
+            <div className="flex flex-wrap gap-3">
               <div className="flex flex-col">
                 <RedirectBackButton />
                 <div className="flex flex-wrap gap-2 sm:flex-nowrap">
@@ -117,21 +105,10 @@ const ProjectViewWrapper = () => {
                   )}
                 </div>
               </div>
-              {canEditProjects &&
-                editable &&
-                isNull(latest_project) &&
-                (!['Withdrawn', 'Not approved'].includes(submission_status) ||
-                  canEditApprovedProjects) && (
-                  <CustomLink
-                    className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
-                    href={`/projects-listing/${project_id}/edit`}
-                    color="secondary"
-                    variant="contained"
-                    button
-                  >
-                    Edit
-                  </CustomLink>
-                )}
+              <ProjectViewButtons
+                {...{ data, specificFields }}
+                setParams={project.setParams}
+              />
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>

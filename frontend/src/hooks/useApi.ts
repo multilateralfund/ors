@@ -1,7 +1,14 @@
 import type { IApi } from '@ors/helpers/Api/types'
 import { DataType, ErrorType } from '@ors/types/primitives'
 
-import { Dispatch, SetStateAction, useEffect, useId, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useId,
+  useState,
+} from 'react'
 
 import { produce } from 'immer'
 import { isFunction } from 'lodash'
@@ -15,11 +22,10 @@ export type ApiSettings = {
   onSuccess?: any
   onSuccessNoCatch?: any
   parseParams?: any
+  reactivePath?: boolean
 } & IApi
 
-export default function useApi<DT = DataType>(
-  props: ApiSettings,
-): {
+export interface UseApiReturn<DT> {
   apiSettings: ApiSettings
   data: DT | null | undefined
   error: ErrorType
@@ -28,10 +34,16 @@ export default function useApi<DT = DataType>(
   params: Record<string, any>
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
   setParams: (params: Record<string, any>) => void
-} {
+  refetch: () => void
+}
+
+export default function useApi<DT = DataType>(
+  props: ApiSettings,
+): UseApiReturn<DT> {
   const id = useId()
+  const [fetchIndex, setFetchIndex] = useState(0)
   const [apiSettings, setApiSettings] = useState(props)
-  const { options, path, throwError = true } = apiSettings
+  const { options, path, throwError = true, reactivePath = false } = apiSettings
   const [data, setData] = useState<DT | null | undefined>(undefined)
   const [error, setError] = useState<ErrorType>(undefined)
   const [loading, setLoading] = useState<boolean>(false)
@@ -65,16 +77,19 @@ export default function useApi<DT = DataType>(
     setLoaded(true)
   }
 
-  function setParams(params: Record<string, any>) {
-    setApiSettings(
-      produce((apiSettings) => {
-        apiSettings.options.params = {
-          ...apiSettings.options.params,
-          ...params,
-        }
-      }),
-    )
-  }
+  const setParams = useCallback(
+    (params: Record<string, any>) => {
+      setApiSettings(
+        produce((apiSettings) => {
+          apiSettings.options.params = {
+            ...apiSettings.options.params,
+            ...params,
+          }
+        }),
+      )
+    },
+    [setApiSettings],
+  )
 
   useEffect(() => {
     debounce(
@@ -98,7 +113,25 @@ export default function useApi<DT = DataType>(
       `useApi:${id}`,
     )
     /* eslint-disable-next-line */
-  }, [path, options, throwError])
+  }, [path, options, throwError, fetchIndex])
+
+  const refetch = useCallback(() => {
+    setFetchIndex((index) => index + 1)
+  }, [])
+
+  useEffect(() => {
+    if (!reactivePath) {
+      return
+    }
+
+    if (apiSettings.path !== props.path) {
+      setApiSettings((prev) => ({ ...prev, path: props.path }))
+      refetch()
+    }
+
+    // Yes, props.path, as the "path" in the code comes from state so it's not reactive
+    // unless manually set
+  }, [apiSettings.path, props.path, reactivePath, refetch])
 
   return {
     apiSettings,
@@ -106,8 +139,9 @@ export default function useApi<DT = DataType>(
     error,
     loaded,
     loading,
-    params: options.params || {},
+    params: options?.params || {},
     setApiSettings,
     setParams,
+    refetch,
   }
 }

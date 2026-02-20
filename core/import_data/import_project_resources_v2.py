@@ -7,7 +7,7 @@ from django.db import transaction
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
 )
-
+from core.models.group import Group
 from core.models.base import Module
 from core.models.country import Country
 from core.models.project_metadata import (
@@ -79,8 +79,8 @@ OUTDATED_SUBSECTORS = {
 
 NEW_STATUSES = [
     {
-        "STATUS": "New Submission",
-        "STATUS_CODE": "NEWSUB",
+        "STATUS": "N/A",
+        "STATUS_CODE": "NA",
     },
     {
         "STATUS": "Unknow",
@@ -96,13 +96,12 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Number of female trainers trained",
     "Total number of technicians certified",
     "Number of female technicians certified",
-    "Number of training institutions newly assisted",
+    "Number of training institutions newly  assisted",
     "Number of tools sets distributed",
     "Total number of customs officers trained",
     "Number of female customs officers trained",
     "Total number of NOU personnel supported",
     "Number of female NOU personnel supported",
-    "Number of enterprises assisted",
     "Certification system for technicians established or further enhanced (yes or no)",
     "Operation of recovery and recycling scheme (yes or no)",
     "Operation of reclamation scheme (yes or no)",
@@ -124,6 +123,12 @@ FIELDS_WITH_ACTUAL_VALUES = [
     "Quantity of HFC-23 by-product (by product generation rate)",
     "Quantity of HFC-23 by-product (Destroyed)",
     "Quantity of HFC-23 by-product (Emitted)",
+    "Number of Production Lines assisted",
+    "Number of enterprises assisted",
+    "Number of enterprises",
+    "Aggregated consumption",
+    "Cost effectiveness (US$/ Kg)",
+    "Cost effectiveness (US$/ CO2-eq)",
 ]
 
 
@@ -149,6 +154,16 @@ def import_project_clusters(file_path):
             production = True
         elif row["Production"] == "Both":
             production = None
+
+        # get annex groups
+        annex_groups = []
+        if row["Annex groups"]:
+            annex_groups_name_alt = row["Annex groups"].split(",")
+            annex_groups = Group.objects.filter(name__in=annex_groups_name_alt)
+            if annex_groups.count() != len(annex_groups_name_alt):
+                logger.warning(
+                    f"⚠️ Some annex groups not found for cluster {row['Name']}"
+                )
         cluster_data = {
             "name": row["Name"],
             "code": row["Acronym"],
@@ -157,9 +172,12 @@ def import_project_clusters(file_path):
             "production": production,
             "sort_order": index,
         }
-        ProjectCluster.objects.update_or_create(
+
+        cluster, _ = ProjectCluster.objects.update_or_create(
             name=cluster_data["name"], defaults=cluster_data
         )
+        if annex_groups:
+            cluster.annex_groups.set(annex_groups)
 
 
 def clean_up_project_statuses():
@@ -168,25 +186,34 @@ def clean_up_project_statuses():
     Remove outdated statuses and add new ones
     """
     # remove Unknown status only if there are no projects with this status
-    if Project.objects.filter(status__code="UNK").exists():
+
+    if Project.objects.really_all().filter(status__code="UNK").exists():
         logger.warning(
             "⚠️ Cannot remove 'Unknown' status, there are projects with this status."
         )
     else:
         ProjectStatus.objects.filter(code="UNK").delete()
 
-    # change the status 'N/A' into 'New submission' and delete status 'N/A'
+    # change the status 'New submission' into 'N/A' and delete status 'New submission'
 
     new_submission_status, _ = ProjectStatus.objects.update_or_create(
-        name="New submission",
+        name="N/A",
         defaults={
-            "code": "NEWSUB",
+            "code": "NA",
         },
     )
-    Project.objects.filter(status__code="NA").update(status=new_submission_status)
-    ProjectStatus.objects.filter(code="NA").delete()
+    Project.objects.really_all().filter(status__code="NEWSUB").update(
+        status=new_submission_status
+    )
+    ProjectStatus.objects.filter(code="NEWSUB").delete()
 
-    ProjectStatus.objects.filter(code="NEWSUB").update(name="New submission")
+    # change the status 'Newly approved' into 'Ongoing' and delete status 'Newly approved'
+
+    on_going_status = ProjectStatus.objects.filter(name="Ongoing").first()
+    Project.objects.really_all().filter(status__code="NEW").update(
+        status=on_going_status
+    )
+    ProjectStatus.objects.filter(code="NEW").delete()
 
 
 def import_project_type(file_path):
@@ -314,24 +341,49 @@ def import_project_specific_fields(file_path):
     @param file_path = str (file path for import file)
     """
 
-    def _clean_up_field_name(field_name):
+    def _clean_up_field_name(field_name, mya=False):
         """
         Clean up field name
         """
-        if field_name == "Phase out (M t)":
-            return "Phase out (Mt)"
+        mya_clean_up = {
+            "Cost effectiveness (US$/ CO2-ep) (MYA)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Cost effectiveness (US$/ CO2-ep)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+            "Aggregated consumption": "Aggregated consumption (MYA)",
+            "Cost effectiveness (US$/ Kg)": "Cost effectiveness (US$/ Kg) (MYA)",
+            "Number of enterprises assisted": "Number of enterprises assisted (MYA)",
+            "Number of enterprises": "Number of enterprises (MYA)",
+            "Number of Production Lines assisted": "Number of Production Lines assisted (MYA)",
+        }
+
+        individual_field_clean_up = {
+            "Cost effectiveness (US$/ CO2-ep)": "Cost effectiveness (US$/ CO2-eq)",
+            "Cost effectiveness (US$/ CO2-ep) (MYA)": "Cost effectiveness (US$/ CO2-eq)",
+            "Phase out (Mt) (MYA)": "Phase out (Mt)",
+            "Phase out (M t)": "Phase out (Mt)",
+            "Phase out (CO2-eq t) (MYA)": "Phase out (CO2-eq t)",
+            "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq)",
+            "Phase out (ODP t) (MYA)": "Phase out (ODP t)",
+        }
+        if mya:
+            if field_name in mya_clean_up:
+                return mya_clean_up[field_name]
+        else:
+            if field_name in individual_field_clean_up:
+                return individual_field_clean_up[field_name]
         return field_name.strip().replace("  ", " ")
 
     df = pd.read_excel(file_path).fillna("")
 
     for _, row in df.iterrows():
-        if (
-            row["Sector name"].strip() == "Other Sector"
-            or row["Project type name"].strip() == "Other Type"
-        ):
-            continue
         if row["Project type name"].strip() == "Project preparation":
             row["Project type name"] = "Preparation"
+        if row["Sector name"].strip() == "Control Submstance Monitoring":
+            row["Sector name"] = "Control Substance Monitoring"
+        if row["Sector name"].strip() == "Compliance Assistance Program":
+            row["Sector name"] = "Compliance Assistance Programme"
+        if row["Sector name"] == "Other Sector":
+            continue
         try:
             cluster_sector_type = ProjectSpecificFields.objects.get(
                 cluster__name__iexact=row["Cluster name"].strip(),
@@ -344,33 +396,50 @@ def import_project_specific_fields(file_path):
             )
             continue
 
+        cluster_sector_type.fields.clear()
+
         # particular fields start from row 22
-        field_names = [
+        # Extract MYA fields separately as some names are dupliated in the impact section
+        field_names_excluding_mya = [
             _clean_up_field_name(row[field_index].strip())
-            for field_index in range(22, len(row) - 1)
+            for field_index in range(22, 49)
             if row[field_index] != ""
         ]
-
-        # check if ods odp fields are present; if they are all fields should be added,
-        #  regardless of the information in the file
-        if set(field_names) & set(SUBSTANCE_FIELDS):
-            field_names.extend(SUBSTANCE_FIELDS)
 
         # search for fields that also have an actual field that is not in the file
         # and add them to the list of fields to be added (for Impact fields)
         actual_field_names = [
             f"{field_name} actual"
-            for field_name in field_names
+            for field_name in field_names_excluding_mya
             if field_name in FIELDS_WITH_ACTUAL_VALUES
         ]
-        field_names.extend(actual_field_names)
+        field_names_excluding_mya.extend(actual_field_names)
+        project_fields = ProjectField.objects.exclude(section="MYA").filter(
+            import_name__in=field_names_excluding_mya
+        )
 
-        project_fields = ProjectField.objects.filter(import_name__in=field_names)
-
-        missing_fields = set(field_names) - set(
+        missing_fields = set(field_names_excluding_mya) - set(
             project_fields.values_list("import_name", flat=True)
         )
 
+        for missing_field in missing_fields:
+            logger.warning(
+                f"⚠️ {missing_field} field not found =>"
+                + f"{row['Cluster name']}/{row['Project type name']}/{row['Sector name']}"
+            )
+        cluster_sector_type.fields.add(*project_fields)
+
+        mya_field_names = [
+            _clean_up_field_name(row[field_index].strip(), mya=True)
+            for field_index in range(49, len(row) - 1)
+            if row[field_index] != ""
+        ]
+        project_fields = ProjectField.objects.filter(
+            import_name__in=mya_field_names, section="MYA"
+        )
+        missing_fields = set(mya_field_names) - set(
+            project_fields.values_list("import_name", flat=True)
+        )
         for missing_field in missing_fields:
             logger.warning(
                 f"⚠️ {missing_field} field not found =>"
@@ -417,13 +486,20 @@ def import_cluster_type_sector_links(file_path):
             )
             continue
         for type_json in cluster_json["types"]:
-            type_obj = ProjectType.objects.filter(name=type_json["type"]).first()
+            type_name = type_json["type"]
+            if type_name == "Project Support":
+                type_name = "Project support"
+            type_obj = ProjectType.objects.filter(name=type_name).first()
             if not type_obj:
                 logger.warning(
-                    f"⚠️ {type_json['type']} type not found => {cluster_json['cluster']} not imported"
+                    f"⚠️ {type_name} type not found => {cluster_json['cluster']} not imported"
                 )
                 continue
             for sector_name in type_json["sectors"]:
+                if sector_name == "Control Submstance Monitoring":
+                    sector_name = "Control Substance Monitoring"
+                if sector_name == "Compliance Assistance Program":
+                    sector_name = "Compliance Assistance Programme"
                 sector = ProjectSector.objects.filter(name=sector_name).first()
                 if not sector:
                     logger.warning(
@@ -435,6 +511,49 @@ def import_cluster_type_sector_links(file_path):
                     type=type_obj,
                     sector=sector,
                 )
+
+
+def generate_new_cluster_type_sector_file(file_path):
+    """
+    Generate new cluster type sector file based on the current data in the database
+
+    @param file_path = str (file path for import file)
+    """
+    combinations = {}  # {cluster: {type: [sectors]}}
+    df = pd.read_excel(file_path).fillna("")
+
+    for _, row in df.iterrows():
+        if row["Project type name"].strip() == "Project preparation":
+            row["Project type name"] = "Preparation"
+
+        if row["Sector name"].strip() == "Other Sector":
+            continue
+
+        combinations.setdefault(row["Cluster name"].strip(), {})
+        combinations[row["Cluster name"].strip()].setdefault(
+            row["Project type name"].strip(), []
+        )
+        combinations[row["Cluster name"].strip()][
+            row["Project type name"].strip()
+        ].append(row["Sector name"].strip())
+
+    new_data = []
+    for cluster_name, types in combinations.items():
+        new_data.append(
+            {
+                "cluster": cluster_name,
+                "types": [
+                    {
+                        "type": type_name,
+                        "sectors": sorted(list(set(sector_names))),  # remove duplicates
+                    }
+                    for type_name, sector_names in types.items()
+                ],
+            }
+        )
+
+    with open("new_ClusterTypeSectorLinks.json", "w", encoding="utf8") as f:
+        json.dump(new_data, f, indent=4)
 
 
 def import_modules():
@@ -465,6 +584,7 @@ def import_fields(file_path):
         fields_json = json.load(f)
 
     # add other types that are not in the file
+    ProjectField.objects.all().delete()
     for field_json in fields_json:
 
         field_data = {
@@ -474,6 +594,7 @@ def import_fields(file_path):
             "write_field_name": field_json["WRITE_FIELD_NAME"],
             "table": field_json["TABLE"],
             "data_type": field_json["DATA_TYPE"],
+            "mlfs_only": field_json.get("MLFS_ONLY", False),
             "section": field_json["SECTION"],
             "is_actual": field_json.get("IS_ACTUAL", False),
             "sort_order": field_json["SORT_ORDER"],
@@ -486,7 +607,7 @@ def import_fields(file_path):
         }
 
         ProjectField.objects.update_or_create(
-            read_field_name=field_data["read_field_name"], defaults=field_data
+            import_name=field_data["import_name"], defaults=field_data
         )
 
 
@@ -556,7 +677,7 @@ def import_project_resources_v2(option):
         logger.info("✔ project types imported")
 
     if option in ["all", "import_sector"]:
-        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_06_05_2025.json"
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSector_15_10_2025.json"
         import_sector(file_path)
         logger.info("✔ sectors imported")
 
@@ -582,7 +703,7 @@ def import_project_resources_v2(option):
         logger.info("✔ cluster type sector links imported")
 
     if option in ["all", "import_fields"]:
-        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_07_08_2025.json"
+        file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_24_10_2025.json"
         import_fields(file_path)
         logger.info("✔ fields imported")
 
@@ -594,6 +715,16 @@ def import_project_resources_v2(option):
         )
         import_project_specific_fields(file_path)
         logger.info("✔ cluster type sector fields imported")
+
+    if option == "generate_new_cluster_type_sector_file":
+        # use to generate new ClusterTypeSectorLinks.json file
+        file_path = (
+            IMPORT_RESOURCES_DIR
+            / "projects_v2"
+            / "project_specific_fields_15_01_2026.xlsx"
+        )
+        generate_new_cluster_type_sector_file(file_path)
+        logger.info("✔ new cluster type sector file generated")
 
     if option in ["all", "import_modules"]:
         import_modules()

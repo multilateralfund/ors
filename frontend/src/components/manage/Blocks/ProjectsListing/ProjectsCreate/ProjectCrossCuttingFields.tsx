@@ -5,12 +5,22 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
+import ProjectFundFields from './ProjectFundFields'
+import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import { changeField, changeHandler } from './SpecificFieldsHelpers'
-import { canEditField, canViewField, hasFields } from '../utils'
+import {
+  canEditField,
+  canGoToSecondStep,
+  canViewField,
+  hasFields,
+  onTextareaFocus,
+} from '../utils'
 import {
   tableColumns,
   lvcNonLvcOpts,
+  considerationOpts,
   defaultProps,
   defaultPropsSimpleField,
   textAreaClassname,
@@ -21,13 +31,15 @@ import {
   BooleanOptionsType,
   ProjectDataProps,
   ProjectData,
+  ProjectTabSetters,
+  ProjectTypeApi,
 } from '../interfaces'
 import { ProjectTypeType } from '@ors/types/api_project_types'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { useStore } from '@ors/store'
 
-import { TextareaAutosize, Divider, Checkbox } from '@mui/material'
+import { TextareaAutosize, Divider } from '@mui/material'
 import { filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -35,21 +47,35 @@ import dayjs from 'dayjs'
 const ProjectCrossCuttingFields = ({
   projectData,
   setProjectData,
+  project,
   errors = {},
-  hasSubmitted,
+  nextStep,
+  setCurrentTab,
   fieldsOpts,
   specificFieldsLoaded,
-}: ProjectDataProps & {
-  specificFieldsLoaded: boolean
-  fieldsOpts: {
-    crtProjectTypesOpts: ProjectTypeType[]
-    projectTypes: ProjectTypeType[]
-    crtSectorsOpts: ProjectSectorType[]
-    sectors: ProjectSectorType[]
-    crtSubsectorsOpts: ProjectSubSectorType[]
-    subsectors: ProjectSubSectorType[]
-  }
-}) => {
+  postExComUpdate,
+  isV3ProjectEditable,
+  mode,
+}: ProjectDataProps &
+  ProjectTabSetters & {
+    project?: ProjectTypeApi
+    nextStep: number
+    specificFieldsLoaded: boolean
+    postExComUpdate: boolean
+    isV3ProjectEditable: boolean
+    mode: string
+    fieldsOpts: {
+      crtProjectTypesOpts: ProjectTypeType[]
+      projectTypes: ProjectTypeType[]
+      crtSectorsOpts: ProjectSectorType[]
+      sectors: ProjectSectorType[]
+      crtSubsectorsOpts: ProjectSubSectorType[]
+      subsectors: ProjectSubSectorType[]
+    }
+  }) => {
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const {
     crtProjectTypesOpts,
     projectTypes,
@@ -59,6 +85,7 @@ const ProjectCrossCuttingFields = ({
     subsectors,
   } = fieldsOpts
   const sectionIdentifier = 'crossCuttingFields'
+  const { projIdentifiers } = projectData
   const crossCuttingFields = projectData[sectionIdentifier]
   const {
     project_type,
@@ -67,17 +94,17 @@ const ProjectCrossCuttingFields = ({
     is_lvc,
     title,
     description,
-    total_fund,
-    support_cost_psc,
     project_start_date,
     project_end_date,
-    individual_consideration,
+    blanket_or_individual_consideration,
   } = crossCuttingFields
+  const { submission_status } = project || {}
 
   const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
 
+  const isV3Project = postExComUpdate || isV3ProjectEditable
   const canViewAboutSection =
     canViewField(viewableFields, 'title') ||
     canViewField(viewableFields, 'description')
@@ -92,62 +119,43 @@ const ProjectCrossCuttingFields = ({
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-[15rem]',
+      className: defaultProps.FieldProps.className + ' w-full',
     },
   }
   const defaultPropsDateInput = {
-    className: 'BPListUpload !ml-0 h-10 w-40',
+    className: 'BPListUpload !ml-0 h-10 w-40 !flex-grow-0',
   }
+
+  const areInvalidFields = !(
+    canGoToSecondStep(projIdentifiers, agency_id) &&
+    project_type &&
+    sector
+  )
+  const isNextDisabled = areInvalidFields || !specificFieldsLoaded
+  const isStartDateDisabled =
+    (mode === 'edit' &&
+      submission_status === 'Approved' &&
+      (postExComUpdate || !!project?.project_start_date)) ||
+    !canEditField(editableFields, 'project_start_date')
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
-      },
-    }))
-  }
-
-  const handleChangeNumericValues = (
-    event: ChangeEvent<HTMLInputElement>,
-    field: string,
-  ) => {
-    const initialValue = event.target.value
-    const value = initialValue === '' ? null : initialValue
-
-    if (!isNaN(Number(value))) {
-      setProjectData((prevData) => ({
+    setProjectData(
+      (prevData) => ({
         ...prevData,
         [sectionIdentifier]: {
           ...prevData[sectionIdentifier],
-          [field]: value,
+          subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
         },
-      }))
-    } else {
-      event.preventDefault()
-    }
+      }),
+      'subsector',
+    )
   }
-
-  const handleChangeBlanketConsideration = (consideration: boolean) => {
-    setProjectData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        individual_consideration: !consideration,
-      },
-    }))
-  }
-
-  const getIsInputDisabled = (field: keyof typeof errors) =>
-    hasSubmitted && errors[field]?.length > 0
 
   const getFieldDefaultProps = (field: string) => {
     return {
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          'border-red-500': getIsInputDisabled(field),
           [disabledClassName]: !canEditField(editableFields, field),
         }),
       },
@@ -159,51 +167,63 @@ const ProjectCrossCuttingFields = ({
       {canViewAboutSection && (
         <>
           <SectionTitle>About</SectionTitle>
-          {canViewField(viewableFields, 'title') && (
-            <div>
-              <Label>{tableColumns.title}</Label>
-              <SimpleInput
-                id={title}
-                value={title}
-                onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                  changeHandler['text']<ProjectData, CrossCuttingFields>(
-                    event,
-                    'title',
-                    setProjectData,
-                    sectionIdentifier,
-                  )
-                }
-                disabled={!canEditField(editableFields, 'title')}
-                type="text"
-                {...getFieldDefaultProps('title')}
-                containerClassName={
-                  defaultPropsSimpleField.containerClassName + ' !w-[55rem]'
-                }
-              />
-            </div>
-          )}
-          {canViewField(viewableFields, 'description') && (
-            <div>
-              <Label>{tableColumns.description}</Label>
-              <TextareaAutosize
-                value={description}
-                onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                  changeHandler['text']<ProjectData, CrossCuttingFields>(
-                    event,
-                    'description',
-                    setProjectData,
-                    sectionIdentifier,
-                  )
-                }
-                disabled={!canEditField(editableFields, 'description')}
-                className={cx(textAreaClassname + ' !min-w-[64rem]', {
-                  'border-red-500': getIsInputDisabled('description'),
-                })}
-                minRows={7}
-                tabIndex={-1}
-              />
-            </div>
-          )}
+          <div className="flex flex-col gap-y-2">
+            {canViewField(viewableFields, 'title') && (
+              <div>
+                <Label>{tableColumns.title}</Label>
+                <div className="flex items-center">
+                  <SimpleInput
+                    id="title"
+                    value={title}
+                    onFocus={onTextareaFocus}
+                    onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                      changeHandler['text']<ProjectData, CrossCuttingFields>(
+                        event,
+                        'title',
+                        setProjectData,
+                        sectionIdentifier,
+                      )
+                    }
+                    disabled={!canEditField(editableFields, 'title')}
+                    type="text"
+                    {...getFieldDefaultProps('title')}
+                    containerClassName={
+                      defaultPropsSimpleField.containerClassName +
+                      ' w-full max-w-[55rem]'
+                    }
+                  />
+                  <div className="w-8">
+                    <FieldErrorIndicator errors={errors} field="title" />
+                  </div>
+                </div>
+              </div>
+            )}
+            {canViewField(viewableFields, 'description') && (
+              <div>
+                <Label>{tableColumns.description} (max 1000 characters)</Label>
+                <div className="flex items-center">
+                  <TextareaAutosize
+                    value={description}
+                    onFocus={onTextareaFocus}
+                    onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                      changeHandler['text']<ProjectData, CrossCuttingFields>(
+                        event,
+                        'description',
+                        setProjectData,
+                        sectionIdentifier,
+                      )
+                    }
+                    disabled={!canEditField(editableFields, 'description')}
+                    className={cx(textAreaClassname, 'max-w-[64rem]')}
+                    maxLength={1000}
+                    style={STYLE}
+                    minRows={6}
+                  />
+                  <FieldErrorIndicator errors={errors} field="description" />
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -217,232 +237,282 @@ const ProjectCrossCuttingFields = ({
           <div className="flex flex-col gap-y-2">
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'project_type') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.type}</Label>
-                  <Field
-                    widget="autocomplete"
-                    options={crtProjectTypesOpts}
-                    value={
-                      some(projectTypes, { id: project_type })
-                        ? project_type
-                        : null
-                    }
-                    onChange={(_: React.SyntheticEvent, value) =>
-                      changeHandler['drop_down']<
-                        ProjectData,
-                        CrossCuttingFields
-                      >(
-                        value,
-                        'project_type',
-                        setProjectData,
-                        sectionIdentifier,
-                      )
-                    }
-                    getOptionLabel={(option: any) =>
-                      getOptionLabel(projectTypes, option)
-                    }
-                    disabled={
-                      !specificFieldsLoaded ||
-                      !canEditField(editableFields, 'project_type')
-                    }
-                    Input={{
-                      error: getIsInputDisabled('project_type'),
-                    }}
-                    {...sectionDefaultProps}
-                  />
+                  <div className="flex items-center">
+                    <Field
+                      widget="autocomplete"
+                      options={crtProjectTypesOpts}
+                      value={
+                        some(projectTypes, { id: project_type })
+                          ? project_type
+                          : null
+                      }
+                      onChange={(_: React.SyntheticEvent, value) =>
+                        changeHandler['drop_down']<
+                          ProjectData,
+                          CrossCuttingFields
+                        >(
+                          value,
+                          'project_type',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
+                      }
+                      getOptionLabel={(option: any) =>
+                        getOptionLabel(projectTypes, option)
+                      }
+                      disabled={
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.project_type_id && !!project_type))) ||
+                        !specificFieldsLoaded ||
+                        !canEditField(editableFields, 'project_type')
+                      }
+                      {...sectionDefaultProps}
+                    />
+                    <div className="w-8">
+                      <FieldErrorIndicator
+                        errors={errors}
+                        field="project_type"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
               {canViewField(viewableFields, 'sector') && (
-                <div>
+                <div className="flex-shrink basis-[18.5rem]">
                   <Label>{tableColumns.sector}</Label>
-                  <Field
-                    widget="autocomplete"
-                    options={crtSectorsOpts}
-                    value={some(sectors, { id: sector }) ? sector : null}
-                    onChange={(_, value) =>
-                      changeHandler['drop_down']<
-                        ProjectData,
-                        CrossCuttingFields
-                      >(value, 'sector', setProjectData, sectionIdentifier)
-                    }
-                    getOptionLabel={(option) => getOptionLabel(sectors, option)}
-                    disabled={
-                      !specificFieldsLoaded ||
-                      !canEditField(editableFields, 'sector')
-                    }
-                    Input={{
-                      error: getIsInputDisabled('sector'),
-                    }}
-                    {...sectionDefaultProps}
-                  />
+                  <div className="flex items-center">
+                    <Field
+                      widget="autocomplete"
+                      options={crtSectorsOpts}
+                      value={some(sectors, { id: sector }) ? sector : null}
+                      onChange={(_, value) =>
+                        changeHandler['drop_down']<
+                          ProjectData,
+                          CrossCuttingFields
+                        >(value, 'sector', setProjectData, sectionIdentifier)
+                      }
+                      getOptionLabel={(option) =>
+                        getOptionLabel(sectors, option)
+                      }
+                      disabled={
+                        (isV3Project &&
+                          (postExComUpdate ||
+                            (!!project?.sector_id && !!sector))) ||
+                        !specificFieldsLoaded ||
+                        !canEditField(editableFields, 'sector')
+                      }
+                      {...sectionDefaultProps}
+                    />
+                    <div className="w-8">
+                      <FieldErrorIndicator errors={errors} field="sector" />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
             <div className="flex flex-wrap gap-x-20 gap-y-3">
               {canViewField(viewableFields, 'subsectors') && (
-                <div>
+                <div className="flex-shrink basis-[40.25rem]">
                   <Label>{tableColumns.subsectors}</Label>
-                  <Field
-                    widget="autocomplete"
-                    multiple={true}
-                    options={crtSubsectorsOpts}
-                    value={
-                      filter(subsectors, (subsector) =>
-                        includes(subsector_ids, subsector.id),
-                      ) as ProjectSubSectorType[]
-                    }
-                    onChange={(_, value) =>
-                      handleChangeSubSector(value as ProjectSubSectorType[])
-                    }
-                    getOptionLabel={(option) =>
-                      getOptionLabel(subsectors, option)
-                    }
-                    disabled={!canEditField(editableFields, 'subsectors')}
-                    Input={{
-                      error: getIsInputDisabled('subsector_ids'),
-                    }}
-                    FieldProps={{ className: 'mb-0 w-[40rem] BPListUpload' }}
-                  />
+                  <div className="flex items-center">
+                    <div className="w-full">
+                      <Field
+                        widget="autocomplete"
+                        multiple={true}
+                        options={crtSubsectorsOpts}
+                        value={
+                          filter(subsectors, (subsector) =>
+                            includes(subsector_ids, subsector.id),
+                          ) as ProjectSubSectorType[]
+                        }
+                        onChange={(_, value) =>
+                          handleChangeSubSector(value as ProjectSubSectorType[])
+                        }
+                        getOptionLabel={(option) =>
+                          getOptionLabel(subsectors, option)
+                        }
+                        disabled={!canEditField(editableFields, 'subsectors')}
+                        FieldProps={{ className: 'w-full BPListUpload mb-0' }}
+                      />
+                    </div>
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="subsector_ids"
+                    />
+                  </div>
                 </div>
               )}
               {canViewField(viewableFields, 'is_lvc') && (
                 <div>
                   <Label>{tableColumns.is_lvc}</Label>
-                  <Field
-                    widget="autocomplete"
-                    options={lvcNonLvcOpts}
-                    value={
-                      (find(lvcNonLvcOpts, { id: is_lvc }) ||
-                        null) as BooleanOptionsType | null
-                    }
-                    onChange={(_, value) =>
-                      changeHandler['drop_down']<
-                        ProjectData,
-                        CrossCuttingFields
-                      >(value, 'is_lvc', setProjectData, sectionIdentifier)
-                    }
-                    getOptionLabel={(option: any) =>
-                      getOptionLabel(lvcNonLvcOpts, option)
-                    }
-                    disabled={!canEditField(editableFields, 'is_lvc')}
-                    Input={{
-                      error: getIsInputDisabled('is_lvc'),
-                    }}
-                    {...defaultProps}
-                  />
+                  <div className="flex items-center">
+                    <Field
+                      widget="autocomplete"
+                      options={lvcNonLvcOpts}
+                      value={
+                        (find(lvcNonLvcOpts, { id: is_lvc }) ||
+                          null) as BooleanOptionsType | null
+                      }
+                      onChange={(_, value) =>
+                        changeHandler['drop_down']<
+                          ProjectData,
+                          CrossCuttingFields
+                        >(value, 'is_lvc', setProjectData, sectionIdentifier)
+                      }
+                      getOptionLabel={(option: any) =>
+                        getOptionLabel(lvcNonLvcOpts, option)
+                      }
+                      disabled={!canEditField(editableFields, 'is_lvc')}
+                      {...defaultProps}
+                    />
+                    <FieldErrorIndicator errors={errors} field="is_lvc" />
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex flex-wrap gap-x-20 gap-y-3">
-              {canViewField(viewableFields, 'total_fund') && (
-                <div>
-                  <Label>{tableColumns.total_fund}</Label>
-                  <SimpleInput
-                    id={total_fund as string}
-                    value={total_fund ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(event, 'total_fund')
-                    }
-                    disabled={!canEditField(editableFields, 'total_fund')}
-                    type="text"
-                    {...getFieldDefaultProps('total_fund')}
-                  />
-                </div>
-              )}
-              {canViewField(viewableFields, 'support_cost_psc') && (
-                <div>
-                  <Label>{tableColumns.support_cost_psc}</Label>
-                  <SimpleInput
-                    id={support_cost_psc as string}
-                    value={support_cost_psc ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(event, 'support_cost_psc')
-                    }
-                    disabled={!canEditField(editableFields, 'support_cost_psc')}
-                    type="text"
-                    {...getFieldDefaultProps('support_cost_psc')}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-x-20 gap-y-3">
+            <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
+              <ProjectFundFields
+                {...{ projectData, setProjectData, project, errors }}
+                type="crossCutting"
+              />
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>
                   <Label>{tableColumns.project_start_date}</Label>
-                  <DateInput
-                    id="project_start_date"
-                    value={project_start_date as string}
-                    onChange={(event) =>
-                      changeField(
-                        event.target.value || null,
-                        'project_start_date',
-                        setProjectData,
-                        sectionIdentifier,
-                      )
-                    }
-                    disabled={
-                      !canEditField(editableFields, 'project_start_date')
-                    }
-                    formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-                    className={cx(defaultPropsDateInput.className, {
-                      'border-red-500':
-                        getIsInputDisabled('project_start_date'),
-                      [disabledClassName]: !canEditField(
-                        editableFields,
-                        'project_start_date',
-                      ),
-                    })}
-                  />
+                  <div className="flex items-center">
+                    <DateInput
+                      id="project_start_date"
+                      value={project_start_date as string}
+                      onChange={(event) =>
+                        changeField(
+                          event.target.value || null,
+                          'project_start_date',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
+                      }
+                      disabled={isStartDateDisabled}
+                      formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+                      className={cx(defaultPropsDateInput.className, {
+                        [disabledClassName]: isStartDateDisabled,
+                      })}
+                    />
+                    <div className="w-8">
+                      <FieldErrorIndicator
+                        errors={errors}
+                        field="project_start_date"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
               {canViewField(viewableFields, 'project_end_date') && (
                 <div>
                   <Label>{tableColumns.project_end_date}</Label>
-                  <DateInput
-                    id="project_end_date"
-                    value={project_end_date as string}
-                    onChange={(event) =>
-                      changeField(
-                        event.target.value || null,
-                        'project_end_date',
+                  <div className="flex items-center">
+                    <DateInput
+                      id="project_end_date"
+                      value={project_end_date as string}
+                      onChange={(event) => {
+                        changeField(
+                          event.target.value || null,
+                          'project_end_date',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
+                        if (mode === 'edit' && (project?.version ?? 0) >= 3) {
+                          changeField(
+                            event.target.value || null,
+                            'date_completion',
+                            setProjectData,
+                            'approvalFields',
+                          )
+                        }
+                      }}
+                      disabled={
+                        !canEditField(editableFields, 'project_end_date')
+                      }
+                      formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+                      className={cx(defaultPropsDateInput.className, {
+                        [disabledClassName]: !canEditField(
+                          editableFields,
+                          'project_end_date',
+                        ),
+                      })}
+                    />
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="project_end_date"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            {canViewField(
+              viewableFields,
+              'blanket_or_individual_consideration',
+            ) && (
+              <div>
+                <Label>
+                  {tableColumns.blanket_or_individual_consideration}
+                </Label>
+                <div className="flex items-center">
+                  <Field
+                    widget="autocomplete"
+                    options={considerationOpts}
+                    value={
+                      considerationOpts.find(
+                        (opt) => opt.id === blanket_or_individual_consideration,
+                      ) ?? null
+                    }
+                    onChange={(_, value) =>
+                      changeHandler['drop_down']<
+                        ProjectData,
+                        CrossCuttingFields
+                      >(
+                        value,
+                        'blanket_or_individual_consideration',
                         setProjectData,
                         sectionIdentifier,
                       )
                     }
-                    disabled={!canEditField(editableFields, 'project_end_date')}
-                    formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-                    className={cx(defaultPropsDateInput.className, {
-                      'border-red-500': getIsInputDisabled('project_end_date'),
-                      [disabledClassName]: !canEditField(
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(considerationOpts, option, 'value')
+                    }
+                    disabled={
+                      !canEditField(
                         editableFields,
-                        'project_end_date',
-                      ),
-                    })}
+                        'blanket_or_individual_consideration',
+                      )
+                    }
+                    {...{
+                      ...defaultProps,
+                      FieldProps: {
+                        className:
+                          defaultProps.FieldProps.className + ' w-[13.5rem]',
+                      },
+                    }}
+                  />
+                  <FieldErrorIndicator
+                    errors={errors}
+                    field="blanket_or_individual_consideration"
                   />
                 </div>
-              )}
-            </div>
-            {canViewField(viewableFields, 'individual_consideration') && (
-              <div className="flex">
-                <Label>Blanket consideration</Label>
-                <Checkbox
-                  className="pb-1 pl-2 pt-0"
-                  checked={!individual_consideration}
-                  onChange={(_, value) =>
-                    handleChangeBlanketConsideration(value)
-                  }
-                  disabled={
-                    !canEditField(editableFields, 'individual_consideration')
-                  }
-                  sx={{
-                    color: 'black',
-                  }}
-                />
               </div>
             )}
           </div>
         </>
       )}
+      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <NavigationButton type="previous" {...{ setCurrentTab }} />
+        <NavigationButton
+          nextTab={nextStep - 1}
+          isBtnDisabled={isNextDisabled}
+          setCurrentTab={setCurrentTab}
+        />
+      </div>
     </>
   )
 }

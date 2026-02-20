@@ -321,8 +321,9 @@ class TestProjectCluster(BaseTest):
 
 
 @pytest.fixture(name="_setup_project_specific_fields")
-def setup_project_specific_fields():
+def setup_project_specific_fields(groupHCFC):
     cluster1 = ProjectClusterFactory.create(name="Cluster1", code="CL1", sort_order=1)
+    cluster1.annex_groups.add(groupHCFC)
     project_type1 = ProjectTypeFactory.create(name="Type1", code="TYP1")
     sector1 = ProjectSectorFactory.create(name="Sector1", code="SEC1")
 
@@ -341,7 +342,10 @@ def setup_project_specific_fields():
         section="section1",
         sort_order=1,
     )
-    substance = SubstanceFactory.create()
+    substance = SubstanceFactory.create(
+        name="Substance1",
+        group=groupHCFC,
+    )
     field2 = ProjectFieldFactory.create(
         import_name="EE demonstration project included (yes/no)",
         label="EE demonstration project included",
@@ -369,6 +373,7 @@ class TestProjectFields(BaseTest):
             write_field_name="test_field_1",
             table="project",
             data_type="text",
+            mlfs_only=False,
             section="section1",
             sort_order=1,
             editable_in_versions="1,2",

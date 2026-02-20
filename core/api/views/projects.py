@@ -13,6 +13,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from core.api.filters.meta_project import (
+    MetaProjectMyaFilter,
+    MetaProjectMyaFilterBackend,
+)
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
@@ -20,8 +24,11 @@ from core.api.permissions import (
     HasProjectStatisticsViewAccess,
     HasProjectViewAccess,
     HasProjectEditAccess,
+    HasProjectV2MyaAccess,
     DenyAll,
 )
+from core.api.serializers import CountrySerializer
+from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
     ProjectFundCreateSerializer,
@@ -31,7 +38,6 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
-    ProjectField,
     ProjectSpecificFieldsSerializer,
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
@@ -41,8 +47,13 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
+from core.api.serializers.meta_project import MetaProjectMyaSerializer
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
+from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
+from core.models import Agency
+from core.models import Country
 from core.models.project import (
     MetaProject,
     Project,
@@ -55,6 +66,7 @@ from core.models.project import (
 )
 from core.models.project_metadata import (
     ProjectCluster,
+    ProjectField,
     ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
@@ -68,9 +80,149 @@ class MetaProjectListView(generics.ListAPIView):
     """
 
     permission_classes = [HasMetaProjectsViewAccess]
-    queryset = MetaProject.objects.order_by("code", "type")
+    queryset = (
+        MetaProject.objects.order_by("code", "type")
+        .prefetch_related(
+            "projects__agency",
+            "projects__comments",
+            "projects__cluster",
+            "projects__country",
+            "projects__decision",
+            "projects__files",
+            "projects__funds",
+            "projects__meeting",
+            "projects__project_type",
+            "projects__rbm_measures__measure",
+            "projects__ods_odp",
+            "projects__sector",
+            "projects__subsectors__sector",
+            "projects__status",
+            "projects__submission_amounts",
+            "projects__submission_status",
+        )
+        .select_related("lead_agency")
+    )
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
+
+
+class MetaProjectCountryListView(generics.ListAPIView):
+    """
+    List meta project countries
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return Country.objects.filter(meta_projects__in=meta_projects).distinct()
+
+
+class MetaProjectClusterListView(generics.ListAPIView):
+    """
+    List meta project clusters
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = ProjectClusterSerializer
+
+    def get_queryset(self):
+        meta_projects = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+        return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
+
+
+class MetaProjectLeadAgencyListView(generics.ListAPIView):
+    """
+    List meta project lead agencies
+    Modified to return information from Project, as the lead agency
+    is now stored there.
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = AgencySerializer
+
+    def get_queryset(self):
+        projects = Project.objects.filter(
+            category=Project.Category.MYA,
+            submission_status__name="Approved",
+            meta_project__isnull=False,
+        ).distinct()
+
+        agencies = Agency.objects.filter(
+            lead_projects__id__in=projects.values_list("id", flat=True),
+        ).distinct()
+        return agencies
+
+
+class MetaProjectMyaListView(generics.ListAPIView):
+    """
+    List meta projects available for MYA update.
+    """
+
+    permission_classes = [HasProjectV2MyaAccess]
+    serializer_class = MetaProjectMyaSerializer
+    filterset_class = MetaProjectMyaFilter
+    filter_backends = [
+        MetaProjectMyaFilterBackend,
+        filters.SearchFilter,
+    ]
+    search_fields = ["projects__code", "projects__title", "umbrella_code"]
+
+    def get_queryset(self):
+        result = (
+            MetaProject.objects.filter(
+                projects__category=Project.Category.MYA,
+                projects__submission_status__name="Approved",
+            ).prefetch_related(
+                "projects",
+                "projects__agency",
+                "projects__cluster",
+                "projects__sector",
+            )
+            # Maybe exclude if ALL sub-projects Completed OR Transfered.
+            # .filter(
+            #     Exists(
+            #         Project.objects.filter(metaproject=OuterRef("pk")).exclude(
+            #             status__name=["Completed", "Transferred"]
+            #         )
+            #     )
+            # )
+            .distinct()
+        )
+        return result
+
+
+class MetaProjectMyaDetailsViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
+    serializer_class = MetaProjecMyaDetailsSerializer
+    queryset = MetaProject.objects.all()
+    permission_classes = [HasProjectV2MyaAccess]
+
+    def update(self, request, *args, **kwargs):
+        mp = self.get_object()
+
+        serializer = MetaProjectFieldSerializer(mp, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        return Response(
+            MetaProjectFieldSerializer(mp).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProjectStatusListView(generics.ListAPIView):
@@ -151,6 +303,18 @@ class ProjectClusterListView(generics.ListAPIView):
         )
         if not include_obsoletes:
             queryset = queryset.filter(obsolete=False)
+
+        if (
+            self.request.query_params.get(
+                "included_in_type_sector_combinations", "false"
+            ).lower()
+            == "true"
+        ):
+            queryset = queryset.filter(
+                id__in=ProjectSpecificFields.objects.values_list(
+                    "cluster_id", flat=True
+                ).distinct()
+            )
         return queryset.order_by("sort_order")
 
     @swagger_auto_schema(
@@ -159,6 +323,12 @@ class ProjectClusterListView(generics.ListAPIView):
                 "include_obsoletes",
                 openapi.IN_QUERY,
                 description="Include obsolete clusters. By default, only non-obsolete clusters are returned.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "included_in_type_sector_combinations",
+                openapi.IN_QUERY,
+                description="Return only clusters that have at least one type-sector combination defined.",
                 type=openapi.TYPE_BOOLEAN,
             ),
         ]
@@ -188,6 +358,14 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
             context["project_submission_status_name"] = project.submission_status.name
         return context
 
+    def get_project_fields_queryset(self, include_actuals):
+        project_fields = ProjectField.objects.get_visible_fields_for_user(
+            self.request.user
+        )
+        if not include_actuals:
+            project_fields = project_fields.filter(is_actual=False)
+        return project_fields.order_by("sort_order")
+
     def get_object(self):
         project_id = self.request.query_params.get("project_id", None)
         include_actuals = (
@@ -203,32 +381,22 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
                 include_actuals = False
             else:
                 include_actuals = True
-        if not include_actuals:
-            queryset = ProjectSpecificFields.objects.select_related(
-                "cluster", "type", "sector"
-            ).prefetch_related(
-                models.Prefetch(
-                    "fields",
-                    queryset=ProjectField.objects.filter(is_actual=False).order_by(
-                        "sort_order"
-                    ),
-                )
+
+        queryset = ProjectSpecificFields.objects.select_related(
+            "cluster", "type", "sector"
+        ).prefetch_related(
+            models.Prefetch(
+                "fields",
+                queryset=self.get_project_fields_queryset(include_actuals),
             )
-        else:
-            queryset = ProjectSpecificFields.objects.select_related(
-                "cluster", "type", "sector"
-            ).prefetch_related(
-                models.Prefetch(
-                    "fields",
-                    queryset=ProjectField.objects.order_by("sort_order"),
-                )
-            )
-        return get_object_or_404(
+        )
+        obj = get_object_or_404(
             queryset,
             cluster_id=self.kwargs["cluster_id"],
             type_id=self.kwargs["type_id"],
             sector_id=self.kwargs["sector_id"],
         )
+        return obj
 
     @swagger_auto_schema(
         manual_parameters=[

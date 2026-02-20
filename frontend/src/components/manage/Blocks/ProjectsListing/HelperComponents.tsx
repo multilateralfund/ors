@@ -1,43 +1,93 @@
-import { Dispatch, ReactNode, SetStateAction } from 'react'
+import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import Field from '@ors/components/manage/Form/Field.tsx'
+import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
+import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import { EditLink } from './ProjectsListing/ProjectViewButtons'
 import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
-import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
 import { enabledButtonClassname } from './constants'
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+  RelatedProjectsType,
+} from './interfaces'
+import { debounce } from '@ors/helpers'
 
+import { filter, lowerCase, map, upperCase } from 'lodash'
+import { MdKeyboardArrowDown } from 'react-icons/md'
+import { FaExternalLinkAlt } from 'react-icons/fa'
+import { SlReload } from 'react-icons/sl'
+import cx from 'classnames'
+import {
+  Button,
+  CircularProgress,
+  Divider,
+  Typography,
+  MenuProps,
+  ButtonProps,
+  InputAdornment,
+  IconButton as MuiIconButton,
+} from '@mui/material'
 import {
   IoAlertCircle,
   IoChevronDown,
   IoChevronUp,
   IoClose,
   IoReturnUpBack,
+  IoSearchOutline,
 } from 'react-icons/io5'
-import { Button, CircularProgress, Divider, Typography } from '@mui/material'
-import { FaExternalLinkAlt } from 'react-icons/fa'
-import { filter, lowerCase, map } from 'lodash'
-import { SlReload } from 'react-icons/sl'
-import cx from 'classnames'
 
-type ButtonProps = {
+type CustomButtonProps = {
   title: string
   onSubmit: () => void
   isDisabled?: boolean
   className?: string
 }
 
+type NavigationButtonProps = {
+  title: string
+  href: string
+  className?: string
+}
+
+export const CreateButton = ({
+  title,
+  href,
+  className,
+}: NavigationButtonProps) => (
+  <CustomLink
+    className={cx(
+      'mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase',
+      className,
+    )}
+    href={href}
+    color="secondary"
+    variant="contained"
+    button
+  >
+    {title}
+  </CustomLink>
+)
+
 export const SubmitButton = ({
   title,
   onSubmit,
   isDisabled = false,
   className,
-}: ButtonProps) => (
+}: CustomButtonProps) => (
   <Button
-    className={cx(className, 'mr-0 h-10 px-3 py-1', {
-      [enabledButtonClassname]: !isDisabled,
-    })}
+    className={cx(
+      className,
+      'mr-0 border border-solid border-current px-3 py-1',
+      {
+        [enabledButtonClassname]: !isDisabled,
+      },
+    )}
     size="large"
     variant="contained"
     onClick={onSubmit}
@@ -51,9 +101,10 @@ export const IncreaseVersionButton = ({
   title,
   onSubmit,
   isDisabled = false,
-}: ButtonProps) => (
+  className,
+}: CustomButtonProps) => (
   <Button
-    className={cx('px-4 py-2', {
+    className={cx('px-4 py-2', className, {
       'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
         !isDisabled,
     })}
@@ -66,9 +117,19 @@ export const IncreaseVersionButton = ({
   </Button>
 )
 
-export const RedirectBackButton = () => (
+export const RedirectBackButton = ({
+  withRedirect,
+  onAction,
+}: {
+  withRedirect?: boolean
+  onAction?: () => void
+}) => (
   <div className="w-fit">
-    <Link className="text-black no-underline" href="/projects-listing/listing">
+    <Link
+      className="cursor-pointer text-black no-underline"
+      href={withRedirect === false ? null : '/projects-listing/listing'}
+      onClick={onAction}
+    >
       <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
         <IoReturnUpBack size={18} />
         IA/BA Portal
@@ -77,9 +138,18 @@ export const RedirectBackButton = () => (
   </div>
 )
 
-export const CancelButton = ({ onClick }: { onClick: any }) => (
+export const CancelButton = ({
+  onClick,
+  className,
+}: {
+  onClick: any
+  className?: string
+}) => (
   <Button
-    className="h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 leading-none text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
+    className={cx(
+      'h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 leading-none text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]',
+      className,
+    )}
     color="primary"
     size="large"
     variant="contained"
@@ -89,21 +159,65 @@ export const CancelButton = ({ onClick }: { onClick: any }) => (
   </Button>
 )
 
+export const NavigationButton = ({
+  nextStep,
+  nextTab,
+  setCurrentStep,
+  setCurrentTab,
+  type = 'next',
+  isBtnDisabled = false,
+}: ProjectTabSetters & {
+  nextStep?: number
+  nextTab?: number
+  type?: string
+  isBtnDisabled?: boolean
+}) => {
+  const moveToNextStep = () => {
+    if (nextStep && setCurrentStep) {
+      setCurrentStep(nextStep)
+    }
+
+    if (setCurrentTab) {
+      setCurrentTab((tab) => nextTab ?? (type === 'next' ? tab + 1 : tab - 1))
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <Button
+      className={cx('h-8 border px-3 py-1 leading-none', {
+        'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+          type === 'next' && !isBtnDisabled,
+        'border-solid border-primary bg-white text-primary':
+          type === 'previous',
+      })}
+      disabled={isBtnDisabled}
+      size="large"
+      variant="contained"
+      onClick={moveToNextStep}
+    >
+      {upperCase(type)}
+    </Button>
+  )
+}
+
 export const PageTitle = ({
   pageTitle,
   projectTitle,
   project,
+  className,
 }: {
   pageTitle: string
   projectTitle: string
   project?: ProjectTypeApi
+  className?: string
 }) => {
   const { submission_status = '', code, code_legacy } = project || {}
 
   return (
     <>
       <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
-      <span>
+      <span className={className}>
         {projectTitle ?? 'New project'}
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </span>
@@ -111,20 +225,38 @@ export const PageTitle = ({
   )
 }
 
-export const ProjectStatusInfo = ({ project }: { project: ProjectTypeApi }) => (
+export const ProjectStatusInfo = ({
+  project,
+  textClassName,
+  chipClassName,
+}: {
+  project: ProjectTypeApi
+  textClassName?: string
+  chipClassName?: string
+}) => (
   <div className="mt-4 flex flex-wrap gap-3">
-    <div className="flex items-center gap-3">
+    <div className={cx('flex items-center gap-3', textClassName)}>
       <span>Submission status:</span>
-      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      <span
+        className={cx(
+          'rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]',
+          chipClassName,
+        )}
+      >
         {project.submission_status}
       </span>
     </div>
 
-    <span>|</span>
+    <span className={textClassName}>|</span>
 
-    <div className="flex items-center gap-3">
+    <div className={cx('flex items-center gap-3', textClassName)}>
       <span>Project status:</span>
-      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      <span
+        className={cx(
+          'rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]',
+          chipClassName,
+        )}
+      >
         {project.status}
       </span>
     </div>
@@ -145,8 +277,15 @@ export const VersionsList = ({
     version = 0,
     latest_project = null,
     submission_status,
+    post_excom_meeting,
   } = project
   const isDraft = lowerCase(submission_status) === 'draft'
+  let versionLabel
+  if (version > 3) {
+    versionLabel = `${version}: Updated after ExCom ${post_excom_meeting}`
+  } else {
+    versionLabel = `${version}: ${submission_status}`
+  }
 
   return (
     (!isDraft || (isDraft && version === 2)) && (
@@ -154,7 +293,7 @@ export const VersionsList = ({
         <VersionsDropdown
           {...{ versions, showVersionsMenu, setShowVersionsMenu }}
         />
-        <HeaderTag {...{ latest_project, version }} />
+        <HeaderTag {...{ latest_project, version: versionLabel }} />
       </>
     )
   )
@@ -184,31 +323,84 @@ export const RelatedProjects = ({
   <div className="flex flex-col">
     {map(data, (entry, index) => {
       const hasErrors = entry.errors.length > 0
+      const isTranchesMode = mode === 'tranches'
 
       return (
-        <div key={entry.id} className={cx({ 'py-3': withExtraProjectInfo })}>
+        <div key={entry.id} className={cx({ 'py-4': withExtraProjectInfo })}>
           <Link
             component="a"
             className={cx(
-              'flex w-fit items-center gap-2 text-lg normal-case leading-tight no-underline',
+              'flex w-fit flex-wrap items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
-                'pb-2.5': withExtraProjectInfo,
+                'pb-1.5': withExtraProjectInfo,
                 '!text-inherit': !hasErrors,
                 '!text-[#801F00]': hasErrors,
               },
             )}
-            href={`/projects-listing/${entry.id}${mode === 'edit' ? '/edit' : ''}`}
+            href={
+              !isTranchesMode
+                ? `/projects-listing/${entry.id}${mode === 'edit' ? '/edit' : ''}`
+                : null
+            }
             target="_blank"
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
           >
-            <FaExternalLinkAlt
-              size={16}
-              className="min-h-[16px] min-w-[16px]"
-            />
-            {entry.title}
+            <div className="flex gap-2">
+              <FaExternalLinkAlt
+                size={16}
+                className="min-h-[16px] min-w-[16px]"
+              />
+              {(isTranchesMode || withExtraProjectInfo) && entry.tranche ? (
+                <div className="flex flex-wrap gap-1">
+                  {entry.title}
+                  <div className="font-medium">(tranche {entry.tranche})</div>
+                </div>
+              ) : (
+                entry.title
+              )}
+            </div>
+            {mode === 'view' && (
+              <div className="italic">
+                [
+                {entry.code ??
+                  entry.code_legacy ??
+                  'code to be generated upon approval'}
+                ]
+              </div>
+            )}
             {hasErrors && <ErrorTag />}
+            {isTranchesMode && entry.editable_for_actual_fields && (
+              <EditLink
+                href={`/projects-listing/${entry.id}/impact`}
+                className="!h-6 rounded-md px-1.5 pb-1 !text-base"
+                rel="noopener noreferrer nofollow"
+                target="_blank"
+                component="a"
+              >
+                Edit indicators
+              </EditLink>
+            )}
           </Link>
+          {isTranchesMode && (
+            <>
+              <div
+                className={cx('ml-6 mt-1 flex items-center gap-2.5', {
+                  '!text-inherit': !hasErrors,
+                  '!text-[#801F00]': hasErrors,
+                })}
+              >
+                <span>Agency:</span>
+                <h4 className="m-0"> {entry.agency}</h4>
+              </div>
+              {hasErrors && !entry.editable_for_actual_fields && (
+                <h4 className="m-0 ml-6 mt-0.5">
+                  Please contact {entry.agency} to fill in the actual indicators
+                  before submitting this project.
+                </h4>
+              )}
+            </>
+          )}
           {withExtraProjectInfo ? (
             <div className="ml-6 flex flex-wrap gap-3">
               <div className="flex items-center gap-2.5">
@@ -282,10 +474,10 @@ export const OpenedList = ({
   data: RelatedProjectsType[]
   errorText?: string
   errorAlert?: ReactNode
-  getTrancheErrors?: () => void
+  getTrancheErrors?: () => Promise<boolean | undefined>
   loaded?: boolean
   canRefreshStatus?: boolean
-  mode?: string
+  mode: string
 }) => (
   <div className="transition-opacity flex flex-col gap-6 opacity-100 duration-300 ease-in-out">
     <div className="flex items-center justify-between gap-2 text-lg">
@@ -320,6 +512,7 @@ export const displaySelectedOption = (
 ) =>
   filters?.[entityIdentifier]?.map((entity: any) => {
     const entityId = entity[field]
+    const entityData = entities?.get(entityId)
 
     return (
       <Typography
@@ -328,7 +521,10 @@ export const displaySelectedOption = (
         component="p"
         variant="h6"
       >
-        {entities?.get(entityId)?.name || entities?.get(entityId)?.label}
+        {entityData?.name ||
+          entityData?.label ||
+          entityData?.code ||
+          entityData?.code_legacy}
         <IoClose
           className="cursor-pointer"
           size={18}
@@ -354,3 +550,142 @@ export const displaySelectedOption = (
       </Typography>
     )
   })
+
+export const DropDownButtonProps: ButtonProps = {
+  endIcon: <MdKeyboardArrowDown />,
+  size: 'large',
+  variant: 'contained',
+}
+
+export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
+  PaperProps: {
+    className: 'mt-1 border border-solid border-black rounded-lg',
+  },
+  transitionDuration: 0,
+}
+
+export const LoadingTab = (
+  <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
+)
+
+export const FieldErrorIndicator = ({
+  errors,
+  field,
+}: {
+  errors: any
+  field: string
+}) => {
+  const formattedErrors = map(errors?.[field], (error, index) => ({
+    id: index,
+    message: error,
+  }))
+
+  return (
+    formattedErrors.length > 0 && (
+      <SectionErrorIndicator
+        errors={formattedErrors}
+        withExplanatoryText={false}
+        className="!cursor-default"
+        iconClassName="align-center h-5 w-5 ml-2 !mb-0"
+      />
+    )
+  )
+}
+
+export const SearchFilter = ({
+  form,
+  filters,
+  placeholder,
+  handleFilterChange,
+  handleParamsChange,
+}: {
+  form: RefObject<HTMLFormElement>
+  filters: Record<string, any>
+  placeholder: string
+  handleFilterChange: (params: Record<string, any>) => void
+  handleParamsChange: (params: Record<string, any>) => void
+}) => {
+  const searchRef = useFocusOnCtrlF()
+
+  return (
+    <Field
+      name="search"
+      defaultValue={filters.search}
+      inputRef={searchRef}
+      placeholder={placeholder}
+      FieldProps={{
+        className: 'mb-0 w-full md:w-[14.375rem] BPList',
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <MuiIconButton
+              aria-label="search table"
+              edge="start"
+              tabIndex={-1}
+              onClick={() => {
+                const search = form.current?.search?.value ?? ''
+
+                handleParamsChange({
+                  offset: 0,
+                  search,
+                })
+                handleFilterChange({ search })
+              }}
+              disableRipple
+            >
+              <IoSearchOutline />
+            </MuiIconButton>
+          </InputAdornment>
+        ),
+      }}
+      onKeyDown={() => {
+        debounce(
+          () => {
+            const search = form.current?.search?.value ?? ''
+
+            handleParamsChange({
+              offset: 0,
+              search,
+            })
+            handleFilterChange({ search })
+            if (searchRef.current) {
+              searchRef.current.select()
+            }
+          },
+          1000,
+          'PFilterSearch',
+        )
+      }}
+    />
+  )
+}
+
+export const displaySearchTerm = (
+  form: RefObject<HTMLFormElement>,
+  filters: Record<string, any>,
+  handleFilterChange: (params: Record<string, any>) => void,
+  handleParamsChange: (params: Record<string, any>) => void,
+) =>
+  !!filters.search && (
+    <Typography
+      className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
+      component="p"
+      variant="h6"
+    >
+      {filters.search}
+      <IoClose
+        className="cursor-pointer"
+        size={18}
+        color="#666"
+        onClick={() => {
+          const inputSearch = form.current?.search
+          if (inputSearch) {
+            inputSearch.value = ''
+          }
+          handleParamsChange({ offset: 0, search: '' })
+          handleFilterChange({ search: '' })
+        }}
+      />
+    </Typography>
+  )

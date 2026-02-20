@@ -1,15 +1,33 @@
+from copy import copy
+from typing import Any
+from typing import Callable
+from typing import Literal
+from typing import NotRequired
+from typing import TypedDict
+
 import openpyxl
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
 from openpyxl.styles import Alignment
 from openpyxl.styles import Border
+from openpyxl.styles import DEFAULT_FONT
+from openpyxl.styles import Font
 from openpyxl.styles import PatternFill
 from openpyxl.styles import Side
-from openpyxl.styles import Font
-from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
 
+
 # pylint: disable=R0913
+
+
+class HeaderType(TypedDict):
+    id: str
+    headerName: str
+    method: NotRequired[Callable[[dict, "HeaderType"], Any]]
+    column_width: NotRequired[float | int]
+    type: NotRequired[Literal["date", "number", "int", "bool"]]
+    align: NotRequired[Literal["left", "right"]]
+    cell_format: NotRequired[str]
 
 
 class BaseWriter:
@@ -96,6 +114,8 @@ class BaseWriter:
                     read_only=header.get("read_only", False),
                     align=header.get("align", "left"),
                     cell_format=header.get("cell_format"),
+                    can_be_clipped=header.get("can_be_clipped", False),
+                    vertical_align=header.get("vertical_align", "center"),
                 )
 
     def set_dimensions(self):
@@ -174,10 +194,13 @@ class BaseWriter:
         align="left",
         can_be_clipped=False,
         cell_format=None,
+        vertical_align="center",
     ):
         cell = self.sheet.cell(row, column, value)
         cell.font = Font(color=None)
-        cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
+        cell.alignment = Alignment(
+            horizontal=align, vertical=vertical_align, wrap_text=True
+        )
         cell.border = Border(
             left=Side(style="hair"),
             right=Side(style="hair"),
@@ -404,3 +427,40 @@ def configure_sheet_print(sheet, orientation):
     sheet.page_margins.right = 0.25
     sheet.page_margins.bottom = 0.25
     sheet.page_margins.left = 0.25
+
+
+def transpose_sheet(src_sheet, dest_sheet):
+    # Value and style
+    for row in src_sheet.rows:
+        for src in row:
+            dest = dest_sheet.cell(row=src.col_idx, column=src.row, value=src.value)
+
+            if src.has_style:
+                dest.value = copy(src.value)
+                dest.font = copy(src.font)
+                dest.fill = copy(src.fill)
+                dest.border = copy(src.border)
+                dest.alignment = copy(src.alignment)
+                dest.number_format = copy(src.number_format)
+                dest.protection = copy(src.protection)
+
+            if src.comment:
+                dest.comment = Comment(src.comment.text, src.comment.author)
+
+    # Merged cells
+    for rng in src_sheet.merged_cells.ranges:
+        dest_sheet.merge_cells(
+            start_row=rng.min_col,
+            start_column=rng.min_row,
+            end_row=rng.max_col,
+            end_column=rng.max_row,
+        )
+
+    # Sheet dimensions
+    for r, dim in src_sheet.row_dimensions.items():
+        if dim.height:
+            dest_sheet.row_dimensions[r].height = dim.height
+
+    for c, dim in src_sheet.column_dimensions.items():
+        if dim.width:
+            dest_sheet.column_dimensions[c].width = dim.width

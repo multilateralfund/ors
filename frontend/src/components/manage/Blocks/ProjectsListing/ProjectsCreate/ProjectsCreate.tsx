@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useContext, useMemo, useState } from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -13,8 +13,10 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
-import { DisabledAlert } from '../HelperComponents.tsx'
+import ProjectDelete from './ProjectDelete.tsx'
+import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
+import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -23,6 +25,8 @@ import {
   ProjectDataProps,
   TrancheErrors,
   RelatedProjectsSectionType,
+  BpDataProps,
+  FileMetaDataProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -37,11 +41,18 @@ import {
   hasSectionErrors,
   hasFields,
   getApprovalErrors,
+  getAgencyErrorType,
+  canEditField,
+  getPostExcomApprovalErrors,
+  getFieldData,
+  formatOptions,
+  getOdsOdpFields,
+  getPostExcomMeetingErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { Tabs, Tab, Typography, CircularProgress } from '@mui/material'
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { find, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -55,10 +66,12 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
+  approval = false,
+  impact = false,
   files,
   projectFiles,
   errors,
-  hasSubmitted,
   project,
   fileErrors,
   trancheErrors,
@@ -67,14 +80,25 @@ const ProjectsCreate = ({
   approvalFields = [],
   specificFieldsLoaded,
   loadedFiles,
+  onBpDataChange,
+  bpData,
+  filesMetaData,
+  setFilesMetaData,
+  metaProjectId,
+  setMetaProjectId,
+  setRefetchRelatedProjects,
+  metaprojectData,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
-  TrancheErrors & {
+  TrancheErrors &
+  FileMetaDataProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate?: boolean
+    approval?: boolean
+    impact?: boolean
     errors: { [key: string]: [] }
-    hasSubmitted: boolean
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
@@ -82,16 +106,21 @@ const ProjectsCreate = ({
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
     loadedFiles?: boolean
+    bpData: BpDataProps
+    onBpDataChange: (bpData: BpDataProps) => void
+    metaProjectId?: number | null
+    setMetaProjectId?: (id: number | null) => void
+    setRefetchRelatedProjects?: (refetch: boolean) => void
+    metaprojectData?: MetaProjectDetailType | null
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const [currentStep, setCurrentStep] = useState<number>(
-    mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
-  )
-  const [currentTab, setCurrentTab] = useState<number>(0)
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
 
   const {
     projIdentifiers,
+    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -100,9 +129,15 @@ const ProjectsCreate = ({
 
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
+  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
-  const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
+  const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(
+    impact ? 3 : approval ? 5 : 0,
+  )
+
+  const areFieldsDisabled = !canLinkToBp || currentStep < 1
+  const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
   const areProjectSpecificTabsDisabled =
     areNextSectionsDisabled || !project_type || !sector
 
@@ -111,24 +146,49 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const groupedFields = groupBy(substanceDetailsFields, 'table')
-  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { warnings } = useStore((state) => state.projectWarnings)
-  const { projectFields, viewableFields } = useStore(
+  const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
 
+  const groupField = getFieldData(overviewFields, 'group')
+  const specificFieldsIdentifiers = 'projectSpecificFields'
+  const specificFieldsData = projectData[specificFieldsIdentifiers] || []
+
+  useEffect(() => {
+    if (groupField) {
+      const groupOptions = formatOptions(groupField, specificFieldsData)
+
+      const validData = find(
+        groupOptions,
+        (option) => option.id === specificFieldsData.group,
+      )
+
+      if (!validData) {
+        setProjectData((prevData) => ({
+          ...prevData,
+          [specificFieldsIdentifiers]: {
+            ...prevData[specificFieldsIdentifiers],
+            group: null,
+          },
+        }))
+      }
+    }
+  }, [groupField])
+
   const isCrossCuttingTabDisabled =
     areNextSectionsDisabled ||
+    bpData.bpDataLoading ||
     !hasFields(projectFields, viewableFields, 'Cross-Cutting')
 
   const hasNoSpecificInfoFields =
     overviewFields.length < 1 && substanceDetailsFields.length < 1
   const isSpecificInfoTabDisabled =
     !specificFieldsLoaded ||
+    bpData.bpDataLoading ||
     areProjectSpecificTabsDisabled ||
     hasNoSpecificInfoFields ||
     (!hasFields(projectFields, viewableFields, 'Header') &&
@@ -136,19 +196,45 @@ const ProjectsCreate = ({
 
   const isImpactTabDisabled =
     !specificFieldsLoaded ||
+    bpData.bpDataLoading ||
     areProjectSpecificTabsDisabled ||
     impactFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Impact')
+
+  useEffect(() => {
+    if (
+      impact &&
+      specificFieldsLoaded &&
+      (impactFields.length < 1 ||
+        !hasFields(projectFields, viewableFields, 'Impact'))
+    ) {
+      setCurrentTab(0)
+    }
+  }, [specificFieldsLoaded])
 
   const isApprovalTabDisabled =
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
 
+  const isEditMode = project && mode === 'edit'
+  const isApprovalTabAvailable = isEditMode && project.version >= 3
+
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
     [projIdentifiers, errors],
   )
+  const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
+
+  const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
+  const postExcomMeetingErrors = {
+    post_excom_meeting:
+      postExComUpdate &&
+      !!projIdentifiers.post_excom_meeting &&
+      hasPostExcomMeetingErrors
+        ? ['Cannot be earlier than the original approval meeting.']
+        : [],
+  }
 
   const bpErrors = useMemo(
     () =>
@@ -165,19 +251,78 @@ const ProjectsCreate = ({
         errors,
         mode,
         mode === 'edit' ? project : undefined,
+        true,
       ),
     [crossCuttingFields, errors, mode],
   )
 
-  const approvalErrors = useMemo(
-    () =>
-      mode === 'edit'
-        ? getApprovalErrors(approvalData, approvalFields, errors, project)
-        : {},
-    [approvalData, approvalFields, errors],
-  )
+  const approvalErrors = useMemo(() => {
+    const approvalCrossCuttingErrors = pick(crossCuttingErrors, [
+      'total_fund',
+      'support_cost_psc',
+    ])
 
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+    return mode === 'edit' && project?.submission_status === 'Recommended'
+      ? {
+          ...getApprovalErrors(
+            approvalData,
+            crossCuttingFields,
+            approvalFields,
+            errors,
+            project,
+          ),
+          ...approvalCrossCuttingErrors,
+        }
+      : postExComUpdate
+        ? getPostExcomApprovalErrors(
+            approvalData,
+            approvalFields,
+            errors,
+            project,
+          )
+        : {}
+  }, [
+    approvalData,
+    crossCuttingFields,
+    approvalFields,
+    errors,
+    crossCuttingErrors,
+  ])
+
+  const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
+  const hasV3EditPermissions =
+    !!project && mode === 'edit' && canEditApprovedProjects
+  const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
+    project?.submission_status ?? '',
+  )
+  const isV3ProjectEditable =
+    hasV3EditPermissions &&
+    (editableByAdmin || project.submission_status === 'Recommended')
+  const disableV3Edit =
+    !!project &&
+    mode === 'edit' &&
+    !postExComUpdate &&
+    !project.editable &&
+    project.editable_for_actual_fields
+
+  const hasComponents =
+    !!project &&
+    project.component &&
+    project.component.original_project_id === project.id
+
+  const bpErrorMessage = 'A business plan activity should be selected.'
+  const shouldValidateBp =
+    canViewBp && mode === 'edit' && canEditField(editableFields, 'bp_activity')
+
+  const hasBpDefaultErrors =
+    shouldValidateBp && bpData.hasBpData && !bpLinking.bpId
+
+  const allBpErrors = hasBpDefaultErrors
+    ? {
+        ...bpErrors,
+        bp_activity: [bpErrorMessage],
+      }
+    : bpErrors
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -191,9 +336,20 @@ const ProjectsCreate = ({
       ),
     [projectSpecificFields, specificFields, errors, mode, project],
   )
+
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
-  const impactErrors = specificFieldsErrors['Impact'] || {}
+  const allImpactErrors = specificFieldsErrors['Impact'] || {}
+
+  const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
+    key.includes('(actual)') && value?.[0]?.includes('not completed')
+
+  const impactErrors = Object.fromEntries(
+    Object.entries(allImpactErrors).filter(
+      (error) => !isActualFieldEmpty(error),
+    ),
+  )
+
   const { errorText, isError } = trancheErrors || {}
 
   const fieldsForValidation = map(odsOdpFields, 'write_field_name')
@@ -203,10 +359,10 @@ const ProjectsCreate = ({
     project?.submission_status === 'Draft' ? ' for submission' : ''
 
   const odsOpdDataErrors =
-    mode === 'edit'
+    odsOdpFields.length > 0
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) =>
-            checkInvalidValue(odsOdp[field])
+            mode === 'edit' && checkInvalidValue(odsOdp[field])
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
@@ -224,48 +380,101 @@ const ProjectsCreate = ({
     !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
   ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
+  const formatFieldName = (field: string) =>
+    ['ods_substance_id', 'ods_blend_id'].includes(field)
+      ? 'ods_display_name'
+      : field
+
   const formattedOdsOdpErrors = map(
     filteredOdsOdpErrors,
     ({ id, ...fields }) => {
-      const fieldLabels = map(
+      const substanceNo = Number(id) + 1
+
+      const fieldLabels = Object.entries(
         fields as Record<string, string[]>,
-        (errorMsgs, field) => {
-          if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
-            return getFieldLabel(specificFields, field)
-          }
-          return null
-        },
-      ).filter(Boolean)
+      ).filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
 
       if (fieldLabels.length === 0) return null
 
-      return {
-        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
-      }
+      const missingFields = fieldLabels
+        .filter(([_, errors]) => errors[0] === 'This field is required.')
+        .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+
+      const invalidFields = fieldLabels
+        .filter(([_, errors]) => errors[0] !== 'This field is required.')
+        .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+
+      const messages = [
+        missingFields.length > 0
+          ? `${missingFields.join(', ')}: ${
+              missingFields.length > 1 ? 'These fields are' : 'This field is'
+            } required${errorMessageExtension}.`
+          : null,
+        invalidFields.length > 0
+          ? `${invalidFields.join(', ')}: ${
+              invalidFields.length > 1 ? 'These fields are' : 'This field is'
+            } not valid.`
+          : null,
+      ].filter(Boolean)
+
+      const odsOdpType = odsDisplayField
+        ? `Substance ${substanceNo}`
+        : 'Phase out'
+
+      return { message: `${odsOdpType} - ` + messages.join(' ') }
     },
   ).filter(Boolean)
 
   const odsOdpErrors = map(
     formattedOdsOdp as { [key: string]: [] }[],
-    (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
+    (error) =>
+      mapKeys(error, (_, key) =>
+        getFieldLabel(specificFields, formatFieldName(key)),
+      ),
   )
 
   const hasNoFiles =
+    loadedFiles &&
     mode === 'edit' &&
-    getHasNoFiles(parseInt(project_id), files, projectFiles) &&
-    (project?.version ?? 0) < 3
+    project?.submission_status !== 'Withdrawn' &&
+    (project?.submission_status !== 'Draft' || project?.version === 1) &&
+    (project?.version ?? 0) < 3 &&
+    (!project?.component ||
+      project?.id === project?.component.original_project_id) &&
+    getHasNoFiles(parseInt(project_id), files, projectFiles)
+
+  const missingFileTypeErrors =
+    mode === 'add' || loadedFiles
+      ? map(filesMetaData, ({ type }, index) =>
+          !type
+            ? {
+                id: index,
+                message: `Attachment ${Number(index) + 1} - Type is required.`,
+              }
+            : null,
+        ).filter(Boolean)
+      : []
 
   const steps = [
     {
       id: 'project-identifiers',
-      ariaControls: 'project-identifiers',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Identifiers</div>
-          {(hasSectionErrors(projIdentifiersErrors) ||
-            hasSectionErrors(bpErrors)) && (
-            <SectionErrorIndicator errors={[]} />
-          )}
+          {bpData.bpDataLoading
+            ? LoadingTab
+            : (hasSectionErrors(projIdentifiersErrors) ||
+                !!agencyErrorType ||
+                (postExComUpdate &&
+                  !(
+                    projIdentifiers.post_excom_meeting &&
+                    projIdentifiers.post_excom_decision
+                  )) ||
+                hasSectionErrors(postExcomMeetingErrors) ||
+                hasBpDefaultErrors ||
+                hasSectionErrors(bpErrors)) && (
+                <SectionErrorIndicator errors={[]} />
+              )}
         </div>
       ),
       disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
@@ -274,22 +483,45 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
-            areNextSectionsDisabled,
             setCurrentStep,
             setCurrentTab,
-            hasSubmitted,
             mode,
+            project,
+            postExComUpdate,
+            isV3ProjectEditable,
             specificFieldsLoaded,
+            onBpDataChange,
+            bpData,
           }}
+          areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
-          errors={projIdentifiersErrors}
+          errors={{ ...projIdentifiersErrors, ...postExcomMeetingErrors }}
+          bpErrors={allBpErrors}
         />
       ),
-      errors: formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
+      errors: [
+        ...formatErrors({
+          ...projIdentifiersErrors,
+          ...postExcomMeetingErrors,
+          ...bpErrors,
+        }),
+        ...(!!agencyErrorType
+          ? [
+              {
+                message:
+                  agencyErrorType === 'no_valid_agency'
+                    ? 'At least one agency field must include your own agency.'
+                    : agencyErrorType === 'similar_agencies'
+                      ? 'Agency and lead agency cannot be similar when submitting on behalf of a cooperating agency.'
+                      : 'Agency and lead agency cannot be different unless submitting on behalf of a cooperating agency.',
+              },
+            ]
+          : []),
+        ...(hasBpDefaultErrors ? [{ message: bpErrorMessage }] : []),
+      ],
     },
     {
       id: 'project-cross-cutting-section',
-      ariaControls: 'project-cross-cutting-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Cross-Cutting</div>
@@ -307,10 +539,17 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
-            hasSubmitted,
+            project,
+            setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
+            postExComUpdate,
+            isV3ProjectEditable,
+            mode,
           }}
+          nextStep={
+            !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
+          }
           errors={crossCuttingErrors}
         />
       ),
@@ -318,25 +557,24 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-specific-info-section',
-      ariaControls: 'project-specific-info-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            !hasNoSpecificInfoFields &&
-            (hasSectionErrors(overviewErrors) ||
-              hasSectionErrors(substanceDetailsErrors) ||
-              formattedOdsOdpErrors.length > 0 ||
-              errorText ||
-              (mode === 'edit' && odsOdpData.length === 0)) &&
-            (isSpecificInfoTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : !hasNoSpecificInfoFields &&
+              (hasSectionErrors(overviewErrors) ||
+                hasSectionErrors(substanceDetailsErrors) ||
+                formattedOdsOdpErrors.length > 0 ||
+                errorText ||
+                (mode === 'edit' &&
+                  odsOdpFields.length > 0 &&
+                  odsOdpData.length === 0)) &&
+              (isSpecificInfoTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
       disabled: isSpecificInfoTabDisabled,
@@ -347,13 +585,15 @@ const ProjectsCreate = ({
             setProjectData,
             overviewFields,
             substanceDetailsFields,
-            hasSubmitted,
             overviewErrors,
             substanceDetailsErrors,
             odsOdpErrors,
             trancheErrors,
             getTrancheErrors,
+            setCurrentTab,
+            disableV3Edit,
           }}
+          nextStep={!isImpactTabDisabled ? 4 : 5}
         />
       ),
       errors: [
@@ -361,7 +601,9 @@ const ProjectsCreate = ({
           ...overviewErrors,
           ...substanceDetailsErrors,
         }),
-        ...(mode === 'edit' && odsOdpData.length === 0
+        ...(mode === 'edit' &&
+        odsOdpFields.length > 0 &&
+        odsOdpData.length === 0
           ? [
               {
                 message: `At least a substance must be provided${errorMessageExtension}.`,
@@ -374,21 +616,18 @@ const ProjectsCreate = ({
     },
     {
       id: 'project-impact-section',
-      ariaControls: 'project-impact-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            impactFields.length >= 1 &&
-            hasSectionErrors(impactErrors) &&
-            (isImpactTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : impactFields.length >= 1 &&
+              hasSectionErrors(impactErrors) &&
+              (isImpactTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
       disabled: isImpactTabDisabled,
@@ -396,19 +635,21 @@ const ProjectsCreate = ({
         <ProjectImpact
           sectionFields={impactFields}
           errors={impactErrors}
-          {...{ projectData, setProjectData, hasSubmitted }}
+          nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
+          {...{ projectData, setProjectData, setCurrentTab }}
         />
       ),
       errors: formatErrors(impactErrors),
     },
     {
       id: 'project-documentation-section',
-      ariaControls: 'project-documentation-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div className="leading-tight">Documentation</div>
-          {fileErrors || (loadedFiles && hasNoFiles) ? (
-            areNextSectionsDisabled ? (
+          <div className="leading-tight">Attachments</div>
+          {mode !== 'add' && !loadedFiles ? (
+            LoadingTab
+          ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
+            areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
               <SectionErrorIndicator errors={[]} />
@@ -419,7 +660,25 @@ const ProjectsCreate = ({
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectDocumentation
-          {...{ projectFiles, files, mode, project, loadedFiles }}
+          {...{
+            projectFiles,
+            files,
+            mode,
+            project,
+            loadedFiles,
+            setCurrentTab,
+            filesMetaData,
+            setFilesMetaData,
+            disableV3Edit,
+          }}
+          nextStep={
+            !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+          }
+          hasNextStep={mode === 'edit'}
+          isNextButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
+          }
+          errors={missingFileTypeErrors}
           {...rest}
         />
       ),
@@ -431,36 +690,31 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(loadedFiles && hasNoFiles
+        ...(hasNoFiles
           ? [
               {
                 message: `At least one file must be attached to this version${errorMessageExtension}.`,
               },
             ]
           : []),
+        ...missingFileTypeErrors,
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(isApprovalTabAvailable
       ? [
           {
             id: 'project-approval-section',
-            ariaControls: 'project-approval-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 ? (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                ) : (
-                  hasSectionErrors(approvalErrors) &&
-                  (isApprovalTabDisabled ? (
-                    DisabledAlert
-                  ) : (
-                    <SectionErrorIndicator errors={[]} />
-                  ))
-                )}
+                {approvalFields.length === 0
+                  ? LoadingTab
+                  : hasSectionErrors(approvalErrors) &&
+                    (isApprovalTabDisabled || bpData.bpDataLoading ? (
+                      DisabledAlert
+                    ) : (
+                      <SectionErrorIndicator errors={[]} />
+                    ))}
               </div>
             ),
             disabled: isApprovalTabDisabled,
@@ -470,7 +724,8 @@ const ProjectsCreate = ({
                 {...{
                   projectData,
                   setProjectData,
-                  hasSubmitted,
+                  project,
+                  setCurrentTab,
                 }}
                 errors={approvalErrors}
               />
@@ -479,28 +734,40 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode
       ? [
           {
             id: 'project-related-projects-section',
-            ariaControls: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            disabled: areNextSectionsDisabled,
+            component: (
+              <ProjectRelatedProjects
+                canDisassociate={postExComUpdate}
+                {...{
+                  project,
+                  relatedProjects,
+                  metaProjectId,
+                  setMetaProjectId,
+                  setRefetchRelatedProjects,
+                  setCurrentTab,
+                  metaprojectData,
+                }}
+              />
+            ),
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode
       ? [
           {
             id: 'project-history-section',
-            ariaControls: 'project-history-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">History</div>
               </div>
             ),
-            disabled: false,
-            component: <ProjectHistory mode={mode} project={project} />,
+            disabled: areNextSectionsDisabled,
+            component: <ProjectHistory {...{ project, setCurrentTab }} />,
           },
         ]
       : []),
@@ -508,40 +775,64 @@ const ProjectsCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, ariaControls, label, disabled }) => (
-          <Tab
-            id={id}
-            aria-controls={ariaControls}
-            label={label}
-            disabled={disabled}
-            classes={{
-              disabled: 'text-gray-200',
-            }}
-          />
-        ))}
-      </Tabs>
-
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label, disabled }) => (
+            <Tab
+              key={id}
+              id={id}
+              aria-controls={id}
+              label={label}
+              disabled={disabled}
+              classes={{
+                disabled: 'text-gray-300',
+              }}
+            />
+          ))}
+        </Tabs>
+        {mode === 'edit' &&
+          project?.submission_status === 'Draft' &&
+          project?.version === 1 &&
+          project?.editable && (
+            <ProjectDelete {...{ project, hasComponents }} />
+          )}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => {
+          .map(({ id, component, errors }) => {
             return (
-              <>
+              <span key={id}>
+                {isEditMode &&
+                  project.submission_status === 'Draft' &&
+                  !canEditApprovedProjects &&
+                  currentTab === 0 && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="text-lg leading-5">
+                          {project.version === 2
+                            ? 'The Identifiers fields cannot be edited anymore. If there was a mistake in completing them, the project needs to be resubmitted with the correct information.'
+                            : "After the project's submission, the Identifiers fields cannot be further edited. Any mistake in completing them will require the project to be resubmitted with the correct information."}
+                        </Typography>
+                      }
+                    />
+                  )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -550,7 +841,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="pt-0.5 text-lg leading-none">
+                        <Typography className="text-lg leading-5">
                           {warnings.warnings[0]}
                         </Typography>
                       }
@@ -565,7 +856,7 @@ const ProjectsCreate = ({
                         <Typography className="text-lg">
                           Please make sure all the sections are valid.
                         </Typography>
-                        <Typography>
+                        <Typography component="div">
                           <div className="mt-1">
                             {errors.map((err, idx) =>
                               err ? (
@@ -581,7 +872,7 @@ const ProjectsCreate = ({
                   />
                 )}
                 {component}
-              </>
+              </span>
             )
           })}
       </div>

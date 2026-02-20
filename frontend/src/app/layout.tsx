@@ -20,6 +20,7 @@ import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import useSearchParams from '@ors/hooks/useSearchParams'
+import { UpdatedFieldsProvider } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsProvider from '../contexts/PermissionsProvider'
 
 import '../themes/styles/global.css'
@@ -59,7 +60,6 @@ function useAppState(user: ApiUser | null | undefined) {
         const [
           // Common data
           settings,
-          project_settings,
           user_permissions,
           agencies,
           countries,
@@ -78,7 +78,6 @@ function useAppState(user: ApiUser | null | undefined) {
           substances,
         ] = await Promise.all([
           api('api/settings/', {}, false),
-          api('api/project-settings/', {}, false),
           api('api/user/permissions/', {}, false),
           api(
             'api/agencies/',
@@ -126,7 +125,6 @@ function useAppState(user: ApiUser | null | undefined) {
         const projects = {
           clusters: getInitialSliceData(clusters),
           meetings: getInitialSliceData(meetings),
-          project_settings: getInitialSliceData(project_settings),
           sectors: getInitialSliceData<ProjectSectorType[]>(sectors),
           statuses: getInitialSliceData<ProjectStatusType[]>(statuses),
           submission_statuses:
@@ -224,9 +222,11 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <PermissionsProvider>
-            <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
-              {children}
-            </LoginWrapper>
+            <UpdatedFieldsProvider>
+              <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
+                {children}
+              </LoginWrapper>
+            </UpdatedFieldsProvider>
           </PermissionsProvider>
         </ThemeProvider>
       </StoreProvider>

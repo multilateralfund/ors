@@ -60,3 +60,27 @@
     @apply rounded-b-none bg-primary px-3 py-2 text-mlfs-hlYellow;
   }
 }
+
+.sectionsTabs.projectCardView {
+  .MuiTab-root {
+    @apply bg-[#00364D] text-gray-400;
+
+    &:first-child {
+      @apply ml-6;
+    }
+
+    &.Mui-selected {
+      @apply bg-white text-primary;
+    }
+  }
+
+  &:has(.MuiTabScrollButton-root) {
+    .MuiTab-root:first-child {
+      @apply ml-0;
+    }
+  }
+
+  .MuiTabScrollButton-root {
+    @apply text-gray-400;
+  }
+}

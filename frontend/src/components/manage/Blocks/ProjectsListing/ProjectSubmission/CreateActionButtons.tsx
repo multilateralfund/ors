@@ -1,7 +1,9 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
 import { formatProjectFields, formatSubmitData } from '../utils'
 import { ActionButtons } from '../interfaces'
@@ -10,6 +12,7 @@ import { useStore } from '@ors/store'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { fromPairs, map } from 'lodash'
 
 const CreateActionButtons = ({
   projectData,
@@ -19,12 +22,12 @@ const CreateActionButtons = ({
   isSaveDisabled,
   setIsLoading,
   setErrors,
-  setHasSubmitted,
   setFileErrors,
   setOtherErrors,
   specificFields,
   specificFieldsLoaded,
   mode,
+  filesMetaData,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
@@ -32,8 +35,19 @@ const CreateActionButtons = ({
   const { canUpdateProjects } = useContext(PermissionsContext)
   const { setWarnings } = useStore((state) => state.projectWarnings)
   const { projectFields } = useStore((state) => state.projectFields)
+  const { updatedFields, clearUpdatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const { newFiles = [] } = files || {}
+
+  const onCancel = () => {
+    if (updatedFields.size > 0) {
+      setIsCancelModalOpen(true)
+    } else {
+      setLocation('/projects-listing/listing')
+    }
+  }
 
   const createProject = async () => {
     setIsLoading(true)
@@ -49,12 +63,18 @@ const CreateActionButtons = ({
         formatProjectFields(projectFields),
       )
 
+      const formattedFilesMetadata = fromPairs(
+        map(filesMetaData, (file) => [file.name, file.type]),
+      )
+      const params = { metadata: JSON.stringify(formattedFilesMetadata) }
+
       if (newFiles.length > 0) {
         await uploadFiles(
           `/api/project/files/validate/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
       const result = await api(`api/projects/v2/`, {
@@ -69,12 +89,14 @@ const CreateActionButtons = ({
 
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${result.id}/files/v2/`,
+          `/api/projects/v2/${result.id}/project-files/`,
           newFiles,
           false,
           'list',
+          params,
         )
       }
+      clearUpdatedFields()
       setLocation(`/projects-listing/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()
@@ -82,12 +104,16 @@ const CreateActionButtons = ({
       if (error.status === 400) {
         setErrors(errors)
 
-        if (errors?.file) {
-          setFileErrors(errors.file)
+        if (errors?.files) {
+          setFileErrors(errors.files)
         }
 
         if (errors?.details) {
           setOtherErrors(errors.details)
+        }
+
+        if (errors?.metadata) {
+          setFileErrors(errors.metadata)
         }
       }
 
@@ -97,19 +123,25 @@ const CreateActionButtons = ({
       })
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
+      <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       {canUpdateProjects && (
         <SubmitButton
           title="Create project (draft)"
           isDisabled={!specificFieldsLoaded || isSaveDisabled}
           onSubmit={createProject}
-          className="ml-auto"
+          className="!py-2"
+        />
+      )}
+      {isCancelModalOpen && (
+        <CancelWarningModal
+          mode="project creation"
+          isModalOpen={isCancelModalOpen}
+          setIsModalOpen={setIsCancelModalOpen}
         />
       )}
     </div>

@@ -40,27 +40,40 @@ import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/
 import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/[period]/[type]/edit/page'
 import BPUpload from '@ors/app/business-plans/upload/page'
 
-import ProjectsPage from '@ors/app/projects/page'
-import ProjectsProjectPage from '@ors/app/projects/[project_id]/page'
+// import ProjectsPage from '@ors/app/projects/page'
+// import ProjectsProjectPage from '@ors/app/projects/[project_id]/page'
 
-import ProjectSubmissionsPage from '@ors/app/project-submissions/page'
-import ProjectSubmissionsSubmissionPage from '@ors/app/project-submissions/[submission_id]/page'
-import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/page'
-import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
+// import ProjectSubmissionsPage from '@ors/app/project-submissions/page'
+// import ProjectSubmissionsSubmissionPage from '@ors/app/project-submissions/[submission_id]/page'
+// import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/page'
+// import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
-import ProjectsExportPage from '@ors/app/projects_listing/export/page'
+import ProjectsExportPage from '@ors/app/projects_listing/export/[export_type]/page.tsx'
+import ProjectsApprovalSummaryPage from '@ors/app/projects_listing/approval-summary/page'
+import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects/page'
+import BlanketApprovalDetailsPage from '@ors/app/projects_listing/blanket-approval-details/page'
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
+import ProjectsCompareVersionsPage from '@ors/app/projects_listing/compare-versions/page'
+import ProjectsApprovalUpdatePage from './app/projects_listing/[project_id]/approval/page'
+import ProjectsImpactUpdatePage from './app/projects_listing/[project_id]/impact/page'
+import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
+import ProjectsRecommendPage from '@ors/app/projects_listing/[project_id]/recommend/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
-import ProjectsEnterprises from '@ors/app/projects_listing/enterprises/page'
-import ProjectsEnterprisesCreate from '@ors/app/projects_listing/enterprises/[project_id]/create/page'
-import ProjectsEnterprisesView from '@ors/app/projects_listing/enterprises/[project_id]/view/[enterprise_id]/page'
-import ProjectsEnterprisesEdit from '@ors/app/projects_listing/enterprises/[project_id]/edit/[enterprise_id]/page'
+import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
+import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
+import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
+import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
+import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterprise_id]/edit/page'
+import ProjectsEnterprisesPage from '@ors/app/projects_listing/projects_enterprises/page'
+import ProjectsEnterprisesCreatePage from '@ors/app/projects_listing/projects_enterprises/[project_id]/create/page'
+import ProjectsEnterprisesViewPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/view/[enterprise_id]/page'
+import ProjectsEnterprisesEditPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/edit/[enterprise_id]/page'
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
@@ -69,9 +82,13 @@ import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
+import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
+import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspace/page.tsx'
+import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
+import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
+import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
 
 function RedirectToSection() {
-  const user = useStore((state) => state.user)
   const { canEditReplenishment } = useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
@@ -253,7 +270,7 @@ export default function App() {
             </Route>
           </ReplenishmentLayout>
         </Route>
-        <Route path="/project-submissions/create">
+        {/* <Route path="/project-submissions/create">
           <ProjectSubmissionsCreatePage />
         </Route>
         <Route path="/project-submissions/edit">
@@ -264,13 +281,13 @@ export default function App() {
         </Route>
         <Route path="/project-submissions/">
           <ProjectSubmissionsPage />
-        </Route>
-        <Route path="/projects/:project_id">
+        </Route> */}
+        {/* <Route path="/projects/:project_id">
           <ProjectsProjectPage />
         </Route>
         <Route path="/projects">
           <ProjectsPage />
-        </Route>
+        </Route> */}
         <Route path="/projects-listing">
           <Redirect to="/projects-listing/listing" replace />
         </Route>
@@ -289,9 +306,29 @@ export default function App() {
             <ProjectsAssociationPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/export">
+        <Route path="/projects-listing/export/:export_type">
           <ProjectsDataProvider>
             <ProjectsExportPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/approval-summary">
+          <ProjectsDataProvider>
+            <ProjectsApprovalSummaryPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/summary-of-projects">
+          <ProjectsDataProvider>
+            <SummaryOfProjectsPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/blanket-approval-details">
+          <ProjectsDataProvider>
+            <BlanketApprovalDetailsPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/compare-versions">
+          <ProjectsDataProvider>
+            <ProjectsCompareVersionsPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/settings">
@@ -299,20 +336,55 @@ export default function App() {
             <ProjectsSettingsPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/update-mya-data">
+          <ProjectsDataProvider>
+            <ProjectsUpdateMyaDataPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/update-mya-data/:metaproject_id">
+          <ProjectsDataProvider>
+            <ProjectsUpdateMyaDataPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/enterprises">
-          <ProjectsEnterprises />
+          <ProjectsDataProvider>
+            <EnterprisesPage />
+          </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id">
-          <ProjectsEnterprises />
+        <Route path="/projects-listing/enterprises/create">
+          <ProjectsDataProvider>
+            <EnterpriseCreatePage />
+          </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/create">
-          <ProjectsEnterprisesCreate />
+        <Route path="/projects-listing/enterprises/:enterprise_id">
+          <ProjectsDataProvider>
+            <EnterprisePage />
+          </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/view/:enterprise_id">
-          <ProjectsEnterprisesView />
+        <Route path="/projects-listing/enterprises/:enterprise_id/edit">
+          <ProjectsDataProvider>
+            <EnterpriseEditPage />
+          </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/edit/:enterprise_id">
-          <ProjectsEnterprisesEdit />
+        <Route path="/projects-listing/projects-enterprises/:project_id">
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/projects-enterprises/:project_id/create">
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesCreatePage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/projects-enterprises/:project_id/view/:enterprise_id">
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesViewPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesEditPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsDataProvider>
@@ -329,9 +401,29 @@ export default function App() {
             <ProjectsEditPage mode="edit" />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/:project_id/approval">
+          <ProjectsDataProvider>
+            <ProjectsApprovalUpdatePage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/impact">
+          <ProjectsDataProvider>
+            <ProjectsImpactUpdatePage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/post-excom-update">
+          <ProjectsDataProvider>
+            <ProjectsPostExComUpdatePage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/:project_id/submit">
           <ProjectsDataProvider>
             <ProjectsSubmitPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/recommend">
+          <ProjectsDataProvider>
+            <ProjectsRecommendPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">
@@ -348,6 +440,23 @@ export default function App() {
           <ProjectsDataProvider>
             <ProjectsEditPage mode="partial-link" />
           </ProjectsDataProvider>
+        </Route>
+        {/* APR routes */}
+        <Route path="/apr" nest>
+          <APRProvider>
+            <Route path="/">
+              <AprRedirect />
+            </Route>
+            <Route path="/:year/workspace">
+              <APRWorkspace />
+            </Route>
+            <Route path="/:year/edit">
+              <APREdit />
+            </Route>
+            <Route path="/:year/mlfs/workspace">
+              <APRMLFSWorkspace />
+            </Route>
+          </APRProvider>
         </Route>
         <Route>
           <NotFoundPage />

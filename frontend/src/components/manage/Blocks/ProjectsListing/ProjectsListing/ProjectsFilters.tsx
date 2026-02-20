@@ -4,32 +4,28 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import { SearchFilter } from '../HelperComponents'
 import { tableColumns } from '../constants'
-import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
-import { debounce } from '@ors/helpers/Utils/Utils'
 
-import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
-import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
+import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
 
 const ProjectsFilters = ({
   mode,
-  commonSlice,
-  projectSlice,
-  meetings,
+  filterOptions = {},
   form,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+  const { canViewMetainfoProjects, canViewSectorsSubsectors, isMlfsUser } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
 
-  const searchRef = useFocusOnCtrlF()
+  const meetingsOptions = filterOptions?.meeting
+    ? [...filterOptions.meeting].reverse()
+    : []
 
   const defaultProps = {
     multiple: true,
@@ -48,60 +44,16 @@ const ProjectsFilters = ({
 
   return (
     <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
-      <Field
-        name="search"
-        defaultValue={filters.search}
-        inputRef={searchRef}
+      <SearchFilter
         placeholder="Search by keyword..."
-        FieldProps={{
-          className: 'mb-0 w-full md:w-[14.375rem] BPList',
-        }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <MuiIconButton
-                aria-label="search table"
-                edge="start"
-                tabIndex={-1}
-                onClick={() => {
-                  const search = form.current.search.value
-                  handleParamsChange({
-                    offset: 0,
-                    search,
-                  })
-                  handleFilterChange({ search })
-                }}
-                disableRipple
-              >
-                <IoSearchOutline />
-              </MuiIconButton>
-            </InputAdornment>
-          ),
-        }}
-        onKeyDown={() => {
-          debounce(
-            () => {
-              const search = form.current.search.value
-              handleParamsChange({
-                offset: 0,
-                search,
-              })
-              handleFilterChange({ search })
-              if (searchRef.current) {
-                searchRef.current.select()
-              }
-            },
-            1000,
-            'PFilterSearch',
-          )
-        }}
+        {...{ form, filters, handleFilterChange, handleParamsChange }}
       />
       {mode === 'listing' && (
         <Field
           Input={{ placeholder: tableColumns.country }}
           options={getFilterOptions(
             filters,
-            commonSlice.countries.data,
+            filterOptions?.country,
             'country_id',
           )}
           widget="autocomplete"
@@ -120,11 +72,7 @@ const ProjectsFilters = ({
       )}
       <Field
         Input={{ placeholder: tableColumns.agency }}
-        options={getFilterOptions(
-          filters,
-          commonSlice.agencies.data,
-          'agency_id',
-        )}
+        options={getFilterOptions(filters, filterOptions?.agency, 'agency_id')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const agency = filters.agency_id || []
@@ -142,7 +90,11 @@ const ProjectsFilters = ({
         <>
           <Field
             Input={{ placeholder: tableColumns.cluster }}
-            options={getFilterOptions(filters, clusters, 'cluster_id')}
+            options={getFilterOptions(
+              filters,
+              filterOptions?.cluster,
+              'cluster_id',
+            )}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
               const projectCluster = filters.cluster_id || []
@@ -160,7 +112,7 @@ const ProjectsFilters = ({
             Input={{ placeholder: tableColumns.type }}
             options={getFilterOptions(
               filters,
-              project_types,
+              filterOptions?.project_type,
               'project_type_id',
             )}
             widget="autocomplete"
@@ -181,7 +133,11 @@ const ProjectsFilters = ({
       {canViewSectorsSubsectors && (
         <Field
           Input={{ placeholder: tableColumns.sector }}
-          options={getFilterOptions(filters, sectors, 'sector_id')}
+          options={getFilterOptions(
+            filters,
+            filterOptions?.sector,
+            'sector_id',
+          )}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const sector = filters.sector_id || []
@@ -198,12 +154,12 @@ const ProjectsFilters = ({
       )}
       <div className="w-full md:w-[7.76rem]">
         <PopoverInput
-          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[16px] md:w-[7.76rem]"
+          className="!m-0 h-[2.25rem] min-h-[2.25rem] truncate border-2 !pr-0 !text-[16px] text-inherit"
           label="Meeting"
-          options={meetings}
+          options={meetingsOptions}
           onChange={(value: any) => {
             const meetingId = filters.meeting_id || []
-            const meetingValue = meetings.filter(
+            const meetingValue = meetingsOptions.filter(
               (meeting: any) => meeting.value === value,
             )
             const newValue = union(meetingId, meetingValue)
@@ -218,34 +174,36 @@ const ProjectsFilters = ({
       </div>
       {canViewMetainfoProjects && (
         <>
-          <Field
-            Input={{ placeholder: tableColumns.submission_status }}
-            options={getFilterOptions(
-              filters,
-              projectSlice.submission_statuses.data,
-              'submission_status_id',
-            )}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              const submissionStatus = filters.submission_status_id || []
-              const newValue = union(submissionStatus, value)
+          {mode === 'listing' && (
+            <Field
+              Input={{ placeholder: tableColumns.submission_status }}
+              options={getFilterOptions(
+                filters,
+                filterOptions?.submission_status,
+                'submission_status_id',
+              )}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const submissionStatus = filters.submission_status_id || []
+                const newValue = union(submissionStatus, value)
 
-              handleFilterChange({ submission_status_id: newValue })
-              handleParamsChange({
-                submission_status_id: newValue
-                  .map((item: any) => item.id)
-                  .join(','),
-                offset: 0,
-              })
-            }}
-            {...defaultProps}
-            FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
-          />
+                handleFilterChange({ submission_status_id: newValue })
+                handleParamsChange({
+                  submission_status_id: newValue
+                    .map((item: any) => item.id)
+                    .join(','),
+                  offset: 0,
+                })
+              }}
+              {...defaultProps}
+              FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
+            />
+          )}
           <Field
             Input={{ placeholder: tableColumns.project_status }}
             options={getFilterOptions(
               filters,
-              projectSlice.statuses.data,
+              filterOptions?.status,
               'status_id',
             )}
             widget="autocomplete"
@@ -265,6 +223,38 @@ const ProjectsFilters = ({
             }}
           />
         </>
+      )}
+      {isMlfsUser && (
+        <Field
+          Input={{
+            placeholder: tableColumns.blanket_or_individual_consideration,
+          }}
+          options={getFilterOptions(
+            filters,
+            filterOptions?.blanket_approval_individual_consideration,
+            'blanket_or_individual_consideration',
+          )}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const consideration =
+              filters.blanket_or_individual_consideration || []
+            const newValue = union(consideration, value)
+
+            handleFilterChange({
+              blanket_or_individual_consideration: newValue,
+            })
+            handleParamsChange({
+              blanket_or_individual_consideration: newValue
+                .map((item: any) => item.id)
+                .join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+          FieldProps={{
+            className: defaultProps.FieldProps.className + ' md:!w-[19rem]',
+          }}
+        />
       )}
     </div>
   )

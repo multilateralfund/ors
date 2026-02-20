@@ -21,8 +21,11 @@ const BPDataProvider = (props: BPDataProviderProps) => {
   const { data: countries } = useApi({
     options: {
       withStoreCache: false,
+      params: {
+        values_exclusive_for: 'business_plan',
+      },
     },
-    path: '/api/business-plan/countries/',
+    path: 'api/countries/',
   })
 
   return (

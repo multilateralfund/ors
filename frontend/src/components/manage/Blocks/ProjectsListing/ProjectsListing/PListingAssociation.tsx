@@ -6,10 +6,11 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
+import { PListingProps, ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
-import { PListingProps } from '../interfaces'
 
-import { flatMap } from 'lodash'
+import { flatMap, sumBy } from 'lodash'
 
 export default function PListingAssociation({
   tableToolbar,
@@ -21,6 +22,10 @@ export default function PListingAssociation({
   const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
+  const projectFilters = useGetProjectFilters({
+    ...filters,
+    meta_project__isnull: false,
+  })
   const projectsAssociation = useGetProjectsAssociation(updatedInitialFilters)
   const { loading, setParams, results = [] } = projectsAssociation
 
@@ -39,9 +44,19 @@ export default function PListingAssociation({
       projects: formattedProjects,
     }
   })
+
   const projects = {
     ...projectsAssociation,
-    results: flatMap(formattedResults, (entry) => entry.projects || []),
+    results: flatMap(formattedResults, (entry) => [
+      {
+        title: 'Metaproject: ' + (entry.umbrella_code ?? 'N/A'),
+        isMetaproject: true,
+        total_fund: sumBy(entry.projects, 'total_fund') || undefined,
+        support_cost_psc:
+          sumBy(entry.projects, 'support_cost_psc') || undefined,
+      } as any as ProjectTypeApi,
+      ...(entry.projects || []),
+    ]),
   }
 
   return (
@@ -54,7 +69,14 @@ export default function PListingAssociation({
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PListingFilters
             mode="listing"
-            {...{ form, filters, setFilters, setParams, initialFilters }}
+            {...{
+              form,
+              filters,
+              setFilters,
+              setParams,
+              initialFilters,
+              projectFilters,
+            }}
           />
           {tableToolbar}
         </div>

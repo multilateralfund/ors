@@ -15,20 +15,33 @@ interface PermissionsContextProps {
   canViewMetainfoProjects: boolean
   canViewSectorsSubsectors: boolean
   canUpdateProjects: boolean
+  canUpdateV3Projects: boolean
   canSubmitProjects: boolean
   canRecommendProjects: boolean
   canApproveProjects: boolean
   canAssociateProjects: boolean
+  canDisassociateProjects: boolean
+  canDisassociateComponents: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
   canViewProductionProjects: boolean
+  canUpdatePostExcom: boolean
+  canTransferProjects: boolean
+  canViewMetaProjects: boolean
+  canViewEnterprises: boolean
   canEditEnterprise: boolean
   canApproveEnterprise: boolean
+  canEditProjectEnterprise: boolean
+  canApproveProjectEnterprise: boolean
   canSetProjectSettings: boolean
+  isMlfsUser: boolean
   canCommentCPCountry: boolean
   canCommentCPSecretariat: boolean
   isCPCountryUserType: boolean
   isBpAdmin: boolean
+  canViewAPR: boolean
+  canEditAPR: boolean
+  canSubmitAPR: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

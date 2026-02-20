@@ -12,7 +12,6 @@ from rest_framework.viewsets import GenericViewSet
 from core.models.country import Country
 from core.models.agency import Agency
 from core.models.project import Project
-from core.models.project import MetaProject
 from core.models.utils import SubstancesType
 from core.models.substance import Substance
 from core.models.blend import Blend
@@ -25,7 +24,9 @@ from core.models.project_metadata import ProjectStatus
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
+from core.api.export.projects_v2 import ProjectV2Writer
 from core.api.serializers.project import ProjectExportSerializer
+from core.api.serializers.project_v2 import ProjectExportV2Serializer
 from core.api.utils import workbook_response, workbook_pdf_response
 
 from core.api.export.business_plan import ModelNameCodeWriter
@@ -61,9 +62,9 @@ class ProjectsExport:
 
 @dataclass
 class SheetDefinition:
-    model: Model
+    model: typing.Any | None
     data_getter: typing.Callable
-    writer: ModelNameWriter | ModelNameCodeWriter
+    writer: type[ModelNameWriter | ModelNameCodeWriter]
     sheet_name: str
     validate_column: str
     enforce_validation: bool = True
@@ -71,7 +72,7 @@ class SheetDefinition:
     def get_data(self):
         return self.data_getter(self.model)
 
-    def write_data(self, exporter):
+    def write_data(self, exporter: "ProjectsV2Export"):
         data = self.get_data()
         self.writer(exporter.wb, self.sheet_name).write(data)
         exporter.add_data_validation(
@@ -84,7 +85,7 @@ class SheetDefinition:
 
 @dataclass
 class MultiModelSheetDefinition(SheetDefinition):
-    models: typing.List[Model] = field(kw_only=True, default_factory=list)
+    models: typing.List[type[Model]] = field(kw_only=True, default_factory=list)
 
     def get_data(self):
         return list(chain(*(self.data_getter(model) for model in self.models)))
@@ -133,8 +134,8 @@ class ProjectsV2Export(ProjectsExport):
 
     def get_wb(self, method):
         queryset = self.view.filter_queryset(self.view.get_queryset())
-        data = ProjectExportSerializer(queryset, many=True).data
-        ProjectWriter(self.sheet).write(data)
+        data = ProjectExportV2Serializer(queryset, many=True).data
+        ProjectV2Writer(self.sheet).write(data)
 
         data_sheets = [
             SheetDefinition(
@@ -154,10 +155,10 @@ class ProjectsV2Export(ProjectsExport):
                 enforce_validation=False,
             ),
             SheetDefinition(
-                MetaProject,
-                self.get_codes,
+                Project,
+                partial(self.get_by_prop_name, prop_name="metacode"),
                 ModelNameWriter,
-                "Metaproject codes",
+                "Metacodes",
                 "C",
                 enforce_validation=False,
             ),
@@ -169,10 +170,10 @@ class ProjectsV2Export(ProjectsExport):
                 "D",
             ),
             SheetDefinition(
-                MetaProject.MetaProjectType,
+                Project.Category,
                 self.get_enum_labels,
                 ModelNameWriter,
-                "Metaproject categories",
+                "Project categories",
                 "E",
             ),
             SheetDefinition(
@@ -276,21 +277,12 @@ class ProjectsV2Export(ProjectsExport):
 
     def add_data_validation(
         self,
-        column,
-        validation_sheet,
-        validation_range,
-        allow_blank=False,
-        show_error=False,
+        column: str,
+        validation_sheet: str,
+        validation_range: int,
+        allow_blank: bool = False,
+        show_error: bool = False,
     ):
-        """
-        Add data validation to a column in the Activities sheet
-        @param wb: openpyxl.Workbook
-        @param column: str
-        @param validation_sheet: str
-        @param validation_range: number
-        @param allow_blank: bool
-
-        """
         validation_formula = f"'{validation_sheet}'!$A$2:$A${validation_range + 1}"
         data_validation = openpyxl.worksheet.datavalidation.DataValidation(
             type="list",

@@ -3,8 +3,13 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import { canEditField, formatOptions } from '../utils'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { STYLE } from '../../Replenishment/Inputs/constants'
+import { FieldErrorIndicator } from '../HelperComponents'
+import { canEditField, formatOptions, onTextareaFocus } from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -19,47 +24,37 @@ import {
   additionalProperties,
   disabledClassName,
   textFieldClassName,
+  approvalToOdsMap,
 } from '../constants'
 
-import { find, get, isObject, isBoolean, isNil, isArray } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
-
-export const getIsInputDisabled = (
-  hasSubmitted: boolean,
-  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  field: string,
-  index?: number,
-) => {
-  const isError =
-    isArray(errors) && !isNil(index)
-      ? errors?.[index]?.[field]?.length > 0
-      : !isArray(errors) && errors?.[field]?.length > 0
-
-  return (
-    hasSubmitted &&
-    (isError || (field === 'Tranche number' && hasTrancheErrors))
-  )
-}
+import {
+  find,
+  get,
+  isObject,
+  isBoolean,
+  isNil,
+  omit,
+  isUndefined,
+} from 'lodash'
 
 const getFieldDefaultProps = (
-  isError: boolean,
   editableFields: string[],
   field: ProjectSpecificFields,
 ) => {
   const fieldName = field.write_field_name
-  const isOdp = field.table === 'ods_odp'
+  const isOdp = field.table === 'ods_odp' && field.section !== 'Approval'
 
   return {
     ...{
       ...defaultPropsSimpleField,
-      className: cx(defaultPropsSimpleField.className, {
-        '!ml-0 h-10': field.data_type === 'date',
+      className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
         'w-[125px]': isOdp,
-        'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
+        '!flex-grow-0': field.data_type === 'date',
+        '!bg-mlfs-bannerColor': field.is_actual,
       }),
       containerClassName: cx(defaultPropsSimpleField.containerClassName, {
         'w-[125px]': isOdp,
@@ -76,8 +71,10 @@ const changeNestedField: FieldHandler = (
   subField,
   index,
 ) => {
+  const approvalIdentifier = 'approvalFields'
+
   if (!isNil(index) && subField) {
-    setState((prevData) => {
+    setState((prevData: any) => {
       const sectionData = prevData[section] as Record<string, any>
       const subSectionData = sectionData[subField] || []
 
@@ -86,25 +83,53 @@ const changeNestedField: FieldHandler = (
         [field]: value,
       }
 
+      let computedTotal: Record<string, number> = {}
+
+      const approvalField = Object.keys(approvalToOdsMap).find(
+        (key) =>
+          approvalToOdsMap[key as keyof typeof approvalToOdsMap] === field,
+      )
+
+      if (
+        approvalField &&
+        isUndefined(prevData[approvalIdentifier][approvalField])
+      ) {
+        const computedField = `computed_${approvalField}`
+
+        const total = subSectionData.reduce(
+          (sum: number, item: any) => sum + (Number(item[field]) || 0),
+          0,
+        )
+
+        computedTotal[computedField] = total
+      }
+
       return {
         ...prevData,
         [section]: {
           ...prevData[section],
           [subField]: subSectionData,
         },
+        [approvalIdentifier]: {
+          ...prevData[approvalIdentifier],
+          ...computedTotal,
+        },
       }
-    })
+    }, field)
   }
 }
 
 export const changeField: FieldHandler = (value, field, setState, section) => {
-  setState((prevData) => ({
-    ...prevData,
-    [section]: {
-      ...prevData[section],
-      [field]: value,
-    },
-  }))
+  setState(
+    (prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value,
+      },
+    }),
+    field,
+  )
 }
 
 const getValue = <T,>(
@@ -182,14 +207,16 @@ export const AutocompleteWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
+  hasField?: boolean,
 ) => {
-  const options = formatOptions(field)
+  const options = formatOptions(
+    field,
+    hasField ? fields[sectionIdentifier] : undefined,
+  )
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
@@ -197,45 +224,82 @@ export const AutocompleteWidget = <T,>(
     ? find(options, { id: value }) || null
     : value
 
-  return (
-    <div className="flex h-full flex-col justify-between">
-      <Label>{field.label}</Label>
-      <Field
-        widget="autocomplete"
-        options={options}
-        disabled={!canEditField(editableFields, fieldName)}
-        value={formattedValue}
-        onChange={(_: React.SyntheticEvent, value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        getOptionLabel={(option) => {
-          const field = fieldName === 'group' ? 'name_alt' : 'name'
+  const normalizedValue =
+    fieldName === 'ods_display_name'
+      ? options.find((opt) => opt.id === value) || null
+      : formattedValue
 
-          return (
-            (isObject(option)
-              ? get(option, field)
-              : (find(options, { id: option }) as OptionsType)?.[field]) || ''
-          )
-        }}
-        Input={{
-          error: getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-        }}
-        {...defaultProps}
-        {...(additionalProperties[fieldName] ?? {})}
-      />
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
+
+  return (
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
+        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          options={options}
+          disabled={!canEditField(editableFields, fieldName)}
+          value={normalizedValue}
+          onChange={(_: React.SyntheticEvent, value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          getOptionLabel={(option) => {
+            const field =
+              fieldName === 'group'
+                ? 'name_alt'
+                : fieldName === 'ods_display_name'
+                  ? 'label'
+                  : 'name'
+
+            return (
+              (isObject(option)
+                ? get(option, field)
+                : (find(options, { id: option }) as OptionsType)?.[field]) || ''
+            )
+          }}
+          {...defaultProps}
+          {...(additionalProperties[fieldName] ?? {})}
+          {...(field.section === 'Impact'
+            ? {
+                FieldProps: {
+                  className: cx(
+                    defaultProps.FieldProps.className,
+                    '!w-40',
+                    isPlannedImpactField && 'actual_field',
+                  ),
+                },
+              }
+            : {})}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
+      </div>
     </div>
   )
 }
@@ -245,8 +309,6 @@ export const TextWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -262,37 +324,40 @@ export const TextWidget = <T,>(
       })}
     >
       <Label>{field.label}</Label>
-      <SimpleInput
-        id={fieldName}
-        value={value}
-        type="text"
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            event,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-        containerClassName={
-          defaultPropsSimpleField.containerClassName +
-          (fieldName === 'programme_officer' ? textFieldClassName : '')
-        }
-      />
+      <div className="flex items-center">
+        <SimpleInput
+          id={fieldName}
+          value={value}
+          type="text"
+          disabled={!canEditField(editableFields, fieldName)}
+          onFocus={onTextareaFocus}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              event,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          {...getFieldDefaultProps(editableFields, field)}
+          containerClassName={
+            defaultPropsSimpleField.containerClassName +
+            (fieldName === 'programme_officer'
+              ? textFieldClassName + ' max-w-[370px]'
+              : '')
+          }
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
+      </div>
     </div>
   )
 }
@@ -302,8 +367,6 @@ export const TextAreaWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -311,36 +374,46 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+  const isOdsReplacement = fieldName === 'ods_replacement'
+  const nrChars = isOdsReplacement ? 256 : 500
 
   return (
-    <div className="w-full md:w-auto">
-      <Label>{field.label}</Label>
-      <TextareaAutosize
-        value={value as string}
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            event,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        className={cx(textAreaClassname, {
-          'md:w-[255px] md:min-w-[255px]': field.table === 'ods_odp',
-          'border-red-500': getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-        })}
-        minRows={2}
-        tabIndex={-1}
-      />
+    <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
+      <Label>
+        {field.label} (max {nrChars} characters)
+      </Label>
+      <div className="flex items-center">
+        <TextareaAutosize
+          value={value as string}
+          disabled={!canEditField(editableFields, fieldName)}
+          onFocus={onTextareaFocus}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              event,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          className={cx(textAreaClassname, 'max-w-[415px]', {
+            '!min-h-[27px] !w-auto !min-w-56 !pb-1.5 md:!min-w-72':
+              isOdsReplacement,
+          })}
+          maxLength={nrChars}
+          style={STYLE}
+          minRows={isOdsReplacement ? 1 : 2}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
+      </div>
     </div>
   )
 }
@@ -350,46 +423,85 @@ const NumberWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
   index?: number,
 ) => {
+  const isApprovalOdp =
+    field.section === 'Approval' && field.table === 'ods_odp'
+
   const fieldName = field.write_field_name
-  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  const fieldForValue =
+    isApprovalOdp && isUndefined(fields[sectionIdentifier][fieldName])
+      ? `computed_${fieldName}`
+      : fieldName
+  const value = getValue(
+    fields,
+    sectionIdentifier,
+    fieldForValue,
+    subField,
+    index,
+  )
+
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
 
   return (
-    <div className="flex h-full flex-col justify-between">
-      <Label>{field.label}</Label>
-      <SimpleInput
-        id={fieldName}
-        value={value ?? ''}
-        disabled={!canEditField(editableFields, fieldName)}
-        type="text"
-        onChange={(value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-      />
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between':
+          field.table !== 'ods_odp' || field.section === 'Approval',
+      })}
+    >
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
+      <div className="flex items-center">
+        <FormattedNumberInput
+          id={fieldName}
+          value={value ?? ''}
+          withoutDefaultValue={true}
+          decimalDigits={field.data_type === 'number' ? 0 : 2}
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          {...omit(
+            getFieldDefaultProps(editableFields, field),
+            'containerClassName',
+          )}
+        />
+        <div
+          className={cx({
+            'w-8': field.section === 'Approval' && field.table === 'ods_odp',
+          })}
+        >
+          <FieldErrorIndicator
+            errors={
+              !isNil(index)
+                ? (errors as { [key: string]: string[] }[])[index]
+                : errors
+            }
+            field={field.label}
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -399,8 +511,6 @@ const BooleanWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -409,35 +519,53 @@ const BooleanWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
+  const isDisabledImpactField =
+    field.section === 'Impact' && !canEditField(editableFields, fieldName)
+  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
+
   return (
     <div className="col-span-full flex w-full">
-      <Label>{field.label}</Label>
-      <Checkbox
-        className="pb-1 pl-2 pt-0"
-        checked={Boolean(value)}
-        disabled={!canEditField(editableFields, fieldName)}
-        onChange={(_: React.SyntheticEvent, value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        sx={{
-          color: getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          )
-            ? 'red'
-            : 'black',
-        }}
-      />
+      <Label
+        className={cx({
+          italic: isDisabledImpactField,
+          '!font-medium': isPlannedImpactField,
+        })}
+      >
+        {field.label}
+        {isDisabledImpactField ? ' (planned)' : ''}
+      </Label>
+      <div className="flex items-center">
+        <Checkbox
+          className="pb-1 pl-2 pt-0"
+          checked={Boolean(value)}
+          disabled={!canEditField(editableFields, fieldName)}
+          onChange={(_: React.SyntheticEvent, value) =>
+            changeHandler[field.data_type]<T, SpecificFields>(
+              value,
+              fieldName,
+              setFields,
+              sectionIdentifier,
+              subField,
+              index,
+            )
+          }
+          inputProps={{ tabIndex: 0 }}
+          sx={{
+            '&.Mui-focusVisible': {
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            },
+            color: 'black',
+          }}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
+      </div>
     </div>
   )
 }
@@ -447,8 +575,6 @@ const DateWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  hasTrancheErrors: boolean,
-  hasSubmitted: boolean,
   editableFields: string[],
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -460,33 +586,48 @@ const DateWidget = <T,>(
   return (
     <div>
       <Label>{field.label}</Label>
-      <DateInput
-        id={fieldName}
-        value={value}
-        disabled={!canEditField(editableFields, fieldName)}
-        formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-        onChange={(value) =>
-          changeHandler[field.data_type]<T, SpecificFields>(
-            value,
-            fieldName,
-            setFields,
-            sectionIdentifier,
-            subField,
-            index,
-          )
-        }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
-          ),
-          editableFields,
-          field,
-        )}
-      />
+      <div className="flex items-center">
+        <div className="w-40">
+          <DateInput
+            id={fieldName}
+            value={value}
+            disabled={!canEditField(editableFields, fieldName)}
+            formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+            onChange={(value) => {
+              changeHandler[field.data_type]<T, SpecificFields>(
+                value,
+                fieldName,
+                setFields,
+                sectionIdentifier,
+                subField,
+                index,
+              )
+
+              if (fieldName === 'date_completion') {
+                changeHandler[field.data_type]<T, SpecificFields>(
+                  value,
+                  'project_end_date' as keyof SpecificFields,
+                  setFields,
+                  'crossCuttingFields' as keyof T,
+                  subField,
+                  index,
+                )
+              }
+            }}
+            {...omit(getFieldDefaultProps(editableFields, field), [
+              'containerClassName',
+            ])}
+          />
+        </div>
+        <FieldErrorIndicator
+          errors={
+            !isNil(index)
+              ? (errors as { [key: string]: string[] }[])[index]
+              : errors
+          }
+          field={field.label}
+        />
+      </div>
     </div>
   )
 }

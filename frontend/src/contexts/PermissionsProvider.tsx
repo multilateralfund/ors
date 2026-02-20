@@ -47,6 +47,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canUpdateProjects = user_permissions.includes(
     'has_project_v2_edit_access',
   )
+  const canUpdateV3Projects = user_permissions.includes(
+    'has_project_v2_version3_edit_access',
+  )
   const canSubmitProjects = user_permissions.includes(
     'has_project_v2_submit_access',
   )
@@ -59,12 +62,19 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canAssociateProjects = user_permissions.includes(
     'has_project_v2_associate_projects_access',
   )
+  const canDisassociateProjects = user_permissions.includes(
+    'has_project_v2_remove_association_access',
+  )
+  const canDisassociateComponents = user_permissions.includes(
+    'has_project_v2_disassociate_component_access',
+  )
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
+      canUpdateV3Projects ||
       canSubmitProjects ||
       canRecommendProjects ||
       canApproveProjects ||
@@ -72,15 +82,37 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProductionProjects = user_permissions.includes(
     'can_view_production_projects',
   )
+  const canViewMetaProjects = user_permissions.includes(
+    'has_project_v2_mya_access',
+  )
+  const canUpdatePostExcom = user_permissions.includes(
+    'has_project_v2_edit_post_excom',
+  )
+  const canTransferProjects = user_permissions.includes(
+    'has_project_v2_transfer_projects_access',
+  )
+
+  const canViewEnterprises = user_permissions.includes(
+    'has_enterprise_view_access',
+  )
   const canEditEnterprise = user_permissions.includes(
-    'has_project_enterprise_edit_access',
+    'has_enterprise_edit_access',
   )
   const canApproveEnterprise = user_permissions.includes(
+    'has_enterprise_approval_access',
+  )
+  const canEditProjectEnterprise = user_permissions.includes(
+    'has_project_enterprise_edit_access',
+  )
+  const canApproveProjectEnterprise = user_permissions.includes(
     'has_project_enterprise_approval_access',
   )
+
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
   )
+
+  const isMlfsUser = user_permissions.includes('is_mlfs_user')
 
   const canCommentCPCountry = user_permissions.includes(
     'can_cp_country_type_comment',
@@ -104,6 +136,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
     'has_replenishment_edit_access',
   )
 
+  const canViewAPR = user_permissions.includes('has_apr_view_access')
+  const canEditAPR = user_permissions.includes('has_apr_edit_access')
+  const canSubmitAPR = user_permissions.includes('has_apr_submit_access')
+
   return (
     <PermissionsContext.Provider
       value={{
@@ -121,20 +157,33 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewMetainfoProjects,
         canViewSectorsSubsectors,
         canUpdateProjects,
+        canUpdateV3Projects,
         canSubmitProjects,
         canRecommendProjects,
         canApproveProjects,
         canAssociateProjects,
+        canDisassociateProjects,
+        canDisassociateComponents,
         canEditProjects,
         canEditApprovedProjects,
         canViewProductionProjects,
+        canUpdatePostExcom,
+        canTransferProjects,
+        canViewMetaProjects,
+        canViewEnterprises,
         canEditEnterprise,
         canApproveEnterprise,
+        canEditProjectEnterprise,
+        canApproveProjectEnterprise,
         canSetProjectSettings,
+        isMlfsUser,
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,
         isBpAdmin,
+        canViewAPR,
+        canEditAPR,
+        canSubmitAPR,
       }}
     >
       {children}

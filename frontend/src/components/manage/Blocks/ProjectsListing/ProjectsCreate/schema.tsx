@@ -1,9 +1,7 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import { tagsCellRenderer } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schemaHelpers'
 import { tableColumns } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { LinkableActivity } from './LinkedBPTable'
-import { ProjectData } from '../interfaces'
+import { SetProjectData } from '../interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
 import { Checkbox } from '@mui/material'
@@ -15,7 +13,7 @@ import {
 
 const bpLinkColumnDefs = (
   yearColumns: any[],
-  setProjectData?: Dispatch<SetStateAction<ProjectData>>,
+  setProjectData?: SetProjectData,
 ) => [
   ...(setProjectData
     ? [
@@ -30,13 +28,20 @@ const bpLinkColumnDefs = (
             <Checkbox
               checked={params.data?.selected}
               onChange={(event) => {
-                setProjectData((prevData) => ({
-                  ...prevData,
-                  bpLinking: {
-                    ...prevData.bpLinking,
-                    bpId: event.target.checked ? params.data!.id : null,
-                  },
-                }))
+                const nrRows = params.api.getDisplayedRowCount()
+
+                if (nrRows > 1) {
+                  setProjectData(
+                    (prevData) => ({
+                      ...prevData,
+                      bpLinking: {
+                        ...prevData.bpLinking,
+                        bpId: event.target.checked ? params.data!.id : null,
+                      },
+                    }),
+                    'bp_activity',
+                  )
+                }
               }}
               sx={{
                 color: 'black',
@@ -61,6 +66,15 @@ const bpLinkColumnDefs = (
     minWidth: 90,
     sortable: false,
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+  },
+  {
+    headerName: tableColumns.project_cluster_id,
+    field: 'project_cluster.code',
+    tooltipField: 'project_cluster.name',
+    minWidth: 70,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
+    valueGetter: (params: any) =>
+      params.data.project_cluster?.code ?? params.data.project_cluster?.name,
   },
   {
     headerName: tableColumns.project_type_id,

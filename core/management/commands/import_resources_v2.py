@@ -30,6 +30,7 @@ class Command(BaseCommand):
                 "import_cluster_type_sector_links",
                 "import_fields",
                 "import_project_specific_fields",
+                "generate_new_cluster_type_sector_file",
             ],
         )
 

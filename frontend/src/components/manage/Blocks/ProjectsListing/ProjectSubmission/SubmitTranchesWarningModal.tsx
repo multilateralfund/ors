@@ -17,12 +17,12 @@ const SubmitTranchesWarningModal = ({
 
   return (
     <Modal
-      aria-labelledby="tranche-warning-modal-title"
+      aria-labelledby="tranche-warning-modal"
       open={isTrancheWarningOpen}
       onClose={() => setIsTrancheWarningOpen(false)}
       keepMounted
     >
-      <Box className="flex w-full max-w-lg flex-col absolute-center">
+      <Box className="flex w-full max-w-[90%] flex-col absolute-center sm:max-w-lg">
         <Typography className="mb-4 text-[20px] font-medium text-black">
           Submit project
         </Typography>
@@ -31,8 +31,8 @@ const SubmitTranchesWarningModal = ({
           previous tranche(s) of this project. Are you sure you want to continue
           with the submission of the current tranche?
         </Typography>
-        <div className="ml-auto flex gap-1">
-          <SubmitButton title="Continue" onSubmit={onSubmit} />
+        <div className="flex flex-wrap justify-end gap-2">
+          <SubmitButton title="Continue" onSubmit={onSubmit} className="h-10" />
           <Button
             className="border border-solid border-[#F2F2F2] bg-[#F2F2F2] text-base leading-none text-[#4D4D4D] hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
             onClick={() => setIsTrancheWarningOpen(false)}

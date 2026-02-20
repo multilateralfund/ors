@@ -20,13 +20,22 @@ function cleanValue(value: string) {
   }
   return value
 }
-type BasePasteWrapperProps = {
+interface BasePasteWrapperProps {
   label: string
   mutator: (row: any, value: any) => void
+  form: any[] | undefined
+  setForm: (state: any[]) => void
+  rowIdField?: string
   // activitiesRef: any
-} & Pick<BPEditTableInterface, 'form' | 'setForm'>
+}
 export function BasePasteWrapper(props: BasePasteWrapperProps) {
-  const { label, mutator, form, setForm } = props
+  const {
+    label,
+    mutator,
+    form,
+    setForm,
+    rowIdField = 'display_internal_id',
+  } = props
   const { enqueueSnackbar } = useSnackbar()
   const [pasting, setPasting] = useState(false)
 
@@ -47,7 +56,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
     if (numEntries > 0) {
       const nextForm = [...form!]
       for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
-        const rowId = nextForm[i].display_internal_id
+        const rowId = nextForm[i][rowIdField]
         if (pendingIds.includes(rowId)) {
           mutator(nextForm[i], cleanValue(newValues[rowId]))
           pendingIds = pendingIds.filter((v) => v != rowId)
@@ -56,6 +65,8 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       }
       setPasting(false)
       setForm(nextForm)
+      console.debug('pendingIds', pendingIds)
+      console.debug('newValues', newValues)
       if (numInserted > 0) {
         enqueueSnackbar(
           `Successfully pasted ${numInserted}/${numEntries} entries.`,

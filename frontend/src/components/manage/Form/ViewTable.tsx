@@ -1,32 +1,13 @@
 import { ThemeSlice } from '@ors/types/store'
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
 import { ColDef, IRowNode, RowClassRules } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
-import {
-  forEach,
-  get,
-  indexOf,
-  isEmpty,
-  isFunction,
-  isObject,
-  noop,
-  omit,
-  range,
-  times,
-} from 'lodash'
+import { forEach, indexOf, isFunction, noop, omit, range, times } from 'lodash'
 
 import {
   defaultColDef as globalColDef,
@@ -34,7 +15,6 @@ import {
 } from '@ors/config/Table/columnsDef'
 
 import { debounce, getError } from '@ors/helpers/Utils/Utils'
-import { useStore } from '@ors/store'
 
 type Pagination = {
   page: number
@@ -42,7 +22,7 @@ type Pagination = {
   rowsPerPageOptions?: Array<number>
 }
 
-export type TableProps = {
+export type TableProps<TData = any> = {
   Toolbar?: React.FC<any>
   enableFullScreen?: boolean
   errors?: any
@@ -51,7 +31,7 @@ export type TableProps = {
   resizeGridOnRowUpdate?: boolean
   rowsVisible?: number
   withFluidEmptyColumn?: boolean
-} & AgGridReactProps
+} & AgGridReactProps<TData>
 
 function cloneStyle(original: Element, clone: Element) {
   clone.setAttribute('style', original.getAttribute('style') || '')
@@ -137,7 +117,7 @@ const AgGridWrapper: any = styled('div')`
   --ag-row-height: ${(props: any) => props.rowHeight ?? 36}px !important;
 `
 
-function ViewTable(props: TableProps) {
+function ViewTable<TData = any>(props: TableProps<TData>) {
   const {
     id,
     Toolbar,
@@ -182,6 +162,10 @@ function ViewTable(props: TableProps) {
     rowsPerPage: paginationPageSize,
   })
   const [fullScreen, setFullScreen] = useState(false)
+
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, rowsPerPage: paginationPageSize }))
+  }, [paginationPageSize])
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
@@ -362,7 +346,7 @@ function ViewTable(props: TableProps) {
         headerDepth={headerDepth}
         rowHeight={rowHeight}
       >
-        <AgGridReact
+        <AgGridReact<TData>
           alwaysShowHorizontalScroll={alwaysShowHorizontalScroll}
           animateRows={false}
           components={components}
@@ -387,19 +371,21 @@ function ViewTable(props: TableProps) {
           suppressPropertyNamesCheck={true}
           suppressRowClickSelection={true}
           suppressRowHoverHighlight={true}
-          columnDefs={[
-            ...(columnDefs || []),
-            ...(withFluidEmptyColumn
-              ? [
-                  {
-                    category: 'expand',
-                    field: 'none',
-                    flex: 1,
-                    headerName: '',
-                  },
-                ]
-              : []),
-          ]}
+          columnDefs={
+            [
+              ...(columnDefs || []),
+              ...(withFluidEmptyColumn
+                ? [
+                    {
+                      category: 'expand',
+                      field: 'none',
+                      flex: 1,
+                      headerName: '',
+                    },
+                  ]
+                : []),
+            ] as AgGridReactProps['columnDefs']
+          }
           noRowsOverlayComponent={(props: any) => {
             return (
               <Typography id="no-rows" component="span">
@@ -621,4 +607,4 @@ function ViewTable(props: TableProps) {
   )
 }
 
-export default React.memo(ViewTable)
+export default React.memo(ViewTable) as typeof ViewTable

@@ -1,84 +1,96 @@
-import { Dispatch, SetStateAction } from 'react'
-
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { FieldErrorIndicator } from '../../HelperComponents'
+import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
+import { getEntityById, getOptionLabel } from '../utils'
+import { getFormattedDecimalValue } from '../../utils'
 import { defaultProps } from '../../constants'
-import {
-  EnterpriseRemarks,
-  EnterpriseOverview,
-  EnterpriseData,
-} from '../../interfaces'
 
-import { useParams } from 'wouter'
-import { find } from 'lodash'
-
-interface EnterpiseSeachProps {
-  enterprises: (EnterpriseOverview & EnterpriseRemarks & { id: number })[]
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-}
+import { createFilterOptions } from '@mui/material'
 
 const PEnterpriseSearch = ({
-  enterprises,
   enterpriseData,
   setEnterpriseData,
-}: EnterpiseSeachProps) => {
-  const { enterprise_id } = useParams<Record<string, string>>()
+  enterprises,
+  enterprise,
+  errors,
+}: PEnterpriseDataProps & {
+  enterprises: EnterpriseType[]
+}) => {
+  const enterpriseId = enterpriseData.overview.id
 
-  const overviewData = enterpriseData.overview as EnterpriseOverview & {
-    id?: number | null
-  }
+  const customFiltering = createFilterOptions({
+    stringify: (option: any) => `${option.name} ${option.code}`,
+  })
 
   const onEnterpriseChange = (value: any) => {
     const enterpriseId = value?.id ?? null
 
     if (enterpriseId) {
-      const crtEnterprise = find(
-        enterprises,
-        (option) => option.id === enterpriseId,
-      )
+      const crtEnterprise = getEntityById(enterprises, enterpriseId)
 
       if (crtEnterprise) {
-        setEnterpriseData((prevData) => ({
-          ...prevData,
-          overview: {
-            id: enterpriseId,
-            name: crtEnterprise.name,
-            country: crtEnterprise.country,
-            location: crtEnterprise.location,
-            application: crtEnterprise.application,
-            local_ownership: crtEnterprise.local_ownership,
-            export_to_non_a5: crtEnterprise.export_to_non_a5,
-          },
-          remarks: { remarks: crtEnterprise.remarks },
-        }))
+        setEnterpriseData(
+          (prevData) => ({
+            ...prevData,
+            overview: {
+              id: enterpriseId,
+              status: crtEnterprise.status,
+              name: crtEnterprise.name,
+              country: crtEnterprise.country,
+              location: crtEnterprise.location,
+              stage: crtEnterprise.stage,
+              sector: crtEnterprise.sector,
+              subsector: crtEnterprise.subsector,
+              application: crtEnterprise.application,
+              local_ownership: getFormattedDecimalValue(
+                crtEnterprise.local_ownership,
+              ),
+              export_to_non_a5: getFormattedDecimalValue(
+                crtEnterprise.export_to_non_a5,
+              ),
+              revision: crtEnterprise.revision,
+              date_of_revision: crtEnterprise.date_of_revision,
+            },
+          }),
+          'search',
+        )
       }
     } else {
-      setEnterpriseData((prevData) => ({
-        ...prevData,
-        overview: {
-          ...prevData['overview'],
-          id: null,
-        },
-      }))
+      setEnterpriseData(
+        (prevData) => ({
+          ...prevData,
+          overview: {
+            ...prevData['overview'],
+            id: null,
+            status: '',
+          },
+        }),
+        'search',
+      )
     }
   }
 
   return (
     <>
-      <Label>Enterprise</Label>
-      <Field
-        widget="autocomplete"
-        options={enterprises}
-        value={overviewData.id}
-        disabled={!!enterprise_id}
-        onChange={(_, value) => {
-          onEnterpriseChange(value)
-        }}
-        getOptionLabel={(option: any) => getOptionLabel(enterprises, option)}
-        {...defaultProps}
-      />
+      <Label>Select existing enterprise</Label>
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          options={enterprises}
+          value={enterpriseId}
+          disabled={!!enterprise}
+          onChange={(_, value) => {
+            onEnterpriseChange(value)
+          }}
+          getOptionLabel={(option: any) =>
+            getOptionLabel(enterprises, option, 'code')
+          }
+          filterOptions={customFiltering}
+          {...defaultProps}
+        />
+        <FieldErrorIndicator field="id" {...{ errors }} />
+      </div>
     </>
   )
 }

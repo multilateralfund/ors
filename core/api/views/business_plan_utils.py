@@ -544,13 +544,13 @@ class BusinessPlanUtils:
 
         return status.HTTP_201_CREATED, serializer.data
 
-    def update_bp(self, data, current_obj):
+    def update_bp(self, data, current_obj, from_import=False):
         # validate data
         serializer = self.get_serializer(data=data, instance=current_obj)
         errors = self.validate_bp(serializer, current_obj)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
-        serializer.save(from_import=True)
+        serializer.save(from_import=from_import)
 
         # set initial_id
         current_obj.activities.filter(initial_id__isnull=True).update(

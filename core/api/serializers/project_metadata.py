@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from core.models import (
-    Group,
     Substance,
     ProjectOdsOdp,
 )
@@ -178,6 +177,7 @@ class ProjectFieldListSerializer(serializers.ModelSerializer):
             "write_field_name",
             "table",
             "data_type",
+            "mlfs_only",
             "section",
             "is_actual",
             "sort_order",
@@ -217,6 +217,7 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             "write_field_name",
             "table",
             "data_type",
+            "mlfs_only",
             "section",
             "is_actual",
             "editable_in_versions",
@@ -243,9 +244,11 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
         """
         ! Returns options only for specific fields.
         """
-
         if obj.read_field_name == "group":
-            return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
+            groups_queryset = self.context["cluster"].annex_groups.order_by("name")
+            if not groups_queryset.exists():
+                return []
+            return GroupSerializer(groups_queryset, many=True).data
         if obj.read_field_name == "ods_type":
             return [
                 (
@@ -259,16 +262,31 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             ]
         if obj.read_field_name == "ods_display_name":
             data = {}
-
-            data["substances"] = SubstanceSerializer(
-                Substance.objects.all().order_by("name"), many=True
-            ).data
+            group_ids = (
+                self.context["cluster"].annex_groups.values_list("id", flat=True)
+                or None
+            )
+            substances = (
+                Substance.objects.all()
+                .select_related("group")
+                .filter_project_accepted_substances(group_ids=group_ids)
+                .order_by("name")
+            )
+            data["substances"] = SubstanceSerializer(substances, many=True).data
             for entry in data["substances"]:
                 entry["baseline_type"] = "substance"
 
-            data["blends"] = BlendSerializer(
-                Blend.objects.all().order_by("name"), many=True
-            ).data
+            blends = (
+                Blend.objects.all()
+                .filter_project_accepted_blends(group_ids=group_ids)
+                .prefetch_related(
+                    "components",
+                    "components__substance",
+                    "components__substance__group",
+                )
+                .order_by("name")
+            )
+            data["blends"] = BlendSerializer(blends, many=True).data
             for entry in data["blends"]:
                 entry["baseline_type"] = "blend"
 
@@ -293,6 +311,8 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             "checklist_regulations_actual",
         ]:
             return Project.Regulations.choices
+        if obj.read_field_name == "blanket_or_individual_consideration":
+            return Project.BlanketOrIndividualConsideration.choices
         return None
 
 
@@ -313,7 +333,10 @@ class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
             obj.fields.all(),
             many=True,
             read_only=True,
-            context={"project_submission_status_name": project_submission_status_name},
+            context={
+                "project_submission_status_name": project_submission_status_name,
+                "cluster": obj.cluster,
+            },
         ).data
 
     class Meta:

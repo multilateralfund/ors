@@ -1,7 +1,14 @@
 import { useContext, useState } from 'react'
-import { useLocation } from 'wouter'
-import Link from '@ors/components/ui/Link/Link'
 
+import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
+import Link from '@ors/components/ui/Link/Link'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { matchPath } from '@ors/helpers/Url/Url'
+
+import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
+import { DebouncedFunc, debounce } from 'lodash'
+import { useLocation } from 'wouter'
 import {
   Collapse,
   Drawer,
@@ -11,13 +18,6 @@ import {
   ListItemButton,
 } from '@mui/material'
 import cx from 'classnames'
-import { DebouncedFunc, debounce } from 'lodash'
-
-import { matchPath } from '@ors/helpers/Url/Url'
-import { useStore } from '@ors/store'
-
-import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
@@ -64,51 +64,29 @@ const useInternalNavSections = () => {
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
 
+  if (!(P.canViewCPReports || P.canEditCPReports || P.canExportCPReports)) {
+    return []
+  }
+
   return [
     {
       label: 'Online CP Reporting',
       menu: [
-        P.canViewCPReports
-          ? { label: 'View reports', url: '/country-programme/reports' }
-          : null,
-        P.canEditCPReports
-          ? { label: 'Add new report', url: '/country-programme/create' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Export data', url: '/country-programme/export-data' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Settings', url: '/country-programme/settings' }
-          : null,
+        ...(P.canViewCPReports
+          ? [{ label: 'View reports', url: '/country-programme/reports' }]
+          : []),
+        ...(P.canEditCPReports
+          ? [{ label: 'Add new report', url: '/country-programme/create' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Export data', url: '/country-programme/export-data' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Settings', url: '/country-programme/settings' }]
+          : []),
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(P.canViewBp
-      ? [{ label: 'Business plans', url: '/business-plans' }]
-      : []),
-    ...(P.canViewV1Projects
-      ? [{ label: 'Project submissions', url: '/project-submissions' }]
-      : []),
-    ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
-    ...(P.canViewProjects || P.canSetProjectSettings
-      ? [
-          {
-            label: 'Projects Listing',
-            menu: [
-              P.canViewProjects
-                ? { label: 'View projects', url: '/projects-listing/listing' }
-                : null,
-              P.canSetProjectSettings
-                ? {
-                    label: 'IA/BA Portal - Settings',
-                    url: '/projects-listing/settings',
-                  }
-                : null,
-            ].filter(Boolean),
-            url: '/projects-listing/listing',
-          },
-        ]
-      : []),
     // @ts-ignore
   ].map((item) => nI(item))
 }
@@ -117,33 +95,75 @@ const useInternalNavSectionsReplenishment = () => {
   const { canViewReplenishment } = useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  return canViewReplenishment
-    ? [
-        {
-          label: 'Contributions',
-          menu: [
-            {
-              label: 'Scale of assessment',
-              url: '/replenishment/scale-of-assessment',
-            },
-            {
-              label: 'Status of the fund',
-              url: '/replenishment/status-of-the-fund',
-            },
-            { label: 'Statistics', url: '/replenishment/statistics' },
-            {
-              label: 'Status of contributions',
-              url: '/replenishment/status-of-contributions',
-            },
-            { label: 'In/out flows', url: '/replenishment/in-out-flows' },
-            { label: 'Dashboard', url: '/replenishment/dashboard' },
-          ],
-          url: '/replenishment',
-        },
-      ]
-    : []
-        // @ts-ignore
-        .map((item) => nI(item))
+
+  if (!canViewReplenishment) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'Scale of assessment',
+        url: '/replenishment/scale-of-assessment',
+      },
+      {
+        label: 'Status of the fund',
+        url: '/replenishment/status-of-the-fund',
+      },
+      { label: 'Statistics', url: '/replenishment/statistics' },
+      {
+        label: 'Status of contributions',
+        url: '/replenishment/status-of-contributions',
+      },
+      { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+      { label: 'Dashboard', url: '/replenishment/dashboard' },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
+}
+
+const useInternalNavSectionsIaBaPortal = () => {
+  const { canViewBp, canViewProjects, canSetProjectSettings } =
+    useContext(PermissionsContext)
+  const [pathname] = useLocation()
+  const nI = makeInternalNavItem.bind(null, pathname)
+
+  if (!(canViewBp || canViewProjects || canSetProjectSettings)) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'IA/BA Portal',
+        menu: [
+          ...(canViewBp
+            ? [{ label: 'Business plans', url: '/business-plans' }]
+            : []),
+          ...(canViewProjects
+            ? [
+                {
+                  label: 'Projects Listing',
+                  url: '/projects-listing/listing',
+                },
+              ]
+            : []),
+          ...(canSetProjectSettings
+            ? [
+                {
+                  label: 'IA/BA portal settings',
+                  url: '/projects-listing/settings',
+                },
+              ]
+            : []),
+        ],
+        url: '/projects-listing/listing',
+      },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
 }
 
 interface navItem {
@@ -184,15 +204,20 @@ const useMenuItems = () => {
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
-      makeExternalNavItem('Projects', '/projects-data/dashboards'),
-      ...useInternalNavSectionsReplenishment(),
-      makeExternalNavItem('Countries', '/projects-data/funding-dashboard'),
-      makeExternalNavItem('Our impact', '/projects-data/people-environment'),
       makeExternalNavItem(
-        'CP Data Center',
-        '/projects-data/projects-dashboard',
+        'Projects and impact',
+        '/projects-data/projects-impacts',
       ),
+      makeExternalNavItem('Countries', '/projects-data/countries'),
+      makeExternalNavItem('CP Data Center', '/projects-data/cp-data-center'),
       ...useInternalNavSections(),
+      makeExternalNavItem(
+        'Contributions',
+        '/projects-data/contributions',
+        useInternalNavSectionsReplenishment(),
+      ),
+      makeExternalNavItem('Portals', '/projects-data/portals'),
+      ...useInternalNavSectionsIaBaPortal(),
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decisions', '/resources/decisions'),
@@ -234,6 +259,11 @@ const DesktopHeaderNavigation = ({
   const initiallyExpanded: Record<string, boolean> = {}
   recursivelyExpandItems(items, initiallyExpanded)
 
+  const [location, setLocation] = useLocation()
+  const { updatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [crtUrl, setCrtUrl] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState<Record<string, boolean>>({})
   const [hideInProgress, setHideInProgress] = useState<
     Record<string, DebouncedFunc<any> | null>
@@ -324,21 +354,25 @@ const DesktopHeaderNavigation = ({
             >
               {item.menu?.map((menuItem, menuItemIdx) => {
                 const Component = menuItem?.internal ? Link : 'a'
-                const regularSubMenuLink = !menuItem.menu ? (
-                  <Component
-                    key={menuItem.label + menuItemIdx}
-                    className={cx(
-                      'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                      {
-                        'bg-mlfs-hlYellow': menuItem.current,
-                      },
-                    )}
-                    href={menuItem.url}
-                    onClick={() => toggleCollapseOpen(menuItem.label)}
-                  >
-                    {menuItem.label}
-                  </Component>
-                ) : null
+                const regularSubMenuLink =
+                  !menuItem.menu || menuItem.menu.length === 0 ? (
+                    <Component
+                      key={menuItem.label + menuItemIdx}
+                      className={cx(
+                        'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                        {
+                          'bg-mlfs-hlYellow': menuItem.current,
+                        },
+                      )}
+                      href={menuItem.url}
+                      onClick={() => toggleCollapseOpen(menuItem.label)}
+                    >
+                      {menuItem.label}
+                    </Component>
+                  ) : null
+                const isExternalWithMenu =
+                  menuItem.external && menuItem.menu && menuItem.menu.length > 0
+
                 return (
                   regularSubMenuLink || (
                     <List
@@ -354,13 +388,32 @@ const DesktopHeaderNavigation = ({
                               menuItem.current && !menuItem.menu,
                           },
                         )}
-                        onClick={() => toggleCollapseOpen(menuItem.label)}
+                        {...(isExternalWithMenu ? { href: menuItem.url } : {})}
+                        onClick={() => {
+                          if (!isExternalWithMenu) {
+                            toggleCollapseOpen(menuItem.label)
+                          }
+                        }}
                       >
                         {menuItem.label}
                         {openMenus[menuItem.label] ? (
-                          <IoChevronUp />
+                          <IoChevronUp
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         ) : (
-                          <IoChevronDown />
+                          <IoChevronDown
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         )}
                       </ListItemButton>
                       <Collapse
@@ -371,21 +424,46 @@ const DesktopHeaderNavigation = ({
                         <List className="py-0" component="div">
                           {menuItem.menu &&
                             menuItem.menu.map((subMenuItem) => {
-                              const Component = subMenuItem?.internal
-                                ? Link
-                                : 'a'
+                              const isInternal = subMenuItem?.internal
+                              const Component = isInternal ? Link : 'a'
+                              const hasUnsavedChanges =
+                                isInternal && updatedFields.size > 0
+
                               return (
-                                <ListItem
-                                  key={subMenuItem.label}
-                                  className={cx(
-                                    'last:rounded-0 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
-                                    { 'bg-mlfs-hlYellow': subMenuItem.current },
+                                <div key={subMenuItem.label}>
+                                  <ListItem
+                                    className={cx(
+                                      'last:rounded-0 cursor-pointer text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 pl-8 text-lg text-primary no-underline transition-all hover:bg-mlfs-hlYellow',
+                                      {
+                                        'bg-mlfs-hlYellow': subMenuItem.current,
+                                      },
+                                    )}
+                                    component={Component}
+                                    href={
+                                      !hasUnsavedChanges
+                                        ? subMenuItem.url
+                                        : null
+                                    }
+                                    onClick={() => {
+                                      if (hasUnsavedChanges) {
+                                        setIsCancelModalOpen(true)
+                                        setCrtUrl(subMenuItem.url)
+                                      } else {
+                                        setLocation(subMenuItem.url)
+                                      }
+                                    }}
+                                  >
+                                    {subMenuItem.label}
+                                  </ListItem>
+                                  {isCancelModalOpen && !!crtUrl && (
+                                    <CancelWarningModal
+                                      mode="current action"
+                                      url={crtUrl}
+                                      isModalOpen={isCancelModalOpen}
+                                      setIsModalOpen={setIsCancelModalOpen}
+                                    />
                                   )}
-                                  component={Component}
-                                  href={subMenuItem.url}
-                                >
-                                  {subMenuItem.label}
-                                </ListItem>
+                                </div>
                               )
                             })}
                         </List>
@@ -429,6 +507,11 @@ const MobileHeaderNavigation = ({
     {} as Record<string, boolean>,
   )
 
+  const [location, setLocation] = useLocation()
+  const { updatedFields } = useUpdatedFields()
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [crtUrl, setCrtUrl] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [openMenus, setOpenMenus] =
     useState<Record<string, boolean>>(initiallyExpanded)
@@ -477,7 +560,6 @@ const MobileHeaderNavigation = ({
                 {item.label}
               </ListItem>
             ) : null
-
             return (
               regularMenuLink || (
                 <div key={item.label}>
@@ -503,32 +585,58 @@ const MobileHeaderNavigation = ({
                     <List component="div">
                       {item.menu &&
                         item.menu.map((menuItem) => {
-                          const regularSubMenuLink = !menuItem.menu ? (
-                            <ListItem
-                              key={menuItem.label}
-                              className={cx(styling, 'pl-10')}
-                              component={'a'}
-                              href={menuItem.url}
-                            >
-                              {menuItem.label}
-                            </ListItem>
-                          ) : null
+                          const regularSubMenuLink =
+                            !menuItem.menu || menuItem.menu.length === 0 ? (
+                              <ListItem
+                                key={menuItem.label}
+                                className={cx(styling, 'pl-10')}
+                                component={'a'}
+                                href={menuItem.url}
+                              >
+                                {menuItem.label}
+                              </ListItem>
+                            ) : null
+                          const isExternalWithMenu =
+                            menuItem.external &&
+                            menuItem.menu &&
+                            menuItem.menu.length > 0
 
                           return (
                             regularSubMenuLink || (
                               <div key={menuItem.label}>
                                 <ListItemButton
                                   className={cx(
-                                    'flex items-center justify-between rounded-none',
+                                    'flex items-center justify-between rounded-none pl-10',
                                     styling,
                                   )}
-                                  onClick={() => toggleOpenMenu(menuItem.label)}
+                                  {...(isExternalWithMenu
+                                    ? { href: menuItem.url }
+                                    : {})}
+                                  onClick={() => {
+                                    if (!isExternalWithMenu) {
+                                      toggleOpenMenu(menuItem.label)
+                                    }
+                                  }}
                                 >
                                   {menuItem.label}
                                   {openMenus[menuItem.label] ? (
-                                    <IoChevronUp />
+                                    <IoChevronUp
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   ) : (
-                                    <IoChevronDown />
+                                    <IoChevronDown
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   )}
                                 </ListItemButton>
                                 <Collapse
@@ -539,24 +647,51 @@ const MobileHeaderNavigation = ({
                                   <List component="div">
                                     {menuItem.menu &&
                                       menuItem.menu.map((subMenuItem) => {
-                                        const Component = subMenuItem?.internal
+                                        const isInternal = subMenuItem?.internal
+                                        const Component = isInternal
                                           ? Link
                                           : 'a'
+                                        const hasUnsavedChanges =
+                                          isInternal && updatedFields.size > 0
+
                                         return (
-                                          <ListItem
-                                            key={subMenuItem.label}
-                                            className={cx(
-                                              'block py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
-                                              {
-                                                'bg-mlfs-hlYellowTint':
-                                                  subMenuItem.current,
-                                              },
+                                          <div key={subMenuItem.label}>
+                                            <ListItem
+                                              className={cx(
+                                                'block cursor-pointer py-4 pl-12 text-xl uppercase text-primary no-underline transition-all hover:bg-mlfs-hlYellowTint',
+                                                {
+                                                  'bg-mlfs-hlYellowTint':
+                                                    subMenuItem.current,
+                                                },
+                                              )}
+                                              component={Component}
+                                              href={
+                                                !hasUnsavedChanges
+                                                  ? subMenuItem.url
+                                                  : null
+                                              }
+                                              onClick={() => {
+                                                if (hasUnsavedChanges) {
+                                                  setIsCancelModalOpen(true)
+                                                  setCrtUrl(subMenuItem.url)
+                                                } else {
+                                                  setLocation(subMenuItem.url)
+                                                }
+                                              }}
+                                            >
+                                              {subMenuItem.label}
+                                            </ListItem>
+                                            {isCancelModalOpen && !!crtUrl && (
+                                              <CancelWarningModal
+                                                mode="current action"
+                                                url={crtUrl}
+                                                isModalOpen={isCancelModalOpen}
+                                                setIsModalOpen={
+                                                  setIsCancelModalOpen
+                                                }
+                                              />
                                             )}
-                                            component={Component}
-                                            href={subMenuItem.url}
-                                          >
-                                            {subMenuItem.label}
-                                          </ListItem>
+                                          </div>
                                         )
                                       })}
                                   </List>

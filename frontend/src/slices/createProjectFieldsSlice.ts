@@ -1,3 +1,5 @@
+import { ProjectSpecificFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
+import { formatFieldLabel } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { defaultSliceData } from './createYearRangesSlice'
 import type { CreateSliceProps, ProjectsFieldsSlice } from '@ors/types/store'
 import { fetchSliceData } from '@ors/helpers/Store/Store'
@@ -16,12 +18,13 @@ export const createProjectFieldsSlice = ({
     setViewableFields: (version: number, submissionStatus?: string) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const viewableFields = filter(
-        fields,
-        ({ visible_in_versions }) =>
-          visible_in_versions?.includes(version) &&
-          (submissionStatus !== 'Draft' || visible_in_versions.includes(1)),
-      ).map((field) => field.write_field_name)
+      const viewableFields = filter(fields, ({ visible_in_versions }) => {
+        const versionCheck = version >= 3 ? 3 : version
+        return (
+          visible_in_versions?.includes(versionCheck) &&
+          (submissionStatus !== 'Draft' || visible_in_versions.includes(1))
+        )
+      }).map((field) => field.write_field_name)
 
       set(
         produce((state) => {
@@ -33,6 +36,8 @@ export const createProjectFieldsSlice = ({
       version: number,
       submissionStatus?: string,
       canEditAll?: boolean,
+      isPostExcom?: boolean,
+      mode?: string,
     ) => {
       const fields = get().projectFields.projectFields?.data ?? []
       const isAfterApproval = ['Approved', 'Not approved'].includes(
@@ -40,22 +45,78 @@ export const createProjectFieldsSlice = ({
       )
 
       const editableFields = fields
-        .filter(({ editable_in_versions, is_actual, section }) => {
-          const isEditableInVersion = editable_in_versions?.includes(version)
-          const isFieldEditable =
-            section !== 'Impact' || !isAfterApproval || is_actual
-          const isDraftEditable =
-            submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
-          const isEditableByStatus = submissionStatus !== 'Withdrawn'
+        .filter(
+          ({ editable_in_versions, is_actual, section, write_field_name }) => {
+            if (section === 'MYA') {
+              return false
+            }
 
-          return (
-            canEditAll ||
-            (isEditableInVersion &&
+            const isFieldNotV3Editable = [
+              'bp_activity',
+              'blanket_or_individual_consideration',
+            ].includes(write_field_name)
+
+            if (
+              mode === 'edit' &&
+              submissionStatus === 'Approved' &&
+              !isPostExcom &&
+              !canEditAll
+            ) {
+              return is_actual
+            }
+
+            if (!isFieldNotV3Editable) {
+              if (
+                mode === 'edit' &&
+                submissionStatus === 'Approved' &&
+                !isPostExcom
+              ) {
+                return (
+                  section !== 'Approval' && (section !== 'Impact' || is_actual)
+                )
+              }
+
+              if (mode === 'edit' && submissionStatus === 'Not approved') {
+                return section !== 'Approval'
+              }
+
+              const postExcomEditableApprovalFields = [
+                'programme_officer',
+                'excom_provision',
+                'ad_hoc_pcr',
+                'pcr_waived',
+              ]
+
+              if (isPostExcom) {
+                return (
+                  (section !== 'Approval' ||
+                    postExcomEditableApprovalFields.includes(
+                      write_field_name,
+                    )) &&
+                  (section !== 'Impact' || is_actual)
+                )
+              }
+            }
+
+            const isEditableInVersion = editable_in_versions?.includes(version)
+            const isFieldEditable =
+              section !== 'Impact' || !isAfterApproval || is_actual
+            const isDraftEditable =
+              submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
+            const isEditableByStatus =
+              write_field_name !== 'bp_activity' ||
+              submissionStatus !== 'Withdrawn'
+            const canEditField =
+              isEditableInVersion &&
               isFieldEditable &&
               isDraftEditable &&
-              isEditableByStatus)
-          )
-        })
+              isEditableByStatus
+
+            return !isFieldNotV3Editable
+              ? canEditAll || canEditField
+              : canEditField
+          },
+        )
         .map((field) => field.write_field_name)
 
       set(
@@ -72,7 +133,13 @@ export const createProjectFieldsSlice = ({
 
       set(
         produce((state) => {
-          state.projectFields.projectFields = fields
+          const formattedFields = (fields || []).map(
+            (field: ProjectSpecificFields) => ({
+              ...field,
+              label: formatFieldLabel(field.label),
+            }),
+          )
+          state.projectFields.projectFields = formattedFields
         }),
       )
     },

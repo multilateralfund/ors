@@ -33,6 +33,7 @@ export const CellAutocompleteWidget = memo(
         openOnFocus?: boolean
         freeSolo?: boolean
         showUnselectedOptions?: boolean
+        allowEmptyStringOnClear?: boolean
       } & AutocompleteWidgetProps &
         ICellEditorParams,
       ref,
@@ -152,7 +153,9 @@ export const CellAutocompleteWidget = memo(
           onChange={(_: any, value: any) => {
             isValueSelected.current = true
 
-            const parsedValue = props.agFormatValue?.(value) || value
+            const parsedValue = props.allowEmptyStringOnClear
+              ? props.agFormatValue?.(value) ?? value
+              : props.agFormatValue?.(value) || value
             setValue(parsedValue)
             setInputValue(parsedValue)
           }}

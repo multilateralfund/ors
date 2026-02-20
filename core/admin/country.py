@@ -37,6 +37,11 @@ class CountryAdmin(admin.ModelAdmin):
             "disputed_contributions",
             "finalreportsview",
             "enterprises",
+            "meta_projects",
         ]
         fields = get_final_display_list(Country, exclude)
         return fields
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("parent")

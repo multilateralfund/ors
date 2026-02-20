@@ -1,12 +1,15 @@
-import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import React from 'react'
-import dayjs from 'dayjs'
-import { FaClockRotateLeft } from 'react-icons/fa6'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader.tsx'
+import { NavigationButton } from '../HelperComponents'
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+
+import { FaClockRotateLeft } from 'react-icons/fa6'
+import dayjs from 'dayjs'
 
 type ProjectHistoryProps = {
   project: ProjectTypeApi
-  mode: string
 }
 
 const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
@@ -29,8 +32,8 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
   // </li>
 
   return (
-    <div className="flex grow items-center justify-between gap-3 text-pretty px-4 py-3 pl-0">
-      <div className="flex items-center gap-2">
+    <div className="flex grow flex-wrap items-center justify-between gap-x-3 gap-y-2 text-pretty px-4 py-3 pl-0">
+      <div className="flex flex-wrap items-center gap-2">
         <p
           id={`report_date`}
           className="my-1 min-w-24 text-sm font-normal text-gray-500"
@@ -41,7 +44,11 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
           id={`report_summary`}
           className="text-md my-1 font-medium text-gray-900"
         >
-          {description}
+          {description.split('\n').map((desc, i) => (
+            <span key={i}>
+              {desc} <br />
+            </span>
+          ))}
         </p>
       </div>
       <div>
@@ -56,12 +63,15 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
   )
 }
 
-const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
+const ProjectHistory = ({
+  project,
+  setCurrentTab,
+}: ProjectHistoryProps & ProjectTabSetters) => {
   const historyItems = project.history
 
   const renderCollection = (items: typeof historyItems) => {
     return items.map((item, index) => (
-      <div>
+      <div key={index}>
         <HistoryItem key={item.created_at} item={item} />{' '}
         <hr className={'mx-0 my-0 h-px !w-[98%] border-0 bg-gray-200'} />
       </div>
@@ -71,11 +81,18 @@ const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
   const renderedHistory = renderCollection(historyItems)
 
   return (
-    <div>
-      <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
-      <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
-      <div className="">{renderedHistory}</div>
-    </div>
+    <>
+      <div>
+        <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
+        <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
+        <div className="">{renderedHistory}</div>
+      </div>
+      {setCurrentTab && (
+        <div className="mt-5">
+          <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
+        </div>
+      )}
+    </>
   )
 }
 

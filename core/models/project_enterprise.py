@@ -3,6 +3,7 @@ from django.db import models
 from core.models.blend import Blend
 from core.models.project import Project
 from core.models.substance import Substance
+from core.models.utils import EnterpriseStatus
 
 # pylint: disable=C0302
 
@@ -11,14 +12,19 @@ class EnterpriseManager(models.Manager):
     def get_next_serial_number(self, country_id, first3lettersofname):
         return (
             self.filter(
-                country_id=country_id,
-                code__startswith=f"{country_id}/{first3lettersofname}/",
+                country_id=country_id, code__contains=f"/{first3lettersofname}/"
             ).count()
             + 1
         )
 
 
 class Enterprise(models.Model):
+
+    status = models.CharField(
+        max_length=64,
+        choices=EnterpriseStatus.choices,
+        default=EnterpriseStatus.PENDING,
+    )
     code = models.CharField(
         max_length=128,
         null=True,
@@ -43,6 +49,29 @@ class Enterprise(models.Model):
         blank=True,
         help_text="Name of the city where the enterprise is located",
     )
+    stage = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="Stage of the HPMP relating to the enterprise",
+    )
+    sector = models.ForeignKey(
+        "core.ProjectSector",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="enterprises",
+        help_text="""Sector related to the enterprise (e.g., aerosol, fire-fighting, foam, production,
+                    refrigeration, solvent)""",
+    )
+    subsector = models.ForeignKey(
+        "core.ProjectSubSector",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="enterprises",
+        help_text="Name of the sub-sector within each sector",
+    )
     application = models.CharField(
         max_length=256,
         null=True,
@@ -59,10 +88,10 @@ class Enterprise(models.Model):
         blank=True,
         help_text="Percentage of produce exported to non-A5 countries",
     )
-    remarks = models.TextField(
+    date_of_revision = models.DateField(
         null=True,
         blank=True,
-        help_text="Any remark on the enterprise",
+        help_text="Date of the latest revision of the project",
     )
 
     objects = EnterpriseManager()
@@ -91,10 +120,6 @@ class Enterprise(models.Model):
 
 class ProjectEnterprise(models.Model):
 
-    class EnterpriseStatus(models.TextChoices):
-        PENDING = "Pending Approval", "Pending Approval"
-        APPROVED = "Approved", "Approved"
-
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -108,42 +133,153 @@ class ProjectEnterprise(models.Model):
         related_name="project_enterprises",
         help_text="Enterprise linked to this project enterprise entry",
     )
-    capital_cost_approved = models.FloatField(
+    agency = models.ForeignKey(
+        "core.Agency",
+        on_delete=models.PROTECT,
+        related_name="project_enterprises",
+        help_text="Agency responsible for this project enterprise entry",
+    )
+    project_type = models.ForeignKey(
+        "core.ProjectType",
+        on_delete=models.PROTECT,
+        related_name="project_enterprises",
+        null=True,
+        blank=True,
+        help_text="Type of project (e.g., demonstration, investment, technical assistance)",
+    )
+    capital_cost_approved = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Capital cost approved/allocated for the enterprise (US $)",
     )  # (ICC)
-    operating_cost_approved = models.FloatField(
+    operating_cost_approved = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Operating cost approved/allocated for enterprise (US $)",
     )  # (IOC)
-    funds_disbursed = models.FloatField(
+    funds_disbursed = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
         null=True,
         blank=True,
-        help_text="Funds disbursed for the enterprise (US $)",
+        help_text="Funds disbursed to the enterprise (US $)",
+    )
+    capital_cost_disbursed = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Capital cost disbursed to the enterprise (US $)",
+    )
+    operating_cost_disbursed = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Operating cost disbursed to the enterprise (US $)",
+    )
+    cost_effectiveness_actual = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness actual (US $/kg)",
+    )
+    co_financing_planned = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Co-financing planned for the enterprise (US $)",
+    )
+    co_financing_actual = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Co-financing actual for the enterprise (US $)",
+    )
+    funds_transferred = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Funds transferred from one agency to another (US $)",
+    )
+    agency_remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Text on remarks relating to the project by agency if any",
+    )
+    secretariat_remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Text on remarks relating to the project by secretariat if any",
+    )
+    excom_provision = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Text on ExCom provision relating to the project if any",
+    )
+    date_of_report = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of the latest report of the project",
+    )
+    planned_completion_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Expected date of completion of the project",
+    )
+    actual_completion_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Actual date of completion of the project",
+    )
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Duration of project implementation from approval (in months)",
     )
     status = models.CharField(
         max_length=64,
         choices=EnterpriseStatus.choices,
         default=EnterpriseStatus.PENDING,
     )
-
-    @property
-    def funds_approved(self):
-        """
-        Calculated field (capital_cost_approved + operating_cost_approved)
-        Funds approved/allocated for the enterprise (US $)
-        """
-        return None
-
-    @property
-    def cost_effectiveness_approved(self):
-        """
-        Calculated field = '(funds approved/(phase out*1000))'
-        Cost-effectiveness as approved (US $/kg)
-        """
-        return None
+    chemical_phased_out = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Total quantity of chemical phased out (mt)",
+    )
+    meeting = models.ForeignKey(
+        "core.Meeting",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enterprises",
+        help_text="Meeting where the project was approved",
+    )
+    impact = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Total ODP tonnes phased out",
+    )
+    funds_approved = models.DecimalField(
+        max_digits=20,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Funds approved/allocated for the enterprise (US $)",
+    )
+    date_of_approval = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Month and year of meeting when project was approved",
+    )
 
     def __str__(self):
         return f"Enterprise: {self.enterprise} (Project:{self.project})"
@@ -171,29 +307,26 @@ class ProjectEnterpriseOdsOdp(models.Model):
         null=True,
         blank=True,
     )
-    phase_out_mt = models.FloatField(
+    consumption = models.FloatField(
         null=True,
         blank=True,
         help_text="""
         Amount of the controlled substance to be phased out (mt)
-        (Phase out (mt))
     """,
     )
-    ods_replacement = models.CharField(
+    selected_alternative = models.CharField(
         max_length=256,
         null=True,
         blank=True,
         help_text="""
         Name of alternative technology or chemical
-        Replacement technology
         """,
     )
-    ods_replacement_phase_in = models.FloatField(
+    chemical_phased_in = models.FloatField(
         null=True,
         blank=True,
         help_text="""
-            Amount of alternative 1 being used in place of controlled chemical 1
-            (Replacement technology phased in (mt))
+            Amount of alternative being used in place of controlled chemical (mt)
         """,
     )
 

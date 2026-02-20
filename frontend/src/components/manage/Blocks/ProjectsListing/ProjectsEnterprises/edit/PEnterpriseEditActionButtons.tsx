@@ -1,63 +1,73 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { EnterpriseActionButtons } from '../../interfaces'
-import { enabledButtonClassname } from '../../constants'
+import ChangeStatusModal from '../../Enterprises/edit/ChangeStatusModal'
+import { handleErrors } from '../FormHelperComponents'
+import { dropDownClassName, enabledButtonClassname } from '../../constants'
+import {
+  EnterpriseActionButtons,
+  PEnterpriseData,
+  PEnterpriseType,
+} from '../../interfaces'
 import { api } from '@ors/helpers'
 
+import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
-import { useParams } from 'wouter'
+import { omit } from 'lodash'
 import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
   enterpriseData,
+  enterprise,
   setEnterpriseId,
-  setEnterpriseTitle,
+  setEnterpriseName,
   setIsLoading,
-  setHasSubmitted,
-  setOtherErrors,
   setErrors,
+  setOtherErrors,
 }: EnterpriseActionButtons & {
-  setEnterpriseTitle: (title: string) => void
+  enterpriseData: PEnterpriseData
+  enterprise?: PEnterpriseType
+  setEnterpriseName: (name: string) => void
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const [_, setLocation] = useLocation()
+  const { clearUpdatedFields } = useUpdatedFields()
 
-  const { overview } = enterpriseData
-  const disableSubmit = !overview.name
+  const { canEditProjectEnterprise, canApproveProjectEnterprise } =
+    useContext(PermissionsContext)
 
-  const handleErrors = async (error: any) => {
-    const errors = await error.json()
+  const [modalType, setModalType] = useState<string | null>(null)
 
-    if (error.status === 400) {
-      setErrors(errors)
+  const { status } = enterprise ?? {}
+  const isPending = status === 'Pending Approval'
 
-      if (errors?.details) {
-        setOtherErrors(errors.details)
-      }
-    }
-
-    setEnterpriseId(null)
-    enqueueSnackbar(<>An error occurred. Please try again.</>, {
-      variant: 'error',
-    })
-  }
+  const {
+    overview,
+    details,
+    substance_details,
+    substance_fields,
+    funding_details,
+    remarks,
+  } = enterpriseData
+  const disableSubmit = !(overview.name && overview.id)
 
   const editEnterprise = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setOtherErrors('')
 
     try {
-      const { overview, substance_details, remarks, ...rest } = enterpriseData
-
       const data = {
         project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
+        enterprise: omit(overview, ['status', 'linkStatus']),
+        status: overview.linkStatus,
         ods_odp: substance_details,
-        enterprise: { ...overview, ...remarks },
+        ...details,
+        ...substance_fields,
+        ...funding_details,
+        ...remarks,
       }
 
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {
@@ -66,35 +76,98 @@ const PEnterpriseEditActionButtons = ({
       })
 
       setEnterpriseId(result.id)
-      setEnterpriseTitle(result.name)
+      setEnterpriseName(result.enterprise.name)
+      clearUpdatedFields()
+
+      if (isPending && overview.linkStatus === 'Approved') {
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+        )
+      }
+      return true
     } catch (error) {
-      await handleErrors(error)
+      await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
+
+      return false
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
+  const onEditEnterprise = async () => {
+    const wasEdited = await editEnterprise()
+
+    if (wasEdited) {
+      enqueueSnackbar(<>Project enterprise was updated successfully.</>, {
+        variant: 'success',
+      })
+    }
+  }
+
+  const approveProjectEnterprise = async () => {
+    const canChangeStatus = canEditProjectEnterprise
+      ? await editEnterprise()
+      : true
+
+    if (canChangeStatus) {
+      try {
+        await api(`api/project-enterprise/${enterprise_id}/approve/`, {
+          method: 'POST',
+        })
+
+        enqueueSnackbar(<>Project enterprise was approved successfully.</>, {
+          variant: 'success',
+        })
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+        )
+      } catch (error) {
+        enqueueSnackbar(
+          <>Could not approve project enterprise. Please try again.</>,
+          {
+            variant: 'error',
+          },
+        )
+      }
+    }
+    setModalType(null)
+  }
+
   return (
-    <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/enterprises/${project_id}/view/${enterprise_id}`}
-      />
-      {canEditEnterprise && (
+    <>
+      {canEditProjectEnterprise && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableSubmit,
           })}
-          onClick={editEnterprise}
+          onClick={onEditEnterprise}
           disabled={disableSubmit}
           variant="contained"
           size="large"
         >
-          Update enterprise
+          Update project enterprise
         </Button>
       )}
-    </div>
+      {isPending && canApproveProjectEnterprise && (
+        <Button
+          className={cx({ [dropDownClassName]: !disableSubmit })}
+          onClick={() => setModalType('Approved')}
+          disabled={disableSubmit}
+          variant="contained"
+          size="large"
+        >
+          Approve project enterprise
+        </Button>
+      )}
+      {!!modalType && (
+        <ChangeStatusModal
+          type="project enterprise"
+          modalType={modalType}
+          setIsModalOpen={setModalType}
+          onAction={approveProjectEnterprise}
+        />
+      )}
+    </>
   )
 }
 

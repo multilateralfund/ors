@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "explorer",
     "mptt",
     "django_celery_beat",
+    "rangefilter",
     "core",
 ]
 
@@ -258,6 +259,16 @@ CONSTANCE_CONFIG = {
         datetime(2024, 5, 27),
         "Default 'As Of Date' for replenishment",
     ),
+    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED": (
+        False,
+        "Enable agency submission notifications",
+        bool,
+    ),
+    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS": (
+        "",
+        "Email addresses that receive agency submission notifications (comma-separated)",
+        str,
+    ),
 }
 
 # Logging
@@ -366,6 +377,24 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="10", hour="0"),
     },
 }
+
+# Sentry
+SENTRY_DSN = env.str("SENTRY_DSN", default="")
+SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="staging")
+SENTRY_DSN_FRONTEND = env.str("SENTRY_DSN_FRONTEND", default="")
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
+        integrations=[
+            DjangoIntegration(),
+        ],
+    )
+
 
 # URLs for automatically retrieving Decisions and Meetings
 # For now it looks like meetings_others and decisions_others are not used

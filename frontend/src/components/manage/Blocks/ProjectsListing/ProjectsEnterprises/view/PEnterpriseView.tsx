@@ -1,40 +1,42 @@
-'use client'
-
 import { useState } from 'react'
 
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
-import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
+import PEnterpriseDetailsSection from './PEnterpriseDetailsSection'
+import PEnterpriseSubstanceDetailsSection from './PEnterpriseSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
 import PEnterpriseRemarksSection from './PEnterpriseRemarksSection'
-import { EnterpriseType } from '../../interfaces'
+import { PEnterpriseType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
+const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const tabs = [
     {
       id: 'enterprise-overview',
-      ariaControls: 'enterprise-overview',
       label: 'Overview',
-      component: <PEnterpriseOverviewSection {...{ enterprise }} />,
+      component: (
+        <PEnterpriseOverviewSection enterprise={enterprise.enterprise} />
+      ),
+    },
+    {
+      id: 'enterprise-details',
+      label: 'Details',
+      component: <PEnterpriseDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-substance-details',
-      ariaControls: 'enterprise-substance-details',
       label: 'Substance details',
-      component: <PEnterprisesSubstanceDetailsSection {...{ enterprise }} />,
+      component: <PEnterpriseSubstanceDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-funding-details',
-      ariaControls: 'enterprise-funding-details',
       label: 'Funding details',
       component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-remarks',
-      ariaControls: 'enterprise-remarks',
       label: 'Remarks',
       component: <PEnterpriseRemarksSection {...{ enterprise }} />,
     },
@@ -44,7 +46,7 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
     <>
       <div className="flex items-center justify-between">
         <Tabs
-          aria-label="view-enterprise"
+          aria-label="view-project-enterprise"
           value={activeTab}
           className="sectionsTabs"
           variant="scrollable"
@@ -58,8 +60,8 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
             setActiveTab(newValue)
           }}
         >
-          {tabs.map(({ id, ariaControls, label }) => (
-            <Tab id={id} aria-controls={ariaControls} label={label} />
+          {tabs.map(({ id, label }) => (
+            <Tab id={id} aria-controls={id} label={label} />
           ))}
         </Tabs>
       </div>

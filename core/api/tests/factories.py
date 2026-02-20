@@ -13,6 +13,10 @@ from core.models import (
     Invoice,
     Payment,
     ScaleOfAssessmentVersion,
+    AnnualProjectReport,
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
+    AnnualProjectReportFile,
 )
 from core.models.business_plan import (
     BusinessPlan,
@@ -64,6 +68,7 @@ from core.models.substance import Substance, SubstanceAltName
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend, BlendAltName
+from core.models.utils import EnterpriseStatus
 
 User = get_user_model()
 
@@ -176,6 +181,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("pystr", max_chars=50)
     abbr = factory.Faker("pystr", max_chars=5)
+    location_type = Country.LocationType.COUNTRY
 
 
 class CPReportFormatColumnFactory(factory.django.DjangoModelFactory):
@@ -391,9 +397,8 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
 class MeetingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Meeting
-        django_get_or_create = ("number",)
 
-    number = factory.Faker("random_int", min=1, max=100)
+    number = factory.Sequence(lambda n: n + 1)
     date = factory.Faker("date")
     status = Meeting.MeetingStatus.COMPLETED
 
@@ -404,7 +409,6 @@ class DecisionFactory(factory.django.DjangoModelFactory):
 
     meeting = factory.SubFactory(MeetingFactory)
     number = factory.Faker("random_int", min=1, max=100)
-    description = factory.Faker("pystr", max_chars=100)
 
 
 class ProjectComponentsFactory(factory.django.DjangoModelFactory):
@@ -449,7 +453,6 @@ class MetaProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetaProject
 
-    code = factory.Faker("pystr", max_chars=10)
     type = MetaProject.MetaProjectType.IND
 
 
@@ -468,12 +471,87 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     meeting = factory.SubFactory(MeetingFactory)
     submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
+    category = Project.Category.MYA
 
     # pylint: disable=E1101
     @factory.post_generation
     def subsectors(obj, _, extracted, **kwargs):
         if extracted:
             obj.subsectors.set(extracted)
+
+
+class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProgressReport
+
+    year = factory.Sequence(lambda n: n + 2025)
+    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    date_endorsed = factory.Faker("date")
+    remarks_endorsed = factory.Faker("pystr", max_chars=400)
+    endorsed = factory.Faker("pybool")
+
+
+class AnnualAgencyProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualAgencyProjectReport
+
+    progress_report = factory.SubFactory(AnnualProgressReportFactory)
+    agency = factory.SubFactory(AgencyFactory)
+    status = factory.LazyAttribute(
+        lambda o: AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+    )
+    created_by = factory.SubFactory(UserFactory)
+    is_unlocked = factory.Faker("pybool")
+    submitted_by = None
+
+
+class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AnnualProjectReport
+
+    project = factory.SubFactory(ProjectFactory)
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+    status = "ONG"
+
+    date_first_disbursement = factory.Faker("date")
+    date_planned_completion = factory.Faker("date")
+    date_actual_completion = factory.Faker("date")
+    date_financial_completion = factory.Faker("date")
+
+    consumption_phased_out_odp = factory.Faker("random_int")
+    consumption_phased_out_co2 = factory.Faker("random_int")
+    production_phased_out_odp = factory.Faker("random_int")
+    production_phased_out_co2 = factory.Faker("random_int")
+
+    funds_disbursed = factory.Faker("random_int")
+    funds_committed = factory.Faker("random_int")
+    estimated_disbursement_current_year = factory.Faker("random_int")
+    support_cost_disbursed = factory.Faker("random_int")
+    support_cost_committed = factory.Faker("random_int")
+    disbursements_made_to_final_beneficiaries = factory.Faker("random_int")
+    funds_advanced = factory.Faker("random_int")
+
+    last_year_remarks = factory.Faker("pystr")
+    current_year_remarks = factory.Faker("pystr")
+    gender_policy = factory.Faker("pybool")
+
+    @factory.post_generation
+    def populate_denormalized_fields(obj, create, *args, **kwargs):
+        if create:
+            obj.populate_derived_fields()
+            obj.save()
+
+
+class AnnualProjectReportFileFactory(factory.django.DjangoModelFactory):
+    """Factory for AnnualProjectReportFile."""
+
+    class Meta:
+        model = AnnualProjectReportFile
+
+    report = factory.SubFactory(AnnualAgencyProjectReportFactory)
+    file = factory.django.FileField(filename="test_report.pdf")
+    file_name = "Test Report"
+    file_type = AnnualProjectReportFile.FileType.ANNUAL_PROGRESS_FINANCIAL_REPORT
 
 
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
@@ -513,10 +591,14 @@ class EnterpriseFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=256)
     country = factory.SubFactory(CountryFactory)
     location = factory.Faker("pystr", max_chars=256)
+    stage = factory.Faker("pystr", max_chars=256)
+    sector = factory.SubFactory(ProjectSectorFactory)
+    subsector = factory.SubFactory(ProjectSubSectorFactory)
     application = factory.Faker("pystr", max_chars=256)
     local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
     export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
-    remarks = factory.Faker("pystr", max_chars=200)
+    status = EnterpriseStatus.PENDING
+    date_of_revision = factory.Faker("date")
 
 
 class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
@@ -525,15 +607,36 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
 
     project = factory.SubFactory(ProjectFactory)
     enterprise = factory.SubFactory(EnterpriseFactory)
-    location = factory.Faker("pystr", max_chars=256, prefix="Location ")
-    application = factory.Faker("pystr", max_chars=256, prefix="Application ")
-    local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
-    export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    agency = factory.SubFactory(AgencyFactory)
+    project_type = factory.SubFactory(ProjectTypeFactory)
     capital_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     operating_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     funds_disbursed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
-    status = ProjectEnterprise.EnterpriseStatus.PENDING
-    remarks = factory.Faker("pystr", max_chars=200, prefix="Remark ")
+    capital_cost_disbursed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    operating_cost_disbursed = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    cost_effectiveness_actual = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    co_financing_planned = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    co_financing_actual = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    funds_transferred = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    agency_remarks = factory.Faker("pystr", max_chars=200, prefix="Agency Remark ")
+    secretariat_remarks = factory.Faker(
+        "pystr", max_chars=200, prefix="Secretariat Remark "
+    )
+    excom_provision = factory.Faker("pystr", max_chars=200, prefix="ExCom Provision ")
+    date_of_report = factory.Faker("date")
+    planned_completion_date = factory.Faker("date")
+    actual_completion_date = factory.Faker("date")
+    project_duration = factory.Faker("random_int", min=1, max=120)
+    status = EnterpriseStatus.PENDING
+    chemical_phased_out = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    impact = factory.Faker("pystr", max_chars=200, prefix="Impact ")
+    funds_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    date_of_approval = factory.Faker("date")
+    meeting = factory.SubFactory(MeetingFactory)
 
 
 class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
@@ -541,9 +644,9 @@ class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
         model = ProjectEnterpriseOdsOdp
 
     project_enterprise = factory.SubFactory(ProjectEnterpriseFactory)
-    phase_out_mt = factory.Faker("random_int", min=1, max=100)
-    ods_replacement = factory.Faker("pystr", max_chars=100)
-    ods_replacement_phase_in = factory.Faker("random_int", min=1, max_chars=100)
+    consumption = factory.Faker("random_int", min=1, max=100)
+    selected_alternative = factory.Faker("pystr", max_chars=100)
+    chemical_phased_in = factory.Faker("random_int", min=1, max_chars=100)
 
 
 class SubmissionAmountFactory(factory.django.DjangoModelFactory):

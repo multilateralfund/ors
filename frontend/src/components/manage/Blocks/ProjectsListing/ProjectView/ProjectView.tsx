@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from './ProjectIdentifiers'
 import ProjectCrossCutting from './ProjectCrossCutting'
 import ProjectSpecificInfo from './ProjectSpecificInfo'
@@ -10,18 +11,25 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectDelete from '../ProjectsCreate/ProjectDelete'
+import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
+import {
+  filterApprovalFields,
+  getIsUpdatablePostExcom,
+  getSectionFields,
+  hasFields,
+} from '../utils'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
-import { getSectionFields, hasFields } from '../utils'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
-import { Tabs, Tab, Tooltip, CircularProgress } from '@mui/material'
 import { debounce, isArray, isNull } from 'lodash'
-
+import { Tabs, Tab, Tooltip } from '@mui/material'
 import cx from 'classnames'
 
 const ProjectDownloads = ({
@@ -99,7 +107,13 @@ const ProjectView = ({
   specificFieldsLoaded: boolean
   loadedFiles: boolean
 }) => {
+  const { canUpdatePostExcom } = useContext(PermissionsContext)
+
   const [activeTab, setActiveTab] = useState(0)
+  const [metaProjectId, setMetaProjectId] = useState<number | null>(
+    project.meta_project_id,
+  )
+  const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
 
   const {
     fetchProjectFields,
@@ -107,6 +121,19 @@ const ProjectView = ({
     viewableFields,
     setViewableFields,
   } = useStore((state) => state.projectFields)
+
+  const { fieldHistory, fetchFieldHistory } = useStore(
+    (state) => state.projectFieldHistory,
+  )
+
+  const canDeleteProject =
+    project.submission_status === 'Draft' &&
+    project.version === 1 &&
+    project.editable
+
+  useEffect(() => {
+    fetchFieldHistory(project.id)
+  }, [fetchFieldHistory, JSON.stringify(project)])
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -128,103 +155,109 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const isAfterApproval = ['Approved', 'Not approved'].includes(
-    project.submission_status,
-  )
 
-  const approvalFields = isAfterApproval
-    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
-        (field) => field.section === 'Approval',
+  const hasApprovalTab = project.version >= 3
+
+  const approvalFields = hasApprovalTab
+    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter((field) =>
+        filterApprovalFields(specificFields, field),
       ) ?? [])
     : []
 
-  const relatedProjects = useGetRelatedProjects(project, 'view')
+  const relatedProjects = useGetRelatedProjects(
+    project,
+    'view',
+    metaProjectId,
+    refetchRelatedProjects,
+  )
 
-  const classes = {
-    disabled: 'text-gray-200',
-  }
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    project.meta_project_id,
+  )
+
+  const hasComponents =
+    project.component && project.component.original_project_id === project.id
 
   const tabs = [
     {
       id: 'project-identifiers',
-      ariaControls: 'project-identifiers',
       label: 'Identifiers',
-      component: <ProjectIdentifiers {...{ project, specificFields }} />,
+      component: (
+        <ProjectIdentifiers {...{ project, fieldHistory: fieldHistory.data }} />
+      ),
     },
     {
       id: 'project-cross-cutting',
-      ariaControls: 'project-cross-cutting',
       label: 'Cross-Cutting',
       disabled: !hasFields(allFields, viewableFields, 'Cross-Cutting'),
-      classes: classes,
-      component: <ProjectCrossCutting {...{ project }} />,
+      component: (
+        <ProjectCrossCutting
+          {...{ project, fieldHistory: fieldHistory.data }}
+        />
+      ),
     },
     {
       id: 'project-specific-info',
-      ariaControls: 'project-specific-info',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         (!substanceDetailsFields.length && !overviewFields.length) ||
         (!hasFields(allFields, viewableFields, 'Header') &&
           !hasFields(allFields, viewableFields, 'Substance Details')),
-      classes: classes,
-      component: <ProjectSpecificInfo {...{ project, specificFields }} />,
+      component: (
+        <ProjectSpecificInfo
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-impact',
-      ariaControls: 'project-impact',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
-      classes: classes,
-      component: <ProjectImpact {...{ project, specificFields }} />,
+
+      component: (
+        <ProjectImpact
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-documentation',
-      ariaControls: 'project-documentation',
-      label: 'Documentation',
+      label: 'Attachments',
       component: (
         <ProjectDocumentation {...{ projectFiles, loadedFiles }} mode="view" />
       ),
     },
-    ...(isAfterApproval
+    ...(hasApprovalTab
       ? [
           {
             id: 'project-approval',
-            ariacontrols: 'project-approval',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 && (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                )}
+                {approvalFields.length === 0 && LoadingTab}
               </div>
             ),
             disabled:
               !approvalFields.length ||
               !hasFields(allFields, viewableFields, 'Approval'),
-            classes: classes,
             component: (
               <ProjectApproval
                 specificFields={approvalFields}
                 {...{ project }}
+                fieldHistory={fieldHistory.data}
               />
             ),
           },
@@ -234,9 +267,26 @@ const ProjectView = ({
       ? [
           {
             id: 'project-related-projects-section',
-            ariaControls: 'project-related-projects-section',
             label: 'Related projects',
-            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+            component: (
+              <ProjectRelatedProjects
+                canDisassociate={
+                  canUpdatePostExcom &&
+                  getIsUpdatablePostExcom(
+                    project.submission_status,
+                    project.status,
+                  )
+                }
+                {...{
+                  project,
+                  relatedProjects,
+                  metaProjectId,
+                  setMetaProjectId,
+                  setRefetchRelatedProjects,
+                  metaprojectData,
+                }}
+              />
+            ),
           },
         ]
       : []),
@@ -244,9 +294,8 @@ const ProjectView = ({
       ? [
           {
             id: 'project-history-section',
-            ariaControls: 'project-history-section',
             label: 'History',
-            component: <ProjectHistory mode="view" project={project} />,
+            component: <ProjectHistory project={project} />,
           },
         ]
       : []),
@@ -254,7 +303,11 @@ const ProjectView = ({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div
+        className={cx('flex items-center justify-between', {
+          'flex-col-reverse sm:flex-row': canDeleteProject,
+        })}
+      >
         <Tabs
           aria-label="view-project"
           value={activeTab}
@@ -270,26 +323,34 @@ const ProjectView = ({
             setActiveTab(newValue)
           }}
         >
-          {tabs.map(({ id, ariaControls, label, disabled, classes }) => (
+          {tabs.map(({ id, label, disabled }) => (
             <Tab
+              key={id}
               id={id}
-              aria-controls={ariaControls}
+              aria-controls={id}
               label={label}
               disabled={disabled}
-              classes={classes}
+              classes={{
+                disabled: 'text-gray-300',
+              }}
             />
           ))}
         </Tabs>
-        <div>
-          <div className="flex items-center justify-between gap-x-2">
+        <div className={cx({ 'mb-1 ml-auto sm:mb-0': canDeleteProject })}>
+          <div className="flex items-center justify-between gap-x-4">
             <ProjectDownloads project={project} />
+            {canDeleteProject && (
+              <ProjectDelete {...{ project, hasComponents }} />
+            )}
           </div>
         </div>
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs
           .filter((_, index) => index === activeTab)
-          .map(({ component }) => component)}
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
       </div>
     </>
   )

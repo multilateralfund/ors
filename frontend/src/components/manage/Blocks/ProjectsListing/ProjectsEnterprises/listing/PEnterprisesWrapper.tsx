@@ -1,38 +1,35 @@
-'use client'
-
 import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
+import EnterprisesFiltersWrapper from '../../Enterprises/listing/EnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
-import { PageTitle, RedirectBackButton } from '../../HelperComponents'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
+import {
+  CreateButton,
+  PageTitle,
+  RedirectBackButton,
+} from '../../HelperComponents'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { useGetProject } from '../../hooks/useGetProject'
 
-import { IoAddCircle } from 'react-icons/io5'
 import { Redirect, useParams } from 'wouter'
-import { FiEdit } from 'react-icons/fi'
-import { Button } from '@mui/material'
-import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
+    useContext(PermissionsContext)
+
   const form = useRef<any>()
 
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
-
   const { project_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
+  const project = useGetProject(project_id)
   const { data, error, loading: loadingProject } = project ?? {}
 
   const initialFilters = {
     offset: 0,
     limit: 100,
-    project_id: project_id ?? null,
+    project_id: project_id,
   }
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
@@ -40,17 +37,9 @@ export default function PEnterprisesWrapper() {
   const enterprises = useGetProjectEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
-  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
-  const statuses = useGetEnterpriseStatuses()
-  const enterpriseStatuses = map(statuses, (status) => ({
-    id: status[0],
-    label: status[1],
-    name: status[1],
-  }))
-
   if (
     !canViewProjects ||
+    !canViewEnterprises ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
@@ -60,76 +49,43 @@ export default function PEnterprisesWrapper() {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading || (!!project_id && loadingProject)}
+        active={loading || loadingProject}
       />
       <HeaderTitle>
         <div className="flex flex-wrap justify-between gap-3">
           <div className="flex flex-col">
             <RedirectBackButton />
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-              <PageHeading>
-                {project && data ? (
-                  <PageTitle
-                    pageTitle="Enterprises information for"
-                    projectTitle={data.code ?? data.code_legacy}
-                  />
-                ) : (
-                  <span className="font-medium text-[#4D4D4D]">
-                    Enterprises
-                  </span>
-                )}
-              </PageHeading>
-            </div>
+            <PageHeading>
+              <PageTitle
+                pageTitle="Enterprises for project"
+                projectTitle={data?.code ?? data?.code_legacy}
+                className="break-all"
+              />
+            </PageHeading>
           </div>
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
-          <PEnterprisesFiltersWrapper
+          <EnterprisesFiltersWrapper
             {...{
-              enterpriseStatuses,
               filters,
               initialFilters,
               setFilters,
               setParams,
             }}
           />
-          {project_id && canEditEnterprise && (
-            <div className="mb-auto flex gap-2">
-              <Link
-                className="no-underline"
-                href={`/projects-listing/enterprises/${project_id}/create`}
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
-                  variant="contained"
-                  size="large"
-                >
-                  Add enterprise <IoAddCircle className="ml-1.5" size={20} />
-                </Button>
-              </Link>
-              <Link
-                className="p-0 no-underline"
-                href={`/projects-listing/enterprises/${project_id}/edit/${enterpriseId}`}
-                disabled={!enterpriseId}
-                button
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
-                  disabled={!enterpriseId}
-                  variant="contained"
-                  size="large"
-                >
-                  Edit enterprise <FiEdit className="ml-1.5" size={18} />
-                </Button>
-              </Link>
+          {canEditProjectEnterprise && (
+            <div className="ml-auto mt-auto flex items-center">
+              <CreateButton
+                title="Add project enterprise"
+                href={`/projects-listing/projects-enterprises/${project_id}/create`}
+                className="!mb-0"
+              />
             </div>
           )}
         </div>
-        <PEnterprisesTable
-          {...{ enterprises, filters }}
-          {...(project_id && { enterpriseId, setEnterpriseId })}
-        />
+        <PEnterprisesTable {...{ enterprises }} />
       </form>
     </>
   )

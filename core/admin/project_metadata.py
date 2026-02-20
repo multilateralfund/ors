@@ -1,5 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from core.admin.utils import get_final_display_list
 from core.models.project_metadata import (
@@ -25,8 +26,21 @@ class ProjectClusterAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["project", "bpactivity", "project_specific_fields"]
-        return get_final_display_list(ProjectCluster, exclude)
+        exclude = [
+            "project",
+            "bpactivity",
+            "project_specific_fields",
+            "meta_projects",
+            "annex_groups",
+        ]
+        return get_final_display_list(ProjectCluster, exclude) + ["get_annex_groups"]
+
+    def get_annex_groups(self, obj):
+        return mark_safe(
+            "<br/>".join([group.name_alt for group in obj.annex_groups.all()])
+        )
+
+    get_annex_groups.short_description = "Annex Groups"
 
 
 @admin.register(ProjectField)
@@ -34,8 +48,9 @@ class ProjectFieldAdmin(admin.ModelAdmin):
     search_fields = [
         "read_field_name",
         "write_field_name",
-        "name",
     ]
+
+    list_filter = ["table", "data_type", "section", "mlfs_only"]
 
     def get_list_display(self, request):
         exclude = [
@@ -118,6 +133,10 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["projects", "bpactivity"]
         return get_final_display_list(ProjectSubSector, exclude)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("sector")
 
 
 @admin.register(ProjectType)

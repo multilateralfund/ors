@@ -1,6 +1,7 @@
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
-
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+
+import { FileMetaDataType } from '../ProjectsListing/interfaces'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 export type BpPathParams = {
   agency: string
@@ -45,9 +46,11 @@ export type BpFile = {
 
 export type BpFileInput = {
   files?: BpFilesObject
-  setFiles?: React.Dispatch<React.SetStateAction<BpFilesObject>>
+  setFiles?: Dispatch<SetStateAction<BpFilesObject>>
+  setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
   extensionsList?: string
   value?: string
+  mode?: string
   clearable?: boolean
   inputValue?: []
   accept?: string

@@ -1,15 +1,38 @@
 from rest_framework import serializers
 
+from core.models import (
+    Blend,
+    Substance,
+    Group,
+)
+from core.models.project import Project
 from core.models.project_enterprise import (
     Enterprise,
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
+
+
+class ProjectEnterpriseListSerializer(serializers.ModelSerializer):
+    project_id = serializers.IntegerField(read_only=True, source="project.id")
+    project_code = serializers.CharField(
+        source="project.code", read_only=True
+    )  # read-only field to display project code
+
+    class Meta:
+        model = ProjectEnterprise
+        fields = [
+            "id",
+            "project_id",
+            "project_code",
+        ]
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(read_only=True)
+    project_enterprises = ProjectEnterpriseListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Enterprise
@@ -19,11 +42,29 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             "name",
             "country",
             "location",
+            "stage",
+            "sector",
+            "subsector",
             "application",
             "local_ownership",
             "export_to_non_a5",
-            "remarks",
+            "project_enterprises",
+            "date_of_revision",
+            "status",
         ]
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if not self.instance:
+            if user.has_perm("core.has_enterprise_approval_access"):
+                attrs["status"] = EnterpriseStatus.APPROVED
+            else:
+                attrs["status"] = EnterpriseStatus.PENDING
+        else:
+            if not user.has_perm("core.has_enterprise_approval_access"):
+                attrs.pop("status", None)  # prevent status change if no permission
+
+        return super().validate(attrs)
 
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
@@ -39,9 +80,9 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
             "project_enterprise",
             "ods_substance",
             "ods_blend",
-            "phase_out_mt",
-            "ods_replacement",
-            "ods_replacement_phase_in",
+            "consumption",
+            "selected_alternative",
+            "chemical_phased_in",
         ]
 
     def validate(self, attrs):
@@ -77,6 +118,42 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
                     "Cannot update ods_blend when ods_substance is set"
                 )
 
+        project = None
+        group_ids = []
+        if "project_id" in self.context:
+            project = Project.objects.filter(id=self.context["project_id"]).first()
+        if project:
+            group_ids = project.cluster.annex_groups.values_list("id", flat=True) or []
+
+        if attrs.get("ods_substance"):
+            accepted_substances = (
+                Substance.objects.all().filter_project_accepted_substances(
+                    group_ids=group_ids
+                )
+            )
+            if not accepted_substances.filter(id=attrs["ods_substance"].id).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
+                raise serializers.ValidationError(
+                    f"Substance must be one of {names_alt} groups"
+                )
+
+        if attrs.get("ods_blend"):
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends(
+                group_ids=group_ids
+            )
+            if not accepted_blends.filter(id=attrs["ods_blend"].id).exists():
+                names_alt = ", ".join(
+                    Group.objects.filter(id__in=group_ids).values_list(
+                        "name_alt", flat=True
+                    )
+                )
+                raise serializers.ValidationError(
+                    f"Blend must have at least one substance in {names_alt} groups"
+                )
         return super().validate(attrs)
 
 
@@ -92,32 +169,62 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         model = ProjectEnterprise
         fields = [
             "id",
+            "actual_completion_date",
+            "agency",
+            "agency_remarks",
+            "cost_effectiveness_actual",
             "capital_cost_approved",
-            "cost_effectiveness_approved",
+            "capital_cost_disbursed",
+            "chemical_phased_out",
+            "co_financing_actual",
+            "co_financing_planned",
+            "date_of_approval",
+            "date_of_report",
             "enterprise",
-            "ods_odp",
+            "excom_provision",
             "funds_approved",
             "funds_disbursed",
+            "funds_transferred",
+            "impact",
+            "meeting",
+            "ods_odp",
+            "operating_cost_approved",
+            "operating_cost_disbursed",
+            "project_duration",
+            "planned_completion_date",
             "project",
             "project_code",
-            "operating_cost_approved",
+            "project_type",
+            "secretariat_remarks",
             "status",
         ]
 
     def create(self, validated_data):
+        user = self.context["request"].user
         _ = validated_data.pop("request", None)
-        ods_odp_data = validated_data.pop("ods_odp")
+        ods_odp_data = validated_data.pop("ods_odp", [])
         enterprise_data = validated_data.pop("enterprise")
         if "id" in enterprise_data:
-            enterprise = Enterprise.objects.get(id=enterprise_data["id"])
-            for attr, value in enterprise_data.items():
-                setattr(enterprise, attr, value)
-            enterprise.save()
+            # if enterprise exists, use it in linking, but don't alter any of its data
+            enterprise_data_id = enterprise_data.pop("id")
+            try:
+                enterprise = Enterprise.objects.get(id=enterprise_data_id)
+                if enterprise.status == EnterpriseStatus.PENDING or user.has_perm(
+                    "core.has_project_enterprise_approval_access"
+                ):
+                    # allow updating enterprise data only if its status is not APPROVED
+                    # for users with approval permission, allow updating any status
+                    for attr, value in enterprise_data.items():
+                        setattr(enterprise, attr, value)
+                    enterprise.save()
+            except Enterprise.DoesNotExist as exc:
+                raise serializers.ValidationError(
+                    "Enterprise with given ID does not exist."
+                ) from exc
         else:
             enterprise = Enterprise.objects.create(**enterprise_data)
         project_enterprise = ProjectEnterprise.objects.create(
-            **validated_data,
-            enterprise=enterprise,
+            **validated_data, enterprise=enterprise
         )
         for ods_odp in ods_odp_data:
             ProjectEnterpriseOdsOdp.objects.create(
@@ -125,11 +232,49 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             )
         return project_enterprise
 
+    def validate(self, attrs):
+        # validate partial updates
+        instance = self.instance
+        user = self.context["request"].user
+        if not instance and attrs.get("id"):
+            try:
+                instance = ProjectEnterprise.objects.get(id=attrs["id"])
+            except ProjectEnterprise.DoesNotExist:
+                instance = None
+        if user.has_perm("core.has_project_enterprise_approval_access"):
+            if not instance:
+                attrs["status"] = EnterpriseStatus.APPROVED
+                attrs["enterprise"]["status"] = EnterpriseStatus.APPROVED
+
+        else:
+            if instance:
+                attrs.pop("status", None)
+                attrs["enterprise"].pop("status", None)
+                if instance.status == EnterpriseStatus.APPROVED:
+                    # Approved entries cannot be updated directly, only new pending ones can be created
+                    # unless the user has the approval permission
+                    raise serializers.ValidationError(
+                        "Cannot update an approved ProjectEnterprise directly. Create a new pending entry instead."
+                    )
+            else:
+                attrs["status"] = EnterpriseStatus.PENDING
+                if "id" not in attrs.get("enterprise", {}):
+                    attrs["enterprise"]["status"] = EnterpriseStatus.PENDING
+
+        # prevent changing project on update
+        if instance:
+            if "project" in attrs and attrs["project"] != instance.project:
+                raise serializers.ValidationError("Cannot change project of the entry")
+
+        return super().validate(attrs)
+
     def update(self, instance, validated_data):
         _ = validated_data.pop("request", None)
+
         ods_odp_data = validated_data.pop("ods_odp")
         enterprise_data = validated_data.pop("enterprise", None)
-        if enterprise_data:
+        if enterprise_data and instance.enterprise.status != EnterpriseStatus.APPROVED:
+            # Update enterprise data only if its status is not APPROVED
             enterprise = instance.enterprise
             for attr, value in enterprise_data.items():
                 setattr(enterprise, attr, value)

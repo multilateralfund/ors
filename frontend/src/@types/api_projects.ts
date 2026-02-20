@@ -1,5 +1,9 @@
 import { ApiUser } from '@ors/types/api_auth_user.ts'
 import { ApiBPActivity } from './api_bp_get'
+import { ApiAgency } from '@ors/types/api_agencies.ts'
+import { Country } from '@ors/types/store'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
+import { ProjectSectorType } from './api_project_sector'
 
 export type ProjectSubSectorType = {
   id: number
@@ -99,9 +103,11 @@ export type ProjectType = {
   meeting_transf_id: any
   metaproject_category: string
   metaproject_code: string
-  metaproject_new_code: string
+  meta_project_id: number
+  metacode: string
   mya_code: string
   mya_subsector: string
+  umbrella_code: string
   national_agency: any
   ods_odp: {
     co2_mt: string
@@ -145,6 +151,7 @@ export type ProjectType = {
   submission_comments: any
   submission_number: any
   submission_status: string
+  submission_status_id: number
   subsectors: ProjectSubSectorType[]
   subsector_legacy: string
   substance_category: string
@@ -154,6 +161,7 @@ export type ProjectType = {
   support_cost_psc: any
   technology: any
   title: string
+  total_fund: any
   total_fund_approved: any
   total_fund_transferred: any
   total_grant: any
@@ -163,6 +171,10 @@ export type ProjectType = {
   umbrella_project: boolean
   withdrawn: boolean
   decision_id: number
+  post_excom_meeting: number
+  post_excom_decision: ApiDecision
+  post_excom_meeting_id: number | null
+  post_excom_decision_id: number | null
 }
 
 export type ProjectAssociationType = {
@@ -172,5 +184,26 @@ export type ProjectAssociationType = {
   type: string
   code: string
   pcr_project_id: string
+  umbrella_code: string
   projects: ProjectType[]
+}
+
+export type ProjectCluster = {
+  category: string
+  code: string
+  id: number
+  name: string
+  sort_order: number
+  obsolete: boolean
+  production: boolean
+}
+
+export type MetaProjectType = {
+  id: number
+  umbrella_code: string
+  lead_agency: ApiAgency
+  country: Country
+  clusters: ProjectCluster[]
+  sectors: ProjectSectorType[]
+  type: string
 }

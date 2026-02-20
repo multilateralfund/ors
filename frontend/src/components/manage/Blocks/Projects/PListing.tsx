@@ -332,7 +332,7 @@ export default function PListing() {
               value={params.status_id}
               widget="chipToggle"
               options={filter(projectSlice.statuses.data, (item) => {
-                return item.code !== 'NEWSUB'
+                return item.code !== 'NA'
               })}
               onChange={(status_id) => {
                 updateParams({ status_id })

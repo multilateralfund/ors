@@ -1,78 +1,102 @@
-'use client'
-
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
+import DeletePEnterpriseModal from './DeletePEnterpriseModal'
+import getColumnDefs from '../../Enterprises/listing/schema'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
-import { getPaginationSelectorOpts } from '../../utils'
-import { PROJECTS_PER_PAGE } from '../../constants'
-import getColumnDefs from './schema'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'
+import { api } from '@ors/helpers'
+
+import { enqueueSnackbar } from 'notistack'
 
 const PEnterprisesTable = ({
   enterprises,
-  filters,
-  enterpriseId,
-  setEnterpriseId,
 }: {
   enterprises: ReturnType<typeof useGetProjectEnterprises>
-  filters: Record<string, any>
-  enterpriseId?: number | null
-  setEnterpriseId?: (enterpriseId: number | null) => void
 }) => {
   const gridApiRef = useRef<any>()
 
   const { count, loaded, loading, results, setParams } = enterprises
 
-  const { columnDefs, defaultColDef } = getColumnDefs(
-    gridApiRef,
-    enterpriseId,
-    setEnterpriseId,
-  )
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
+  const [idToDelete, setIdToDelete] = useState<number | null>(null)
+
+  const { columnDefs, defaultColDef } = getColumnDefs(setIdToDelete)
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 500)
+
+  const handleDeleteProjectEnterprise = async () => {
+    try {
+      await api(`api/project-enterprise/${idToDelete}`, {
+        method: 'DELETE',
+      })
+
+      setParams((prev: any) => ({ ...prev }))
+    } catch (error) {
+      enqueueSnackbar(
+        <>Could not delete project enterprise. Please try again.</>,
+        {
+          variant: 'error',
+        },
+      )
+    }
+    setIdToDelete(null)
+  }
 
   return (
-    loaded && (
-      <ViewTable
-        key={JSON.stringify(filters)}
-        getRowId={(props) => props.data.id}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        domLayout="normal"
-        suppressScrollOnNewData={true}
-        enablePagination={true}
-        loaded={loaded}
-        loading={loading}
-        paginationPageSize={PROJECTS_PER_PAGE}
-        paginationPageSizeSelector={paginationPageSizeSelectorOpts}
-        resizeGridOnRowUpdate={true}
-        rowBuffer={100}
-        rowCount={count}
-        rowData={results}
-        rowsVisible={90}
-        tooltipShowDelay={200}
-        onGridReady={({ api }) => {
-          gridApiRef.current = api
-        }}
-        components={{
-          agColumnHeader: undefined,
-          agTextCellRenderer: undefined,
-        }}
-        onPaginationChanged={({ page, rowsPerPage }) => {
-          setParams({
-            limit: rowsPerPage,
-            offset: page * rowsPerPage,
-          })
-        }}
-        onSortChanged={({ api }) => {
-          const ordering = api
-            .getColumnState()
-            .filter((column) => !!column.sort)
-            .map(({ sort, colId }) => (sort === 'asc' ? '' : '-') + colId)
-            .join(',')
-          setParams({ offset: 0, ordering })
-        }}
-      />
-    )
+    <>
+      {loaded && (
+        <ViewTable
+          getRowId={(props) => props.data.id}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          domLayout="normal"
+          suppressScrollOnNewData={true}
+          enablePagination={true}
+          loaded={loaded}
+          loading={loading}
+          paginationPageSize={getPaginationPageSize(count)}
+          paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+          resizeGridOnRowUpdate={true}
+          rowBuffer={100}
+          rowCount={count}
+          rowData={results}
+          rowsVisible={90}
+          tooltipShowDelay={200}
+          onGridReady={({ api }) => {
+            gridApiRef.current = api
+          }}
+          components={{
+            agColumnHeader: undefined,
+            agTextCellRenderer: undefined,
+          }}
+          onPaginationChanged={({ page, rowsPerPage }) => {
+            setParams({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }}
+          onSortChanged={({ api }) => {
+            const ordering = api
+              .getColumnState()
+              .filter((column) => !!column.sort)
+              .map(
+                ({ sort, colId }) =>
+                  (sort === 'asc' ? '' : '-') +
+                  (['status', 'agency__name', 'project_type'].includes(colId)
+                    ? colId
+                    : 'enterprise__' + colId.split('.')[1]),
+              )
+              .join(',')
+            setParams({ offset: 0, ordering })
+          }}
+        />
+      )}
+      {idToDelete && (
+        <DeletePEnterpriseModal
+          {...{ idToDelete, setIdToDelete }}
+          onAction={handleDeleteProjectEnterprise}
+        />
+      )}
+    </>
   )
 }
 

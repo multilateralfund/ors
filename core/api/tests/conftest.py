@@ -1,8 +1,11 @@
 # pylint: disable=W0621,R0913, R0914
 import pytest
 import unicodedata
+from datetime import date
+from unittest.mock import patch
 
 from django.urls import reverse
+from django.utils import timezone
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
@@ -48,20 +51,20 @@ from core.api.tests.factories import (
     CPPricesFactory,
     CPRecordFactory,
     CPUsageFactory,
+    AnnualProgressReportFactory,
+    AnnualAgencyProjectReportFactory,
+    AnnualProjectReportFactory,
 )
+from core.models import Country
 from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
-from core.models import ProjectFile
+from core.models import ProjectFile, ProjectOdsOdp
 from core.models.adm import AdmRecordArchive
 from core.models.base import Module
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-
-from core.utils import (
-    get_meta_project_code,
-    get_project_sub_code,
-)
+from core.utils import get_project_sub_code
 
 # pylint: disable=C0302,W0613
 
@@ -246,8 +249,59 @@ def agency_inputter_user(agency):
 
 
 @pytest.fixture
+def agency_viewer_user(agency):
+    group = Group.objects.get(name="Projects - Agency viewer")
+    user = UserFactory(username="AgencyViewerUser", agency=agency)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_agency_viewer_user(agency):
+    group = Group.objects.get(name="APR - Agency Viewer")
+    user = UserFactory(username="APRAgencyViewer", agency=agency)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_agency_inputter_user(agency):
+    group = Group.objects.get(name="APR - Agency Inputter")
+    user = UserFactory(username="APRAgencyInputter", agency=agency)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_agency_submitter_user(agency):
+    group = Group.objects.get(name="APR - Agency Submitter")
+    user = UserFactory(
+        username="APRAgencySubmitter",
+        email="agency-submitter@agency.org",
+        agency=agency,
+    )
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
+def apr_mlfs_full_access_user():
+    group = Group.objects.get(name="APR - MLFS Full Access")
+    user = UserFactory(username="APRMLFSFullAccess")
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
 def new_country(project_module, business_plan_module):
     country = CountryFactory.create(iso3="NwC")
+    country.modules.add(project_module, business_plan_module)
+    return country
+
+
+@pytest.fixture
+def country_europe(project_module, business_plan_module):
+    country = CountryFactory(name="Europe", location_type=Country.LocationType.REGION)
     country.modules.add(project_module, business_plan_module)
     return country
 
@@ -448,7 +502,7 @@ def excluded_usage():
 @pytest.fixture
 def groupA():
     return GroupFactory.create(
-        name="group A", annex="A", name_alt="group A A", group_id="AI"
+        id=7, name="group A", annex="A", name_alt="group A A", group_id="AI"
     )
 
 
@@ -517,6 +571,11 @@ def blend(excluded_usage, time_frames):
 
 
 @pytest.fixture
+def blend_component(blend, substance_hcfc):
+    blend.components.create(substance=substance_hcfc, percentage=0.5)
+
+
+@pytest.fixture
 def project_type():
     return ProjectTypeFactory.create(name="Project Type", code="PT", sort_order=1)
 
@@ -537,13 +596,18 @@ def project_ongoing_status():
 
 
 @pytest.fixture
+def project_completed_status():
+    return ProjectStatusFactory.create(name="Completed", code="COM")
+
+
+@pytest.fixture
 def project_closed_status():
     return ProjectStatusFactory.create(name="Closed", code="CLO")
 
 
 @pytest.fixture
 def submitted_status():
-    return ProjectStatusFactory.create(code="NEWSUB")
+    return ProjectStatusFactory.create(code="NA")
 
 
 @pytest.fixture
@@ -620,41 +684,41 @@ def rbm_measure():
 
 @pytest.fixture
 def meeting():
-    return MeetingFactory.create(number=1, date="2019-03-14", end_date="2019-03-15")
+    return MeetingFactory(number=1, date="2019-03-14", end_date="2019-03-15")
 
 
 @pytest.fixture
 def new_meeting():
-    return MeetingFactory.create(number=3, date="2020-03-14")
+    return MeetingFactory(number=3, date="2020-03-14")
 
 
 @pytest.fixture
 def decision(meeting):
-    return DecisionFactory.create(number=1, meeting=meeting)
+    return DecisionFactory(number=1, meeting=meeting)
 
 
 @pytest.fixture
-def project_cluster_kpp():
-    return ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+def project_cluster_kpp(groupHCFC):
+    cluster = ProjectClusterFactory.create(name="KPP1", code="KPP1", sort_order=1)
+    cluster.annex_groups.add(groupHCFC)
+    return cluster
 
 
 @pytest.fixture
-def project_cluster_kip():
-    return ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+def project_cluster_kip(groupHCFC):
+    cluster = ProjectClusterFactory.create(name="KIP1", code="KIP1", sort_order=2)
+    cluster.annex_groups.add(groupHCFC)
+    return cluster
 
 
 @pytest.fixture
 def meta_project(country_ro, project_cluster_kpp):
-    code = get_meta_project_code(country_ro, project_cluster_kpp)
-
-    return MetaProjectFactory.create(code=code)
+    return MetaProjectFactory.create()
 
 
 @pytest.fixture
 def meta_project_mya(country_ro, project_cluster_kip):
-    code = get_meta_project_code(country_ro, project_cluster_kip)
-
-    return MetaProjectFactory.create(code=code, type="Multi-year agreement")
+    return MetaProjectFactory.create(type="Multi-year agreement")
 
 
 @pytest.fixture(name="project_url")
@@ -714,7 +778,7 @@ def _test_file2(tmp_path):
 
 @pytest.fixture(name="wrong_format_file3")
 def _wrong_format_file3(tmp_path):
-    p = tmp_path / "project_file3.csv"
+    p = tmp_path / "project_file3.zip"
     p.write_text("This is the third project test file")
     return p
 
@@ -732,9 +796,6 @@ def project(
     project_cluster_kpp,
     meta_project,
 ):
-    code = get_project_sub_code(
-        country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
-    )
     project = ProjectFactory.create(
         meta_project=meta_project,
         title="Karma to Burn",
@@ -751,9 +812,27 @@ def project(
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
         serial_number=1,
-        code=code,
     )
+    return project
 
+
+@pytest.fixture
+def approved_project(
+    project,
+    project_approved_status,
+):
+    project.submission_status = project_approved_status
+    project.version = 3
+    project.code = get_project_sub_code(
+        project.country,
+        project.cluster,
+        project.agency,
+        project.project_type,
+        project.sector,
+        project.meeting,
+        None,
+    )
+    project.save()
     return project
 
 
@@ -774,6 +853,7 @@ def project2(
         country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
     )
     project = ProjectFactory.create(
+        version=1,
         meta_project=meta_project_mya,
         title="Karma to Burn",
         country=country_ro,
@@ -1254,3 +1334,423 @@ def setup_bp_activity_create(
             },
         ],
     }
+
+
+@pytest.fixture(name="_setup_project_list")
+def setup_project_list(
+    country_ro,
+    agency,
+    new_agency,
+    new_country,
+    project_type,
+    new_project_type,
+    project_status,
+    submitted_status,
+    project_draft_status,
+    project_submitted_status,
+    project_approved_status,
+    subsector,
+    meeting,
+    new_meeting,
+    sector,
+    new_sector,
+    project_cluster_kpp,
+    project_cluster_kip,
+):
+    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
+    projects = []
+    projects_data = [
+        {
+            "country": country_ro,
+            "agency": agency,
+            "project_type": project_type,
+            "status": project_status,
+            "submission_status": project_draft_status,
+            "sector": sector,
+            "subsectors": [subsector],
+            "substance_type": "HCFC",
+            "meeting": meeting,
+            "cluster": project_cluster_kpp,
+        },
+        {
+            "country": new_country,
+            "agency": new_agency,
+            "project_type": new_project_type,
+            "status": submitted_status,
+            "submission_status": project_submitted_status,
+            "sector": new_sector,
+            "subsectors": [new_subsector],
+            "substance_type": "CFC",
+            "meeting": new_meeting,
+            "cluster": project_cluster_kip,
+        },
+    ]
+
+    for i in range(4):
+        for project_data in projects_data:
+            project_data["code"] = get_project_sub_code(
+                project_data["country"],
+                project_data["cluster"],
+                project_data["agency"],
+                project_data["project_type"],
+                project_data["sector"],
+                project_data["meeting"],
+                project_data["meeting"],
+                i + 1,
+            )
+
+            ProjectFactory.create(
+                title=f"Project {i}",
+                serial_number=i + 1,
+                **project_data,
+            )
+
+    # project_without cluster
+    proj_data = projects_data[0].copy()
+    proj_data.pop("cluster")
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        None,
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        25,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 25",
+            **proj_data,
+        )
+    )
+
+    # project_without sector and subsector
+    proj_data = projects_data[0].copy()
+    proj_data["sector"] = None
+    proj_data["subsectors"] = None
+    proj_data["code"] = get_project_sub_code(
+        proj_data["country"],
+        proj_data["cluster"],
+        project_data["agency"],
+        project_data["project_type"],
+        project_data["sector"],
+        project_data["meeting"],
+        project_data["meeting"],
+        26,
+    )
+    projects.append(
+        ProjectFactory.create(
+            title="Project 26",
+            serial_number=26,
+            **proj_data,
+        )
+    )
+
+    proj_data = projects_data[0].copy()
+    proj_data["production"] = True
+
+    projects.append(
+        ProjectFactory.create(
+            title="Project 27",
+            serial_number=27,
+            **proj_data,
+        )
+    )
+
+    proj_data["production"] = False
+    proj_data["version"] = 2
+    proj_data["submission_status"] = project_submitted_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 28",
+            serial_number=28,
+            **proj_data,
+        )
+    )
+
+    proj_data["version"] = 3
+    proj_data["submission_status"] = project_approved_status
+    projects.append(
+        ProjectFactory.create(
+            title="Project 29",
+            serial_number=29,
+            **proj_data,
+        )
+    )
+
+    return projects
+
+
+@pytest.fixture
+def apr_year():
+    return 2024
+
+
+@pytest.fixture
+def annual_progress_report(apr_year):
+    return AnnualProgressReportFactory(year=apr_year, endorsed=False)
+
+
+@pytest.fixture
+def annual_progress_report_endorsed(apr_year, meeting_apr_same_year):
+    return AnnualProgressReportFactory(
+        year=apr_year,
+        endorsed=True,
+        date_endorsed=timezone.now().date(),
+        meeting_endorsed=meeting_apr_same_year,
+        remarks_endorsed="Test endorsement",
+    )
+
+
+@pytest.fixture
+def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
+    return AnnualAgencyProjectReportFactory(
+        progress_report=annual_progress_report,
+        agency=agency,
+        is_unlocked=False,
+        created_by=agency_viewer_user,
+    )
+
+
+@pytest.fixture
+def annual_project_report(annual_agency_report, approved_project):
+    return AnnualProjectReportFactory(
+        report=annual_agency_report,
+        project=approved_project,
+    )
+
+
+@pytest.fixture
+def multiple_projects_for_apr(
+    agency, country_ro, sector, project_ongoing_status, project_completed_status
+):
+    ongoing_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2022, 1, 1),
+            code=f"TEST/ONG/{i}/INV/01",
+            version=3,
+        )
+        for i in range(1, 4)
+    ]
+
+    completed_projects = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code=f"TEST/COM/{i}/INV/01",
+            version=3,
+        )
+        for i in range(1, 3)
+    ]
+
+    return ongoing_projects + completed_projects
+
+
+@pytest.fixture
+def multiple_meetings_apr_same_year(apr_year):
+    return [
+        MeetingFactory(
+            number=10 + i,
+            date=date(apr_year, i, 14),
+            end_date=date(apr_year, i, 15),
+        )
+        for i in range(1, 3)
+    ]
+
+
+@pytest.fixture
+def meeting_apr_previous_year(apr_year):
+    return MeetingFactory(
+        number=39,
+        date=date(apr_year - 1, 4, 14),
+        end_date=date(apr_year - 1, 4, 15),
+    )
+
+
+@pytest.fixture
+def meeting_apr_same_year(apr_year):
+    return MeetingFactory(
+        number=29,
+        date=date(apr_year, 4, 14),
+        end_date=date(apr_year, 4, 15),
+    )
+
+
+@pytest.fixture
+def meeting_apr_next_year(apr_year):
+    return MeetingFactory(
+        number=19,
+        date=date(apr_year + 1, 4, 14),
+        end_date=date(apr_year + 1, 4, 15),
+    )
+
+
+@pytest.fixture
+def multiple_decisions_apr_same_year(multiple_meetings_apr_same_year):
+    return [
+        DecisionFactory(number=10 + i, meeting=meeting)
+        for (i, meeting) in enumerate(multiple_meetings_apr_same_year)
+    ]
+
+
+@pytest.fixture
+def decision_apr_previous_year(meeting_apr_previous_year):
+    return DecisionFactory(number=39, meeting=meeting_apr_previous_year)
+
+
+@pytest.fixture
+def decision_apr_same_year(meeting_apr_same_year):
+    return DecisionFactory(number=29, meeting=meeting_apr_same_year)
+
+
+@pytest.fixture
+def decision_apr_next_year(meeting_apr_next_year):
+    return DecisionFactory(number=19, meeting=meeting_apr_next_year)
+
+
+@pytest.fixture
+def initial_project_version_for_apr(agency, country_ro, sector, project_ongoing_status):
+    return ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/INITIAL/V3/01",
+        version=3,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+
+@pytest.fixture
+def initial_project_version_2_for_apr(
+    agency, country_ro, sector, project_ongoing_status
+):
+    return ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/INITIAL/V2/01",
+        version=2,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+
+@pytest.fixture
+def multiple_project_versions_for_apr(
+    agency,
+    country_ro,
+    sector,
+    project_ongoing_status,
+    multiple_decisions_apr_same_year,
+    substance,
+):
+    post_excom_versions = [
+        ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            date_completion=date(2026, 5, 3),
+            code="TEST/COM/MULT/01",
+            version=i + 3,
+            post_excom_decision=decision,
+            total_fund=100000.0 + i * 25000.0,
+            support_cost_psc=10000.0 + i * 2500.0,
+        )
+        for (i, decision) in enumerate(multiple_decisions_apr_same_year, start=1)
+    ]
+    final_version = post_excom_versions[-1]
+    initial_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        date_completion=date(2026, 5, 1),
+        code="TEST/COM/MULT/01",
+        version=3,
+        post_excom_decision=None,
+        latest_project=final_version,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+    for version in post_excom_versions[:-1]:
+        version.latest_project = final_version
+        version.save()
+
+    for i, version in enumerate([initial_version] + post_excom_versions, start=1):
+        # Adding production and consumption for each project
+        ProjectOdsOdpFactory(
+            project=version,
+            ods_substance=substance,
+            odp=0.02 + i,
+            co2_mt=0.05 + i,
+            phase_out_mt=0.15 + i,
+            ods_type=ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
+            sort_order=1,
+        )
+        ProjectOdsOdpFactory(
+            project=version,
+            ods_substance=substance,
+            odp=0.02 + i,
+            co2_mt=0.05 + i,
+            phase_out_mt=0.15 + i,
+            ods_type=ProjectOdsOdp.ProjectOdsOdpType.OTHER,
+            sort_order=1,
+        )
+
+    return [initial_version] + post_excom_versions
+
+
+@pytest.fixture
+def late_post_excom_versions_for_apr(
+    decision_apr_next_year, agency, country_ro, sector, project_ongoing_status
+):
+    later_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/LATE/FUTURE/01",
+        version=4,
+        latest_project=None,
+        post_excom_decision=decision_apr_next_year,
+        total_fund=200000.0,
+        support_cost_psc=20000.0,
+    )
+    initial_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/LATE/FUTURE/01",
+        version=3,
+        latest_project=later_version,
+        post_excom_decision=None,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+
+    return [initial_version, later_version]
+
+
+@pytest.fixture()
+def mock_send_agency_submission_notification():
+    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
+        yield send_mail

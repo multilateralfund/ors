@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { ProjectSpecificFields } from '../interfaces'
+import { formatFieldLabel } from '../utils'
 import { api } from '@ors/helpers'
 
 export const fetchSpecificFields = async (
@@ -19,7 +20,7 @@ export const fetchSpecificFields = async (
     const res = await api(url)
     const formattedFields = ((res.fields as ProjectSpecificFields[]) || [])
       .map((field) => {
-        return { ...field, label: field.label.replace(/(?<=CO)2/g, '₂') }
+        return { ...field, label: formatFieldLabel(field.label) }
       })
       .sort(
         (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),

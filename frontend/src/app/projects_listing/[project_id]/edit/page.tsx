@@ -7,9 +7,17 @@ import usePageTitle from '@ors/hooks/usePageTitle'
 
 import { Redirect, useParams } from 'wouter'
 
+const getPageTitle = (mode: string) => {
+  switch (mode) {
+    case 'edit':
+      return 'Project edit'
+    default:
+      return 'Project creation'
+  }
+}
+
 export default function EditProject({ mode }: { mode: string }) {
-  const pageTitle = mode === 'edit' ? 'Project edit' : 'Project creation'
-  usePageTitle(pageTitle)
+  usePageTitle(getPageTitle(mode))
 
   const { project_id } = useParams<Record<string, string>>()
   const { canUpdateProjects, canEditProjects } = useContext(PermissionsContext)

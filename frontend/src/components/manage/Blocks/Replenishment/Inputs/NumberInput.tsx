@@ -9,12 +9,17 @@ import { INumberInputProps } from './types'
 
 const NumberInput = forwardRef<HTMLInputElement, INumberInputProps>(
   function NumberInput(props, ref) {
-    const { id, className, name, onChange, ...rest } = props
+    const { id, className, name, onChange, allow0Values, ...rest } = props
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
       const value = evt.target.value
-      if (!value || (!!value && getFloat(value)) || value === '-') {
+
+      if (allow0Values) {
         onChange!(evt)
+      } else {
+        if (!value || (!!value && getFloat(value)) || value === '-') {
+          onChange!(evt)
+        }
       }
     }
 

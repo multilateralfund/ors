@@ -27,14 +27,17 @@ class Decision(models.Model):
     meeting = models.ForeignKey(
         Meeting, null=True, default=None, on_delete=models.CASCADE
     )
-    number = models.CharField(
-        max_length=255, blank=True, null=True, default="", unique=True
-    )
+    number = models.CharField(max_length=255, blank=True, null=True, default="")
     title = models.CharField(max_length=255, blank=True, default="")
-    description = models.TextField(blank=True, default="")
+
+    internal_api_id = models.IntegerField(unique=True, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Decisions"
 
     def __str__(self):
-        return f"Meeting {getattr(self.meeting, 'number', '')} - Decision {self.number}"
+        title = self.title
+        if not title.startswith("Decision"):
+            title = f"Decision {title}"
+        meeting_number = getattr(self.meeting, "number", "")
+        return f"Meeting {meeting_number} - {title}"

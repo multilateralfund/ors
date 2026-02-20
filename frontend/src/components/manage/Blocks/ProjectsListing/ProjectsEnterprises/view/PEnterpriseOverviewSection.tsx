@@ -1,45 +1,62 @@
+import { useContext } from 'react'
+
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   detailItem,
   numberDetailItem,
+  dateDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
-import { EnterpriseType } from '../../interfaces'
-import { tableColumns } from '../../constants'
-import { useStore } from '@ors/store'
-
-import { find } from 'lodash'
+import { viewColumnsClassName } from '../../constants'
+import { enterpriseFieldsMapping } from '../constants'
+import { EnterpriseOverview } from '../../interfaces'
+import { getEntityById } from '../utils'
 
 const PEnterpriseOverviewSection = ({
   enterprise,
 }: {
-  enterprise: EnterpriseType
+  enterprise: EnterpriseOverview
 }) => {
-  const { enterprise: enterpriseObj } = enterprise
-
-  const commonSlice = useStore((state) => state.common)
-  const countries = commonSlice.countries.data
-  const country = find(
-    countries,
-    (country) => country.id === enterpriseObj.country,
-  )?.name
+  const { countries, sectors, subsectors } = useContext(ProjectsDataContext)
+  const country = getEntityById(countries, enterprise.country)?.name
+  const sector = getEntityById(sectors, enterprise.sector)?.name
+  const subsector = getEntityById(subsectors, enterprise.subsector)?.name
 
   return (
     <>
-      <div className="flex w-full flex-col gap-4">
-        {detailItem(tableColumns.name, enterpriseObj.name)}
-        {detailItem(tableColumns.country, country ?? '')}
-        {detailItem(tableColumns.location, enterpriseObj.location)}
-        {detailItem(tableColumns.application, enterpriseObj.application)}
-      </div>
-
-      <div className="mt-4 flex w-full flex-col gap-4">
-        <div className="flex flex-wrap gap-x-7 gap-y-5">
+      <div className="flex flex-col gap-4">
+        {detailItem(enterpriseFieldsMapping.name, enterprise.name)}
+        {detailItem(enterpriseFieldsMapping.country, country)}
+        {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
+        {detailItem(enterpriseFieldsMapping.stage, enterprise.stage)}
+        <div className={viewColumnsClassName}>
+          {detailItem(enterpriseFieldsMapping.sector, sector)}
+          {detailItem(enterpriseFieldsMapping.subsector, subsector)}
+        </div>
+        {detailItem(
+          enterpriseFieldsMapping.application,
+          enterprise.application,
+        )}
+        <div className={viewColumnsClassName}>
           {numberDetailItem(
-            tableColumns.local_ownership + ' (%)',
-            enterpriseObj.local_ownership as string,
+            enterpriseFieldsMapping.local_ownership,
+            enterprise.local_ownership as string,
+            'decimal',
           )}
           {numberDetailItem(
-            tableColumns.export_to_non_a5 + ' (%)',
-            enterpriseObj.export_to_non_a5 as string,
+            enterpriseFieldsMapping.export_to_non_a5,
+            enterprise.export_to_non_a5 as string,
+            'decimal',
+          )}
+        </div>
+        <div className={viewColumnsClassName}>
+          {/* {numberDetailItem(
+              enterpriseFieldsMapping.revision,
+              enterprise.revision as string,
+              'integer',
+            )} */}
+          {dateDetailItem(
+            enterpriseFieldsMapping.date_of_revision,
+            enterprise.date_of_revision as string,
           )}
         </div>
       </div>

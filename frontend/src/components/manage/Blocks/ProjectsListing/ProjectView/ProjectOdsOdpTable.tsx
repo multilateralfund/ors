@@ -7,7 +7,7 @@ import {
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
 
-import { cloneDeep, find, map } from 'lodash'
+import { cloneDeep, find, isEqual, map, omit } from 'lodash'
 import {
   ValueGetterParams,
   ITooltipParams,
@@ -17,15 +17,39 @@ import {
 const ProjectOdsOdpTable = ({
   data,
   fields = [],
+  history,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
+  history: any
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
     resizable: true,
   }
+
+  const hasExcomUpdates = find(history, (item) => item.post_excom_meeting)
+
+  const plannedHistoricalValues =
+    find(history, (item) => !item.post_excom_meeting)?.value ?? []
+
+  const arraysAreEqual =
+    data.length === plannedHistoricalValues.length &&
+    data.every((item, index) =>
+      isEqual(
+        omit(item, ['id', 'project_id']),
+        omit(plannedHistoricalValues[index], ['id', 'project_id']),
+      ),
+    )
+
+  const dataToDisplay =
+    arraysAreEqual || !hasExcomUpdates
+      ? [{ titleHelper: '', data: data }]
+      : [
+          { titleHelper: '(actual)', data: data },
+          { titleHelper: '(planned)', data: plannedHistoricalValues },
+        ]
 
   const hasCfc = data.some(
     (entry) => entry.ods_display_name?.toLowerCase() === 'cfc',
@@ -41,7 +65,7 @@ const ProjectOdsOdpTable = ({
 
     const initialOdsDisplayNameField: ProjectSpecificFields = {
       ...cloneDeep(fields[index]),
-      label: 'Ods display name',
+      label: 'ODS display name',
       data_type: 'text',
     }
 
@@ -58,6 +82,15 @@ const ProjectOdsOdpTable = ({
     field: string,
   ) => find(options, { name: params.data[field] })?.name
 
+  const getOdsDisplayName = (params: ValueGetterParams | ITooltipParams) => {
+    const { ods_display_name, ods_blend_composition } = params.data ?? {}
+
+    return (
+      (ods_display_name ?? '-') +
+      (ods_blend_composition ? ` (${ods_blend_composition})` : '')
+    )
+  }
+
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
       const field = fieldObj.write_field_name
@@ -66,10 +99,14 @@ const ProjectOdsOdpTable = ({
       return {
         headerName: fieldObj.label,
         field: field,
-        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
-          getFieldName(params, options, field),
+        valueGetter: (params: ValueGetterParams) =>
+          field === 'ods_display_name'
+            ? getOdsDisplayName(params)
+            : getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
-          getFieldName(params, options, field),
+          field === 'ods_display_name'
+            ? getOdsDisplayName(params)
+            : getFieldName(params, options, field),
         initialWidth: 140,
         minWidth: 140,
         ...defaultColDef,
@@ -137,24 +174,32 @@ const ProjectOdsOdpTable = ({
     },
   }
 
-  return (
-    <ViewTable
-      rowData={data ?? []}
-      enablePagination={false}
-      suppressCellFocus={true}
-      withSeparators={true}
-      className="mb-4"
-      columnDefs={[
-        ...map(getFormattedFields(), (field) =>
-          (
-            fieldColumnMapping[field.data_type as Exclude<FieldType, 'date'>] ??
-            fieldColumnMapping['text']
-          )(field),
-        ),
-      ]}
-      getRowId={(props: GetRowIdParams) => props.data.id}
-    />
-  )
+  return map(dataToDisplay, (item, index) => (
+    <div key={index}>
+      {hasExcomUpdates && (
+        <div className="text-base font-semibold">
+          Substances {item.titleHelper}
+        </div>
+      )}
+      <ViewTable
+        rowData={item.data ?? []}
+        enablePagination={false}
+        suppressCellFocus={true}
+        withSeparators={true}
+        className="mb-4"
+        columnDefs={[
+          ...map(getFormattedFields(), (field) =>
+            (
+              fieldColumnMapping[
+                field.data_type as Exclude<FieldType, 'date'>
+              ] ?? fieldColumnMapping['text']
+            )(field),
+          ),
+        ]}
+        getRowId={(props: GetRowIdParams) => props.data.id}
+      />
+    </div>
+  ))
 }
 
 export default ProjectOdsOdpTable

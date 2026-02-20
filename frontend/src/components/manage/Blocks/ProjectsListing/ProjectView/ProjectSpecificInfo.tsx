@@ -1,15 +1,26 @@
+import { useCallback } from 'react'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
 import { viewModesHandler } from './ViewHelperComponents'
-import { canViewField, getSectionFields, hasFields } from '../utils'
-import { viewColumnsClassName } from '../constants'
+import { textAreaViewClassname, viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
+import {
+  canViewField,
+  getFieldData,
+  getOdsOdpFields,
+  getSectionFields,
+  hasFields,
+} from '../utils'
 import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
 import { groupBy, map } from 'lodash'
 
-const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
+const ProjectSpecificInfo = ({
+  project,
+  specificFields,
+  fieldHistory,
+}: { fieldHistory?: any } & ProjectViewProps) => {
   const headerFields = getSectionFields(specificFields, 'Header')
   const substanceFields = getSectionFields(specificFields, 'Substance Details')
 
@@ -17,9 +28,8 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
 
   const groupedFields = groupBy(substanceFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = (groupedFields[field] || []).filter(
-    (field) => field.read_field_name !== 'sort_order',
-  )
+  const odsOdpFields = getOdsOdpFields(substanceFields)
+  const odpDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
 
   const { projectFields: allFields, viewableFields } = useStore(
     (state) => state.projectFields,
@@ -44,6 +54,13 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
       (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
     ) || []
 
+  const getFieldHistory = useCallback(
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
+    },
+    [fieldHistory],
+  )
+
   return (
     <>
       {canViewOverviewSection && (
@@ -54,8 +71,16 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
               {map(
                 headerFields,
                 (field) =>
-                  canViewField(viewableFields, field.write_field_name) &&
-                  viewModesHandler[field.data_type](project, field),
+                  canViewField(viewableFields, field.write_field_name) && (
+                    <span key={field.write_field_name}>
+                      {viewModesHandler[field.data_type](
+                        project,
+                        field,
+                        undefined,
+                        getFieldHistory(field.write_field_name),
+                      )}
+                    </span>
+                  ),
               )}
             </div>
           </div>
@@ -68,22 +93,36 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
 
       {canViewSubstanceDetailsSection && (
         <>
-          <SectionTitle>Substance Details</SectionTitle>
+          <SectionTitle>
+            {odpDisplayField || odsOdpFields.length === 0
+              ? 'Substance'
+              : 'Phase out'}{' '}
+            details
+          </SectionTitle>
           <div className="flex w-full flex-col gap-4">
             <div
-              className={
-                projectFields.length > 1 ? viewColumnsClassName : 'w-1/2'
-              }
+              className={projectFields.length > 1 ? viewColumnsClassName : ''}
             >
-              {map(
-                projectFields,
-                (field) =>
-                  canViewField(viewableFields, field.write_field_name) &&
-                  viewModesHandler[field.data_type](project, field),
-              )}
+              {map(projectFields, (field) => (
+                <span key={field.write_field_name}>
+                  {canViewField(viewableFields, field.write_field_name) &&
+                    viewModesHandler[field.data_type](
+                      project,
+                      field,
+                      field.write_field_name === 'products_manufactured'
+                        ? textAreaViewClassname
+                        : undefined,
+                      getFieldHistory(field.write_field_name),
+                    )}
+                </span>
+              ))}
             </div>
             {canViewSubstanceSection && odsOdpFields.length > 0 && (
-              <ProjectOdsOdpTable data={data} fields={odsOdpFields} />
+              <ProjectOdsOdpTable
+                data={data}
+                fields={odsOdpFields}
+                history={getFieldHistory('ods_odp')}
+              />
             )}
           </div>
         </>

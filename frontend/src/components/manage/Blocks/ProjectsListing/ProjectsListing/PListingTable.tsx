@@ -3,7 +3,7 @@
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
-import { getPaginationSelectorOpts } from '../utils'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../utils'
 import { ListingProjectData } from '../interfaces'
 import { PROJECTS_PER_PAGE } from '../constants'
 import getColumnDefs from './schema'
@@ -19,6 +19,8 @@ export type PListingTableProps = {
   associationIds?: number[]
   setAssociationIds?: (data: number[]) => void
   enablePagination?: boolean
+  sortable?: boolean
+  setOffset?: (offset: number) => void
 }
 
 const PListingTable = ({
@@ -30,6 +32,8 @@ const PListingTable = ({
   associationIds,
   setAssociationIds,
   enablePagination,
+  sortable,
+  setOffset,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -39,9 +43,14 @@ const PListingTable = ({
     setProjectData,
     associationIds,
     setAssociationIds,
+    sortable,
   )
 
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
+  const paginationPageSize = getPaginationPageSize(
+    count,
+    mode === 'listing' ? PROJECTS_PER_PAGE : 50,
+  )
 
   return (
     loaded && (
@@ -70,7 +79,7 @@ const PListingTable = ({
         enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={PROJECTS_PER_PAGE}
+        paginationPageSize={paginationPageSize}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={100}
@@ -83,25 +92,31 @@ const PListingTable = ({
           agTextCellRenderer: undefined,
         }}
         onPaginationChanged={({ page, rowsPerPage }) => {
-          setParams({
-            limit: rowsPerPage,
-            offset: page * rowsPerPage,
-          })
+          if (setOffset) {
+            setOffset(page * rowsPerPage)
+          } else {
+            setParams({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }
         }}
         onSortChanged={({ api }) => {
           const ordering = api
             .getColumnState()
             .filter((column) => !!column.sort)
             .map(({ sort, colId }) => {
-              const field = ['code', 'tranche', 'title', 'total_fund'].includes(
-                colId,
-              )
+              const field = [
+                'code',
+                'tranche',
+                'title',
+                'total_fund',
+                'metacode',
+              ].includes(colId)
                 ? colId
                 : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
-                  : colId === 'metaproject_new_code'
-                    ? 'meta_project__code'
-                    : colId.split('.')[0] + '__name'
+                  : colId.split('.')[0] + '__name'
 
               if (colId === 'code') {
                 // Ordering by code needs to be sent as 'filtered_code'
@@ -110,7 +125,7 @@ const PListingTable = ({
               return (sort === 'asc' ? '' : '-') + field
             })
             .join(',')
-          setParams({ offset: 0, ordering })
+          setParams({ offset: 0, ordering: ordering + ',-date_created' })
         }}
       />
     )

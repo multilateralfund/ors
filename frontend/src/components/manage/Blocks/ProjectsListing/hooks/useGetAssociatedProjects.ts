@@ -41,7 +41,7 @@ export const useGetAssociatedProjects = async (
       projects: formattedProjects,
     }))
   } catch (e) {
-    console.error('Error at loading projects for submission')
+    console.error('Error at loading projects')
     setAssociatedProjects((prev) => ({
       ...prev,
       projects: null,

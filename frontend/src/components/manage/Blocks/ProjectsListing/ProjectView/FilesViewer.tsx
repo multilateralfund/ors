@@ -1,21 +1,67 @@
 import { useContext, useEffect, useState } from 'react'
 
+import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import { FieldErrorIndicator } from '../HelperComponents'
+import ExportConfirmModal from './ExportConfirmModal'
+import { defaultProps, exportButtonClassname } from '../constants'
 import { ProjectDocs, ProjectFile } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
+import useApi from '@ors/hooks/useApi'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
+import { filter, find, isNil, map } from 'lodash'
 import { TbFiles } from 'react-icons/tb'
-import { filter, isNil } from 'lodash'
+import cx from 'classnames'
 
 export function FilesViewer(props: ProjectDocs) {
-  const { bpFiles, files, setFiles, mode, project, loadedFiles } = props
+  const {
+    bpFiles,
+    files,
+    setFiles,
+    mode,
+    project,
+    loadedFiles,
+    filesMetaData,
+    setFilesMetaData,
+    errors,
+    allFileErrors,
+  } = props
 
-  const { canUpdateProjects } = useContext(PermissionsContext)
+  const { fileTypes } = useContext(ProjectsDataContext)
+  const { data: commonFileTypes } = useApi({
+    options: {
+      withStoreCache: true,
+    },
+    path: 'api/file-types/',
+  })
+
+  const formatOption = ([id, name]: [number, string]) => ({ id, name })
+
+  const allFileTypesOpts = map(fileTypes, formatOption)
+
+  const crtFileTypesOpts = mode === 'transfer' ? fileTypes : commonFileTypes
+  const fileTypesOpts = map(crtFileTypesOpts, formatOption)
+
+  const firstColFieldsProps = {
+    ...defaultProps,
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-full ProjAssociation',
+    },
+  }
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
+  const [exportConfirmModalType, setExportConfirmModalType] = useState<
+    string | null
+  >(null)
+
+  const { addUpdatedField } = useUpdatedFields()
 
   useEffect(() => {
     const existingFiles = filter(
@@ -28,7 +74,11 @@ export function FilesViewer(props: ProjectDocs) {
     setCurrentFiles([...existingFiles, ...newFiles])
   }, [bpFiles, files])
 
-  const handleDelete = (file: ProjectFile | File) => {
+  const handleDelete = (file: ProjectFile | File, fileIndex: number) => {
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
+
     const isNewFile = !(file as ProjectFile).id
     const updatedFiles = filter(currentFiles, (crtFile) =>
       isNewFile
@@ -47,78 +97,196 @@ export function FilesViewer(props: ProjectDocs) {
         ? files?.deletedFilesIds || []
         : [...(files?.deletedFilesIds || []), (file as ProjectFile).id],
     })
+
+    setFilesMetaData?.((prev) =>
+      filter(prev, (_, index: number) => fileIndex !== index),
+    )
+  }
+
+  const handleChangeFileType = (value: any, fileIndex: number) => {
+    if (mode !== 'transfer') {
+      addUpdatedField('files')
+    }
+
+    setFilesMetaData?.((prev) =>
+      map(prev, (file, index: number) =>
+        fileIndex === index ? { ...file, type: value?.id ?? null } : file,
+      ),
+    )
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-      {mode !== 'view' &&
-        (!project || project?.submission_status === 'Draft') && (
+    <>
+      <div className="flex flex-col gap-2">
+        <HeaderWithIcon title="File attachments" Icon={TbFiles} />
+        {mode === 'transfer' && allFileErrors && allFileErrors.length > 0 && (
+          <CustomAlert
+            type="error"
+            alertClassName="mt-1"
+            content={
+              <div className="mt-0.5 flex flex-col gap-1.5 text-base">
+                {allFileErrors.map((err, idx) =>
+                  err ? (
+                    <div key={idx}>
+                      {'\u2022'} {err.message}
+                    </div>
+                  ) : null,
+                )}
+              </div>
+            }
+          />
+        )}
+        {mode === 'edit' && (
           <>
-            <div className="mt-5 flex gap-4">
+            <div className="mt-5 flex flex-wrap gap-4">
+              {['Draft', 'Submitted', 'Recommended'].includes(
+                project?.submission_status ?? '',
+              ) && (
+                <>
+                  <a
+                    className={cx(
+                      exportButtonClassname,
+                      'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
+                    )}
+                    onClick={() => {
+                      setExportConfirmModalType('word-export')
+                    }}
+                  >
+                    Download project summary
+                  </a>
+                  <a
+                    className={cx(
+                      exportButtonClassname,
+                      'h-9 border-white hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow',
+                    )}
+                    onClick={() => {
+                      setExportConfirmModalType('excel-export')
+                    }}
+                  >
+                    Download Excel
+                  </a>
+                </>
+              )}
               <a
-                className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-                href={formatApiUrl(
-                  `/api/projects/v2/export?project_id=${project?.id}&output_format=docx`,
+                href="https://www.multilateralfund.org/resources/project-guides-tools"
+                rel="noopener noreferrer nofollow"
+                target="_blank"
+                className={cx(
+                  'h-9 border-white bg-secondary',
+                  exportButtonClassname,
                 )}
               >
-                Download project template
-              </a>
-              <a
-                className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
-                href={formatApiUrl(
-                  `/api/projects/v2/export?project_id=${project?.id}`,
-                )}
-              >
-                Download Excel
+                Guides and Tools
               </a>
             </div>
             <Divider className="mt-4" />
           </>
         )}
-      {!isNil(loadedFiles) && !loadedFiles ? (
-        <CircularProgress color="inherit" size="30px" className="mt-2" />
-      ) : (
-        <div className="mt-3 flex flex-col gap-2.5">
-          {currentFiles.length === 0 ? (
-            <p className="m-1 ml-0 text-lg font-normal text-gray-500">
-              No files available
-            </p>
-          ) : (
-            currentFiles.map((file, index: number) => (
-              <div key={index} className="flex items-center gap-2">
-                <a
-                  className="m-0 flex items-center gap-2.5 no-underline"
-                  href={
-                    (file as ProjectFile).download_url
-                      ? formatApiUrl((file as ProjectFile).download_url)
-                      : URL.createObjectURL(file as File)
-                  }
-                  {...(!(file as ProjectFile).download_url && {
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                  })}
-                  download={(file as ProjectFile).filename || file.name}
-                >
-                  <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
-                  <span className="text-lg font-medium text-secondary">
-                    {(file as ProjectFile).filename || file.name}
-                  </span>
-                </a>
 
-                {setFiles &&
-                  canUpdateProjects &&
-                  ('editable' in file ? file.editable : true) && (
-                    <IoTrash
-                      className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                      onClick={() => handleDelete(file)}
-                    />
-                  )}
-              </div>
-            ))
-          )}
-        </div>
+        {!isNil(loadedFiles) && !loadedFiles ? (
+          <CircularProgress color="inherit" size="30px" className="mt-2" />
+        ) : (
+          <div
+            className={cx('flex flex-col gap-2.5', {
+              'mt-3': mode !== 'transfer',
+            })}
+          >
+            {currentFiles.length === 0 ? (
+              <p className="m-1 ml-0 text-lg font-normal text-gray-500">
+                No files available
+              </p>
+            ) : (
+              currentFiles.map((file, index: number) => {
+                const isFileEditable =
+                  setFiles && ('editable' in file ? file.editable : true)
+                const fileName = (file as ProjectFile).filename || file.name
+                const downloadUrl = (file as ProjectFile).download_url
+
+                return (
+                  <div
+                    key={index}
+                    className={cx('flex flex-wrap items-end gap-2', {
+                      'gap-x-4': mode !== 'view',
+                    })}
+                  >
+                    <a
+                      className="m-0 mb-1 flex items-center gap-2.5 no-underline"
+                      href={
+                        downloadUrl
+                          ? formatApiUrl(downloadUrl)
+                          : URL.createObjectURL(file as File)
+                      }
+                      {...(!downloadUrl && {
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      })}
+                      download={fileName}
+                    >
+                      <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                      <span className="text-lg font-medium text-secondary">
+                        {fileName}
+                      </span>
+                    </a>
+                    {filesMetaData ? (
+                      <div className="flex-shrink basis-[290px]">
+                        <Label className="!mb-0.5 !text-[15px]">Type</Label>
+                        <div className="flex items-center">
+                          <Field
+                            widget="autocomplete"
+                            options={fileTypesOpts}
+                            value={filesMetaData[index]?.type}
+                            onChange={(_, value) =>
+                              handleChangeFileType(value, index)
+                            }
+                            getOptionLabel={(option) =>
+                              getOptionLabel(allFileTypesOpts, option)
+                            }
+                            disabled={!isFileEditable}
+                            {...firstColFieldsProps}
+                          />
+                          <FieldErrorIndicator
+                            errors={{
+                              file: filter(
+                                errors,
+                                (error) => error?.id === index,
+                              ).map(
+                                (error) => error?.message.split(' - ')[1] || '',
+                              ),
+                            }}
+                            field="file"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-1 text-lg italic">
+                        (
+                        {find(
+                          fileTypes,
+                          (type) => type[0] === file.type,
+                        )?.[1] ?? ''}
+                        )
+                      </div>
+                    )}
+                    {isFileEditable && (
+                      <IoTrash
+                        className="transition-colors mb-1.5 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                        onClick={() => handleDelete(file, index)}
+                      />
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )}
+      </div>
+      {!!exportConfirmModalType && (
+        <ExportConfirmModal
+          mode={exportConfirmModalType}
+          projectId={project?.id}
+          setModalType={setExportConfirmModalType}
+        />
       )}
-    </div>
+    </>
   )
 }

@@ -4,9 +4,11 @@ from rest_framework.test import APIClient
 
 from core.api.tests.factories import (
     AgencyFactory,
+    MetaProjectFactory,
     ProjectFieldFactory,
     ProjectSpecificFieldsFactory,
 )
+from core.utils import get_meta_project_code
 
 
 pytestmark = pytest.mark.django_db
@@ -22,8 +24,9 @@ class TestProjectListPreviousTranches:
         project1.tranche = 2
         project1.save()
         project2.tranche = 1
+        project2.country = project1.country
+        project2.cluster = project1.cluster
         project2.submission_status = project_approved_status
-        project2.meta_project = project1.meta_project
         project2.save()
 
     def test_project_list_previous_tranches_permissions(
@@ -47,7 +50,14 @@ class TestProjectListPreviousTranches:
         def _test_user_permissions(user, expected_response_status):
             self.client.force_authenticate(user=user)
             response = self.client.get(
-                reverse("project-v2-list-previous-tranches", args=(project.id,))
+                reverse(
+                    "project-v2-list-previous-tranches",
+                    args=(
+                        project.country.id,
+                        project.cluster.id,
+                        project.tranche,
+                    ),
+                )
             )
             assert response.status_code == expected_response_status
             return response.data
@@ -55,7 +65,14 @@ class TestProjectListPreviousTranches:
         # test with unauthenticated user
         self.client.force_authenticate(user=None)
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         viewer_user.agency = agency_user.agency
         viewer_user.save()
@@ -78,43 +95,72 @@ class TestProjectListPreviousTranches:
         project_draft_status,
         project2,
         secretariat_v1_v2_edit_access_user,
+        new_country,
     ):
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         self._prepare_projects(project, project2, project_approved_status)
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 1
         assert response.data[0]["id"] == project2.id
         assert response.data[0]["tranche"] == 1
 
-        # test with tranche query parameter
+        # test without project_id
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
-            {"tranche": 2},
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
+            {"project_id": project.id},
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 1
         assert response.data[0]["id"] == project2.id
         assert response.data[0]["tranche"] == 1
 
-        # test with project2 without meta_project
-        project2.meta_project = None
+        # test with project2 with different country
+        project2.country = new_country
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
 
         # test with project2 with different tranche
         project2.tranche = 3
-        project2.meta_project = project.meta_project
+        project2.country = project.country
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
@@ -124,7 +170,14 @@ class TestProjectListPreviousTranches:
         project2.tranche = 1
         project2.save()
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,))
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            )
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 0
@@ -182,7 +235,14 @@ class TestProjectListPreviousTranches:
         project_specific_fields.fields.add(field1, field2, field3)
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
             {"include_validation": "true"},
         )
         assert response.status_code == 200, response.data
@@ -206,7 +266,14 @@ class TestProjectListPreviousTranches:
         project2.save()
 
         response = self.client.get(
-            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            reverse(
+                "project-v2-list-previous-tranches",
+                args=(
+                    project.country.id,
+                    project.cluster.id,
+                    project.tranche,
+                ),
+            ),
             {"include_validation": "true"},
         )
         assert response.status_code == 200, response.data
@@ -223,6 +290,7 @@ class TestAssociateProject:
         self,
         project,
         project2,
+        meta_project,
         user,
         viewer_user,
         agency_user,
@@ -234,6 +302,16 @@ class TestAssociateProject:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
+        project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
+        project2.save()
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
 
@@ -242,7 +320,8 @@ class TestAssociateProject:
             response = self.client.post(
                 url,
                 data={
-                    "project_ids": [project.id, project2.id],
+                    "projects_to_associate": [project.id, project2.id],
+                    "meta_project_id": meta_project.id,
                     "lead_agency_id": agency.id,
                 },
                 format="json",
@@ -266,12 +345,26 @@ class TestAssociateProject:
         _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
-    def test_associate_project(
+    def test_associate_project_projects_without_meta_project(
         self,
         secretariat_v1_v2_edit_access_user,
         project,
         project2,
     ):
+        # both projects are without meta projects
+        # expect a new meta project to be created and assigned to both projects
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
+        project.meta_project = None
+        project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
+        project2.meta_project = None
+        project2.save()
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
@@ -280,36 +373,109 @@ class TestAssociateProject:
             url,
             format="json",
             data={
-                "project_ids": [project.id, project2.id],
+                "projects_to_associate": [project.id, project2.id],
                 "lead_agency_id": agency.id,
             },
         )
         assert response.status_code == 200, response.data
-
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project.lead_agency == agency
+        assert project2.lead_agency == agency
 
-        project.meta_project = None
+    def test_associate_project_one_project_with_meta_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        meta_project,
+    ):
+        # one project has a meta project, the other does not
+        # expect the project without meta project to be assigned to the meta project of the other project
+        project.meta_project = meta_project
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
         project.save()
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
         project2.meta_project = None
         project2.save()
-
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-associate-projects")
+        agency = AgencyFactory.create(code="TESTAG")
+        # associate project
         response = self.client.post(
             url,
             format="json",
             data={
-                "project_ids": [project.id, project2.id],
+                "projects_to_associate": [project.id, project2.id],
                 "lead_agency_id": agency.id,
             },
         )
         assert response.status_code == 200, response.data
-
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project.meta_project == meta_project
+        assert project.lead_agency == agency
+        assert project2.lead_agency == agency
+
+    def test_associate_project_both_projects_with_different_meta_projects(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        project3,
+        meta_project,
+    ):
+        # both projects have different meta projects
+        # expect to receive a meta_project_id which will be assigned to both projects
+        another_meta_project = MetaProjectFactory.create()
+        meta_project_to_assign = MetaProjectFactory.create()
+        project3.meta_project = meta_project_to_assign
+        project3.metacode = get_meta_project_code(
+            project3.country,
+            project3.cluster,
+        )
+        project3.save()
+
+        project.meta_project = meta_project
+        project.metacode = get_meta_project_code(
+            project.country,
+            project.cluster,
+        )
+        project.save()
+        project2.meta_project = another_meta_project
+        project2.metacode = get_meta_project_code(
+            project2.country,
+            project2.cluster,
+        )
+        project2.save()
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-associate-projects")
+        agency = AgencyFactory.create(code="TESTAG")
+        # associate project
+        response = self.client.post(
+            url,
+            format="json",
+            data={
+                "projects_to_associate": [project.id, project2.id],
+                "meta_project_id": meta_project_to_assign.id,
+                "lead_agency_id": agency.id,
+            },
+        )
+        assert response.status_code == 200, response.data
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.meta_project == project2.meta_project
+        assert project.meta_project == meta_project_to_assign
+        assert project.lead_agency == agency
+        assert project2.lead_agency == agency
 
 
 class TestProjectListAssocitatedProjects:
@@ -465,3 +631,62 @@ class TestProjectListAssocitatedProjects:
         assert response.data[1]["errors"]["previous_tranches"][0] == (
             f"Previous tranche {project3.title}({project3.id}): At least one actual indicator should be filled."
         )
+
+    def test_remove_association_permissions(
+        self,
+        project,
+        project2,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-remove-association", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            project.meta_project = project2.meta_project
+            project.save()
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_remove_association(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-remove-association", args=(project.id,))
+        agency = AgencyFactory.create(code="Test agency 1")
+        # associate project
+        project.meta_project = project2.meta_project
+        project.lead_agency = agency
+        project.save()
+        response = self.client.post(url)
+        assert response.status_code == 200, response.data
+        project.refresh_from_db()
+        assert project.meta_project is None

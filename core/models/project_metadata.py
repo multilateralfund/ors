@@ -2,6 +2,7 @@ from colorfield.fields import ColorField
 
 from django.conf import settings
 from django.db import models
+from django.utils.functional import cached_property
 
 ALL_TYPE_CODES = ["CPG", "DEM", "INS", "INV", "PRP", "TAS", "TRA", "DOC", "PS", "PHA"]
 
@@ -32,6 +33,16 @@ PROJECT_SECTOR_TO_TYPE_MAPPINGS = {
 }
 
 
+class ProjectFieldManager(models.Manager):
+    def get_visible_fields_for_user(self, user):
+        """
+        Filters out MLFS-only fields for users without MLFS access.
+        """
+        if not user.has_perm("core.is_mlfs_user"):
+            return self.exclude(mlfs_only=True)
+        return self
+
+
 class ProjectField(models.Model):
     import_name = models.CharField(max_length=255)
     label = models.CharField(max_length=255)
@@ -58,6 +69,12 @@ class ProjectField(models.Model):
         blank=True,
         help_text="Comma-separated list of project versions where the field is visible. Values: 1,2,3",
     )
+    mlfs_only = models.BooleanField(
+        default=False,
+        help_text="If True, the field is only visible to MLFS users",
+    )
+
+    objects = ProjectFieldManager()
 
     def __str__(self):
         return f"{self.table} - {self.label}"
@@ -145,6 +162,12 @@ class ProjectCluster(models.Model):
             as production projects
         """,
     )
+    annex_groups = models.ManyToManyField(
+        "Group",
+        blank=True,
+        related_name="project_clusters",
+        help_text="List of annex groups that this cluster belongs to. To be used for filtering substance lists.",
+    )
     production = models.BooleanField(
         default=False,
         null=True,
@@ -186,7 +209,7 @@ class ProjectType(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def allowed_sectors(self):
         sector_codes = [
             sector
@@ -233,7 +256,7 @@ class ProjectSector(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def allowed_types(self):
         type_codes = PROJECT_SECTOR_TO_TYPE_MAPPINGS.get(self.code, [])
         return list(

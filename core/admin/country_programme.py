@@ -27,7 +27,11 @@ class CPReportAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("country")
+        return queryset.select_related(
+            "country", "created_by", "version_created_by"
+        ).prefetch_related(
+            "cpreportedsections",
+        )
 
     def get_list_display(self, request):
         exclude = [

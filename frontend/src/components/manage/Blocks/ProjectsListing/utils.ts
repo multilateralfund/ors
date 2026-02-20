@@ -1,6 +1,14 @@
-import { Dispatch, SetStateAction } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import { tableColumns, validationFieldsPairs } from './constants'
+import { getMeetingNr } from '../../Utils/utilFunctions'
+import {
+  approvalOdsFields,
+  approvalToOdsMap,
+  initialTranferedProjectData,
+  PROJECTS_PER_PAGE,
+  tableColumns,
+  validationFieldsPairs,
+} from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -14,10 +22,18 @@ import {
   ProjectAllVersionsFiles,
   OdsOdpFields,
   ListingProjectData,
+  ProjectTransferData,
+  SetProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
-import { Cluster } from '@ors/types/store'
+import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
 
+import dayjs from 'dayjs'
+import {
+  ITooltipParams,
+  ValueFormatterParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
 import {
   concat,
   difference,
@@ -26,33 +42,38 @@ import {
   flatMap,
   fromPairs,
   get,
+  groupBy,
   isArray,
   isNaN,
   isNil,
+  isUndefined,
   keys,
+  lowerCase,
   map,
+  min,
   omit,
   pick,
   reduce,
 } from 'lodash'
-import {
-  ITooltipParams,
-  ValueFormatterParams,
-  ValueGetterParams,
-} from 'ag-grid-community'
-import dayjs from 'dayjs'
 
-const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
+const getFieldId = <T>(
+  field: ProjectSpecificFields,
+  data: T,
+  projectData?: ProjectTypeApi,
+) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
-
-  return find(formatOptions(field), {
+  return find(formatOptions(field, projectData), {
     [fieldName]: data[field.read_field_name as keyof T]?.toString(),
   })?.id
 }
 
+export const getFormattedDecimalValue = (value: string | null) =>
+  !isNil(value) ? Number(value).toString() : value
+
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
+  projectData?: ProjectTypeApi,
 ) =>
   reduce(
     fields,
@@ -63,10 +84,12 @@ export const getDefaultValues = <T>(
       if (data) {
         acc[fieldName] =
           dataType === 'drop_down'
-            ? getFieldId<T>(field, data)
-            : dataType === 'boolean'
-              ? (data[fieldName] ?? false)
-              : data[fieldName]
+            ? getFieldId<T>(field, data, projectData)
+            : dataType === 'decimal'
+              ? getFormattedDecimalValue(data[fieldName])
+              : dataType === 'boolean'
+                ? (data[fieldName] ?? false)
+                : data[fieldName]
       } else {
         acc[fieldName] =
           dataType === 'text' ? '' : dataType === 'boolean' ? false : null
@@ -76,33 +99,72 @@ export const getDefaultValues = <T>(
     {},
   )
 
-export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
+export const canGoToSecondStep = (
+  projIdentifiers: ProjIdentifiers,
+  agency_id: number | undefined,
+) =>
   !!(
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     projIdentifiers.cluster &&
     projIdentifiers.agency &&
     projIdentifiers.lead_agency
-  )
+  ) && !getAgencyErrorType(projIdentifiers, agency_id)
 
 export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
+  agency_id: number | undefined,
 ) => {
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title } = crossCuttingFields
+  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
+  const {
+    project_type,
+    sector,
+    title,
+    total_fund,
+    support_cost_psc,
+    project_start_date,
+    project_end_date,
+  } = crossCuttingFields
 
-  return !canLinkToBp || !(project_type && sector && title)
+  return (
+    !canLinkToBp ||
+    !(project_type && sector && title) ||
+    Number(total_fund) < Number(support_cost_psc) ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date))
+  )
 }
 
-export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
+const filterSubstancesOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.group_id === group_id)
+const filterBlendsOptions = (options: any, group_id: number | null) =>
+  filter(options, (option) => option.substance_groups.includes(group_id))
+
+export const formatOptions = (
+  field: ProjectSpecificFields,
+  data?: any,
+): OptionsType[] => {
   const options = field.options as
     | OptionsType[]
-    | Record<'substances' | 'blends', OptionsType[]>
+    | Record<'substances' | 'blends', (OptionsType & { composition: string })[]>
+
+  const groupValue = data ? data.group_id || data.group : null
 
   return field.write_field_name === 'ods_display_name' && !isArray(options)
-    ? concat(options.substances, options.blends).map((option) => {
-        return { ...option, id: `${option.baseline_type}-${option.id}` }
+    ? concat(
+        data
+          ? filterSubstancesOptions(options.substances, groupValue)
+          : options.substances,
+        data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
+      ).map((option) => {
+        return {
+          ...option,
+          id: `${option.baseline_type}-${option.id}`,
+          label:
+            option.baseline_type === 'blend'
+              ? option.name + ' (' + option.composition + ')'
+              : option.name,
+        }
       })
     : map(options, (option) =>
         isArray(option) ? { id: option[0], name: option[1] } : option,
@@ -367,6 +429,30 @@ export const getProjIdentifiersErrors = (
   }
 }
 
+export const getAgencyErrorType = (
+  projIdentifiers: ProjIdentifiers | ProjectTypeApi,
+  agencyId: number | undefined,
+) => {
+  const { lead_agency, lead_agency_submitting_on_behalf } = projIdentifiers
+
+  const agency =
+    'agency_id' in projIdentifiers
+      ? projIdentifiers.agency_id
+      : projIdentifiers.agency
+
+  if (!(agency && lead_agency) && !agencyId) return null
+
+  return agencyId && agencyId !== agency && agencyId !== lead_agency
+    ? 'no_valid_agency'
+    : lead_agency_submitting_on_behalf
+      ? agency === lead_agency
+        ? 'similar_agencies'
+        : null
+      : agency !== lead_agency
+        ? 'different_agencies'
+        : null
+}
+
 export const checkInvalidValue = (value: any) =>
   isNil(value) || value === '' || value.length === 0
 
@@ -379,7 +465,9 @@ const getFieldErrors = (
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
       ? ['title', 'project_type', 'sector'].includes(field) ||
         project?.submission_status !== 'Draft'
-        ? ['This field is required.']
+        ? field.includes('_actual')
+          ? ['This field is not completed.']
+          : ['This field is required.']
         : ['This field is required for submission.']
       : []
 
@@ -391,31 +479,51 @@ export const getCrossCuttingErrors = (
   errors: { [key: string]: [] },
   mode: string,
   project: ProjectTypeApi | undefined,
+  validateApproval: boolean,
 ) => {
   const requiredFields = [
     'title',
     'project_type',
     'sector',
     'description',
-    'subsector_ids',
     'is_lvc',
     'total_fund',
     'support_cost_psc',
     'project_start_date',
     'project_end_date',
   ]
+  const requiredFieldsAfterSubmission =
+    project?.submission_status !== 'Draft'
+      ? [...requiredFields, 'blanket_or_individual_consideration']
+      : requiredFields
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) =>
+      [
+        ...requiredFields,
+        'subsector_ids',
+        'blanket_or_individual_consideration',
+      ].includes(key),
+    ),
   )
 
-  const { project_start_date, project_end_date } = crossCuttingFields
+  const { total_fund, support_cost_psc, project_start_date, project_end_date } =
+    crossCuttingFields
 
   const fieldsToCheck =
-    mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
+    mode === 'edit' ? requiredFieldsAfterSubmission : requiredFields.slice(0, 3)
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
+    ...(Number(total_fund) < Number(support_cost_psc) && {
+      support_cost_psc: ['Value cannot be greater than project funding.'],
+    }),
+    ...(validateApproval &&
+      mode === 'edit' &&
+      project?.submission_status === 'Recommended' &&
+      dayjs(project_end_date).isBefore(dayjs(), 'day') && {
+        project_end_date: ['Cannot be a past date.'],
+      }),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
@@ -423,29 +531,11 @@ export const getCrossCuttingErrors = (
   }
 }
 
-export const getApprovalErrors = (
-  approvalData: SpecificFields,
-  specificFields: ProjectSpecificFields[] | undefined = [],
+const getFormattedErrors = (
   errors: { [key: string]: [] },
-  project: ProjectTypeApi | undefined,
-) => {
-  const requiredFields = [
-    'meeting_approved',
-    'decision',
-    'excom_provision',
-    'date_completion',
-  ]
-
-  const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
-  )
-
-  const allErrors = {
-    ...getFieldErrors(requiredFields, approvalData, project),
-    ...filteredErrors,
-  }
-
-  return Object.entries(allErrors).reduce(
+  specificFields: ProjectSpecificFields[] | undefined = [],
+) =>
+  Object.entries(errors).reduce(
     (acc, [key, errMsg]) => {
       const field = specificFields.find(
         ({ write_field_name }) => write_field_name === key,
@@ -459,6 +549,71 @@ export const getApprovalErrors = (
     },
     {} as Record<string, string[]>,
   )
+
+export const getApprovalErrors = (
+  approvalData: SpecificFields,
+  crossCuttingFields: CrossCuttingFields,
+  specificFields: ProjectSpecificFields[] | undefined = [],
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+) => {
+  const defaultRequiredFields = [
+    'decision',
+    'date_completion',
+    'programme_officer',
+    'excom_provision',
+  ]
+
+  const requiredFields = [...defaultRequiredFields, ...approvalOdsFields]
+  const fieldsForValidation = [
+    ...defaultRequiredFields,
+    ...approvalOdsFields.map((field) =>
+      isUndefined(approvalData[field as keyof SpecificFields])
+        ? `computed_${field}`
+        : field,
+    ),
+  ]
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) =>
+      [...requiredFields, 'funding_window'].includes(key),
+    ),
+  )
+
+  const allErrors = {
+    ...getFieldErrors(fieldsForValidation, approvalData, project),
+    ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
+      date_completion: ['Cannot be a past date.'],
+    }),
+    ...(dayjs(approvalData.date_completion).isBefore(
+      dayjs(crossCuttingFields.project_start_date),
+    ) && {
+      date_completion: ['Start date cannot be later than date of completion.'],
+    }),
+    ...filteredErrors,
+  }
+
+  return getFormattedErrors(allErrors, specificFields)
+}
+
+export const getPostExcomApprovalErrors = (
+  approvalData: SpecificFields,
+  specificFields: ProjectSpecificFields[] | undefined = [],
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+) => {
+  const fieldsForValidation = ['programme_officer', 'excom_provision']
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => fieldsForValidation.includes(key)),
+  )
+
+  const allErrors = {
+    ...getFieldErrors(fieldsForValidation, approvalData, project),
+    ...filteredErrors,
+  }
+
+  return getFormattedErrors(allErrors, specificFields)
 }
 
 export const hasSpecificField = (
@@ -488,6 +643,28 @@ export const getDefaultImpactErrors = (
 export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
   Object.values(errors).some((errors) => errors.length > 0)
 
+export const getTransferErrors = (
+  projectData: ProjectTransferData,
+  project: ProjectTypeApi,
+) => {
+  const { fund_transferred, psc_transferred } = projectData
+
+  return {
+    ...getFieldErrors(keys(initialTranferedProjectData), projectData, project),
+    ...(Number(fund_transferred) > Number(project.total_fund) && {
+      fund_transferred: ['Value cannot be greater than project funding.'],
+    }),
+    ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
+      psc_transferred: ['Value cannot be greater than project support cost.'],
+    }),
+    ...(Number(psc_transferred) > Number(fund_transferred) && {
+      psc_transferred: [
+        'Value cannot be greater than transferred project funding.',
+      ],
+    }),
+  }
+}
+
 export const getFieldLabel = (
   specificFields: ProjectSpecificFields[],
   field: string,
@@ -506,6 +683,9 @@ export const getSpecificFieldsErrors = (
   canEditApprovedProjects: boolean,
   project?: ProjectTypeApi,
 ) => {
+  const isEditMode = project && mode === 'edit'
+  const version = isEditMode ? project.version : 1
+
   const fieldNames = map(
     filter(
       specificFields,
@@ -514,9 +694,8 @@ export const getSpecificFieldsErrors = (
         section !== 'MYA' &&
         data_type !== 'boolean' &&
         (canEditApprovedProjects ||
-          editable_in_versions.includes(
-            project && mode === 'edit' ? project.version : 1,
-          )),
+          (isEditMode && project.version > 3) ||
+          editable_in_versions.includes(version)),
     ),
     'write_field_name',
   ) as string[]
@@ -585,15 +764,21 @@ export const getFileFromMetadata = async (fileMeta: {
   return new File([blob], fileMeta.filename, { type: contentType })
 }
 
-export const formatErrors = (errors: { [key: string]: string[] }) =>
-  Object.entries(errors)
+export const formatErrors = (
+  errors: { [key: string]: string[] },
+  fieldNames?: Record<string, string>,
+) => {
+  const crtFieldNames = fieldNames ?? tableColumns
+
+  return Object.entries(errors)
     .filter(([, errorMsgs]) => errorMsgs.length > 0)
     .flatMap(([field, errorMsgs]) =>
       errorMsgs.map((errMsg, idx) => ({
         id: `${field}-${idx}`,
-        message: `${tableColumns[field] ?? field}: ${errMsg}`,
+        message: `${crtFieldNames[field] ?? field}: ${errMsg}`,
       })),
     )
+}
 
 export const getHasNoFiles = (
   id: number,
@@ -609,12 +794,35 @@ export const getHasNoFiles = (
   return files?.newFiles?.length === 0 && crtVersionFiles.length === 0
 }
 
+export const getIsUpdatablePostExcom = (
+  submission_status: string | undefined,
+  status: string | undefined,
+) =>
+  submission_status === 'Approved' &&
+  status !== 'Closed' &&
+  status !== 'Transferred'
+
 export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
+  onTransferProject?: () => void,
 ) => {
-  const { canViewBp, canUpdateBp, canViewProjects } = permissions
-  const { projectId, projectSubmissionStatus } = projectData ?? {}
+  const {
+    canViewBp,
+    canUpdateBp,
+    canViewEnterprises,
+    canEditProjectEnterprise,
+    canUpdatePostExcom,
+    canTransferProjects,
+    canViewMetaProjects,
+  } = permissions
+  const {
+    projectId,
+    projectSubmissionStatus,
+    projectStatus,
+    projectMetaprojectId,
+    projectEditable,
+  } = projectData ?? {}
 
   return [
     {
@@ -623,42 +831,72 @@ export const getMenus = (
         {
           title: 'View business plans',
           url: '/business-plans',
-          permissions: [canViewBp],
+          disabled: !canViewBp,
         },
         {
           title: 'New business plan',
           url: '/business-plans/upload',
-          permissions: [canUpdateBp],
+          disabled: !canUpdateBp,
         },
       ],
     },
     {
       title: 'Approved Projects',
       menuItems: [
-        { title: 'Update MYA data', url: null },
-        { title: 'Update post ExCom fields', url: null },
         {
-          title: 'Update enterprises',
-          url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
-          permissions: [canViewProjects],
+          title: 'Update MYA data',
+          url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
           disabled:
-            !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+            !canViewMetaProjects || (!!projectId && !projectMetaprojectId),
         },
-        { title: 'Transfer a project', url: null },
+        {
+          title: 'Update post ExCom fields',
+          url: `/projects-listing/${projectId}/post-excom-update`,
+          disabled:
+            !canUpdatePostExcom ||
+            !projectId ||
+            !getIsUpdatablePostExcom(projectSubmissionStatus, projectStatus),
+        },
+        {
+          title: 'Update project enterprises',
+          url: `/projects-listing/projects-enterprises/${projectId}`,
+          disabled:
+            !canEditProjectEnterprise ||
+            !projectId ||
+            projectSubmissionStatus !== 'Approved',
+        },
+        {
+          title: 'Manage enterprises',
+          url: `/projects-listing/enterprises`,
+          disabled: !canViewEnterprises,
+        },
+        {
+          title: 'Transfer a project',
+          url: null,
+          onClick: onTransferProject,
+          disabled:
+            !canTransferProjects ||
+            !projectId ||
+            !projectEditable ||
+            projectSubmissionStatus !== 'Approved',
+        },
       ],
     },
     {
       title: 'Reporting',
       menuItems: [
-        { title: 'Create Annual Progress Report', url: null },
-        { title: 'Raise a PCR', url: null },
+        { title: 'Annual Progress Reports', url: '/apr' },
+        { title: 'Raise a PCR', url: null, disabled: true },
       ],
     },
   ]
 }
 
-export const getProduction = (clusters: Cluster[], clusterId: number | null) =>
-  find(clusters, (cluster) => cluster.id === clusterId)?.production
+export const getClusterDetails = (
+  clusters: Cluster[],
+  clusterId: number | null,
+  field: keyof Cluster,
+) => find(clusters, (cluster) => cluster.id === clusterId)?.[field]
 
 export const formatFiles = (
   files: ProjectAllVersionsFiles[] = [],
@@ -762,13 +1000,25 @@ export const filterClusterOptions = (
   canViewProdProjects: boolean,
 ) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)
 
-export const getPaginationSelectorOpts = (count: number) => {
-  const nrResultsOpts = [100, 250, 500, 1000]
+export const getPaginationSelectorOpts = (
+  count: number,
+  maxResults: number,
+) => {
+  const actualMaxResults = min([count, maxResults]) ?? maxResults
+
+  const nrResultsOpts = [50, 100, 150, 200, 250, 500, 1000]
   const filteredNrResultsOptions = nrResultsOpts.filter(
-    (option) => option < count,
+    (option) => option <= actualMaxResults,
   )
 
-  return [...filteredNrResultsOptions, count]
+  return count < maxResults
+    ? [...filteredNrResultsOptions, count]
+    : filteredNrResultsOptions
+}
+
+export const getPaginationPageSize = (count: number, nrEntries?: number) => {
+  const entriesPerPage = nrEntries ?? PROJECTS_PER_PAGE
+  return min([count, entriesPerPage])
 }
 
 export const getAreFiltersApplied = (filters: Record<string, any>) =>
@@ -780,3 +1030,155 @@ export const formatEntity = (currentEntity: any = [], field: string = 'id') =>
   new Map<number, any>(
     currentEntity.map((entity: any) => [entity[field], entity]),
   )
+
+export const getFieldData = (
+  data: ProjectSpecificFields[],
+  fieldName: string,
+) => find(data, (field) => field.write_field_name === fieldName)
+
+export const getHistoryItemValue = (value: any, fieldName: string): any => {
+  if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
+    return dayjs(value).format('DD/MM/YYYY')
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('title')
+  ) {
+    return value.title
+  } else if (
+    value &&
+    typeof value === 'object' &&
+    value.hasOwnProperty('name')
+  ) {
+    return value.name
+  } else if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No'
+  } else if (Array.isArray(value)) {
+    return value.map((v) => getHistoryItemValue(v, fieldName)).join(', ') || '-'
+  }
+  return value
+}
+
+export const filterHistoryField = (history: ProjectFieldHistoryValue[]) =>
+  history.filter(
+    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
+  )
+
+export const getLatesValueByMeeting = (history: ProjectFieldHistoryValue[]) =>
+  Object.values(
+    history.reduce(
+      (acc, item) => {
+        const key = item.post_excom_meeting ?? '-'
+        if (!acc[key] || item.version > acc[key].version) {
+          acc[key] = item
+        }
+        return acc
+      },
+      {} as Record<string, any>,
+    ),
+  ).sort((a, b) => b.version - a.version)
+
+export const hasExcomUpdate = (
+  history: ProjectFieldHistoryValue[],
+  fieldName: string,
+) => {
+  const filteredHistory = filterHistoryField(history)
+  const latestByMeeting = getLatesValueByMeeting(filteredHistory)
+
+  const historicValues =
+    latestByMeeting.reduce((acc, item) => {
+      acc.add(getHistoryItemValue(item.value, fieldName))
+      return acc
+    }, new Set()) ?? new Set()
+
+  return historicValues.size > 1
+}
+
+export const getFormattedDate = (value: string) =>
+  value ? dayjs(value).format('DD/MM/YYYY') : '-'
+
+export const getFormattedNumericValue = (value: string, digits: number = 2) =>
+  !isNil(value)
+    ? formatDecimalValue(parseFloat(value), {
+        maximumFractionDigits: digits,
+        minimumFractionDigits: digits,
+      })
+    : '-'
+
+export const handleChangeNumericValues = (
+  event: ChangeEvent<HTMLInputElement>,
+  field: string,
+  sectionIdentifier: keyof ProjectData,
+  setProjectData: SetProjectData,
+) => {
+  const initialValue = event.target.value
+  const value = initialValue === '' ? null : initialValue
+
+  if (!isNaN(Number(value))) {
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          [field]: value,
+        },
+      }),
+      field,
+    )
+  } else {
+    event.preventDefault()
+  }
+}
+
+export const filterApprovalFields = (
+  specificFields: ProjectSpecificFields[],
+  field: ProjectSpecificFields,
+) => {
+  const odsOdpFields = getOdsOdpFields(specificFields)
+  const odsOdpFieldsNames = map(odsOdpFields, 'write_field_name') as string[]
+
+  const mappedField = approvalToOdsMap[field.write_field_name]
+
+  return (
+    field.section === 'Approval' &&
+    (field.table !== 'ods_odp' ||
+      (mappedField && odsOdpFieldsNames.includes(mappedField)))
+  )
+}
+
+export const formatFieldLabel = (label: string) =>
+  label.replace(/(?<=CO)2/g, '₂')
+
+export const onTextareaFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+  setTimeout(() => {
+    const element = e.target
+    const textLength = element.value.length
+    element.setSelectionRange(textLength, textLength)
+  })
+}
+
+export const getTransferFieldLabel = (
+  project: ProjectTypeApi,
+  field: string,
+) => {
+  const isFromTransfer = !!project?.transferred_from
+  const formattedField = isFromTransfer ? 'transfer_' + field : field
+  const fieldLabel = tableColumns[formattedField]
+
+  if (isFromTransfer && project?.status === 'Transferred') {
+    return 'Initial ' + lowerCase(fieldLabel)
+  }
+
+  return fieldLabel
+}
+
+export const getOdsOdpFields = (specificFields: ProjectSpecificFields[]) => {
+  const groupedFields = groupBy(specificFields, 'table')
+  return (groupedFields['ods_odp'] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
+}
+
+export const getPostExcomMeetingErrors = (projIdentifiers: ProjIdentifiers) =>
+  (getMeetingNr(projIdentifiers.post_excom_meeting ?? undefined) ?? 0) <
+  (getMeetingNr(projIdentifiers.meeting ?? undefined) ?? 0)

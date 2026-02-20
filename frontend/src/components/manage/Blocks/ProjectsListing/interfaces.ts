@@ -1,10 +1,15 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { ProjectType } from '@ors/types/api_projects'
 
 export type ListingProjectData = {
   projectId: number | null
   projectTitle: string
   projectSubmissionStatus: string
+  projectStatus: string
+  projectMetaprojectId: number | null
+  projectCode: string
+  projectEditable: boolean
 }
 export interface PListingProps {
   tableToolbar: ReactNode
@@ -19,6 +24,9 @@ export interface ProjIdentifiers {
   lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
+  category: string | null
+  post_excom_meeting: number | null
+  post_excom_decision: number | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -31,7 +39,7 @@ export interface CrossCuttingFields {
   project_end_date: string | null
   total_fund: string | null
   support_cost_psc: string | null
-  individual_consideration: boolean
+  blanket_or_individual_consideration: string | null
 }
 
 export interface SpecificFields {
@@ -86,13 +94,13 @@ export interface SpecificFields {
   number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
   meeting: number | null
-  meeting_approved: number | null
-  decision: string | null
+  decision: number | null
   decision_id: string | null
+  date_completion: string | null
 }
 
 export type OdsOdpFields = {
-  ods_display_name: string
+  ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -114,6 +122,7 @@ export type FieldType =
 export type OptionsType = {
   id: number | string
   name: string
+  label?: string
   name_alt?: string
   baseline_type?: string
 }
@@ -142,7 +151,7 @@ export type SpecificFieldsSectionProps = ProjectDataProps & {
 export type FieldHandler = <T, K>(
   value: any,
   field: keyof K,
-  setState: Dispatch<SetStateAction<T>>,
+  setState: (updater: SetStateAction<T>, fieldName?: keyof K) => void,
   section: keyof T,
   subField?: string,
   index?: number,
@@ -156,6 +165,7 @@ export type ProjectFile = {
   download_url: string
   project_id: number
   editable: boolean
+  type: string
 }
 
 export type ProjectAllVersionsFiles = {
@@ -170,11 +180,27 @@ export type ProjectTypeApi = ProjIdentifiers &
   SpecificFields &
   ProjectType & {
     meeting_id: number | null
+    component: { id: number; original_project_id: number }
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
     meta_project: Record<string, any>
     history: ProjectType['history']
+    fund_transferred: number
+    psc_transferred: number
+    transfer_meeting: string
+    transfer_meeting_id: number | null
+    transfer_decision: string
+    transfer_decision_id: number | null
+    transfer_excom_provision: string
+    total_phase_out_metric_tonnes: string | null
+    total_phase_out_odp_tonnes: string | null
+    total_phase_out_co2_tonnes: string | null
+    computed_total_phase_out_metric_tonnes: string | null
+    computed_total_phase_out_odp_tonnes: string | null
+    computed_total_phase_out_co2_tonnes: string | null
+    transferred_from: number | null
+    editable_for_actual_fields: boolean
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi
@@ -191,6 +217,8 @@ export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
+  fieldHistory?: ProjectFieldHistoryValue[],
+  hasActualFields?: boolean,
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -202,11 +230,13 @@ export interface ProjectFiles {
   files?: ProjectFilesObject
   setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
 }
-export interface ProjectDocs extends ProjectFiles {
+export interface ProjectDocs extends ProjectFiles, FileMetaDataProps {
   mode: string
   loadedFiles?: boolean
   bpFiles?: ProjectFile[]
   project?: ProjectTypeApi
+  errors?: Array<{ id: number; message: string } | null>
+  allFileErrors?: { message: string }[]
 }
 
 export interface ProjectVersions {
@@ -214,8 +244,11 @@ export interface ProjectVersions {
   title: string
   version: number
   final_version_id: number
+  submission_status: string
   created_by: string
   date_created: string
+  meeting: number | null
+  post_excom_meeting: number | null
 }
 
 export interface ProjectData {
@@ -229,24 +262,49 @@ export interface ProjectData {
   }
 }
 
+export interface ProjectTransferData {
+  agency: number | null
+  transfer_meeting: number | null
+  transfer_decision: number | null
+  transfer_excom_provision: string
+  fund_transferred: string | null
+  psc_transferred: string | null
+}
+
+export type SetEnterpriseData<T> = (
+  updater: SetStateAction<T>,
+  fieldName?: string,
+) => void
+
+export type SetProjectData = (
+  updater: SetStateAction<ProjectData>,
+  fieldName?: string,
+) => void
+
+export type SetProjectTranferData = (
+  updater: SetStateAction<ProjectTransferData>,
+  fieldName?: string,
+) => void
+
 export interface ProjectDataProps {
   projectData: ProjectData
-  setProjectData: Dispatch<SetStateAction<ProjectData>>
-  hasSubmitted: boolean
+  setProjectData: SetProjectData
   errors?: { [key: string]: string[] }
 }
 
 export interface ProjectHeader {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
+  trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => Promise<boolean | undefined>
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
   setErrors: (value: { [key: string]: [] }) => void
-  setHasSubmitted: (value: boolean) => void
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
+  filesMetaData?: FileMetaDataType[]
 }
 
 export type ActionButtons = ProjectHeader & {
@@ -254,16 +312,21 @@ export type ActionButtons = ProjectHeader & {
   setIsLoading: (value: boolean) => void
 }
 
-export type ProjectIdentifiersSectionProps = {
+export type ProjectTabSetters = {
+  setCurrentStep?: Dispatch<SetStateAction<number>>
+  setCurrentTab?: Dispatch<SetStateAction<number>>
+}
+
+export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   projectData: ProjectData
-  setProjectData: Dispatch<SetStateAction<ProjectData>>
+  setProjectData: SetProjectData
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
-  setCurrentStep: Dispatch<SetStateAction<number>>
-  setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
-  hasSubmitted: boolean
   mode: string
+  project?: ProjectTypeApi
+  postExComUpdate?: boolean
+  isV3ProjectEditable: boolean
   specificFieldsLoaded: boolean
 }
 
@@ -272,11 +335,12 @@ export type TrancheErrorType = {
   isError: boolean
   tranchesData: RelatedProjectsType[]
   loaded: boolean
+  loading: boolean
 }
 
 export type TrancheErrors = {
   trancheErrors?: TrancheErrorType
-  getTrancheErrors?: () => void
+  getTrancheErrors?: () => Promise<boolean | undefined>
 }
 
 export type RelatedProjectsType = ProjectTypeApi & {
@@ -290,6 +354,7 @@ export type RelatedProjectsSectionType = {
   setData: Dispatch<SetStateAction<AssociatedProjectsType>>
   queryParams: string
   noResultsText: string
+  downloadButton?: ReactNode
 }
 
 export type AssociatedProjectsType = {
@@ -297,63 +362,132 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type EnterpriseType = EnterpriseFundingDetails & {
-  funds_approved: string | null
-  cost_effectiveness_approved: string | null
-} & {
-  ods_odp: EnterpriseSubstanceDetails[]
-} & {
-  enterprise: EnterpriseOverview & EnterpriseRemarks & { id: number | null }
-}
+export type PEnterpriseType = EnterpriseDetails &
+  EnterpriseSubstanceFields &
+  EnterpriseFundingDetails &
+  EnterpriseRemarks & {
+    id: number | null
+    status: string
+    enterprise: EnterpriseType
+    ods_odp: EnterpriseSubstanceDetails[]
+  }
 
-export interface EnterpriseData {
-  overview: EnterpriseOverview
+export interface PEnterpriseData {
+  overview: EnterpriseOverview & { id: number | null; status?: string }
+  details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
+  substance_fields: EnterpriseSubstanceFields
   funding_details: EnterpriseFundingDetails
   remarks: EnterpriseRemarks
 }
 
-export interface EnterpriseDataProps {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-  hasSubmitted: boolean
-  errors?: { [key: string]: string[] }
+export type PEnterpriseDataType = {
+  enterpriseData: PEnterpriseData
+  setEnterpriseData: SetEnterpriseData<PEnterpriseData>
+  enterprise?: PEnterpriseType
 }
+
+export type EnterpriseDataType = {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: SetEnterpriseData<EnterpriseOverview>
+  enterprise?: EnterpriseType
+}
+
+export type EnterprisesCommonProps = {
+  errors: { [key: string]: string[] }
+}
+
+export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
+
+export type EnterpriseDataProps = EnterpriseDataType &
+  EnterprisesCommonProps & { mode: string }
+
 export interface EnterpriseOverview {
   name: string
   country: number | null
   location: string
+  stage: string
+  sector: number | null
+  subsector: number | null
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
+  revision: string | null
+  date_of_revision: string | null
+  linkStatus?: string
+}
+
+export interface EnterpriseDetails {
+  agency: number | null
+  project_type: number | null
+  planned_completion_date: string | null
+  actual_completion_date: string | null
+  project_duration: string | null
+  date_of_approval: string | null
+  meeting: number | null
+  excom_provision: string
+  date_of_report: string | null
+}
+
+export type EnterpriseType = EnterpriseOverview & {
+  id: number
+  status: string
+  code: string
 }
 
 export interface EnterpriseSubstanceDetails {
   ods_substance: number | null
   ods_blend: number | null
-  phase_out_mt: string | null
-  ods_replacement: string
-  ods_replacement_phase_in: string | null
+  consumption: string | null
+  selected_alternative: string
+  chemical_phased_in: string | null
+}
+
+export interface EnterpriseSubstanceFields {
+  chemical_phased_out: string | null
+  impact: string | null
 }
 
 export interface EnterpriseFundingDetails {
   capital_cost_approved: string | null
   operating_cost_approved: string | null
   funds_disbursed: string | null
+  funds_approved: string | null
+  cost_effectiveness_approved: string | null
+  capital_cost_disbursed: string | null
+  operating_cost_disbursed: string | null
+  cost_effectiveness_actual: string | null
+  co_financing_planned: string | null
+  co_financing_actual: string | null
+  funds_transferred: string | null
 }
 
 export interface EnterpriseRemarks {
-  remarks: string
+  agency_remarks: string
+  secretariat_remarks: string
 }
-
-export interface EnterpriseHeader {
-  enterpriseData: EnterpriseData
+export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
-  setHasSubmitted: (value: boolean) => void
-  setErrors: (value: { [key: string]: [] }) => void
+  setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }
 
-export type EnterpriseActionButtons = EnterpriseHeader & {
+export type EnterpriseActionButtons = EnterpriseHeaderProps & {
   setIsLoading: (value: boolean) => void
+}
+
+export interface BpDataProps {
+  hasBpData: boolean
+  bpDataLoading: boolean
+}
+
+export interface FileMetaDataType {
+  id: number | null
+  name: string
+  type: string | null
+}
+
+export interface FileMetaDataProps {
+  filesMetaData?: FileMetaDataType[]
+  setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
 }

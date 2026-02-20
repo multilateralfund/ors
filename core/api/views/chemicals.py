@@ -17,6 +17,7 @@ from core.api.serializers.chemicals import (
 from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
 from core.models.group import Group
+from core.models.project import Project
 from core.models.substance import Substance
 from core.models.usage import ExcludedUsage
 
@@ -108,7 +109,19 @@ class SubstancesListView(ChemicalBaseListView):
         )
         if not include_user_substances:
             queryset = queryset.filter(created_by__isnull=True)
-
+        if self.request.query_params.get("filter_by_project", None):
+            project = Project.objects.filter(
+                id=self.request.query_params.get("filter_by_project")
+            ).first()
+            if project:
+                group_ids = (
+                    project.cluster.annex_groups.values_list("id", flat=True) or None
+                )
+                queryset = queryset.filter_project_accepted_substances(
+                    group_ids=group_ids
+                )
+            else:
+                queryset = queryset.none()
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -137,6 +150,12 @@ class SubstancesListView(ChemicalBaseListView):
                 openapi.IN_QUERY,
                 description="Add excluded usages ids list to the substances",
                 type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "filter_by_project",
+                openapi.IN_QUERY,
+                description="Include only substances of that are part of the project's cluster accepted annex groups.",
+                type=openapi.TYPE_INTEGER,
             ),
             openapi.Parameter(
                 "for_year",
@@ -199,7 +218,9 @@ class BlendsListView(ChemicalBaseListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         # do not list legacy blends
-        queryset = queryset.exclude(is_legacy=True)
+        queryset = queryset.exclude(is_legacy=True).prefetch_related(
+            "components__substance__group",
+        )
 
         return queryset.order_by("sort_order")
 
@@ -218,6 +239,14 @@ class BlendsListView(ChemicalBaseListView):
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
+                "filter_by_project",
+                openapi.IN_QUERY,
+                description="""
+                    Include only blends that have at least one substance
+                    in their composition of the project's cluster accepted annex groups.""",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
                 "for_year",
                 openapi.IN_QUERY,
                 description=(
@@ -233,9 +262,26 @@ class BlendsListView(ChemicalBaseListView):
         if request.query_params.get("limit", None):
             return super().get(request, *args, **kwargs)
 
-        # we need to corectly sort the blends
-        blend_list = list(self.filter_queryset(self.get_queryset()).all())
+        # if filter_by_project is provided, filter blends that have at least one substance in their composition
+        # of the project's cluster accepted annex groups
+        if self.request.query_params.get("filter_by_project", None):
+            project = Project.objects.filter(
+                id=self.request.query_params.get("filter_by_project")
+            ).first()
+            if project:
+                group_ids = (
+                    project.cluster.annex_groups.values_list("id", flat=True) or None
+                )
+                blends_queryset = Blend.objects.all().filter_project_accepted_blends(
+                    group_ids=group_ids
+                )
+            else:
+                blends_queryset = self.get_queryset().none()
+        else:
+            blends_queryset = self.get_queryset()
 
+        # we need to corectly sort the blends
+        blend_list = list(self.filter_queryset(blends_queryset).all())
         blend_list.sort(
             key=lambda x: (
                 ("aaa", float("inf") if x.sort_order is None else x.sort_order)

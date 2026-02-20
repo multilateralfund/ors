@@ -1,44 +1,78 @@
-import { useContext } from 'react'
-
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { NavigationButton } from '../HelperComponents'
 import { FilesViewer } from './FilesViewer'
-import { ProjectFile, ProjectFiles, ProjectTypeApi } from '../interfaces'
+import {
+  FileMetaDataProps,
+  ProjectFile,
+  ProjectFiles,
+  ProjectTabSetters,
+  ProjectTypeApi,
+} from '../interfaces'
 
 const ProjectDocumentation = ({
-  files,
-  setFiles,
   projectFiles = [],
   mode,
-  project,
-  loadedFiles,
-}: ProjectFiles & {
-  projectFiles?: ProjectFile[]
-  mode: string
-  project?: ProjectTypeApi
-  loadedFiles?: boolean
-}) => {
-  const { canUpdateProjects } = useContext(PermissionsContext)
-
+  setCurrentTab,
+  nextStep,
+  hasNextStep,
+  isNextButtonDisabled,
+  disableV3Edit,
+  ...rest
+}: ProjectFiles &
+  ProjectTabSetters &
+  FileMetaDataProps & {
+    projectFiles?: ProjectFile[]
+    mode: string
+    project?: ProjectTypeApi
+    loadedFiles?: boolean
+    nextStep?: number
+    hasNextStep?: boolean
+    isNextButtonDisabled?: boolean
+    errors?: Array<{ id: number; message: string } | null>
+    allFileErrors?: { message: string }[]
+    disableV3Edit?: boolean
+  }) => {
   return (
-    <div className="flex w-full flex-col gap-4">
-      <FilesViewer
-        {...{ files, setFiles, mode, project, loadedFiles }}
-        bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
-      />
-
-      {mode !== 'view' && canUpdateProjects && (
-        <FileInput
-          {...{ files, setFiles }}
-          extensionsList="Allowed files extensions: .pdf, .doc, .docx"
-          label="Upload completed template and any supporting documentation"
-          value=""
-          clearable={false}
-          inputValue={[]}
-          accept=".pdf,.doc,.docx"
+    <>
+      <div className="flex w-full flex-col gap-4">
+        <FilesViewer
+          {...{ mode, ...rest }}
+          bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
         />
+
+        {mode !== 'view' && !disableV3Edit && (
+          <FileInput
+            {...rest}
+            extensionsList="Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .png, .jpg, .jpeg, .gif"
+            label={
+              mode === 'transfer'
+                ? 'Upload file attachments'
+                : 'Upload completed template and any supporting documentation'
+            }
+            value=""
+            mode={mode}
+            clearable={false}
+            inputValue={[]}
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg,.gif"
+          />
+        )}
+      </div>
+      {setCurrentTab && nextStep && (
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NavigationButton
+            nextTab={nextStep - 1}
+            type="previous"
+            setCurrentTab={setCurrentTab}
+          />
+          {hasNextStep && (
+            <NavigationButton
+              isBtnDisabled={isNextButtonDisabled}
+              {...{ setCurrentTab }}
+            />
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }
 

@@ -1,7 +1,8 @@
-from core.api.serializers.project_metadata import ProjectFieldListSerializer
-from core.models.project_metadata import ProjectSpecificFields, ProjectField
 from rest_framework import generics, mixins, status
 from rest_framework.response import Response
+
+from core.api.serializers.project_metadata import ProjectFieldListSerializer
+from core.models.project_metadata import ProjectField, ProjectSpecificFields
 
 
 class ProjectFieldView(mixins.ListModelMixin, generics.GenericAPIView):
@@ -9,7 +10,8 @@ class ProjectFieldView(mixins.ListModelMixin, generics.GenericAPIView):
     List project fields
     """
 
-    queryset = ProjectField.objects.all()
+    def get_queryset(self):
+        return ProjectField.objects.get_visible_fields_for_user(self.request.user)
 
     def get(self, request, *args, **kwargs):
         """

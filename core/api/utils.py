@@ -7,13 +7,14 @@ from typing import TypedDict
 import django.core.exceptions
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
-from django.db.models import Exists
-from django.db.models import OuterRef
+from django.db.models import Exists, OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 
 from django_clamd.validators import validate_file_infection
 from openpyxl.worksheet.page import PageMargins
+
+from core.models import AnnualProgressReport, AnnualAgencyProjectReport
 
 User = get_user_model()
 
@@ -36,7 +37,7 @@ SECTION_GROUP_MAPPING_12_18 = [
     "Annex E, Group I",
 ]
 
-SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
+SUBMISSION_STATUSE_CODES = ["NA", "UNK"]
 
 PROJECT_SECTOR_TYPE_MAPPING = {
     # sector code: available project types
@@ -155,3 +156,60 @@ def validate_files(files: list[ContentFile]) -> FilesValidatorError | None:
         if validation_result:
             errors.append(validation_result)
     return {"validation_error": "Virus found!", "files": errors} if errors else None
+
+
+def get_latest_endorsed_year():
+    latest = (
+        AnnualProgressReport.objects.filter(endorsed=True).order_by("-year").first()
+    )
+    return latest.year if latest else None
+
+
+def get_unendorsed_years():
+    return list(
+        AnnualProgressReport.objects.filter(endorsed=False)
+        .values_list("year", flat=True)
+        .order_by("year")
+    )
+
+
+def get_previous_year_project_reports(agency_id, year):
+    previous_year = year - 1
+
+    try:
+        previous_agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report__year=previous_year, agency_id=agency_id
+        )
+    except AnnualAgencyProjectReport.DoesNotExist:
+        return {}
+
+    reports_map = {}
+    previous_reports = previous_agency_report.project_reports.select_related(
+        "project"
+    ).all()
+
+    for report in previous_reports:
+        key = (report.project.code, agency_id)
+        reports_map[key] = {
+            "status": report.status,
+            "date_first_disbursement": report.date_first_disbursement,
+            "date_planned_completion": report.date_planned_completion,
+            "date_actual_completion": report.date_actual_completion,
+            "date_financial_completion": report.date_financial_completion,
+            "consumption_phased_out_odp": report.consumption_phased_out_odp,
+            "consumption_phased_out_co2": report.consumption_phased_out_co2,
+            "production_phased_out_odp": report.production_phased_out_odp,
+            "production_phased_out_co2": report.production_phased_out_co2,
+            "funds_disbursed": report.funds_disbursed,
+            "funds_committed": report.funds_committed,
+            "estimated_disbursement_current_year": report.estimated_disbursement_current_year,
+            "support_cost_disbursed": report.support_cost_disbursed,
+            "support_cost_committed": report.support_cost_committed,
+            "disbursements_made_to_final_beneficiaries": report.disbursements_made_to_final_beneficiaries,
+            "funds_advanced": report.funds_advanced,
+            "last_year_remarks": report.last_year_remarks,
+            "current_year_remarks": report.current_year_remarks,
+            "gender_policy": report.gender_policy,
+        }
+
+    return reports_map

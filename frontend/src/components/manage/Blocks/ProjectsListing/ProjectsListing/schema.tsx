@@ -1,14 +1,15 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { tableColumns } from '../constants'
+import ProjectCard from './ProjectCard'
+import { menusDefaultProjectData, tableColumns } from '../constants'
 import { ListingProjectData } from '../interfaces'
 import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { FiEdit } from 'react-icons/fi'
-import { filter, isNil } from 'lodash'
+import { isNil } from 'lodash'
 import {
   CellClassParams,
   ICellRendererParams,
@@ -23,17 +24,27 @@ const getColumnDefs = (
   setProjectData?: (data: ListingProjectData) => void,
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
+  sortable?: boolean,
 ) => {
   const {
     canViewProjects,
     canAssociateProjects,
     canUpdateProjects,
     canEditProjects,
+    canEditApprovedProjects,
+    canEditProjectEnterprise,
   } = useContext(PermissionsContext)
 
+  const [projectCardModalId, setProjectCardModalId] = useState<number | null>(
+    null,
+  )
+
   const getCellClass = (data: any) => {
-    const projectTypeClass =
-      data.isOnly !== false ? 'single-project' : 'multiple-projects'
+    const projectTypeClass = data.isMetaproject
+      ? 'metaproject'
+      : data.isOnly !== false
+        ? 'single-project'
+        : 'multiple-projects'
 
     return cx('!pl-0 ag-text-center', projectTypeClass, {
       'first-project': data.isFirst,
@@ -47,33 +58,26 @@ const getColumnDefs = (
             {
               minWidth: 40,
               maxWidth: 40,
+              resizable: false,
               cellClass: (props: CellClassParams) =>
                 `!pl-0 ag-text-center ${getCellClass(props.data)}`,
-              cellRenderer: (props: ICellRendererParams) =>
-                props.data.isFirst !== false && (
-                  <Checkbox
-                    checked={
-                      setAssociationIds
-                        ? associationIds.includes(props.data.id)
-                        : true
+              cellRenderer: (props: ICellRendererParams) => (
+                <Checkbox
+                  checked={
+                    setAssociationIds
+                      ? associationIds.includes(props.data.id)
+                      : true
+                  }
+                  onChange={(event) => {
+                    if (setAssociationIds) {
+                      setAssociationIds(
+                        event.target.checked ? [props.data.id] : [],
+                      )
                     }
-                    onChange={(event) => {
-                      if (setAssociationIds) {
-                        setAssociationIds(
-                          event.target.checked
-                            ? [...associationIds, props.data.id]
-                            : filter(
-                                associationIds,
-                                (id) => id !== props.data.id,
-                              ),
-                        )
-                      }
-                    }}
-                    sx={{
-                      color: 'black',
-                    }}
-                  />
-                ),
+                  }}
+                  sx={{ color: 'black' }}
+                />
+              ),
             },
           ]
         : []),
@@ -100,13 +104,16 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 ) : (
-                  mode !== 'association-listing' && (
-                    <div className="w-4 min-w-4" />
-                  )
+                  mode !== 'association-listing' &&
+                  canEditProjects && <div className="w-4 min-w-4" />
                 )}
-                {projectId !== undefined &&
+                {mode === 'listing' &&
+                  projectId !== undefined &&
                   setProjectData &&
-                  (canAssociateProjects || canUpdateProjects) && (
+                  (canAssociateProjects ||
+                    canUpdateProjects ||
+                    canEditApprovedProjects ||
+                    canEditProjectEnterprise) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {
@@ -117,12 +124,15 @@ const getColumnDefs = (
                                 projectTitle: props.data.title,
                                 projectSubmissionStatus:
                                   props.data.submission_status,
+                                projectStatus: props.data.status,
+                                projectMetaprojectId:
+                                  props.data.meta_project_id,
+                                projectCode: props.data.code,
+                                projectEditable:
+                                  props.data.editable ||
+                                  props.data.editable_for_actual_fields,
                               }
-                            : {
-                                projectId: null,
-                                projectTitle: '',
-                                projectSubmissionStatus: '',
-                              },
+                            : menusDefaultProjectData,
                         )
                       }}
                       sx={{
@@ -132,25 +142,54 @@ const getColumnDefs = (
                   )}
               </>
             )}
-            <Link
-              className={cx(
-                'ml-2 overflow-hidden truncate whitespace-nowrap',
-                {
-                  'no-underline': !canViewProjects,
-                },
-                {
-                  '!ml-12':
-                    mode === 'association' &&
-                    !associationIds &&
-                    !setAssociationIds,
-                },
-              )}
-              href={
-                canViewProjects ? `/projects-listing/${props.data.id}` : null
-              }
-            >
-              {props.value}
-            </Link>
+            {mode === 'listing' && setProjectData ? (
+              <>
+                <div
+                  className={cx(
+                    'ml-2 cursor-pointer overflow-hidden truncate whitespace-nowrap text-inherit underline',
+                    {
+                      'no-underline': !canViewProjects,
+                    },
+                  )}
+                  onClick={() => {
+                    if (canViewProjects) {
+                      setProjectCardModalId(props.data.id)
+                    }
+                  }}
+                >
+                  {props.value}
+                </div>
+                {props.data.id === projectCardModalId && (
+                  <ProjectCard
+                    isModalOpen={props.data.id === projectCardModalId}
+                    setIsModalOpen={setProjectCardModalId}
+                    project={props.data}
+                  />
+                )}
+              </>
+            ) : (
+              <Link
+                className={cx(
+                  'ml-2 overflow-hidden truncate whitespace-nowrap',
+                  {
+                    'no-underline': !(canViewProjects && props.data.id),
+                  },
+                  {
+                    '!ml-12':
+                      mode === 'association' &&
+                      !associationIds &&
+                      !setAssociationIds,
+                  },
+                )}
+                href={
+                  canViewProjects && props.data.id
+                    ? `/projects-listing/${props.data.id}`
+                    : null
+                }
+              >
+                <span>{props.value}</span>
+              </Link>
+            )}
           </div>
         ),
       },
@@ -160,7 +199,7 @@ const getColumnDefs = (
         tooltipField: 'submission_status',
       },
       {
-        headerName: tableColumns.status,
+        headerName: tableColumns.project_status,
         field: 'status',
         tooltipField: 'status',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
@@ -175,8 +214,8 @@ const getColumnDefs = (
       },
       {
         headerName: tableColumns.metacode,
-        field: 'metaproject_new_code',
-        tooltipField: 'metaproject_new_code',
+        field: 'metacode',
+        tooltipField: 'metacode',
       },
       {
         headerName: tableColumns.code,
@@ -227,13 +266,31 @@ const getColumnDefs = (
             minimumFractionDigits: 2,
           }),
       },
+      ...(mode === 'association-listing'
+        ? [
+            {
+              headerName: tableColumns.support_cost_psc,
+              field: 'support_cost_psc',
+              minWidth: 120,
+              valueGetter: (params: ValueGetterParams) =>
+                !isNil(params.data.support_cost_psc)
+                  ? '$' + formatNumberColumns(params, 'support_cost_psc')
+                  : '',
+              tooltipValueGetter: (params: ITooltipParams) =>
+                formatNumberColumns(params, 'support_cost_psc', {
+                  maximumFractionDigits: 10,
+                  minimumFractionDigits: 2,
+                }),
+            },
+          ]
+        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: mode === 'listing',
+      sortable: mode === 'listing' || !!sortable,
     },
   }
 }

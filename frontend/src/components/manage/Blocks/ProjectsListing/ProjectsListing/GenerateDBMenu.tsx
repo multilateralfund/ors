@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 
 import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -6,23 +6,80 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { Menu, MenuItem } from '@mui/material'
 import { MdExpandMore } from 'react-icons/md'
 import { GoDatabase } from 'react-icons/go'
+import { formatApiUrl } from '@ors/helpers'
+import { ListingProjectData } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
-const GenerateDBMenu = () => {
-  const { canViewProjects } = useContext(PermissionsContext)
+const GenerateDBMenu = ({
+  projectData,
+}: {
+  projectData: ListingProjectData
+}) => {
+  const { canViewProjects, canApproveProjects, isMlfsUser } =
+    useContext(PermissionsContext)
 
-  const menuItems = [
-    { title: 'Funding amounts', url: null },
-    {
-      title: 'Project warehouse',
-      url: '/projects-listing/export',
-      permissions: [canViewProjects],
-    },
-    { title: 'MYA warehouse', url: null },
-    { title: 'ExCom provisions', url: null },
-    { title: 'Enterprise warehouse', url: null },
-    { title: 'Projects for blanket and individual consideration', url: null },
-    { title: 'Report on associated projects', url: null },
-  ]
+  const menuItems = useMemo(
+    () => [
+      {
+        title: 'MYA warehouse',
+        url: '/projects-listing/export/mya',
+        permissions: [canViewProjects],
+      },
+      {
+        title: 'Projects warehouse',
+        url: '/projects-listing/export/all',
+        permissions: [canViewProjects],
+      },
+      {
+        title: 'Approval summary',
+        url: '/projects-listing/approval-summary',
+        permissions: [isMlfsUser && canApproveProjects],
+      },
+      {
+        title: 'Summary of projects',
+        url: '/projects-listing/summary-of-projects',
+        permissions: [isMlfsUser && canApproveProjects],
+      },
+      {
+        title: 'Blanket approval details',
+        url: '/projects-listing/blanket-approval-details',
+        permissions: [isMlfsUser && canViewProjects],
+      },
+      {
+        title: 'Compare versions',
+        url: '/projects-listing/compare-versions',
+        permissions: [canViewProjects],
+      },
+      {
+        title: 'Enterprise warehouse',
+        url: null,
+        permissions: [isMlfsUser && canViewProjects],
+      },
+      {
+        title: 'Associated projects',
+        url: projectData.projectId
+          ? formatApiUrl(
+              `/api/projects/v2/export_associated_projects?project_id=${projectData.projectId}`,
+            )
+          : null,
+        onClick: (evt: MouseEvent) => {
+          const proceed = confirm(
+            `Do you want to generate the report on associated projects for ${projectData.projectCode}?`,
+          )
+          if (!proceed) {
+            evt.preventDefault()
+          }
+        },
+        permissions: [canViewProjects],
+      },
+    ],
+    [
+      canApproveProjects,
+      canViewProjects,
+      isMlfsUser,
+      projectData.projectCode,
+      projectData.projectId,
+    ],
+  )
 
   const filteredMenuItems = menuItems.filter(
     ({ permissions }) => !permissions || permissions.some(Boolean),
@@ -81,16 +138,18 @@ const GenerateDBMenu = () => {
           },
         }}
       >
-        {filteredMenuItems.map(({ url, title }) => (
+        {filteredMenuItems.map(({ url, title, onClick }) => (
           <MenuItem
-            className="whitespace-normal rounded-none py-2 pl-3.5 pr-7 hover:bg-white"
+            key={title}
+            className="whitespace-normal rounded-none p-0 hover:bg-white"
             onClick={handleClose}
             disabled={!url}
           >
             <CustomLink
-              className="break-words text-lg normal-case leading-tight tracking-[0.05em] no-underline"
+              className="h-full w-full break-words py-2 pl-3.5 pr-7 text-lg normal-case leading-tight tracking-[0.05em] no-underline"
               href={url}
               variant="contained"
+              onClick={onClick}
             >
               {title}
             </CustomLink>

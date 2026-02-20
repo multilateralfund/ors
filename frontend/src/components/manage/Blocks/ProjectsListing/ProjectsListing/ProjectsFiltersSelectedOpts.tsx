@@ -1,115 +1,102 @@
 import { useContext } from 'react'
 
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { displaySelectedOption } from '../HelperComponents'
+import { displaySearchTerm, displaySelectedOption } from '../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../utils'
+import { initialFilters } from '../constants'
 
 import { Typography } from '@mui/material'
-import { IoClose } from 'react-icons/io5'
 import { map } from 'lodash'
 
 export const initialParams = {
-  country_id: [],
   agency_id: [],
   cluster_id: [],
   project_type_id: [],
   sector_id: [],
   meeting_id: [],
-  submission_status_id: [],
   status_id: [],
+  blanket_or_individual_consideration: [],
   search: '',
 }
 
 const ProjectsFiltersSelectedOpts = ({
   mode,
-  commonSlice,
-  projectSlice,
-  meetings,
+  filterOptions = {},
   form,
-  initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+  const { canViewMetainfoProjects, canViewSectorsSubsectors, isMlfsUser } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
-
-  const { agencies, countries } = commonSlice
-  const { submission_statuses, statuses } = projectSlice
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(countries.data),
+      entities: formatEntity(filterOptions?.country),
       entityIdentifier: 'country_id',
       hasPermissions: mode === 'listing',
     },
     {
-      entities: formatEntity(agencies.data),
+      entities: formatEntity(filterOptions?.agency),
       entityIdentifier: 'agency_id',
       hasPermissions: true,
     },
     {
-      entities: formatEntity(clusters),
+      entities: formatEntity(filterOptions?.cluster),
       entityIdentifier: 'cluster_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(project_types),
+      entities: formatEntity(filterOptions?.project_type),
       entityIdentifier: 'project_type_id',
       hasPermissions: canViewMetainfoProjects,
     },
     {
-      entities: formatEntity(sectors),
+      entities: formatEntity(filterOptions?.sector),
       entityIdentifier: 'sector_id',
       hasPermissions: canViewSectorsSubsectors,
     },
     {
-      entities: formatEntity(meetings, 'value'),
+      entities: formatEntity(filterOptions?.meeting, 'value'),
       entityIdentifier: 'meeting_id',
       hasPermissions: true,
       field: 'value',
     },
     {
-      entities: formatEntity(submission_statuses.data),
+      entities: formatEntity(filterOptions?.submission_status),
       entityIdentifier: 'submission_status_id',
-      hasPermissions: canViewMetainfoProjects,
+      hasPermissions: canViewMetainfoProjects && mode === 'listing',
     },
     {
-      entities: formatEntity(statuses.data),
+      entities: formatEntity(filterOptions?.status),
       entityIdentifier: 'status_id',
       hasPermissions: canViewMetainfoProjects,
     },
+    {
+      entities: formatEntity(
+        filterOptions?.blanket_approval_individual_consideration,
+      ),
+      entityIdentifier: 'blanket_or_individual_consideration',
+      hasPermissions: isMlfsUser,
+    },
   ]
 
-  const displaySearchTerm = () =>
-    !!filters.search && (
-      <Typography
-        className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
-        component="p"
-        variant="h6"
-      >
-        {filters.search}
-        <IoClose
-          className="cursor-pointer"
-          size={18}
-          color="#666"
-          onClick={() => {
-            form.current.search.value = ''
-            handleParamsChange({ offset: 0, search: '' })
-            handleFilterChange({ search: '' })
-          }}
-        />
-      </Typography>
-    )
+  const currentInitialParams =
+    mode === 'listing'
+      ? { ...initialParams, submission_status_id: [], country_id: [] }
+      : initialParams
 
   return (
     (areFiltersApplied || filters?.search) && (
-      <div className="mt-[6px] flex flex-wrap gap-2">
-        {displaySearchTerm()}
+      <div className="mt-1.5 flex flex-wrap gap-2">
+        {displaySearchTerm(
+          form,
+          filters,
+          handleFilterChange,
+          handleParamsChange,
+        )}
         {map(
           filterSelectedOpts,
           (selectedOpt) =>
@@ -130,8 +117,8 @@ const ProjectsFiltersSelectedOpts = ({
           component="span"
           onClick={() => {
             form.current.search.value = ''
-            handleParamsChange({ offset: 0, ...initialParams })
-            handleFilterChange({ ...initialFilters, ...initialParams })
+            handleParamsChange({ offset: 0, ...currentInitialParams })
+            handleFilterChange({ ...initialFilters, ...currentInitialParams })
           }}
         >
           Clear All

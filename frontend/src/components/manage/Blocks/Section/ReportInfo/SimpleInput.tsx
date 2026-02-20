@@ -1,3 +1,4 @@
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import cx from 'classnames'
 
 const SimpleInput = ({
@@ -6,6 +7,7 @@ const SimpleInput = ({
   defaultValue,
   disabled = false,
   label,
+  onFocus,
   onChange,
   type,
   value,
@@ -16,6 +18,7 @@ const SimpleInput = ({
   disabled?: boolean
   id: string
   label: string
+  onFocus?: (event: any) => void
   onChange?: (event: any) => void
   type: string
   value?: any
@@ -35,14 +38,16 @@ const SimpleInput = ({
         id={id}
         name={id}
         className={cx(
-          'text-md block h-10 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500 disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500',
+          'block h-10 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-base text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500 disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500',
           className,
         )}
         autoComplete="off"
+        style={STYLE}
         defaultValue={defaultValue}
         disabled={disabled}
         type={type}
         value={value}
+        onFocus={onFocus}
         onChange={onChange}
       />
     </div>

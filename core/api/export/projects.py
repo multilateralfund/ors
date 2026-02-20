@@ -17,8 +17,8 @@ class ProjectWriter(WriteOnlyBase):
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
-                "id": "metaproject_code",
-                "headerName": "Metaproject Code",
+                "id": "metacode",
+                "headerName": "Metacode",
             },
             {
                 "id": "cluster",

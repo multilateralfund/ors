@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { initialFilters } from '../constants'
 import { PListingProps } from '../interfaces'
@@ -18,6 +19,7 @@ export default function PListingProjects({
   const [filters, setFilters] = useState({ ...initialFilters })
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
+  const projectFilters = useGetProjectFilters(filters)
   const projects = useGetProjects(initialFilters)
   const { loading, setParams } = projects
 
@@ -31,7 +33,13 @@ export default function PListingProjects({
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PListingFilters
             mode="listing"
-            {...{ form, filters, initialFilters, setFilters, setParams }}
+            {...{
+              form,
+              filters,
+              setFilters,
+              setParams,
+              projectFilters,
+            }}
           />
           {tableToolbar}
         </div>

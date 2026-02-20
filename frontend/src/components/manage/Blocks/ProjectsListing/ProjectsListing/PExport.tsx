@@ -6,25 +6,38 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
+import { useGetProjectFilters } from '../hooks/useGetProjectFilters'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { formatApiUrl } from '@ors/helpers'
 import { initialFilters } from '../constants'
 import Link from '@ors/components/ui/Link/Link'
 
-export default function PExport() {
+export default function PExport({
+  export_type,
+}: {
+  export_type: 'mya' | 'all'
+}) {
   const form = useRef<any>()
 
   const { canViewProjects } = useContext(PermissionsContext)
 
   const downloadUrlBase = '/api/projects/v2/export'
 
-  const projects = useGetProjects(initialFilters)
-  const { loading, params, setParams } = projects
+  const firstLoadFilters = useMemo(() => {
+    if (export_type === 'all') {
+      return { ...initialFilters, really_all: true }
+    } else if (export_type === 'mya') {
+      return { ...initialFilters, category: 'Multi-year agreement' }
+    }
+    return { ...initialFilters }
+  }, [export_type])
 
-  const [filters, setFilters] = useState<Record<string, any>>({
-    ...initialFilters,
-  })
+  const [filters, setFilters] = useState<Record<string, any>>(firstLoadFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
+
+  const projectFilters = useGetProjectFilters(filters)
+  const projects = useGetProjects(firstLoadFilters)
+  const { loading, params, setParams } = projects
 
   const downloadUrl = useMemo(() => {
     const encodedParams = new URLSearchParams(params).toString()
@@ -42,11 +55,18 @@ export default function PExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <PListingFilters
             mode="listing"
-            {...{ form, filters, initialFilters, setFilters, setParams }}
+            {...{
+              form,
+              filters,
+              firstLoadFilters,
+              setFilters,
+              setParams,
+              projectFilters,
+            }}
           />
           {canViewProjects && (
             <Link
-              className="mb-0.5 px-4 py-2 text-lg uppercase"
+              className="mb-auto px-4 py-2 text-lg uppercase md:mb-0.5"
               color="secondary"
               href={downloadUrl}
               variant="contained"

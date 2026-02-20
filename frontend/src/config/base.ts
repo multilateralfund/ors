@@ -12,6 +12,10 @@ export type BaseConfig = {
     host?: string
     protocol?: string
   }
+  sentry?: {
+    dsn?: string
+    environment?: string
+  }
 }
 
 const baseConfig: BaseConfig = {
@@ -24,6 +28,10 @@ const baseConfig: BaseConfig = {
     host,
     protocol,
   },
+  sentry: {
+    dsn: import.meta.env.VITE_PUBLIC_SENTRY_DSN,
+    environment: import.meta.env.VITE_PUBLIC_SENTRY_ENVIRONMENT,
+  }
 }
 
 export default baseConfig

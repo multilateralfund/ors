@@ -330,7 +330,7 @@ export function usePListingGridOptions() {
                 : find(projectSlice.statuses.data, { id: option })?.name || ''
             },
             options: filter(projectSlice.statuses.data, (item) => {
-              return item.code !== 'NEWSUB'
+              return item.code !== 'NA'
             }),
           },
           cellRenderer: (props: any) => {

@@ -1,7 +1,8 @@
+import json
 import pytest
 from django.urls import reverse
+from decimal import Decimal
 from rest_framework.test import APIClient
-
 from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 
 from core.api.tests.base import BaseTest
@@ -9,182 +10,33 @@ from core.api.tests.factories import (
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
-    ProjectFactory,
-    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
-    ProjectSubSectorFactory,
     SubstanceFactory,
 )
 from core.models import BPActivity
-from core.models.project import MetaProject, Project, ProjectFile
-from core.utils import (
-    get_project_sub_code,
-    get_meta_project_code,
-    get_meta_project_new_code,
-)
+from core.models.project import Project, ProjectFile
 
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C0302,C0415,C8008,W0221,R0912,R0913,R0913,R0914,R0915,W0613,
 
 
-@pytest.fixture(name="_setup_project_list")
-def setup_project_list(
-    country_ro,
-    agency,
-    new_agency,
-    new_country,
-    project_type,
-    new_project_type,
-    project_status,
-    submitted_status,
-    project_draft_status,
-    project_submitted_status,
-    project_approved_status,
-    subsector,
-    meeting,
-    new_meeting,
-    sector,
-    new_sector,
-    project_cluster_kpp,
-    project_cluster_kip,
-):
-    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
-    projects = []
-    projects_data = [
-        {
-            "country": country_ro,
-            "agency": agency,
-            "project_type": project_type,
-            "status": project_status,
-            "submission_status": project_draft_status,
-            "sector": sector,
-            "subsectors": [subsector],
-            "substance_type": "HCFC",
-            "meeting": meeting,
-            "cluster": project_cluster_kpp,
-        },
-        {
-            "country": new_country,
-            "agency": new_agency,
-            "project_type": new_project_type,
-            "status": submitted_status,
-            "submission_status": project_submitted_status,
-            "sector": new_sector,
-            "subsectors": [new_subsector],
-            "substance_type": "CFC",
-            "meeting": new_meeting,
-            "cluster": project_cluster_kip,
-        },
-    ]
-
-    for i in range(4):
-        for project_data in projects_data:
-            project_data["code"] = get_project_sub_code(
-                project_data["country"],
-                project_data["cluster"],
-                project_data["agency"],
-                project_data["project_type"],
-                project_data["sector"],
-                project_data["meeting"],
-                project_data["meeting"],
-                i + 1,
-            )
-
-            ProjectFactory.create(
-                title=f"Project {i}",
-                serial_number=i + 1,
-                date_received=f"2020-01-{i + 1}",
-                **project_data,
-            )
-
-    # project_without cluster
-    proj_data = projects_data[0].copy()
-    proj_data.pop("cluster")
-    proj_data["code"] = get_project_sub_code(
-        proj_data["country"],
-        None,
-        project_data["agency"],
-        project_data["project_type"],
-        project_data["sector"],
-        project_data["meeting"],
-        project_data["meeting"],
-        25,
-    )
-    projects.append(
-        ProjectFactory.create(
-            title="Project 25",
-            date_received="2020-01-30",
-            **proj_data,
-        )
-    )
-
-    # project_without sector and subsector
-    proj_data = projects_data[0].copy()
-    proj_data["sector"] = None
-    proj_data["subsectors"] = None
-    proj_data["code"] = get_project_sub_code(
-        proj_data["country"],
-        proj_data["cluster"],
-        project_data["agency"],
-        project_data["project_type"],
-        project_data["sector"],
-        project_data["meeting"],
-        project_data["meeting"],
-        26,
-    )
-    projects.append(
-        ProjectFactory.create(
-            title="Project 26",
-            serial_number=26,
-            date_received="2020-01-30",
-            **proj_data,
-        )
-    )
-
-    proj_data = projects_data[0].copy()
-    proj_data["production"] = True
-
-    projects.append(
-        ProjectFactory.create(
-            title="Project 27",
-            serial_number=27,
-            date_received="2020-01-30",
-            **proj_data,
-        )
-    )
-
-    proj_data["production"] = False
-    proj_data["version"] = 2
-    proj_data["submission_status"] = project_submitted_status
-    projects.append(
-        ProjectFactory.create(
-            title="Project 28",
-            serial_number=28,
-            date_received="2020-01-30",
-            **proj_data,
-        )
-    )
-
-    proj_data["version"] = 3
-    proj_data["submission_status"] = project_approved_status
-    projects.append(
-        ProjectFactory.create(
-            title="Project 29",
-            serial_number=29,
-            date_received="2020-01-30",
-            **proj_data,
-        )
-    )
-
-    return projects
-
-
 @pytest.fixture(name="project_file_url")
 def _project_file_url(project_file):
     return reverse("project-files", args=(project_file.id,))
+
+
+def setup_files(files):
+    metadata = {}
+    for file, file_type in files:
+        metadata[file.name] = file_type
+
+    return {
+        "files": [file.open() for file, _ in files],
+        "metadata": json.dumps(metadata),
+    }
 
 
 @pytest.fixture(name="_setup_project_create")
@@ -196,12 +48,11 @@ def setup_project_create(
     meeting,
     subsector,
     project_cluster_kip,
-    groupA,
+    groupHCFC,
     decision,
 ):
     statuses_dict = [
         {"name": "N/A", "code": "NA"},
-        {"name": "New submission", "code": "NEWSUB"},
     ]
 
     submission_statuses_dict = [
@@ -223,22 +74,21 @@ def setup_project_create(
     )
 
     substA = SubstanceFactory.create(
-        name="SubstanceA", odp=0.02, gwp=0.05, group=groupA
+        name="SubstanceA", odp=0.02, gwp=0.05, group=groupHCFC
     )
     blend = BlendFactory.create(
         name="Blend 1",
+        composition=f"{substA.name}= 0.5",
         sort_order=1,
     )
-
+    blend.components.create(substance=substA, percentage=0.2)
     return {
         "ad_hoc_pcr": True,
+        "aggregated_consumption": Decimal(943),
         "agency": agency.id,
-        "aggregated_consumption": 943.3,
-        "baseline": 43.4,
+        "cost_effectiveness": Decimal(43),
+        "cost_effectiveness_co2": Decimal(54),
         "bp_activity": bp_activity.id,
-        "cost_effectiveness": 43.3,
-        "cost_effectiveness_co2": 54.3,
-        "number_of_production_lines_assisted": 3,
         "cluster": project_cluster_kip.id,
         "country": country_ro.id,
         "description": "Description",
@@ -247,34 +97,28 @@ def setup_project_create(
         "destruction_technology": "D1",
         "excom_provision": "test excom provision",
         "funding_window": "test funding window",
-        "group": groupA.id,
-        "individual_consideration": False,
+        "group": groupHCFC.id,
+        "blanket_or_individual_consideration": None,
         "is_lvc": True,
         "is_sme": False,
         "lead_agency": new_agency.id,
         "meeting": meeting.id,
-        "mya_start_date": "2023-10-01",
-        "mya_end_date": "2024-09-30",
-        "mya_project_funding": 1234.4,
-        "mya_support_cost": 434.2,
-        "number_of_enterprises": 2,
-        "mya_phase_out_co2_eq_t": 948.3,
-        "mya_phase_out_odp_t": 23.2,
-        "mya_phase_out_mt": 3.53,
         "pcr_waived": False,
         "total_number_of_technicians_trained": 32,
         "number_of_female_technicians_trained": 12,
         "total_number_of_trainers_trained": 2,
         "number_of_female_trainers_trained": 4,
+        "number_of_enterprises_assisted": 8,
+        "number_of_enterprises": 16,
         "total_number_of_technicians_certified": 3,
         "number_of_female_technicians_certified": 65,
+        "number_of_production_lines_assisted": 12,
         "number_of_training_institutions_newly_assisted": 34,
         "number_of_tools_sets_distributed": 4,
         "total_number_of_customs_officers_trained": 23,
         "number_of_female_customs_officers_trained": 2,
         "total_number_of_nou_personnel_supported": 2,
         "number_of_female_nou_personnel_supported": 43,
-        "number_of_enterprises_assisted": 43,
         "certification_system_for_technicians": True,
         "operation_of_recovery_and_recycling_scheme": False,
         "operation_of_reclamation_scheme": True,
@@ -304,11 +148,9 @@ def setup_project_create(
         "project_start_date": "2023-10-01",
         "project_type": project_type.id,
         "sector": subsector.sectors.first().id,
-        "starting_point": 543.4,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
         "tranche": 2,
-        "targets": 543.4,
         "title": "test title",
         "total_fund": 2340000,
         "ods_odp": [
@@ -585,26 +427,6 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_date_received_filter(
-        self, secretariat_viewer_user, _setup_project_list
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
-
-        response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
-        assert response.status_code == 200
-        assert len(response.data) == 8
-        for project in response.data:
-            assert project["date_received"] in [
-                "2020-01-03",
-                "2020-01-04",
-                "2020-01-30",
-            ]
-
-        response = self.client.get(self.url, {"date_received_before": "2020-01-01"})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["date_received"] == "2020-01-01"
-
     def test_project_list_search_filter(
         self, secretariat_viewer_user, _setup_project_list
     ):
@@ -728,26 +550,16 @@ class TestCreateProjects(BaseTest):
         fields = [
             "ad_hoc_pcr",
             "aggregated_consumption",
-            "baseline",
             "bp_activity",
             "cost_effectiveness",
             "cost_effectiveness_co2",
-            "number_of_production_lines_assisted",
             "description",
             "date_completion",
             "destruction_technology",
             "excom_provision",
             "funding_window",
-            "individual_consideration",
+            "blanket_or_individual_consideration",
             "is_lvc",
-            "mya_start_date",
-            "mya_end_date",
-            "mya_project_funding",
-            "mya_support_cost",
-            "number_of_enterprises",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
             "pcr_waived",
             "total_number_of_technicians_trained",
             "number_of_female_technicians_trained",
@@ -762,6 +574,8 @@ class TestCreateProjects(BaseTest):
             "total_number_of_nou_personnel_supported",
             "number_of_female_nou_personnel_supported",
             "number_of_enterprises_assisted",
+            "number_of_enterprises",
+            "number_of_production_lines_assisted",
             "certification_system_for_technicians",
             "operation_of_recovery_and_recycling_scheme",
             "operation_of_reclamation_scheme",
@@ -786,16 +600,16 @@ class TestCreateProjects(BaseTest):
             "programme_officer",
             "project_end_date",
             "project_start_date",
-            "starting_point",
             "support_cost_psc",
             "tranche",
-            "targets",
             "title",
             "total_fund",
         ]
         for field in fields:
             if field == "bp_activity":
                 assert response.data[field]["id"] == data[field]
+            elif isinstance(data[field], Decimal):
+                assert Decimal(response.data[field]) == (data[field])
             else:
                 assert response.data[field] == data[field]
 
@@ -844,13 +658,11 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["name"] == sector.name
         assert response.data["sector"]["code"] == sector.code
         assert response.data["is_sme"] == "Non-SME"
-        assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data
         ]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["tranche"] == data["tranche"]
-        assert response.data["targets"] == data["targets"]
         assert response.data["title"] == data["title"]
         assert response.data["total_fund"] == data["total_fund"]
         assert (
@@ -893,7 +705,7 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][1]["sort_order"]
             == data["ods_odp"][1]["sort_order"]
         )
-        assert response.data["status"] == "New submission"
+        assert response.data["status"] == "N/A"
         assert response.data["submission_status"] == "Draft"
 
         assert (
@@ -902,7 +714,6 @@ class TestCreateProjects(BaseTest):
 
         project = Project.objects.get(id=response.data["id"])
         project2.refresh_from_db()
-        assert project.meta_project == project2.meta_project
         assert project.component
         assert project.component == project2.component
 
@@ -955,110 +766,6 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def test_meta_project_creation(
-        self,
-        agency,
-        new_agency,
-        new_country,
-        meeting,
-        country_ro,
-        project_cluster_kpp,
-        project_cluster_kip,
-        project_closed_status,
-        project_ongoing_status,
-        project_type,
-        sector,
-        subsector,
-        admin_user,
-        _setup_project_create,
-    ):
-        data = {
-            "cluster": project_cluster_kip.id,
-            "country": country_ro.id,
-            "meeting": meeting.id,
-            "agency": agency.id,
-            "lead_agency": agency.id,
-            "sector": sector.id,
-            "subsector_ids": [],
-            "project_type": project_type.id,
-            "title": "Meta Project Test",
-            "description": "This is a test meta project",
-        }
-
-        # setup objects
-        meta_project = MetaProjectFactory.create(
-            lead_agency=agency,
-        )
-        project = ProjectFactory.create(
-            title="Project test 1",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_closed_status,
-        )
-        project.meta_project = meta_project
-        project.save()
-        meta_project.new_code = get_meta_project_new_code([project])
-        meta_project.code = get_meta_project_code(country_ro, project_cluster_kip)
-        meta_project.save()
-
-        # create project and expect a new meta project to be created
-        # as the meta project does not have a project with a different status from closed
-        self.client.force_authenticate(user=admin_user)
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201, response.data
-        created_meta_project_id = response.data["meta_project"]["id"]
-        # created a new meta project
-        assert MetaProject.objects.count() == 2
-
-        # remove created meta project
-        MetaProject.objects.filter(id=created_meta_project_id).delete()
-
-        # add an ongoing project to the existing meta project
-        project2 = ProjectFactory.create(
-            title="Project test 2",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_ongoing_status,
-        )
-        project2.meta_project = meta_project
-        project2.save()
-        meta_project.new_code = get_meta_project_new_code([project, project2])
-        meta_project.save()
-
-        response = self.client.post(self.url, data, format="json")
-
-        assert response.status_code == 201, response.data
-        assert MetaProject.objects.count() == 1  # no new meta project created
-        assert (
-            response.data["meta_project"]["id"] == meta_project.id
-        )  # meta project is used now
-
-        # test warning message
-        project3 = ProjectFactory.create(
-            title="Project test 3",
-            cluster=project_cluster_kip,
-            agency=agency,
-            country=country_ro,
-            status=project_ongoing_status,
-        )
-        meta_project2 = MetaProjectFactory.create(
-            lead_agency=agency,
-        )
-        project3.meta_project = meta_project2
-        project3.save()
-        meta_project2.new_code = get_meta_project_new_code([project3])
-        meta_project2.code = get_meta_project_code(
-            new_country, project_cluster_kip, new_agency
-        )
-        meta_project2.save()
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201, response.data
-        assert response.data["warnings"] == [
-            "Multiple meta projects found for the same country and cluster. Using the first one found."
-        ]
-
 
 class TestProjectsV2Update:
     client = APIClient()
@@ -1099,11 +806,11 @@ class TestProjectsV2Update:
             _test_user_permissions(user, own_agency_response_status)
             project.agency = new_agency
             project.save()
-            project.meta_project.lead_agency = None
-            project.meta_project.save()
+            project.lead_agency = None
+            project.save()
             _test_user_permissions(user, different_agency_response_status)
-            project.meta_project.lead_agency = user.agency
-            project.meta_project.save()
+            project.lead_agency = user.agency
+            project.save()
             _test_user_permissions(user, lead_agency_response_status)
 
         _test_user_permissions(user, 403)
@@ -1129,15 +836,17 @@ class TestProjectsV2Update:
         _test_permissions_for_different_project_agency(
             secretariat_production_v1_v2_edit_access_user, 200, 200, 200
         )
+
+        # those return 404 because even if those users have edit access, they only have it for v3 projects
         secretariat_v3_edit_access_user.agency = agency_user.agency
         secretariat_v3_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_v3_edit_access_user, 403, 403, 403
+            secretariat_v3_edit_access_user, 404, 404, 404
         )
         secretariat_production_v3_edit_access_user.agency = agency_user.agency
         secretariat_production_v3_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_production_v3_edit_access_user, 403, 403, 403
+            secretariat_production_v3_edit_access_user, 404, 404, 404
         )
         _test_user_permissions(admin_user, 200)
 
@@ -1154,16 +863,8 @@ class TestProjectsV2Update:
         project.refresh_from_db()
         assert project.title == "Into the Spell"
         assert project.production is True
-        assert project.code == get_project_sub_code(
-            project.country,
-            project.cluster,
-            new_agency,
-            project.project_type,
-            project.sector,
-            project.meeting,
-            None,
-            project.serial_number,
-        )
+        # project code is only set on approval
+        assert project.code is None
 
     # TODO: test ods_odp create/delete
 
@@ -1173,17 +874,17 @@ class TestProjectsV2Update:
         project_url,
         project,
         project_ods_odp_subst,
-        substance,
+        substance_hcfc,
     ):
         ods_odp_to_delete = ProjectOdsOdpFactory.create(
             project=project,
-            ods_substance_id=substance.id,
+            ods_substance_id=substance_hcfc.id,
             odp=0.02,
         )
         blend = BlendFactory.create(
-            name="test blend",
-            sort_order=1,
+            name="test blend", sort_order=1, composition=f"{substance_hcfc.name}=100"
         )
+        blend.components.create(substance=substance_hcfc, percentage=0.2)
         self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
@@ -1264,8 +965,9 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
+            "date_completion": "2023-10-01",
         }
 
         def _test_user_permissions(user, expected_response_status):
@@ -1299,7 +1001,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting_approved": meeting.id,
+            "meeting": meeting.id,
             "decision": decision.id,
             "excom_provision": "test excom_provision",
             "date_completion": "2023-10-01",
@@ -1348,6 +1050,48 @@ class TestProjectsV2Update:
         assert response.data["pcr_waived"] is True
         assert response.data["ad_hoc_pcr"] is False
         assert response.data["date_approved"] == meeting.end_date
+        assert response.data["project_end_date"] == data["date_completion"]
+
+    @pytest.mark.parametrize(
+        "test_user,expected_response_status",
+        [
+            (None, 403),
+            ("user", 403),
+            ("viewer_user", 403),
+            ("agency_user", 204),
+            ("agency_inputter_user", 204),
+            ("secretariat_viewer_user", 403),
+            ("secretariat_v1_v2_edit_access_user", 204),
+            ("secretariat_production_v1_v2_edit_access_user", 204),
+            ("secretariat_v3_edit_access_user", 403),
+            ("secretariat_production_v3_edit_access_user", 403),
+            ("mlfs_admin_user", 204),
+            ("admin_user", 204),
+        ],
+    )
+    def test_delete_project_permissions(
+        self,
+        project,
+        user,
+        test_user,
+        expected_response_status,
+        project_submitted_status,
+        request,
+    ):
+        url = reverse("project-v2-detail", args=(project.id,))
+        if test_user:
+            user = request.getfixturevalue(test_user)
+        else:
+            user = None
+
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(url)
+        assert response.status_code == expected_response_status
+        project.submission_status = project_submitted_status
+        project.save()
+        self.client.force_authenticate(user=user)
+        response = self.client.delete(url)
+        assert response.status_code in [403, 404]  # cannot delete submitted projects
 
 
 class TestProjectFiles:
@@ -1370,8 +1114,14 @@ class TestProjectFiles:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-        url = reverse("project-files-v2", args=(project.id,))
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        url = reverse("project-file-v2-list", args=(project.id,))
+        delete_url = reverse("project-file-v2-delete", args=(project.id,))
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
 
         def _test_user_permissions(
             user,
@@ -1395,7 +1145,7 @@ class TestProjectFiles:
             if expected_get_response_status == 200:
                 if len(response.data) > 0:
                     download_url = reverse(
-                        "project-files-v2-download",
+                        "project-file-v2-download",
                         args=(
                             response.data[0]["project_id"],
                             response.data[0]["id"],
@@ -1404,7 +1154,7 @@ class TestProjectFiles:
                     response = self.client.get(download_url)
                     assert response.status_code == 200
 
-            response = self.client.delete(url, delete_data, format="json")
+            response = self.client.delete(delete_url, delete_data, format="json")
             assert response.status_code == expected_delete_response_status
 
         # test with unauthenticated user
@@ -1413,7 +1163,7 @@ class TestProjectFiles:
         assert response.status_code == 403
         response = self.client.get(url)
         assert response.status_code == 403
-        response = self.client.delete(url)
+        response = self.client.delete(delete_url)
         assert response.status_code == 403
 
         _test_user_permissions(user, 403, 403, 403)
@@ -1426,9 +1176,9 @@ class TestProjectFiles:
             secretariat_production_v1_v2_edit_access_user, 201, 200, 204
         )
 
-        _test_user_permissions(secretariat_v3_edit_access_user, 403, 200, 403)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404, 200, 404)
         _test_user_permissions(
-            secretariat_production_v3_edit_access_user, 403, 200, 403
+            secretariat_production_v3_edit_access_user, 404, 200, 404
         )
         _test_user_permissions(admin_user, 201, 200, 204)
 
@@ -1442,15 +1192,19 @@ class TestProjectFiles:
         self, agency_inputter_user, project, test_file1, test_file2, wrong_format_file3
     ):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file with wrong extension
-        data = {
-            "files": [test_file1.open(), test_file2.open(), wrong_format_file3.open()]
-        }
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+                (wrong_format_file3, "other"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
     def test_file_validation_endpoint(
         self, agency_inputter_user, test_file1, test_file2, wrong_format_file3
@@ -1459,18 +1213,27 @@ class TestProjectFiles:
         url = reverse("project-files-validation")
 
         # upload file with wrong extension
-        data = {
-            "files": [test_file1.open(), test_file2.open(), wrong_format_file3.open()]
-        }
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+                (wrong_format_file3, "other"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
-        assert response.data == {"file": "File extension .csv is not valid"}
+        assert response.data == {"file": "File extension .zip is not valid"}
 
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-validation")
 
         # upload file
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 200
         assert ProjectFile.objects.all().count() == 0
@@ -1479,10 +1242,15 @@ class TestProjectFiles:
         self, agency_inputter_user, project, test_file1, test_file2
     ):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
-        data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
         assert project.files.all().count() == 2
@@ -1498,10 +1266,16 @@ class TestProjectFiles:
 
     def test_file_upload(self, agency_inputter_user, project, test_file1, test_file2):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
         data = {"files": [test_file1.open(), test_file2.open()]}
+        data = setup_files(
+            (
+                (test_file1, "other"),
+                (test_file2, "endorsement_letter"),
+            )
+        )
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
@@ -1509,14 +1283,17 @@ class TestProjectFiles:
         response = self.client.get(url)
         assert response.status_code == 200
         assert response.data[0]["project_id"] == project.id
+        assert response.data[0]["type"] == "other"
         assert response.data[0]["filename"] == test_file1.name
+        assert response.data[1]["type"] == "endorsement_letter"
         assert response.data[1]["project_id"] == project.id
         assert response.data[1]["filename"] == test_file2.name
 
         # delete file (DELETE)
         file_ids = [response.data[0]["id"], response.data[1]["id"]]
         data = {"file_ids": file_ids}
-        response = self.client.delete(url, data, format="json")
+        delete_url = reverse("project-file-v2-delete", args=(project.id,))
+        response = self.client.delete(delete_url, data, format="json")
         assert response.status_code == 204
 
         # check delete (GET)
@@ -1526,17 +1303,17 @@ class TestProjectFiles:
 
     def test_file_download(self, agency_inputter_user, project, test_file1):
         self.client.force_authenticate(user=agency_inputter_user)
-        url = reverse("project-files-v2", args=(project.id,))
+        url = reverse("project-file-v2-list", args=(project.id,))
 
         # upload file
-        data = {"files": [test_file1.open()]}
+        data = setup_files(((test_file1, "other"),))
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 201
 
         # download file
         my_file = ProjectFile.objects.get(filename=test_file1.name)
         url = reverse(
-            "project-files-v2-download",
+            "project-file-v2-download",
             args=(
                 my_file.project.id,
                 my_file.id,
@@ -1590,7 +1367,7 @@ class TestProjectV2FileIncludePreviousVersions:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project.id,))
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
@@ -1628,7 +1405,7 @@ class TestProjectV2FileIncludePreviousVersions:
         project3,
         project3_file,
     ):
-        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project.id,))
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
@@ -1663,7 +1440,7 @@ class TestProjectV2FileIncludePreviousVersions:
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
-        url = reverse("project-v2-file-include-previous-versions", args=(project3.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project3.id,))
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
 
         response = self.client.get(url)
@@ -1686,7 +1463,7 @@ class TestProjectV2FileIncludePreviousVersions:
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
-        url = reverse("project-v2-file-include-previous-versions", args=(project2.id,))
+        url = reverse("project-file-v2-include-previous-versions", args=(project2.id,))
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
 
         response = self.client.get(url)
@@ -1697,3 +1474,74 @@ class TestProjectV2FileIncludePreviousVersions:
         assert data[1]["id"] == project3.id  # project3 is the archived version
         assert any(f["id"] == project2_file.id for f in data[0]["files"])
         assert any(f["id"] == project3_file.id for f in data[1]["files"])
+
+    def test_edit_type_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_file,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        mlfs_admin_user,
+        admin_user,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        data = {
+            "file_type": "endorsement_letter",
+        }
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.put(url, data, format="json")
+            assert response.status_code == expected_response_status
+
+        # Unauthenticated
+        self.client.force_authenticate(user=None)
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(mlfs_admin_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_edit_type(
+        self,
+        mlfs_admin_user,
+        project,
+        project_file,
+    ):
+        url = reverse(
+            "project-file-v2-edit-type",
+            args=(
+                project.id,
+                project_file.id,
+            ),
+        )
+        self.client.force_authenticate(user=mlfs_admin_user)
+        data = {
+            "file_type": "endorsement_letter",
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        assert response.data["type"] == "endorsement_letter"
+        project_file.refresh_from_db()
+        assert project_file.type == "endorsement_letter"

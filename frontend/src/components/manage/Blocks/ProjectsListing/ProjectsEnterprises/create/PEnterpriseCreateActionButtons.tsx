@@ -1,83 +1,83 @@
 import { useContext } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { handleErrors } from '../FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseActionButtons } from '../../interfaces'
+import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
+import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
-import { useParams } from 'wouter'
+import { omit } from 'lodash'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
-  setHasSubmitted,
   setErrors,
   setOtherErrors,
-}: EnterpriseActionButtons) => {
-  const { project_id } = useParams<Record<string, string>>()
-  const { canEditEnterprise } = useContext(PermissionsContext)
+}: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
+  const [_, setLocation] = useLocation()
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const { clearUpdatedFields } = useUpdatedFields()
 
-  const { overview } = enterpriseData
+  const { project_id } = useParams<Record<string, string>>()
 
   const createEnterprise = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setOtherErrors('')
 
     try {
-      const { overview, substance_details, remarks, ...rest } = enterpriseData
+      const {
+        overview,
+        details,
+        substance_details,
+        substance_fields,
+        funding_details,
+        remarks,
+      } = enterpriseData
 
       const data = {
         project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
+        enterprise: omit(overview, ['status', 'linkStatus']),
         ods_odp: substance_details,
-        enterprise: { ...overview, ...remarks },
+        ...details,
+        ...substance_fields,
+        ...funding_details,
+        ...remarks,
       }
 
       const result = await api(`api/project-enterprise/`, {
         data: data,
         method: 'POST',
       })
+
       setEnterpriseId(result.id)
-    } catch (error) {
-      const errors = await error.json()
-
-      if (error.status === 400) {
-        setErrors(errors)
-
-        if (errors?.details) {
-          setOtherErrors(errors.details)
-        }
-      }
-
-      setEnterpriseId(null)
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
+      enqueueSnackbar(<>Project enterprise was created successfully.</>, {
+        variant: 'success',
       })
+      clearUpdatedFields()
+      setLocation(
+        `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
+      )
+    } catch (error) {
+      await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/enterprises/${project_id}`}
+    canEditProjectEnterprise && (
+      <SubmitButton
+        title="Create project enterprise"
+        isDisabled={!enterpriseData.overview.name}
+        onSubmit={createEnterprise}
+        className="!py-2"
       />
-      {canEditEnterprise && (
-        <SubmitButton
-          title="Create enterprise"
-          isDisabled={!overview.name}
-          onSubmit={createEnterprise}
-          className="ml-auto"
-        />
-      )}
-    </div>
+    )
   )
 }
 

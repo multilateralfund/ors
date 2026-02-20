@@ -6,11 +6,13 @@ import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlans
 import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import TransferProjectModal from './TransferProjectModal'
 import PListingAssociation from './PListingAssociation'
 import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
-import { CancelButton } from '../HelperComponents'
+import { CancelButton, CreateButton } from '../HelperComponents'
+import { menusDefaultProjectData } from '../constants'
 import { ListingProjectData } from '../interfaces'
 import { getMenus } from '../utils'
 
@@ -23,49 +25,63 @@ export default function PListingWrapper() {
   const {
     canViewBp,
     canUpdateBp,
-    canViewProjects,
+    canViewEnterprises,
+    canEditProjectEnterprise,
     canUpdateProjects,
     canAssociateProjects,
+    canUpdatePostExcom,
+    canTransferProjects,
+    canViewMetaProjects,
   } = useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
-  const [projectData, setProjectData] = useState<ListingProjectData>({
-    projectId: null,
-    projectTitle: '',
-    projectSubmissionStatus: '',
-  })
-  const { projectId, projectTitle } = projectData
+  const [projectData, setProjectData] = useState<ListingProjectData>(
+    menusDefaultProjectData,
+  )
+  const { projectId, projectTitle, projectSubmissionStatus } = projectData
+  const [transferId, setTansferId] = useState<number>()
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
 
   const projectActions = (
-    <div className="mt-1 flex flex-wrap items-center gap-3">
-      {canUpdateProjects && (
-        <div
-          className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            '!cursor-default text-gray-400 opacity-60': !projectId,
-          })}
-          onClick={() => {
-            if (projectId) {
-              setIsCopyModalOpen(true)
-            }
-          }}
-        >
-          <LuCopy className="mb-1" size={18} />
-          Copy project
-        </div>
+    <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-4">
+      {view === 'list' && (
+        <>
+          {canUpdateProjects && (
+            <div
+              className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
+                '!cursor-default text-gray-400 opacity-60': !projectId,
+              })}
+              onClick={() => {
+                if (projectId) {
+                  setIsCopyModalOpen(true)
+                }
+              }}
+            >
+              <LuCopy className="mb-1" size={18} />
+              Copy project
+            </div>
+          )}
+          {canAssociateProjects && (
+            <CustomLink
+              href={
+                projectId && projectSubmissionStatus === 'Approved'
+                  ? `/projects-listing/${projectId}/associate`
+                  : null
+              }
+              className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
+                '!cursor-default text-gray-400 opacity-60': !(
+                  projectId && projectSubmissionStatus === 'Approved'
+                ),
+              })}
+            >
+              <IoIosLink className="mb-1" size={18} />
+              Associate project
+            </CustomLink>
+          )}
+        </>
       )}
-      {canAssociateProjects && (
-        <CustomLink
-          href={projectId ? `/projects-listing/${projectId}/associate` : null}
-          className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            '!cursor-default text-gray-400 opacity-60': !projectId,
-          })}
-        >
-          <IoIosLink className="mb-1" size={18} />
-          Associate project
-        </CustomLink>
-      )}
-      <GenerateDBMenu />
+      <GenerateDBMenu projectData={projectData} />
     </div>
   )
 
@@ -85,12 +101,12 @@ export default function PListingWrapper() {
 
   const copyProjectModal = (
     <Modal
-      aria-labelledby="copy-modal-title"
+      aria-labelledby="copy-modal"
       open={isCopyModalOpen}
       onClose={() => setIsCopyModalOpen(false)}
       keepMounted
     >
-      <Box className="flex w-full max-w-lg flex-col px-0 absolute-center">
+      <Box className="flex w-full max-w-[90%] flex-col px-0 absolute-center md:max-w-lg">
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Copy project
         </Typography>
@@ -101,7 +117,7 @@ export default function PListingWrapper() {
           </span>
           <span className="text-lg font-semibold">{projectTitle}</span>
         </div>
-        <div className="ml-auto mr-6 flex gap-3">
+        <div className="mr-6 flex justify-end gap-3">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
             href={`/projects-listing/create/${projectId}/copy`}
@@ -117,32 +133,54 @@ export default function PListingWrapper() {
     </Modal>
   )
 
+  const handleTransferModalOpen = () => {
+    setIsTransferModalOpen(true)
+  }
+
+  const onSuccessfulTransfer = (id: number) => {
+    setProjectData(menusDefaultProjectData)
+    setTansferId(id)
+  }
+
   return (
     <>
-      <div className="mt-5 flex flex-wrap justify-between gap-y-3">
+      <div className="mt-5 flex flex-wrap justify-between gap-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
           {getMenus(
-            { canViewBp, canUpdateBp, canViewProjects },
+            {
+              canViewBp,
+              canUpdateBp,
+              canViewEnterprises,
+              canEditProjectEnterprise,
+              canUpdatePostExcom,
+              canTransferProjects,
+              canViewMetaProjects,
+            },
             projectData,
+            handleTransferModalOpen,
           ).map((menu) => (
-            <ExpandableMenu menu={menu} />
+            <ExpandableMenu key={menu.title} menu={menu} />
           ))}
         </div>
         {canUpdateProjects && (
-          <CustomLink
-            className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+          <CreateButton
+            title="New Project Submission"
             href="/projects-listing/create"
-            color="secondary"
-            variant="contained"
-            button
-          >
-            New Project Submission
-          </CustomLink>
+          />
         )}
       </div>
+      {isTransferModalOpen && projectData.projectId && (
+        <TransferProjectModal
+          id={projectData.projectId}
+          isModalOpen={isTransferModalOpen}
+          setIsModalOpen={setIsTransferModalOpen}
+          onSuccess={onSuccessfulTransfer}
+        />
+      )}
       <Box className="shadow-none">
         {view === 'list' ? (
           <PListingProjects
+            key={transferId}
             {...{
               projectId,
               setProjectData,
@@ -150,13 +188,7 @@ export default function PListingWrapper() {
             }}
           />
         ) : (
-          <PListingAssociation
-            {...{
-              projectId,
-              setProjectData,
-              tableToolbar,
-            }}
-          />
+          <PListingAssociation {...{ tableToolbar }} />
         )}
         {isCopyModalOpen && copyProjectModal}
       </Box>
