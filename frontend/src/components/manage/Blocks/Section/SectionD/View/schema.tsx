@@ -75,6 +75,7 @@ function useGridOptions(props: { model: string }) {
                 field: 'other_uses_remarks',
                 headerName: 'Decision / type of use or remarks',
                 ...colDefById['remarks'],
+                ...sectionColDefById['other_uses_remarks'],
               },
             ],
             groupId: 'other_uses',

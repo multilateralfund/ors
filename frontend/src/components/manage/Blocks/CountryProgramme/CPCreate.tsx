@@ -21,6 +21,7 @@ import { useSnackbar } from 'notistack'
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
@@ -85,75 +86,82 @@ const TableProps: CPCreateTableProps = {
     }, [fullScreen, exitFullScreen])
 
     return (
-      <div
-        className={cx(
-          'mb-4 flex md:flex-row md:items-center md:justify-between',
-          {
-            'flex-col': !fullScreen,
-            'flex-col-reverse': fullScreen,
-            'px-4': fullScreen,
-          },
-        )}
-      >
-        <div className="flex flex-col gap-2">
-          <Typography
-            className={cx({ 'mb-4 md:mb-0': fullScreen })}
-            component="h2"
-            variant="h6"
-          >
-            {section.title}
-          </Typography>
-          {section.note && (
-            <Typography
-              className={cx(
-                'border border-solid border-black px-2 py-4 font-bold',
-                {
-                  'mb-4 md:mb-0': fullScreen,
-                },
-              )}
-            >
-              {section.note}
-            </Typography>
+      <>
+        <div
+          className={cx(
+            'mb-4 flex md:flex-row md:items-center md:justify-between',
+            {
+              'flex-col': !fullScreen,
+              'flex-col-reverse': fullScreen,
+              'px-4': fullScreen,
+            },
           )}
-        </div>
-        <Portal
-          active={isActiveSection && !fullScreen}
-          domNode="sectionToolbar"
         >
-          <div className="flex items-center justify-end">
-            {section.allowFullScreen && !fullScreen && (
-              <div
-                className="text-md cursor-pointer"
-                aria-label="enter fullscreen"
-                onClick={() => {
-                  enterFullScreen()
-                }}
+          <div className="flex flex-col gap-2">
+            <Typography
+              className={cx({ 'mb-4 md:mb-0': fullScreen })}
+              component="h2"
+              variant="h6"
+            >
+              {section.title}
+            </Typography>
+            {section.note && (
+              <Typography
+                className={cx(
+                  'border border-solid border-black px-2 py-4 font-bold',
+                  {
+                    'mb-4 md:mb-0': fullScreen,
+                  },
+                )}
               >
-                <div className="flex items-center justify-between gap-x-2">
-                  <span className="text-primary">Fullscreen</span>
-                  <IoExpand className="text-xl text-secondary" />
-                </div>
-              </div>
+                {section.note}
+              </Typography>
             )}
-            {fullScreen && (
-              <div>
+          </div>
+          <Portal
+            active={isActiveSection && !fullScreen}
+            domNode="sectionToolbar"
+          >
+            <div className="flex items-center justify-end">
+              {section.allowFullScreen && !fullScreen && (
                 <div
-                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
-                  aria-label="exit fullscreen"
+                  className="text-md cursor-pointer"
+                  aria-label="enter fullscreen"
                   onClick={() => {
-                    exitFullScreen()
+                    enterFullScreen()
                   }}
                 >
                   <div className="flex items-center justify-between gap-x-2">
-                    <span className="text-primary">Close</span>
-                    <IoClose className="text-xl text-secondary" />
+                    <span className="text-primary">Fullscreen</span>
+                    <IoExpand className="text-xl text-secondary" />
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </Portal>
-      </div>
+              )}
+              {fullScreen && (
+                <div>
+                  <div
+                    className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
+                    aria-label="exit fullscreen"
+                    onClick={() => {
+                      exitFullScreen()
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-x-2">
+                      <span className="text-primary">Close</span>
+                      <IoClose className="text-xl text-secondary" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Portal>
+        </div>
+        {section.additionalNote && (
+          <Typography className="border border-b-0 border-solid border-mui-box-border p-2 text-center font-bold">
+            {section.additionalNote}
+          </Typography>
+        )}
+      </>
     )
   },
   defaultColDef: defaultColDefEdit,
@@ -171,6 +179,12 @@ const TableProps: CPCreateTableProps = {
   suppressRowHoverHighlight: false,
   withSeparators: false,
 }
+
+const getCrtVariant = (year: number) =>
+  filter(
+    variants,
+    (variant) => variant.minYear <= year && variant.maxYear >= year,
+  )[0]
 
 const CPCreate: React.FC = () => {
   const { isCPCountryUserType, canEditCPReports, canSubmitFinalCPReport } =
@@ -201,6 +215,17 @@ const CPCreate: React.FC = () => {
     ),
   ])
 
+  const crtVariant = getCrtVariant(new Date().getFullYear() - 1)
+  const isNewFormat = shouldEnableNewCPDataFormatting(crtVariant.model)
+
+  const defaultDataSectionD = {
+    all_uses: '0.000',
+    chemical_name: 'HFC-23',
+    destruction: '0.000',
+    display_name: 'HFC-23',
+    feedstock: '0.000',
+  }
+
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
       [],
@@ -230,16 +255,12 @@ const CPCreate: React.FC = () => {
       'section_c_create',
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      [
-        {
-          all_uses: '0.000',
-          chemical_name: 'HFC-23',
-          destruction: '0.000',
-          display_name: 'HFC-23',
-          feedstock: '0.000',
-          row_id: 'generation_1',
-        },
-      ],
+      isNewFormat
+        ? [
+            { ...defaultDataSectionD, row_id: 'generation_1' },
+            { ...defaultDataSectionD, row_id: 'generation_2' },
+          ]
+        : [{ ...defaultDataSectionD, row_id: 'generation_1' }],
       'section_d_create',
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -314,11 +335,7 @@ const CPCreate: React.FC = () => {
     [localStorage],
   )
 
-  const variant = useMemo(() => {
-    return filter(variants, (variant) => {
-      return variant.minYear <= form.year && variant.maxYear >= form.year
-    })[0]
-  }, [form.year])
+  const variant = useMemo(() => getCrtVariant(form.year), [form.year])
   const [activeTab, setActiveTab] = useState(0)
   const { setActiveTab: setActiveTabStore } = useStore(
     (state) => state.cp_current_tab,
@@ -636,7 +653,8 @@ const CPCreate: React.FC = () => {
                 variant="contained"
                 disabled={
                   !canSubmitFinalCPReport ||
-                  !!existingReports.data?.length || existingReports.loading
+                  !!existingReports.data?.length ||
+                  existingReports.loading
                 }
                 onClick={handleShowConfirmation}
               >

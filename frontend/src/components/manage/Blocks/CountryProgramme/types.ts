@@ -27,6 +27,7 @@ export type SectionMeta = {
   id: string
   label: string
   note?: string
+  additionalNote?: string
   panelId: string
   title: string
 }
