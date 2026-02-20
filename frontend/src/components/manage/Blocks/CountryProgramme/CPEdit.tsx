@@ -17,6 +17,7 @@ import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import { CPCommentsForEdit } from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
+import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -54,7 +55,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
-  return [value]
+  return value
 }
 
 const TableProps: ITableProps = {
@@ -70,78 +71,85 @@ const TableProps: ITableProps = {
   }: any) => {
     const convertData = (gridContext?.unit || 'mt') === 'mt' ? 0 : 1
     return (
-      <div
-        className={cx('mb-4 flex', {
-          'flex-col': !fullScreen,
-          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-            fullScreen,
-          'px-4': fullScreen,
-        })}
-      >
-        <Typography
-          className={cx({ 'mb-4 md:mb-0': fullScreen })}
-          component="h2"
-          variant="h6"
+      <>
+        <div
+          className={cx('mb-4 flex', {
+            'flex-col': !fullScreen,
+            'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+              fullScreen,
+            'px-4': fullScreen,
+          })}
         >
-          {section.title}
-        </Typography>
-        {section.note && (
           <Typography
-            className={cx(
-              'border border-solid border-black px-2 py-4 font-bold',
-              {
-                'mb-4 md:mb-0': fullScreen,
-              },
-            )}
+            className={cx({ 'mb-4 md:mb-0': fullScreen })}
+            component="h2"
+            variant="h6"
           >
-            {section.note}
+            {section.title}
           </Typography>
-        )}
-        <Portal
-          active={isActiveSection && !fullScreen}
-          domNode="sectionToolbar"
-        >
-          <div className="flex items-center justify-end gap-x-2">
-            <DownloadCalculatedAmounts report={report} />
-            <DownloadReport
-              archive={archive}
-              convertData={convertData}
-              report={report}
-            />
+          {section.note && (
+            <Typography
+              className={cx(
+                'border border-solid border-black px-2 py-4 font-bold',
+                {
+                  'mb-4 md:mb-0': fullScreen,
+                },
+              )}
+            >
+              {section.note}
+            </Typography>
+          )}
+          <Portal
+            active={isActiveSection && !fullScreen}
+            domNode="sectionToolbar"
+          >
+            <div className="flex items-center justify-end gap-x-2">
+              <DownloadCalculatedAmounts report={report} />
+              <DownloadReport
+                archive={archive}
+                convertData={convertData}
+                report={report}
+              />
 
-            {section.allowFullScreen && !fullScreen && (
-              <div
-                className="text-md cursor-pointer"
-                aria-label="enter fullscreen"
-                onClick={() => {
-                  enterFullScreen()
-                }}
-              >
-                <div className="flex items-center justify-between gap-x-2">
-                  <span className="text-primary">Fullscreen</span>
-                  <IoExpand className="text-xl text-secondary" />
-                </div>
-              </div>
-            )}
-            {fullScreen && (
-              <div>
+              {section.allowFullScreen && !fullScreen && (
                 <div
-                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
-                  aria-label="exit fullscreen"
+                  className="text-md cursor-pointer"
+                  aria-label="enter fullscreen"
                   onClick={() => {
-                    exitFullScreen()
+                    enterFullScreen()
                   }}
                 >
                   <div className="flex items-center justify-between gap-x-2">
-                    <span className="text-primary">Close</span>
-                    <IoClose className="text-xl text-secondary" />
+                    <span className="text-primary">Fullscreen</span>
+                    <IoExpand className="text-xl text-secondary" />
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </Portal>
-      </div>
+              )}
+              {fullScreen && (
+                <div>
+                  <div
+                    className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
+                    aria-label="exit fullscreen"
+                    onClick={() => {
+                      exitFullScreen()
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-x-2">
+                      <span className="text-primary">Close</span>
+                      <IoClose className="text-xl text-secondary" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Portal>
+        </div>
+        {section.additionalNote && (
+          <Typography className="border border-b-0 border-solid border-mui-box-border p-2 text-center font-bold">
+            {section.additionalNote}
+          </Typography>
+        )}
+      </>
     )
   },
   defaultColDef: defaultColDefEdit,
@@ -166,6 +174,20 @@ function CPEdit() {
 
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
+
+  const variant = useMemo(() => report.variant, [report])
+  const isNewFormat = useMemo(
+    () => !!variant && shouldEnableNewCPDataFormatting(variant.model),
+    [variant],
+  )
+
+  const defaultDataSectionD = {
+    all_uses: '0.000',
+    chemical_name: 'HFC-23',
+    destruction: '0.000',
+    display_name: 'HFC-23',
+    feedstock: '0.000',
+  }
 
   const Sections = {
     section_a: useMakeClassInstance<SectionA>(SectionA, [
@@ -196,14 +218,15 @@ function CPEdit() {
       null,
     ]),
     section_d: useMakeClassInstance<SectionD>(SectionD, [
-      defaults(report.data?.section_d || [], {
-        all_uses: '0.000',
-        chemical_name: 'HFC-23',
-        destruction: '0.000',
-        display_name: 'HFC-23',
-        feedstock: '0.000',
-        row_id: 'generation_1',
-      }),
+      defaults(
+        report.data?.section_d || [],
+        isNewFormat
+          ? [
+              { ...defaultDataSectionD, row_id: 'generation_1' },
+              { ...defaultDataSectionD, row_id: 'generation_2' },
+            ]
+          : [{ ...defaultDataSectionD, row_id: 'generation_1' }],
+      ),
       null,
     ]),
     section_e: useMakeClassInstance<SectionE>(SectionE, [
@@ -215,8 +238,6 @@ function CPEdit() {
       null,
     ]),
   }
-
-  const variant = useMemo(() => report.variant, [report])
 
   const [errors, setErrors] = useState<Record<string, any>>({})
   const [form, setForm] = useState<CPEditForm>({

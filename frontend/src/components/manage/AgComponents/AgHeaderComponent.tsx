@@ -22,6 +22,19 @@ function getTooltipTitle(props: any) {
   return displayName
 }
 
+const getOtherUsesRemarksDisplayName = (displayName: string) => {
+  const index = displayName.indexOf('or')
+
+  if (index === -1) {
+    return [displayName, '']
+  }
+
+  const firstDisplayName = displayName.slice(0, index).trim()
+  const secondDisplayName = displayName.slice(index).trim()
+
+  return [firstDisplayName, secondDisplayName]
+}
+
 export interface IAgHeaderParams extends IHeaderParams {
   className?: string
   colDef: ColDef
@@ -40,6 +53,12 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       (footnote.id || (footnote.content ? hash(footnote.content) : null)),
   )
   const { details, displayName } = props
+
+  const colId = props.column?.getColId()
+  const isOtherUsesRemarks = colId === 'other_uses_remarks'
+  const formattedDisplayName = isOtherUsesRemarks
+    ? getOtherUsesRemarksDisplayName(displayName)
+    : displayName
 
   useEffect(() => {
     if (!footnotes || !footnote || !footnoteId) {
@@ -61,7 +80,9 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
       value={getTooltipTitle(props)}
     >
       <Typography
-        className={cx(props.className, { 'cursor-pointer font-bold': !!footnote })}
+        className={cx(props.className, {
+          'cursor-pointer font-bold': !!footnote,
+        })}
         component="span"
         onClick={() => {
           if (!footnote) return
@@ -77,12 +98,13 @@ export default function AgHeaderComponent(props: IAgHeaderParams) {
           })
         }}
       >
-        {displayName}
+        {isOtherUsesRemarks ? formattedDisplayName[0] : formattedDisplayName}
         {!!footnote && (
           <sup className="font-bold" title={footnote.content}>
             {footnote.index || footnoteId}
           </sup>
         )}
+        {isOtherUsesRemarks && ` ${formattedDisplayName[1]}`}
         {!!footnote?.icon && (
           <IconButton
             className={cx('ml-1 p-0', { 'cursor-default': !footnote })}

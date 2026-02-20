@@ -300,6 +300,8 @@ export function getSections(
             component: components[mode].section_e || DefaultComponent,
             label: 'Section E',
             note: 'NOTE: Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances.',
+            additionalNote:
+              'Columnns shaded in grey are provided on a volunatry basis',
             panelId: 'section-E-panel',
             title:
               'SECTION E. ANNEX F, GROUP II – DATA ON QUANTITY OF EMISSIONS OF HFC-23 FROM FACILITIES MANUFACTURING ANNEX C GROUP I OR ANNEX F SUBSTANCES (METRIC TONNES)',
