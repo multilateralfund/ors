@@ -853,3 +853,90 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
     date = factory.Faker("date")
     payment_for_years = ["deferred"]
+
+
+class ProjectCompletionReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.ProjectCompletionReport"
+
+    project = factory.SubFactory(ProjectFactory)
+    status = "DRAFT"
+    created_by = factory.SubFactory(UserFactory)
+
+
+class PCRProjectActivityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRProjectActivity"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    project_type = "INV"
+    sector = "FOA"
+    activity_type = "EQUIPMENT"
+
+
+class PCROverallAssessmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCROverallAssessment"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    rating = "SATISFACTORY"
+
+
+class PCRCommentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRComment"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    section = "ACTIVITIES"
+    comment_text = factory.Faker("pystr", max_chars=500)
+
+
+class PCRCauseOfDelayFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRCauseOfDelay"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    description = factory.Faker("pystr", max_chars=500)
+
+
+class PCRLessonLearnedFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRLessonLearned"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    description = factory.Faker("pystr", max_chars=500)
+
+
+class PCRRecommendationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRRecommendation"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    recommendation_text = factory.Faker("pystr", max_chars=500)
+
+
+class PCRGenderMainstreamingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRGenderMainstreaming"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    indicator_met = True
+
+
+class PCRSDGContributionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRSDGContribution"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    description = factory.Faker("pystr", max_chars=500)
+
+
+class PCRSupportingEvidenceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = "core.PCRSupportingEvidence"
+
+    pcr = factory.SubFactory(ProjectCompletionReportFactory)
+    description = factory.Faker("pystr", max_chars=200)
+    related_section = "overview"
+    file = factory.django.FileField(filename="test_evidence.pdf")
+    uploaded_by = factory.SubFactory(UserFactory)

@@ -288,6 +288,24 @@
         "model_name": "annualprojectreport"
     },
     {
+        "permission_codename": "has_pcr_view_access",
+        "permission_name": "Has PCR view access",
+        "app_label": "core",
+        "model_name": "projectcompletionreport"
+    },
+    {
+        "permission_codename": "has_pcr_edit_access",
+        "permission_name": "Has PCR edit access",
+        "app_label": "core",
+        "model_name": "projectcompletionreport"
+    },
+    {
+        "permission_codename": "has_pcr_submit_access",
+        "permission_name": "Has PCR submit access",
+        "app_label": "core",
+        "model_name": "projectcompletionreport"
+    },
+    {
         "permission_codename": "is_mlfs_user",
         "permission_name": "Is MLFS user",
         "app_label": "core",
