@@ -390,7 +390,17 @@ const CPCreate: React.FC = () => {
     disabled: existingReports.loading,
     name: 'year',
     onChange: (_event: any, value: WidgetYear) => {
-      handleSetForm((oldForm: any) => ({ ...oldForm, year: value.id }))
+      const variant = getCrtVariant(value.id)
+      const isNewFormat = shouldEnableNewCPDataFormatting(variant.model)
+
+      handleSetForm((oldForm: any) => ({
+        ...oldForm,
+        year: value.id,
+        section_d:
+          !isNewFormat && oldForm.section_d.length === 2
+            ? oldForm.section_d.slice(0, 1)
+            : oldForm.section_d,
+      }))
     },
     options: yearOptions,
     value: { id: form.year, label: `${form.year}` },
