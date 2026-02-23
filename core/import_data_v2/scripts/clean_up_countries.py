@@ -20,31 +20,32 @@ def clean_up_countries():
     """
     # clean up country names
     country_name_corrections = {
-        "Bolivia (Plurinational State of)": "Bolivia",
-        "Cabo Verde": "Cape Verde",
-        "Côte d'Ivoire": "Cote D'Ivoire",
-        "Syrian Arab Republic": "Syria",
-        "Timor-Leste": "Timor Leste",
-        "Viet Nam": "Vietnam",
-        "Venezuela (Bolivarian Republic of)": "Venezuela",
-        "Türkiye": "Turkey",
-        "United Republic of Tanzania": "Tanzania",
-        "Iran (Islamic Republic of)": "Iran",
-        "Guinea Bissau": "Guinea-Bissau",
-        "Micronesia (Federated States of)": "Micronesia",
+        "English-speaking Africa": "Region: Anglophone Africa",
+        "French-speaking Africa": "Region: Francophone Africa",
+        "Europe and Central Asia": "Region: Europe and Central Asia",
+        "Latin America and the Caribbean": "Region: Latin America and the Caribbean",
+        "Southern Latin America Network": "Region: South Latin America",
+        "South Asia": "Region: South Asia",
+        "Southeast Asia": "Region: Southeast Asia",
+        "Pacific Island Countries": "Region: Pacific Island Countries",
+        "West Asia": "Region: West Asia",
     }
 
-    # for old_name, new_name in country_name_corrections.items():
-    #     country = Country.objects.filter(name=old_name).first()
-    #     if country:
-    #         country.name = new_name
-    #         country.save()
-    #         logger.info(f"✔ Country name updated from '{old_name}' to '{new_name}'")
+    for old_name, new_name in country_name_corrections.items():
+        country = Country.objects.filter(name=old_name).first()
+        if country:
+            country.name = new_name
+            country.save()
+            logger.info(
+                f"✔ Country name for ID {country.id} updated from '{old_name}' to '{new_name}'"
+            )
 
     # set modules for countries
     projects_module = Module.objects.filter(code="Projects").first()
     business_plans_module = Module.objects.filter(code="BP").first()
+
     file_path = IMPORT_RESOURCES_V2_DIR / "countries" / "MLF Countries and Regions.xlsx"
+
     df = pd.read_excel(file_path).fillna("")
 
     for _, row in df.iterrows():
