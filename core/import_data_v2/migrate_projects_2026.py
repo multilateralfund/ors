@@ -18,6 +18,8 @@ from core.models import (
     Substance,
     Blend,
     Meeting,
+    Project,
+    ProjectOdsOdp,
 )
 from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
 from core.models.project_metadata import (
@@ -26,12 +28,11 @@ from core.models.project_metadata import (
     ProjectSector,
     ProjectSubSector,
     ProjectSubmissionStatus,
-    ProjectStatus,
 )
-from core.models import Project, ProjectOdsOdp
 from core.utils import post_approval_changes
 from core.import_data.utils import get_import_user
 
+#pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,10 @@ def get_cluster_by_name(name):
 
 
 def get_type_by_name(name):
-    type = ProjectType.objects.filter(name__iexact=name.strip()).first()
+    project_type = ProjectType.objects.filter(name__iexact=name.strip()).first()
     if not type:
         logger.warning(f"⚠️ Type with name '{name.strip()}' not found")
-    return type
+    return project_type
 
 
 def get_sector_by_name(name):
@@ -66,8 +67,7 @@ def get_substance_blend_ods_display_name(name, code):
     TRANSLATE_ODS_ODP_NAMES = {
         "MB": "Methyl Bromide",
     }
-    if name in TRANSLATE_ODS_ODP_NAMES:
-        name = TRANSLATE_ODS_ODP_NAMES[name]
+    name = TRANSLATE_ODS_ODP_NAMES.get(name, name)
     substance = None
     blend = None
     substance = Substance.objects.filter(name__iexact=name).first()
@@ -110,15 +110,15 @@ def get_subsectors_by_name(name):
     }
     subsectors = []
     if name and str(name).strip():
-        if str(name).strip() in TRANSLATE_SUB_SECTORS:
-            name = TRANSLATE_SUB_SECTORS[str(name).strip()]
-        subsector = ProjectSubSector.objects.filter(name__iexact=name.strip()).first()
+        name = TRANSLATE_SUB_SECTORS.get(str(name).strip(), str(name).strip())
+        subsector = ProjectSubSector.objects.filter(name__iexact=name).first()
         if not subsector:
             # now we can try to split by comma
             subsector_names = [s.strip() for s in name.split(",")]
             for subsector_name in subsector_names:
-                if str(subsector_name).strip() in TRANSLATE_SUB_SECTORS:
-                    subsector_name = TRANSLATE_SUB_SECTORS[str(subsector_name).strip()]
+                subsector_name = TRANSLATE_SUB_SECTORS.get(
+                    str(subsector_name).strip(), str(subsector_name).strip()
+                )
                 subsector = ProjectSubSector.objects.filter(
                     name__iexact=subsector_name
                 ).first()
@@ -126,7 +126,8 @@ def get_subsectors_by_name(name):
                     subsectors.append(subsector)
                 else:
                     logger.warning(
-                        f"⚠️ Sub-sector with name '{subsector_name}' not found while processing subsectors with original name '{name.strip()}'"
+                        f"""⚠️ Sub-sector with name '{subsector_name}' not found while processing
+                         subsectors with original name '{name.strip()}'"""
                     )
         return subsectors
 
@@ -195,7 +196,7 @@ def create_new_project(row, dry_run=True):
     country = get_country_by_name(row["COUNTRY"])
     agency = get_agency_by_name(row["AGENCY"])
     cluster = get_cluster_by_name(row["Cluster"])
-    type = get_type_by_name(row["Type"])
+    project_type = get_type_by_name(row["Type"])
     sector = get_sector_by_name(row["Sector"])
     subsectors = get_subsectors_by_name(row["Subsector"])
     total_fund_approved = row["TOTAL_FUND_APPROVED"]
@@ -222,7 +223,9 @@ def create_new_project(row, dry_run=True):
     meeting = Meeting.objects.filter(number=meeting_number).first()
     if not meeting:
         logger.warning(
-            f"⚠️ Meeting with number '{meeting_number}' not found while processing project with legacy code '{row['CODE']}'"
+            f"""⚠️ Meeting with number '{meeting_number}' not found while 
+            processing project with legacy code '{row['CODE']}'
+            """
         )
 
     submission_status = ProjectSubmissionStatus.objects.filter(
@@ -235,7 +238,7 @@ def create_new_project(row, dry_run=True):
         agency=agency,
         country=country,
         cluster=cluster,
-        project_type=type,
+        project_type=project_type,
         project_type_legacy=row["TYPE"],
         sector=sector,
         sector_legacy=row["SEC"],
@@ -269,7 +272,6 @@ def create_new_project(row, dry_run=True):
         serial_number = Project.objects.get_next_serial_number(project.country.id)
         project.serial_number = serial_number
         project.save()
-        # still should see if this should be called here or after all information is updated from the other sheets as well
         post_approval_changes(project)
         project.save()
     return project
@@ -296,13 +298,12 @@ def process_current_invetory_sheet(dry_run=True):
                 count += 1
                 logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found")
                 continue
-            else:
-                create_new_project(row, dry_run=dry_run)
+            create_new_project(row, dry_run=dry_run)
         else:
             if cluster_object := get_cluster_by_name(row["Cluster"]):
                 project.cluster = cluster_object
-            if type := get_type_by_name(row["Type"]):
-                project.project_type = type
+            if project_type := get_type_by_name(row["Type"]):
+                project.project_type = project_type
             if sector := get_sector_by_name(row["Sector"]):
                 project.sector = sector
             subsectors = get_subsectors_by_name(row["Subsector"])
@@ -326,16 +327,16 @@ def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
 
     df = pd.read_excel(file_path, sheet_name="ODS Phaseout fields", header=1).fillna("")
 
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
-            # logger.info(f"Skipping project with legacy code '{row['CODE']}' as it is in the ignore list extracted from C+P sheets")
+            logger.info(f"Skipping project with legacy code '{row['CODE']}'")
             continue
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
         if not project:
             substance, blend, ods_display_name = get_substance_blend_ods_display_name(
                 row["ODS_NAME"], row["CODE"]
             )
-            # logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found while processing ODS Phaseout Fields sheet")
+            logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found")
             continue
         existing_project_ods_odp = find_project_ods_odp_by_name(
             ProjectOdsOdp.objects.filter(project=project), row["ODS_NAME"]
@@ -377,10 +378,12 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
         ""
     )
 
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             logger.info(
-                f"Skipping project with legacy code '{row['CODE']}' as it is in the ignore list extracted from C+P sheets"
+                f"""Skipping project with legacy code '{row['CODE']}' as it is
+                in the ignore list extracted from C+P sheets
+                """
             )
             continue
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
@@ -459,10 +462,12 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
     df = pd.read_excel(file_path, sheet_name="Funding fields", header=2).fillna("")
     ids_already_updated = []
     import_user = get_import_user()
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             logger.info(
-                f"Skipping project with legacy code '{row['CODE']}' as it is in the ignore list extracted from C+P sheets"
+                f"""Skipping project with legacy code '{row['CODE']}' as it
+                  is in the ignore list extracted from C+P sheets
+                  """
             )
             continue
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
@@ -474,7 +479,9 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         meeting = Meeting.objects.filter(number=row["MEETING"]).first()
         if not meeting:
             logger.warning(
-                f"⚠️ Meeting with name '{row['MEETING']}' not found while processing Funding Fields sheet for project with legacy code '{row['CODE']}'"
+                f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing 
+                Funding Fields sheet for project with legacy code '{row['CODE']}'
+                """
             )
             continue
         if project.id in ids_already_updated:
@@ -515,7 +522,7 @@ def process_transfer_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
     transfer_status = ProjectStatus.objects.filter(name__iexact="Transferred").first()
     ids_already_updated = []
     import_user = get_import_user()
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             continue
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
@@ -528,7 +535,9 @@ def process_transfer_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
             meeting = Meeting.objects.filter(number=row["MEETING"]).first()
             if not meeting:
                 logger.warning(
-                    f"⚠️ Meeting with name '{row['MEETING']}' not found while processing Transfer Fields sheet for project with legacy code '{row['CODE']}'"
+                    f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing
+                      Transfer Fields sheet for project with legacy code '{row['CODE']}'
+                      """
                 )
                 continue
         except ValueError:
@@ -599,7 +608,7 @@ def process_c_and_p_consumption_sheet(dry_run=True):
     )
     df = pd.read_excel(file_path, sheet_name="C+P Consumption", header=3).fillna("")
     legacy_codes_already_updated = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         project = Project.objects.filter(
             legacy_code=row["Legacy Code"], production=False
         ).first()
@@ -612,15 +621,15 @@ def process_c_and_p_consumption_sheet(dry_run=True):
         if row["Legacy Code"] not in legacy_codes_already_updated:
             agency = get_agency_by_name(row["Agency"])
             cluster = get_cluster_by_name(row["Cluster"])
-            type = get_type_by_name(row["Type"])
+            project_type = get_type_by_name(row["Type"])
             sector = get_sector_by_name(row["Sector"])
             project.production = False
             if agency:
                 project.agency = agency
             if cluster:
                 project.cluster = cluster
-            if type:
-                project.project_type = type
+            if project_type:
+                project.project_type = project_type
             if sector:
                 project.sector = sector
             project.total_fund = row["total_fund.1"]
@@ -666,7 +675,7 @@ def process_c_and_p_production_sheet(dry_run=True):
     )
     df = pd.read_excel(file_path, sheet_name="C+P Production", header=3).fillna("")
     legacy_codes_already_updated = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         project = Project.objects.filter(legacy_code=row["Legacy Code"]).first()
         if not project:
             logger.warning(
@@ -695,15 +704,15 @@ def process_c_and_p_production_sheet(dry_run=True):
 
             agency = get_agency_by_name(row["Agency"])
             cluster = get_cluster_by_name(row["Cluster"])
-            type = get_type_by_name(row["Type"])
+            project_type = get_type_by_name(row["Type"])
             sector = get_sector_by_name(row["Sector"])
             project.production = True
             if agency:
                 project.agency = agency
             if cluster:
                 project.cluster = cluster
-            if type:
-                project.project_type = type
+            if project_type:
+                project.project_type = project_type
             if sector:
                 project.sector = sector
             project.total_fund = row["total_fund.1"]
