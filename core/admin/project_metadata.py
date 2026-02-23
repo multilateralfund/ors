@@ -90,12 +90,15 @@ class ProjectSectorAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "enterprises",
+            "subsectors",
             "projectsubsector",
             "bpactivity",
             "project",
             "project_specific_fields",
         ]
-        return get_final_display_list(ProjectSector, exclude)
+        fields = get_final_display_list(ProjectSector, exclude)
+        return fields
 
 
 @admin.register(ProjectStatus)
@@ -131,8 +134,9 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["projects", "bpactivity"]
-        return get_final_display_list(ProjectSubSector, exclude)
+        exclude = ["projects", "bpactivity", "enterprises"]
+        fields = get_final_display_list(ProjectSubSector, exclude)
+        return fields
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -151,8 +155,10 @@ class ProjectTypeAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "project",
+            "project_enterprises",
             "businessplan",
             "bpactivity",
             "project_specific_fields",
         ]
-        return get_final_display_list(ProjectType, exclude)
+        fields = get_final_display_list(ProjectType, exclude)
+        return fields

@@ -1350,13 +1350,6 @@ class Project(models.Model):
     objects = ProjectManager()
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["legacy_code"],
-                condition=models.Q(latest_project__isnull=True),
-                name="unique_legacy_code_when_latest_project_is_none",
-            )
-        ]
         ordering = ["-date_actual", "country__name", "serial_number"]
 
     @cached_property
