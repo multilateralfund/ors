@@ -32,7 +32,7 @@ from core.models.project_metadata import (
 from core.utils import post_approval_changes
 from core.import_data.utils import get_import_user
 
-#pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught
+# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ def get_sector_by_name(name):
     if name.strip() in TRANSLATED_SECTORS:
         name = TRANSLATED_SECTORS[name.strip()]
     sector = ProjectSector.objects.filter(name__iexact=name.strip()).first()
-    if not sector:
+    if not sector and name.strip():
         logger.warning(f"⚠️ Sector with name '{name.strip()}' not found")
     return sector
 
