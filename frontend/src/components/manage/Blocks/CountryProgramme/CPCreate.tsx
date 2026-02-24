@@ -215,8 +215,8 @@ const CPCreate: React.FC = () => {
     ),
   ])
 
-  const crtVariant = getCrtVariant(new Date().getFullYear() - 1)
-  const isNewFormat = shouldEnableNewCPDataFormatting(crtVariant.model)
+  const initialVariant = getCrtVariant(new Date().getFullYear() - 1)
+  const isNewFormat = shouldEnableNewCPDataFormatting(initialVariant.model)
 
   const defaultDataSectionD = {
     all_uses: '0.000',
