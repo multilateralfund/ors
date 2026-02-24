@@ -20,6 +20,8 @@ const ProjectIdentifiersSection = ({
   bpData,
   onBpDataChange,
   bpErrors,
+  project,
+  mode,
   ...rest
 }: ProjectIdentifiersSectionProps & {
   bpData: BpDataProps
@@ -55,6 +57,8 @@ const ProjectIdentifiersSection = ({
             setProjectData,
             areNextSectionsDisabled,
             setCurrentTab,
+            project,
+            mode,
           }}
           {...rest}
         />
@@ -70,6 +74,8 @@ const ProjectIdentifiersSection = ({
             onBpDataChange,
             bpData,
             bpErrors,
+            project,
+            mode,
           }}
           isSectionDisabled={
             areNextSectionsDisabled ||
