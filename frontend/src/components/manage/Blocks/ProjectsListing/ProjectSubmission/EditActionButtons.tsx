@@ -496,7 +496,7 @@ const EditActionButtons = ({
   const onEditProject = async () => {
     const updatedSuccessfully = await editProject()
 
-    if (updatedSuccessfully) {
+    if (updatedSuccessfully && !postExComUpdate) {
       enqueueSnackbar(<>Updated project successfully.</>, {
         variant: 'success',
       })
@@ -618,6 +618,12 @@ const EditActionButtons = ({
       try {
         await api(`api/projects/v2/${id}/${action}/`, {
           method: 'POST',
+        })
+
+        const actionType = action === 'approve' ? 'approved' : 'not approved'
+
+        enqueueSnackbar(<>Project {actionType} successfully.</>, {
+          variant: 'success',
         })
         setLocation(`/projects-listing/${id}`)
       } catch (error) {
