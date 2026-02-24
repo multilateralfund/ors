@@ -393,14 +393,23 @@ const CPCreate: React.FC = () => {
       const variant = getCrtVariant(value.id)
       const isNewFormat = shouldEnableNewCPDataFormatting(variant.model)
 
-      handleSetForm((oldForm: any) => ({
-        ...oldForm,
-        year: value.id,
-        section_d:
-          !isNewFormat && oldForm.section_d.length === 2
-            ? oldForm.section_d.slice(0, 1)
-            : oldForm.section_d,
-      }))
+      handleSetForm((oldForm: any) => {
+        const updatedSectionDData =
+          isNewFormat && oldForm.section_d.length === 1
+            ? [
+                ...oldForm.section_d,
+                { ...defaultDataSectionD, row_id: 'generation_2' },
+              ]
+            : !isNewFormat && oldForm.section_d.length === 2
+              ? oldForm.section_d.slice(0, 1)
+              : oldForm.section_d
+
+        return {
+          ...oldForm,
+          year: value.id,
+          section_d: updatedSectionDData,
+        }
+      })
     },
     options: yearOptions,
     value: { id: form.year, label: `${form.year}` },
