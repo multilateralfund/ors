@@ -96,7 +96,7 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
         generation = response.data["section_d"][0]
         assert (
-            response.data["section_d"][0]["row_id"] == f"generation_{generation_['id']}"
+            response.data["section_d"][0]["row_id"] == f"generation_{generation['id']}"
         )
 
         assert len(response.data["section_e"]) == 2
