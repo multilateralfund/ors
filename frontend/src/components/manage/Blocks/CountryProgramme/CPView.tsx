@@ -49,86 +49,93 @@ const TableProps: ITableProps = {
       .trim()
     const convertData = (gridContext?.unit || 'mt') === 'mt' ? 0 : 1
     return (
-      <div
-        className={cx('mb-4 flex', {
-          'flex-col': !fullScreen,
-          'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
-            fullScreen,
-          'px-4': fullScreen && !print,
-        })}
-      >
-        <Typography
-          className={cx('flex items-center', { 'mb-4 md:mb-0': fullScreen })}
-          component="h2"
-          variant="h6"
+      <>
+        <div
+          className={cx('mb-4 flex', {
+            'flex-col': !fullScreen,
+            'flex-col-reverse md:flex-row md:items-center md:justify-between md:py-2':
+              fullScreen,
+            'px-4': fullScreen && !print,
+          })}
         >
-          {sectionTitle}
-          {['section_a', 'section_b'].includes(section.id) ? (
-            <UnitSelectionWidget
-              className="ml-2 border-y-0 border-l border-r-0 border-solid border-primary pl-2"
-              gridContext={gridContext}
-              onChange={onUnitSelectionChange}
-            />
-          ) : null}
-        </Typography>
-        {section.note && (
           <Typography
-            className={cx(
-              'border border-solid border-black px-2 py-4 font-bold',
-              {
-                'mb-4 md:mb-0': fullScreen,
-              },
-            )}
+            className={cx('flex items-center', { 'mb-4 md:mb-0': fullScreen })}
+            component="h2"
+            variant="h6"
           >
-            {section.note}
+            {sectionTitle}
+            {['section_a', 'section_b'].includes(section.id) ? (
+              <UnitSelectionWidget
+                className="ml-2 border-y-0 border-l border-r-0 border-solid border-primary pl-2"
+                gridContext={gridContext}
+                onChange={onUnitSelectionChange}
+              />
+            ) : null}
+          </Typography>
+          {section.note && (
+            <Typography
+              className={cx(
+                'border border-solid border-black px-2 py-4 font-bold',
+                {
+                  'mb-4 md:mb-0': fullScreen,
+                },
+              )}
+            >
+              {section.note}
+            </Typography>
+          )}
+          <Portal
+            active={isActiveSection && !fullScreen}
+            domNode="sectionToolbar"
+          >
+            <div className="flex items-center justify-end gap-x-2">
+              {!archive && <DownloadCalculatedAmounts report={report} />}
+              <DownloadReport
+                archive={archive}
+                convertData={convertData}
+                report={report}
+              />
+              {section.allowFullScreen && !fullScreen && (
+                <Tooltip placement="top" title="Enter fullscreen">
+                  <div
+                    className="text-md cursor-pointer"
+                    aria-label="enter fullscreen"
+                    onClick={() => {
+                      enterFullScreen()
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-x-2">
+                      <span className="text-primary">Fullscreen</span>
+                      <IoExpand className="text-xl text-secondary" />
+                    </div>
+                  </div>
+                </Tooltip>
+              )}
+              {fullScreen && (
+                <Tooltip placement="top" title="Exit fullscreen">
+                  <div
+                    className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
+                    aria-label="exit fullscreen"
+                    onClick={() => {
+                      exitFullScreen()
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-x-2">
+                      <span className="text-primary">Close</span>
+                      <IoClose className="text-xl text-secondary" />
+                    </div>
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </Portal>
+        </div>
+        {section.additionalNote && (
+          <Typography className="border border-b-0 border-solid border-mui-box-border p-2 text-center font-bold">
+            {section.additionalNote}
           </Typography>
         )}
-        <Portal
-          active={isActiveSection && !fullScreen}
-          domNode="sectionToolbar"
-        >
-          <div className="flex items-center justify-end gap-x-2">
-            {!archive && <DownloadCalculatedAmounts report={report} />}
-            <DownloadReport
-              archive={archive}
-              convertData={convertData}
-              report={report}
-            />
-            {section.allowFullScreen && !fullScreen && (
-              <Tooltip placement="top" title="Enter fullscreen">
-                <div
-                  className="text-md cursor-pointer"
-                  aria-label="enter fullscreen"
-                  onClick={() => {
-                    enterFullScreen()
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-x-2">
-                    <span className="text-primary">Fullscreen</span>
-                    <IoExpand className="text-xl text-secondary" />
-                  </div>
-                </div>
-              </Tooltip>
-            )}
-            {fullScreen && (
-              <Tooltip placement="top" title="Exit fullscreen">
-                <div
-                  className="exit-fullscreen not-printable text-md cursor-pointer p-2 text-primary"
-                  aria-label="exit fullscreen"
-                  onClick={() => {
-                    exitFullScreen()
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-x-2">
-                    <span className="text-primary">Close</span>
-                    <IoClose className="text-xl text-secondary" />
-                  </div>
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        </Portal>
-      </div>
+      </>
     )
   },
   domLayout: 'autoHeight',

@@ -35,7 +35,7 @@ const LinkedBPTableWrapper = (
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
   const crtBpYearStart =
-    mode === 'edit' && project?.bp_activity?.business_plan?.year_start
+    mode === 'edit' ? project?.bp_activity?.business_plan?.year_start : null
 
   const latestEndorsedBpPeriod = find(
     periodOptions,

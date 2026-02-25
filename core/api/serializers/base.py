@@ -6,7 +6,6 @@ from core.models.country_programme import CPReport
 from core.models.project import Project
 from core.models.substance import Substance
 
-
 CP_GENERATION_CHEMICAL = "HFC-23"
 
 
@@ -20,7 +19,7 @@ class RowIDField(serializers.CharField):
         class_name = value.__class__.__name__
 
         if class_name == "CPGeneration":
-            return "generation_1"
+            return f"generation_{value.id}"
         if class_name == "CPEmission":
             return f"facility_{value.id}"
         if class_name == "CPUsage":

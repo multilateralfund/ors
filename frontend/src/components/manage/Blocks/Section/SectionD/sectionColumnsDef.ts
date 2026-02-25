@@ -55,11 +55,14 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
                 props.data.rowType,
               ),
             }),
-            footnote: {
-              id: '1',
-              content: 'Unintentional generation.',
-              order: 1,
-            },
+            footnote:
+              props.node.rowIndex === 1
+                ? {
+                    id: '1',
+                    content: 'Unintentional generation.',
+                    order: 1,
+                  }
+                : {},
           }),
         },
       }
@@ -106,6 +109,18 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           },
         },
       }),
+  ...(shouldEnableNewCPDataFormatting(model)
+    ? {
+        other_uses_remarks: {
+          ...colDefById['other_uses_remarks'],
+          headerComponentParams: {
+            footnote: {
+              id: '*',
+            },
+          },
+        },
+      }
+    : {}),
 })
 
 const sectionDefaultColDef: ColDef<any, any> = {
