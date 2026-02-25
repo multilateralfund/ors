@@ -17,7 +17,7 @@ function getRowData(report: any) {
 
 export default function SectionDViewDiff(props: any) {
   const { TableProps, report, reportDiff, variant } = props
-  const gridOptions = useGridOptions({ model: variant })
+  const gridOptions = useGridOptions({ model: variant.model })
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(reportDiff))
 
