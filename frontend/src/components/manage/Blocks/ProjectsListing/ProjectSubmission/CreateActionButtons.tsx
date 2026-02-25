@@ -97,7 +97,7 @@ const CreateActionButtons = ({
         )
       }
       clearUpdatedFields()
-      enqueueSnackbar(<>Created project successfully.</>, {
+      enqueueSnackbar(<>Project created successfully.</>, {
         variant: 'success',
       })
       setLocation(`/projects-listing/${result.id}/edit`)

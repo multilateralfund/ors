@@ -258,7 +258,7 @@ const ProjectsCreateWrapper = () => {
       <ProjectFormFooter
         id={projectId}
         href={`/projects-listing/${projectId}`}
-        successMessage="Created project successfully."
+        successMessage="Project created successfully."
         successRedirectMessage="View project."
         {...{ nonFieldsErrors, otherErrors }}
       />
