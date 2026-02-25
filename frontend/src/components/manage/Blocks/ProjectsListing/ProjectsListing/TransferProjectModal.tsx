@@ -207,7 +207,7 @@ const ProjectTransferWrapper = ({
       }
 
       setIsModalOpen(false)
-      enqueueSnackbar(<>Project was transferred successfully.</>, {
+      enqueueSnackbar(<>Project transferred successfully.</>, {
         variant: 'success',
       })
       clearUpdatedFields()
