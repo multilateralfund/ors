@@ -296,7 +296,8 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
             return [{"id": index, "name": str(index)} for index in range(1, 11)]
         if obj.read_field_name == "production_control_type":
             return Project.ProductionControlType.choices
-
+        if obj.read_field_name == "consumption_level_status":
+            return Project.ConsumptionLevelStatus.choices
         if obj.read_field_name == "blanket_or_individual_consideration":
             return Project.BlanketOrIndividualConsideration.choices
         return None

@@ -103,6 +103,16 @@ class ProjectProductionControlTypeView(APIView):
         return Response(choices)
 
 
+class ProjectConsumptionLevelStatusView(APIView):
+    """
+    View to return a list of all Project ConsumptionLevelStatus choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = Project.ConsumptionLevelStatus.choices
+        return Response(choices)
+
+
 class ProjectOdsOdpTypeView(APIView):
     """
     View to return a list of all Project OdsOdpType choices

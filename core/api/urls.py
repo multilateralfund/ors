@@ -124,6 +124,7 @@ from core.api.views.project_enterprise import (
 )
 from core.api.views.projects_v2 import (
     ProjectProductionControlTypeView,
+    ProjectConsumptionLevelStatusView,
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
@@ -568,6 +569,11 @@ urlpatterns = [
         "project-production-control-type/",
         ProjectProductionControlTypeView.as_view(),
         name="project-production-control-type",
+    ),
+    path(
+        "project-consumption-level-status/",
+        ProjectConsumptionLevelStatusView.as_view(),
+        name="project-consumption-level-status",
     ),
     path(
         "project-ods-odp-type/",
