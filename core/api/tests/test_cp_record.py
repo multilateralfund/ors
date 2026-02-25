@@ -1,4 +1,5 @@
 from math import isclose
+
 import pytest
 from django.urls import reverse
 
@@ -93,7 +94,10 @@ class TestCPRecordList(BaseTest):
         assert int(float(section_c[6]["current_year_price"])) == 2019
 
         assert response.data["section_d"][0]["chemical_name"] == "HFC-23"
-        assert response.data["section_d"][0]["row_id"] == "generation_1"
+        generation = response.data["section_d"][0]
+        assert (
+            response.data["section_d"][0]["row_id"] == f"generation_{generation_['id']}"
+        )
 
         assert len(response.data["section_e"]) == 2
         emission = response.data["section_e"][0]
