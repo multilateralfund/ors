@@ -19,6 +19,7 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
     end_date = serializers.SerializerMethodField()
     project_funding = serializers.SerializerMethodField()
     support_cost = serializers.SerializerMethodField()
+    phase_out_co2_eq_t = serializers.SerializerMethodField()
     phase_out_odp = serializers.SerializerMethodField()
     phase_out_mt = serializers.SerializerMethodField()
 
@@ -31,6 +32,7 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
             "support_cost",
             "start_date",
             "end_date",
+            "phase_out_co2_eq_t",
             "phase_out_odp",
             "phase_out_mt",
         ]
@@ -42,6 +44,7 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
                 max_end=Max("project_end_date"),
                 total_funding=Sum("total_fund"),
                 total_support=Sum("support_cost_psc"),
+                phase_out_co2_eq_t=Sum("ods_odp__co2_mt"),
                 phase_out_odp=Sum("ods_odp__odp"),
                 phase_out_mt=Sum("ods_odp__phase_out_mt"),
             )
@@ -58,6 +61,9 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
     def get_support_cost(self, obj):
         return self._get_computed_values(obj)["total_support"]
+
+    def get_phase_out_co2_eq_t(self, obj):
+        return self._get_computed_values(obj)["phase_out_co2_eq_t"]
 
     def get_phase_out_odp(self, obj):
         return self._get_computed_values(obj)["phase_out_odp"]

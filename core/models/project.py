@@ -90,14 +90,21 @@ class MetaProject(models.Model):
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Project Funding (MYA)",
+        help_text="MYA Total agreed funding in principle (US $)",
     )
     support_cost = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Support Cost (MYA)",
+        help_text="MYA Total support costs in principle (US $)",
+    )
+    project_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="MYA Total agreed costs in principle (US $)",
     )
 
     start_date = models.DateTimeField(
@@ -105,64 +112,109 @@ class MetaProject(models.Model):
     )
     end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
 
+    phase_out_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (CO2-eq tonnes) (MYA)",
+    )
     phase_out_odp = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (ODP t) (MYA)",
+        help_text="Phase-out (ODP tonnes) (MYA)",
     )
     phase_out_mt = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (Mt) (MYA)",
+        help_text="Phase-out (metric tonnes) (MYA)",
     )
     # END: auto calculated from projects
 
-    targets = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
-    )
-    starting_point = models.DecimalField(
+    target_reduction = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Starting point",
+        help_text="Target in the last year (reduction in %)",
     )
-    baseline = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
-    )
-    number_of_enterprises_assisted = models.IntegerField(
-        null=True, blank=True, help_text="Number of enterprises assisted"
-    )
-    number_of_enterprises = models.IntegerField(
-        null=True, blank=True, help_text="Number of enterprises"
-    )
-    aggregated_consumption = models.DecimalField(
+    target_co2_eq_t = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Aggregated consumption",
+        help_text="Target in the last year (CO2-eq tonnes)",
+    )
+    target_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Target in the last year (ODP tonnes)",
+    )
+    starting_point_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point for aggregate reductions in consumption or production (ODP tonnes)",
+    )
+    starting_point_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point for aggregate reductions in consumption or production (CO2-eq tonnes)",
+    )
+    baseline_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Baseline (ODP tonnes)",
+    )
+    baseline_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Baseline (CO2-eq tonnes)",
+    )
+    number_of_smes_directly_funded = models.IntegerField(
+        null=True, blank=True, help_text="Number of SMEs directly funded"
+    )
+    number_of_non_sme_directly_funded = models.IntegerField(
+        null=True, blank=True, help_text="Number of non-SMEs directly funded"
+    )
+    number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Number of both SMEs and non-SMEs included in the project but not directly funded",
     )
     number_of_production_lines_assisted = models.IntegerField(
-        null=True, blank=True, help_text="Number of Production Lines assisted"
+        null=True,
+        blank=True,
+        help_text="Production sector: number of production lines assisted",
     )
     cost_effectiveness_kg = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg)",
+        help_text="Cost effectiveness (US $/kg)",
     )
     cost_effectiveness_co2 = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-ep)",
+        help_text="Cost effectiveness (US $/CO2-eq tonnes) ",
     )
 
     draft_project_funding = models.DecimalField(
@@ -170,14 +222,21 @@ class MetaProject(models.Model):
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Project Funding (MYA)",
+        help_text="MYA Total agreed funding in principle (US $) (draft)",
     )
     draft_support_cost = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Support Cost (MYA)",
+        help_text="MYA Total support costs in principle (US $) (draft)",
+    )
+    draft_project_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="MYA Total agreed costs in principle (US $) (draft)",
     )
     draft_start_date = models.DateTimeField(
         null=True, blank=True, help_text="Start date (MYA)"
@@ -185,62 +244,107 @@ class MetaProject(models.Model):
     draft_end_date = models.DateTimeField(
         null=True, blank=True, help_text="End date (MYA)"
     )
+    draft_phase_out_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (CO2-eq tonnes) (MYA) (draft)",
+    )
     draft_phase_out_odp = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (ODP t) (MYA)",
+        help_text="Phase-out (ODP tonnes) (MYA)",
     )
     draft_phase_out_mt = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (Mt) (MYA)",
+        help_text="Phase-out (metric tonnes) (MYA)",
     )
-    draft_targets = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
-    )
-    draft_starting_point = models.DecimalField(
+    draft_target_reduction = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Starting point",
+        help_text="Target in the last year (reduction in %) (draft)",
     )
-    draft_baseline = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
-    )
-    draft_number_of_enterprises_assisted = models.IntegerField(
-        null=True, blank=True, help_text="Number of enterprises assisted"
-    )
-    draft_number_of_enterprises = models.IntegerField(
-        null=True, blank=True, help_text="Number of enterprises"
-    )
-    draft_aggregated_consumption = models.DecimalField(
+    draft_target_co2_eq_t = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Aggregated consumption",
+        help_text="Target in the last year (CO2-eq tonnes) (draft)",
+    )
+    draft_target_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Target in the last year (ODP tonnes) (draft)",
+    )
+    draft_starting_point_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point for aggregate reductions in consumption or production (ODP tonnes) (draft)",
+    )
+    draft_starting_point_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point for aggregate reductions in consumption or production (CO2-eq tonnes) (draft)",
+    )
+    draft_baseline_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Baseline (ODP tonnes)",
+    )
+    draft_baseline_co2_eq_t = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Baseline (CO2-eq tonnes)",
+    )
+    draft_number_of_smes_directly_funded = models.IntegerField(
+        null=True, blank=True, help_text="Number of SMEs directly funded (draft)"
+    )
+    draft_number_of_non_sme_directly_funded = models.IntegerField(
+        null=True, blank=True, help_text="Number of non-SMEs directly funded (draft)"
+    )
+    draft_number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (draft)",
     )
     draft_number_of_production_lines_assisted = models.IntegerField(
-        null=True, blank=True, help_text="Number of Production Lines assisted"
+        null=True,
+        blank=True,
+        help_text="Production sector: number of production lines assisted",
     )
     draft_cost_effectiveness_kg = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg)",
+        help_text="Cost effectiveness (US $/kg)",
     )
     draft_cost_effectiveness_co2 = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-ep)",
+        help_text="Cost effectiveness (US $/CO2-eq tonnes)",
     )
 
     # END: Task #32217 fields.
@@ -305,13 +409,14 @@ class Project(models.Model):
         BLANKET = "blanket", "Blanket"
         INDIVIDUAL = "individual", "Individual"
 
+    class ConsumptionLevelStatus(models.TextChoices):
+        LVC = "LVC", "LVC"
+        NON_LVC = "Non-LVC", "Non-LVC"
+        NA = "Not applicable", "Not applicable"
+
     class ProjectCompliance(models.TextChoices):
         EE = "Energy Efficieny", "Energy Efficieny"
         NONEE = "Non-Energey Efficiency", "Non-Energey Efficiency"
-
-    class DestructionTechnology(models.TextChoices):
-        DT1 = "D1", "D1"
-        DT2 = "D2", "D2"
 
     class ProductionControlType(models.TextChoices):
         REDUCTION = "reduction", "Reduction"
@@ -324,11 +429,7 @@ class Project(models.Model):
             "conversion_to_non_controlled_substance",
             "Conversion to non-controlled substance",
         )
-
-    class Regulations(models.TextChoices):
-        PR1 = "pr1", "PR1"
-        PR2 = "pr2", "PR2"
-        PR3 = "pr3", "PR3"
+        OTHER = "other", "Other"
 
     class Category(models.TextChoices):
         MYA = "Multi-year agreement", "Multi-year agreement"
@@ -831,7 +932,9 @@ class Project(models.Model):
     )  # obsolete
 
     # new fields
-    is_lvc = models.BooleanField(
+    consumption_level_status = models.CharField(
+        max_length=256,
+        choices=ConsumptionLevelStatus.choices,
         help_text="The field to be derived but with the option change the value for the KIP (As an example).",
         null=True,
         blank=True,
@@ -849,6 +952,11 @@ class Project(models.Model):
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Duration of project (months)",
+    )
     group = models.ForeignKey(
         "core.Group",
         on_delete=models.CASCADE,
@@ -857,9 +965,7 @@ class Project(models.Model):
         blank=True,
         help_text="Annex group of substances",
     )
-    destruction_technology = models.CharField(
-        max_length=256, choices=DestructionTechnology.choices, null=True, blank=True
-    )
+    destruction_technology = models.CharField(max_length=256, null=True, blank=True)
 
     production_control_type = models.CharField(
         max_length=256,
@@ -867,54 +973,53 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
-    is_sme = models.BooleanField(null=True, blank=True)
-    number_of_enterprises = models.IntegerField(
+    number_of_non_sme_directly_funded = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises (planned)",
+        help_text="Number of non-SMEs directly funded (planned)",
     )
-    number_of_enterprises_actual = models.IntegerField(
+    number_of_non_sme_directly_funded_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises (actual)",
+        help_text="Number of non-SMEs directly funded (actual)",
     )
-    number_of_enterprises_assisted = models.IntegerField(
+    number_of_smes_directly_funded = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises assisted (planned)",
+        help_text="Number of SMEs directly funded (planned)",
     )
-    number_of_enterprises_assisted_actual = models.IntegerField(
+    number_of_smes_directly_funded_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises assisted (actual)",
+        help_text="Number of SMEs directly funded (actual)",
     )
-    aggregated_consumption = models.DecimalField(
+    number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Aggregated consumption (planned)",
+        help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (planned)",
     )
-    aggregated_consumption_actual = models.DecimalField(
+    number_of_both_sme_non_sme_not_directly_funded_actual = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Aggregated consumption (actual)",
+        help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (actual)",
     )
     cost_effectiveness = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg) (planned)",
+        help_text="Cost effectiveness (US $/kg) (planned)",
     )
     cost_effectiveness_actual = models.DecimalField(
         max_digits=30,
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ Kg) actual",
+        help_text="Cost effectiveness (US $/kg) actual",
     )
     cost_effectiveness_co2 = models.DecimalField(
         max_digits=30,
@@ -933,12 +1038,12 @@ class Project(models.Model):
     number_of_production_lines_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of production lines assisted (planned)",
+        help_text="Production sector: number of production lines assisted (planned)",
     )
     number_of_production_lines_assisted_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of production lines assisted (actual)",
+        help_text="Production sector: number of production lines assisted (actual)",
     )
 
     # new approval fields
@@ -984,102 +1089,102 @@ class Project(models.Model):
     total_number_of_technicians_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians trained (planned)",
+        help_text="Total number of technicians trained - planned",
     )
     total_number_of_technicians_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians trained (actual)",
+        help_text="Total number of technicians trained - actual",
     )
     number_of_female_technicians_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians trained (planned)",
+        help_text="Number of female technicians trained - planned",
     )
     number_of_female_technicians_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians trained (actual)",
+        help_text="Number of female technicians trained - actual",
     )
     total_number_of_trainers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of trainers trained (planned)",
+        help_text="Total number of trainers trained - planned",
     )
     total_number_of_trainers_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of trainers trained (actual)",
+        help_text="Total number of trainers trained - actual",
     )
     number_of_female_trainers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female trainers trained (planned)",
+        help_text="Number of female trainers trained - planned",
     )
     number_of_female_trainers_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female trainers trained (actual)",
+        help_text="Number of female trainers trained - actual",
     )
     total_number_of_technicians_certified = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians certified (planned)",
+        help_text="Total number of technicians certified - planned",
     )
     total_number_of_technicians_certified_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians certified (actual)",
+        help_text="Total number of technicians certified - actual",
     )
     number_of_female_technicians_certified = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians certified (planned)",
+        help_text="Number of female technicians certified - planned",
     )
     number_of_female_technicians_certified_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians certified (actual)",
+        help_text="Number of female technicians certified - actual",
     )
     number_of_training_institutions_newly_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of training institutions newly assisted (planned)",
+        help_text="Number of training institutions newly assisted - planned",
     )
     number_of_training_institutions_newly_assisted_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of training institutions newly assisted (actual)",
+        help_text="Number of training institutions newly assisted - actual",
     )
-    number_of_tools_sets_distributed = models.IntegerField(
+    number_of_toolkits_and_equipment_distributed = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of tools sets distributed (planned)",
+        help_text="Number of toolkits and equipment distributed - planned",
     )
-    number_of_tools_sets_distributed_actual = models.IntegerField(
+    number_of_toolkits_and_equipment_distributed_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of tools sets distributed (actual)",
+        help_text="Number of toolkits and equipment distributed - actual",
     )
     total_number_of_customs_officers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of customs officers trained (planned)",
+        help_text="Total number of customs officers trained - planned",
     )
     total_number_of_customs_officers_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of customs officers trained (actual)",
+        help_text="Total number of customs officers trained - actual",
     )
     number_of_female_customs_officers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female customs officers trained (planned)",
+        help_text="Number of female customs officers trained - planned",
     )
     number_of_female_customs_officers_trained_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female customs officers trained (actual)",
+        help_text="Number of female customs officers trained - actual",
     )
     total_number_of_nou_personnel_supported = models.IntegerField(
         null=True,
@@ -1101,125 +1206,126 @@ class Project(models.Model):
         blank=True,
         help_text="Number of female NOU personnel supported (actual)",
     )
-    certification_system_for_technicians = models.BooleanField(
+    establishment_of_technician_certification = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Certification system for technicians established or further enhanced (planned)",
+        help_text="Establishment or upgrade of technician certification system - planned",
     )
-    certification_system_for_technicians_actual = models.BooleanField(
+    establishment_of_technician_certification_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Certification system for technicians established or further enhanced (actual)",
+        help_text="Establishment or upgrade of technician certification system - actual",
     )
-    operation_of_recovery_and_recycling_scheme = models.BooleanField(
+    establishment_of_recovery_and_recycling_scheme = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of recovery and recycling scheme (planned)",
+        help_text="Establishment or upgrade of recovery and recycling scheme - planned",
     )
-    operation_of_recovery_and_recycling_scheme_actual = models.BooleanField(
+    establishment_of_recovery_and_recycling_scheme_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of recovery and recycling scheme (actual)",
+        help_text="Establishment or upgrade of recovery and recycling scheme - actual",
     )
-    operation_of_reclamation_scheme = models.BooleanField(
+    establishment_of_reclamation_scheme = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of reclamation scheme (planned)",
+        help_text="Establishment or upgrade of reclamation scheme - planned",
     )
-    operation_of_reclamation_scheme_actual = models.BooleanField(
+    establishment_of_reclamation_scheme_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of reclamation scheme (actual)",
+        help_text="Establishment or upgrade of reclamation scheme - actual",
     )
-    establishment_of_imp_exp_licensing = models.BooleanField(
+    upgrade_of_imp_exp_licensing = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment or upgrade of import/export licensing (planned)",
+        help_text="Upgrade of import/export licensing system - planned",
     )
-    establishment_of_imp_exp_licensing_actual = models.BooleanField(
+
+    upgrade_of_imp_exp_licensing_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment or upgrade of import/export licensing (actual)",
+        help_text="Upgrade of import/export licensing system - actual",
     )
-    establishment_of_quota_systems = models.BooleanField(
+    upgrade_of_quota_system = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment of quota systems (planned)",
+        help_text="Upgrade of quota system - planned",
     )
-    establishment_of_quota_systems_actual = models.BooleanField(
+    upgrade_of_quota_system_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment of quota systems (actual)",
+        help_text="Upgrade of quota system - actual",
     )
-    ban_of_equipment = models.IntegerField(
+    number_of_bans_on_equipment = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of equipment (planned)",
+        help_text="Number of bans on equipment - planned",
     )
-    ban_of_equipment_actual = models.IntegerField(
+    number_of_bans_on_equipment_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of equipment (actual)",
+        help_text="Number of bans on equipment - actual",
     )
-    ban_of_substances = models.IntegerField(
+    number_of_bans_on_substances = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of substances (planned)",
+        help_text="Number of bans on substances - planned",
     )
-    ban_of_substances_actual = models.IntegerField(
+    number_of_bans_on_substances_actual = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of substances (actual)",
+        help_text="Number of bans on substances - actual",
     )
-    kwh_year_saved = models.FloatField(
+    energy_savings = models.FloatField(
         null=True,
         blank=True,
-        help_text="kWh/year saved (planned)",
+        help_text="Energy savings - planned (kWh/year)",
     )
-    kwh_year_saved_actual = models.FloatField(
+    energy_savings_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="kWh/year saved (actual)",
+        help_text="Energy savings - actual (kWh/year)",
     )
     meps_developed_domestic_refrigeration = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for domestic refrigeration (planned)",
+        help_text="MEPS to be developed/enhanced for domestic refrigeration (planned)",
     )
     meps_developed_domestic_refrigeration_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for domestic refrigeration (actual)",
+        help_text="MEPS to be developed/enhanced for domestic refrigeration (actual)",
     )
     meps_developed_commercial_refrigeration = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial refrigeration (planned)",
+        help_text="MEPS or equivalent standard to be developed/enhanced for commercial refrigeration (planned)",
     )
     meps_developed_commercial_refrigeration_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial refrigeration (actual)",
+        help_text="MEPS or equivalent standard to be developed/enhanced for commercial refrigeration (actual)",
     )
     meps_developed_residential_ac = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for residential air-conditioning (planned)",
+        help_text="MEPS to be developed/enhanced for residential AC (planned)",
     )
     meps_developed_residential_ac_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for residential air-conditioning (actual)",
+        help_text="MEPS to be developed/enhanced for residential AC (actual)",
     )
     meps_developed_commercial_ac = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial AC (planned)",
+        help_text="MEPS or equivalent standard to be developed/enhanced for commercial AC (planned)",
     )
     meps_developed_commercial_ac_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial AC (actual)",
+        help_text="MEPS or equivalent standard to be developed/enhanced for commercial AC (actual)",
     )
     capacity_building_programmes = models.BooleanField(
         null=True,
@@ -1240,22 +1346,32 @@ class Project(models.Model):
     ee_demonstration_project = models.BooleanField(
         null=True,
         blank=True,
-        help_text="EE demonstration project included (planned)",
+        help_text="Energy-efficiency demonstration project included (planned)",
     )
     ee_demonstration_project_actual = models.BooleanField(
         null=True,
         blank=True,
-        help_text="EE demonstration project included (actual)",
+        help_text="Energy-efficiency demonstration project included (actual)",
+    )
+    end_users = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="End users",
+    )
+    end_users_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="End users (actual)",
     )
     quantity_controlled_substances_destroyed_mt = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of controlled substances destroyed (Metric tonnes) (planned)",
+        help_text="Quantity of controlled substances destroyed (metric tonnes) (planned)",
     )
     quantity_controlled_substances_destroyed_mt_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of controlled substances destroyed (Metric tonnes) (actual)",
+        help_text="Quantity of controlled substances destroyed (metric tonnes) (actual)",
     )
     quantity_controlled_substances_destroyed_co2_eq_t = models.FloatField(
         null=True,
@@ -1267,59 +1383,45 @@ class Project(models.Model):
         blank=True,
         help_text="Quantity of controlled substances destroyed (CO2-eq tonnes) (actual)",
     )
-    checklist_regulations = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-        choices=Regulations.choices,
-        help_text="Checklist of regulations or policies enacted (planned)",
-    )
-    checklist_regulations_actual = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-        choices=Regulations.choices,
-        help_text="Checklist of regulations or policies enacted (actual)",
-    )
     quantity_hfc_23_by_product_generated = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Generated) (planned)",
+        help_text="Quantity of HFC-23 by-product generated (metric tonnes) (planned)",
     )
     quantity_hfc_23_by_product_generated_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Generated) (actual)",
+        help_text="Quantity of HFC-23 by-product generated (metric tonnes) (actual)",
     )
-    quantity_hfc_23_by_product_generation_rate = models.FloatField(
+    hfc_23_by_product_generation_rate = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (by product generation rate) (planned)",
+        help_text="HFC-23 by-product generation rate (%) (planned)",
     )
-    quantity_hfc_23_by_product_generation_rate_actual = models.FloatField(
+    hfc_23_by_product_generation_rate_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (by product generation rate) (actual)",
+        help_text="HFC-23 by-product generation rate (%) (actual)",
     )
     quantity_hfc_23_by_product_destroyed = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Destroyed) (planned)",
+        help_text="Quantity of HFC-23 by-product destroyed (metric tonnes) (planned)",
     )
     quantity_hfc_23_by_product_destroyed_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Destroyed) (actual)",
+        help_text="Quantity of HFC-23 by-product destroyed (metric tonnes) (actual)",
     )
     quantity_hfc_23_by_product_emitted = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Emitted) (planned)",
+        help_text="Quantity of HFC-23 by-product emitted (metric tonnes) (planned)",
     )
     quantity_hfc_23_by_product_emitted_actual = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Emitted) (actual)",
+        help_text="Quantity of HFC-23 by-product emitted (metric tonnes) (actual)",
     )
 
     # fields used in transfering projects
@@ -1644,11 +1746,15 @@ class ProjectOdsOdp(models.Model):
 
     ods_display_name = models.CharField(max_length=256, null=True, blank=True)
     ods_replacement = models.CharField(
-        max_length=256, null=True, blank=True, help_text="Replacement technology/ies"
+        max_length=256, null=True, blank=True, help_text="Replacement technologies"
     )
-    co2_mt = models.FloatField(null=True, blank=True, help_text="Phase out (CO2-eq t)")
-    odp = models.FloatField(null=True, blank=True, help_text="Phase out (ODP t)")
-    phase_out_mt = models.FloatField(null=True, blank=True, help_text="Phase out (Mt)")
+    co2_mt = models.FloatField(
+        null=True, blank=True, help_text="Phase-out (CO2-eq tonnes)"
+    )
+    odp = models.FloatField(null=True, blank=True, help_text="Phase-out (ODP tonnes)")
+    phase_out_mt = models.FloatField(
+        null=True, blank=True, help_text="Phase-out (metric tonnes)"
+    )
 
     ods_type = models.CharField(
         max_length=256,

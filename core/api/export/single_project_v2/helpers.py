@@ -64,6 +64,18 @@ def get_blanket_consideration_value(row: dict, header: HeaderType):
     return value
 
 
+def get_consumption_level_status_value(row: dict, header: HeaderType):
+    value: Union[bool, None] = row[header["id"]]
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        try:
+            return Project.ConsumptionLevelStatus(value).label
+        except ValueError:
+            return value
+    return value
+
+
 def field_value(data, header):
     name = header["id"]
     field_data = data["field_data"]

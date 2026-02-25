@@ -181,11 +181,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
-    is_sme = serializers.SerializerMethodField()
     blanket_or_individual_consideration = serializers.SerializerMethodField()
-    destruction_technology = serializers.SerializerMethodField()
     production_control_type = serializers.SerializerMethodField()
-    checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
     editable_for_actual_fields = serializers.SerializerMethodField()
     post_excom_meeting = serializers.SerializerMethodField()
@@ -217,27 +214,11 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     bp_activity = serializers.SerializerMethodField()
 
-    def get_destruction_technology(self, obj):
-        return obj.get_destruction_technology_display()
-
     def get_blanket_or_individual_consideration(self, obj):
         return obj.get_blanket_or_individual_consideration_display()
 
     def get_production_control_type(self, obj):
         return obj.get_production_control_type_display()
-
-    def get_is_sme(self, obj):
-        """
-        Get the is_sme field
-        """
-        if obj.is_sme:
-            return "SME"
-        if obj.is_sme is False:
-            return "Non-SME"
-        return None
-
-    def get_checklist_regulations(self, obj):
-        return obj.get_checklist_regulations_display()
 
     def get_post_excom_meeting(self, obj):
         if obj.post_excom_meeting:
@@ -256,14 +237,13 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "ad_hoc_pcr",
             "agency",
             "agency_id",
-            "aggregated_consumption",
-            "ban_of_equipment",
-            "ban_of_substances",
+            "number_of_both_sme_non_sme_not_directly_funded",
+            "number_of_bans_on_equipment",
+            "number_of_bans_on_substances",
             "bp_activity",
             "blanket_or_individual_consideration",
             "capacity_building_programmes",
-            "certification_system_for_technicians",
-            "checklist_regulations",
+            "establishment_of_technician_certification",
             "cluster",
             "cluster_id",
             "code",
@@ -285,17 +265,17 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "editable",
             "editable_for_actual_fields",
             "ee_demonstration_project",
-            "establishment_of_imp_exp_licensing",
-            "establishment_of_quota_systems",
+            "end_users",
+            "upgrade_of_imp_exp_licensing",
+            "upgrade_of_quota_system",
             "excom_provision",
             "funds",
             "fund_transferred",
             "funding_window",
             "group",
             "group_id",
-            "is_lvc",
-            "is_sme",
-            "kwh_year_saved",
+            "consumption_level_status",
+            "energy_savings",
             "latest_file",
             "lead_agency",
             "lead_agency_submitting_on_behalf",
@@ -315,23 +295,24 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "post_excom_decision",
             "post_excom_decision_id",
             "mya_code",
-            "number_of_enterprises",
-            "number_of_enterprises_assisted",
+            "number_of_non_sme_directly_funded",
+            "number_of_smes_directly_funded",
             "number_of_female_customs_officers_trained",
             "number_of_female_nou_personnel_supported",
             "number_of_female_technicians_certified",
             "number_of_female_technicians_trained",
             "number_of_female_trainers_trained",
             "number_of_production_lines_assisted",
-            "number_of_tools_sets_distributed",
+            "number_of_toolkits_and_equipment_distributed",
             "number_of_training_institutions_newly_assisted",
             "ods_odp",
-            "operation_of_recovery_and_recycling_scheme",
-            "operation_of_reclamation_scheme",
+            "establishment_of_recovery_and_recycling_scheme",
+            "establishment_of_reclamation_scheme",
             "production_control_type",
             "products_manufactured",
             "project_end_date",
             "project_start_date",
+            "project_duration",
             "project_type",
             "project_type_id",
             "programme_officer",
@@ -344,7 +325,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
             "quantity_hfc_23_by_product_generated",
-            "quantity_hfc_23_by_product_generation_rate",
+            "hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
             "quantity_hfc_23_by_product_emitted",
             "sector",
@@ -581,7 +562,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
     component = ProjectComponentsSerializer(read_only=True)
-    checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
@@ -604,11 +584,11 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "versions",
             "history",
             "bp_activity_json",
-            "aggregated_consumption_actual",
+            "number_of_both_sme_non_sme_not_directly_funded_actual",
             "cost_effectiveness_actual",
             "cost_effectiveness_co2_actual",
-            "number_of_enterprises_actual",
-            "number_of_enterprises_assisted_actual",
+            "number_of_non_sme_directly_funded_actual",
+            "number_of_smes_directly_funded_actual",
             "number_of_production_lines_assisted_actual",
             "total_number_of_technicians_trained_actual",
             "number_of_female_technicians_trained_actual",
@@ -617,32 +597,32 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "total_number_of_technicians_certified_actual",
             "number_of_female_technicians_certified_actual",
             "number_of_training_institutions_newly_assisted_actual",
-            "number_of_tools_sets_distributed_actual",
+            "number_of_toolkits_and_equipment_distributed_actual",
             "total_number_of_customs_officers_trained_actual",
             "number_of_female_customs_officers_trained_actual",
             "total_number_of_nou_personnel_supported_actual",
             "number_of_female_nou_personnel_supported_actual",
-            "certification_system_for_technicians_actual",
-            "operation_of_recovery_and_recycling_scheme_actual",
-            "operation_of_reclamation_scheme_actual",
-            "establishment_of_imp_exp_licensing_actual",
-            "establishment_of_quota_systems_actual",
+            "establishment_of_technician_certification_actual",
+            "establishment_of_recovery_and_recycling_scheme_actual",
+            "establishment_of_reclamation_scheme_actual",
+            "upgrade_of_imp_exp_licensing_actual",
+            "upgrade_of_quota_system_actual",
             "editable",
             "editable_for_actual_fields",
-            "ban_of_equipment_actual",
-            "ban_of_substances_actual",
-            "kwh_year_saved_actual",
+            "number_of_bans_on_equipment_actual",
+            "number_of_bans_on_substances_actual",
+            "energy_savings_actual",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration_actual",
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac_actual",
             "capacity_building_programmes_actual",
             "ee_demonstration_project_actual",
+            "end_users_actual",
             "quantity_controlled_substances_destroyed_mt_actual",
             "quantity_controlled_substances_destroyed_co2_eq_t_actual",
-            "checklist_regulations_actual",
             "quantity_hfc_23_by_product_generated_actual",
-            "quantity_hfc_23_by_product_generation_rate_actual",
+            "hfc_23_by_product_generation_rate_actual",
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
             "transfer_meeting",
@@ -674,9 +654,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         if obj.id in self.context.get("edit_actual_fields_queryset_ids", set()):
             return True
         return False
-
-    def get_checklist_regulations_actual(self, obj):
-        return obj.get_checklist_regulations_actual_display()
 
     def get_history(self, obj):
         queryset = obj.project_history.all().select_related("project", "user")
@@ -946,20 +923,18 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         fields = [
             "ad_hoc_pcr",
             "agency",
-            "aggregated_consumption",
+            "number_of_both_sme_non_sme_not_directly_funded",
             "associate_project_id",
-            "ban_of_equipment",
-            "ban_of_equipment_actual",
-            "ban_of_substances",
-            "ban_of_substances_actual",
+            "number_of_bans_on_equipment",
+            "number_of_bans_on_equipment_actual",
+            "number_of_bans_on_substances",
+            "number_of_bans_on_substances_actual",
             "bp_activity",
             "cluster",
             "capacity_building_programmes",
             "capacity_building_programmes_actual",
-            "certification_system_for_technicians",
-            "certification_system_for_technicians_actual",
-            "checklist_regulations",
-            "checklist_regulations_actual",
+            "establishment_of_technician_certification",
+            "establishment_of_technician_certification_actual",
             "country",
             "cost_effectiveness",
             "cost_effectiveness_co2",
@@ -970,18 +945,19 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "destruction_technology",
             "ee_demonstration_project",
             "ee_demonstration_project_actual",
-            "establishment_of_imp_exp_licensing",
-            "establishment_of_imp_exp_licensing_actual",
-            "establishment_of_quota_systems",
-            "establishment_of_quota_systems_actual",
+            "end_users",
+            "end_users_actual",
+            "upgrade_of_imp_exp_licensing",
+            "upgrade_of_imp_exp_licensing_actual",
+            "upgrade_of_quota_system",
+            "upgrade_of_quota_system_actual",
             "excom_provision",
             "funding_window",
             "group",
             "blanket_or_individual_consideration",
-            "is_lvc",
-            "is_sme",
-            "kwh_year_saved",
-            "kwh_year_saved_actual",
+            "consumption_level_status",
+            "energy_savings",
+            "energy_savings_actual",
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meeting",
@@ -993,13 +969,13 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac",
             "meps_developed_commercial_ac_actual",
-            "number_of_enterprises",
-            "number_of_enterprises_assisted",
-            "aggregated_consumption_actual",
+            "number_of_non_sme_directly_funded",
+            "number_of_smes_directly_funded",
+            "number_of_both_sme_non_sme_not_directly_funded_actual",
             "cost_effectiveness_actual",
             "cost_effectiveness_co2_actual",
-            "number_of_enterprises_actual",
-            "number_of_enterprises_assisted_actual",
+            "number_of_non_sme_directly_funded_actual",
+            "number_of_smes_directly_funded_actual",
             "number_of_production_lines_assisted_actual",
             "number_of_female_nou_personnel_supported",
             "number_of_female_nou_personnel_supported_actual",
@@ -1014,13 +990,13 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "number_of_production_lines_assisted",
             "number_of_training_institutions_newly_assisted",
             "number_of_training_institutions_newly_assisted_actual",
-            "number_of_tools_sets_distributed",
-            "number_of_tools_sets_distributed_actual",
+            "number_of_toolkits_and_equipment_distributed",
+            "number_of_toolkits_and_equipment_distributed_actual",
             "ods_odp",
-            "operation_of_recovery_and_recycling_scheme",
-            "operation_of_recovery_and_recycling_scheme_actual",
-            "operation_of_reclamation_scheme",
-            "operation_of_reclamation_scheme_actual",
+            "establishment_of_recovery_and_recycling_scheme",
+            "establishment_of_recovery_and_recycling_scheme_actual",
+            "establishment_of_reclamation_scheme",
+            "establishment_of_reclamation_scheme_actual",
             "pcr_waived",
             "post_excom_meeting",
             "post_excom_decision",
@@ -1029,16 +1005,17 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "programme_officer",
             "project_end_date",
             "project_start_date",
+            "project_duration",
             "project_type",
             "production",
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
             "quantity_hfc_23_by_product_generated",
-            "quantity_hfc_23_by_product_generation_rate",
+            "hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
             "quantity_hfc_23_by_product_emitted",
             "quantity_hfc_23_by_product_generated_actual",
-            "quantity_hfc_23_by_product_generation_rate_actual",
+            "hfc_23_by_product_generation_rate_actual",
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
             "quantity_controlled_substances_destroyed_mt_actual",
@@ -1228,24 +1205,24 @@ class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            "ban_of_equipment_actual",
-            "ban_of_substances_actual",
+            "number_of_bans_on_equipment_actual",
+            "number_of_bans_on_substances_actual",
             "capacity_building_programmes_actual",
-            "certification_system_for_technicians_actual",
-            "checklist_regulations_actual",
+            "establishment_of_technician_certification_actual",
             "ee_demonstration_project_actual",
-            "establishment_of_imp_exp_licensing_actual",
-            "establishment_of_quota_systems_actual",
-            "kwh_year_saved_actual",
+            "end_users_actual",
+            "upgrade_of_imp_exp_licensing_actual",
+            "upgrade_of_quota_system_actual",
+            "energy_savings_actual",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration_actual",
             "meps_developed_residential_ac_actual",
             "meps_developed_commercial_ac_actual",
-            "aggregated_consumption_actual",
+            "number_of_both_sme_non_sme_not_directly_funded_actual",
             "cost_effectiveness_actual",
             "cost_effectiveness_co2_actual",
-            "number_of_enterprises_actual",
-            "number_of_enterprises_assisted_actual",
+            "number_of_non_sme_directly_funded_actual",
+            "number_of_smes_directly_funded_actual",
             "number_of_production_lines_assisted_actual",
             "number_of_female_nou_personnel_supported_actual",
             "number_of_female_customs_officers_trained_actual",
@@ -1253,11 +1230,11 @@ class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
             "number_of_female_trainers_trained_actual",
             "number_of_female_technicians_certified_actual",
             "number_of_training_institutions_newly_assisted_actual",
-            "number_of_tools_sets_distributed_actual",
-            "operation_of_recovery_and_recycling_scheme_actual",
-            "operation_of_reclamation_scheme_actual",
+            "number_of_toolkits_and_equipment_distributed_actual",
+            "establishment_of_recovery_and_recycling_scheme_actual",
+            "establishment_of_reclamation_scheme_actual",
             "quantity_hfc_23_by_product_generated_actual",
-            "quantity_hfc_23_by_product_generation_rate_actual",
+            "hfc_23_by_product_generation_rate_actual",
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
             "quantity_controlled_substances_destroyed_mt_actual",
@@ -1332,7 +1309,9 @@ class ProjectV2EditApprovalFieldsSerializer(
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
         if self.instance.excom_provision is None:
-            errors["excom_provision"] = "Excom provision is required for approval."
+            errors["excom_provision"] = (
+                "Executive Committee provision is required for approval."
+            )
         if self.instance.date_completion is None:
             errors["date_completion"] = "Date of completion is required for approval."
         if not errors:
@@ -1359,11 +1338,12 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "country",
             "agency",
             "meeting",
-            "is_lvc",
+            "consumption_level_status",
             "title",
             "description",
             "project_start_date",
             "project_end_date",
+            "project_duration",
             "total_fund",
             "support_cost_psc",
         ]

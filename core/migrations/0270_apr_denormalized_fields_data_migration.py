@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def populate_denormalized_fields(apps, schema_editor):
-    from core.models.annual_project_report import AnnualProjectReport
+    AnnualProjectReport = apps.get_model("core", "AnnualProjectReport")
 
     existing_aprs = AnnualProjectReport.objects.select_related(
         "project__agency",
