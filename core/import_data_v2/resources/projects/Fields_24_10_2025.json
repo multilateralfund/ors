@@ -402,7 +402,7 @@
         "WRITE_FIELD_NAME": "destruction_technology",
         "READ_FIELD_NAME": "destruction_technology",
         "TABLE": "project",
-        "DATA_TYPE": "title",
+        "DATA_TYPE": "text",
         "SECTION": "Header",
         "SORT_ORDER": 34,
         "EDITABLE_IN_VERSIONS": [1,2,3],
