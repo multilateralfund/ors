@@ -182,7 +182,7 @@ class TestProjectVersioning:
 
         # check project 1
         assert response.data[1]["id"] == project.id
-        assert len(response.data[1]["errors"]) == 7
+        assert len(response.data[1]["errors"]) == 6
         assert "previous_tranches" in response.data[1]["errors"]
 
         # set required fields

@@ -156,8 +156,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Project Funding",
-        "LABEL": "Project funding",
+        "IMPORT_NAME": "Project funding (US $)",
+        "LABEL": "Project funding (US $)",
         "WRITE_FIELD_NAME": "total_fund",
         "READ_FIELD_NAME": "total_fund",
         "TABLE": "project",
@@ -312,8 +312,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Project Support Cost",
-        "LABEL": "Project support cost",
+        "IMPORT_NAME": "Project support costs (US $)",
+        "LABEL": "Project support costs (US $)",
         "WRITE_FIELD_NAME": "support_cost_psc",
         "READ_FIELD_NAME": "support_cost_psc",
         "TABLE": "project",
@@ -336,7 +336,7 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Blanket or Individual consideration (MLFS Users only)",
+        "IMPORT_NAME": "Blanket approval or individual consideration",
         "LABEL": "Blanket or individual consideration",
         "WRITE_FIELD_NAME": "blanket_or_individual_consideration",
         "READ_FIELD_NAME": "blanket_or_individual_consideration",
@@ -421,7 +421,7 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Tranche Number",
+        "IMPORT_NAME": "Tranche number",
         "LABEL": "Tranche number",
         "WRITE_FIELD_NAME": "tranche",
         "READ_FIELD_NAME": "tranche",
@@ -445,7 +445,7 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Replacement technologies",
+        "IMPORT_NAME": "Replacement technology/ies",
         "LABEL": "Replacement technologies",
         "WRITE_FIELD_NAME": "ods_replacement",
         "READ_FIELD_NAME": "ods_replacement",
@@ -518,7 +518,7 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Product Manufactured",
+        "IMPORT_NAME": "Product manufactured",
         "LABEL": "Product manufactured",
         "WRITE_FIELD_NAME": "products_manufactured",
         "READ_FIELD_NAME": "products_manufactured",
@@ -1481,8 +1481,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
-        "LABEL": "Cost effectiveness (US$/ CO2-eq)",
+        "IMPORT_NAME": "Cost effectiveness (US $/CO2-eq tonnes)",
+        "LABEL": "Cost effectiveness (US $/CO2-eq tonnes)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2",
         "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "project",
@@ -1493,8 +1493,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq) actual",
-        "LABEL": "Cost effectiveness (US$/ CO2-eq) (actual)",
+        "IMPORT_NAME": "Cost effectiveness (US $/CO2-eq tonnes) actual",
+        "LABEL": "Cost effectiveness (US $/CO2-eq tonnes) (actual)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2_actual",
         "READ_FIELD_NAME": "cost_effectiveness_co2_actual",
         "TABLE": "project",
@@ -1698,8 +1698,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Phase-out (CO2-eq tonnes) (MYA)",
-        "LABEL": "Phase-out (CO2-eq tonnes) (MYA)",
+        "IMPORT_NAME": "Phase-out (CO2-eq tonnes)",
+        "LABEL": "Phase-out (CO2-eq tonnes)",
         "WRITE_FIELD_NAME": "phase_out_co2_eq_t",
         "READ_FIELD_NAME": "phase_out_co2_eq_t",
         "TABLE": "meta_project",
@@ -1710,8 +1710,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Phase-out (metric tonnes) (MYA)",
-        "LABEL": "Phase-out (metric tonnes) (MYA)",
+        "IMPORT_NAME": "Phase-out (metric tonnes)",
+        "LABEL": "Phase-out (metric tonnes)",
         "WRITE_FIELD_NAME": "phase_out_mt",
         "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "meta_project",
@@ -1722,8 +1722,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Phase-out (ODP tonnes) (MYA)",
-        "LABEL": "Phase-out (ODP tonnes) (MYA)",
+        "IMPORT_NAME": "Phase-out (ODP tonnes)",
+        "LABEL": "Phase-out (ODP tonnes)",
         "WRITE_FIELD_NAME": "phase_out_odp",
         "READ_FIELD_NAME": "phase_out_odp",
         "TABLE": "meta_project",
@@ -1746,8 +1746,8 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq) (MYA)",
-        "LABEL": "Cost effectiveness (US$/ CO2-eq) (MYA)",
+        "IMPORT_NAME": "Cost effectiveness (US $/CO2-eq tonnes)",
+        "LABEL": "Cost effectiveness (US $/CO2-eq tonnes)",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2",
         "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "meta_project",
