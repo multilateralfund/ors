@@ -18,7 +18,6 @@ function useGridOptions(props: { model: string }) {
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
-        ...sectionColDefById['display_name'],
         cellClass: 'bg-mui-box-background',
         cellRendererParams: (props: any) => ({
           className: cx({
@@ -31,6 +30,7 @@ function useGridOptions(props: { model: string }) {
         field: 'display_name',
         headerClass: 'ag-text-left',
         headerName: 'Substance',
+        ...sectionColDefById['display_name'],
       },
       shouldEnableNewCPDataFormatting(model)
         ? {
@@ -79,7 +79,7 @@ function useGridOptions(props: { model: string }) {
                 field: 'other_uses_remarks',
                 headerName: 'Decision / type of use or remarks',
                 ...colDefById['remarks'],
-                ...sectionColGroupDefById['other_uses'],
+                ...sectionColDefById['other_uses_remarks'],
                 dataType: 'text_diff',
               },
             ],
