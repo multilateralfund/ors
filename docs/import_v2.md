@@ -30,7 +30,12 @@ The scripts should be run in the following order when installing locally or when
 
 4. Importing resources
 ```
-
+    python manage.py import_resources_v2 import_project_type
+    python manage.py import_resources_v2 import_sector
+    python manage.py import_resources_v2 import_subsector
+    python manage.py import_resources_v2 import modules
+    python manage.py import_resources_v2 import_project_submission_statuses
+    
     python manage.py import_resources_v2 import_fields
     python manage.py import_resources_v2 import_cluster_type_sector_links
     python manage.py import_resources_v2 import_project_specific_fields

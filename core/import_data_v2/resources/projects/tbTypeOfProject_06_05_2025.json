@@ -44,5 +44,11 @@
     "TYPE_PRO": "Revolving Fund",
     "SORT_TYPE": 7,
     "OUTDATED": false
+  },
+  {
+    "TYPE": "OtherT",
+    "TYPE_PRO": "Other Type",
+    "SORT_TYPE": 8,
+    "OUTDATED": false
   }
 ]
