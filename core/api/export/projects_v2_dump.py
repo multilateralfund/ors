@@ -1,10 +1,8 @@
 import time
-
 from functools import lru_cache
 from functools import partial
 
 import openpyxl
-
 from django.db.models import JSONField
 from django.db.models.fields import BooleanField
 from django.db.models.fields import CharField
@@ -18,8 +16,8 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import format_iso_date
 from core.api.utils import workbook_response
 from core.models import Project
-
 from core.models.project import OLD_FIELD_HELP_TEXT
+from core.models.project_metadata import ProjectField
 
 
 def get_field_value(project, header):
@@ -81,10 +79,22 @@ def get_value_component_field(project, header):
 
 
 class ProjectsV2DumpWriter:
-
     def __init__(self, sheet, fields):
         self.sheet = sheet
+        self.field_names = self._extract_field_names(fields)
         self.headers = list(self._build_headers(fields))
+
+    def _extract_field_names(self, fields):
+        result = {}
+
+        field_names = [f.name for f in fields]
+        project_fields = ProjectField.objects.filter(write_field_name__in=field_names)
+
+        for f in project_fields:
+            if f.label not in result:
+                result[f.write_field_name] = f.label
+
+        return result
 
     def write(self, queryset):
         self.sheet.append([h["headerName"] for h in self.headers])
@@ -118,9 +128,11 @@ class ProjectsV2DumpWriter:
                 yield self._field_header(f)
 
     def _field_header(self, f, method=get_field_value):
+        if f.name not in self.field_names:
+            print(f"Cannot locate name for: {f.name}!")
         return {
             "id": f.name,
-            "headerName": f.name,
+            "headerName": self.field_names.get(f.name, f.name),
             "method": method,
         }
 
