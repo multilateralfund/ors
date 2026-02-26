@@ -82,17 +82,19 @@ const ProjectTransfer = ({
     FieldProps: {
       className:
         defaultProps.FieldProps.className +
-        (field === 'agency' ? ' max-w-40 w-40' : ' w-full'),
+        (['agency', 'lead_agency'].includes(field)
+          ? ' max-w-40 w-40'
+          : ' w-full'),
     },
   })
 
-  const handleChangeAgency = (value: ApiAgency | null) => {
+  const handleChangeAgency = (value: ApiAgency | null, field: string) => {
     setProjectData(
       (prevData) => ({
         ...prevData,
-        agency: value?.id ?? null,
+        [field]: value?.id ?? null,
       }),
-      'agency',
+      field,
     )
   }
 
@@ -174,7 +176,7 @@ const ProjectTransfer = ({
                 options={agenciesOpts}
                 value={projectData.agency}
                 onChange={(_, value) => {
-                  handleChangeAgency(value)
+                  handleChangeAgency(value, 'agency')
                 }}
                 getOptionLabel={(option) =>
                   getOptionLabel(agenciesOpts, option)
@@ -183,6 +185,24 @@ const ProjectTransfer = ({
               />
               <div className="w-8">
                 <FieldErrorIndicator errors={errors} field="agency" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <Label>Lead agency</Label>
+            <div className="flex items-center">
+              <Field
+                widget="autocomplete"
+                options={agencies}
+                value={projectData.lead_agency}
+                onChange={(_, value) => {
+                  handleChangeAgency(value, 'lead_agency')
+                }}
+                getOptionLabel={(option) => getOptionLabel(agencies, option)}
+                {...fieldDefaultProps('lead_agency')}
+              />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="lead_agency" />
               </div>
             </div>
           </div>
