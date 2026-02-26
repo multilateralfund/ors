@@ -45,6 +45,8 @@ def import_cluster_type_sector_links(file_path):
                     sector_name = "Control Substance Monitoring"
                 if sector_name == "Compliance Assistance Program":
                     sector_name = "Compliance Assistance Programme"
+                if sector_name == "Technical assistance":
+                    sector_name = "Technical Assistance"
                 sector = ProjectSector.objects.filter(name=sector_name).first()
                 if not sector:
                     logger.warning(

@@ -123,8 +123,8 @@ from core.api.views.project_enterprise import (
     ProjectEnterpriseViewSet,
 )
 from core.api.views.projects_v2 import (
-    ProjectDestructionTechnologyView,
     ProjectProductionControlTypeView,
+    ProjectConsumptionLevelStatusView,
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
@@ -561,11 +561,6 @@ urlpatterns = [
         name="decision-list",
     ),
     path(
-        "project-destruction-technology/",
-        ProjectDestructionTechnologyView.as_view(),
-        name="project-destruction-technology",
-    ),
-    path(
         "project-enterprise-status/",
         ProjectEnterpriseStatusView.as_view(),
         name="project-enterprise-status",
@@ -574,6 +569,11 @@ urlpatterns = [
         "project-production-control-type/",
         ProjectProductionControlTypeView.as_view(),
         name="project-production-control-type",
+    ),
+    path(
+        "project-consumption-level-status/",
+        ProjectConsumptionLevelStatusView.as_view(),
+        name="project-consumption-level-status",
     ),
     path(
         "project-ods-odp-type/",

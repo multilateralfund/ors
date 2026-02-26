@@ -3,8 +3,11 @@ from typing import List
 
 from core.api.export.base import HeaderType
 from core.api.export.base import WriteOnlyBase
-from core.api.export.single_project_v2.helpers import format_iso_date
-from core.api.export.single_project_v2.helpers import get_blanket_consideration_value
+from core.api.export.single_project_v2.helpers import (
+    format_iso_date,
+    get_blanket_consideration_value,
+    get_consumption_level_status_value,
+)
 from core.models import ProjectField
 
 
@@ -71,9 +74,9 @@ def get_headers_cross_cutting(
             "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
         },
         {
-            "id": "is_lvc",
-            "headerName": "LVC/Non-LVC",
-            "method": lambda r, h: r[h["id"]] and "LVC" or "Non-LVC",
+            "id": "consumption_level_status",
+            "headerName": "Consumption level status",
+            "method": get_consumption_level_status_value,
             "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
         },
         {
@@ -101,6 +104,10 @@ def get_headers_cross_cutting(
             "id": "project_end_date",
             "headerName": "Project end date",
             "method": lambda r, h: format_iso_date(r[h["id"]]),
+        },
+        {
+            "id": "project_duration",
+            "headerName": "Duration of project (months)",
         },
         {
             "id": "blanket_or_individual_consideration",

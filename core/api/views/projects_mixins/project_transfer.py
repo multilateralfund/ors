@@ -75,7 +75,7 @@ class ProjectTransferMixin:
             openapi.Parameter(
                 "transfer_excom_provision",
                 openapi.IN_FORM,
-                description="ExCom provision",
+                description="Executive Committee provision",
                 type=openapi.TYPE_STRING,
                 required=False,
             ),

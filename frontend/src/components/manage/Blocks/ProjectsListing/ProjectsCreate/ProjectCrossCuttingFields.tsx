@@ -4,7 +4,10 @@ import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
 import ProjectFundFields from './ProjectFundFields'
@@ -14,12 +17,13 @@ import {
   canEditField,
   canGoToSecondStep,
   canViewField,
+  getProjectDuration,
   hasFields,
   onTextareaFocus,
 } from '../utils'
 import {
   tableColumns,
-  lvcNonLvcOpts,
+  consumptionLevelOpts,
   considerationOpts,
   defaultProps,
   defaultPropsSimpleField,
@@ -28,7 +32,6 @@ import {
 } from '../constants'
 import {
   CrossCuttingFields,
-  BooleanOptionsType,
   ProjectDataProps,
   ProjectData,
   ProjectTabSetters,
@@ -39,8 +42,8 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { useStore } from '@ors/store'
 
+import { filter, find, includes, omit, some } from 'lodash'
 import { TextareaAutosize, Divider } from '@mui/material'
-import { filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -91,11 +94,12 @@ const ProjectCrossCuttingFields = ({
     project_type,
     sector,
     subsector_ids,
-    is_lvc,
+    consumption_level_status,
     title,
     description,
     project_start_date,
     project_end_date,
+    project_duration,
     blanket_or_individual_consideration,
   } = crossCuttingFields
   const { submission_status } = project || {}
@@ -156,7 +160,9 @@ const ProjectCrossCuttingFields = ({
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-          [disabledClassName]: !canEditField(editableFields, field),
+          [disabledClassName]:
+            !canEditField(editableFields, field) ||
+            field === 'project_duration',
         }),
       },
     }
@@ -345,30 +351,44 @@ const ProjectCrossCuttingFields = ({
                   </div>
                 </div>
               )}
-              {canViewField(viewableFields, 'is_lvc') && (
+              {canViewField(viewableFields, 'consumption_level_status') && (
                 <div>
-                  <Label>{tableColumns.is_lvc}</Label>
+                  <Label>{tableColumns.consumption_level_status}</Label>
                   <div className="flex items-center">
                     <Field
                       widget="autocomplete"
-                      options={lvcNonLvcOpts}
+                      options={consumptionLevelOpts}
                       value={
-                        (find(lvcNonLvcOpts, { id: is_lvc }) ||
-                          null) as BooleanOptionsType | null
+                        find(consumptionLevelOpts, {
+                          id: consumption_level_status,
+                        }) || null
                       }
                       onChange={(_, value) =>
                         changeHandler['drop_down']<
                           ProjectData,
                           CrossCuttingFields
-                        >(value, 'is_lvc', setProjectData, sectionIdentifier)
+                        >(
+                          value,
+                          'consumption_level_status',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
                       }
                       getOptionLabel={(option: any) =>
-                        getOptionLabel(lvcNonLvcOpts, option)
+                        getOptionLabel(consumptionLevelOpts, option)
                       }
-                      disabled={!canEditField(editableFields, 'is_lvc')}
+                      disabled={
+                        !canEditField(
+                          editableFields,
+                          'consumption_level_status',
+                        )
+                      }
                       {...defaultProps}
                     />
-                    <FieldErrorIndicator errors={errors} field="is_lvc" />
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="consumption_level_status"
+                    />
                   </div>
                 </div>
               )}
@@ -378,6 +398,8 @@ const ProjectCrossCuttingFields = ({
                 {...{ projectData, setProjectData, project, errors }}
                 type="crossCutting"
               />
+            </div>
+            <div className="flex w-fit grid-cols-3 flex-wrap gap-x-20 gap-y-2 md:grid">
               {canViewField(viewableFields, 'project_start_date') && (
                 <div>
                   <Label>{tableColumns.project_start_date}</Label>
@@ -385,14 +407,26 @@ const ProjectCrossCuttingFields = ({
                     <DateInput
                       id="project_start_date"
                       value={project_start_date as string}
-                      onChange={(event) =>
+                      onChange={(event) => {
+                        const startDate = event.target.value || null
+
                         changeField(
-                          event.target.value || null,
+                          startDate,
                           'project_start_date',
                           setProjectData,
                           sectionIdentifier,
                         )
-                      }
+
+                        changeField(
+                          getProjectDuration({
+                            project_start_date: startDate,
+                            project_end_date,
+                          }),
+                          'project_duration',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
+                      }}
                       disabled={isStartDateDisabled}
                       formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                       className={cx(defaultPropsDateInput.className, {
@@ -416,20 +450,32 @@ const ProjectCrossCuttingFields = ({
                       id="project_end_date"
                       value={project_end_date as string}
                       onChange={(event) => {
+                        const endDate = event.target.value || null
+
                         changeField(
-                          event.target.value || null,
+                          endDate,
                           'project_end_date',
                           setProjectData,
                           sectionIdentifier,
                         )
                         if (mode === 'edit' && (project?.version ?? 0) >= 3) {
                           changeField(
-                            event.target.value || null,
+                            endDate,
                             'date_completion',
                             setProjectData,
                             'approvalFields',
                           )
                         }
+
+                        changeField(
+                          getProjectDuration({
+                            project_start_date,
+                            project_end_date: endDate,
+                          }),
+                          'project_duration',
+                          setProjectData,
+                          sectionIdentifier,
+                        )
                       }}
                       disabled={
                         !canEditField(editableFields, 'project_end_date')
@@ -445,6 +491,28 @@ const ProjectCrossCuttingFields = ({
                     <FieldErrorIndicator
                       errors={errors}
                       field="project_end_date"
+                    />
+                  </div>
+                </div>
+              )}
+              {canViewField(viewableFields, 'project_duration') && (
+                <div>
+                  <Label>{tableColumns.project_duration}</Label>
+                  <div className="flex items-center">
+                    <FormattedNumberInput
+                      id="project_duration"
+                      value={project_duration ?? ''}
+                      withoutDefaultValue={true}
+                      decimalDigits={0}
+                      disabled={true}
+                      {...omit(
+                        getFieldDefaultProps('project_duration'),
+                        'containerClassName',
+                      )}
+                    />
+                    <FieldErrorIndicator
+                      errors={errors}
+                      field="project_duration"
                     />
                   </div>
                 </div>

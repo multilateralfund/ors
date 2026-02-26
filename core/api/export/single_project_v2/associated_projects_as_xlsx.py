@@ -7,6 +7,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import (
     format_iso_date,
     get_blanket_consideration_value,
+    get_consumption_level_status_value,
 )
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.utils import workbook_response
@@ -42,9 +43,9 @@ class ProjectWriter(WriteOnlyBase):
                 "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
             },
             {
-                "id": "is_lvc",
-                "headerName": "LVC/Non-LVC",
-                "method": lambda r, h: r[h["id"]] and "LVC" or "Non-LVC",
+                "id": "consumption_level_status",
+                "headerName": "Consumption level status",
+                "method": get_consumption_level_status_value,
                 "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
             },
             {
@@ -64,6 +65,10 @@ class ProjectWriter(WriteOnlyBase):
                 "id": "project_end_date",
                 "headerName": "Project end date",
                 "method": lambda r, h: format_iso_date(r[h["id"]]),
+            },
+            {
+                "id": "project_duration",
+                "headerName": "Duration of project (months)",
             },
             {
                 "id": "total_fund",

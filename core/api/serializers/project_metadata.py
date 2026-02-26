@@ -292,25 +292,12 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
 
             return data
 
-        if obj.read_field_name == "is_sme":
-            return [
-                {"id": True, "name": "SME"},
-                {"id": False, "name": "Non-SME"},
-            ]
-
         if obj.read_field_name == "tranche":
             return [{"id": index, "name": str(index)} for index in range(1, 11)]
         if obj.read_field_name == "production_control_type":
             return Project.ProductionControlType.choices
-
-        if obj.read_field_name == "destruction_technology":
-            return Project.DestructionTechnology.choices
-
-        if obj.read_field_name in [
-            "checklist_regulations",
-            "checklist_regulations_actual",
-        ]:
-            return Project.Regulations.choices
+        if obj.read_field_name == "consumption_level_status":
+            return Project.ConsumptionLevelStatus.choices
         if obj.read_field_name == "blanket_or_individual_consideration":
             return Project.BlanketOrIndividualConsideration.choices
         return None

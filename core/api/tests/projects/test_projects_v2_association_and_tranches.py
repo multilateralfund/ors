@@ -202,7 +202,7 @@ class TestProjectListPreviousTranches:
         )
         field1 = ProjectFieldFactory.create(
             import_name="number_of_female_technicians_trained",
-            label="Number of female technicians trained",
+            label="Number of female technicians trained - planned",
             read_field_name="number_of_female_technicians",
             write_field_name="number_of_female_technicians",
             table="project",
@@ -212,7 +212,7 @@ class TestProjectListPreviousTranches:
         )
         field2 = ProjectFieldFactory.create(
             import_name="number_of_female_technicians_trained_actual",
-            label="Number of female technicians trained",
+            label="Number of female technicians trained - actual",
             read_field_name="number_of_female_technicians_trained_actual",
             write_field_name="number_of_female_technicians_trained_actual",
             table="project",
@@ -223,7 +223,7 @@ class TestProjectListPreviousTranches:
         )
         field3 = ProjectFieldFactory.create(
             import_name="total_number_of_trainers_trained_actual",
-            label="Total number of trainers trained actual",
+            label="Total number of trainers trained - actual",
             read_field_name="total_number_of_trainers_trained_actual",
             write_field_name="total_number_of_trainers_trained_actual",
             table="project",
@@ -583,7 +583,7 @@ class TestProjectListAssocitatedProjects:
         assert len(response.data) == 2
         assert response.data[0]["id"] == project2.id
         assert response.data[1]["id"] == project.id
-        assert len(response.data[0]["errors"]) == 6
+        assert len(response.data[0]["errors"]) == 7
         assert len(response.data[1]["errors"]) == 7
         assert response.data[1]["errors"]["tranche"][0] == (
             "Project must have at least one previous tranche entry."
@@ -602,7 +602,7 @@ class TestProjectListAssocitatedProjects:
         )
         field = ProjectFieldFactory.create(
             import_name="number_of_female_technicians_trained_actual",
-            label="Number of female technicians trained",
+            label="Number of female technicians trained - actual",
             read_field_name="number_of_female_technicians_trained_actual",
             write_field_name="number_of_female_technicians_trained_actual",
             table="project",
@@ -626,7 +626,7 @@ class TestProjectListAssocitatedProjects:
         assert len(response.data) == 2
         assert response.data[0]["id"] == project2.id
         assert response.data[1]["id"] == project.id
-        assert len(response.data[0]["errors"]) == 6
+        assert len(response.data[0]["errors"]) == 7
         assert len(response.data[1]["errors"]) == 7
         assert response.data[1]["errors"]["previous_tranches"][0] == (
             f"Previous tranche {project3.title}({project3.id}): At least one actual indicator should be filled."
