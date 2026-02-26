@@ -4,6 +4,7 @@ import { getMeetingNr } from '../../Utils/utilFunctions'
 import {
   approvalOdsFields,
   approvalToOdsMap,
+  consumptionLevelOpts,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
@@ -26,7 +27,7 @@ import {
   SetProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
-import { Cluster, ProjectFieldHistoryValue } from '@ors/types/store'
+import { Cluster, Country, ProjectFieldHistoryValue } from '@ors/types/store'
 
 import dayjs from 'dayjs'
 import {
@@ -46,6 +47,7 @@ import {
   isArray,
   isNaN,
   isNil,
+  isNull,
   isUndefined,
   keys,
   lowerCase,
@@ -486,11 +488,12 @@ export const getCrossCuttingErrors = (
     'project_type',
     'sector',
     'description',
-    'is_lvc',
+    'consumption_level_status',
     'total_fund',
     'support_cost_psc',
     'project_start_date',
     'project_end_date',
+    'project_duration',
   ]
   const requiredFieldsAfterSubmission =
     project?.submission_status !== 'Draft'
@@ -1182,3 +1185,41 @@ export const getOdsOdpFields = (specificFields: ProjectSpecificFields[]) => {
 export const getPostExcomMeetingErrors = (projIdentifiers: ProjIdentifiers) =>
   (getMeetingNr(projIdentifiers.post_excom_meeting ?? undefined) ?? 0) <
   (getMeetingNr(projIdentifiers.meeting ?? undefined) ?? 0)
+
+export const getConsumptionLevelStatus = (
+  countries: Country[],
+  countryId: number,
+) => {
+  const isLvc = find(countries, { id: countryId })?.is_lvc ?? null
+
+  const lvcToConsumptionMapping: Record<string, string> = {
+    true: 'LVC',
+    false: 'Non-LVC',
+  }
+
+  if (isNull(isLvc)) {
+    return isLvc
+  }
+
+  return (
+    find(consumptionLevelOpts, {
+      id: lvcToConsumptionMapping[String(isLvc)],
+    })?.name ?? null
+  )
+}
+
+export const getProjectDuration = (project: {
+  project_start_date: string | null
+  project_end_date: string | null
+}) => {
+  const { project_start_date, project_end_date } = project
+
+  if (!project_start_date || !project_end_date) {
+    return null
+  }
+  const startDate = dayjs(project_start_date)
+  const endDate = dayjs(project_end_date)
+  const months = endDate.diff(startDate, 'month', true)
+
+  return String(Math.max(Math.ceil(months), 0))
+}

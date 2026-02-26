@@ -23,14 +23,15 @@ export const tableColumns: { [key: string]: string } = {
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
-  subsectors: 'Sub-sector(s)',
-  is_lvc: 'LVC/non-LVC',
+  subsectors: 'Subsector',
+  consumption_level_status: 'Consumption level status',
   project_start_date: 'Project start date',
   project_end_date: 'Project end date',
+  project_duration: 'Duration of project (months)',
   total_fund: 'Project funding',
-  support_cost_psc: 'Project support cost',
+  support_cost_psc: 'Project support costs',
   blanket_or_individual_consideration:
-    'Blanket approval/Individual consideration',
+    'Blanket approval or individual consideration',
   meeting: 'Meeting number',
   post_excom_meeting: 'Post ExCom meeting',
   description: 'Description',
@@ -93,11 +94,12 @@ export const initialCrossCuttingFields = {
   project_type: null,
   sector: null,
   subsector_ids: [],
-  is_lvc: null,
+  consumption_level_status: null,
   title: '',
   description: '',
   project_start_date: null,
   project_end_date: null,
+  project_duration: null,
   total_fund: null,
   support_cost_psc: null,
   blanket_or_individual_consideration: null,
@@ -112,9 +114,10 @@ export const initialTranferedProjectData = {
   psc_transferred: null,
 }
 
-export const lvcNonLvcOpts = [
-  { name: 'LVC', id: true },
-  { name: 'Non-LVC', id: false },
+export const consumptionLevelOpts = [
+  { name: 'LVC', id: 'LVC' },
+  { name: 'Non-LVC', id: 'Non-LVC' },
+  { name: 'Not applicable', id: 'Not applicable' },
 ]
 
 export const considerationOpts = [

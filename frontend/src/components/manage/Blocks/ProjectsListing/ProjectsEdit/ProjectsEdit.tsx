@@ -13,12 +13,14 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import {
   filterApprovalFields,
+  getConsumptionLevelStatus,
   getDefaultValues,
   getFieldData,
   getFileFromMetadata,
   getFormattedDecimalValue,
   getNonFieldErrors,
   getOdsOdpFields,
+  getProjectDuration,
   hasSpecificField,
 } from '../utils'
 import {
@@ -296,11 +298,13 @@ const ProjectsEdit = ({
               subsector_ids: !shouldEmptySubsector
                 ? map(project.subsectors, 'id')
                 : [],
-              is_lvc: project.is_lvc,
+              consumption_level_status: project.consumption_level_status,
               title: project.title,
               description: project.description,
               project_start_date: project.project_start_date,
               project_end_date: project.project_end_date,
+              project_duration:
+                project.project_duration ?? getProjectDuration(project),
               total_fund: getFormattedDecimalValue(project.total_fund),
               support_cost_psc: getFormattedDecimalValue(
                 project.support_cost_psc,
@@ -320,8 +324,10 @@ const ProjectsEdit = ({
             bpLinking: { isLinkedToBP: false, bpId: null },
             crossCuttingFields: {
               ...initialCrossCuttingFields,
-              is_lvc:
-                find(countries, { id: project.country_id })?.is_lvc ?? null,
+              consumption_level_status: getConsumptionLevelStatus(
+                countries,
+                project.country_id,
+              ),
             },
           }),
     }))

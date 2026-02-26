@@ -32,11 +32,12 @@ export interface CrossCuttingFields {
   project_type: number | null
   sector: number | null
   subsector_ids: number[]
-  is_lvc: boolean | null
+  consumption_level_status: string | null
   title: string
   description: string
   project_start_date: string | null
   project_end_date: string | null
+  project_duration: string | null
   total_fund: string | null
   support_cost_psc: string | null
   blanket_or_individual_consideration: string | null

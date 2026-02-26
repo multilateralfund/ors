@@ -26,6 +26,7 @@ import {
   filterClusterOptions,
   getAgencyErrorType,
   getClusterDetails,
+  getConsumptionLevelStatus,
 } from '../utils'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
@@ -35,7 +36,7 @@ import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { find, isNil, isNull, map } from 'lodash'
+import { isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 
 export type DecisionOption = {
@@ -170,7 +171,10 @@ const ProjectIdentifiersFields = ({
       ...prevData,
       crossCuttingFields: {
         ...prevData.crossCuttingFields,
-        is_lvc: find(countries, { id: country?.id })?.is_lvc ?? null,
+        consumption_level_status: getConsumptionLevelStatus(
+          countries,
+          country?.id,
+        ),
       },
     }))
   }

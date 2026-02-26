@@ -236,7 +236,8 @@ export const AutocompleteWidget = <T,>(
   return (
     <div
       className={cx('flex h-full flex-col', {
-        'justify-between': field.table !== 'ods_odp',
+        'justify-between':
+          field.table !== 'ods_odp' && field.section !== 'Header',
       })}
     >
       <Label
@@ -245,7 +246,10 @@ export const AutocompleteWidget = <T,>(
           '!font-medium': isPlannedImpactField,
         })}
       >
-        {field.label} {isDisabledImpactField ? ' (planned)' : ''}
+        {field.label}
+        {isDisabledImpactField && !field.label.includes('- planned')
+          ? ' - planned'
+          : ''}
       </Label>
       <div className="flex items-center">
         <Field
@@ -453,7 +457,8 @@ const NumberWidget = <T,>(
     <div
       className={cx('flex h-full flex-col', {
         'justify-between':
-          field.table !== 'ods_odp' || field.section === 'Approval',
+          (field.table !== 'ods_odp' && field.section !== 'Header') ||
+          field.section === 'Approval',
       })}
     >
       <Label
@@ -463,7 +468,9 @@ const NumberWidget = <T,>(
         })}
       >
         {field.label}
-        {isDisabledImpactField ? ' (planned)' : ''}
+        {isDisabledImpactField && !field.label.includes('- planned')
+          ? ' - planned'
+          : ''}
       </Label>
       <div className="flex items-center">
         <FormattedNumberInput
@@ -532,7 +539,9 @@ const BooleanWidget = <T,>(
         })}
       >
         {field.label}
-        {isDisabledImpactField ? ' (planned)' : ''}
+        {isDisabledImpactField && !field.label.includes('- planned')
+          ? ' - planned'
+          : ''}
       </Label>
       <div className="flex items-center">
         <Checkbox
