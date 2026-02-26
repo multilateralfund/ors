@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { useAPRCurrentYear } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
-import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
+import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found.tsx'
 import { Redirect } from 'wouter'

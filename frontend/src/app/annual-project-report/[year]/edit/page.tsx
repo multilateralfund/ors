@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
-import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
+import BackLink from '@ors/components/manage/Blocks/ProjectReport/BackLink.tsx'
 import { useLocation, useParams } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import { Alert, Box, Tab, Tabs } from '@mui/material'
@@ -9,10 +9,9 @@ import NotFoundPage from '@ors/app/not-found.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import { useStore } from '@ors/store.tsx'
 import cx from 'classnames'
-import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
-import useGetColumnDefs, {
-  dataTypeDefinitions,
-} from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
+import Loader from '@ors/components/manage/Blocks/ProjectReport/Loader.tsx'
+import useGetColumnDefs from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/schema.tsx'
+import { dataTypeDefinitions } from '@ors/components/manage/Blocks/ProjectReport/dataTypes.ts'
 import { AgGridReact } from 'ag-grid-react'
 import Button from '@mui/material/Button'
 import { api } from '@ors/helpers'
@@ -27,9 +26,9 @@ import {
   AnnualAgencyProjectReport,
   AnnualProjectReport,
 } from '@ors/app/annual-project-report/types.ts'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
-import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
-import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
+import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
+import { validateRows } from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/validation.tsx'
+import ValidationErrors from '@ors/components/manage/Blocks/ProjectReport/AnnualProgressReport/ValidationErrors.tsx'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 
 const TABS = [

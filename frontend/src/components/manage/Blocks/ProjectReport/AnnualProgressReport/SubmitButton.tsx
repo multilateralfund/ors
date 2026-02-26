@@ -1,9 +1,9 @@
 import React from 'react'
 import Button from '@mui/material/Button'
-import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
+import { useConfirmation } from '@ors/contexts/ConfirmationContext.tsx'
 import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
-import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors.ts'
+import { handleActionErrors } from '@ors/components/manage/Blocks/ProjectReport/errors.ts'
 
 interface SubmitButtonProps {
   revalidateData: () => void
