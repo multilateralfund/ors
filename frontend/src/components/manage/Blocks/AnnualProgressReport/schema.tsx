@@ -296,7 +296,7 @@ export default function useGetColumnDefs({
     },
     // Phaseout data fields
     consumptionODPMTProposal: {
-      label: 'Consumption ODP/MT to be Phased Out per Proposal',
+      label: 'Consumption to be Phased Out per Proposal (ODP tonnes)',
       fieldName: 'consumption_phased_out_odp_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -306,7 +306,7 @@ export default function useGetColumnDefs({
       },
     },
     consumptionMTProposal: {
-      label: 'Consumption to be Phased Out per Proposal in Metric Tonnes',
+      label: 'Consumption to be Phased Out per Proposal (metric tonnes)',
       fieldName: 'consumption_phased_out_mt_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -316,7 +316,7 @@ export default function useGetColumnDefs({
       },
     },
     consumptionODPCO2Proposal: {
-      label: 'Consumption to be Phased Out per Proposal in CO2-eq Tonnes',
+      label: 'Consumption to be Phased Out per Proposal (CO2-eq tonnes)',
       fieldName: 'consumption_phased_out_co2_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -326,7 +326,7 @@ export default function useGetColumnDefs({
       },
     },
     productionODPMTProposal: {
-      label: 'Production ODP/MT to be Phased Out per Proposal',
+      label: 'Production to be Phased Out per Proposal (ODP tonnes)',
       fieldName: 'production_phased_out_odp_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -336,7 +336,7 @@ export default function useGetColumnDefs({
       },
     },
     productionMTProposal: {
-      label: 'Production to be Phased Out per Proposal in Metric Tonnes',
+      label: 'Production to be Phased Out per Proposal (metric tonnes)',
       fieldName: 'production_phased_out_mt_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -346,7 +346,7 @@ export default function useGetColumnDefs({
       },
     },
     productionODPCO2Proposal: {
-      label: 'Production to be Phased Out per Proposal in CO2-eq Tonnes',
+      label: 'Production to be Phased Out per Proposal (CO2-eq tonnes)',
       fieldName: 'production_phased_out_co2_proposal',
       group: 'Phaseout data fields',
       input: false,
@@ -356,7 +356,7 @@ export default function useGetColumnDefs({
       },
     },
     consumptionODPMTActual: {
-      label: 'Consumption ODP/MT Phased Out',
+      label: 'Consumption Phased Out (ODP tonnes)',
       fieldName: 'consumption_phased_out_odp',
       group: 'Phaseout data fields',
       input: true,
@@ -369,7 +369,7 @@ export default function useGetColumnDefs({
       },
     },
     consumptionMTActual: {
-      label: 'Consumption Phased Out in Metric Tonnes',
+      label: 'Consumption Phased Out (metric tonnes)',
       fieldName: 'consumption_phased_out_mt',
       group: 'Phaseout data fields',
       input: true,
@@ -382,7 +382,7 @@ export default function useGetColumnDefs({
       },
     },
     consumptionODPCO2Actual: {
-      label: 'Consumption Phased Out in CO2-eq Tonnes',
+      label: 'Consumption Phased Out (CO2-eq tonnes)',
       fieldName: 'consumption_phased_out_co2',
       group: 'Phaseout data fields',
       input: true,
@@ -395,7 +395,7 @@ export default function useGetColumnDefs({
       },
     },
     productionODPMTActual: {
-      label: 'Production ODP/MT Phased Out',
+      label: 'Production Phased Out (ODP tonnes)',
       fieldName: 'production_phased_out_odp',
       group: 'Phaseout data fields',
       input: true,
@@ -408,7 +408,7 @@ export default function useGetColumnDefs({
       },
     },
     productionMTActual: {
-      label: 'Production Phased Out in Metric Tonnes',
+      label: 'Production Phased Out (metric tonnes)',
       fieldName: 'production_phased_out_mt',
       group: 'Phaseout data fields',
       input: true,
@@ -421,7 +421,7 @@ export default function useGetColumnDefs({
       },
     },
     productionODPCO2Actual: {
-      label: 'Production Phased Out in CO2-eq Tonnes',
+      label: 'Production Phased Out (CO2-eq tonnes)',
       fieldName: 'production_phased_out_co2',
       group: 'Phaseout data fields',
       input: true,
