@@ -47,12 +47,16 @@ class APRExportWriter:
 
     NUMERIC_FIELDS = {
         "consumption_phased_out_odp_proposal",
+        "consumption_phased_out_mt_proposal",
         "consumption_phased_out_co2_proposal",
         "production_phased_out_odp_proposal",
+        "production_phased_out_mt_proposal",
         "production_phased_out_co2_proposal",
         "consumption_phased_out_odp",
+        "consumption_phased_out_mt",
         "consumption_phased_out_co2",
         "production_phased_out_odp",
+        "production_phased_out_mt",
         "production_phased_out_co2",
         "approved_funding",
         "adjustment",

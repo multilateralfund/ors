@@ -200,11 +200,21 @@ class AnnualProjectReport(models.Model):
     consumption_phased_out_odp = models.FloatField(
         null=True, blank=True, verbose_name="Consumption ODP/MT Phased Out"
     )
+    consumption_phased_out_mt = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Consumption Phased Out in Metric Tonnes",
+    )
     consumption_phased_out_co2 = models.FloatField(
         null=True, blank=True, verbose_name="Consumption Phased Out in CO2-eq Tonnes"
     )
     production_phased_out_odp = models.FloatField(
         null=True, blank=True, verbose_name="Production ODP/MT Phased Out"
+    )
+    production_phased_out_mt = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Production Phased Out in Metric Tonnes",
     )
     production_phased_out_co2 = models.FloatField(
         null=True, blank=True, verbose_name="Production Phased Out in CO2-eq Tonnes"
@@ -352,6 +362,12 @@ class AnnualProjectReport(models.Model):
         verbose_name="Consumption ODP Proposal (denormalized)",
         help_text="Snapshot of version 3 consumption phase out ODP",
     )
+    consumption_phased_out_mt_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Consumption MT Proposal (denormalized)",
+        help_text="Snapshot of version 3 consumption phase out metric tonnes",
+    )
     consumption_phased_out_co2_proposal_denorm = models.FloatField(
         null=True,
         blank=True,
@@ -363,6 +379,12 @@ class AnnualProjectReport(models.Model):
         blank=True,
         verbose_name="Production ODP Proposal (denormalized)",
         help_text="Snapshot of version 3 production phase out ODP",
+    )
+    production_phased_out_mt_proposal_denorm = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Production MT Proposal (denormalized)",
+        help_text="Snapshot of version 3 production phase out metric tonnes",
     )
     production_phased_out_co2_proposal_denorm = models.FloatField(
         null=True,
@@ -614,6 +636,20 @@ class AnnualProjectReport(models.Model):
         return self.project_version_3.production_phase_out_co2
 
     @cached_property
+    def consumption_phased_out_mt_proposal(self):
+        if not self.project_version_3:
+            return None
+
+        return self.project_version_3.consumption_phase_out_mt
+
+    @cached_property
+    def production_phased_out_mt_proposal(self):
+        if not self.project_version_3:
+            return None
+
+        return self.project_version_3.production_phase_out_mt
+
+    @cached_property
     def approved_funding(self):
         # TODO: are we sure it's .total_fund and not .total_fund_approved?
         if not self.project_version_3:
@@ -761,6 +797,12 @@ class AnnualProjectReport(models.Model):
             )
             self.production_phased_out_co2_proposal_denorm = (
                 version_3.production_phase_out_co2
+            )
+            self.consumption_phased_out_mt_proposal_denorm = (
+                version_3.consumption_phase_out_mt
+            )
+            self.production_phased_out_mt_proposal_denorm = (
+                version_3.production_phase_out_mt
             )
 
             # Approved funding

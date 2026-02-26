@@ -4145,6 +4145,20 @@ class TestAPRMLFSExportView(BaseTest):
             == version3.production_phase_out_co2
         )
 
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_mt_proposal"]
+            ).value
+            == version3.consumption_phase_out_mt
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_mt_proposal"]
+            ).value
+            == version3.production_phase_out_mt
+        )
+
     def test_date_fields_from_different_versions(
         self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
     ):
@@ -4565,6 +4579,14 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             project_data["production_phased_out_co2_proposal"]
             == version3.production_phase_out_co2
         )
+        assert (
+            project_data["consumption_phased_out_mt_proposal"]
+            == version3.consumption_phase_out_mt
+        )
+        assert (
+            project_data["production_phased_out_mt_proposal"]
+            == version3.production_phase_out_mt
+        )
 
     def test_financial_approved_and_adjustment_fields(
         self,
@@ -4807,8 +4829,10 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         # Fields that depend on version 3 should be None
         assert project_data["consumption_phased_out_odp_proposal"] is None
         assert project_data["consumption_phased_out_co2_proposal"] is None
+        assert project_data["consumption_phased_out_mt_proposal"] is None
         assert project_data["production_phased_out_odp_proposal"] is None
         assert project_data["production_phased_out_co2_proposal"] is None
+        assert project_data["production_phased_out_mt_proposal"] is None
         assert project_data["approved_funding"] is None
         assert project_data["support_cost_approved"] is None
 

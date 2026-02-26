@@ -1474,13 +1474,16 @@ class Project(models.Model):
         data = {
             "consumption_odp": None,
             "consumption_co2": None,
+            "consumption_mt": None,
             "production_odp": None,
             "production_co2": None,
+            "production_mt": None,
         }
 
         for substance in self.ods_odp.all():
             substance_odp = substance.odp
             substance_co2_mt = substance.co2_mt
+            substance_phase_out_mt = substance.phase_out_mt
             if substance.ods_type == ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION:
                 if substance_odp:
                     data["production_odp"] = (
@@ -1490,6 +1493,10 @@ class Project(models.Model):
                     data["production_co2"] = (
                         data["production_co2"] or 0
                     ) + substance_co2_mt
+                if substance_phase_out_mt:
+                    data["production_mt"] = (
+                        data["production_mt"] or 0
+                    ) + substance_phase_out_mt
             else:
                 if substance_odp:
                     data["consumption_odp"] = (
@@ -1499,6 +1506,10 @@ class Project(models.Model):
                     data["consumption_co2"] = (
                         data["consumption_co2"] or 0
                     ) + substance_co2_mt
+                if substance_phase_out_mt:
+                    data["consumption_mt"] = (
+                        data["consumption_mt"] or 0
+                    ) + substance_phase_out_mt
 
         return data
 
@@ -1517,6 +1528,14 @@ class Project(models.Model):
     @property
     def production_phase_out_co2(self):
         return self.phase_out_data["production_co2"]
+
+    @property
+    def consumption_phase_out_mt(self):
+        return self.phase_out_data["consumption_mt"]
+
+    @property
+    def production_phase_out_mt(self):
+        return self.phase_out_data["production_mt"]
 
     @property
     def computed_total_phase_out_metric_tonnes(self):

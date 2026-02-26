@@ -64,6 +64,11 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         read_only=True,
         allow_null=True,
     )
+    consumption_phased_out_mt_proposal = serializers.FloatField(
+        source="consumption_phased_out_mt_proposal_denorm",
+        read_only=True,
+        allow_null=True,
+    )
     consumption_phased_out_co2_proposal = serializers.FloatField(
         source="consumption_phased_out_co2_proposal_denorm",
         read_only=True,
@@ -71,6 +76,11 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
     )
     production_phased_out_odp_proposal = serializers.FloatField(
         source="production_phased_out_odp_proposal_denorm",
+        read_only=True,
+        allow_null=True,
+    )
+    production_phased_out_mt_proposal = serializers.FloatField(
+        source="production_phased_out_mt_proposal_denorm",
         read_only=True,
         allow_null=True,
     )
@@ -82,8 +92,10 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Phaseout data fields - input
     consumption_phased_out_odp = serializers.FloatField(allow_null=True)
+    consumption_phased_out_mt = serializers.FloatField(allow_null=True)
     consumption_phased_out_co2 = serializers.FloatField(allow_null=True)
     production_phased_out_odp = serializers.FloatField(allow_null=True)
+    production_phased_out_mt = serializers.FloatField(allow_null=True)
     production_phased_out_co2 = serializers.FloatField(allow_null=True)
 
     # Financial data fields - derived
@@ -181,13 +193,17 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "date_financial_completion",
             # Project phaseout data fields - derived
             "consumption_phased_out_odp_proposal",
+            "consumption_phased_out_mt_proposal",
             "consumption_phased_out_co2_proposal",
             "production_phased_out_odp_proposal",
+            "production_phased_out_mt_proposal",
             "production_phased_out_co2_proposal",
             # Project phaseout data fields - input
             "consumption_phased_out_odp",
+            "consumption_phased_out_mt",
             "consumption_phased_out_co2",
             "production_phased_out_odp",
+            "production_phased_out_mt",
             "production_phased_out_co2",
             # Project financial data fields - derived
             "approved_funding",
@@ -246,8 +262,10 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "date_approved",
             "date_completion_proposal",
             "consumption_phased_out_odp_proposal",
+            "consumption_phased_out_mt_proposal",
             "consumption_phased_out_co2_proposal",
             "production_phased_out_odp_proposal",
+            "production_phased_out_mt_proposal",
             "production_phased_out_co2_proposal",
             "approved_funding",
             "adjustment",
@@ -405,8 +423,10 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
 
     # Phaseout data fields - input
     consumption_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
+    consumption_phased_out_mt = serializers.FloatField(allow_null=True, required=False)
     consumption_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
     production_phased_out_odp = serializers.FloatField(allow_null=True, required=False)
+    production_phased_out_mt = serializers.FloatField(allow_null=True, required=False)
     production_phased_out_co2 = serializers.FloatField(allow_null=True, required=False)
 
     # Financial data fields - input
@@ -446,8 +466,10 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
             "date_financial_completion",
             # Project phaseout data fields - input
             "consumption_phased_out_odp",
+            "consumption_phased_out_mt",
             "consumption_phased_out_co2",
             "production_phased_out_odp",
+            "production_phased_out_mt",
             "production_phased_out_co2",
             # Project financial data fields - input
             "funds_disbursed",

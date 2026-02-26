@@ -305,6 +305,16 @@ export default function useGetColumnDefs({
         cellDataType: 'decimal',
       },
     },
+    consumptionMTProposal: {
+      label: 'Consumption to be Phased Out per Proposal in Metric Tonnes',
+      fieldName: 'consumption_phased_out_mt_proposal',
+      group: 'Phaseout data fields',
+      input: false,
+      overrideOptions: {
+        minWidth: 200,
+        cellDataType: 'decimal',
+      },
+    },
     consumptionODPCO2Proposal: {
       label: 'Consumption to be Phased Out per Proposal in CO2-eq Tonnes',
       fieldName: 'consumption_phased_out_co2_proposal',
@@ -322,6 +332,16 @@ export default function useGetColumnDefs({
       input: false,
       overrideOptions: {
         minWidth: 160,
+        cellDataType: 'decimal',
+      },
+    },
+    productionMTProposal: {
+      label: 'Production to be Phased Out per Proposal in Metric Tonnes',
+      fieldName: 'production_phased_out_mt_proposal',
+      group: 'Phaseout data fields',
+      input: false,
+      overrideOptions: {
+        minWidth: 200,
         cellDataType: 'decimal',
       },
     },
@@ -348,6 +368,19 @@ export default function useGetColumnDefs({
         },
       },
     },
+    consumptionMTActual: {
+      label: 'Consumption Phased Out in Metric Tonnes',
+      fieldName: 'consumption_phased_out_mt',
+      group: 'Phaseout data fields',
+      input: true,
+      overrideOptions: {
+        minWidth: 200,
+        cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
+      },
+    },
     consumptionODPCO2Actual: {
       label: 'Consumption Phased Out in CO2-eq Tonnes',
       fieldName: 'consumption_phased_out_co2',
@@ -368,6 +401,19 @@ export default function useGetColumnDefs({
       input: true,
       overrideOptions: {
         minWidth: 160,
+        cellDataType: 'decimal',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
+      },
+    },
+    productionMTActual: {
+      label: 'Production Phased Out in Metric Tonnes',
+      fieldName: 'production_phased_out_mt',
+      group: 'Phaseout data fields',
+      input: true,
+      overrideOptions: {
+        minWidth: 200,
         cellDataType: 'decimal',
         cellEditorParams: {
           allowNullVals: true,
