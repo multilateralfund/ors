@@ -93,7 +93,7 @@ const SummaryOfProjectsFilters = (props: {
         </div>
         <div>
           <Label htmlFor="blanketConsideration">
-            Blanket approval/Individual consideration
+            Blanket approval or individual consideration
           </Label>
           <Field
             widget="autocomplete"

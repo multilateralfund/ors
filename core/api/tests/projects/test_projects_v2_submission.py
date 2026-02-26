@@ -35,9 +35,10 @@ class TestProjectVersioning:
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.save()
@@ -95,9 +96,10 @@ class TestProjectVersioning:
         assert response.data
 
         # set required fields
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.save()
@@ -159,7 +161,7 @@ class TestProjectVersioning:
         )
         field = ProjectFieldFactory.create(
             import_name="number_of_female_technicians_trained_actual",
-            label="Number of female technicians trained",
+            label="Number of female technicians trained - actual",
             read_field_name="number_of_female_technicians_trained_actual",
             write_field_name="number_of_female_technicians_trained_actual",
             table="project",
@@ -176,7 +178,7 @@ class TestProjectVersioning:
 
         # check project 2
         assert response.data[0]["id"] == project2.id
-        assert len(response.data[0]["errors"]) == 5
+        assert len(response.data[0]["errors"]) == 6
 
         # check project 1
         assert response.data[1]["id"] == project.id
@@ -184,9 +186,10 @@ class TestProjectVersioning:
         assert "previous_tranches" in response.data[1]["errors"]
 
         # set required fields
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.save()
@@ -195,9 +198,10 @@ class TestProjectVersioning:
         project3.save()
 
         # set required fields
-        project2.is_lvc = False
+        project2.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project2.project_start_date = "2023-10-01"
         project2.project_end_date = "2024-09-30"
+        project2.project_duration = 12
         project2.total_fund = 2340000
         project2.support_cost_psc = 23
         project2.save()
@@ -251,9 +255,10 @@ class TestProjectVersioning:
     ):
         project.version = 2
         project.submission_status = project_submitted_status
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.blanket_or_individual_consideration = "individual"
@@ -313,9 +318,10 @@ class TestProjectVersioning:
         # set required fields
         project.version = 2
         project.submission_status = project_submitted_status
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.blanket_or_individual_consideration = "individual"
@@ -361,9 +367,10 @@ class TestProjectVersioning:
         # set required fields for project
         project.version = 2
         project.submission_status = project_submitted_status
-        project.is_lvc = False
+        project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project.project_start_date = "2023-10-01"
         project.project_end_date = "2024-09-30"
+        project.project_duration = 12
         project.total_fund = 2340000
         project.support_cost_psc = 23
         project.blanket_or_individual_consideration = "individual"
@@ -373,9 +380,10 @@ class TestProjectVersioning:
         # set required fields for project2
         project2.version = 2
         project2.submission_status = project_submitted_status
-        project2.is_lvc = False
+        project2.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
         project2.project_start_date = "2023-10-01"
         project2.project_end_date = "2024-09-30"
+        project2.project_duration = 12
         project2.total_fund = 2340000
         project2.support_cost_psc = 23
         project2.blanket_or_individual_consideration = "individual"
@@ -584,7 +592,7 @@ class TestProjectVersioning:
         project.version = 3
         project.submission_status = project_recommended_status
         project.decision = decision
-        project.excom_provision = "Excom Provision"
+        project.excom_provision = "Executive Committee provision"
         project.date_completion = datetime.date(2024, 9, 30)
         project.save()
 
@@ -648,7 +656,7 @@ class TestProjectVersioning:
         assert response.status_code == 400
 
         project.decision = decision
-        project.excom_provision = "Excom Provision"
+        project.excom_provision = "Executive Committee provision"
         project.date_completion = datetime.date(2024, 9, 30)
         project.save()
 

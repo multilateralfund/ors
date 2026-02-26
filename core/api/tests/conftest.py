@@ -812,6 +812,7 @@ def project(
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
         serial_number=1,
+        consumption_level_status="LVC",
     )
     return project
 

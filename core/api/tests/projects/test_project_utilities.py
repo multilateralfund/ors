@@ -347,8 +347,8 @@ def setup_project_specific_fields(groupHCFC):
         group=groupHCFC,
     )
     field2 = ProjectFieldFactory.create(
-        import_name="EE demonstration project included (yes/no)",
-        label="EE demonstration project included",
+        import_name="Energy-efficiency demonstration project included",
+        label="Energy-efficiency demonstration project included",
         read_field_name="ee_demonstration_project",
         write_field_name="ee_demonstration_project",
         table="project",

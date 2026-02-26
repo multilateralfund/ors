@@ -626,7 +626,9 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     secretariat_remarks = factory.Faker(
         "pystr", max_chars=200, prefix="Secretariat Remark "
     )
-    excom_provision = factory.Faker("pystr", max_chars=200, prefix="ExCom Provision ")
+    excom_provision = factory.Faker(
+        "pystr", max_chars=200, prefix="EExecutive Committee provision "
+    )
     date_of_report = factory.Faker("date")
     planned_completion_date = factory.Faker("date")
     actual_completion_date = factory.Faker("date")

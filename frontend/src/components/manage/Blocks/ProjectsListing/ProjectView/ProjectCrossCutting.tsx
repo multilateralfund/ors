@@ -5,11 +5,11 @@ import {
   detailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
-import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
+import { OptionsType, ProjectTypeApi } from '../interfaces'
 import { canViewField, hasFields } from '../utils'
 import {
   considerationOpts,
-  lvcNonLvcOpts,
+  consumptionLevelOpts,
   tableColumns,
   viewColumnsClassName,
 } from '../constants'
@@ -43,9 +43,9 @@ const ProjectCrossCutting = ({
   const consideration = considerationOpts.find(
     (opt) => opt.value === project.blanket_or_individual_consideration,
   )
-  const is_lvc = find(lvcNonLvcOpts, {
-    id: project.is_lvc,
-  }) as BooleanOptionsType
+  const consumption_level_status = find(consumptionLevelOpts, {
+    id: project.consumption_level_status,
+  }) as OptionsType
 
   const subsectors =
     project.subsectors.length > 0
@@ -59,10 +59,13 @@ const ProjectCrossCutting = ({
     [fieldHistory],
   )
 
-  const formattedHistoryLvc = map(getFieldHistory('is_lvc'), (history) => ({
-    ...history,
-    value: find(lvcNonLvcOpts, { id: history.value })?.name,
-  }))
+  const formattedHistoryLvc = map(
+    getFieldHistory('consumption_level_status'),
+    (history) => ({
+      ...history,
+      value: find(consumptionLevelOpts, { id: history.value })?.name,
+    }),
+  )
 
   return (
     <>
@@ -106,10 +109,14 @@ const ProjectCrossCutting = ({
                   detailItem(tableColumns.subsectors, subsectors, {
                     fieldHistory: getFieldHistory('subsectors'),
                   })}
-                {canViewField(viewableFields, 'is_lvc') &&
-                  detailItem(tableColumns.is_lvc, is_lvc?.name, {
-                    fieldHistory: formattedHistoryLvc,
-                  })}
+                {canViewField(viewableFields, 'consumption_level_status') &&
+                  detailItem(
+                    tableColumns.consumption_level_status,
+                    consumption_level_status?.name,
+                    {
+                      fieldHistory: formattedHistoryLvc,
+                    },
+                  )}
               </div>
             </div>
             <div className="flex w-full flex-col gap-4">
@@ -159,6 +166,13 @@ const ProjectCrossCutting = ({
                     tableColumns.project_end_date,
                     project.project_end_date as string,
                     getFieldHistory('project_end_date'),
+                  )}
+                {canViewField(viewableFields, 'project_duration') &&
+                  numberDetailItem(
+                    tableColumns.project_duration,
+                    project.project_duration as string,
+                    'number',
+                    getFieldHistory('project_duration'),
                   )}
               </div>
             </div>

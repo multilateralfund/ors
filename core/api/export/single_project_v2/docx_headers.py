@@ -10,12 +10,17 @@ def get_headers_metaproject() -> List[HeaderType]:
     return [
         {
             "id": "project_funding",
-            "headerName": "Project Funding (MYA)",
+            "headerName": "MYA Total agreed funding in principle (US $)",
             "method": get_dollar_value,
         },
         {
             "id": "support_cost",
-            "headerName": "Support Cost (MYA)",
+            "headerName": "MYA Total support costs in principle (US $)",
+            "method": get_dollar_value,
+        },
+        {
+            "id": "project_cost",
+            "headerName": "MYA Total agreed costs in principle (US $)",
             "method": get_dollar_value,
         },
         {
@@ -29,58 +34,83 @@ def get_headers_metaproject() -> List[HeaderType]:
             "method": get_date_value,
         },
         {
+            "id": "phase_out_co2_eq_t",
+            "headerName": "Phase-out (CO2-eq tonnes) (MYA)",
+            "method": get_value_or_dash,
+        },
+        {
             "id": "phase_out_odp",
-            "headerName": "Phase out (ODP t) (MYA)",
+            "headerName": "Phase-out (ODP tonnes) (MYA)",
             "method": get_value_or_dash,
         },
         {
             "id": "phase_out_mt",
-            "headerName": "Phase out (Mt) (MYA)",
+            "headerName": "Phase-out (metric tonnes) (MYA)",
             "method": get_value_or_dash,
         },
         {
-            "id": "targets",
-            "headerName": "Targets",
+            "id": "target_reduction",
+            "headerName": "Target in the last year (reduction in %)",
             "method": get_value_or_dash,
         },
         {
-            "id": "starting_point",
-            "headerName": "Starting point",
+            "id": "target_co2_eq_t",
+            "headerName": "Target in the last year (CO2-eq tonnes)",
             "method": get_value_or_dash,
         },
         {
-            "id": "baseline",
-            "headerName": "Baseline",
+            "id": "target_odp",
+            "headerName": "Target in the last year (ODP tonnes)",
             "method": get_value_or_dash,
         },
         {
-            "id": "number_of_enterprises_assisted",
-            "headerName": "Number of enterprises assisted",
+            "id": "starting_point_odp",
+            "headerName": "Starting point for aggregate reductions in consumption or production (ODP tonnes)",
             "method": get_value_or_dash,
         },
         {
-            "id": "number_of_enterprises",
-            "headerName": "Number of enterprises",
+            "id": "starting_point_co2_eq_t",
+            "headerName": "Starting point for aggregate reductions in consumption or production (CO2-eq tonnes)",
             "method": get_value_or_dash,
         },
         {
-            "id": "aggregated_consumption",
-            "headerName": "Aggregated consumption",
+            "id": "baseline_odp",
+            "headerName": "Baseline (ODP tonnes)",
+            "method": get_value_or_dash,
+        },
+        {
+            "id": "baseline_co2_eq_t",
+            "headerName": "Baseline (CO2-eq tonnes)",
+            "method": get_value_or_dash,
+        },
+        {
+            "id": "number_of_smes_directly_funded",
+            "headerName": "Number of SMEs directly funded",
+            "method": get_value_or_dash,
+        },
+        {
+            "id": "number_of_non_sme_directly_funded",
+            "headerName": "Number of non-SMEs directly funded",
+            "method": get_value_or_dash,
+        },
+        {
+            "id": "number_of_both_sme_non_sme_not_directly_funded",
+            "headerName": "Number of both SMEs and non-SMEs included in the project but not directly funded",
             "method": get_value_or_dash,
         },
         {
             "id": "number_of_production_lines_assisted",
-            "headerName": "Number of Production Lines assisted",
+            "headerName": "Production sector: number of production lines assisted",
             "method": get_value_or_dash,
         },
         {
             "id": "cost_effectiveness_kg",
-            "headerName": "Cost effectiveness (US$/ Kg)",
+            "headerName": "Cost effectiveness (US $/kg)",
             "method": get_value_or_dash,
         },
         {
             "id": "cost_effectiveness_co2",
-            "headerName": "Cost effectiveness (US$/ CO2-ep)",
+            "headerName": "Cost effectiveness (US $/CO2-eq tonnes)",
             "method": get_value_or_dash,
         },
     ]

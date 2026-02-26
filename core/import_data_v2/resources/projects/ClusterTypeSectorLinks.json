@@ -71,12 +71,6 @@
                 "sectors": [
                     "Production"
                 ]
-            },
-            {
-                "type": "Preparation",
-                "sectors": [
-                    "Emissions"
-                ]
             }
         ]
     },
@@ -87,12 +81,6 @@
                 "type": "Investment",
                 "sectors": [
                     "Production"
-                ]
-            },
-            {
-                "type": "Preparation",
-                "sectors": [
-                    "Emissions"
                 ]
             }
         ]
@@ -123,6 +111,7 @@
                     "Refrigeration",
                     "Servicing",
                     "Solvent",
+                    "Technical assistance",
                     "Verification"
                 ]
             },
@@ -135,6 +124,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -147,6 +137,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -181,6 +172,7 @@
                     "Refrigeration",
                     "Servicing",
                     "Solvent",
+                    "Technical assistance",
                     "Verification"
                 ]
             },
@@ -206,6 +198,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -218,6 +211,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -235,6 +229,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -250,7 +245,8 @@
                     "Refrigeration",
                     "SERVCEE-89/6",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -262,6 +258,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -281,7 +278,8 @@
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -293,6 +291,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -305,6 +304,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -324,7 +324,8 @@
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -336,6 +337,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -348,6 +350,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -367,7 +370,8 @@
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -379,6 +383,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -391,6 +396,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -408,6 +414,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -423,7 +430,8 @@
                     "Refrigeration",
                     "SERVCEE-89/6",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -435,6 +443,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -455,7 +464,8 @@
                     "Refrigeration",
                     "SERVCEE-89/6",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -467,6 +477,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -479,6 +490,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -499,7 +511,8 @@
                     "Refrigeration",
                     "SERVCEE-89/6",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -511,6 +524,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -523,6 +537,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             }
@@ -540,7 +555,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -557,7 +573,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -574,7 +591,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -591,7 +609,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -608,7 +627,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -625,7 +645,8 @@
             {
                 "type": "Technical assistance",
                 "sectors": [
-                    "Project monitoring and coordination"
+                    "Project monitoring and coordination",
+                    "Technical assistance"
                 ]
             }
         ]
@@ -644,7 +665,8 @@
                     "Project monitoring and coordination",
                     "Refrigeration",
                     "Servicing",
-                    "Solvent"
+                    "Solvent",
+                    "Technical assistance"
                 ]
             },
             {
@@ -656,6 +678,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },
@@ -668,6 +691,7 @@
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
+                    "Servicing",
                     "Solvent"
                 ]
             },

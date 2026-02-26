@@ -93,16 +93,6 @@ def get_meeting_number(queryset: QuerySet[Project]):
     return meetings
 
 
-class ProjectDestructionTechnologyView(APIView):
-    """
-    View to return a list of all Project DestructionTechnology choices
-    """
-
-    def get(self, request, *args, **kwargs):
-        choices = Project.DestructionTechnology.choices
-        return Response(choices)
-
-
 class ProjectProductionControlTypeView(APIView):
     """
     View to return a list of all Project ProductionControlType choices
@@ -110,6 +100,16 @@ class ProjectProductionControlTypeView(APIView):
 
     def get(self, request, *args, **kwargs):
         choices = Project.ProductionControlType.choices
+        return Response(choices)
+
+
+class ProjectConsumptionLevelStatusView(APIView):
+    """
+    View to return a list of all Project ConsumptionLevelStatus choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = Project.ConsumptionLevelStatus.choices
         return Response(choices)
 
 
