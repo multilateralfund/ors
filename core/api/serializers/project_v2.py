@@ -414,6 +414,35 @@ class ProjectListPreviousTranchesSerializer(ProjectListV2Serializer):
         ]
 
 
+class ProjectV2OdsOdpSerializerMethods:
+
+    @staticmethod
+    def ods_display_name(obj):
+        if obj.ods_display_name:
+            return obj.ods_display_name
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        if obj.ods_blend:
+            return obj.ods_blend.name
+        return None
+
+    @staticmethod
+    def ods_substance_name(obj):
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        return None
+
+    @staticmethod
+    def ods_type(obj):
+        return obj.get_ods_type_display()
+
+    @staticmethod
+    def ods_blend_composition(obj):
+        if obj.ods_blend:
+            return obj.ods_blend.composition
+        return ""
+
+
 class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
     """
     ProjectOdsOdpSerializer class
@@ -452,26 +481,16 @@ class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "project_id"]
 
     def get_ods_display_name(self, obj):
-        if obj.ods_display_name:
-            return obj.ods_display_name
-        if obj.ods_substance:
-            return obj.ods_substance.name
-        if obj.ods_blend:
-            return obj.ods_blend.name
-        return None
+        return ProjectV2OdsOdpSerializerMethods.ods_display_name(obj)
 
     def get_ods_substance_name(self, obj):
-        if obj.ods_substance:
-            return obj.ods_substance.name
-        return None
+        return ProjectV2OdsOdpSerializerMethods.ods_substance_name(obj)
 
     def get_ods_type(self, obj):
-        return obj.get_ods_type_display()
+        return ProjectV2OdsOdpSerializerMethods.ods_type(obj)
 
     def get_ods_blend_composition(self, obj):
-        if obj.ods_blend:
-            return obj.ods_blend.composition
-        return ""
+        return ProjectV2OdsOdpSerializerMethods.ods_blend_composition(obj)
 
     def validate(self, attrs):
         if attrs.get("ods_substance_id") and attrs.get("ods_blend_id"):
