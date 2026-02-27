@@ -4,7 +4,6 @@ import { getMeetingNr } from '../../Utils/utilFunctions'
 import {
   approvalOdsFields,
   approvalToOdsMap,
-  consumptionLevelOpts,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
@@ -1189,6 +1188,7 @@ export const getPostExcomMeetingErrors = (projIdentifiers: ProjIdentifiers) =>
 export const getConsumptionLevelStatus = (
   countries: Country[],
   countryId: number,
+  consumptionLevelStatuses: OptionsType[],
 ) => {
   const isLvc = find(countries, { id: countryId })?.is_lvc ?? null
 
@@ -1202,7 +1202,7 @@ export const getConsumptionLevelStatus = (
   }
 
   return (
-    find(consumptionLevelOpts, {
+    find(consumptionLevelStatuses, {
       id: lvcToConsumptionMapping[String(isLvc)],
     })?.name ?? null
   )

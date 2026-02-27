@@ -79,8 +79,14 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects, canViewBp } =
     useContext(PermissionsContext)
-  const { countries, clusters, project_types, sectors, subsectors } =
-    useContext(ProjectsDataContext)
+  const {
+    countries,
+    clusters,
+    project_types,
+    sectors,
+    subsectors,
+    consumptionLevelStatuses,
+  } = useContext(ProjectsDataContext)
 
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
@@ -322,16 +328,25 @@ const ProjectsEdit = ({
           }
         : {
             bpLinking: { isLinkedToBP: false, bpId: null },
-            crossCuttingFields: {
-              ...initialCrossCuttingFields,
-              consumption_level_status: getConsumptionLevelStatus(
-                countries,
-                project.country_id,
-              ),
-            },
           }),
     }))
   }, [])
+
+  useEffect(() => {
+    if (mode === 'partial-link') {
+      setProjectData((prevData) => ({
+        ...prevData,
+        crossCuttingFields: {
+          ...initialCrossCuttingFields,
+          consumption_level_status: getConsumptionLevelStatus(
+            countries,
+            project.country_id,
+            consumptionLevelStatuses,
+          ),
+        },
+      }))
+    }
+  }, [countries, consumptionLevelStatuses])
 
   useEffect(() => {
     if (!approval && !impact && canViewBp && country && agency && cluster) {

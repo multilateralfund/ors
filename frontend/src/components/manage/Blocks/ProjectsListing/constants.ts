@@ -114,12 +114,6 @@ export const initialTranferedProjectData = {
   psc_transferred: null,
 }
 
-export const consumptionLevelOpts = [
-  { name: 'LVC', id: 'LVC' },
-  { name: 'Non-LVC', id: 'Non-LVC' },
-  { name: 'Not applicable', id: 'Not applicable' },
-]
-
 export const considerationOpts = [
   { name: 'Blanket approval', id: 'blanket', value: 'Blanket' },
   { name: 'Individual consideration', id: 'individual', value: 'Individual' },
