@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import { OptionsType } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { Cluster, Country } from '@ors/types/store'
 import { ProjectTypeType } from '@ors/types/api_project_types'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
@@ -17,6 +18,7 @@ interface ProjectsDataContextProps {
   substances: ApiSubstance[]
   blends: ApiBlend[]
   fileTypes: string[]
+  consumptionLevelStatuses: OptionsType[]
 }
 
 const ProjectsDataContext = createContext<ProjectsDataContextProps>(

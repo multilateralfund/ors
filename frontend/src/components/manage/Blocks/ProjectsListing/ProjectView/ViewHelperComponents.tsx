@@ -1,5 +1,9 @@
 import FieldHistoryIndicator from '@ors/components/ui/FieldHistoryIndicator/FieldHistoryIndicator'
-import { getFormattedNumericValue, hasExcomUpdate } from '../utils'
+import {
+  getFieldExtraLabel,
+  getFormattedNumericValue,
+  hasExcomUpdate,
+} from '../utils'
 import {
   DetailItemClassname,
   FieldType,
@@ -58,9 +62,7 @@ export const detailItem = (
     >
       <span className={cx(detailClassname, className)}>
         {fieldName}
-        {isDisabledImpactField && !fieldName.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {getFieldExtraLabel(isDisabledImpactField, fieldName)}
       </span>
       <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
     </span>
@@ -88,10 +90,7 @@ export const numberDetailItem = (
       })}
     >
       <span>
-        {fieldName}{' '}
-        {isDisabledImpactField && !fieldName.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {fieldName} {getFieldExtraLabel(isDisabledImpactField, fieldName)}
       </span>
       <h4 className="m-0">
         {getFormattedNumericValue(fieldValue, dataType === 'decimal' ? 2 : 0)}
@@ -121,10 +120,7 @@ export const booleanDetailItem = (
       })}
     >
       <span>
-        {fieldName}{' '}
-        {isDisabledImpactField && !fieldName.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {fieldName} {getFieldExtraLabel(isDisabledImpactField, fieldName)}
       </span>
       <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
     </span>

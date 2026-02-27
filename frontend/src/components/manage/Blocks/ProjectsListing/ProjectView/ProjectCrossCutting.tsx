@@ -1,4 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
+
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import {
   dateDetailItem,
@@ -9,7 +11,6 @@ import { OptionsType, ProjectTypeApi } from '../interfaces'
 import { canViewField, hasFields } from '../utils'
 import {
   considerationOpts,
-  consumptionLevelOpts,
   tableColumns,
   viewColumnsClassName,
 } from '../constants'
@@ -28,6 +29,7 @@ const ProjectCrossCutting = ({
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
+  const { consumptionLevelStatuses } = useContext(ProjectsDataContext)
 
   const canViewAboutSection =
     canViewField(viewableFields, 'title') ||
@@ -43,7 +45,7 @@ const ProjectCrossCutting = ({
   const consideration = considerationOpts.find(
     (opt) => opt.value === project.blanket_or_individual_consideration,
   )
-  const consumption_level_status = find(consumptionLevelOpts, {
+  const consumption_level_status = find(consumptionLevelStatuses, {
     id: project.consumption_level_status,
   }) as OptionsType
 
@@ -63,7 +65,7 @@ const ProjectCrossCutting = ({
     getFieldHistory('consumption_level_status'),
     (history) => ({
       ...history,
-      value: find(consumptionLevelOpts, { id: history.value })?.name,
+      value: find(consumptionLevelStatuses, { id: history.value })?.name,
     }),
   )
 

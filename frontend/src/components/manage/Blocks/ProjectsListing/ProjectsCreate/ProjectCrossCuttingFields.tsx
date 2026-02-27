@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
@@ -8,6 +8,7 @@ import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { SectionTitle } from './ProjectsCreate'
 import ProjectFundFields from './ProjectFundFields'
@@ -23,7 +24,6 @@ import {
 } from '../utils'
 import {
   tableColumns,
-  consumptionLevelOpts,
   considerationOpts,
   defaultProps,
   defaultPropsSimpleField,
@@ -78,6 +78,7 @@ const ProjectCrossCuttingFields = ({
   }) => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+  const { consumptionLevelStatuses } = useContext(ProjectsDataContext)
 
   const {
     crtProjectTypesOpts,
@@ -357,9 +358,9 @@ const ProjectCrossCuttingFields = ({
                   <div className="flex items-center">
                     <Field
                       widget="autocomplete"
-                      options={consumptionLevelOpts}
+                      options={consumptionLevelStatuses}
                       value={
-                        find(consumptionLevelOpts, {
+                        find(consumptionLevelStatuses, {
                           id: consumption_level_status,
                         }) || null
                       }
@@ -375,7 +376,7 @@ const ProjectCrossCuttingFields = ({
                         )
                       }
                       getOptionLabel={(option: any) =>
-                        getOptionLabel(consumptionLevelOpts, option)
+                        getOptionLabel(consumptionLevelStatuses, option)
                       }
                       disabled={
                         !canEditField(

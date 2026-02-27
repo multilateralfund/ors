@@ -1,9 +1,10 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 
 import ProjectsDataContext from './ProjectsDataContext'
 import useApi from '@ors/hooks/useApi'
 
 import { useParams } from 'wouter'
+import { map } from 'lodash'
 
 interface ProjectsDataProviderProps extends PropsWithChildren {}
 
@@ -103,6 +104,23 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
     path: 'api/file-types/',
   })
 
+  const { data: initialConsumptionLevelStatuses } = useApi({
+    options: {
+      withStoreCache: true,
+    },
+    path: 'api/project-consumption-level-status/',
+  })
+
+  const consumptionLevelStatuses = useMemo(
+    () =>
+      map(initialConsumptionLevelStatuses, (status) => ({
+        id: status[0],
+        label: status[1],
+        name: status[1],
+      })),
+    [initialConsumptionLevelStatuses],
+  )
+
   return (
     <ProjectsDataContext.Provider
       value={{
@@ -115,6 +133,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
         substances,
         blends,
         fileTypes,
+        consumptionLevelStatuses,
       }}
     >
       {children}

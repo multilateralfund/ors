@@ -82,7 +82,7 @@ export default function FieldHistoryIndicator({
               label,
               value,
               idx >= firstDifferentIndex,
-              fieldName.includes('(actual)'),
+              fieldName.includes('- actual'),
               extraPropsMap[formattedDataType],
             )}
           </span>

@@ -9,7 +9,12 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { canEditField, formatOptions, onTextareaFocus } from '../utils'
+import {
+  canEditField,
+  formatOptions,
+  getFieldExtraLabel,
+  onTextareaFocus,
+} from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -231,7 +236,7 @@ export const AutocompleteWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
-  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
+  const isActualImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div
@@ -243,13 +248,11 @@ export const AutocompleteWidget = <T,>(
       <Label
         className={cx({
           italic: isDisabledImpactField,
-          '!font-medium': isPlannedImpactField,
+          '!font-medium': isActualImpactField,
         })}
       >
         {field.label}
-        {isDisabledImpactField && !field.label.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {getFieldExtraLabel(isDisabledImpactField, field.label)}
       </Label>
       <div className="flex items-center">
         <Field
@@ -289,7 +292,7 @@ export const AutocompleteWidget = <T,>(
                   className: cx(
                     defaultProps.FieldProps.className,
                     '!w-40',
-                    isPlannedImpactField && 'actual_field',
+                    isActualImpactField && 'actual_field',
                   ),
                 },
               }
@@ -451,7 +454,7 @@ const NumberWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
-  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
+  const isActualImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div
@@ -464,13 +467,11 @@ const NumberWidget = <T,>(
       <Label
         className={cx({
           italic: isDisabledImpactField,
-          '!font-medium': isPlannedImpactField,
+          '!font-medium': isActualImpactField,
         })}
       >
         {field.label}
-        {isDisabledImpactField && !field.label.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {getFieldExtraLabel(isDisabledImpactField, field.label)}
       </Label>
       <div className="flex items-center">
         <FormattedNumberInput
@@ -528,20 +529,18 @@ const BooleanWidget = <T,>(
 
   const isDisabledImpactField =
     field.section === 'Impact' && !canEditField(editableFields, fieldName)
-  const isPlannedImpactField = field.section === 'Impact' && field.is_actual
+  const isActualImpactField = field.section === 'Impact' && field.is_actual
 
   return (
     <div className="col-span-full flex w-full">
       <Label
         className={cx({
           italic: isDisabledImpactField,
-          '!font-medium': isPlannedImpactField,
+          '!font-medium': isActualImpactField,
         })}
       >
         {field.label}
-        {isDisabledImpactField && !field.label.includes('- planned')
-          ? ' - planned'
-          : ''}
+        {getFieldExtraLabel(isDisabledImpactField, field.label)}
       </Label>
       <div className="flex items-center">
         <Checkbox

@@ -71,6 +71,14 @@ const ProjectApproval = ({
                     )}
                   </span>
                 )}
+                {fieldName === 'date_completion' &&
+                  canViewField(viewableFields, 'project_duration') &&
+                  numberDetailItem(
+                    tableColumns.project_duration,
+                    project.project_duration as string,
+                    'number',
+                    getFieldHistory('project_duration'),
+                  )}
                 {project.status === 'Transferred' &&
                   (fieldName === 'meeting' ? (
                     <span key="transferred_meeting">
