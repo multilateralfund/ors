@@ -1223,3 +1223,8 @@ export const getProjectDuration = (project: {
 
   return String(Math.max(Math.ceil(months), 0))
 }
+
+export const getFieldExtraLabel = (
+  displayExtraLabel: boolean | undefined,
+  label: string,
+) => (displayExtraLabel && !label.includes('- planned') ? ' - planned' : '')

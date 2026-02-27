@@ -6,7 +6,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { getFormattedDecimalValue, getFormattedNumericValue } from '../utils'
-import { nonMonetaryFields } from '../UpdateMyaData/constants'
+import { monetaryFields } from '../UpdateMyaData/constants'
 import {
   MetaProjectDetailType,
   MetaProjectFieldData,
@@ -67,7 +67,7 @@ const ProjectRelatedProjectsMetaProject = ({
         return (fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || 'N/A'
       case 'DecimalField':
         return fieldValue
-          ? `${nonMonetaryFields.includes(fd.name) ? '' : '$'}${getFormattedNumericValue(fieldValue, 2)}`
+          ? `${monetaryFields.includes(fd.name) ? '$' : ''}${getFormattedNumericValue(fieldValue, 2)}`
           : 'N/A'
       default:
         return fieldValue ? getFormattedNumericValue(fieldValue, 0) : 'N/A'

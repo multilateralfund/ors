@@ -380,7 +380,9 @@ const ProjectsEdit = ({
         Object.fromEntries(
           approvalOdsFields.map((field) => [
             field,
-            project[field as keyof ProjectTypeApi] ?? undefined,
+            getFormattedDecimalValue(
+              project[field as keyof ProjectTypeApi] ?? undefined,
+            ),
           ]),
         ),
         approvalFieldsNames,
@@ -390,8 +392,10 @@ const ProjectsEdit = ({
         Object.fromEntries(
           approvalOdsFields.map((field) => [
             field,
-            project[field as keyof ProjectTypeApi] ??
-              project[`computed_${field}` as keyof ProjectTypeApi],
+            getFormattedDecimalValue(
+              project[field as keyof ProjectTypeApi] ??
+                project[`computed_${field}` as keyof ProjectTypeApi],
+            ),
           ]),
         ),
         approvalFieldsNames,
