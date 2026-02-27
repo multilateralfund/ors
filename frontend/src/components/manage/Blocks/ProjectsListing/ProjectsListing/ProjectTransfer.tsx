@@ -4,6 +4,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import {
   getMeetingNr,
@@ -12,7 +13,6 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { DecisionOption } from '../ProjectsCreate/ProjectIdentifiersFields'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation'
-import { FormattedNumberInput } from '../../Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
 import { BpFilesObject } from '../../BusinessPlans/types'
