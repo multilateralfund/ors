@@ -7,7 +7,6 @@ import {
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
-  validationFieldsPairs,
 } from './constants'
 import {
   ProjIdentifiers,
@@ -629,14 +628,30 @@ export const getDefaultImpactErrors = (
 ) => {
   const errorMsg = 'Number cannot be greater than the total one.'
 
+  const validationFieldsPairs: [keyof SpecificFields, keyof SpecificFields][] =
+    reduce(
+      specificFields,
+      (acc: any, field) => {
+        const fieldName = field.write_field_name as string
+
+        if (fieldName.includes('_female_')) {
+          const totalFieldName = `total_${fieldName.replace(/_female_/, '_')}`
+
+          if (hasSpecificField(specificFields, totalFieldName)) {
+            acc = [...acc, [fieldName, totalFieldName]]
+          }
+        }
+        return acc
+      },
+      [],
+    )
+
   return Object.fromEntries(
     validationFieldsPairs
       .filter(
         ([key, totalKey]) =>
-          hasSpecificField(specificFields, key) &&
-          hasSpecificField(specificFields, totalKey) &&
           (projectSpecificFields[key] ?? 0) >
-            (projectSpecificFields[totalKey] ?? 0),
+          (projectSpecificFields[totalKey] ?? 0),
       )
       .map(([key]) => [key, [errorMsg]]),
   )
