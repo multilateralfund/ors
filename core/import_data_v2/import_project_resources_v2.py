@@ -21,7 +21,12 @@ from core.import_data_v2.scripts.import_project_clusters import (
 )
 from core.import_data_v2.scripts.clean_up_project_statuses import (
     clean_up_project_statuses,
+    clean_up_project_submission_statuses,
     import_project_submission_statuses,
+)
+
+from core.import_data_v2.scripts.clean_up_project_meta_project_attributes import (
+    clean_up_project_meta_project_attributes,
 )
 from core.import_data_v2.scripts.import_sector_subsector import (
     import_sector,
@@ -72,6 +77,14 @@ def import_project_resources_v2(option):
     if option in ["all", "clean_up_project_statuses"]:
         clean_up_project_statuses()
         logger.info("✔ project statuses cleaned up")
+
+    if option in ["all", "clean_up_project_submission_statuses"]:
+        clean_up_project_submission_statuses()
+        logger.info("✔ project submission statuses cleaned up")
+
+    if option in ["all", "clean_up_project_meta_project_attributes"]:
+        clean_up_project_meta_project_attributes()
+        logger.info("✔ project meta project attributes cleaned up")
 
     if option in ["all", "import_cluster_type_sector_links"]:
         file_path = IMPORT_RESOURCES_V2_DIR / "projects" / "ClusterTypeSectorLinks.json"
