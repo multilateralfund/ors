@@ -617,7 +617,7 @@ class Project(models.Model):
         null=True,
         blank=True,
         help_text=OLD_FIELD_HELP_TEXT,
-    )  # obsolete
+    )
     stage = models.IntegerField(
         null=True,
         blank=True,
@@ -993,16 +993,12 @@ class Project(models.Model):
         blank=True,
         help_text="Number of SMEs directly funded (actual)",
     )
-    number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (planned)",
     )
-    number_of_both_sme_non_sme_not_directly_funded_actual = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    number_of_both_sme_non_sme_not_directly_funded_actual = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (actual)",

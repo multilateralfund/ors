@@ -180,8 +180,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Decision",
-        "LABEL": "Decision",
+        "IMPORT_NAME": "Decision number",
+        "LABEL": "Decision number",
         "WRITE_FIELD_NAME": "decision",
         "READ_FIELD_NAME": "decision",
         "TABLE": "project",
@@ -276,8 +276,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Total phase out (CO2-eq t)",
-        "LABEL": "Total phase out (CO2-eq t)",
+        "IMPORT_NAME": "Total phase-out (CO2-eq tonnes)",
+        "LABEL": "Total phase-out (CO2-eq tonnes)",
         "WRITE_FIELD_NAME": "total_phase_out_co2_tonnes",
         "READ_FIELD_NAME": "total_phase_out_co2_tonnes",
         "TABLE": "ods_odp",
@@ -288,8 +288,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Total phase out (ODP t)",
-        "LABEL": "Total phase out (ODP t)",
+        "IMPORT_NAME": "Total phase-out (ODP tonnes)",
+        "LABEL": "Total phase-out (ODP tonnes)",
         "WRITE_FIELD_NAME": "total_phase_out_odp_tonnes",
         "READ_FIELD_NAME": "total_phase_out_odp_tonnes",
         "TABLE": "ods_odp",
@@ -300,8 +300,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Total phase out (M t)",
-        "LABEL": "Total phase out (M t)",
+        "IMPORT_NAME": "Total phase-out (metric tonnes)",
+        "LABEL": "Total phase-out (metric tonnes)",
         "WRITE_FIELD_NAME": "total_phase_out_metric_tonnes",
         "READ_FIELD_NAME": "total_phase_out_metric_tonnes",
         "TABLE": "ods_odp",
@@ -1043,7 +1043,7 @@
     },
     {
         "IMPORT_NAME": "MEPS to be developed/enhanced for residential AC actual",
-        "LABEL": "MEPS to be developed/enhanced for residential AC (actual)",
+        "LABEL": "MEPS to be developed/enhanced for residential AC - actual",
         "WRITE_FIELD_NAME": "meps_developed_residential_ac_actual",
         "READ_FIELD_NAME": "meps_developed_residential_ac_actual",
         "TABLE": "project",
@@ -1068,7 +1068,7 @@
     },
     {
         "IMPORT_NAME": "MEPS or equivalent standard to be developed/enhanced for commercial AC actual",
-        "LABEL": "MEPS or equivalent standard to be developed/enhanced for commercial AC (actual)",
+        "LABEL": "MEPS or equivalent standard to be developed/enhanced for commercial AC - actual",
         "WRITE_FIELD_NAME": "meps_developed_commercial_ac_actual",
         "READ_FIELD_NAME": "meps_developed_commercial_ac_actual",
         "TABLE": "project",
@@ -1093,7 +1093,7 @@
     },
     {
         "IMPORT_NAME": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) actual",
-        "LABEL": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) (actual)",
+        "LABEL": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) - actual",
         "WRITE_FIELD_NAME": "capacity_building_programmes_actual",
         "READ_FIELD_NAME": "capacity_building_programmes_actual",
         "TABLE": "project",
@@ -1118,7 +1118,7 @@
     },
     {
         "IMPORT_NAME": "Energy-efficiency demonstration project included actual",
-        "LABEL": "Energy-efficiency demonstration project included (actual)",
+        "LABEL": "Energy-efficiency demonstration project included - actual",
         "WRITE_FIELD_NAME": "ee_demonstration_project_actual",
         "READ_FIELD_NAME": "ee_demonstration_project_actual",
         "TABLE": "project",
@@ -1143,7 +1143,7 @@
     },
     {
         "IMPORT_NAME": "End users actual",
-        "LABEL": "End users (actual)",
+        "LABEL": "End users - actual",
         "WRITE_FIELD_NAME": "end_users_actual",
         "READ_FIELD_NAME": "end_users_actual",
         "TABLE": "project",
@@ -1168,7 +1168,7 @@
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (metric tonnes) actual",
-        "LABEL": "Quantity of controlled substances destroyed (metric tonnes) (actual)",
+        "LABEL": "Quantity of controlled substances destroyed (metric tonnes) - actual",
         "WRITE_FIELD_NAME": "quantity_controlled_substances_destroyed_mt_actual",
         "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_mt_actual",
         "TABLE": "project",
@@ -1193,7 +1193,7 @@
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq tonnes) actual",
-        "LABEL": "Quantity of controlled substances destroyed (CO2-eq tonnes) (actual)",
+        "LABEL": "Quantity of controlled substances destroyed (CO2-eq tonnes) - actual",
         "WRITE_FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t_actual",
         "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t_actual",
         "TABLE": "project",
@@ -1218,7 +1218,7 @@
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product generated (metric tonnes) actual",
-        "LABEL": "Quantity of HFC-23 by-product generated (metric tonnes) (actual)",
+        "LABEL": "Quantity of HFC-23 by-product generated (metric tonnes) - actual",
         "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_generated_actual",
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_generated_actual",
         "TABLE": "project",
@@ -1243,7 +1243,7 @@
     },
     {
         "IMPORT_NAME": "HFC-23 by-product generation rate (%) actual",
-        "LABEL": "HFC-23 by-product generation rate (%) (actual)",
+        "LABEL": "HFC-23 by-product generation rate (%) - actual",
         "WRITE_FIELD_NAME": "hfc_23_by_product_generation_rate_actual",
         "READ_FIELD_NAME": "hfc_23_by_product_generation_rate_actual",
         "TABLE": "project",
@@ -1268,7 +1268,7 @@
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product destroyed (metric tonnes) actual",
-        "LABEL": "Quantity of HFC-23 by-product destroyed (metric tonnes) (actual)",
+        "LABEL": "Quantity of HFC-23 by-product destroyed (metric tonnes) - actual",
         "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_destroyed_actual",
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_destroyed_actual",
         "TABLE": "project",
@@ -1294,7 +1294,7 @@
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product emitted (metric tonnes) actual",
-        "LABEL": "Quantity of HFC-23 by-product emitted (metric tonnes) (actual)",
+        "LABEL": "Quantity of HFC-23 by-product emitted (metric tonnes) - actual",
         "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_emitted_actual",
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_emitted_actual",
         "TABLE": "project",
@@ -1319,7 +1319,7 @@
     },
     {
         "IMPORT_NAME": "Total number of NOU personnel supported actual",
-        "LABEL": "Total number of NOU personnel supported (actual)",
+        "LABEL": "Total number of NOU personnel supported - actual",
         "WRITE_FIELD_NAME": "total_number_of_nou_personnel_supported_actual",
         "READ_FIELD_NAME": "total_number_of_nou_personnel_supported_actual",
         "TABLE": "project",
@@ -1344,7 +1344,7 @@
     },
     {
         "IMPORT_NAME": "Number of female NOU personnel supported actual",
-        "LABEL": "Number of female NOU personnel supported (actual)",
+        "LABEL": "Number of female NOU personnel supported - actual",
         "WRITE_FIELD_NAME": "number_of_female_nou_personnel_supported_actual",
         "READ_FIELD_NAME": "number_of_female_nou_personnel_supported_actual",
         "TABLE": "project",
@@ -1369,7 +1369,7 @@
     },
     {
         "IMPORT_NAME": "Number of SMEs directly funded actual",
-        "LABEL": "Number of SMEs directly funded (actual)",
+        "LABEL": "Number of SMEs directly funded - actual",
         "WRITE_FIELD_NAME": "number_of_smes_directly_funded_actual",
         "READ_FIELD_NAME": "number_of_smes_directly_funded_actual",
         "TABLE": "project",
@@ -1394,7 +1394,7 @@
     },
     {
         "IMPORT_NAME": "Production sector: number of production lines assisted actual",
-        "LABEL": "Production sector: number of production lines assisted (actual)",
+        "LABEL": "Production sector: number of production lines assisted - actual",
         "WRITE_FIELD_NAME": "number_of_production_lines_assisted_actual",
         "READ_FIELD_NAME": "number_of_production_lines_assisted_actual",
         "TABLE": "project",
@@ -1419,7 +1419,7 @@
     },
     {
         "IMPORT_NAME": "Number of non-SMEs directly funded actual",
-        "LABEL": "Number of non-SMEs directly funded (actual)",
+        "LABEL": "Number of non-SMEs directly funded - actual",
         "WRITE_FIELD_NAME": "number_of_non_sme_directly_funded_actual",
         "READ_FIELD_NAME": "number_of_non_sme_directly_funded_actual",
         "TABLE": "project",
@@ -1444,7 +1444,7 @@
     },
     {
         "IMPORT_NAME": "Number of both SMEs and non-SMEs included in the project but not directly funded actual",
-        "LABEL": "Number of both SMEs and non-SMEs included in the project but not directly funded (actual)",
+        "LABEL": "Number of both SMEs and non-SMEs included in the project but not directly funded - actual",
         "WRITE_FIELD_NAME": "number_of_both_sme_non_sme_not_directly_funded_actual",
         "READ_FIELD_NAME": "number_of_both_sme_non_sme_not_directly_funded_actual",
         "TABLE": "project",
@@ -1469,7 +1469,7 @@
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US $/kg) actual",
-        "LABEL": "Cost effectiveness (US $/kg) (actual)",
+        "LABEL": "Cost effectiveness (US $/kg) - actual",
         "WRITE_FIELD_NAME": "cost_effectiveness_actual",
         "READ_FIELD_NAME": "cost_effectiveness_actual",
         "TABLE": "project",
@@ -1494,7 +1494,7 @@
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US $/CO2-eq tonnes) actual",
-        "LABEL": "Cost effectiveness (US $/CO2-eq tonnes) (actual)",
+        "LABEL": "Cost effectiveness (US $/CO2-eq tonnes) - actual",
         "WRITE_FIELD_NAME": "cost_effectiveness_co2_actual",
         "READ_FIELD_NAME": "cost_effectiveness_co2_actual",
         "TABLE": "project",
