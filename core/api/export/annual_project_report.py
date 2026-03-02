@@ -235,24 +235,21 @@ class APRExportWriter:
 
         # Handle boolean fields - convert to Yes/No
         if field_name in self.BOOLEAN_FIELDS or isinstance(value, bool):
-            if isinstance(value, bool):
-                return "Yes" if value else "No"
-            # Also handle if it comes as 1/0
-            if value in (1, "1", True):
+            if value in (True, 1, "1"):
                 return "Yes"
-            if value in (0, "0", False):
+            if value in (False, 0, "0"):
                 return "No"
             return ""
 
         # Handle date fields - convert to date object for Excel
         if field_name in self.DATE_FIELDS:
+            result = None
             if isinstance(value, str):
                 try:
-                    # Parse ISO date string and return as date object
-                    return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+                    result = datetime.fromisoformat(value.replace("Z", "+00:00")).date()
                 except (ValueError, AttributeError):
                     pass
-            return None
+            return result
 
         # All other fields as string
         return str(value) if value else ""
@@ -332,12 +329,11 @@ class APRExportWriter:
                 filename = f"APR_{self.year}_{safe_agency_name}.xlsx"
             else:
                 filename = "APR_Cumulative_{safe_agency_name}.xlsx"
-        else:
+        elif self.year:
             # This is a multi-agency report (for MLFS to edit)
-            if self.year:
-                filename = f"APR_{self.year}_All_Agencies.xlsx"
-            else:
-                filename = "APR_Cumulative_All_Agencies.xlsx"
+            filename = f"APR_{self.year}_All_Agencies.xlsx"
+        else:
+            filename = "APR_Cumulative_All_Agencies.xlsx"
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -695,6 +691,24 @@ class APRSummaryTablesExportWriter:
         for col in range(2, 6):
             ws.cell(row, col).number_format = "#,##0"
 
+    def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
+        """Helper for writing a single data row in the annual summary sheet."""
+        label_cell = ws.cell(row, col_map["approval_year"], row_data["label"])
+        if bold:
+            label_cell.font = Font(bold=True)
+        ws.cell(row, col_map["num_approvals"], row_data["num_approvals"])
+        ws.cell(row, col_map["num_completed"], row_data["num_completed"])
+        ws.cell(row, col_map["pct_completed"], row_data["pct_completed"])
+        ws.cell(row, col_map["pct_completed"]).number_format = "0%"
+        ws.cell(row, col_map["approved_funding"], row_data["approved_funding"])
+        ws.cell(row, col_map["funds_disbursed"], row_data["funds_disbursed"])
+        ws.cell(row, col_map["balance"], row_data["balance"])
+        ws.cell(row, col_map["pct_funds_disbursed"], row_data["pct_funds_disbursed"])
+
+        for col_name in ["approved_funding", "funds_disbursed", "balance"]:
+            ws.cell(row, col_map[col_name]).number_format = "#,##0"
+        ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
+
     def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
         ws = self.workbook[self.SHEET_ANNUAL]
@@ -754,19 +768,21 @@ class APRSummaryTablesExportWriter:
 
             pct_completed = (num_completed / num_approvals) if num_approvals else 0
 
-            ws.cell(row, col_map["approval_year"], approval_year)
-            ws.cell(row, col_map["num_approvals"], num_approvals)
-            ws.cell(row, col_map["num_completed"], num_completed)
-            ws.cell(row, col_map["pct_completed"], pct_completed)
-            ws.cell(row, col_map["pct_completed"]).number_format = "0%"
-            ws.cell(row, col_map["approved_funding"], total_approved_funding)
-            ws.cell(row, col_map["funds_disbursed"], total_funds_disbursed)
-            ws.cell(row, col_map["balance"], total_balance)
-            ws.cell(row, col_map["pct_funds_disbursed"], avg_pct_disbursed)
-
-            for col_name in ["approved_funding", "funds_disbursed", "balance"]:
-                ws.cell(row, col_map[col_name]).number_format = "#,##0"
-            ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
+            self._write_annual_row(
+                ws,
+                row,
+                col_map,
+                {
+                    "label": approval_year,
+                    "num_approvals": num_approvals,
+                    "num_completed": num_completed,
+                    "pct_completed": pct_completed,
+                    "approved_funding": total_approved_funding,
+                    "funds_disbursed": total_funds_disbursed,
+                    "balance": total_balance,
+                    "pct_funds_disbursed": avg_pct_disbursed,
+                },
+            )
 
             # Accumulate grand totals
             grand_totals["num_approvals"] += num_approvals
@@ -787,19 +803,22 @@ class APRSummaryTablesExportWriter:
             sum(gt["pct_values"]) / len(gt["pct_values"]) if gt["pct_values"] else 0
         )
 
-        ws.cell(row, col_map["approval_year"], "Total").font = Font(bold=True)
-        ws.cell(row, col_map["num_approvals"], gt["num_approvals"])
-        ws.cell(row, col_map["num_completed"], gt["num_completed"])
-        ws.cell(row, col_map["pct_completed"], pct_completed_total)
-        ws.cell(row, col_map["pct_completed"]).number_format = "0%"
-        ws.cell(row, col_map["approved_funding"], gt["approved_funding"])
-        ws.cell(row, col_map["funds_disbursed"], gt["funds_disbursed"])
-        ws.cell(row, col_map["balance"], gt["balance"])
-        ws.cell(row, col_map["pct_funds_disbursed"], avg_pct_total)
-
-        for col_name in ["approved_funding", "funds_disbursed", "balance"]:
-            ws.cell(row, col_map[col_name]).number_format = "#,##0"
-        ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
+        self._write_annual_row(
+            ws,
+            row,
+            col_map,
+            {
+                "label": "Total",
+                "num_approvals": gt["num_approvals"],
+                "num_completed": gt["num_completed"],
+                "pct_completed": pct_completed_total,
+                "approved_funding": gt["approved_funding"],
+                "funds_disbursed": gt["funds_disbursed"],
+                "balance": gt["balance"],
+                "pct_funds_disbursed": avg_pct_total,
+            },
+            bold=True,
+        )
 
     def _write_investment_projects_sheet(self):
         """Sheet (b): Cumulative completed investment projects"""
@@ -1048,7 +1067,9 @@ class APRSummaryTablesExportWriter:
                 queryset, "project__date_approved", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
-                queryset, "date_of_completion_per_agreement_or_decisions_denorm", "date_planned_completion"
+                queryset,
+                "date_of_completion_per_agreement_or_decisions_denorm",
+                "date_planned_completion",
             )
             num_disbursing = sum(
                 1 for apr in queryset if apr.funds_disbursed and apr.funds_disbursed > 0
