@@ -520,8 +520,10 @@ class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
 
     consumption_phased_out_odp = factory.Faker("random_int")
     consumption_phased_out_co2 = factory.Faker("random_int")
+    consumption_phased_out_mt = factory.Faker("random_int")
     production_phased_out_odp = factory.Faker("random_int")
     production_phased_out_co2 = factory.Faker("random_int")
+    production_phased_out_mt = factory.Faker("random_int")
 
     funds_disbursed = factory.Faker("random_int")
     funds_committed = factory.Faker("random_int")
