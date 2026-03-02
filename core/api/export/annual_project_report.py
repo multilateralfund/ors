@@ -6,7 +6,7 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import HttpResponse
 from openpyxl import load_workbook
 from openpyxl.styles import Font
@@ -815,9 +815,11 @@ class APRSummaryTablesExportWriter:
     def _write_non_investment_projects_sheet(self):
         """Sheet (c): Cumulative completed non-investment projects"""
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
-        completed_non_investment = self.queryset.filter(
-            project__status__code="COM"
-        ).exclude(project__project_type__code="INV")
+        completed_non_investment = (
+            self.queryset.filter(project__status__code="COM")
+            .exclude(project__project_type__code="INV")
+            .exclude(project__project_type__code="PRP")
+        )
         self._write_flat_aggregation_sheet(
             ws, completed_non_investment, include_odp_co2=False, sheet_type="cumulative"
         )
@@ -837,7 +839,7 @@ class APRSummaryTablesExportWriter:
         """Sheet (e): Cumulative ongoing investment projects"""
         ws = self.workbook[self.SHEET_ONGOING_INVESTMENT]
         ongoing_investment = self.queryset.filter(
-            Q(project__status__code="COM") | Q(project__status__code="ONG"),
+            project__status__code="ONG",
             project__project_type__code="INV",
         )
         self._write_flat_aggregation_sheet(
@@ -850,9 +852,11 @@ class APRSummaryTablesExportWriter:
     def _write_ongoing_non_investment_sheet(self):
         """Sheet (f): Cumulative ongoing non-investment projects"""
         ws = self.workbook[self.SHEET_ONGOING_NON_INVESTMENT]
-        ongoing_non_investment = self.queryset.filter(
-            Q(project__status__code="COM") | Q(project__status__code="ONG")
-        ).exclude(project__project_type__code="INV")
+        ongoing_non_investment = (
+            self.queryset.filter(project__status__code="ONG")
+            .exclude(project__project_type__code="INV")
+            .exclude(project__project_type__code="PRP")
+        )
         self._write_flat_aggregation_sheet(
             ws,
             ongoing_non_investment,
@@ -864,7 +868,7 @@ class APRSummaryTablesExportWriter:
         """Sheet (g): Cumulative ongoing preparation activities"""
         ws = self.workbook[self.SHEET_ONGOING_PREPARATION]
         ongoing_preparation = self.queryset.filter(
-            Q(project__status__code="COM") | Q(project__status__code="ONG"),
+            project__status__code="ONG",
             project__project_type__code="PRP",
         )
         self._write_flat_aggregation_sheet(
@@ -1044,7 +1048,7 @@ class APRSummaryTablesExportWriter:
                 queryset, "project__date_approved", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
-                queryset, "project__date_approved", "date_planned_completion"
+                queryset, "date_of_completion_per_agreement_or_decisions_denorm", "date_planned_completion"
             )
             num_disbursing = sum(
                 1 for apr in queryset if apr.funds_disbursed and apr.funds_disbursed > 0
