@@ -94,8 +94,14 @@ const LinkedBPTable = ({
     bp_status: 'Endorsed',
     year_start: period?.year_start,
     year_end: period?.year_start + 2,
-    country_id: [projIdentifiers.country, globalCountry.id],
-    agency_id: [projIdentifiers.agency, allAgenciesAgency.id],
+    country_id: [
+      projIdentifiers.country,
+      ...(globalCountry?.id ? [globalCountry.id] : []),
+    ],
+    agency_id: [
+      projIdentifiers.agency,
+      ...(allAgenciesAgency?.id ? [allAgenciesAgency.id] : []),
+    ],
     project_cluster_id: projIdentifiers.cluster,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
@@ -136,6 +142,7 @@ type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
+  project?: ProjectTypeApi
 }
 
 export type LinkableActivity = ApiBPActivity & {
@@ -150,6 +157,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     setProjectData,
     bpData,
     onBpDataChange,
+    project,
     ...rest
   } = props
   const { results, ...restActivities } = activities
@@ -174,6 +182,12 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     const isActivityAvailable = find(results, (result) => result.id === bpId)
 
     if (areActivitiesLoaded && !isActivityAvailable) {
+      const crtActivityId =
+        find(
+          results,
+          ({ initial_id }) => initial_id === project?.bp_activity?.initial_id,
+        )?.id ?? null
+
       setProjectData((prevData) => {
         const { bpLinking } = prevData
 
@@ -181,7 +195,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
           ...prevData,
           bpLinking: {
             ...bpLinking,
-            bpId: null,
+            bpId: crtActivityId,
           },
         }
       })
@@ -230,9 +244,8 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
         {isLinkedToBP && (
           <BPTable
             results={formattedResults}
-            yearRanges={yearRanges}
             bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
-            setProjectData={setProjectData}
+            {...{ project, setProjectData, yearRanges }}
             isProjectsSection
             {...rest}
             {...restActivities}

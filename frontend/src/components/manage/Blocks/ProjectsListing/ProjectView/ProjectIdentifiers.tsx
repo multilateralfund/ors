@@ -36,10 +36,10 @@ const ProjectIdentifiers = ({
   const bpActivity = {
     ...project.bp_activity,
     get display_internal_id(): string {
-      const countryAbbr = this.country?.abbr ?? ''
+      const countryIso3 = this.country?.iso3 ?? ''
       const agency = this.agency?.name ?? ''
-      const id = this.id?.toString() ?? ''
-      return `${agency}-${countryAbbr}-0000${id}`
+      const id = this.initial_id?.toString() ?? ''
+      return `${agency}-${countryIso3}-000${id}`
     },
   }
   const bp = bpActivity?.business_plan
