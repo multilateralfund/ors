@@ -117,7 +117,7 @@ class MetaProject(models.Model):
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (CO2-eq tonnes) (MYA)",
+        help_text="Phase-out (CO2-eq tonnes) (MYA)",
     )
     phase_out_odp = models.DecimalField(
         max_digits=30,
@@ -249,7 +249,7 @@ class MetaProject(models.Model):
         decimal_places=15,
         null=True,
         blank=True,
-        help_text="Phase out (CO2-eq tonnes) (MYA) (draft)",
+        help_text="Phase-out (CO2-eq tonnes) (MYA) (draft)",
     )
     draft_phase_out_odp = models.DecimalField(
         max_digits=30,
