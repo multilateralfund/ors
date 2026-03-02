@@ -342,7 +342,7 @@ const ProjectsCreate = ({
   const allImpactErrors = specificFieldsErrors['Impact'] || {}
 
   const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
-    key.includes('(actual)') && value?.[0]?.includes('not completed')
+    key.includes('- actual') && value?.[0]?.includes('not completed')
 
   const impactErrors = Object.fromEntries(
     Object.entries(allImpactErrors).filter(

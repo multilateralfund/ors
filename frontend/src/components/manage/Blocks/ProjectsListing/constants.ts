@@ -114,59 +114,9 @@ export const initialTranferedProjectData = {
   psc_transferred: null,
 }
 
-export const consumptionLevelOpts = [
-  { name: 'LVC', id: 'LVC' },
-  { name: 'Non-LVC', id: 'Non-LVC' },
-  { name: 'Not applicable', id: 'Not applicable' },
-]
-
 export const considerationOpts = [
   { name: 'Blanket approval', id: 'blanket', value: 'Blanket' },
   { name: 'Individual consideration', id: 'individual', value: 'Individual' },
-]
-
-export const validationFieldsPairs: [
-  keyof SpecificFields,
-  keyof SpecificFields,
-][] = [
-  [
-    'number_of_female_technicians_trained',
-    'total_number_of_technicians_trained',
-  ],
-  ['number_of_female_trainers_trained', 'total_number_of_trainers_trained'],
-  [
-    'number_of_female_technicians_certified',
-    'total_number_of_technicians_certified',
-  ],
-  [
-    'number_of_female_customs_officers_trained',
-    'total_number_of_customs_officers_trained',
-  ],
-  [
-    'number_of_female_nou_personnel_supported',
-    'total_number_of_nou_personnel_supported',
-  ],
-
-  [
-    'number_of_female_technicians_trained_actual',
-    'total_number_of_technicians_trained_actual',
-  ],
-  [
-    'number_of_female_trainers_trained_actual',
-    'total_number_of_trainers_trained_actual',
-  ],
-  [
-    'number_of_female_technicians_certified_actual',
-    'total_number_of_technicians_certified_actual',
-  ],
-  [
-    'number_of_female_customs_officers_trained_actual',
-    'total_number_of_customs_officers_trained_actual',
-  ],
-  [
-    'number_of_female_nou_personnel_supported_actual',
-    'total_number_of_nou_personnel_supported_actual',
-  ],
 ]
 
 export const disabledClassName =

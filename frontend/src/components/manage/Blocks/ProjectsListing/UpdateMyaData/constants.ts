@@ -14,15 +14,10 @@ export const initialParams = {
   limit: MT_PER_PAGE,
 }
 
-export const nonMonetaryFields = [
-  'phase_out_co2_eq_t',
-  'phase_out_odp',
-  'phase_out_mt',
-  'target_reduction',
-  "target_co2_eq_t",
-  "target_odp",
-  'starting_point_odp',
-  'starting_point_co2_eq_t',
-  'baseline_odp',
-  'baseline_co2_eq_t',
+export const monetaryFields = [
+  'project_funding',
+  'support_cost',
+  'project_cost',
+  'cost_effectiveness_kg',
+  'cost_effectiveness_co2',
 ]

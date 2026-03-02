@@ -2,7 +2,10 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { DateInput, FormattedNumberInput } from '../../Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
 import { EnterprisesCommonProps, SetEnterpriseData } from '../interfaces'

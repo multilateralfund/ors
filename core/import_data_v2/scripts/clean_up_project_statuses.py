@@ -46,6 +46,28 @@ def clean_up_project_statuses():
     ProjectStatus.objects.filter(code="NEW").delete()
 
 
+def clean_up_project_submission_statuses():
+    """
+    Clean up project submission statuses
+    """
+    projects_approved = Project.objects.really_all().filter(
+        status__name__in=[
+            "Financially completed",
+            "Ongoing",
+            "Completed",
+            "Transferred",
+            "Closed",
+        ]
+    )
+    submission_status_approved = ProjectSubmissionStatus.objects.filter(
+        name="Approved"
+    ).first()
+    for project in projects_approved:
+        project.submission_status = submission_status_approved
+        project.version = 3
+        project.save()
+
+
 @transaction.atomic
 def import_project_submission_statuses(file_path):
     """

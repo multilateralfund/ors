@@ -4,6 +4,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
+import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import ProjectFundFields from './ProjectFundFields'
 import { widgets } from './SpecificFieldsHelpers'
@@ -19,12 +20,14 @@ import {
   disabledClassName,
   defaultProps,
   approvalOdsFields,
+  tableColumns,
+  defaultPropsSimpleField,
 } from '../constants'
 import useApi from '@ors/hooks/useApi.ts'
 import { useStore } from '@ors/store'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
 
-import { find, map } from 'lodash'
+import { find, map, omit } from 'lodash'
 import cx from 'classnames'
 
 type DecisionOption = {
@@ -165,13 +168,47 @@ const ProjectApprovalFields = ({
               ].includes(field.write_field_name),
           )
           .map((field) => {
+            const fieldName = field.write_field_name
             const dataType = ['programme_officer', 'funding_window'].includes(
               field.write_field_name,
             )
               ? 'simpleText'
               : field.data_type
 
-            return approvalField(field, dataType)
+            return (
+              <React.Fragment key={fieldName}>
+                {approvalField(field, dataType)}
+                {fieldName === 'date_completion' &&
+                  canViewField(viewableFields, 'project_duration') && (
+                    <div key="project_duration">
+                      <Label>{tableColumns.project_duration}</Label>
+                      <div className="flex items-center">
+                        <FormattedNumberInput
+                          id="project_duration"
+                          value={
+                            projectData.crossCuttingFields.project_duration ??
+                            ''
+                          }
+                          withoutDefaultValue={true}
+                          decimalDigits={0}
+                          disabled={true}
+                          {...omit(
+                            {
+                              ...defaultPropsSimpleField,
+                              className: cx(
+                                defaultPropsSimpleField.className,
+                                '!m-0 h-10 !py-1',
+                                disabledClassName,
+                              ),
+                            },
+                            'containerClassName',
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+              </React.Fragment>
+            )
           })}
       </div>
       <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">

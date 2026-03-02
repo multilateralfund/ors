@@ -70,6 +70,7 @@ const ProjectIdentifiersFields = ({
     countries,
     agencies,
     clusters: allClusters,
+    consumptionLevelStatuses,
   } = useContext(ProjectsDataContext)
   const clusters = filterClusterOptions(allClusters, canViewProductionProjects)
 
@@ -174,6 +175,7 @@ const ProjectIdentifiersFields = ({
         consumption_level_status: getConsumptionLevelStatus(
           countries,
           country?.id,
+          consumptionLevelStatuses,
         ),
       },
     }))
