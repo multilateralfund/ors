@@ -16,25 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
-def populate_existing_projects_metacode():
-    """
-    Populate the metacode field in Project model using the MetaProject code.
-    This function will update the metacode field for all Approved projects that have a code defined
-    in their meta_project.
-    """
-    logger.info("⏳ Populating metacode for existing projects...")
-    Project.objects.update(metacode=None)  # Reset existing metacode values
-    projects_with_meta_project_code = Project.objects.really_all().filter(
-        meta_project__code__isnull=False, submission_status__name="Approved"
-    )
-    for project in projects_with_meta_project_code:
-        project.metacode = project.meta_project.code
-
-    Project.objects.bulk_update(projects_with_meta_project_code, ["metacode"])
-    logger.info("✅ Successfully populated metacode for existing projects.")
-
-
-@transaction.atomic
 def populate_existing_projects_lead_agency():
     """
     Populate the lead agency field in Project model using the MetaProject lead agency.
@@ -294,7 +275,6 @@ class Command(BaseCommand):
             help="Import type",
             default="all",
             choices=[
-                "populate_existing_projects_metacode",
                 "populate_existing_meta_projects_fields",
                 "populate_existing_projects_lead_agency",
                 "populate_existing_projects_category",
@@ -310,9 +290,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         imp_type = kwargs["type"]
 
-        if imp_type == "populate_existing_projects_metacode":
-            populate_existing_projects_metacode()
-        elif imp_type == "populate_existing_meta_projects_fields":
+        if imp_type == "populate_existing_meta_projects_fields":
             populate_existing_meta_projects_fields()
         elif imp_type == "populate_existing_projects_lead_agency":
             populate_existing_projects_lead_agency()

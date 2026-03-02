@@ -34,11 +34,35 @@ The scripts should be run in the following order when installing locally or when
     python manage.py import_resources_v2 import_sector
     python manage.py import_resources_v2 import_subsector
     python manage.py import_resources_v2 import modules
+
     python manage.py import_resources_v2 import_project_submission_statuses
-    
+    python manage.py import_resources_v2 clean_up_project_statuses
+    python manage.py import_resources_v2 clean_up_project_submission_statuses
+
+    python manage.py import_resources_v2 clean_up_project_meta_project_attributes
+
     python manage.py import_resources_v2 import_fields
     python manage.py import_resources_v2 import_cluster_type_sector_links
     python manage.py import_resources_v2 import_project_specific_fields
 
 You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and
 the `generate_new_cluster_type_sector_file` function from `import_project_resources_v2.py`
+
+
+
+## Migrating 2026 projects data:
+
+
+For migrating the 2026 projects data, please first download files from nextcloud
+    - **nextcloud path** OzoneMlf/5. Projects - database/2026 Data/2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx
+    - **local path** core/import_data_v2/projects/migrations_2026/
+
+After that, run the following commands:
+
+python manage.py migrate_projects_2026 create_missing_clusters_types_sectors_subsectors
+python manage.py migrate_projects_2026 current_inventory
+python manage.py migrate_projects_2026 ods_phaseout_fields
+python manage.py migrate_projects_2026 ods_production_fields
+python manage.py migrate_projects_2026 funding_fields
+python manage.py migrate_projects_2026 transfer_fields
+python manage.py migrate_projects_2026 c_and_p

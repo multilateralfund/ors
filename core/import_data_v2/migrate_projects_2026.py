@@ -228,8 +228,8 @@ def create_new_project(row, dry_run=True):
             """
         )
 
-    submission_status = ProjectSubmissionStatus.objects.filter(
-        name__iexact="Submitted"
+    approved_submission_status = ProjectSubmissionStatus.objects.filter(
+        name__iexact="Approved"
     ).first()
     project = Project(
         title=row["PROJECT_TITLE"],
@@ -260,7 +260,7 @@ def create_new_project(row, dry_run=True):
         category=category,
         production=production,
         version=3,
-        submission_status=submission_status,
+        submission_status=approved_submission_status,
         support_cost_psc=total_psc_cost,
         total_fund=total_fund_approved,
         meeting=meeting,
