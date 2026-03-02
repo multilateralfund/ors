@@ -113,6 +113,10 @@ class ProjectsOdsOdpWriter:
                 "headerName": "Project ID",
             },
             {
+                "id": "version",
+                "headerName": "Project version",
+            },
+            {
                 "id": "code",
                 "headerName": "Project code",
             },
