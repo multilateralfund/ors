@@ -339,8 +339,10 @@ class TestAPRSummaryTablesExport(BaseTest):
                 break
 
         assert total_row is not None
-        assert sheet.cell(total_row, 2).value == 1  # num approvals
-        assert sheet.cell(total_row, 3).value == 1  # num completed
+        # Approved
+        assert sheet.cell(total_row, 2).value == 1
+        # Completed
+        assert sheet.cell(total_row, 3).value == 1
 
     def test_investment_projects_sheet_flat_layout(
         self,
