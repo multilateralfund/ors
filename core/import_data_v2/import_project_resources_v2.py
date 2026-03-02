@@ -37,10 +37,9 @@ from core.import_data_v2.scripts.clean_up_countries import (
 )
 from core.import_data_v2.scripts.import_modules import import_modules
 
-#pylint: disable=too-many-branches, too-many-statements
+# pylint: disable=too-many-branches, too-many-statements
 
 logger = logging.getLogger(__name__)
-
 
 
 @transaction.atomic
