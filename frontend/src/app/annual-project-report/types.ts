@@ -36,12 +36,16 @@ export interface AnnualProjectReport {
   date_actual_completion: string | null
   date_financial_completion: string | null
   consumption_phased_out_odp_proposal: number | null
+  consumption_phased_out_mt_proposal: number | null
   consumption_phased_out_co2_proposal: number | null
   production_phased_out_odp_proposal: number | null
+  production_phased_out_mt_proposal: number | null
   production_phased_out_co2_proposal: number | null
   consumption_phased_out_odp: number | null
+  consumption_phased_out_mt: number | null
   consumption_phased_out_co2: number | null
   production_phased_out_odp: number | null
+  production_phased_out_mt: number | null
   production_phased_out_co2: number | null
   approved_funding: number | null
   adjustment: number | null

@@ -632,7 +632,14 @@ class APRSummaryTablesExportView(APIView):
         if request.user.agency:
             agency = request.user.agency
 
-        writer = APRSummaryTablesExportWriter(agency=agency)
+        year = request.query_params.get("year")
+        if year:
+            try:
+                year = int(year)
+            except (ValueError, TypeError):
+                year = None
+
+        writer = APRSummaryTablesExportWriter(agency=agency, year=year)
         return writer.generate()
 
 
