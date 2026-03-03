@@ -86,17 +86,17 @@ class APRExportWriter:
     }
 
     @classmethod
-    def build_column_mapping(cls, exclude_fields=None):
+    def build_column_mapping(cls):
         """
         Generate column index-to-field mapping from serializer's excel_fields.
         This ensures consistency between serializer and Excel export.
 
-        If exclude_fields is provided, those fields are omitted from the mapping
-        and the remaining columns are re-numbered contiguously.
+        All fields — including any excluded ones — are mapped to their natural
+        (1-indexed) column positions so that the output always stays aligned
+        with the template headers. Excluded fields are written as None by
+        _write_row_data rather than being removed from the mapping.
         """
         excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
-        if exclude_fields:
-            excel_fields = [f for f in excel_fields if f not in exclude_fields]
         # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
@@ -123,7 +123,7 @@ class APRExportWriter:
         self.workbook = None
         self.worksheet = None
         self.status_worksheet = None
-        self.column_mapping = self.build_column_mapping(exclude_fields=exclude_fields)
+        self.column_mapping = self.build_column_mapping()
         self.status_column_idx = None
 
         # Find the status column index
@@ -243,9 +243,14 @@ class APRExportWriter:
 
     def _write_row_data(self, row_number, report_data):
         """Writes a single project report's data to the row identified by row_number"""
+        excluded_fields = self.exclude_fields or set()
         for field_name, col_idx in self.column_mapping.items():
             cell = self.worksheet.cell(row_number, col_idx)
-            value = self._format_field_value(field_name, report_data)
+            value = (
+                None
+                if field_name in excluded_fields
+                else self._format_field_value(field_name, report_data)
+            )
             cell.value = value
 
     def _format_field_value(self, field_name, report_data):
