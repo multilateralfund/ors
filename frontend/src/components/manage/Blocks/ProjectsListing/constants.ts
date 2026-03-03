@@ -179,3 +179,5 @@ export const defaultTrancheErrors = {
   loaded: false,
   loading: false,
 }
+
+export const projectPhaseOutFields = ['co2_mt', 'odp', 'phase_out_mt']

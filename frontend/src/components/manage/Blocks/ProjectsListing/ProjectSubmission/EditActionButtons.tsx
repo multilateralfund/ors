@@ -12,6 +12,7 @@ import {
   dropDownClassName,
   dropdownItemClassname,
   enabledButtonClassname,
+  projectPhaseOutFields,
 } from '../constants'
 import {
   canEditField,
@@ -193,7 +194,11 @@ const EditActionButtons = ({
 
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+    (odsOdpData.some((data) =>
+      Object.entries(data)
+        .filter(([key]) => !projectPhaseOutFields.includes(key))
+        .some(([, value]) => checkInvalidValue(value)),
+    ) ||
       odsOdpData.length === 0)
 
   const {

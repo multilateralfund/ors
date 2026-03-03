@@ -17,6 +17,7 @@ import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
+import { projectPhaseOutFields } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -352,7 +353,10 @@ const ProjectsCreate = ({
 
   const { errorText, isError } = trancheErrors || {}
 
-  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name').filter(
+    (field) => !projectPhaseOutFields.includes(field),
+  )
+
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const errorMessageExtension =
@@ -397,11 +401,17 @@ const ProjectsCreate = ({
       if (fieldLabels.length === 0) return null
 
       const missingFields = fieldLabels
-        .filter(([_, errors]) => errors[0] === 'This field is required.')
+        .filter(
+          ([_, errors]) =>
+            errors[0] === `This field is required${errorMessageExtension}.`,
+        )
         .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
 
       const invalidFields = fieldLabels
-        .filter(([_, errors]) => errors[0] !== 'This field is required.')
+        .filter(
+          ([_, errors]) =>
+            errors[0] !== `This field is required${errorMessageExtension}.`,
+        )
         .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
 
       const messages = [
