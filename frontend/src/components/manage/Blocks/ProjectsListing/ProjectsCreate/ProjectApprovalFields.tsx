@@ -70,7 +70,7 @@ const ProjectApprovalFields = ({
 
   const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return map(data, (d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.title, value: d.id }))
   }, [decisionsApi.data])
 
   const handleChangeDecision = (option: DecisionOption | string | null) => {
