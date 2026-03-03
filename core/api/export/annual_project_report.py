@@ -86,27 +86,40 @@ class APRExportWriter:
     }
 
     @classmethod
-    def build_column_mapping(cls):
+    def build_column_mapping(cls, exclude_fields=None):
         """
         Generate column index-to-field mapping from serializer's excel_fields.
         This ensures consistency between serializer and Excel export.
+
+        If exclude_fields is provided, those fields are omitted from the mapping
+        and the remaining columns are re-numbered contiguously.
         """
         excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
+        if exclude_fields:
+            excel_fields = [f for f in excel_fields if f not in exclude_fields]
         # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
-    def __init__(self, year=None, agency_name=None, project_reports_data=None):
+    def __init__(
+        self,
+        year=None,
+        agency_name=None,
+        project_reports_data=None,
+        exclude_fields=None,
+    ):
         """
         If agency_name is None, the report includes all agencies.
         If year is None, it's a cumulative report for all years.
+        If exclude_fields is provided, those columns are omitted from the export.
         """
         self.year = year
         self.agency_name = agency_name
         self.project_reports_data = project_reports_data or []
+        self.exclude_fields = exclude_fields
         self.workbook = None
         self.worksheet = None
         self.status_worksheet = None
-        self.column_mapping = self.build_column_mapping()
+        self.column_mapping = self.build_column_mapping(exclude_fields=exclude_fields)
         self.status_column_idx = None
 
         # Find the status column index
@@ -115,7 +128,8 @@ class APRExportWriter:
                 self.status_column_idx = idx
                 break
 
-    def generate(self):
+    def _build_workbook(self):
+        """Build the workbook with all data, formatting, and validation."""
         self.workbook = load_workbook(str(self.TEMPLATE_PATH))
         self.worksheet = self.workbook[self.SHEET_NAME]
 
@@ -133,7 +147,14 @@ class APRExportWriter:
         # Apply data validation (status dropdown)
         self._apply_data_validation()
 
+    def generate(self):
+        self._build_workbook()
         return self._create_response()
+
+    def generate_to_file(self, filepath):
+        """Generate the Excel file and save it to the given file path."""
+        self._build_workbook()
+        self.workbook.save(filepath)
 
     def _remove_hidden_sheets(self):
         """
