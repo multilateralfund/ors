@@ -106,16 +106,20 @@ class APRExportWriter:
         agency_name=None,
         project_reports_data=None,
         exclude_fields=None,
+        progress_callback=None,
     ):
         """
         If agency_name is None, the report includes all agencies.
         If year is None, it's a cumulative report for all years.
         If exclude_fields is provided, those columns are omitted from the export.
+        If progress_callback is provided, it is called with (rows_written, total)
+        every 100 rows while writing data.
         """
         self.year = year
         self.agency_name = agency_name
         self.project_reports_data = project_reports_data or []
         self.exclude_fields = exclude_fields
+        self.progress_callback = progress_callback
         self.workbook = None
         self.worksheet = None
         self.status_worksheet = None
@@ -210,6 +214,7 @@ class APRExportWriter:
                 template_row + 1, self.worksheet.max_row - template_row
             )
 
+        total = len(self.project_reports_data)
         for idx, report_data in enumerate(self.project_reports_data):
             current_row = self.FIRST_DATA_ROW + idx
             if idx > 0:
@@ -218,6 +223,10 @@ class APRExportWriter:
                 self._copy_row_style(template_row, current_row)
 
             self._write_row_data(current_row, report_data)
+
+            rows_written = idx + 1
+            if self.progress_callback and rows_written % 100 == 0:
+                self.progress_callback(rows_written, total)
 
     def _copy_row_style(self, source_row, target_row):
         for col_idx in range(1, len(self.column_mapping) + 1):
