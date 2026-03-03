@@ -703,13 +703,16 @@ export const getSpecificFieldsErrors = (
   const isEditMode = project && mode === 'edit'
   const version = isEditMode ? project.version : 1
 
+  const fieldsNotValidated = ['destruction_technology']
+
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section, editable_in_versions, data_type }) =>
+      ({ table, section, editable_in_versions, data_type, write_field_name }) =>
         table === 'project' &&
         section !== 'MYA' &&
         data_type !== 'boolean' &&
+        !fieldsNotValidated.includes(write_field_name) &&
         (canEditApprovedProjects ||
           (isEditMode && project.version > 3) ||
           editable_in_versions.includes(version)),

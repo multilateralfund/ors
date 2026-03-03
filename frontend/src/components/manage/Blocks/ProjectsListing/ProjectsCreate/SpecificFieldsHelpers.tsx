@@ -382,10 +382,12 @@ export const TextAreaWidget = <T,>(
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
   const isOdsReplacement = fieldName === 'ods_replacement'
-  const nrChars = isOdsReplacement ? 256 : 500
+  const isDestructionTech = fieldName === 'destruction_technology'
+  const isCustomField = isOdsReplacement || isDestructionTech
+  const nrChars = isCustomField ? 256 : 500
 
   return (
-    <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
+    <div className={cx('w-full', { 'md:w-auto': isCustomField })}>
       <Label>
         {field.label} (max {nrChars} characters)
       </Label>
@@ -405,12 +407,13 @@ export const TextAreaWidget = <T,>(
             )
           }
           className={cx(textAreaClassname, 'max-w-[415px]', {
-            '!min-h-[27px] !w-auto !min-w-56 !pb-1.5 md:!min-w-72':
-              isOdsReplacement,
+            '!min-h-[23px] !pb-[5px]': isCustomField,
+            '!w-auto !min-w-56 md:!min-w-72': isOdsReplacement,
+            'md:!min-w-[300px]': isDestructionTech,
           })}
           maxLength={nrChars}
           style={STYLE}
-          minRows={isOdsReplacement ? 1 : 2}
+          minRows={isCustomField ? 1 : 2}
         />
         <FieldErrorIndicator
           errors={
