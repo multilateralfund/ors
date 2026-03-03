@@ -150,11 +150,15 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Writing {len(project_data)} rows to {output}...")
 
+        def _write_progress(rows_written, total):
+            self.stdout.write(f"  {rows_written}/{total} rows written...")
+
         writer = APRExportWriter(
             year=year,
             agency_name=None,
             project_reports_data=project_data,
             exclude_fields=EXCLUDE_FIELDS,
+            progress_callback=_write_progress,
         )
         writer.generate_to_file(output)
 

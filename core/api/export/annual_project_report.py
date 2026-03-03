@@ -86,17 +86,17 @@ class APRExportWriter:
     }
 
     @classmethod
-    def build_column_mapping(cls, exclude_fields=None):
+    def build_column_mapping(cls):
         """
         Generate column index-to-field mapping from serializer's excel_fields.
         This ensures consistency between serializer and Excel export.
 
-        If exclude_fields is provided, those fields are omitted from the mapping
-        and the remaining columns are re-numbered contiguously.
+        All fields — including any excluded ones — are mapped to their natural
+        (1-indexed) column positions so that the output always stays aligned
+        with the template headers. Excluded fields are written as None by
+        _write_row_data rather than being removed from the mapping.
         """
         excel_fields = AnnualProjectReportReadSerializer.Meta.excel_fields
-        if exclude_fields:
-            excel_fields = [f for f in excel_fields if f not in exclude_fields]
         # Map fields to column numbers (1-indexed)
         return {field: idx + 1 for idx, field in enumerate(excel_fields)}
 
@@ -106,20 +106,24 @@ class APRExportWriter:
         agency_name=None,
         project_reports_data=None,
         exclude_fields=None,
+        progress_callback=None,
     ):
         """
         If agency_name is None, the report includes all agencies.
         If year is None, it's a cumulative report for all years.
         If exclude_fields is provided, those columns are omitted from the export.
+        If progress_callback is provided, it is called with (rows_written, total)
+        every 100 rows while writing data.
         """
         self.year = year
         self.agency_name = agency_name
         self.project_reports_data = project_reports_data or []
         self.exclude_fields = exclude_fields
+        self.progress_callback = progress_callback
         self.workbook = None
         self.worksheet = None
         self.status_worksheet = None
-        self.column_mapping = self.build_column_mapping(exclude_fields=exclude_fields)
+        self.column_mapping = self.build_column_mapping()
         self.status_column_idx = None
 
         # Find the status column index
@@ -210,6 +214,7 @@ class APRExportWriter:
                 template_row + 1, self.worksheet.max_row - template_row
             )
 
+        total = len(self.project_reports_data)
         for idx, report_data in enumerate(self.project_reports_data):
             current_row = self.FIRST_DATA_ROW + idx
             if idx > 0:
@@ -218,6 +223,10 @@ class APRExportWriter:
                 self._copy_row_style(template_row, current_row)
 
             self._write_row_data(current_row, report_data)
+
+            rows_written = idx + 1
+            if self.progress_callback and rows_written % 100 == 0:
+                self.progress_callback(rows_written, total)
 
     def _copy_row_style(self, source_row, target_row):
         for col_idx in range(1, len(self.column_mapping) + 1):
@@ -234,9 +243,14 @@ class APRExportWriter:
 
     def _write_row_data(self, row_number, report_data):
         """Writes a single project report's data to the row identified by row_number"""
+        excluded_fields = self.exclude_fields or set()
         for field_name, col_idx in self.column_mapping.items():
             cell = self.worksheet.cell(row_number, col_idx)
-            value = self._format_field_value(field_name, report_data)
+            value = (
+                None
+                if field_name in excluded_fields
+                else self._format_field_value(field_name, report_data)
+            )
             cell.value = value
 
     def _format_field_value(self, field_name, report_data):
