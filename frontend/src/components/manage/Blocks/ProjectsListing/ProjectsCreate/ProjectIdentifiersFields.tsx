@@ -563,7 +563,7 @@ const ProjectIdentifiersFields = ({
           <div className="flex items-center">
             <FormControlLabel
               className="w-fit"
-              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              label={tableColumns.lead_agency_submitting_on_behalf}
               control={
                 <Checkbox
                   checked={projIdentifiers?.lead_agency_submitting_on_behalf}

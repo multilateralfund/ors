@@ -152,7 +152,7 @@ const ProjectApprovalFields = ({
                 />
               </div>
               <div className="w-8">
-                <FieldErrorIndicator errors={errors} field="Decision" />
+                <FieldErrorIndicator errors={errors} field="Decision number" />
               </div>
             </div>
           </div>

@@ -412,9 +412,14 @@ export const getProjIdentifiersErrors = (
     'cluster',
     'lead_agency',
   ]
+  const allFields = [
+    ...requiredFields,
+    'lead_agency_submitting_on_behalf',
+    'production',
+  ]
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+    Object.entries(errors).filter(([key]) => allFields.includes(key)),
   )
 
   return {
@@ -562,7 +567,6 @@ export const getApprovalErrors = (
     'decision',
     'date_completion',
     'programme_officer',
-    'excom_provision',
   ]
 
   const requiredFields = [...defaultRequiredFields, ...approvalOdsFields]
@@ -577,7 +581,7 @@ export const getApprovalErrors = (
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) =>
-      [...requiredFields, 'funding_window'].includes(key),
+      [...requiredFields, 'funding_window', 'excom_provision'].includes(key),
     ),
   )
 
@@ -603,14 +607,15 @@ export const getPostExcomApprovalErrors = (
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
 ) => {
-  const fieldsForValidation = ['programme_officer', 'excom_provision']
+  const requiredFields = ['programme_officer']
+  const allFields = [...requiredFields, 'excom_provision']
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => fieldsForValidation.includes(key)),
+    Object.entries(errors).filter(([key]) => allFields.includes(key)),
   )
 
   const allErrors = {
-    ...getFieldErrors(fieldsForValidation, approvalData, project),
+    ...getFieldErrors(requiredFields, approvalData, project),
     ...filteredErrors,
   }
 
@@ -665,9 +670,12 @@ export const getTransferErrors = (
   project: ProjectTypeApi,
 ) => {
   const { fund_transferred, psc_transferred } = projectData
+  const fieldsToValidate = keys(initialTranferedProjectData).filter(
+    (field) => field !== 'transfer_excom_provision',
+  )
 
   return {
-    ...getFieldErrors(keys(initialTranferedProjectData), projectData, project),
+    ...getFieldErrors(fieldsToValidate, projectData, project),
     ...(Number(fund_transferred) > Number(project.total_fund) && {
       fund_transferred: ['Value cannot be greater than project funding.'],
     }),
@@ -719,6 +727,7 @@ export const getSpecificFieldsErrors = (
     ),
     'write_field_name',
   ) as string[]
+  const allFieldNames = [...fieldNames, ...fieldsNotValidated]
 
   const defaultImpactErrors =
     getDefaultImpactErrors(projectSpecificFields, specificFields) ?? {}
@@ -730,7 +739,7 @@ export const getSpecificFieldsErrors = (
   const updatedErrors = { ...sectionErrors, ...defaultImpactErrors, ...errors }
 
   const filteredErrors = Object.entries(updatedErrors)
-    .filter(([key]) => fieldNames.includes(key))
+    .filter(([key]) => allFieldNames.includes(key))
     .reduce(
       (acc, [key, errMsg]) => {
         const field = specificFields.find(
