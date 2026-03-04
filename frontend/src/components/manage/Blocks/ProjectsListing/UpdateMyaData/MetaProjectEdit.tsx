@@ -16,6 +16,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
 import { formatFieldLabel, getFormattedDecimalValue } from '../utils'
+import { disabledClassName } from '../constants'
 import { monetaryFields } from './constants'
 
 import { useSnackbar } from 'notistack'
@@ -148,6 +149,7 @@ export const MetaProjectEdit = (props: {
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
+    const isFieldDisabled = fd.name === 'project_duration'
 
     switch (fd.type) {
       case 'DateTimeField':
@@ -175,10 +177,13 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            className={cx('!m-0 h-10 w-full !border-gray-400 p-2.5', {
+              [disabledClassName]: isFieldDisabled,
+            })}
             withoutDefaultValue={true}
             value={fieldValue}
             decimalDigits={0}
+            disabled={isFieldDisabled}
             onChange={changeSimpleInput(fd.name, {
               numeric: ['IntegerField'].includes(fd.type),
             })}
