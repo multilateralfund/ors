@@ -410,6 +410,8 @@ class APRSummaryTablesExportWriter:
 
     # I.2 and Project completion_Rep year data start (after merged header rows 3-4)
     CLUSTER_DATA_START_ROW = 5
+    # Number of template placeholder data rows in the cluster sheets (before Total)
+    CLUSTER_TEMPLATE_DATA_ROWS = 5
 
     @classmethod
     def build_annual_column_mapping(cls):
@@ -513,6 +515,49 @@ class APRSummaryTablesExportWriter:
             for col in range(1, ws.max_column + 1):
                 ws.cell(row, col).value = None
 
+    def _find_section_row(self, ws, header_text, search_from):
+        """Return the row number where col-1 matches header_text (case-insensitive)."""
+        needle = header_text.strip().lower()
+        for r in range(search_from, ws.max_row + 1):
+            val = ws.cell(r, 1).value
+            if val and str(val).strip().lower() == needle:
+                return r
+        return None
+
+    def _copy_row_style_summary(self, ws, source_row, target_row):
+        """Copy all cell styles from source_row to target_row."""
+        for col in range(1, ws.max_column + 1):
+            src = ws.cell(source_row, col)
+            tgt = ws.cell(target_row, col)
+            if src.has_style:
+                tgt.font = copy(src.font)
+                tgt.border = copy(src.border)
+                tgt.fill = copy(src.fill)
+                tgt.number_format = src.number_format
+                tgt.protection = copy(src.protection)
+                tgt.alignment = copy(src.alignment)
+
+    def _adjust_section_rows(self, ws, section_start, template_count, needed_count):
+        """
+        Resize a contiguous data section from template_count rows to needed_count rows
+        by inserting or deleting rows (and carrying styles along when inserting).
+        """
+        if needed_count == template_count:
+            return
+        if needed_count > template_count:
+            n_insert = needed_count - template_count
+            insert_at = section_start + template_count
+            ws.insert_rows(insert_at, n_insert)
+            style_source = (
+                section_start + template_count - 1
+                if template_count > 0
+                else section_start
+            )
+            for i in range(n_insert):
+                self._copy_row_style_summary(ws, style_source, insert_at + i)
+        else:
+            ws.delete_rows(section_start + needed_count, template_count - needed_count)
+
     def _write_summary_data_sheet(self):
         """I.1: Overall summary data"""
         ws = self.workbook[self.SHEET_SUMMARY]
@@ -576,8 +621,6 @@ class APRSummaryTablesExportWriter:
         """I.2: Summary data by cluster"""
         ws = self.workbook[self.SHEET_SUMMARY_CLUSTER]
 
-        self._clear_template_data_rows(ws, self.CLUSTER_DATA_START_ROW)
-
         cluster_groups = (
             self.queryset.exclude(project__cluster__isnull=True)
             .values("project__cluster__name", "project__cluster__sort_order")
@@ -585,7 +628,8 @@ class APRSummaryTablesExportWriter:
             .order_by("project__cluster__sort_order", "project__cluster__name")
         )
 
-        row = self.CLUSTER_DATA_START_ROW
+        # Pre-compute all rows before touching the sheet structure
+        rows_data = []
         totals = {
             "num_approved": 0,
             "num_completed": 0,
@@ -593,7 +637,6 @@ class APRSummaryTablesExportWriter:
             "disbursed": 0,
             "balance": 0,
         }
-
         for group in cluster_groups:
             cluster_name = group["project__cluster__name"]
             cluster_qs = self.queryset.filter(project__cluster__name=cluster_name)
@@ -603,7 +646,6 @@ class APRSummaryTablesExportWriter:
             pct_completed = (
                 round(num_completed / num_approved * 100) if num_approved else 0
             )
-
             approved_funding = sum(
                 apr.approved_funding_plus_adjustment or 0 for apr in cluster_qs
             )
@@ -612,7 +654,49 @@ class APRSummaryTablesExportWriter:
             pct_disbursed = (
                 round(disbursed / approved_funding * 100) if approved_funding else 0
             )
+            rows_data.append(
+                (
+                    cluster_name,
+                    num_approved,
+                    num_completed,
+                    pct_completed,
+                    approved_funding,
+                    disbursed,
+                    balance,
+                    pct_disbursed,
+                )
+            )
+            totals["num_approved"] += num_approved
+            totals["num_completed"] += num_completed
+            totals["approved_funding"] += approved_funding
+            totals["disbursed"] += disbursed
+            totals["balance"] += balance
 
+        n_rows = len(rows_data)
+
+        # Resize data section; Total row (already labelled in template) shifts with it
+        self._adjust_section_rows(
+            ws, self.CLUSTER_DATA_START_ROW, self.CLUSTER_TEMPLATE_DATA_ROWS, n_rows
+        )
+
+        # Clear data rows; preserve the Total row label (col 1) from the template
+        total_row = self.CLUSTER_DATA_START_ROW + n_rows
+        self._clear_template_data_rows(ws, self.CLUSTER_DATA_START_ROW, total_row - 1)
+        for col in range(2, ws.max_column + 1):
+            ws.cell(total_row, col).value = None
+
+        # Write data rows
+        row = self.CLUSTER_DATA_START_ROW
+        for (
+            cluster_name,
+            num_approved,
+            num_completed,
+            pct_completed,
+            approved_funding,
+            disbursed,
+            balance,
+            pct_disbursed,
+        ) in rows_data:
             ws.cell(row, 1, cluster_name)
             ws.cell(row, 2, num_approved)
             ws.cell(row, 3, num_completed)
@@ -621,18 +705,11 @@ class APRSummaryTablesExportWriter:
             ws.cell(row, 6, disbursed)
             ws.cell(row, 7, balance)
             ws.cell(row, 8, pct_disbursed)
-
             for col in range(2, 9):
                 ws.cell(row, col).number_format = "#,##0"
-
-            totals["num_approved"] += num_approved
-            totals["num_completed"] += num_completed
-            totals["approved_funding"] += approved_funding
-            totals["disbursed"] += disbursed
-            totals["balance"] += balance
             row += 1
 
-        # Total row
+        # Total row: label already in template, write only the values
         total_pct_completed = (
             round(totals["num_completed"] / totals["num_approved"] * 100)
             if totals["num_approved"]
@@ -643,24 +720,19 @@ class APRSummaryTablesExportWriter:
             if totals["approved_funding"]
             else 0
         )
-
-        ws.cell(row, 1, "Total").font = Font(bold=True)
-        ws.cell(row, 2, totals["num_approved"])
-        ws.cell(row, 3, totals["num_completed"])
-        ws.cell(row, 4, total_pct_completed)
-        ws.cell(row, 5, totals["approved_funding"])
-        ws.cell(row, 6, totals["disbursed"])
-        ws.cell(row, 7, totals["balance"])
-        ws.cell(row, 8, total_pct_disbursed)
-
+        ws.cell(total_row, 2, totals["num_approved"])
+        ws.cell(total_row, 3, totals["num_completed"])
+        ws.cell(total_row, 4, total_pct_completed)
+        ws.cell(total_row, 5, totals["approved_funding"])
+        ws.cell(total_row, 6, totals["disbursed"])
+        ws.cell(total_row, 7, totals["balance"])
+        ws.cell(total_row, 8, total_pct_disbursed)
         for col in range(2, 9):
-            ws.cell(row, col).number_format = "#,##0"
+            ws.cell(total_row, col).number_format = "#,##0"
 
     def _write_project_completion_year_sheet(self):
         """Project completion in the reporting year, grouped by cluster"""
         ws = self.workbook[self.SHEET_COMPLETION_YEAR]
-
-        self._clear_template_data_rows(ws, self.CLUSTER_DATA_START_ROW)
 
         if self.year:
             completed_qs = self.queryset.filter(
@@ -677,13 +749,12 @@ class APRSummaryTablesExportWriter:
             .order_by("project__cluster__sort_order", "project__cluster__name")
         )
 
-        row = self.CLUSTER_DATA_START_ROW
+        # Pre-compute all rows before touching the sheet structure
+        rows_data = []
         totals = {"num_completed": 0, "odp": 0, "mt": 0, "co2": 0}
-
         for group in cluster_groups:
             cluster_name = group["project__cluster__name"]
             cluster_qs = completed_qs.filter(project__cluster__name=cluster_name)
-
             num_completed = cluster_qs.count()
             total_odp = sum(
                 (apr.consumption_phased_out_odp or 0)
@@ -700,31 +771,46 @@ class APRSummaryTablesExportWriter:
                 + (apr.production_phased_out_co2 or 0)
                 for apr in cluster_qs
             )
+            rows_data.append(
+                (cluster_name, num_completed, total_odp, total_mt, total_co2)
+            )
+            totals["num_completed"] += num_completed
+            totals["odp"] += total_odp
+            totals["mt"] += total_mt
+            totals["co2"] += total_co2
 
+        n_rows = len(rows_data)
+
+        # Resize data section; Total row (already labelled in template) shifts with it
+        self._adjust_section_rows(
+            ws, self.CLUSTER_DATA_START_ROW, self.CLUSTER_TEMPLATE_DATA_ROWS, n_rows
+        )
+
+        # Clear data rows; preserve the Total row label (col 1) from the template
+        total_row = self.CLUSTER_DATA_START_ROW + n_rows
+        self._clear_template_data_rows(ws, self.CLUSTER_DATA_START_ROW, total_row - 1)
+        for col in range(2, ws.max_column + 1):
+            ws.cell(total_row, col).value = None
+
+        # Write data rows
+        row = self.CLUSTER_DATA_START_ROW
+        for cluster_name, num_completed, total_odp, total_mt, total_co2 in rows_data:
             ws.cell(row, 1, cluster_name)
             ws.cell(row, 2, num_completed)
             ws.cell(row, 3, total_odp)
             ws.cell(row, 4, total_mt)
             ws.cell(row, 5, total_co2)
-
             for col in range(2, 6):
                 ws.cell(row, col).number_format = "#,##0"
-
-            totals["num_completed"] += num_completed
-            totals["odp"] += total_odp
-            totals["mt"] += total_mt
-            totals["co2"] += total_co2
             row += 1
 
-        # Total row
-        ws.cell(row, 1, "Total").font = Font(bold=True)
-        ws.cell(row, 2, totals["num_completed"])
-        ws.cell(row, 3, totals["odp"])
-        ws.cell(row, 4, totals["mt"])
-        ws.cell(row, 5, totals["co2"])
-
+        # Total row: label already in template, write only the values
+        ws.cell(total_row, 2, totals["num_completed"])
+        ws.cell(total_row, 3, totals["odp"])
+        ws.cell(total_row, 4, totals["mt"])
+        ws.cell(total_row, 5, totals["co2"])
         for col in range(2, 6):
-            ws.cell(row, col).number_format = "#,##0"
+            ws.cell(total_row, col).number_format = "#,##0"
 
     def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
         """Helper for writing a single data row in the annual summary sheet."""
@@ -935,49 +1021,84 @@ class APRSummaryTablesExportWriter:
     def _write_flat_aggregation_sheet(self, ws, queryset, include_odp_co2, sheet_type):
         """
         Write flat aggregation layout, as used by sheets (b)-(g).
-        Structure: Total row, "Region" label, region data, "Sector" label, sector data
+        Structure: Total row, "Region" label, region data, "Sector" label, sector data.
+        Inserts or deletes rows as needed so the section sizes match the actual data.
         """
-        self._clear_template_data_rows(ws, self.DATA_START_ROW)
-
         column_specs = self._get_column_specs(sheet_type, include_odp_co2)
 
-        # Row 4: Total
-        row = self.DATA_START_ROW
+        # Pre-compute all data before touching the sheet structure
         total_data = self._compute_group_data(queryset, include_odp_co2, sheet_type)
+        region_items = list(
+            self._compute_grouped_data(
+                queryset,
+                "project__country__parent__name",
+                include_odp_co2,
+                sheet_type,
+            )
+        )
+        sector_items = list(
+            self._compute_grouped_data(
+                queryset,
+                "project__sector__code",
+                include_odp_co2,
+                sheet_type,
+            )
+        )
+        n_regions = len(region_items)
+        n_sectors = len(sector_items)
+
+        # Locate the "Sector" section header in the template to measure section sizes.
+        # The template layout (by rows) looks like this:
+        # DATA_START_ROW            -> Total
+        # +1                        -> Region header
+        # +2...sector_header-1      -> region rows
+        # sector_header             -> Sector header
+        # sector_header+1...max_row -> sector rows
+        sector_header_row = self._find_section_row(
+            ws, "Sector", self.DATA_START_ROW + 1
+        )
+        if sector_header_row is None:
+            sector_header_row = ws.max_row + 1  # degenerate fallback
+
+        template_n_regions = sector_header_row - self.DATA_START_ROW - 2
+        template_n_sectors = ws.max_row - sector_header_row
+
+        # Resize the region data section
+        region_data_start = self.DATA_START_ROW + 2
+        self._adjust_section_rows(ws, region_data_start, template_n_regions, n_regions)
+
+        # After adjustment the Sector header has moved to:
+        new_sector_header_row = region_data_start + n_regions
+
+        # Resize the sector data section
+        sector_data_start = new_sector_header_row + 1
+        self._adjust_section_rows(ws, sector_data_start, template_n_sectors, n_sectors)
+
+        # Clear only data rows — section headers ("Region", "Sector") come from the template
+        self._clear_template_data_rows(ws, self.DATA_START_ROW, self.DATA_START_ROW)
+        self._clear_template_data_rows(
+            ws, region_data_start, region_data_start + n_regions - 1
+        )
+        self._clear_template_data_rows(
+            ws, sector_data_start, sector_data_start + n_sectors - 1
+        )
+
+        # Write Total row (label also in template, but overwriting is harmless)
         self._write_aggregation_row(
-            ws, row, "Total", total_data, column_specs, bold=True
+            ws, self.DATA_START_ROW, "Total", total_data, column_specs, bold=True
         )
-        row += 1
 
-        # "Region" section header
-        ws.cell(row, 1, "Region").font = Font(bold=True)
-        row += 1
-
-        # "Region" data rows
-        region_items = self._compute_grouped_data(
-            queryset,
-            "project__country__parent__name",
-            include_odp_co2,
-            sheet_type,
-        )
-        for group_name, group_data in region_items:
+        # Region data rows (header already in template at DATA_START_ROW + 1)
+        for row, (group_name, group_data) in enumerate(
+            region_items, start=region_data_start
+        ):
             self._write_aggregation_row(ws, row, group_name, group_data, column_specs)
-            row += 1
 
-        # "Sector" section header
-        ws.cell(row, 1, "Sector").font = Font(bold=True)
-        row += 1
-
-        # "Sector" data rows
-        sector_items = self._compute_grouped_data(
-            queryset,
-            "project__sector__code",
-            include_odp_co2,
-            sheet_type,
-        )
-        for group_name, group_data in sector_items:
+        # Sector data rows (header already in template at new_sector_header_row)
+        for row, (group_name, group_data) in enumerate(
+            sector_items, start=sector_data_start
+        ):
             self._write_aggregation_row(ws, row, group_name, group_data, column_specs)
-            row += 1
 
     def _write_aggregation_row(self, ws, row, label, data, column_specs, bold=False):
         """Write a single aggregation data row to the worksheet."""
