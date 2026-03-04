@@ -272,7 +272,8 @@ const EditActionButtons = ({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const handleErrors = async (error: any, type?: string) => {
-    const errors = await error.json()
+    const errors =
+      error && typeof error.json === 'function' ? await error.json() : {}
 
     if (error.status === 400) {
       setErrors(errors)
@@ -411,15 +412,20 @@ const EditActionButtons = ({
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/projects/v2/${id}/project-files/delete`, {
-          data: {
-            file_ids: deletedFilesIds,
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'DELETE',
-        })
+        try {
+          await api(`/api/projects/v2/${id}/project-files/delete`, {
+            data: {
+              file_ids: deletedFilesIds,
+            },
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+          })
+        } catch (error) {
+          await handleErrors(error, 'files')
+          throw error
+        }
       }
 
       await Promise.all(
@@ -454,6 +460,7 @@ const EditActionButtons = ({
         enqueueSnackbar(<>Could not fetch updated files.</>, {
           variant: 'error',
         })
+        return
       }
 
       if (isApproved) {
@@ -477,7 +484,11 @@ const EditActionButtons = ({
       }
 
       if (isRecommended || isAfterApproval) {
-        await editApprovalFields()
+        const canEditApprovalFields = await editApprovalFields()
+
+        if (!canEditApprovalFields) {
+          return
+        }
       }
 
       if (postExComUpdate) {
