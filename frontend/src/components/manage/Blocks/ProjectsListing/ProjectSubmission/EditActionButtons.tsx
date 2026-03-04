@@ -628,9 +628,9 @@ const EditActionButtons = ({
   }
 
   const approveRejectProject = async (action: string) => {
-    const canApprove = await editApprovalFields()
+    const updatedSuccessfully = await editProject()
 
-    if (canApprove) {
+    if (updatedSuccessfully) {
       try {
         await api(`api/projects/v2/${id}/${action}/`, {
           method: 'POST',
