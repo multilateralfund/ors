@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   MetaProjectDetailType,
@@ -15,9 +15,13 @@ import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/Project
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
-import { formatFieldLabel, getFormattedDecimalValue } from '../utils'
-import { disabledClassName } from '../constants'
+import { disabledClassName, tableColumns } from '../constants'
 import { monetaryFields } from './constants'
+import {
+  formatFieldLabel,
+  getFormattedDecimalValue,
+  getProjectDuration,
+} from '../utils'
 
 import { useSnackbar } from 'notistack'
 import { values } from 'lodash'
@@ -32,6 +36,15 @@ import {
   Typography,
 } from '@mui/material'
 
+const projectDuration = 'project_duration'
+
+const projectDurationField = {
+  value: null,
+  label: tableColumns[projectDuration],
+  order: 4,
+  type: 'IntegerField',
+}
+
 export const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
 
@@ -42,6 +55,7 @@ export const orderFieldData = (fd: MetaProjectFieldData) => {
 
   return orderedFieldData
 }
+
 export const MetaProjectEdit = (props: {
   mp: MetaProjectDetailType
   refreshMetaProjectDetails: () => void
@@ -62,9 +76,16 @@ export const MetaProjectEdit = (props: {
 
   const projects = getResults<ProjectType>(mp?.projects ?? [])
 
+  const fd = useMemo<MetaProjectFieldData>(
+    () => ({
+      ...(mp?.field_data ?? {}),
+      [projectDuration]: projectDurationField,
+    }),
+    [mp],
+  )
+
   const loadInitialState = useCallback(() => {
     const result = {} as Record<string, any>
-    const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
     for (const key of Object.keys(fd)) {
       const fdEntry = fd[key as keyof MetaProjectFieldData]
@@ -84,7 +105,7 @@ export const MetaProjectEdit = (props: {
     setForm(loadInitialState)
   }, [loadInitialState, mp])
 
-  const fieldData = orderFieldData(mp?.field_data ?? {})
+  const fieldData = orderFieldData(fd)
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
@@ -100,8 +121,6 @@ export const MetaProjectEdit = (props: {
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-
-        console.log(errors)
 
         setFieldErrors(errors)
 
@@ -133,10 +152,30 @@ export const MetaProjectEdit = (props: {
     [setForm],
   )
 
-  const getFieldValue = (name: string, missing?: string) => {
+  const computeProjectDuration = () => {
+    const startDate = getBaseFieldValue('start_date')
+    const endDate = getBaseFieldValue('end_date')
+
+    return getProjectDuration({
+      project_start_date: startDate,
+      project_end_date: endDate,
+    })
+  }
+
+  const getBaseFieldValue = (name: string) => {
     const formValue = form[name]
     const computedValue = mp.computed_field_data[name]
-    const value = formValue === null ? computedValue : formValue
+
+    return formValue === null ? computedValue : formValue
+  }
+
+  const getFieldValue = (name: string, missing?: string) => {
+    if (name === projectDuration) {
+      return computeProjectDuration()
+    }
+
+    const value = getBaseFieldValue(name)
+
     return value || (missing ?? '')
   }
 
@@ -144,12 +183,22 @@ export const MetaProjectEdit = (props: {
     const formValue = form[name]
     const computedValue = mp.computed_field_data[name]
 
-    return formValue === null && computedValue !== undefined
+    return (
+      name === projectDuration ||
+      (formValue === null && computedValue !== undefined)
+    )
   }
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      [projectDuration]: computeProjectDuration(),
+    }))
+  }, [form.start_date, form.end_date])
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
-    const isFieldDisabled = fd.name === 'project_duration'
+    const isFieldDisabled = fd.name === projectDuration
 
     switch (fd.type) {
       case 'DateTimeField':
