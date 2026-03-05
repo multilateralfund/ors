@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   MetaProjectDetailType,
@@ -15,8 +15,13 @@ import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/Project
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
-import { formatFieldLabel, getFormattedDecimalValue } from '../utils'
+import { disabledClassName, tableColumns } from '../constants'
 import { monetaryFields } from './constants'
+import {
+  formatFieldLabel,
+  getFormattedDecimalValue,
+  getProjectDuration,
+} from '../utils'
 
 import { useSnackbar } from 'notistack'
 import { values } from 'lodash'
@@ -31,6 +36,15 @@ import {
   Typography,
 } from '@mui/material'
 
+const projectDuration = 'project_duration'
+
+const projectDurationField = {
+  value: null,
+  label: tableColumns[projectDuration],
+  order: 4,
+  type: 'IntegerField',
+}
+
 export const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
 
@@ -41,6 +55,7 @@ export const orderFieldData = (fd: MetaProjectFieldData) => {
 
   return orderedFieldData
 }
+
 export const MetaProjectEdit = (props: {
   mp: MetaProjectDetailType
   refreshMetaProjectDetails: () => void
@@ -61,9 +76,16 @@ export const MetaProjectEdit = (props: {
 
   const projects = getResults<ProjectType>(mp?.projects ?? [])
 
+  const fd = useMemo<MetaProjectFieldData>(
+    () => ({
+      ...(mp?.field_data ?? {}),
+      [projectDuration]: projectDurationField,
+    }),
+    [mp],
+  )
+
   const loadInitialState = useCallback(() => {
     const result = {} as Record<string, any>
-    const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
     for (const key of Object.keys(fd)) {
       const fdEntry = fd[key as keyof MetaProjectFieldData]
@@ -83,7 +105,7 @@ export const MetaProjectEdit = (props: {
     setForm(loadInitialState)
   }, [loadInitialState, mp])
 
-  const fieldData = orderFieldData(mp?.field_data ?? {})
+  const fieldData = orderFieldData(fd)
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
@@ -99,8 +121,6 @@ export const MetaProjectEdit = (props: {
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-
-        console.log(errors)
 
         setFieldErrors(errors)
 
@@ -132,22 +152,44 @@ export const MetaProjectEdit = (props: {
     [setForm],
   )
 
-  const getFieldValue = (name: string, missing?: string) => {
+  const computeProjectDuration = () =>
+    getProjectDuration({
+      project_start_date: getBaseFieldValue('start_date'),
+      project_end_date: getBaseFieldValue('end_date'),
+    })
+
+  const getBaseFieldValue = (name: string) => {
     const formValue = form[name]
     const computedValue = mp.computed_field_data[name]
-    const value = formValue === null ? computedValue : formValue
-    return value || (missing ?? '')
+
+    return formValue === null ? computedValue : formValue
   }
+
+  const getFieldValue = (name: string, missing?: string) =>
+    name === projectDuration
+      ? computeProjectDuration()
+      : getBaseFieldValue(name) || (missing ?? '')
 
   const valueIsComputed = (name: string) => {
     const formValue = form[name]
     const computedValue = mp.computed_field_data[name]
 
-    return formValue === null && computedValue !== undefined
+    return (
+      name === projectDuration ||
+      (formValue === null && computedValue !== undefined)
+    )
   }
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      [projectDuration]: computeProjectDuration(),
+    }))
+  }, [form.start_date, form.end_date])
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
+    const isFieldDisabled = fd.name === projectDuration
 
     switch (fd.type) {
       case 'DateTimeField':
@@ -175,10 +217,13 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            className={cx('!m-0 h-10 w-full !border-gray-400 p-2.5', {
+              [disabledClassName]: isFieldDisabled,
+            })}
             withoutDefaultValue={true}
             value={fieldValue}
             decimalDigits={0}
+            disabled={isFieldDisabled}
             onChange={changeSimpleInput(fd.name, {
               numeric: ['IntegerField'].includes(fd.type),
             })}
