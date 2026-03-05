@@ -152,15 +152,11 @@ export const MetaProjectEdit = (props: {
     [setForm],
   )
 
-  const computeProjectDuration = () => {
-    const startDate = getBaseFieldValue('start_date')
-    const endDate = getBaseFieldValue('end_date')
-
-    return getProjectDuration({
-      project_start_date: startDate,
-      project_end_date: endDate,
+  const computeProjectDuration = () =>
+    getProjectDuration({
+      project_start_date: getBaseFieldValue('start_date'),
+      project_end_date: getBaseFieldValue('end_date'),
     })
-  }
 
   const getBaseFieldValue = (name: string) => {
     const formValue = form[name]
@@ -169,15 +165,10 @@ export const MetaProjectEdit = (props: {
     return formValue === null ? computedValue : formValue
   }
 
-  const getFieldValue = (name: string, missing?: string) => {
-    if (name === projectDuration) {
-      return computeProjectDuration()
-    }
-
-    const value = getBaseFieldValue(name)
-
-    return value || (missing ?? '')
-  }
+  const getFieldValue = (name: string, missing?: string) =>
+    name === projectDuration
+      ? computeProjectDuration()
+      : getBaseFieldValue(name) || (missing ?? '')
 
   const valueIsComputed = (name: string) => {
     const formValue = form[name]
