@@ -1,5 +1,4 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { SpecificFields } from './interfaces'
 
 export const PROJECTS_PER_PAGE = 100
 
@@ -46,6 +45,8 @@ export const tableColumns: { [key: string]: string } = {
   transfer_excom_provision: 'Transfer Excom provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support cost (US $)',
+  lead_agency_submitting_on_behalf:
+    'Confirm you are the lead agency submitting on behalf of a cooperating agency',
 }
 
 export const defaultProps = {
