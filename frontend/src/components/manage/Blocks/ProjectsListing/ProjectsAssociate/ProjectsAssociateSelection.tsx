@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
@@ -10,6 +10,7 @@ import PListingTable from '../ProjectsListing/PListingTable'
 import getColumnDefs from '../ProjectsListing/schema'
 import { SubmitButton } from '../HelperComponents'
 import { useGetProjects } from '../hooks/useGetProjects'
+import { getPaginationPageSize, getPaginationSelectorOpts } from '../utils'
 import { ProjectTypeApi } from '../interfaces'
 
 import { Typography } from '@mui/material'
@@ -40,6 +41,20 @@ const ProjectsAssociateSelection = ({
 
   const { columnDefs, defaultColDef } = getColumnDefs('association')
 
+  const NR_PROJECTS = 50
+
+  const [offset, setOffset] = useState(0)
+  const [nrResults, setNrResults] = useState(NR_PROJECTS)
+
+  const count = crtProjects.length
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
+  const paginationPageSize = getPaginationPageSize(count, NR_PROJECTS)
+
+  const projects = useMemo(
+    () => crtProjects.slice(offset, offset + nrResults),
+    [crtProjects, offset, nrResults],
+  )
+
   const selectedProjectData = (
     <ViewTable
       key={JSON.stringify(crtProjects)}
@@ -50,10 +65,29 @@ const ProjectsAssociateSelection = ({
       resizeGridOnRowUpdate={true}
       domLayout="autoHeight"
       headerHeight={0}
-      rowData={crtProjects}
-      rowCount={crtProjects.length}
-      rowsVisible={Math.min(crtProjects.length, 90)}
-      rowBuffer={crtProjects.length}
+      rowData={projects}
+      rowCount={count}
+      rowsVisible={Math.min(count, 90)}
+      rowBuffer={count}
+      rowClassRules={{
+        'is-current-project': (params) => params?.data?.is_current_project,
+      }}
+      enablePagination={true}
+      paginationPageSize={paginationPageSize}
+      paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+      onPaginationChanged={({ page, rowsPerPage }) => {
+        setNrResults((prevRowsPerPage) => {
+          if (prevRowsPerPage !== rowsPerPage) {
+            const updatedPage = Math.floor(offset / rowsPerPage)
+            setOffset(updatedPage * rowsPerPage)
+
+            return rowsPerPage
+          }
+
+          setOffset(page * rowsPerPage)
+          return rowsPerPage
+        })
+      }}
       components={{
         agColumnHeader: undefined,
         agTextCellRenderer: undefined,

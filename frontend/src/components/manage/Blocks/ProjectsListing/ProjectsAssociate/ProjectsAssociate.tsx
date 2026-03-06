@@ -111,6 +111,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     () =>
       allCrtProjects.map((project, index) => ({
         ...project,
+        is_current_project: index === 0,
         title: (index === 0 ? '' : '[associated] ') + project.title,
       })),
     [associatedProjects],

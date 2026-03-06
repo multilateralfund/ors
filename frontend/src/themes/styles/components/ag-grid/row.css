@@ -82,7 +82,7 @@
     font-style: italic;
   }
 
-  .ag-row:first-child {
+  .ag-row.is-current-project {
     background-color: #fafce9 !important;
     font-style: normal !important;
   }
