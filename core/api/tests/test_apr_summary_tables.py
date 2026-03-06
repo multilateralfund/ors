@@ -15,11 +15,15 @@ from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFactory,
+    CountryFactory,
     ProjectFactory,
+    ProjectSectorFactory,
+    ProjectTypeFactory,
 )
+from core.models import Country
 from core.models.project_metadata import ProjectCluster, ProjectType
 
-# pylint: disable=W0221,W0613,R0913,R0914
+# pylint: disable=W0221,W0613,R0913,R0914,R0904
 
 
 @pytest.mark.django_db
@@ -643,9 +647,10 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert "Summary data by cluster" in str(sheet["A1"].value)
 
-        # Data rows start at row 5
         cluster_names = []
-        for row in range(5, sheet.max_row + 1):
+        for row in range(
+            APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW, sheet.max_row + 1
+        ):
             val = sheet.cell(row, 1).value
             if val and val != "Total":
                 cluster_names.append(val)
@@ -692,15 +697,220 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert "Project completion" in str(sheet["A1"].value)
 
-        # Data rows start at row 5
         found_cluster = False
-        for row in range(5, sheet.max_row + 1):
+        for row in range(
+            APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW, sheet.max_row + 1
+        ):
             if sheet.cell(row, 1).value == "HPMP stage I":
                 found_cluster = True
-                assert sheet.cell(row, 2).value == 1  # num completed
-                assert sheet.cell(row, 3).value == 15  # ODP: 10 + 5
-                assert sheet.cell(row, 4).value == 150  # MT: 100 + 50
-                assert sheet.cell(row, 5).value == 1500  # CO2: 1000 + 500
+                assert sheet.cell(row, 2).value == 1
+                # ODP = consumption(10) + production(5)
+                assert sheet.cell(row, 3).value == 15
+                # MT = consumption(100) + production(50)
+                assert sheet.cell(row, 4).value == 150
+                # CO2 = consumption(1000) + production(500)
+                assert sheet.cell(row, 5).value == 1500
                 break
 
         assert found_cluster
+
+    def test_sector_header_row_when_more_regions_than_template(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+    ):
+        inv_type = ProjectTypeFactory(code="INV", sort_order=1)
+        sector = ProjectSectorFactory()
+        for i in range(6):
+            region = CountryFactory(
+                name=f"ExtraRegion{i}",
+                location_type=Country.LocationType.REGION,
+            )
+            country = CountryFactory(name=f"ExtraCountry{i}", parent=region)
+            AnnualProjectReportFactory(
+                report=annual_agency_report,
+                project=ProjectFactory(
+                    agency=apr_agency_viewer_user.agency,
+                    status=project_ongoing_status,
+                    project_type=inv_type,
+                    sector=sector,
+                    country=country,
+                ),
+            )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        response = self.client.get(reverse("apr-summary-tables-export"))
+        ws = load_workbook(BytesIO(response.content))[
+            APRSummaryTablesExportWriter.SHEET_ONGOING_INVESTMENT
+        ]
+
+        n_regions = 6
+        # Layout: Totals row -> "Region" header -> n_regions data rows -> "Sector" header
+        expected_sector_row = (
+            APRSummaryTablesExportWriter.DATA_START_ROW + 1 + n_regions + 1
+        )
+        assert (
+            str(ws.cell(expected_sector_row, 1).value or "").strip().lower() == "sector"
+        )
+        assert (
+            str(ws.cell(expected_sector_row - 1, 1).value or "").strip().lower()
+            != "sector"
+        )
+
+    def test_sector_header_row_when_fewer_regions_than_template(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+    ):
+        inv_type = ProjectTypeFactory(code="INV", sort_order=1)
+        sector = ProjectSectorFactory()
+        region = CountryFactory(
+            name="SoleRegion", location_type=Country.LocationType.REGION
+        )
+        country = CountryFactory(name="SoleCountry", parent=region)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_ongoing_status,
+                project_type=inv_type,
+                sector=sector,
+                country=country,
+            ),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        response = self.client.get(reverse("apr-summary-tables-export"))
+        ws = load_workbook(BytesIO(response.content))[
+            APRSummaryTablesExportWriter.SHEET_ONGOING_INVESTMENT
+        ]
+
+        n_regions = 1
+        # Layout: Totals row -> "Region" header -> n_regions data rows -> "Sector" header
+        expected_sector_row = (
+            APRSummaryTablesExportWriter.DATA_START_ROW + 1 + n_regions + 1
+        )
+        assert (
+            str(ws.cell(expected_sector_row, 1).value or "").strip().lower() == "sector"
+        )
+        assert (
+            str(ws.cell(expected_sector_row - 1, 1).value or "").strip() == "SoleRegion"
+        )
+
+    def test_cluster_total_row_position_when_count_exceeds_template(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_completed_status,
+    ):
+        num_clusters = 8
+        for i in range(num_clusters):
+            cluster = ProjectCluster.objects.create(name=f"XCluster{i}", sort_order=i)
+            AnnualProjectReportFactory(
+                report=annual_agency_report,
+                project=ProjectFactory(
+                    agency=apr_agency_viewer_user.agency,
+                    status=project_completed_status,
+                    cluster=cluster,
+                ),
+            )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        response = self.client.get(reverse("apr-summary-tables-export"))
+        ws = load_workbook(BytesIO(response.content))[
+            APRSummaryTablesExportWriter.SHEET_SUMMARY_CLUSTER
+        ]
+
+        expected_total_row = (
+            APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW + num_clusters
+        )
+        assert str(ws.cell(expected_total_row, 1).value or "").strip() == "Total"
+        assert ws.cell(expected_total_row, 2).value == num_clusters
+
+    def test_ongoing_investment_excludes_completed_projects(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_completed_status,
+        project_ongoing_status,
+    ):
+        inv_type = ProjectTypeFactory(code="INV", sort_order=1)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=inv_type,
+            ),
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_ongoing_status,
+                project_type=inv_type,
+            ),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        response = self.client.get(reverse("apr-summary-tables-export"))
+        data_row = APRSummaryTablesExportWriter.DATA_START_ROW
+        wb = load_workbook(BytesIO(response.content))
+        # Each sheet sees exactly its one qualifying project and not the other's
+        # Sheet (b): COM+INV only
+        num_projects = (
+            wb[APRSummaryTablesExportWriter.SHEET_INVESTMENT].cell(data_row, 2).value
+        )
+        assert num_projects == 1
+        # Sheet (e): ONG+INV only
+        num_projects = (
+            wb[APRSummaryTablesExportWriter.SHEET_ONGOING_INVESTMENT]
+            .cell(data_row, 2)
+            .value
+        )
+        assert num_projects == 1
+
+    def test_non_investment_sheet_excludes_prp(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_completed_status,
+    ):
+        prp_type = ProjectTypeFactory(code="PRP", sort_order=2)
+        oth_type = ProjectTypeFactory(code="OTH", sort_order=3)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=prp_type,
+            ),
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=oth_type,
+            ),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        response = self.client.get(reverse("apr-summary-tables-export"))
+        data_row = APRSummaryTablesExportWriter.DATA_START_ROW
+        wb = load_workbook(BytesIO(response.content))
+        # Each sheet sees exactly its one qualifying project and not the other's
+        # Sheet (c): COM+OTH only
+        num_projects = (
+            wb[APRSummaryTablesExportWriter.SHEET_NON_INVESTMENT]
+            .cell(data_row, 2)
+            .value
+        )
+        assert num_projects == 1
+        # Sheet (d): COM+PRP only
+        num_projects = (
+            wb[APRSummaryTablesExportWriter.SHEET_PREPARATION].cell(data_row, 2).value
+        )
+        assert num_projects == 1
