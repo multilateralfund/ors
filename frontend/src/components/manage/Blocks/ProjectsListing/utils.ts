@@ -711,7 +711,11 @@ export const getSpecificFieldsErrors = (
   const isEditMode = project && mode === 'edit'
   const version = isEditMode ? project.version : 1
 
-  const fieldsNotValidated = ['destruction_technology']
+  const fieldsNotValidated = [
+    'destruction_technology',
+    'end_users',
+    'energy_savings',
+  ]
 
   const fieldNames = map(
     filter(
