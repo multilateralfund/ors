@@ -643,9 +643,7 @@ const EditActionButtons = ({
         })
         setLocation(`/projects-listing/${id}`)
       } catch (error) {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
+        await handleErrors(error)
       }
     }
 
