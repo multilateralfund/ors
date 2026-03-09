@@ -34,6 +34,11 @@ def get_headers_metaproject() -> List[HeaderType]:
             "method": get_date_value,
         },
         {
+            "id": "project_duration",
+            "headerName": "Project duration (months)",
+            "method": get_value_or_dash,
+        },
+        {
             "id": "phase_out_co2_eq_t",
             "headerName": "Phase-out (CO2-eq tonnes) (MYA)",
             "method": get_value_or_dash,
