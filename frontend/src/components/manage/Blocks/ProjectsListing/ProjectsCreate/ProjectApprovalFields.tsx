@@ -216,7 +216,7 @@ const ProjectApprovalFields = ({
           .filter((field) => approvalOdsFields.includes(field.write_field_name))
           .map((field) => approvalField(field))}
       </div>
-      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
+      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-14 gap-y-2 md:grid">
         <ProjectFundFields
           {...{ projectData, setProjectData, project, errors }}
           type="approval"
