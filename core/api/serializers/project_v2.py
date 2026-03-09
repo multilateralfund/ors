@@ -1350,6 +1350,10 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
         ]
 
     def validate_required_fields(self, errors):
+        optional_fields_at_submission = [
+            "destruction_technology",
+        ]
+
         mandatory_fields_at_submission = [
             "cluster",
             "project_type",
@@ -1418,7 +1422,10 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                         f"{field.label} is required for submission."
                                     )
                 else:
-                    if getattr(self.instance, field.write_field_name) is None:
+                    if (
+                        getattr(self.instance, field.write_field_name) is None
+                        and field.write_field_name not in optional_fields_at_submission
+                    ):
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )

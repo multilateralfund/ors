@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="setup_admin_listing")
-def setup_admin_listing(
+def _setup_admin_listing(
     blend,
     bp_activity,
     bp_chemical_type,
