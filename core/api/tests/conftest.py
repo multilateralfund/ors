@@ -129,6 +129,7 @@ def admin_user():
         username="Admin",
         email="admin@test.com",
         is_superuser=True,
+        is_staff=True,
     )
 
 

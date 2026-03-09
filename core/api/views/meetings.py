@@ -11,6 +11,6 @@ class MeetingListView(generics.ListAPIView):
 
 
 class DecisionListView(generics.ListAPIView):
-    queryset = Decision.objects.select_related("meeting").order_by("number")
+    queryset = Decision.objects.select_related("meeting").order_by("internal_api_id")
     serializer_class = DecisionSerializer
     filterset_class = DecisionFilter

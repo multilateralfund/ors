@@ -28,7 +28,7 @@ class EnterpriseAdmin(admin.ModelAdmin):
         "code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("country", "country", "meeting"),
+        AutocompleteFilterFactory("country", "country"),
     ]
 
     def get_list_display(self, request):

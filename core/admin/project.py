@@ -420,6 +420,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "businessplan",
             "decision",
             "disputedcontribution",
+            "enterprises",
             "externalallocation",
             "externalincomeannual",
             "post_excom_projects",
