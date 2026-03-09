@@ -46,7 +46,6 @@ import {
   isNaN,
   isNil,
   isNull,
-  isUndefined,
   keys,
   lowerCase,
   map,
@@ -563,30 +562,21 @@ export const getApprovalErrors = (
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
 ) => {
-  const defaultRequiredFields = [
-    'decision',
-    'date_completion',
-    'programme_officer',
-  ]
+  const requiredFields = ['decision', 'date_completion', 'programme_officer']
 
-  const requiredFields = [...defaultRequiredFields, ...approvalOdsFields]
   const fieldsForValidation = [
-    ...defaultRequiredFields,
-    ...approvalOdsFields.map((field) =>
-      isUndefined(approvalData[field as keyof SpecificFields])
-        ? `computed_${field}`
-        : field,
-    ),
+    ...requiredFields,
+    ...approvalOdsFields,
+    'funding_window',
+    'excom_provision',
   ]
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) =>
-      [...requiredFields, 'funding_window', 'excom_provision'].includes(key),
-    ),
+    Object.entries(errors).filter(([key]) => fieldsForValidation.includes(key)),
   )
 
   const allErrors = {
-    ...getFieldErrors(fieldsForValidation, approvalData, project),
+    ...getFieldErrors(requiredFields, approvalData, project),
     ...(dayjs(approvalData.date_completion).isBefore(dayjs(), 'day') && {
       date_completion: ['Cannot be a past date.'],
     }),
