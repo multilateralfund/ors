@@ -111,7 +111,11 @@ class MetaProject(models.Model):
         null=True, blank=True, help_text="Start date (MYA)"
     )
     end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
-
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Project duration (months)",
+    )
     phase_out_co2_eq_t = models.DecimalField(
         max_digits=30,
         decimal_places=15,
@@ -243,6 +247,11 @@ class MetaProject(models.Model):
     )
     draft_end_date = models.DateTimeField(
         null=True, blank=True, help_text="End date (MYA)"
+    )
+    draft_project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Project duration (months) (draft)",
     )
     draft_phase_out_co2_eq_t = models.DecimalField(
         max_digits=30,

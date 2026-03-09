@@ -1578,6 +1578,18 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Project duration (months)",
+        "LABEL": "Project duration (months)",
+        "WRITE_FIELD_NAME": "project_duration",
+        "READ_FIELD_NAME": "project_duration",
+        "TABLE": "meta_project",
+        "DATA_TYPE": "number",
+        "SECTION": "MYA",
+        "SORT_ORDER": 128,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
         "IMPORT_NAME": "MYA Total agreed funding in principle (US $)",
         "LABEL": "MYA Total agreed funding in principle (US $)",
         "WRITE_FIELD_NAME": "project_funding",
