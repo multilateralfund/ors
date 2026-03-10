@@ -495,7 +495,7 @@ export interface FileMetaDataProps {
 export type InlineMessageType = {
   type: 'success' | 'error'
   message: string
-  tab?: string
+  tabId?: string
   redirectMessage?: string
   hrefRedirect?: string
 } | null

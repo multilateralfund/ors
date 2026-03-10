@@ -8,6 +8,7 @@ import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { NavigationButton, RelatedProjects } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import {
+  InlineMessageType,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
@@ -27,6 +28,7 @@ const ProjectRelatedProjects = ({
   setRefetchRelatedProjects,
   canDisassociate,
   metaprojectData,
+  setSuccessMessage,
 }: ProjectTabSetters & {
   project: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
@@ -35,6 +37,7 @@ const ProjectRelatedProjects = ({
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
+  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const {
     canDisassociateProjects,
@@ -101,6 +104,7 @@ const ProjectRelatedProjects = ({
                         project,
                         setRefetchRelatedProjects,
                         hasComponents,
+                        setSuccessMessage,
                       }}
                     />
                   )}
