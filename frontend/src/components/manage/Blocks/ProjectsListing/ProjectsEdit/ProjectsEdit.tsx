@@ -626,11 +626,6 @@ const ProjectsEdit = ({
         />
         <ProjectFormFooter
           id={projectId}
-          href={`/projects-listing/${projectId}`}
-          successMessage={
-            (isEditMode ? 'Updated' : 'Created') + ' project successfully.'
-          }
-          successRedirectMessage="View project."
           {...{ nonFieldsErrors, otherErrors }}
         />
       </>

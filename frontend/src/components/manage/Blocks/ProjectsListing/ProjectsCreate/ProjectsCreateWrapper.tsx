@@ -23,6 +23,7 @@ import {
 import {
   BpDataProps,
   FileMetaDataType,
+  InlineMessageType,
   ProjectData,
   ProjectFilesObject,
   ProjectSpecificFields,
@@ -103,6 +104,7 @@ const ProjectsCreateWrapper = () => {
   const { project_type, sector } = crossCuttingFields
 
   const [projectId, setProjectId] = useState<number | null>(null)
+  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -199,6 +201,17 @@ const ProjectsCreateWrapper = () => {
     setBpData(bpData)
   }
 
+  useEffect(() => {
+    if (projectId) {
+      setSuccessMessage({
+        type: 'success',
+        message: 'Project created successfully.',
+        redirectMessage: 'View project.',
+        hrefRedirect: `/projects-listing/${projectId}`,
+      })
+    }
+  }, [projectId])
+
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
     fieldName?: string,
@@ -252,16 +265,12 @@ const ProjectsCreateWrapper = () => {
           onBpDataChange,
           filesMetaData,
           setFilesMetaData,
+          successMessage,
+          setSuccessMessage,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
-      <ProjectFormFooter
-        id={projectId}
-        href={`/projects-listing/${projectId}`}
-        successMessage="Project created successfully."
-        successRedirectMessage="View project."
-        {...{ nonFieldsErrors, otherErrors }}
-      />
+      <ProjectFormFooter id={projectId} {...{ nonFieldsErrors, otherErrors }} />
     </>
   )
 }

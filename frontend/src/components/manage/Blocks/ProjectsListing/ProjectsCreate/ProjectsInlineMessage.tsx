@@ -17,7 +17,7 @@ const ProjectsInlineMessage = ({
   return (
     <CustomAlert
       type={type}
-      alertClassName="mb-3 items-center"
+      alertClassName="mb-3 BPAlert"
       content={
         hrefRedirect ? (
           <Link

@@ -476,9 +476,6 @@ const EditActionButtons = ({
         })
       }
 
-      setProjectId(result.id)
-      setProjectTitle(result.title)
-
       if (navigationPage) {
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
@@ -490,6 +487,9 @@ const EditActionButtons = ({
           return
         }
       }
+
+      setProjectTitle(result.title)
+      setProjectId(result.id)
 
       if (postExComUpdate) {
         enqueueSnackbar(<>Post ExCom update was successful.</>, {
