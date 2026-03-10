@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   MetaProjectDetailType,
@@ -15,7 +15,7 @@ import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/Project
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
-import { disabledClassName, tableColumns } from '../constants'
+import { disabledClassName } from '../constants'
 import { monetaryFields } from './constants'
 import {
   formatFieldLabel,
@@ -37,13 +37,6 @@ import {
 } from '@mui/material'
 
 const projectDuration = 'project_duration'
-
-const projectDurationField = {
-  value: null,
-  label: tableColumns[projectDuration],
-  order: 4,
-  type: 'IntegerField',
-}
 
 export const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
@@ -76,16 +69,9 @@ export const MetaProjectEdit = (props: {
 
   const projects = getResults<ProjectType>(mp?.projects ?? [])
 
-  const fd = useMemo<MetaProjectFieldData>(
-    () => ({
-      ...(mp?.field_data ?? {}),
-      [projectDuration]: projectDurationField,
-    }),
-    [mp],
-  )
-
   const loadInitialState = useCallback(() => {
     const result = {} as Record<string, any>
+    const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
     for (const key of Object.keys(fd)) {
       const fdEntry = fd[key as keyof MetaProjectFieldData]
@@ -105,7 +91,7 @@ export const MetaProjectEdit = (props: {
     setForm(loadInitialState)
   }, [loadInitialState, mp])
 
-  const fieldData = orderFieldData(fd)
+  const fieldData = orderFieldData(mp?.field_data ?? {})
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
