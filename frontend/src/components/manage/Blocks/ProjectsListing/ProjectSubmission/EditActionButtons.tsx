@@ -307,14 +307,16 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
+    const formattedProjectFields = formatProjectFields(projectFields)
+    const actualData = getActualData(
+      projectData,
+      setProjectData,
+      specificFields,
+      formattedProjectFields,
+    )
+
     if (!editable && editable_for_actual_fields && !postExComUpdate) {
       try {
-        const actualData = getActualData(
-          projectData,
-          setProjectData,
-          specificFields,
-          formatProjectFields(projectFields),
-        )
         const result = await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
@@ -387,11 +389,39 @@ const EditActionButtons = ({
         projectData,
         setProjectData,
         specificFields,
-        formatProjectFields(projectFields),
+        formattedProjectFields,
       )
 
       if (postExComUpdate) {
         data['post-excom-update'] = true
+
+        // main fields validation before edit
+        await api(`api/projects/v2/${id}`, {
+          data: { ...data, validate_request: true },
+          method: 'PUT',
+        })
+      }
+
+      // actual fields validation before edit
+      if (isApproved) {
+        await api(`api/projects/v2/${id}/edit_actual_fields/`, {
+          data: { ...actualData, validate_request: true },
+          method: 'PUT',
+        })
+      }
+
+      // approval fields validation before edit
+      if (isRecommended || isAfterApproval) {
+        const data = formatApprovalData(
+          projectData,
+          setProjectData,
+          [...specificFields, ...approvalFields],
+          formattedProjectFields,
+        )
+        await api(`api/projects/v2/${id}/edit_approval_fields/`, {
+          data: { ...data, validate_request: true },
+          method: 'PUT',
+        })
       }
 
       const result = await api(`api/projects/v2/${id}`, {
@@ -464,12 +494,6 @@ const EditActionButtons = ({
       }
 
       if (isApproved) {
-        const actualData = getActualData(
-          projectData,
-          setProjectData,
-          specificFields,
-          formatProjectFields(projectFields),
-        )
         await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
