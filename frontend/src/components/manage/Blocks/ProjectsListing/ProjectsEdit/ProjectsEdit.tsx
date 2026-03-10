@@ -624,10 +624,7 @@ const ProjectsEdit = ({
           }
           loadedFiles={areFilesLoaded}
         />
-        <ProjectFormFooter
-          id={projectId}
-          {...{ nonFieldsErrors, otherErrors }}
-        />
+        <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
       </>
     )
   )

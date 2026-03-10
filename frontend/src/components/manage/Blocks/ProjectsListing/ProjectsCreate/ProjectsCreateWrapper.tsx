@@ -270,7 +270,7 @@ const ProjectsCreateWrapper = () => {
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
-      <ProjectFormFooter id={projectId} {...{ nonFieldsErrors, otherErrors }} />
+      <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
     </>
   )
 }
