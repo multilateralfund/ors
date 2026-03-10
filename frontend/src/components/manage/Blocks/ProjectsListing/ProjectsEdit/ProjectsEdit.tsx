@@ -34,6 +34,7 @@ import {
   TrancheErrorType,
   BpDataProps,
   FileMetaDataType,
+  InlineMessageType,
 } from '../interfaces'
 import {
   approvalOdsFields,
@@ -254,7 +255,9 @@ const ProjectsEdit = ({
     hasBpData: false,
     bpDataLoading: false,
   })
+
   const [projectId, setProjectId] = useState<number | null>(null)
+  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
@@ -529,6 +532,18 @@ const ProjectsEdit = ({
     }
   }, [country, cluster, tranche, project_id, specificFields])
 
+  useEffect(() => {
+    if (projectId) {
+      setSuccessMessage({
+        type: 'success',
+        message:
+          (isEditMode ? 'Updated' : 'Created') + ' project successfully.',
+        redirectMessage: 'View project.',
+        hrefRedirect: `/projects-listing/${projectId}`,
+      })
+    }
+  }, [projectId])
+
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
     fieldName?: string,
@@ -599,6 +614,8 @@ const ProjectsEdit = ({
             setMetaProjectId,
             setRefetchRelatedProjects,
             metaprojectData,
+            successMessage,
+            setSuccessMessage,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

@@ -5,6 +5,7 @@ import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -28,6 +29,7 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
+  InlineMessageProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -89,11 +91,14 @@ const ProjectsCreate = ({
   setMetaProjectId,
   setRefetchRelatedProjects,
   metaprojectData,
+  successMessage,
+  setSuccessMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
   TrancheErrors &
-  FileMetaDataProps & {
+  FileMetaDataProps &
+  InlineMessageProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -136,6 +141,14 @@ const ProjectsCreate = ({
   const [currentTab, setCurrentTab] = useState<number>(
     impact ? 3 : approval ? 5 : 0,
   )
+
+  const {
+    type = 'success',
+    message,
+    redirectMessage,
+    tab,
+    hrefRedirect,
+  } = successMessage ?? {}
 
   const areFieldsDisabled = !canLinkToBp || currentStep < 1
   const areNextSectionsDisabled = areFieldsDisabled || bpData.bpDataLoading
@@ -878,6 +891,29 @@ const ProjectsCreate = ({
                           </div>
                         </Typography>
                       </>
+                    }
+                  />
+                )}
+                {!!successMessage && (
+                  <CustomAlert
+                    type={type}
+                    alertClassName="mb-3"
+                    content={
+                      hrefRedirect ? (
+                        <Link
+                          className="text-xl text-inherit no-underline"
+                          href={hrefRedirect}
+                        >
+                          <p className="m-0 mt-0.5 text-lg">
+                            {message}
+                            <span className="underline">{redirectMessage}</span>
+                          </p>
+                        </Link>
+                      ) : (
+                        <div className="text-xl text-inherit">
+                          <p className="m-0 mt-0.5 text-lg">{message}</p>
+                        </div>
+                      )
                     }
                   />
                 )}
