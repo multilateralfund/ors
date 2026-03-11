@@ -1,0 +1,328 @@
+[
+  {
+    "SEC": ["ARS"],
+    "SUBSECTOR": "Metered dose inhalers",
+    "CODE_SUBSECTOR": "INH",
+    "SORT_SUBSECTOR": 1
+  },
+  {
+    "SEC": ["ARS"],
+    "SUBSECTOR": "Other aerosols",
+    "CODE_SUBSECTOR": "OTHARS",
+    "SORT_SUBSECTOR": 2,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Other Aeresols"
+  },
+  {
+    "SEC": ["ARS"],
+    "SUBSECTOR": "LPG purification",
+    "CODE_SUBSECTOR": "LPG",
+    "SORT_SUBSECTOR": 3,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "REF"],
+    "SUBSECTOR": "Phase out plan",
+    "CODE_SUBSECTOR": "",
+    "SORT_SUBSECTOR": 4,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "REF"],
+    "SUBSECTOR": "Preparation of project proposal",
+    "CODE_SUBSECTOR": "APR",
+    "SORT_SUBSECTOR": 5,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "REF"],
+    "SUBSECTOR": "HCFC phase out plan",
+    "SORT_SUBSECTOR": 6,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Rigid",
+    "CODE_SUBSECTOR": "RIG",
+    "SORT_SUBSECTOR": 7,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Rigid (insulation refrigeration)",
+    "CODE_SUBSECTOR": "RII",
+    "SORT_SUBSECTOR": 8,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Flexible slabstock",
+    "CODE_SUBSECTOR": "FLS",
+    "SORT_SUBSECTOR": 9,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Flexible molded",
+    "CODE_SUBSECTOR": "FLM",
+    "SORT_SUBSECTOR": 10
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Integral skin",
+    "CODE_SUBSECTOR": "ISK",
+    "SORT_SUBSECTOR": 11,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Polystyrene/polyethylene",
+    "CODE_SUBSECTOR": "POP",
+    "SORT_SUBSECTOR": 12,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Rigid PU",
+    "SORT_SUBSECTOR": 13
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Spray PU",
+    "SORT_SUBSECTOR": 14
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Integral skin PU",
+    "SORT_SUBSECTOR": 15
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "XPS: extruded polystyrene",
+    "SORT_SUBSECTOR": 16,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Extruded polystyrene (XPS)"
+  },
+  {
+    "SEC": ["FOA"],
+    "SUBSECTOR": "Phenolic",
+    "CODE_SUBSECTOR": "PHE",
+    "SORT_SUBSECTOR": 17,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["SOL"],
+    "SUBSECTOR": "Solvents",
+    "CODE_SUBSECTOR": "MSO",
+    "SORT_SUBSECTOR": 18,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["SOL", "ELM", "EMS"],
+    "SUBSECTOR": "No options",
+    "SORT_SUBSECTOR": 19
+  },
+  {
+    "SEC": ["FFI"],
+    "SUBSECTOR": "Fixed system",
+    "CODE_SUBSECTOR": "FXS",
+    "SORT_SUBSECTOR": 20,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["FFI"],
+    "SUBSECTOR": "Assembly fire protection systems",
+    "CODE_SUBSECTOR": "EXT",
+    "SORT_SUBSECTOR": 21,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Assembly Fire Protections Systems"
+  },
+  {
+    "SEC": ["FFI"],
+    "SUBSECTOR": "Servicing fire protection systems",
+    "CODE_SUBSECTOR": "EXT",
+    "SORT_SUBSECTOR": 22,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Servicing Fire Protections Systems"
+  },
+  {
+    "SEC": ["FFI"],
+    "SUBSECTOR": "Banking",
+    "CODE_SUBSECTOR": "BNK",
+    "SORT_SUBSECTOR": 23
+  },
+  {
+    "SEC": ["FFI"],
+    "SUBSECTOR": "Manufacturing",
+    "CODE_SUBSECTOR": "",
+    "SORT_SUBSECTOR": 24
+  },
+  {
+    "SEC": ["EMS"],
+    "SUBSECTOR": "HFC-23 emission control",
+    "SORT_SUBSECTOR": 25,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["SRVEE"],
+    "SUBSECTOR": "Additional Activities for Energy Efficiency",
+    "SORT_SUBSECTOR": 26
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Domestic",
+    "CODE_SUBSECTOR": "DMS",
+    "SORT_SUBSECTOR": 27,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Domestic (refrigerant)",
+    "CODE_SUBSECTOR": "DMR",
+    "SORT_SUBSECTOR": 28,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Commercial",
+    "CODE_SUBSECTOR": "CMM",
+    "SORT_SUBSECTOR": 29,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Commercial (refrigerant)",
+    "CODE_SUBSECTOR": "CMR",
+    "SORT_SUBSECTOR": 30,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Domestic/commercial",
+    "CODE_SUBSECTOR": "DCR",
+    "SORT_SUBSECTOR": 31,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Air conditioning",
+    "SORT_SUBSECTOR": 32,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Industrial refrigeration",
+    "SORT_SUBSECTOR": 33,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Transport refrigeration",
+    "SORT_SUBSECTOR": 34
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Industrial and commercial refrigeration",
+    "SORT_SUBSECTOR": 35
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Project preparation/supervision",
+    "CODE_SUBSECTOR": "PPS",
+    "SORT_SUBSECTOR": 36,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Refrigeration compressor",
+    "SORT_SUBSECTOR": 37,
+    "CODE_SUBSECTOR": "CMP",
+    "ACTION": "RENAME",
+    "OLD_NAME": "Refrigeration Compressor"
+  }, 
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Local installation and assembly",
+    "SORT_SUBSECTOR": 38
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Domestic refrigeration",
+    "SORT_SUBSECTOR": 39,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Domestic Refrigeration"
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Commercial refrigeration",
+    "SORT_SUBSECTOR": 40,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Commercial Refrigeration"
+  },
+  {
+    "SEC": ["REF"],
+    "SUBSECTOR": "Other refrigeration components",
+    "SORT_SUBSECTOR": 41
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Residential air-conditioning",
+    "SORT_SUBSECTOR": 42
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Commercial air-conditioning",
+    "SORT_SUBSECTOR": 43
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Chiller",
+    "CODE_SUBSECTOR": "CHL",
+    "SORT_SUBSECTOR": 44
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "MAC/vehicle air-conditioning ",
+    "CODE_SUBSECTOR": "MAC",
+    "SORT_SUBSECTOR": 45,
+    "ACTION": "RENAME",
+    "OLD_NAME": "MAC"
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "MAC/transport air-conditioning compressor",
+    "CODE_SUBSECTOR": "MCC",
+    "SORT_SUBSECTOR": 46,
+    "ACTION": "RENAME",
+    "OLD_NAME": "MAC compressor"
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Air-conditioning compressor",
+    "SORT_SUBSECTOR": 47,
+    "ACTION": "RENAME",
+    "OLD_NAME": "AC Compressor"
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Other AC components",
+    "SORT_SUBSECTOR": 48
+  },
+  {
+    "SEC": ["AC"],
+    "SUBSECTOR": "Transport air-conditioning",
+    "SORT_SUBSECTOR": 49
+  },
+  {
+    "SEC": ["SRV"],
+    "SUBSECTOR": "Servicing",
+    "SORT_SUBSECTOR": 50
+  },
+  {
+    "SEC": ["SRV"],
+    "SUBSECTOR": "End-user",
+    "SORT_SUBSECTOR": 51,
+    "ACTION": "RENAME",
+    "OLD_NAME": "End User"
+  }
+]
