@@ -302,18 +302,22 @@ const EditActionButtons = ({
   }
 
   const editProject = async (navigationPage?: string) => {
+    const shouldEditApprovalFields = isRecommended || isAfterApproval
+
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
     setErrors({})
 
     const formattedProjectFields = formatProjectFields(projectFields)
-    const actualData = getActualData(
-      projectData,
-      setProjectData,
-      specificFields,
-      formattedProjectFields,
-    )
+    const actualData = isApproved
+      ? getActualData(
+          projectData,
+          setProjectData,
+          specificFields,
+          formattedProjectFields,
+        )
+      : {}
 
     if (!editable && editable_for_actual_fields && !postExComUpdate) {
       try {
@@ -411,7 +415,7 @@ const EditActionButtons = ({
       }
 
       // approval fields validation before edit
-      if (isRecommended || isAfterApproval) {
+      if (shouldEditApprovalFields) {
         const data = formatApprovalData(
           projectData,
           setProjectData,
@@ -507,7 +511,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
-      if (isRecommended || isAfterApproval) {
+      if (shouldEditApprovalFields) {
         const canEditApprovalFields = await editApprovalFields()
 
         if (!canEditApprovalFields) {
