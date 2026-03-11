@@ -1249,3 +1249,37 @@ export const getFieldExtraLabel = (
   displayExtraLabel: boolean | undefined,
   label: string,
 ) => (displayExtraLabel && !label.includes('- planned') ? ' - planned' : '')
+
+const isOldFormat = (decision: string) =>
+  decision.toLowerCase().includes('paragraph')
+
+const getOldFormatOrder = (decision: string) => {
+  const allNumbers = decision.match(/\d+/g)?.map(Number) ?? []
+  const decisionNr =
+    allNumbers.length > 0 ? allNumbers[allNumbers.length - 1] : 0
+
+  const paragraphMatch = decision.match(/paragraphs?\s+([\d\sand,]+)/i)
+  const paragraphNrs = paragraphMatch
+    ? paragraphMatch[1]
+        .split(/and|,/)
+        .map((n) => Number(n.trim()))
+        .filter((n) => !isNaN(n))
+    : []
+
+  return [decisionNr, ...paragraphNrs]
+}
+
+const getNewFormatOrder = (decision: string) => {
+  const decisionNr = decision.match(/\d+/g)?.map(Number) ?? []
+
+  return decisionNr.length > 1
+    ? [decisionNr[1]]
+    : decisionNr.length === 1
+      ? [decisionNr[0]]
+      : [0]
+}
+
+export const orderDecisions = (decision: string) =>
+  isOldFormat(decision)
+    ? getOldFormatOrder(decision)
+    : getNewFormatOrder(decision)

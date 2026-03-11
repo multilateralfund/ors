@@ -8,7 +8,12 @@ import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishmen
 import { FieldErrorIndicator, NavigationButton } from '../HelperComponents'
 import ProjectFundFields from './ProjectFundFields'
 import { widgets } from './SpecificFieldsHelpers'
-import { canEditField, canViewField, getTransferFieldLabel } from '../utils'
+import {
+  canEditField,
+  canViewField,
+  getTransferFieldLabel,
+  orderDecisions,
+} from '../utils'
 import {
   ProjectData,
   ProjectSpecificFields,
@@ -70,7 +75,16 @@ const ProjectApprovalFields = ({
 
   const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return map(data, (d) => ({ name: d.title, value: d.id }))
+
+    const sortedDecisions = [...data].sort((a, b) =>
+      orderDecisions(a.number)
+        .toString()
+        .localeCompare(orderDecisions(b.number).toString(), undefined, {
+          numeric: true,
+        }),
+    )
+
+    return map(sortedDecisions, (d) => ({ name: d.title, value: d.id }))
   }, [decisionsApi.data])
 
   const handleChangeDecision = (option: DecisionOption | string | null) => {
