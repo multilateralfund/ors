@@ -194,9 +194,7 @@ class MetaProject(models.Model):
     number_of_non_sme_directly_funded = models.IntegerField(
         null=True, blank=True, help_text="Number of non-SMEs directly funded"
     )
-    number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded",
@@ -329,9 +327,7 @@ class MetaProject(models.Model):
     draft_number_of_non_sme_directly_funded = models.IntegerField(
         null=True, blank=True, help_text="Number of non-SMEs directly funded (draft)"
     )
-    draft_number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    draft_number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (draft)",

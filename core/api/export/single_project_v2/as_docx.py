@@ -139,7 +139,7 @@ class ProjectsV2ProjectExportDocx:
             elif p.text.startswith("Type:"):
                 p.add_run(data.get("project_type", {}).get("name", "") or "", None)
             elif p.text.startswith("Sector:"):
-                p.add_run(data.get("sector", {}).get("name", "") or "", None)
+                p.add_run((data.get("sector") or {}).get("name", "") or "", None)
             elif p.text.startswith("Cluster:"):
                 p.add_run(data.get("cluster", {}).get("name", "") or "", None)
             elif p.text.startswith("Project costs:"):

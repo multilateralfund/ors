@@ -176,7 +176,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         allow_null=True,
         queryset=Group.objects.all().values_list("id", flat=True),
     )
-    decision = serializers.SlugField(read_only=True)
+    decision = serializers.SlugRelatedField(slug_field="title", read_only=True)
     decision_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
@@ -575,7 +575,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     transfer_meeting_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
-    transfer_decision = serializers.SlugField(read_only=True)
+    transfer_decision = serializers.SlugRelatedField(slug_field="title", read_only=True)
     transfer_decision_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
