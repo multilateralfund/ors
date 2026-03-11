@@ -64,8 +64,7 @@ def clean_up_project_submission_statuses():
     ).first()
     for project in projects_approved:
         project.submission_status = submission_status_approved
-        if project.version < 3:
-            project.version = 3
+        project.version = max(project.version, 3)
         project.save()
 
 
