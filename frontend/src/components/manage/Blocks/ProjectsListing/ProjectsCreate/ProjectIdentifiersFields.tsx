@@ -27,6 +27,7 @@ import {
   getAgencyErrorType,
   getClusterDetails,
   getConsumptionLevelStatus,
+  orderDecisions,
 } from '../utils'
 import useApi from '@ors/hooks/useApi.ts'
 import { ApiDecision } from '@ors/types/api_meetings.ts'
@@ -141,7 +142,16 @@ const ProjectIdentifiersFields = ({
 
   const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return map(data, (d) => ({ name: d.title, value: d.id }))
+
+    const sortedDecisions = [...data].sort((a, b) =>
+      orderDecisions(a.number)
+        .toString()
+        .localeCompare(orderDecisions(b.number).toString(), undefined, {
+          numeric: true,
+        }),
+    )
+
+    return map(sortedDecisions, (d) => ({ name: d.title, value: d.id }))
   }, [decisionsApi.data])
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
