@@ -6,6 +6,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
+import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
@@ -137,6 +138,8 @@ const ProjectsEdit = ({
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
+
+  const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const { files: data, loadedFiles } = useGetProjectFiles(parseInt(project_id))
   const areFilesLoaded = loadedFiles && filesLoaded.current
@@ -570,6 +573,7 @@ const ProjectsEdit = ({
             setProjectData,
             bpData,
             filesMetaData,
+            fieldsOpts,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -599,6 +603,7 @@ const ProjectsEdit = ({
             setMetaProjectId,
             setRefetchRelatedProjects,
             metaprojectData,
+            fieldsOpts,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

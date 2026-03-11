@@ -7,6 +7,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
+import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
@@ -122,6 +123,8 @@ const ProjectsCreateWrapper = () => {
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
+  const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, 'add')
+
   useEffect(() => {
     if (canViewBp && country && agency && cluster) {
       setBpData({
@@ -234,6 +237,7 @@ const ProjectsCreateWrapper = () => {
           setProjectData,
           bpData,
           filesMetaData,
+          fieldsOpts,
         }}
       />
       <ProjectsCreate
@@ -252,6 +256,7 @@ const ProjectsCreateWrapper = () => {
           onBpDataChange,
           filesMetaData,
           setFilesMetaData,
+          fieldsOpts,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

@@ -76,6 +76,7 @@ const EditActionButtons = ({
   postExComUpdate,
   bpData,
   filesMetaData,
+  shouldValidateTotalFund,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -85,6 +86,7 @@ const EditActionButtons = ({
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
   bpData: BpDataProps
+  shouldValidateTotalFund: boolean
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -155,7 +157,15 @@ const EditActionButtons = ({
   const isAfterApproval = isApproved || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project, false),
+    () =>
+      getCrossCuttingErrors(
+        crossCuttingFields,
+        {},
+        'edit',
+        project,
+        false,
+        shouldValidateTotalFund,
+      ),
     [crossCuttingFields],
   )
   const approvalErrors = useMemo(
@@ -266,7 +276,7 @@ const EditActionButtons = ({
     approvalFields.length === 0 ||
     hasOdsOdpErrors ||
     hasSectionErrors(approvalErrors) ||
-    crossCuttingErrors['total_fund'].length > 0 ||
+    crossCuttingErrors?.['total_fund']?.length > 0 ||
     crossCuttingErrors['support_cost_psc'].length > 0
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
