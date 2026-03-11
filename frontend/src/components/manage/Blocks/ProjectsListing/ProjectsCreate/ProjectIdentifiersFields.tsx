@@ -141,24 +141,20 @@ const ProjectIdentifiersFields = ({
 
   const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return map(data, (d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.title, value: d.id }))
   }, [decisionsApi.data])
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
-  const sectionDefaultProps = {
+  const getSectionDefaultProps = (field: string) => ({
     ...defaultProps,
     FieldProps: {
-      className: defaultProps.FieldProps.className + ' flex-grow max-w-[16rem]',
+      className: cx(defaultProps.FieldProps.className, {
+        'flex-grow max-w-[16rem]': field === 'agency',
+        'w-full': field !== 'agency',
+      }),
     },
-  }
-
-  const firstColFieldsProps = {
-    ...defaultProps,
-    FieldProps: {
-      className: defaultProps.FieldProps.className + ' w-full',
-    },
-  }
+  })
 
   const handleChangeCountry = (country: Country) => {
     changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
@@ -319,7 +315,7 @@ const ProjectIdentifiersFields = ({
           </SectionTitle>
           <div className="flex flex-wrap gap-x-20 gap-y-3">
             <div>
-              <Label>Meeting</Label>
+              <Label>{tableColumns.meeting}</Label>
               <div className="flex items-center">
                 <div className="w-32">
                   <PopoverInput
@@ -340,20 +336,22 @@ const ProjectIdentifiersFields = ({
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="postExComDecision">Decision</Label>
-              <Field
-                widget="autocomplete"
-                options={decisionOptions}
-                value={projIdentifiers?.post_excom_decision ?? null}
-                onChange={(_, value) =>
-                  handleChangePostExComDecision(value as DecisionOption)
-                }
-                getOptionLabel={(option) => {
-                  return getOptionLabel(decisionOptions, option, 'value')
-                }}
-                {...sectionDefaultProps}
-              />
+            <div className="flex-shrink basis-[14rem]">
+              <Label htmlFor="postExComDecision">{tableColumns.decision}</Label>
+              <div className="w-full">
+                <Field
+                  widget="autocomplete"
+                  options={decisionOptions}
+                  value={projIdentifiers?.post_excom_decision ?? null}
+                  onChange={(_, value) =>
+                    handleChangePostExComDecision(value as DecisionOption)
+                  }
+                  getOptionLabel={(option) => {
+                    return getOptionLabel(decisionOptions, option, 'value')
+                  }}
+                  {...getSectionDefaultProps('post_excom_decision')}
+                />
+              </div>
             </div>
             {!(
               projIdentifiers?.post_excom_meeting &&
@@ -393,7 +391,7 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(countries, option)
                     }
                     disabled={!isAddOrCopy || !areNextSectionsDisabled}
-                    {...firstColFieldsProps}
+                    {...getSectionDefaultProps('country')}
                   />
                 </div>
                 <div className="w-8">
@@ -449,7 +447,7 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(agencies, option)
                     }
                     disabled={isAgencyDisabled || !areNextSectionsDisabled}
-                    {...sectionDefaultProps}
+                    {...getSectionDefaultProps('agency')}
                   />
                 </div>
                 <div className="w-8">
@@ -474,7 +472,7 @@ const ProjectIdentifiersFields = ({
                       getOptionLabel(clusters, option)
                     }
                     disabled={isClusterDisabled || !areNextSectionsDisabled}
-                    {...firstColFieldsProps}
+                    {...getSectionDefaultProps('cluster')}
                   />
                 </div>
                 <div className="w-8">
@@ -550,7 +548,7 @@ const ProjectIdentifiersFields = ({
                       disabled={
                         isLeadAgencyDisabled || !areNextSectionsDisabled
                       }
-                      {...firstColFieldsProps}
+                      {...getSectionDefaultProps('lead_agency')}
                     />
                   </div>
                   <div className="w-8">
@@ -565,7 +563,7 @@ const ProjectIdentifiersFields = ({
           <div className="flex items-center">
             <FormControlLabel
               className="w-fit"
-              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              label={tableColumns.lead_agency_submitting_on_behalf}
               control={
                 <Checkbox
                   checked={projIdentifiers?.lead_agency_submitting_on_behalf}

@@ -57,9 +57,7 @@ const ProjectIdentifiers = ({
       <div>
         Business plan {bp.name} {' - '}
         <span>(Meeting: {bp.meeting_number})</span>
-        {bp.decision_id ? (
-          <span>{`(Decision: ${bp.decision_number})`}</span>
-        ) : null}
+        {bp.decision_id ? <span> (Decision: {bp.decision_number})</span> : null}
       </div>
     )
 
@@ -74,7 +72,7 @@ const ProjectIdentifiers = ({
     getFieldHistory('post_excom_decision'),
     (history) => ({
       ...history,
-      value: history.value ? history.value.number : null,
+      value: history.value ? history.value.title : null,
     }),
   )
 
@@ -124,15 +122,15 @@ const ProjectIdentifiers = ({
           <div className="flex w-full flex-col gap-4">
             <div className={viewColumnsClassName}>
               {detailItem(
-                'Meeting',
+                tableColumns.meeting,
                 project.post_excom_meeting?.toString() ?? '-',
                 {
                   fieldHistory: getFieldHistory('post_excom_meeting'),
                 },
               )}
               {detailItem(
-                'Decision',
-                project.post_excom_decision?.number ?? '-',
+                tableColumns.decision,
+                project.post_excom_decision?.title ?? '-',
                 {
                   fieldHistory: formattedHistoryDecision,
                 },

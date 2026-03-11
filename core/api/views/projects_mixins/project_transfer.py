@@ -45,8 +45,8 @@ class ProjectTransferMixin:
                     """
                     JSON metadata string.(map by filename):
                         {
-                            "test_document_1.xlsx": "main_submission",
-                            "test_document_2.xlsx": "final_proposal"
+                            "test_document_1.xlsx": "endorsement_letter",
+                            "test_document_2.xlsx": "verification_report"
                         }
                 """
                 ),

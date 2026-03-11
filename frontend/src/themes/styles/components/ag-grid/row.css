@@ -55,12 +55,20 @@
 }
 
 .ag-table.project-association-table {
+  transform: translateZ(0);
+  position: relative;
+  padding-top: 1px;
+
   .ag-root.ag-layout-normal {
     padding-top: 0 !important;
   }
 
   .ag-center-cols-viewport {
     min-height: unset !important;
+  }
+
+  .ag-body-horizontal-scroll {
+    top: 0 !important;
   }
 
   .ag-header {
@@ -74,7 +82,7 @@
     font-style: italic;
   }
 
-  .ag-row:first-child {
+  .ag-row.is-current-project {
     background-color: #fafce9 !important;
     font-style: normal !important;
   }

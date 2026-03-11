@@ -206,7 +206,12 @@ const ProjectsAssociateConfirmation = ({
   })
   const [errors, setErrors] = useState(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  const NR_PROJECTS = 50
+
   const [offset, setOffset] = useState(0)
+  const [nrResults, setNrResults] = useState(NR_PROJECTS)
+
   const [association, setAssociation] = useState<AssociatedProjectsType>({
     projects: [],
     loaded: false,
@@ -231,15 +236,14 @@ const ProjectsAssociateConfirmation = ({
   }, [])
 
   const projects = useMemo(() => {
-    const projectsPerPage = 50
     const projectsToAssociate = [...crtProjects, ...associatedProjects]
 
     return {
       ...projectsAssociation,
-      results: projectsToAssociate.slice(offset, offset + projectsPerPage),
+      results: projectsToAssociate.slice(offset, offset + nrResults),
       count: projectsToAssociate.length,
     }
-  }, [projectsAssociation, crtProjects, associatedProjects, offset])
+  }, [projectsAssociation, crtProjects, associatedProjects, offset, nrResults])
 
   const isOriginalProjIndiv = !crtProjects[0].meta_project_id
   const isAssociatedProjIndiv =
@@ -316,6 +320,20 @@ const ProjectsAssociateConfirmation = ({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const setPagination = (page: number, rowsPerPage: number) => {
+    setNrResults((prevRowsPerPage) => {
+      if (prevRowsPerPage !== rowsPerPage) {
+        const updatedPage = Math.floor(offset / rowsPerPage)
+        setOffset(updatedPage * rowsPerPage)
+
+        return rowsPerPage
+      }
+
+      setOffset(page * rowsPerPage)
+      return rowsPerPage
+    })
   }
 
   return (
@@ -421,7 +439,7 @@ const ProjectsAssociateConfirmation = ({
           mode="association"
           filters={initialFilters}
           enablePagination={true}
-          {...{ projects, associationIds, setOffset }}
+          {...{ projects, associationIds, setPagination }}
         />
       </form>
       {errors && (

@@ -111,7 +111,11 @@ class MetaProject(models.Model):
         null=True, blank=True, help_text="Start date (MYA)"
     )
     end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
-
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Project duration (months)",
+    )
     phase_out_co2_eq_t = models.DecimalField(
         max_digits=30,
         decimal_places=15,
@@ -190,9 +194,7 @@ class MetaProject(models.Model):
     number_of_non_sme_directly_funded = models.IntegerField(
         null=True, blank=True, help_text="Number of non-SMEs directly funded"
     )
-    number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded",
@@ -243,6 +245,11 @@ class MetaProject(models.Model):
     )
     draft_end_date = models.DateTimeField(
         null=True, blank=True, help_text="End date (MYA)"
+    )
+    draft_project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Project duration (months) (draft)",
     )
     draft_phase_out_co2_eq_t = models.DecimalField(
         max_digits=30,
@@ -320,9 +327,7 @@ class MetaProject(models.Model):
     draft_number_of_non_sme_directly_funded = models.IntegerField(
         null=True, blank=True, help_text="Number of non-SMEs directly funded (draft)"
     )
-    draft_number_of_both_sme_non_sme_not_directly_funded = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
+    draft_number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
         null=True,
         blank=True,
         help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (draft)",
@@ -1710,10 +1715,12 @@ class Project(models.Model):
 
 class ProjectFile(models.Model):
     class FileType(models.TextChoices):
-        MAIN_SUBMISSION = "main_submission", "Main project submission"
+        PROJECT_PROPOSAL = "project_proposal", "Project proposal"
+        ENDORSEMENT_LETTER = (
+            "endorsement_letter",
+            "Endorsement/transmittal letter from government",
+        )
         VERIFICATION_REPORT = "verification_report", "Verification report"
-        ENDORSEMENT_LETTER = "endorsement_letter", "Endorsement letter from government"
-        FINAL_PROPOSAL = "final_proposal", "Final project proposal"
         PROJECT_REVIEW_COMMENTS = "project_review_comments", "Project review comments"
         TRANSFERRED_PROJECT_PROPOSAL = (
             "transferred_project_proposal",

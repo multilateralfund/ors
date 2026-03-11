@@ -12,6 +12,7 @@ import {
   dropDownClassName,
   dropdownItemClassname,
   enabledButtonClassname,
+  projectPhaseOutFields,
 } from '../constants'
 import {
   canEditField,
@@ -193,7 +194,11 @@ const EditActionButtons = ({
 
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+    (odsOdpData.some((data) =>
+      Object.entries(data)
+        .filter(([key]) => !projectPhaseOutFields.includes(key))
+        .some(([, value]) => checkInvalidValue(value)),
+    ) ||
       odsOdpData.length === 0)
 
   const {
@@ -267,7 +272,8 @@ const EditActionButtons = ({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const handleErrors = async (error: any, type?: string) => {
-    const errors = await error.json()
+    const errors =
+      error && typeof error.json === 'function' ? await error.json() : {}
 
     if (error.status === 400) {
       setErrors(errors)
@@ -296,19 +302,25 @@ const EditActionButtons = ({
   }
 
   const editProject = async (navigationPage?: string) => {
+    const shouldEditApprovalFields = isRecommended || isAfterApproval
+
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
     setErrors({})
 
-    if (!editable && editable_for_actual_fields && !postExComUpdate) {
-      try {
-        const actualData = getActualData(
+    const formattedProjectFields = formatProjectFields(projectFields)
+    const actualData = isApproved
+      ? getActualData(
           projectData,
           setProjectData,
           specificFields,
-          formatProjectFields(projectFields),
+          formattedProjectFields,
         )
+      : {}
+
+    if (!editable && editable_for_actual_fields && !postExComUpdate) {
+      try {
         const result = await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
@@ -381,11 +393,39 @@ const EditActionButtons = ({
         projectData,
         setProjectData,
         specificFields,
-        formatProjectFields(projectFields),
+        formattedProjectFields,
       )
 
       if (postExComUpdate) {
         data['post-excom-update'] = true
+
+        // main fields validation before edit
+        await api(`api/projects/v2/${id}`, {
+          data: { ...data, validate_request: true },
+          method: 'PUT',
+        })
+      }
+
+      // actual fields validation before edit
+      if (isApproved) {
+        await api(`api/projects/v2/${id}/edit_actual_fields/`, {
+          data: { ...actualData, validate_request: true },
+          method: 'PUT',
+        })
+      }
+
+      // approval fields validation before edit
+      if (shouldEditApprovalFields) {
+        const data = formatApprovalData(
+          projectData,
+          setProjectData,
+          [...specificFields, ...approvalFields],
+          formattedProjectFields,
+        )
+        await api(`api/projects/v2/${id}/edit_approval_fields/`, {
+          data: { ...data, validate_request: true },
+          method: 'PUT',
+        })
       }
 
       const result = await api(`api/projects/v2/${id}`, {
@@ -406,15 +446,20 @@ const EditActionButtons = ({
 
       // Delete files
       if (deletedFilesIds.length > 0) {
-        await api(`/api/projects/v2/${id}/project-files/delete`, {
-          data: {
-            file_ids: deletedFilesIds,
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'DELETE',
-        })
+        try {
+          await api(`/api/projects/v2/${id}/project-files/delete`, {
+            data: {
+              file_ids: deletedFilesIds,
+            },
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+          })
+        } catch (error) {
+          await handleErrors(error, 'files')
+          throw error
+        }
       }
 
       await Promise.all(
@@ -449,15 +494,10 @@ const EditActionButtons = ({
         enqueueSnackbar(<>Could not fetch updated files.</>, {
           variant: 'error',
         })
+        return
       }
 
       if (isApproved) {
-        const actualData = getActualData(
-          projectData,
-          setProjectData,
-          specificFields,
-          formatProjectFields(projectFields),
-        )
         await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
@@ -471,8 +511,12 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
 
-      if (isRecommended || isAfterApproval) {
-        await editApprovalFields()
+      if (shouldEditApprovalFields) {
+        const canEditApprovalFields = await editApprovalFields()
+
+        if (!canEditApprovalFields) {
+          return
+        }
       }
 
       if (postExComUpdate) {
@@ -627,9 +671,7 @@ const EditActionButtons = ({
         })
         setLocation(`/projects-listing/${id}`)
       } catch (error) {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
+        await handleErrors(error)
       }
     }
 

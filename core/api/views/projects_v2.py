@@ -514,7 +514,14 @@ class ProjectV2ViewSet(
     )
     def update(self, request, *args, **kwargs):
         post_excom_update = request.data.get("post-excom-update", False)
+        validate_request = request.data.get("validate_request", False)
         if post_excom_update:
+            if validate_request:
+                serializer = self.get_serializer(
+                    self.get_object(), data=request.data, partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                return Response({}, status=status.HTTP_200_OK)
             project = self.get_object()
             project.increase_version(request.user)
             log_project_history(
@@ -563,6 +570,14 @@ class ProjectV2ViewSet(
         },
     )
     def edit_actual_fields(self, request, *args, **kwargs):
+        validate_request = request.data.get("validate_request", False)
+        if validate_request:
+            serializer = ProjectV2EditActualFieldsSerializer(
+                self.get_object(), data=request.data, partial=True
+            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({}, status=status.HTTP_200_OK)
         project = self.get_object()
         serializer = ProjectV2EditActualFieldsSerializer(
             project, data=request.data, partial=True
@@ -591,6 +606,14 @@ class ProjectV2ViewSet(
         },
     )
     def edit_approval_fields(self, request, *args, **kwargs):
+        validate_request = request.data.get("validate_request", False)
+        if validate_request:
+            serializer = ProjectV2EditApprovalFieldsSerializer(
+                self.get_object(), data=request.data, partial=True
+            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({}, status=status.HTTP_200_OK)
         project = self.get_object()
         serializer = ProjectV2EditApprovalFieldsSerializer(
             project,

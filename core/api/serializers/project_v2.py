@@ -176,7 +176,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         allow_null=True,
         queryset=Group.objects.all().values_list("id", flat=True),
     )
-    decision = serializers.SlugField(read_only=True)
+    decision = serializers.SlugRelatedField(slug_field="title", read_only=True)
     decision_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
@@ -575,7 +575,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     transfer_meeting_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
-    transfer_decision = serializers.SlugField(read_only=True)
+    transfer_decision = serializers.SlugRelatedField(slug_field="title", read_only=True)
     transfer_decision_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
@@ -1350,6 +1350,10 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
         ]
 
     def validate_required_fields(self, errors):
+        optional_fields_at_submission = [
+            "destruction_technology",
+        ]
+
         mandatory_fields_at_submission = [
             "cluster",
             "project_type",
@@ -1412,12 +1416,16 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                     errors["ods_display_name"] = (
                                         "Ods name is required for submission."
                                     )
-                            elif getattr(ods_odp, field.write_field_name) is None:
-                                errors[f"{field.write_field_name}_ods_odp"] = (
-                                    f"{field.label} is required for submission."
-                                )
+                            elif field.write_field_name == "replacement_technology":
+                                if getattr(ods_odp, field.write_field_name) is None:
+                                    errors[f"{field.write_field_name}_ods_odp"] = (
+                                        f"{field.label} is required for submission."
+                                    )
                 else:
-                    if getattr(self.instance, field.write_field_name) is None:
+                    if (
+                        getattr(self.instance, field.write_field_name) is None
+                        and field.write_field_name not in optional_fields_at_submission
+                    ):
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )

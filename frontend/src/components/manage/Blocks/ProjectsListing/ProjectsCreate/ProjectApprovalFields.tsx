@@ -70,7 +70,7 @@ const ProjectApprovalFields = ({
 
   const decisionOptions = useMemo(() => {
     const data = decisionsApi.data ?? ([] as ApiDecision[])
-    return map(data, (d) => ({ name: d.number, value: d.id }))
+    return map(data, (d) => ({ name: d.title, value: d.id }))
   }, [decisionsApi.data])
 
   const handleChangeDecision = (option: DecisionOption | string | null) => {
@@ -152,7 +152,7 @@ const ProjectApprovalFields = ({
                 />
               </div>
               <div className="w-8">
-                <FieldErrorIndicator errors={errors} field="Decision" />
+                <FieldErrorIndicator errors={errors} field="Decision number" />
               </div>
             </div>
           </div>
@@ -216,7 +216,7 @@ const ProjectApprovalFields = ({
           .filter((field) => approvalOdsFields.includes(field.write_field_name))
           .map((field) => approvalField(field))}
       </div>
-      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-12 gap-y-2 md:grid">
+      <div className="mt-2 flex w-fit grid-cols-2 flex-wrap gap-x-14 gap-y-2 md:grid">
         <ProjectFundFields
           {...{ projectData, setProjectData, project, errors }}
           type="approval"
