@@ -1250,13 +1250,22 @@ export const getFieldExtraLabel = (
   label: string,
 ) => (displayExtraLabel && !label.includes('- planned') ? ' - planned' : '')
 
-const isOldFormat = (decision: string) =>
-  decision.toLowerCase().includes('paragraph')
+const getDecisionAndRevision = (decision: string) => {
+  const allNumbers = decision.match(/\d+/g)?.map(Number) ?? []
+
+  const revMatch = decision.match(/Rev\.?(\d+)/i)
+  const revisionNr = revMatch ? Number(revMatch[1]) : 0
+
+  const decisionNr =
+    allNumbers.length > 0
+      ? allNumbers[allNumbers.length - (revisionNr ? 2 : 1)]
+      : 0
+
+  return { decisionNr, revisionNr }
+}
 
 const getOldFormatOrder = (decision: string) => {
-  const allNumbers = decision.match(/\d+/g)?.map(Number) ?? []
-  const decisionNr =
-    allNumbers.length > 0 ? allNumbers[allNumbers.length - 1] : 0
+  const { decisionNr, revisionNr } = getDecisionAndRevision(decision)
 
   const paragraphMatch = decision.match(/paragraphs?\s+([\d\sand,]+)/i)
   const paragraphNrs = paragraphMatch
@@ -1266,20 +1275,16 @@ const getOldFormatOrder = (decision: string) => {
         .filter((n) => !isNaN(n))
     : []
 
-  return [decisionNr, ...paragraphNrs]
+  return [decisionNr, revisionNr, ...paragraphNrs]
 }
 
 const getNewFormatOrder = (decision: string) => {
-  const decisionNr = decision.match(/\d+/g)?.map(Number) ?? []
+  const { decisionNr, revisionNr } = getDecisionAndRevision(decision)
 
-  return decisionNr.length > 1
-    ? [decisionNr[1]]
-    : decisionNr.length === 1
-      ? [decisionNr[0]]
-      : [0]
+  return [decisionNr, revisionNr]
 }
 
 export const orderDecisions = (decision: string) =>
-  isOldFormat(decision)
+  decision.toLowerCase().includes('paragraph')
     ? getOldFormatOrder(decision)
     : getNewFormatOrder(decision)
