@@ -417,7 +417,7 @@ class Project(models.Model):
     class ConsumptionLevelStatus(models.TextChoices):
         LVC = "LVC", "LVC"
         NON_LVC = "Non-LVC", "Non-LVC"
-        NA = "Not applicable", "Not applicable"
+        NA = "N/A", "N/A"
 
     class ProjectCompliance(models.TextChoices):
         EE = "Energy Efficieny", "Energy Efficieny"

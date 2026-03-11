@@ -51,53 +51,48 @@ def import_subsector(file_path):
     with open(file_path, "r", encoding="utf8") as f:
         subsectors_json = json.load(f)
 
+    project_sub_sectors_updated_ids = []
     for subsector_json in subsectors_json:
         subsector_name = subsector_json["SUBSECTOR"].strip()
+        project_sub_sector = None
         if subsector_json.get("ACTION", None) == "RENAME":
             project_sub_sector = ProjectSubSector.objects.filter(
                 name=subsector_json["OLD_NAME"]
-            )
-            if subsector_json.get("OLD_SEC", None):
-                project_sub_sector = project_sub_sector.filter(
-                    sector__code=subsector_json["OLD_SEC"]
+            ).first()
+        if not project_sub_sector:
+            project_sub_sector = ProjectSubSector.objects.filter(
+                name=subsector_name
+            ).first()
+
+        if not project_sub_sector:
+            project_sub_sector = ProjectSubSector.objects.create(name=subsector_name)
+
+        project_sub_sector_code = subsector_json.get("CODE_SUBSECTOR", None)
+        sort_order = subsector_json["SORT_SUBSECTOR"]
+        obsolete = subsector_json.get("OBSOLETE", False)
+
+        project_sub_sector.code = project_sub_sector_code
+        project_sub_sector.sort_order = sort_order
+        project_sub_sector.obsolete = obsolete
+        project_sub_sector.save()
+
+        project_sub_sectors_updated_ids.append(project_sub_sector.id)
+
+        project_sub_sector.sectors.clear()
+        for sector_code in subsector_json["SEC"]:
+            sector = ProjectSector.objects.filter(code=sector_code).first()
+            if not sector:
+                logger.warning(
+                    f"⚠️ {sector_code} sector not found => {subsector_json['SUBSECTOR']} not imported"
                 )
-            project_sub_sector.update(name=subsector_name)
+                continue
+            project_sub_sector.sectors.add(sector)
 
-        # get sector
-        sector = ProjectSector.objects.filter(code=subsector_json["SEC"]).first()
-        if not sector:
-            logger.warning(
-                f"⚠️ {subsector_json['SEC']} sector not found => {subsector_json['SUBSECTOR']} not imported"
-            )
-            continue
-
-        # set subsector data
-        subsector_code = (
-            subsector_json["CODE_SUBSECTOR"].strip()
-            if subsector_json.get("CODE_SUBSECTOR")
-            else None
+    for project_sub_sector in ProjectSubSector.objects.exclude(
+        id__in=project_sub_sectors_updated_ids
+    ):
+        logger.warning(
+            f"⚠️ {project_sub_sector.name} subsector not found in import file => marked as obsolete"
         )
-        subsector_data = {
-            "name": subsector_json["SUBSECTOR"].strip(),
-            "code": subsector_code,
-            "sector": sector,
-            "sort_order": subsector_json["SORT_SUBSECTOR"],
-        }
-
-        project_sub_sector = ProjectSubSector.objects.filter(
-            name=subsector_data["name"]
-        )
-        if project_sub_sector.exists():
-            project_sub_sector.update(
-                name=subsector_data["name"],
-                code=subsector_data["code"],
-                sector=subsector_data["sector"],
-                sort_order=subsector_data["sort_order"],
-            )
-        else:
-            ProjectSubSector.objects.create(
-                name=subsector_data["name"],
-                code=subsector_data["code"],
-                sector=subsector_data["sector"],
-                sort_order=subsector_data["sort_order"],
-            )
+        project_sub_sector.obsolete = True
+        project_sub_sector.save()
