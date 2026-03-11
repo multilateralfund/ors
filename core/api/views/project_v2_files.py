@@ -207,8 +207,8 @@ class ProjectFileV2ViewSet(
                     """
                     JSON metadata string.(map by filename):
                         {
-                            "test_document_1.xlsx": "main_submission",
-                            "test_document_2.xlsx": "final_proposal"
+                            "test_document_1.xlsx": "verification_report",
+                            "test_document_2.xlsx": "transferred_project_proposal"
                         }
                 """
                 ),
@@ -341,8 +341,8 @@ class ProjectFilesValidationView(ProjectFileCreateMixin, APIView):
                     """
                     JSON metadata string.(map by filename):
                         {
-                            "test_document_1.xlsx": "main_submission",
-                            "test_document_2.xlsx": "final_proposal"
+                            "test_document_1.xlsx": "verification_report",
+                            "test_document_2.xlsx": "project_review_comments"
                         }
                 """
                 ),

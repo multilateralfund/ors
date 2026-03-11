@@ -1715,10 +1715,12 @@ class Project(models.Model):
 
 class ProjectFile(models.Model):
     class FileType(models.TextChoices):
-        MAIN_SUBMISSION = "main_submission", "Main project submission"
+        PROJECT_PROPOSAL = "project_proposal", "Project proposal"
+        ENDORSEMENT_LETTER = (
+            "endorsement_letter",
+            "Endorsement/transmittal letter from government",
+        )
         VERIFICATION_REPORT = "verification_report", "Verification report"
-        ENDORSEMENT_LETTER = "endorsement_letter", "Endorsement letter from government"
-        FINAL_PROPOSAL = "final_proposal", "Final project proposal"
         PROJECT_REVIEW_COMMENTS = "project_review_comments", "Project review comments"
         TRANSFERRED_PROJECT_PROPOSAL = (
             "transferred_project_proposal",
