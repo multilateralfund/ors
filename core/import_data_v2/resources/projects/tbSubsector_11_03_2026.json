@@ -284,7 +284,7 @@
   },
   {
     "SEC": ["REF", "AC", "SRV"],
-    "SUBSECTOR": "MAC/vehicle air-conditioning ",
+    "SUBSECTOR": "MAC/vehicle air-conditioning",
     "CODE_SUBSECTOR": "MAC",
     "SORT_SUBSECTOR": 45,
     "ACTION": "RENAME",

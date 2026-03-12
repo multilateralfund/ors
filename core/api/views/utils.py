@@ -62,6 +62,10 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
     "legacy": "Legacy",
 }
 
+TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES = [
+    ("Agency Programme", "Project support", "Core Unit"),
+]
+
 
 def log_project_history(project, request_user, description):
     ProjectHistory.objects.create(

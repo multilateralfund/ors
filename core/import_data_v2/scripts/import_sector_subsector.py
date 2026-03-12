@@ -72,6 +72,7 @@ def import_subsector(file_path):
         sort_order = subsector_json["SORT_SUBSECTOR"]
         obsolete = subsector_json.get("OBSOLETE", False)
 
+        project_sub_sector.name = subsector_name
         project_sub_sector.code = project_sub_sector_code
         project_sub_sector.sort_order = sort_order
         project_sub_sector.obsolete = obsolete
