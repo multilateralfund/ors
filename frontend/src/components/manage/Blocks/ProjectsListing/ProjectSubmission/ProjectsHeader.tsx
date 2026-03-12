@@ -12,18 +12,13 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import {
-  getDefaultImpactErrors,
-  getIsSaveDisabled,
-  getShouldValidateTotalFund,
-} from '../utils'
+import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectFile,
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectHeader,
   BpDataProps,
-  FieldOptsType,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -45,7 +40,7 @@ const ProjectsHeader = ({
   bpData,
   filesMetaData,
   loadedFiles,
-  fieldsOpts,
+  shouldValidateTotalFund,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -55,7 +50,7 @@ const ProjectsHeader = ({
   approvalFields?: ProjectSpecificFields[]
   bpData: BpDataProps
   loadedFiles?: boolean
-  fieldsOpts: FieldOptsType
+  shouldValidateTotalFund: boolean
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -73,11 +68,6 @@ const ProjectsHeader = ({
   )
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
     (errors) => errors.length > 0,
-  )
-
-  const shouldValidateTotalFund = getShouldValidateTotalFund(
-    fieldsOpts,
-    crossCuttingFields.sector,
   )
 
   const hasMissingRequiredFields = getIsSaveDisabled(

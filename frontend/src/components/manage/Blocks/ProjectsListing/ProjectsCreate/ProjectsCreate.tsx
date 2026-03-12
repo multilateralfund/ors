@@ -15,6 +15,7 @@ import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
+import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
 import { projectPhaseOutFields } from '../constants.ts'
 import {
@@ -27,7 +28,6 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
-  FieldOptsType,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -49,7 +49,6 @@ import {
   formatOptions,
   getOdsOdpFields,
   getPostExcomMeetingErrors,
-  getShouldValidateTotalFund,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -90,7 +89,7 @@ const ProjectsCreate = ({
   setMetaProjectId,
   setRefetchRelatedProjects,
   metaprojectData,
-  fieldsOpts,
+  shouldValidateTotalFund,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -115,7 +114,7 @@ const ProjectsCreate = ({
     setMetaProjectId?: (id: number | null) => void
     setRefetchRelatedProjects?: (refetch: boolean) => void
     metaprojectData?: MetaProjectDetailType | null
-    fieldsOpts: FieldOptsType
+    shouldValidateTotalFund: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -130,6 +129,8 @@ const ProjectsCreate = ({
     approvalFields: approvalData,
   } = projectData ?? {}
   const { project_type, sector } = crossCuttingFields
+
+  const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
@@ -246,7 +247,6 @@ const ProjectsCreate = ({
     [errors],
   )
 
-  const shouldValidateTotalFund = getShouldValidateTotalFund(fieldsOpts, sector)
   const crossCuttingErrors = useMemo(
     () =>
       getCrossCuttingErrors(

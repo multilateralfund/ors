@@ -8,14 +8,15 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
 import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
+import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
 import { initialTranferedProjectData } from '../constants'
 import {
   FileMetaDataType,
   ProjectFilesObject,
+  ProjectSpecificFields,
   ProjectTransferData,
   ProjectTypeApi,
-  SectorOptsType,
 } from '../interfaces'
 import {
   getFormattedDecimalValue,
@@ -64,42 +65,30 @@ const ProjectTransferWrapper = ({
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   const { cluster_id, project_type_id, sector_id } = project
-  const [sectorsOpts, setSectorsOpts] = useState<SectorOptsType>([])
-
-  const fetchProjectSectors = async () => {
-    try {
-      const res = await api(
-        'api/project-sector/',
-        {
-          params: {
-            cluster_id: cluster_id,
-            type_id: project_type_id,
-            include_obsoletes: true,
-          },
-          withStoreCache: true,
-        },
-        false,
-      )
-      setSectorsOpts(res || [])
-    } catch (e) {
-      console.error('Error at loading project sectors')
-      setSectorsOpts([])
-    }
-  }
-
-  const debouncedFetchProjectSectors = debounce(fetchProjectSectors, 0)
+  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
+  const [_, setSpecificFieldsLoaded] = useState<boolean>(false)
 
   useEffect(() => {
-    if (!!cluster_id && !!project_type_id) {
-      debouncedFetchProjectSectors()
+    if (cluster_id && project_type_id && sector_id) {
+      fetchSpecificFields(
+        cluster_id,
+        project_type_id,
+        sector_id,
+        setSpecificFields,
+        null,
+        setSpecificFieldsLoaded,
+      )
     } else {
-      setSectorsOpts([])
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
     }
   }, [])
 
   const shouldValidateTotalFund = useMemo(
-    () => getShouldValidateTotalFund({ sectors: sectorsOpts }, sector_id),
-    [sectorsOpts],
+    () => getShouldValidateTotalFund(specificFields),
+    [specificFields],
   )
 
   const transferErrors = useMemo(

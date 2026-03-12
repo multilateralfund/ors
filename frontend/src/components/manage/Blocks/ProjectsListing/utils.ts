@@ -23,7 +23,6 @@ import {
   ListingProjectData,
   ProjectTransferData,
   SetProjectData,
-  SectorOptsType,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, Country, ProjectFieldHistoryValue } from '@ors/types/store'
@@ -1301,8 +1300,7 @@ export const orderDecisions = (decision: string) =>
     : getNewFormatOrder(decision)
 
 export const getShouldValidateTotalFund = (
-  fieldsOpts: { sectors: SectorOptsType },
-  sector: number | null,
+  specificFields: ProjectSpecificFields[],
 ) =>
-  find(fieldsOpts.sectors, (crtSector) => crtSector.id === sector)
+  find(specificFields, (field) => field.write_field_name === 'total_fund')
     ?.validate_fund ?? true

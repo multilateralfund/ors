@@ -1,7 +1,8 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
-import { ProjectData, SectorOptsType } from '../interfaces'
+import { ProjectData } from '../interfaces'
 import { ProjectTypeType } from '@ors/types/api_project_types'
+import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'
 
@@ -23,7 +24,7 @@ const useGetProjectFieldsOpts = (
   const crtProjectTypesOpts = filter(projectTypesOpts, (opt) => !opt.obsolete)
   const projectTypes = mode === 'edit' ? projectTypesOpts : crtProjectTypesOpts
 
-  const [sectorsOpts, setSectorsOpts] = useState<SectorOptsType>([])
+  const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
   const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
   const sectors = mode === 'edit' ? sectorsOpts : crtSectorsOpts
 

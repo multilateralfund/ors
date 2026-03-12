@@ -6,7 +6,6 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
-import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
@@ -22,6 +21,7 @@ import {
   getNonFieldErrors,
   getOdsOdpFields,
   getProjectDuration,
+  getShouldValidateTotalFund,
   hasSpecificField,
 } from '../utils'
 import {
@@ -138,8 +138,6 @@ const ProjectsEdit = ({
   const fieldsValuesLoaded = useRef<boolean>(false)
   const filesLoaded = useRef<boolean>(false)
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
-
-  const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const { files: data, loadedFiles } = useGetProjectFiles(parseInt(project_id))
   const areFilesLoaded = loadedFiles && filesLoaded.current
@@ -364,6 +362,11 @@ const ProjectsEdit = ({
     setBpData(bpData)
   }
 
+  const shouldValidateTotalFund = useMemo(
+    () => getShouldValidateTotalFund(specificFields),
+    [specificFields],
+  )
+
   useEffect(() => {
     setSpecificFieldsLoaded(false)
 
@@ -573,7 +576,7 @@ const ProjectsEdit = ({
             setProjectData,
             bpData,
             filesMetaData,
-            fieldsOpts,
+            shouldValidateTotalFund,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -603,7 +606,7 @@ const ProjectsEdit = ({
             setMetaProjectId,
             setRefetchRelatedProjects,
             metaprojectData,
-            fieldsOpts,
+            shouldValidateTotalFund,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

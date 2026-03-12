@@ -146,6 +146,7 @@ export type ProjectSpecificFields = {
   sort_order: number
   editable_in_versions: number[]
   visible_in_versions: number[]
+  validate_fund: boolean
 }
 
 export type SpecificFieldsSectionProps = ProjectDataProps & {
@@ -496,13 +497,11 @@ export interface FileMetaDataProps {
   setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
 }
 
-export type SectorOptsType = (ProjectSectorType & { validate_fund: boolean })[]
-
 export interface FieldOptsType {
   crtProjectTypesOpts: ProjectTypeType[]
   projectTypes: ProjectTypeType[]
-  crtSectorsOpts: SectorOptsType
-  sectors: SectorOptsType
+  crtSectorsOpts: ProjectSectorType[]
+  sectors: ProjectSectorType[]
   crtSubsectorsOpts: ProjectSubSectorType[]
   subsectors: ProjectSubSectorType[]
 }
