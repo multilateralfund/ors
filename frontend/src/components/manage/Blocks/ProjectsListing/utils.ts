@@ -1303,9 +1303,3 @@ export const orderDecisions = (decision: string) =>
   decision.toLowerCase().includes('paragraph')
     ? getOldFormatOrder(decision)
     : getNewFormatOrder(decision)
-
-export const getShouldValidateTotalFund = (
-  specificFields: ProjectSpecificFields[],
-) =>
-  find(specificFields, (field) => field.write_field_name === 'total_fund')
-    ?.validate_fund ?? true

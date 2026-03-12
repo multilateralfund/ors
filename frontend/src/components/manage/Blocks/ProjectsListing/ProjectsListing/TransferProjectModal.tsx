@@ -21,7 +21,6 @@ import {
 import {
   getFormattedDecimalValue,
   getNonFieldErrors,
-  getShouldValidateTotalFund,
   getTransferErrors,
 } from '../utils'
 import { formatApiUrl, uploadFiles } from '@ors/helpers'
@@ -65,10 +64,9 @@ const ProjectTransferWrapper = ({
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   const { cluster_id, project_type_id, sector_id } = project
-  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
-    [],
-  )
-  const [_, setSpecificFieldsLoaded] = useState<boolean>(false)
+  const [_, setSpecificFields] = useState<ProjectSpecificFields[]>([])
+  const [__, setSpecificFieldsLoaded] = useState<boolean>(false)
+  const [shouldValidateTotalFund, setShouldValidateTotalFund] = useState(true)
 
   const debouncedFetchProjectFields = debounce(
     () =>
@@ -79,6 +77,7 @@ const ProjectTransferWrapper = ({
         setSpecificFields,
         null,
         setSpecificFieldsLoaded,
+        setShouldValidateTotalFund,
       ),
     0,
   )
@@ -89,13 +88,9 @@ const ProjectTransferWrapper = ({
     } else {
       setSpecificFields([])
       setSpecificFieldsLoaded(true)
+      setShouldValidateTotalFund(true)
     }
   }, [])
-
-  const shouldValidateTotalFund = useMemo(
-    () => getShouldValidateTotalFund(specificFields),
-    [specificFields],
-  )
 
   const transferErrors = useMemo(
     () => getTransferErrors(projectData, project, shouldValidateTotalFund),

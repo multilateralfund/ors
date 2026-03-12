@@ -11,6 +11,7 @@ export const fetchSpecificFields = async (
   setFields: Dispatch<SetStateAction<ProjectSpecificFields[]>>,
   project_id: string | null,
   setSpecificFieldsLoaded: (isLoaded: boolean) => void,
+  setShouldValidateTotalFund?: (shouldValidate: boolean) => void,
 ) => {
   let url = `/api/project-cluster/${cluster}/type/${project_type}/sector/${sector}/fields/?`
 
@@ -31,9 +32,11 @@ export const fetchSpecificFields = async (
     )
 
     setFields(specificFields)
+    setShouldValidateTotalFund?.(res.validate_fund ?? true)
   } catch (e) {
     console.error('Error at loading project specific fields')
     setFields([])
+    setShouldValidateTotalFund?.(true)
   } finally {
     setSpecificFieldsLoaded?.(true)
   }

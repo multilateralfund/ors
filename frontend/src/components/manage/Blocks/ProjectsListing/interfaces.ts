@@ -146,7 +146,6 @@ export type ProjectSpecificFields = {
   sort_order: number
   editable_in_versions: number[]
   visible_in_versions: number[]
-  validate_fund: boolean
 }
 
 export type SpecificFieldsSectionProps = ProjectDataProps & {

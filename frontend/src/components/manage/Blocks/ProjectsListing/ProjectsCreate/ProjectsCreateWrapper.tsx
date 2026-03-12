@@ -13,7 +13,6 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import {
   getDefaultValues,
   getNonFieldErrors,
-  getShouldValidateTotalFund,
   hasSpecificField,
 } from '../utils.ts'
 import {
@@ -78,6 +77,7 @@ const ProjectsCreateWrapper = () => {
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
+  const [shouldValidateTotalFund, setShouldValidateTotalFund] = useState(true)
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
@@ -123,11 +123,6 @@ const ProjectsCreateWrapper = () => {
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
-  const shouldValidateTotalFund = useMemo(
-    () => getShouldValidateTotalFund(specificFields),
-    [specificFields],
-  )
-
   useEffect(() => {
     if (canViewBp && country && agency && cluster) {
       setBpData({
@@ -148,10 +143,12 @@ const ProjectsCreateWrapper = () => {
         setSpecificFields,
         null,
         setSpecificFieldsLoaded,
+        setShouldValidateTotalFund,
       )
     } else {
       setSpecificFields([])
       setSpecificFieldsLoaded(true)
+      setShouldValidateTotalFund(true)
     }
   }, [cluster, project_type, sector])
 

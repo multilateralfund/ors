@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
@@ -21,7 +19,6 @@ import {
   getNonFieldErrors,
   getOdsOdpFields,
   getProjectDuration,
-  getShouldValidateTotalFund,
   hasSpecificField,
 } from '../utils'
 import {
@@ -122,6 +119,7 @@ const ProjectsEdit = ({
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
+  const [shouldValidateTotalFund, setShouldValidateTotalFund] = useState(true)
   const [canViewTabs, setCanViewTabs] = useState<boolean>(false)
 
   const { projIdentifiers, crossCuttingFields } = projectData
@@ -362,11 +360,6 @@ const ProjectsEdit = ({
     setBpData(bpData)
   }
 
-  const shouldValidateTotalFund = useMemo(
-    () => getShouldValidateTotalFund(specificFields),
-    [specificFields],
-  )
-
   useEffect(() => {
     setSpecificFieldsLoaded(false)
 
@@ -378,9 +371,12 @@ const ProjectsEdit = ({
         setSpecificFields,
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
+        setShouldValidateTotalFund,
       )
     } else {
       setSpecificFields([])
+      setShouldValidateTotalFund(true)
+
       if (fieldsValuesLoaded.current) {
         setSpecificFieldsLoaded(true)
       }
