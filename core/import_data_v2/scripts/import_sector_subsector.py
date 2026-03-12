@@ -3,7 +3,8 @@ import logging
 
 from django.db import transaction
 
-from core.models.project_metadata import (
+from core.models import (
+    BPActivity,
     ProjectSector,
     ProjectSubSector,
 )
@@ -93,6 +94,14 @@ def import_subsector(file_path):
     ):
         logger.warning(
             f"⚠️ {project_sub_sector.name} subsector not found in import file => marked as obsolete"
+        )
+        projects_with_sub_sector = project_sub_sector.projects.count()
+
+        bp_with_sub_sector = BPActivity.objects.filter(
+            subsector=project_sub_sector
+        ).count()
+        logger.warning(
+            f"⚠️ {project_sub_sector.name} subsector is used in {projects_with_sub_sector} projects and {bp_with_sub_sector} BP activities"
         )
         project_sub_sector.obsolete = True
         project_sub_sector.save()

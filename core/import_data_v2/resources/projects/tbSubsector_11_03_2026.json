@@ -1,12 +1,12 @@
 [
   {
-    "SEC": ["ARS"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Metered dose inhalers",
     "CODE_SUBSECTOR": "INH",
     "SORT_SUBSECTOR": 1
   },
   {
-    "SEC": ["ARS"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Other aerosols",
     "CODE_SUBSECTOR": "OTHARS",
     "SORT_SUBSECTOR": 2,
@@ -62,7 +62,7 @@
     "OBSOLETE": true
   },
   {
-    "SEC": ["FOA"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Flexible molded",
     "CODE_SUBSECTOR": "FLM",
     "SORT_SUBSECTOR": 10
@@ -82,22 +82,22 @@
     "OBSOLETE": true
   },
   {
-    "SEC": ["FOA"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Rigid PU",
     "SORT_SUBSECTOR": 13
   },
   {
-    "SEC": ["FOA"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Spray PU",
     "SORT_SUBSECTOR": 14
   },
   {
-    "SEC": ["FOA"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Integral skin PU",
     "SORT_SUBSECTOR": 15
   },
   {
-    "SEC": ["FOA"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "XPS: extruded polystyrene",
     "SORT_SUBSECTOR": 16,
     "ACTION": "RENAME",
@@ -118,54 +118,56 @@
     "OBSOLETE": true
   },
   {
-    "SEC": ["SOL", "ELM", "EMS"],
-    "SUBSECTOR": "No options",
-    "SORT_SUBSECTOR": 19
-  },
-  {
     "SEC": ["FFI"],
     "SUBSECTOR": "Fixed system",
     "CODE_SUBSECTOR": "FXS",
-    "SORT_SUBSECTOR": 20,
+    "SORT_SUBSECTOR": 19,
     "OBSOLETE": true
   },
   {
-    "SEC": ["FFI"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Assembly fire protection systems",
     "CODE_SUBSECTOR": "EXT",
-    "SORT_SUBSECTOR": 21,
+    "SORT_SUBSECTOR": 20,
     "ACTION": "RENAME",
     "OLD_NAME": "Assembly Fire Protections Systems"
   },
   {
-    "SEC": ["FFI"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Servicing fire protection systems",
     "CODE_SUBSECTOR": "EXT",
-    "SORT_SUBSECTOR": 22,
+    "SORT_SUBSECTOR": 21,
     "ACTION": "RENAME",
     "OLD_NAME": "Servicing Fire Protections Systems"
   },
   {
-    "SEC": ["FFI"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Banking",
     "CODE_SUBSECTOR": "BNK",
-    "SORT_SUBSECTOR": 23
+    "SORT_SUBSECTOR": 22
   },
   {
-    "SEC": ["FFI"],
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
     "SUBSECTOR": "Manufacturing",
     "CODE_SUBSECTOR": "",
-    "SORT_SUBSECTOR": 24
+    "SORT_SUBSECTOR": 23
   },
   {
     "SEC": ["EMS"],
     "SUBSECTOR": "HFC-23 emission control",
-    "SORT_SUBSECTOR": 25,
+    "SORT_SUBSECTOR": 24,
     "OBSOLETE": true
   },
   {
-    "SEC": ["SRVEE"],
-    "SUBSECTOR": "Additional Activities for Energy Efficiency",
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
+    "SUBSECTOR": "Additional activities for energy efficiency",
+    "SORT_SUBSECTOR": 25,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Additional Activities for Energy Efficiency"
+  },
+  {
+    "SEC": ["ARS", "FOA", "SOL", "FFI", "ELM", "EMS", "SRVEE"],
+    "SUBSECTOR": "No options",
     "SORT_SUBSECTOR": 26
   },
   {
@@ -216,12 +218,12 @@
     "OBSOLETE": true
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Transport refrigeration",
     "SORT_SUBSECTOR": 34
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Industrial and commercial refrigeration",
     "SORT_SUBSECTOR": 35
   },
@@ -233,7 +235,7 @@
     "OBSOLETE": true
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Refrigeration compressor",
     "SORT_SUBSECTOR": 37,
     "CODE_SUBSECTOR": "CMP",
@@ -241,47 +243,47 @@
     "OLD_NAME": "Refrigeration Compressor"
   }, 
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Local installation and assembly",
     "SORT_SUBSECTOR": 38
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Domestic refrigeration",
     "SORT_SUBSECTOR": 39,
     "ACTION": "RENAME",
     "OLD_NAME": "Domestic Refrigeration"
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Commercial refrigeration",
     "SORT_SUBSECTOR": 40,
     "ACTION": "RENAME",
     "OLD_NAME": "Commercial Refrigeration"
   },
   {
-    "SEC": ["REF"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Other refrigeration components",
     "SORT_SUBSECTOR": 41
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Residential air-conditioning",
     "SORT_SUBSECTOR": 42
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Commercial air-conditioning",
     "SORT_SUBSECTOR": 43
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Chiller",
     "CODE_SUBSECTOR": "CHL",
     "SORT_SUBSECTOR": 44
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "MAC/vehicle air-conditioning ",
     "CODE_SUBSECTOR": "MAC",
     "SORT_SUBSECTOR": 45,
@@ -289,7 +291,7 @@
     "OLD_NAME": "MAC"
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "MAC/transport air-conditioning compressor",
     "CODE_SUBSECTOR": "MCC",
     "SORT_SUBSECTOR": 46,
@@ -297,29 +299,29 @@
     "OLD_NAME": "MAC compressor"
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Air-conditioning compressor",
     "SORT_SUBSECTOR": 47,
     "ACTION": "RENAME",
     "OLD_NAME": "AC Compressor"
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Other AC components",
     "SORT_SUBSECTOR": 48
   },
   {
-    "SEC": ["AC"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Transport air-conditioning",
     "SORT_SUBSECTOR": 49
   },
   {
-    "SEC": ["SRV"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "Servicing",
     "SORT_SUBSECTOR": 50
   },
   {
-    "SEC": ["SRV"],
+    "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "End-user",
     "SORT_SUBSECTOR": 51,
     "ACTION": "RENAME",
