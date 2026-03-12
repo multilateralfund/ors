@@ -12,6 +12,7 @@ import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
+import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
@@ -28,6 +29,7 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
+  InlineMessageProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -89,11 +91,14 @@ const ProjectsCreate = ({
   setMetaProjectId,
   setRefetchRelatedProjects,
   metaprojectData,
+  successMessage,
+  setSuccessMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
   TrancheErrors &
-  FileMetaDataProps & {
+  FileMetaDataProps &
+  InlineMessageProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -761,6 +766,7 @@ const ProjectsCreate = ({
                   setRefetchRelatedProjects,
                   setCurrentTab,
                   metaprojectData,
+                  setSuccessMessage,
                 }}
               />
             ),
@@ -881,6 +887,10 @@ const ProjectsCreate = ({
                     }
                   />
                 )}
+                {!!successMessage &&
+                  (!successMessage.tabId || successMessage.tabId === id) && (
+                    <ProjectsInlineMessage {...{ successMessage }} />
+                  )}
                 {component}
               </span>
             )

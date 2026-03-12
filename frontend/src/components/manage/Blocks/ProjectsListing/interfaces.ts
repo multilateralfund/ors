@@ -491,3 +491,16 @@ export interface FileMetaDataProps {
   filesMetaData?: FileMetaDataType[]
   setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
 }
+
+export type InlineMessageType = {
+  type: 'success' | 'error'
+  message: string
+  tabId?: string
+  redirectMessage?: string
+  hrefRedirect?: string
+} | null
+
+export interface InlineMessageProps {
+  successMessage: InlineMessageType
+  setSuccessMessage: (message: InlineMessageType) => void
+}
