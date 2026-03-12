@@ -101,7 +101,9 @@ def import_subsector(file_path):
             subsector=project_sub_sector
         ).count()
         logger.warning(
-            f"⚠️ {project_sub_sector.name} subsector is used in {projects_with_sub_sector} projects and {bp_with_sub_sector} BP activities"
+            f"""⚠️ {project_sub_sector.name} subsector is used in
+              {projects_with_sub_sector} projects and {bp_with_sub_sector} BP activities
+            """
         )
         project_sub_sector.obsolete = True
         project_sub_sector.save()
