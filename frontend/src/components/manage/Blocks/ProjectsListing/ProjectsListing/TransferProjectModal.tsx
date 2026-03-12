@@ -94,7 +94,7 @@ const ProjectTransferWrapper = ({
 
   const transferErrors = useMemo(
     () => getTransferErrors(projectData, project, shouldValidateTotalFund),
-    [projectData],
+    [projectData, shouldValidateTotalFund],
   )
 
   const allFileErrors = [

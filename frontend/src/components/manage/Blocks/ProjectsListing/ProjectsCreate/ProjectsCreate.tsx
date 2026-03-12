@@ -257,7 +257,7 @@ const ProjectsCreate = ({
         true,
         shouldValidateTotalFund,
       ),
-    [crossCuttingFields, errors, mode],
+    [crossCuttingFields, errors, mode, shouldValidateTotalFund],
   )
 
   const approvalErrors = useMemo(() => {

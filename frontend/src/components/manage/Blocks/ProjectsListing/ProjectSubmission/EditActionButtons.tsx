@@ -166,7 +166,7 @@ const EditActionButtons = ({
         false,
         shouldValidateTotalFund,
       ),
-    [crossCuttingFields],
+    [crossCuttingFields, shouldValidateTotalFund],
   )
   const approvalErrors = useMemo(
     () =>
