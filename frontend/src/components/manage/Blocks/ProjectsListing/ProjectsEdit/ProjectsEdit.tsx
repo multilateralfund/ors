@@ -21,6 +21,7 @@ import {
   getNonFieldErrors,
   getOdsOdpFields,
   getProjectDuration,
+  getShouldValidateTotalFund,
   hasSpecificField,
 } from '../utils'
 import {
@@ -361,6 +362,11 @@ const ProjectsEdit = ({
     setBpData(bpData)
   }
 
+  const shouldValidateTotalFund = useMemo(
+    () => getShouldValidateTotalFund(specificFields),
+    [specificFields],
+  )
+
   useEffect(() => {
     setSpecificFieldsLoaded(false)
 
@@ -570,6 +576,7 @@ const ProjectsEdit = ({
             setProjectData,
             bpData,
             filesMetaData,
+            shouldValidateTotalFund,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -599,6 +606,7 @@ const ProjectsEdit = ({
             setMetaProjectId,
             setRefetchRelatedProjects,
             metaprojectData,
+            shouldValidateTotalFund,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

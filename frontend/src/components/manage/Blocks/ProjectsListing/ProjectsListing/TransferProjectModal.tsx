@@ -8,23 +8,26 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
 import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
+import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
 import { initialTranferedProjectData } from '../constants'
 import {
   FileMetaDataType,
   ProjectFilesObject,
+  ProjectSpecificFields,
   ProjectTransferData,
   ProjectTypeApi,
 } from '../interfaces'
 import {
   getFormattedDecimalValue,
   getNonFieldErrors,
+  getShouldValidateTotalFund,
   getTransferErrors,
 } from '../utils'
 import { formatApiUrl, uploadFiles } from '@ors/helpers'
 
 import { Modal, Typography, Box, CircularProgress } from '@mui/material'
-import { fromPairs, keys, map, values } from 'lodash'
+import { debounce, fromPairs, keys, map, values } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import Cookies from 'js-cookie'
 
@@ -60,10 +63,45 @@ const ProjectTransferWrapper = ({
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  const { cluster_id, project_type_id, sector_id } = project
+  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
+  const [_, setSpecificFieldsLoaded] = useState<boolean>(false)
+
+  const debouncedFetchProjectFields = debounce(
+    () =>
+      fetchSpecificFields(
+        cluster_id,
+        project_type_id,
+        sector_id,
+        setSpecificFields,
+        null,
+        setSpecificFieldsLoaded,
+      ),
+    0,
+  )
+
+  useEffect(() => {
+    if (!!cluster_id && !!project_type_id && !!sector_id) {
+      debouncedFetchProjectFields()
+    } else {
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
+    }
+  }, [])
+
+  const shouldValidateTotalFund = useMemo(
+    () => getShouldValidateTotalFund(specificFields),
+    [specificFields],
+  )
+
   const transferErrors = useMemo(
-    () => getTransferErrors(projectData, project),
+    () => getTransferErrors(projectData, project, shouldValidateTotalFund),
     [projectData],
   )
+
   const allFileErrors = [
     ...(fileErrors
       ? [

@@ -42,9 +42,9 @@ export const tableColumns: { [key: string]: string } = {
   decision: 'Decision number',
   transfer_meeting: 'Transfer meeting number',
   transfer_decision: 'Transfer decision number',
-  transfer_excom_provision: 'Transfer Excom provision',
+  transfer_excom_provision: 'Transfer Executive Committee provision',
   fund_transferred: 'Transferred project funding (US $)',
-  psc_transferred: 'Transferred project support cost (US $)',
+  psc_transferred: 'Transferred project support costs (US $)',
   lead_agency_submitting_on_behalf:
     'Confirm you are the lead agency submitting on behalf of a cooperating agency',
 }

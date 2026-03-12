@@ -13,6 +13,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import {
   getDefaultValues,
   getNonFieldErrors,
+  getShouldValidateTotalFund,
   hasSpecificField,
 } from '../utils.ts'
 import {
@@ -121,6 +122,11 @@ const ProjectsCreateWrapper = () => {
     useState<TrancheErrorType>(defaultTrancheErrors)
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  const shouldValidateTotalFund = useMemo(
+    () => getShouldValidateTotalFund(specificFields),
+    [specificFields],
+  )
 
   useEffect(() => {
     if (canViewBp && country && agency && cluster) {
@@ -234,6 +240,7 @@ const ProjectsCreateWrapper = () => {
           setProjectData,
           bpData,
           filesMetaData,
+          shouldValidateTotalFund,
         }}
       />
       <ProjectsCreate
@@ -252,6 +259,7 @@ const ProjectsCreateWrapper = () => {
           onBpDataChange,
           filesMetaData,
           setFilesMetaData,
+          shouldValidateTotalFund,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

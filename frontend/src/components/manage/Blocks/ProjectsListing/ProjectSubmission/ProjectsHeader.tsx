@@ -40,6 +40,7 @@ const ProjectsHeader = ({
   bpData,
   filesMetaData,
   loadedFiles,
+  shouldValidateTotalFund,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -49,6 +50,7 @@ const ProjectsHeader = ({
   approvalFields?: ProjectSpecificFields[]
   bpData: BpDataProps
   loadedFiles?: boolean
+  shouldValidateTotalFund: boolean
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -67,10 +69,12 @@ const ProjectsHeader = ({
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
     (errors) => errors.length > 0,
   )
+
   const hasMissingRequiredFields = getIsSaveDisabled(
     projIdentifiers,
     crossCuttingFields,
     agency_id,
+    shouldValidateTotalFund,
   )
   const hasTrancheErrors =
     !!trancheErrors?.errorText || !!trancheErrors?.loading
@@ -174,6 +178,7 @@ const ProjectsHeader = ({
                 postExComUpdate,
                 bpData,
                 filesMetaData,
+                shouldValidateTotalFund,
               }}
               {...rest}
             />

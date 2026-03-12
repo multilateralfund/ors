@@ -12,7 +12,7 @@ import {
 } from '../interfaces'
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
-import { capitalize, find, isBoolean } from 'lodash'
+import { find, isBoolean, upperFirst } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -148,7 +148,7 @@ export const dateDetailItem = (
 
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   text: (data, field, classNames, fieldHistory) =>
-    detailItem(capitalize(field.label), data[field.read_field_name], {
+    detailItem(upperFirst(field.label), data[field.read_field_name], {
       detailClassname: 'self-start',
       classNames,
       fieldHistory,
