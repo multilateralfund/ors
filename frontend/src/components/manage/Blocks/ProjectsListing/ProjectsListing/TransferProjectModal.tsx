@@ -27,7 +27,7 @@ import {
 import { formatApiUrl, uploadFiles } from '@ors/helpers'
 
 import { Modal, Typography, Box, CircularProgress } from '@mui/material'
-import { fromPairs, keys, map, values } from 'lodash'
+import { debounce, fromPairs, keys, map, values } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import Cookies from 'js-cookie'
 
@@ -70,8 +70,8 @@ const ProjectTransferWrapper = ({
   )
   const [_, setSpecificFieldsLoaded] = useState<boolean>(false)
 
-  useEffect(() => {
-    if (!!cluster_id && !!project_type_id && !!sector_id) {
+  const debouncedFetchProjectFields = debounce(
+    () =>
       fetchSpecificFields(
         cluster_id,
         project_type_id,
@@ -79,7 +79,13 @@ const ProjectTransferWrapper = ({
         setSpecificFields,
         null,
         setSpecificFieldsLoaded,
-      )
+      ),
+    0,
+  )
+
+  useEffect(() => {
+    if (!!cluster_id && !!project_type_id && !!sector_id) {
+      debouncedFetchProjectFields()
     } else {
       setSpecificFields([])
       setSpecificFieldsLoaded(true)
