@@ -24,10 +24,10 @@ import {
   getShouldValidateTotalFund,
   getTransferErrors,
 } from '../utils'
-import { api, formatApiUrl, uploadFiles } from '@ors/helpers'
+import { formatApiUrl, uploadFiles } from '@ors/helpers'
 
 import { Modal, Typography, Box, CircularProgress } from '@mui/material'
-import { debounce, fromPairs, keys, map, values } from 'lodash'
+import { fromPairs, keys, map, values } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import Cookies from 'js-cookie'
 
@@ -71,7 +71,7 @@ const ProjectTransferWrapper = ({
   const [_, setSpecificFieldsLoaded] = useState<boolean>(false)
 
   useEffect(() => {
-    if (cluster_id && project_type_id && sector_id) {
+    if (!!cluster_id && !!project_type_id && !!sector_id) {
       fetchSpecificFields(
         cluster_id,
         project_type_id,
