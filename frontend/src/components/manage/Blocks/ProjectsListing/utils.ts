@@ -23,7 +23,7 @@ import {
   ListingProjectData,
   ProjectTransferData,
   SetProjectData,
-  FieldOptsType,
+  SectorOptsType,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster, Country, ProjectFieldHistoryValue } from '@ors/types/store'
@@ -668,25 +668,31 @@ export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
 export const getTransferErrors = (
   projectData: ProjectTransferData,
   project: ProjectTypeApi,
+  shouldValidateTotalFund: boolean,
 ) => {
   const { fund_transferred, psc_transferred } = projectData
-  const fieldsToValidate = keys(initialTranferedProjectData).filter(
+  const initialFieldsToValidate = keys(initialTranferedProjectData).filter(
     (field) => field !== 'transfer_excom_provision',
   )
+  const fieldsToValidate = shouldValidateTotalFund
+    ? initialFieldsToValidate
+    : difference(initialFieldsToValidate, ['fund_transferred'])
 
   return {
     ...getFieldErrors(fieldsToValidate, projectData, project),
-    ...(Number(fund_transferred) > Number(project.total_fund) && {
-      fund_transferred: ['Value cannot be greater than project funding.'],
-    }),
+    ...(shouldValidateTotalFund &&
+      Number(fund_transferred) > Number(project.total_fund) && {
+        fund_transferred: ['Value cannot be greater than project funding.'],
+      }),
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
       psc_transferred: ['Value cannot be greater than project support costs.'],
     }),
-    ...(Number(psc_transferred) > Number(fund_transferred) && {
-      psc_transferred: [
-        'Value cannot be greater than transferred project funding.',
-      ],
-    }),
+    ...(shouldValidateTotalFund &&
+      Number(psc_transferred) > Number(fund_transferred) && {
+        psc_transferred: [
+          'Value cannot be greater than transferred project funding.',
+        ],
+      }),
   }
 }
 
@@ -1295,7 +1301,7 @@ export const orderDecisions = (decision: string) =>
     : getNewFormatOrder(decision)
 
 export const getShouldValidateTotalFund = (
-  fieldsOpts: FieldOptsType,
+  fieldsOpts: { sectors: SectorOptsType },
   sector: number | null,
 ) =>
   find(fieldsOpts.sectors, (crtSector) => crtSector.id === sector)

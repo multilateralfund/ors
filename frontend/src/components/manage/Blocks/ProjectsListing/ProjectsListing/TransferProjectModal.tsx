@@ -15,16 +15,18 @@ import {
   ProjectFilesObject,
   ProjectTransferData,
   ProjectTypeApi,
+  SectorOptsType,
 } from '../interfaces'
 import {
   getFormattedDecimalValue,
   getNonFieldErrors,
+  getShouldValidateTotalFund,
   getTransferErrors,
 } from '../utils'
-import { formatApiUrl, uploadFiles } from '@ors/helpers'
+import { api, formatApiUrl, uploadFiles } from '@ors/helpers'
 
 import { Modal, Typography, Box, CircularProgress } from '@mui/material'
-import { fromPairs, keys, map, values } from 'lodash'
+import { debounce, fromPairs, keys, map, values } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import Cookies from 'js-cookie'
 
@@ -60,10 +62,51 @@ const ProjectTransferWrapper = ({
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  const { cluster_id, project_type_id, sector_id } = project
+  const [sectorsOpts, setSectorsOpts] = useState<SectorOptsType>([])
+
+  const fetchProjectSectors = async () => {
+    try {
+      const res = await api(
+        'api/project-sector/',
+        {
+          params: {
+            cluster_id: cluster_id,
+            type_id: project_type_id,
+            include_obsoletes: true,
+          },
+          withStoreCache: true,
+        },
+        false,
+      )
+      setSectorsOpts(res || [])
+    } catch (e) {
+      console.error('Error at loading project sectors')
+      setSectorsOpts([])
+    }
+  }
+
+  const debouncedFetchProjectSectors = debounce(fetchProjectSectors, 0)
+
+  useEffect(() => {
+    if (!!cluster_id && !!project_type_id) {
+      debouncedFetchProjectSectors()
+    } else {
+      setSectorsOpts([])
+    }
+  }, [])
+
+  const shouldValidateTotalFund = useMemo(
+    () => getShouldValidateTotalFund({ sectors: sectorsOpts }, sector_id),
+    [sectorsOpts],
+  )
+
   const transferErrors = useMemo(
-    () => getTransferErrors(projectData, project),
+    () => getTransferErrors(projectData, project, shouldValidateTotalFund),
     [projectData],
   )
+
   const allFileErrors = [
     ...(fileErrors
       ? [
