@@ -114,6 +114,7 @@ export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
   agency_id: number | undefined,
+  shouldValidateTotalFund: boolean,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
   const {
@@ -129,7 +130,8 @@ export const getIsSaveDisabled = (
   return (
     !canLinkToBp ||
     !(project_type && sector && title) ||
-    Number(total_fund) < Number(support_cost_psc) ||
+    (shouldValidateTotalFund &&
+      Number(total_fund) < Number(support_cost_psc)) ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date))
   )
 }
@@ -484,8 +486,9 @@ export const getCrossCuttingErrors = (
   mode: string,
   project: ProjectTypeApi | undefined,
   validateApproval: boolean,
+  shouldValidateTotalFund: boolean,
 ) => {
-  const requiredFields = [
+  const allRequiredFields = [
     'title',
     'project_type',
     'sector',
@@ -497,6 +500,11 @@ export const getCrossCuttingErrors = (
     'project_end_date',
     'project_duration',
   ]
+
+  const requiredFields = shouldValidateTotalFund
+    ? allRequiredFields
+    : difference(allRequiredFields, ['total_fund'])
+
   const requiredFieldsAfterSubmission =
     project?.submission_status !== 'Draft'
       ? [...requiredFields, 'blanket_or_individual_consideration']
@@ -505,7 +513,7 @@ export const getCrossCuttingErrors = (
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) =>
       [
-        ...requiredFields,
+        ...allRequiredFields,
         'subsector_ids',
         'blanket_or_individual_consideration',
       ].includes(key),
@@ -520,9 +528,10 @@ export const getCrossCuttingErrors = (
 
   return {
     ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
-    ...(Number(total_fund) < Number(support_cost_psc) && {
-      support_cost_psc: ['Value cannot be greater than project funding.'],
-    }),
+    ...(shouldValidateTotalFund &&
+      Number(total_fund) < Number(support_cost_psc) && {
+        support_cost_psc: ['Value cannot be greater than project funding.'],
+      }),
     ...(validateApproval &&
       mode === 'edit' &&
       project?.submission_status === 'Recommended' &&
@@ -658,25 +667,31 @@ export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
 export const getTransferErrors = (
   projectData: ProjectTransferData,
   project: ProjectTypeApi,
+  shouldValidateTotalFund: boolean,
 ) => {
   const { fund_transferred, psc_transferred } = projectData
-  const fieldsToValidate = keys(initialTranferedProjectData).filter(
+  const initialFieldsToValidate = keys(initialTranferedProjectData).filter(
     (field) => field !== 'transfer_excom_provision',
   )
+  const fieldsToValidate = shouldValidateTotalFund
+    ? initialFieldsToValidate
+    : difference(initialFieldsToValidate, ['fund_transferred'])
 
   return {
     ...getFieldErrors(fieldsToValidate, projectData, project),
-    ...(Number(fund_transferred) > Number(project.total_fund) && {
-      fund_transferred: ['Value cannot be greater than project funding.'],
-    }),
+    ...(shouldValidateTotalFund &&
+      Number(fund_transferred) > Number(project.total_fund) && {
+        fund_transferred: ['Value cannot be greater than project funding.'],
+      }),
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
-      psc_transferred: ['Value cannot be greater than project support cost.'],
+      psc_transferred: ['Value cannot be greater than project support costs.'],
     }),
-    ...(Number(psc_transferred) > Number(fund_transferred) && {
-      psc_transferred: [
-        'Value cannot be greater than transferred project funding.',
-      ],
-    }),
+    ...(shouldValidateTotalFund &&
+      Number(psc_transferred) > Number(fund_transferred) && {
+        psc_transferred: [
+          'Value cannot be greater than transferred project funding.',
+        ],
+      }),
   }
 }
 

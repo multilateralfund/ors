@@ -36,9 +36,8 @@ import {
   ProjectData,
   ProjectTabSetters,
   ProjectTypeApi,
+  FieldOptsType,
 } from '../interfaces'
-import { ProjectTypeType } from '@ors/types/api_project_types'
-import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { useStore } from '@ors/store'
 
@@ -67,14 +66,7 @@ const ProjectCrossCuttingFields = ({
     postExComUpdate: boolean
     isV3ProjectEditable: boolean
     mode: string
-    fieldsOpts: {
-      crtProjectTypesOpts: ProjectTypeType[]
-      projectTypes: ProjectTypeType[]
-      crtSectorsOpts: ProjectSectorType[]
-      sectors: ProjectSectorType[]
-      crtSubsectorsOpts: ProjectSubSectorType[]
-      subsectors: ProjectSubSectorType[]
-    }
+    fieldsOpts: FieldOptsType
   }) => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data

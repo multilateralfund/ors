@@ -22,6 +22,7 @@ from core.models.project_metadata import (
 )
 
 from core.models import Project
+from core.api.views.utils import TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES
 
 # pylint: disable=R0911
 
@@ -305,6 +306,7 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
 
 class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
     field_objs = serializers.SerializerMethodField()
+    validate_fund = serializers.SerializerMethodField()
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -330,4 +332,17 @@ class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
         model = ProjectSpecificFields
         fields = [
             "field_objs",
+            "validate_fund",
         ]
+
+    def get_validate_fund(self, obj):
+        cluster_name = obj.cluster.name if obj.cluster else ""
+        type_name = obj.type.name if obj.type else ""
+        sector_name = obj.sector.name if obj.sector else ""
+        if (
+            cluster_name,
+            type_name,
+            sector_name,
+        ) in TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES:
+            return False
+        return True

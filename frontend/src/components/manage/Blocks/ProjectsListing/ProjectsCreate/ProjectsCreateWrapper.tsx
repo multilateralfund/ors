@@ -77,6 +77,7 @@ const ProjectsCreateWrapper = () => {
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
+  const [shouldValidateTotalFund, setShouldValidateTotalFund] = useState(true)
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
@@ -142,10 +143,12 @@ const ProjectsCreateWrapper = () => {
         setSpecificFields,
         null,
         setSpecificFieldsLoaded,
+        setShouldValidateTotalFund,
       )
     } else {
       setSpecificFields([])
       setSpecificFieldsLoaded(true)
+      setShouldValidateTotalFund(true)
     }
   }, [cluster, project_type, sector])
 
@@ -234,6 +237,7 @@ const ProjectsCreateWrapper = () => {
           setProjectData,
           bpData,
           filesMetaData,
+          shouldValidateTotalFund,
         }}
       />
       <ProjectsCreate
@@ -252,6 +256,7 @@ const ProjectsCreateWrapper = () => {
           onBpDataChange,
           filesMetaData,
           setFilesMetaData,
+          shouldValidateTotalFund,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

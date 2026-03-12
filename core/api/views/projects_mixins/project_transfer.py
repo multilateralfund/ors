@@ -101,10 +101,13 @@ class ProjectTransferMixin:
     )
     def transfer(self, request, *args, **kwargs):
         with transaction.atomic():
+            data = request.data.copy()
+            if data.get("fund_transferred") == "null":
+                data["fund_transferred"] = None
             project = self.get_object()
             serializer = ProjectV2TransferSerializer(
                 project,
-                data=request.data,
+                data=data,
             )
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

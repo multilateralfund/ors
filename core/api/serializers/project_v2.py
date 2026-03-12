@@ -41,7 +41,10 @@ from core.models.project_metadata import (
     ProjectType,
 )
 from core.utils import get_project_sub_code
-from core.api.views.utils import log_project_history
+from core.api.views.utils import (
+    log_project_history,
+    TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES,
+)
 
 # pylint: disable=C0302,R1702,W0707,R0912,E1101
 
@@ -1370,6 +1373,17 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "total_fund",
             "support_cost_psc",
         ]
+        cluster_name = self.instance.cluster.name if self.instance.cluster else ""
+        project_type_name = (
+            self.instance.project_type.name if self.instance.project_type else ""
+        )
+        sector_name = self.instance.sector.name if self.instance.sector else ""
+        if (
+            cluster_name,
+            project_type_name,
+            sector_name,
+        ) in TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES:
+            mandatory_fields_at_submission.remove("total_fund")
         for field in mandatory_fields_at_submission:
             if field == "subsectors":
                 if not self.instance.subsectors.exists():
@@ -1620,6 +1634,23 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             "fund_transferred",
             "psc_transferred",
         ]
+
+    def validate_fund_transferred(self, value):
+        cluster_name = self.instance.cluster.name if self.instance.cluster else ""
+        project_type_name = (
+            self.instance.project_type.name if self.instance.project_type else ""
+        )
+        sector_name = self.instance.sector.name if self.instance.sector else ""
+        if (
+            cluster_name,
+            project_type_name,
+            sector_name,
+        ) not in TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES:
+            if value is None:
+                raise serializers.ValidationError(
+                    "This field is required for transfer for this project."
+                )
+        return value
 
     def save(self, **kwargs):
         """

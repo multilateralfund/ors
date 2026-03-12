@@ -59,7 +59,7 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   project_duration: 'Project duration',
   date_of_approval: 'Date of approval',
   meeting: 'Meeting',
-  excom_provision: 'ExCom provision',
+  excom_provision: 'Executive Committee provision',
   date_of_report: 'Date of report',
   agency_remarks: 'Agency remarks',
   secretariat_remarks: 'Secretariat remarks',

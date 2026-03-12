@@ -1,5 +1,9 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+
+import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
+import { ProjectSectorType } from '@ors/types/api_project_sector'
 import type { ProjectFieldHistoryValue } from '@ors/types/store'
+import { ProjectTypeType } from '@ors/types/api_project_types'
 import { ProjectType } from '@ors/types/api_projects'
 
 export type ListingProjectData = {
@@ -490,4 +494,13 @@ export interface FileMetaDataType {
 export interface FileMetaDataProps {
   filesMetaData?: FileMetaDataType[]
   setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
+}
+
+export interface FieldOptsType {
+  crtProjectTypesOpts: ProjectTypeType[]
+  projectTypes: ProjectTypeType[]
+  crtSectorsOpts: ProjectSectorType[]
+  sectors: ProjectSectorType[]
+  crtSubsectorsOpts: ProjectSubSectorType[]
+  subsectors: ProjectSubSectorType[]
 }

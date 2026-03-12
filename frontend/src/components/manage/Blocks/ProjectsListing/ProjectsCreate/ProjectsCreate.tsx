@@ -89,6 +89,7 @@ const ProjectsCreate = ({
   setMetaProjectId,
   setRefetchRelatedProjects,
   metaprojectData,
+  shouldValidateTotalFund,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -113,6 +114,7 @@ const ProjectsCreate = ({
     setMetaProjectId?: (id: number | null) => void
     setRefetchRelatedProjects?: (refetch: boolean) => void
     metaprojectData?: MetaProjectDetailType | null
+    shouldValidateTotalFund: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -253,8 +255,9 @@ const ProjectsCreate = ({
         mode,
         mode === 'edit' ? project : undefined,
         true,
+        shouldValidateTotalFund,
       ),
-    [crossCuttingFields, errors, mode],
+    [crossCuttingFields, errors, mode, shouldValidateTotalFund],
   )
 
   const approvalErrors = useMemo(() => {
