@@ -1635,6 +1635,23 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             "psc_transferred",
         ]
 
+    def validate_fund_transferred(self, value):
+        cluster_name = self.instance.cluster.name if self.instance.cluster else ""
+        project_type_name = (
+            self.instance.project_type.name if self.instance.project_type else ""
+        )
+        sector_name = self.instance.sector.name if self.instance.sector else ""
+        if (
+            cluster_name,
+            project_type_name,
+            sector_name,
+        ) not in TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES:
+            if value is None:
+                raise serializers.ValidationError(
+                    "This field is required for transfer for this project."
+                )
+        return value
+
     def save(self, **kwargs):
         """
         Save the project transfer
