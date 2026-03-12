@@ -344,5 +344,5 @@ class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
             type_name,
             sector_name,
         ) in TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES:
-            return True
-        return False
+            return False
+        return True
