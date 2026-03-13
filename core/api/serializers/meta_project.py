@@ -11,7 +11,7 @@ from core.api.serializers.project_metadata import (
     ProjectSectorSerializer,
 )
 from core.api.serializers.project_v2 import ProjectListV2Serializer
-from core.models.project import MetaProject
+from core.models.project import MetaProject, Project
 
 
 class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
@@ -120,6 +120,26 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         if not lead_agency:
             return None
         return AgencySerializer(lead_agency).data
+
+
+class MetaProjectMyaDetailsIncludingPossibleProjectsSerializer(
+    MetaProjecMyaDetailsSerializer
+):
+    possible_projects = serializers.SerializerMethodField()
+
+    def get_possible_projects(self, obj):
+        # Get all projects that are not part of the meta project but match the country and cluster
+        possible_projects = Project.objects.filter(
+            country=obj.country,
+            cluster=obj.cluster,
+            category=obj.type,
+            meta_project__isnull=True,
+        )
+        return ProjectListV2Serializer(possible_projects, many=True).data
+
+    class Meta:
+        model = MetaProject
+        fields = MetaProjecMyaDetailsSerializer.Meta.fields + ["possible_projects"]
 
 
 class MetaProjectMyaSerializer(serializers.ModelSerializer):

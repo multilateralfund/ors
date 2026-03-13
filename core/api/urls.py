@@ -531,6 +531,11 @@ urlpatterns = [
         name="meta-project-view",
     ),
     path(
+        "meta-projects/country/<int:country_id>/cluster/<int:cluster_id>/category/<str:category>/",
+        MetaProjectMyaDetailsViewSet.as_view({"get": "retrive_cluster_type_sector"}),
+        name="meta-project-cluster-type-sector",
+    ),
+    path(
         "project-statuses/",
         ProjectStatusListView.as_view(),
         name="project-status-list",
