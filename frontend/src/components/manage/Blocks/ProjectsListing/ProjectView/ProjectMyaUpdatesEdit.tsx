@@ -24,6 +24,8 @@ import { ProjectType } from '@ors/types/api_projects'
 import { CircularProgress, Typography } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+import { BiNoEntry } from 'react-icons/bi'
+import { filter, split } from 'lodash'
 
 const projectDuration = 'project_duration'
 
@@ -97,7 +99,10 @@ const ProjectMyaUpdatesEdit = ({
           <div className="w-unset">
             <DateInput
               id={fd.name}
-              className={cx('BPListUpload !ml-0 h-9', disabledClassName)}
+              className={cx(
+                'BPListUpload !ml-0 h-8 w-[130px]',
+                disabledClassName,
+              )}
               value={fieldValue.toString()}
               formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
               disabled={true}
@@ -109,9 +114,10 @@ const ProjectMyaUpdatesEdit = ({
           <FormattedNumberInput
             id={fd.name}
             className={cx(
-              '!m-0 h-9 w-full !border-gray-400 p-2.5',
+              '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
               disabledClassName,
             )}
+            prefixClassName="h-8"
             withoutDefaultValue={true}
             prefix={monetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
@@ -123,7 +129,7 @@ const ProjectMyaUpdatesEdit = ({
           <FormattedNumberInput
             id={fd.name}
             className={cx(
-              '!m-0 h-9 w-full !border-gray-400 p-2.5',
+              '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
               disabledClassName,
             )}
             withoutDefaultValue={true}
@@ -135,30 +141,56 @@ const ProjectMyaUpdatesEdit = ({
     }
   }
 
-  const renderFieldData = (fieldData: any) => {
+  const renderFieldData = (fieldData: any, withLabel: boolean = true) => {
     return fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
 
       return (
         <div key={fd.name} className="py-2">
-          <Label htmlFor={fd.name} className="mt-2 font-semibold">
-            {formatFieldLabel(fd.label)}
-          </Label>
-          <span className="mt-2 flex gap-2">
+          {withLabel && (
+            <Label htmlFor={fd.name} className="mt-2 font-semibold">
+              {formatFieldLabel(fd.label)}
+            </Label>
+          )}
+          <span className="mt-2 flex gap-3">
             {fieldComponent(fd)}
             {isComputed ? (
               <span
-                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-1 italic text-[#2E708E]"
+                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]"
                 title="Based on contained projects."
               >
                 Computed
               </span>
             ) : null}
+            {!withLabel && (
+              <span className="flex items-center whitespace-nowrap">
+                {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
+              </span>
+            )}
           </span>
         </div>
       )
     })
   }
+
+  const getFilteredFields = (label: string) =>
+    filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
+
+  const dateFields = getFilteredFields('date')
+  const baselineFields = getFilteredFields('baseline')
+  const targetFields = getFilteredFields('target')
+  const phaseOutFields = getFilteredFields('phase-out')
+  const startingPointFields = getFilteredFields('starting point')
+  const costEffectivenessFields = getFilteredFields('cost effectiveness')
+
+  const groupFields = (title: string, fields: any) => (
+    <div className="flex flex-col">
+      <Label className="m-auto w-fit font-semibold">{title}</Label>
+      <div className="flex flex-wrap gap-6">
+        {renderFieldData(fields, false)}
+      </div>
+    </div>
+  )
 
   return (
     <div>
@@ -179,14 +211,20 @@ const ProjectMyaUpdatesEdit = ({
             <Typography variant="h6">Details</Typography>
             <div className="flex gap-x-8">
               <div className="flex-grow">
-                {renderFieldData(
-                  fieldData.slice(0, Math.ceil(fieldData.length / 2)),
-                )}
+                {renderFieldData(fieldData.slice(0, 3))}
+                <div className="flex gap-6">{renderFieldData(dateFields)}</div>
+                {renderFieldData(fieldData.slice(5, 6))}
+                {groupFields('Baseline', baselineFields)}
+                {groupFields('Target in the last year', targetFields)}
               </div>
               <div className="flex-grow">
-                {renderFieldData(
-                  fieldData.slice(Math.ceil(fieldData.length / 2)),
+                {groupFields('Phase-out', phaseOutFields)}
+                {groupFields(
+                  'Starting point for aggregate reductions in consumption or production',
+                  startingPointFields,
                 )}
+                {renderFieldData(fieldData).slice(16, 20)}
+                {groupFields('Cost effectiveness', costEffectivenessFields)}
               </div>
             </div>
           </div>
