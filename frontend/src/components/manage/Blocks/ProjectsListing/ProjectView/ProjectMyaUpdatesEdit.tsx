@@ -94,7 +94,7 @@ const ProjectMyaUpdatesEdit = ({
     switch (fd.type) {
       case 'DateTimeField':
         return (
-          <div className="w-full">
+          <div className="w-unset">
             <DateInput
               id={fd.name}
               className={cx('BPListUpload !ml-0 h-9', disabledClassName)}
@@ -144,7 +144,7 @@ const ProjectMyaUpdatesEdit = ({
           <Label htmlFor={fd.name} className="mt-2 font-semibold">
             {formatFieldLabel(fd.label)}
           </Label>
-          <span className="mt-2 flex justify-between">
+          <span className="mt-2 flex gap-2">
             {fieldComponent(fd)}
             {isComputed ? (
               <span

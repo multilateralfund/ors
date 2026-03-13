@@ -232,7 +232,7 @@ export const MetaProjectEdit = (props: {
               {formatFieldLabel(fd.label)}
             </span>
           </Label>
-          <span className="mt-2 flex justify-between">
+          <span className="mt-2 flex gap-2">
             {fieldComponent(fd)}
             {isComputed ? (
               <span
