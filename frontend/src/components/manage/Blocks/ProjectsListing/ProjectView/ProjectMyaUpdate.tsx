@@ -1,9 +1,10 @@
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
-import ProjectRelatedProjectsMetaProject from './ProjectRelatedProjectsMetaProject'
-import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
+import { MetaProjectDetailType } from '../UpdateMyaData/types'
+import ProjectMyaUpdatesEdit from './ProjectMyaUpdatesEdit'
 
 const ProjectMyaUpdate = ({
   project,
@@ -12,23 +13,26 @@ const ProjectMyaUpdate = ({
 }: {
   project?: ProjectTypeApi
   metaprojectData?: MetaProjectDetailType | null
-  mode?: string
+  mode: string
 }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 
-  const isEditMode = mode === 'edit' && !!project
-  const hasMetaProject = isEditMode && !!project.meta_project_id
+  const hasMetaProject = !!project && !!project.meta_project_id
+
+  if (!hasMetaProject || !canViewMetaProjects) {
+    return <>This project has no metaproject associated.</>
+  }
 
   return (
-    <>
-      {hasMetaProject && canViewMetaProjects && (
-        <div className="flex w-full flex-wrap gap-4">
-          <span className="rounded-lg bg-[#F5F5F5] p-6 xl:flex-1">
-            <ProjectRelatedProjectsMetaProject {...{ metaprojectData }} />
-          </span>
-        </div>
-      )}
-    </>
+    <div className="flex w-full flex-wrap gap-4">
+      <span className="flex-1 rounded-lg bg-[#F5F5F5] px-6 py-2">
+        {mode === 'view' ? (
+          <ProjectMyaUpdatesView {...{ metaprojectData }} />
+        ) : (
+          <ProjectMyaUpdatesEdit {...{ metaprojectData }} />
+        )}
+      </span>
+    </div>
   )
 }
 

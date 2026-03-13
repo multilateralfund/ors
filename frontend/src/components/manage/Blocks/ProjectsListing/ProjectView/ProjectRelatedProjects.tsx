@@ -30,29 +30,29 @@ const ProjectRelatedProjects = ({
   setMetaProjectId?: (id: number | null) => void
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
-  mode?: string
+  mode: string
 }) => {
-  const isEditMode = mode === 'edit' && !!project
+  const isNotCreateMode = ['edit', 'view'].includes(mode) && !!project
 
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
 
-  const hasMetaProject = isEditMode && !!project.meta_project_id
+  const hasMetaProject = isNotCreateMode && !!project.meta_project_id
 
   const canRemoveAssociation =
-    isEditMode &&
+    isNotCreateMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
     !!metaProjectId
 
   const canDisassociateComponent =
-    isEditMode &&
+    isNotCreateMode &&
     canDisassociateComponents &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
   const hasComponents =
-    isEditMode &&
+    isNotCreateMode &&
     project.component &&
     project.component.original_project_id === project.id
 
@@ -121,7 +121,7 @@ const ProjectRelatedProjects = ({
 
   return (
     <div className="flex w-full flex-col">
-      {isEditMode && hasMetaProject && (
+      {isNotCreateMode && hasMetaProject && (
         <>
           <SectionTitle>
             <div className="flex flex-wrap items-center gap-2">

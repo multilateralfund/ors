@@ -277,6 +277,7 @@ const ProjectView = ({
                     project.status,
                   )
                 }
+                mode="view"
                 {...{
                   project,
                   relatedProjects,

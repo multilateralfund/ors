@@ -31,7 +31,7 @@ const ProjectUmbrellaProjectDetails = ({
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
-  mode?: string
+  mode: string
   isPrevButtonDisabled?: boolean
 }) => {
   const [crtTab, setCrtTab] = useState<number>(0)

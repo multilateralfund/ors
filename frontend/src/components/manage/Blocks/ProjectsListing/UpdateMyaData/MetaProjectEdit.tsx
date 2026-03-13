@@ -232,7 +232,7 @@ export const MetaProjectEdit = (props: {
               {formatFieldLabel(fd.label)}
               {isComputed ? (
                 <span
-                  className="border-1 rounded-xl border border-solid px-1 text-primary"
+                  className="border-1 rounded-lg border border-solid border-[#2E708E] px-1 text-[#2E708E]"
                   title="Based on contained projects."
                 >
                   Computed

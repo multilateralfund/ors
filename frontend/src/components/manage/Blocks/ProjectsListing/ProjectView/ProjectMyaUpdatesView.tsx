@@ -1,10 +1,7 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
-import Link from '@ors/components/ui/Link/Link.tsx'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
-import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { getFormattedDecimalValue, getFormattedNumericValue } from '../utils'
 import { monetaryFields } from '../UpdateMyaData/constants'
 import {
@@ -13,16 +10,13 @@ import {
 } from '../UpdateMyaData/types'
 
 import { CircularProgress, Divider } from '@mui/material'
-import { MdOutlineManageSearch } from 'react-icons/md'
 import dayjs from 'dayjs'
 
-const ProjectRelatedProjectsMetaProject = ({
+const ProjectMyaUpdatesView = ({
   metaprojectData,
 }: {
   metaprojectData?: MetaProjectDetailType | null
 }) => {
-  const { canViewMetaProjects } = useContext(PermissionsContext)
-
   const metadatDisplayClassname =
     'grid w-full grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2'
 
@@ -100,23 +94,6 @@ const ProjectRelatedProjectsMetaProject = ({
 
   return (
     <div>
-      <SectionTitle>
-        <span className="flex items-center justify-between">
-          <div className="flex gap-2.5">
-            <MdOutlineManageSearch size={26} className="mb-0.5" />
-            MYA Details
-          </div>
-          {!!metaprojectData?.id && canViewMetaProjects && (
-            <Link
-              className="border-primary bg-primary font-bold text-white hover:bg-primary hover:text-mlfs-hlYellow"
-              href={`/projects-listing/update-mya-data/${metaprojectData.id}`}
-              button
-            >
-              Edit
-            </Link>
-          )}
-        </span>
-      </SectionTitle>
       {!!metaprojectData?.id ? (
         <div className="flex gap-x-8">
           <div>
@@ -140,4 +117,4 @@ const ProjectRelatedProjectsMetaProject = ({
   )
 }
 
-export default ProjectRelatedProjectsMetaProject
+export default ProjectMyaUpdatesView
