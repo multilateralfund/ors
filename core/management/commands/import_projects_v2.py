@@ -18,17 +18,33 @@ logger = logging.getLogger(__name__)
 @transaction.atomic
 def populate_existing_projects_lead_agency():
     """
-    Populate the lead agency field in Project model using the MetaProject lead agency.
-    This function will update the lead agency field for all projects that have a lead agency defined
-    in their meta_project.
+    Populate the lead agency field from projects as following:
+    - For individual projects, the lead agency will be populated from the project agency.
+    - For MYA projects, the lead agency will be the project agency only if all associated projects
+    - have the same agency. If not, it will need to be populated manually.
     """
     logger.info("⏳ Populating lead agency for existing projects...")
-    projects_with_meta_project_lead_agency = Project.objects.really_all().filter(
-        meta_project__lead_agency__isnull=False
+    individual_projects = Project.objects.really_all().filter(
+        category="Individual", lead_agency__isnull=True
     )
-    for project in projects_with_meta_project_lead_agency:
-        project.lead_agency = project.meta_project.lead_agency
-    Project.objects.bulk_update(projects_with_meta_project_lead_agency, ["lead_agency"])
+    for project in individual_projects:
+        project.lead_agency = project.agency
+    Project.objects.bulk_update(individual_projects, ["lead_agency"])
+
+    mya_projects = Project.objects.really_all().filter(
+        category="Multi-year agreement", lead_agency__isnull=True
+    )
+    for project in mya_projects:
+        associated_projects = project.meta_project.projects.all()
+        if not associated_projects.exists():
+            logger.warning(
+                f"Project {project.code} is a MYA but has no associated projects with agency. Skipping."
+            )
+            continue
+        agencies = set(associated_projects.values_list("agency", flat=True))
+        if len(agencies) == 1:
+            project.lead_agency = project.agency
+    Project.objects.bulk_update(mya_projects, ["lead_agency"])
     logger.info("✅ Successfully populated lead agency for existing projects.")
 
 

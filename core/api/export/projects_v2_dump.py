@@ -231,13 +231,19 @@ class ProjectsV2Dump:
 
     @lru_cache
     def get_valid_fields(self):
+        old_fields_included = [
+            "additional_funding",
+        ]
         non_reverse = (
             f for f in Project._meta.get_fields() if not isinstance(f, ForeignObjectRel)
         )
         non_old = (
             f
             for f in non_reverse
-            if getattr(f, "help_text", None) != OLD_FIELD_HELP_TEXT
+            if (
+                getattr(f, "help_text", None) != OLD_FIELD_HELP_TEXT
+                or f.name in old_fields_included
+            )
         )
         return list(non_old)
 

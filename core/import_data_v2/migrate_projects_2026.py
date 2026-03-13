@@ -29,10 +29,10 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectSubmissionStatus,
 )
-from core.utils import post_approval_changes
+from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught
+# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +107,7 @@ def get_subsectors_by_name(name):
         "Air-conditioning compressor": "AC Compressor",
         "Air-Conditioning compressor": "AC Compressor",
         "End user, industrial refrigeration": "End User",
+        "commercial air conditioning": "Commercial air-conditioning",
     }
     subsectors = []
     if name and str(name).strip():
@@ -114,7 +115,10 @@ def get_subsectors_by_name(name):
         subsector = ProjectSubSector.objects.filter(name__iexact=name).first()
         if not subsector:
             # now we can try to split by comma
-            subsector_names = [s.strip() for s in name.split(",")]
+            if name in ["Rigid PU, flexible", "Rigid PU, XPS"]:
+                subsector_names = [name]
+            else:
+                subsector_names = [s.strip() for s in name.split(",")]
             for subsector_name in subsector_names:
                 subsector_name = TRANSLATE_SUB_SECTORS.get(
                     str(subsector_name).strip(), str(subsector_name).strip()
@@ -166,6 +170,18 @@ def get_status_by_name(name):
     if not status:
         logger.warning(f"⚠️ Status with name '{name.strip()}' not found")
     return status
+
+
+def update_field(project, field_name, new_value, logging_message=True):
+    current_value = getattr(project, field_name)
+    if current_value != new_value:
+        if logging_message:
+            logger.warning(
+                f"""⚠️ Updating field '{field_name}' for project with legacy
+                    code '{project.legacy_code}' from '{current_value}' to '{new_value}'
+            """
+            )
+        setattr(project, field_name, new_value)
 
 
 def get_date(date_value):
@@ -300,6 +316,82 @@ def process_current_invetory_sheet(dry_run=True):
                 continue
             create_new_project(row, dry_run=dry_run)
         else:
+            country_value = get_country_by_name(row["COUNTRY"])
+            update_field(project, "country", country_value)
+            agency = get_agency_by_name(row["AGENCY"])
+            update_field(project, "agency", agency)
+            update_field(project, "project_type_legacy", row["TYPE"])
+            update_field(project, "sector_legacy", row["SEC"])
+            update_field(project, "subsector_legacy", row["SUBSECTOR"])
+            update_field(project, "title", row["PROJECT_TITLE"])
+            update_field(
+                project,
+                "description",
+                row["PROJECT_DESCRIPTION"],
+                logging_message=False,
+            )
+            update_field(
+                project, "funding_window", row["FUNDING_WINDOWS"], logging_message=False
+            )
+            update_field(
+                project,
+                "excom_provision",
+                row["EXCOM_PROVISION"],
+                logging_message=False,
+            )
+            update_field(project, "additional_funding", row["HFC_PLUS"])
+            update_field(
+                project,
+                "total_fund_approved",
+                get_date(row["TOTAL_FUND_APPROVED"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "total_psc_cost",
+                get_date(row["TOTAL_13%SUPPORT_COST"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "total_grant",
+                get_date(row["TOTAL_GRANT"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "date_completion",
+                get_date(row["DATE_COMPLETION"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "date_actual",
+                get_date(row["DATE_ACTUAL"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "project_end_date",
+                get_date(row["DATE_ACTUAL"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "date_comp_revised",
+                get_date(row["DATE_COMP_REVISED"]),
+                logging_message=False,
+            )
+            update_field(
+                project,
+                "date_per_agreement",
+                get_date(row["DATE_PER_AGREEMENT"]),
+                logging_message=False,
+            )
+            status = get_status_by_name(row["STATUS_CODE"])
+            update_field(project, "status", status, logging_message=False)
+            update_field(project, "remarks", row["REMARKS"], logging_message=False)
+
             if cluster_object := get_cluster_by_name(row["Cluster"]):
                 project.cluster = cluster_object
             if project_type := get_type_by_name(row["Type"]):
@@ -315,6 +407,44 @@ def process_current_invetory_sheet(dry_run=True):
     logger.info(
         f"Finished processing Current Inventory sheet. {count} projects not found."
     )
+
+
+def process_set_new_code(dry_run=True):
+    file_path = (
+        IMPORT_RESOURCES_V2_DIR
+        / "projects"
+        / "migration_2026"
+        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+    )
+
+    df = pd.read_excel(file_path, sheet_name="Current Inventory", header=2).fillna("")
+    df.replace({"NaT": None}, inplace=True)
+    for _, row in df.iterrows():
+        project = Project.objects.filter(legacy_code=row["CODE"]).first()
+        if not project:
+            logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found")
+            continue
+
+        new_project_code = get_project_sub_code(
+            project.country,
+            project.cluster,
+            project.agency,
+            project.project_type,
+            project.sector,
+            project.meeting,
+            project.transfer_meeting,
+            project.serial_number,
+            project.metacode,
+        )
+        if project.code != new_project_code:
+            logger.warning(
+                f"""⚠️ Updating project code for project with legacy code '{project.legacy_code}' 
+                from '{project.code}' to '{new_project_code}'
+                """
+            )
+            project.code = new_project_code
+            if not dry_run:
+                project.save()
 
 
 def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
@@ -495,8 +625,8 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                 )
             project.date_approved = get_date(row["DATE_APPROVAL"])
             project.post_excom_meeting = meeting
-            project.total_fund = row["FUND_ALLOCATED"]
-            project.support_cost_psc = row["SUPPORT_COST_13"]
+            project.total_fund += row["FUND_ALLOCATED"]
+            project.support_cost_psc += row["SUPPORT_COST_13"]
             if not dry_run:
                 project.save()
         else:
@@ -592,8 +722,14 @@ def process_transfer_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                     project.save()
             else:
                 project.transfer_meeting = meeting
-                project.fund_transferred = row["FUND_TRANSFERRED"] or 0
-                project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
+                try:
+                    project.fund_transferred += row["FUND_TRANSFERRED"] or 0
+                except TypeError:
+                    project.fund_transferred = row["FUND_TRANSFERRED"] or 0
+                try:
+                    project.psc_transferred += row["SUPPORT_13_TRANSFERRED"] or 0
+                except TypeError:
+                    project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
                 if not dry_run:
                     project.save()
         ids_already_updated.append(project.id)
@@ -758,6 +894,8 @@ def migrate_projects_2026(option, dry_run=True):
         create_missing_clusters_types_sectors_subsectors(dry_run=dry_run)
     if option == "current_inventory":
         process_current_invetory_sheet(dry_run=dry_run)
+    elif option == "set_new_code":
+        process_set_new_code(dry_run=dry_run)
     elif option == "ods_phaseout_fields":
         process_ods_phaseout_fields_sheet(
             dry_run=dry_run,

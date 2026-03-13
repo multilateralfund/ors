@@ -155,6 +155,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "title",
         "code",
         "metacode",
+        "legacy_code",
         "meta_project__umbrella_code",
     ]
     list_filter = [

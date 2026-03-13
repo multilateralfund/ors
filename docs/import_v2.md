@@ -61,6 +61,7 @@ After that, run the following commands:
 
 python manage.py migrate_projects_2026 create_missing_clusters_types_sectors_subsectors
 python manage.py migrate_projects_2026 current_inventory
+python manage.py migrate_projects_2026 set_new_code
 python manage.py migrate_projects_2026 ods_phaseout_fields
 python manage.py migrate_projects_2026 ods_production_fields
 python manage.py migrate_projects_2026 funding_fields

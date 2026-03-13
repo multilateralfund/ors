@@ -16,6 +16,7 @@ class Command(BaseCommand):
             choices=[
                 "create_missing_clusters_types_sectors_subsectors",
                 "current_inventory",
+                "set_new_code",
                 "ods_phaseout_fields",
                 "ods_production_fields",
                 "funding_fields",
