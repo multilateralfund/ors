@@ -1330,10 +1330,6 @@ class ProjectV2EditApprovalFieldsSerializer(
             errors["meeting"] = "Meeting is required for approval."
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
-        if self.instance.excom_provision is None:
-            errors["excom_provision"] = (
-                "Executive Committee provision is required for approval."
-            )
         if self.instance.date_completion is None:
             errors["date_completion"] = "Date of completion is required for approval."
         if not errors:
@@ -1355,6 +1351,8 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
     def validate_required_fields(self, errors):
         optional_fields_at_submission = [
             "destruction_technology",
+            "end_users",
+            "energy_savings",
         ]
 
         mandatory_fields_at_submission = [
