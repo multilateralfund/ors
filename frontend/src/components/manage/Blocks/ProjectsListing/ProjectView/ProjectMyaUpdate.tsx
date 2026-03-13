@@ -4,7 +4,7 @@ import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/in
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
-import ProjectMyaUpdatesEdit from './ProjectMyaUpdatesEdit'
+
 import { Typography } from '@mui/material'
 
 const ProjectMyaUpdate = ({
@@ -37,11 +37,7 @@ const ProjectMyaUpdate = ({
   return (
     <div className="flex w-full flex-wrap gap-4">
       <span className="flex-1 rounded-lg bg-[#F5F5F5] px-6 py-2">
-        {mode === 'view' ? (
-          <ProjectMyaUpdatesView {...{ metaprojectData }} />
-        ) : (
-          <ProjectMyaUpdatesEdit {...{ metaprojectData }} />
-        )}
+        <ProjectMyaUpdatesView {...{ metaprojectData, mode }} />
       </span>
     </div>
   )

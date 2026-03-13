@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
-
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { monetaryFields } from '../UpdateMyaData/constants'
+import { disabledClassName } from '../constants'
 import {
   formatFieldLabel,
   getFormattedDecimalValue,
@@ -19,15 +23,18 @@ import { getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects'
 
 import { CircularProgress, Typography } from '@mui/material'
-import dayjs from 'dayjs'
 import { filter, split } from 'lodash'
+import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const projectDuration = 'project_duration'
 
 const ProjectMyaUpdatesView = ({
   metaprojectData,
+  mode,
 }: {
   metaprojectData?: MetaProjectDetailType | null
+  mode: string
 }) => {
   const projects = getResults<ProjectType>([
     ...(metaprojectData?.projects ?? []),
@@ -70,10 +77,10 @@ const ProjectMyaUpdatesView = ({
     return formValue === null ? computedValue : formValue
   }
 
-  const getFieldValue = (name: string, missing?: string) =>
+  const getFieldValue = (name: string) =>
     name === projectDuration
       ? computeProjectDuration()
-      : getBaseFieldValue(name) || (missing ?? '')
+      : getBaseFieldValue(name) || ''
 
   const valueIsComputed = (name: string) => {
     const formValue = mpData[name]
@@ -88,15 +95,64 @@ const ProjectMyaUpdatesView = ({
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
 
-    switch (fd.type) {
-      case 'DateTimeField':
-        return (fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || 'N/A'
-      case 'DecimalField':
-        return fieldValue
-          ? `${monetaryFields.includes(fd.name) ? '$' : ''}${getFormattedNumericValue(fieldValue, 2)}`
-          : 'N/A'
-      default:
-        return fieldValue ? getFormattedNumericValue(fieldValue, 0) : 'N/A'
+    if (mode === 'view') {
+      switch (fd.type) {
+        case 'DateTimeField':
+          return (fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || 'N/A'
+        case 'DecimalField':
+          return fieldValue
+            ? `${monetaryFields.includes(fd.name) ? '$' : ''}${getFormattedNumericValue(fieldValue, 2)}`
+            : 'N/A'
+        default:
+          return fieldValue ? getFormattedNumericValue(fieldValue, 0) : 'N/A'
+      }
+    } else {
+      switch (fd.type) {
+        case 'DateTimeField':
+          return (
+            <div className="w-unset">
+              <DateInput
+                id={fd.name}
+                className={cx(
+                  'BPListUpload !ml-0 h-8 w-[130px]',
+                  disabledClassName,
+                )}
+                value={fieldValue.toString()}
+                formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+                disabled={true}
+              />
+            </div>
+          )
+        case 'DecimalField':
+          return (
+            <FormattedNumberInput
+              id={fd.name}
+              className={cx(
+                '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
+                disabledClassName,
+              )}
+              prefixClassName="h-8"
+              withoutDefaultValue={true}
+              prefix={monetaryFields.includes(fd.name) ? '$' : ''}
+              value={fieldValue}
+              disabled={true}
+            />
+          )
+        default:
+          return (
+            <FormattedNumberInput
+              id={fd.name}
+              className={cx(
+                '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
+                disabledClassName,
+              )}
+              withoutDefaultValue={true}
+              value={fieldValue}
+              decimalDigits={0}
+              disabled={true}
+            />
+          )
+      }
     }
   }
 
@@ -105,7 +161,7 @@ const ProjectMyaUpdatesView = ({
       const isComputed = valueIsComputed(fd.name)
 
       return (
-        <div key={fd.name} className="py-2">
+        <div key={fd.name} className="py-1">
           {withLabel && (
             <Label htmlFor={fd.name} className="mt-2 font-semibold">
               {formatFieldLabel(fd.label)}
@@ -122,7 +178,7 @@ const ProjectMyaUpdatesView = ({
               </span>
             ) : null}
             {!withLabel && (
-              <span className="flex items-center whitespace-nowrap">
+              <span className="flex items-center whitespace-nowrap font-semibold">
                 {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
               </span>
             )}
@@ -142,9 +198,11 @@ const ProjectMyaUpdatesView = ({
   const startingPointFields = getFilteredFields('starting point')
   const costEffectivenessFields = getFilteredFields('cost effectiveness')
 
-  const groupFields = (title: string, fields: any) => (
-    <div className="flex flex-col">
-      <Label className="m-auto w-fit font-semibold">{title}</Label>
+  const groupFields = (fields: any) => (
+    <div className="flex w-fit flex-col">
+      <Label className="m-auto !mb-0 w-fit font-semibold">
+        {fields[0].label.split('(')[0].trim()}
+      </Label>
       <div className="flex flex-wrap gap-6">
         {renderFieldData(fields, false)}
       </div>
@@ -173,17 +231,14 @@ const ProjectMyaUpdatesView = ({
                 {renderFieldData(fieldData.slice(0, 3))}
                 <div className="flex gap-6">{renderFieldData(dateFields)}</div>
                 {renderFieldData(fieldData.slice(5, 6))}
-                {groupFields('Baseline', baselineFields)}
-                {groupFields('Target in the last year', targetFields)}
+                {groupFields(baselineFields)}
+                {groupFields(targetFields)}
               </div>
               <div className="flex-grow">
-                {groupFields('Phase-out', phaseOutFields)}
-                {groupFields(
-                  'Starting point for aggregate reductions in consumption or production',
-                  startingPointFields,
-                )}
+                {groupFields(phaseOutFields)}
+                {groupFields(startingPointFields)}
                 {renderFieldData(fieldData).slice(16, 20)}
-                {groupFields('Cost effectiveness', costEffectivenessFields)}
+                {groupFields(costEffectivenessFields)}
               </div>
             </div>
           </div>
