@@ -10,6 +10,7 @@ import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
+import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import {
   getDefaultValues,
   getNonFieldErrors,
@@ -35,6 +36,7 @@ import { useStore } from '@ors/store.tsx'
 
 import { enqueueSnackbar } from 'notistack'
 import { debounce, groupBy } from 'lodash'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
@@ -109,6 +111,14 @@ const ProjectsCreateWrapper = () => {
     newFiles: [],
   })
 
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    null,
+    'add',
+    projIdentifiers.country,
+    projIdentifiers.cluster,
+    projIdentifiers.category,
+  )
+
   const [bpData, setBpData] = useState({
     hasBpData: false,
     bpDataLoading: false,
@@ -122,6 +132,8 @@ const ProjectsCreateWrapper = () => {
     useState<TrancheErrorType>(defaultTrancheErrors)
 
   const nonFieldsErrors = getNonFieldErrors(errors)
+
+  const relatedProjects = useGetRelatedProjects('add', null, false)
 
   useEffect(() => {
     if (canViewBp && country && agency && cluster) {
@@ -257,6 +269,8 @@ const ProjectsCreateWrapper = () => {
           filesMetaData,
           setFilesMetaData,
           shouldValidateTotalFund,
+          relatedProjects,
+          metaprojectData,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

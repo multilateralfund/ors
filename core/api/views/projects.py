@@ -51,6 +51,9 @@ from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
+from core.api.serializers.meta_project import (
+    MetaProjectMyaDetailsIncludingPossibleProjectsSerializer,
+)
 from core.api.views.projects_export import ProjectsExport
 from core.models import Agency
 from core.models import Country
@@ -203,6 +206,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
 
 class MetaProjectMyaDetailsViewSet(
     viewsets.GenericViewSet,
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
 ):
@@ -223,6 +227,30 @@ class MetaProjectMyaDetailsViewSet(
             MetaProjectFieldSerializer(mp).data,
             status=status.HTTP_200_OK,
         )
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "category",
+                openapi.IN_PATH,
+                description="Project category (only MYA allowed)",
+                type=openapi.TYPE_STRING,
+                enum=[Project.Category.MYA, Project.Category.IND],
+            ),
+        ]
+    )
+    @action(methods=["GET"], detail=False)
+    def retrive_cluster_type_sector(self, request, *args, **kwargs):
+        if kwargs["category"] != Project.Category.MYA:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        obj = get_object_or_404(
+            MetaProject.objects.prefetch_related("projects"),
+            country_id=kwargs["country_id"],
+            cluster_id=kwargs["cluster_id"],
+            type=Project.Category.MYA,
+        )
+        serializer = MetaProjectMyaDetailsIncludingPossibleProjectsSerializer(obj)
+        return Response(serializer.data)
 
 
 class ProjectStatusListView(generics.ListAPIView):

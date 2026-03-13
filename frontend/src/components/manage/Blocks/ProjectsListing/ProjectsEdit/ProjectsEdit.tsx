@@ -238,15 +238,18 @@ const ProjectsEdit = ({
   const [refetchRelatedProjects, setRefetchRelatedProjects] = useState(false)
 
   const relatedProjects = useGetRelatedProjects(
-    project,
     mode,
     metaProjectId,
     refetchRelatedProjects,
+    project,
   )
 
   const { data: metaprojectData } = useGetMetaProjectDetails(
     project.meta_project_id,
     mode,
+    projIdentifiers.country,
+    projIdentifiers.cluster,
+    projIdentifiers.category,
   )
 
   const [bpData, setBpData] = useState({

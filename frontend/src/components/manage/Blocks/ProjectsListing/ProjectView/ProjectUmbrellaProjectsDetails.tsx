@@ -1,0 +1,114 @@
+import { useState } from 'react'
+
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+  RelatedProjectsSectionType,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectMyaUpdate from './ProjectMyaUpdate'
+import { NavigationButton } from '../HelperComponents'
+import { MetaProjectDetailType } from '../UpdateMyaData/types'
+
+import { Tabs, Tab } from '@mui/material'
+
+const ProjectUmbrellaProjectDetails = ({
+  project,
+  relatedProjects,
+  setCurrentTab,
+  metaProjectId,
+  setMetaProjectId,
+  setRefetchRelatedProjects,
+  canDisassociate,
+  metaprojectData,
+  mode,
+  isPrevButtonDisabled,
+}: ProjectTabSetters & {
+  project?: ProjectTypeApi
+  relatedProjects: RelatedProjectsSectionType[]
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
+  canDisassociate?: boolean
+  metaprojectData?: MetaProjectDetailType | null
+  mode: string
+  isPrevButtonDisabled?: boolean
+}) => {
+  const [crtTab, setCrtTab] = useState<number>(0)
+
+  const steps = [
+    {
+      id: 'related-projects',
+      label: 'Components/Associated Projects',
+      component: (
+        <ProjectRelatedProjects
+          {...{
+            project,
+            relatedProjects,
+            metaProjectId,
+            setMetaProjectId,
+            setRefetchRelatedProjects,
+            canDisassociate,
+            mode,
+          }}
+        />
+      ),
+    },
+    {
+      id: 'mya-updates',
+      label: 'MYA updates',
+      component: (
+        <ProjectMyaUpdate
+          {...{
+            project,
+            metaprojectData,
+            mode,
+          }}
+        />
+      ),
+    },
+  ]
+
+  return (
+    <>
+      <Tabs
+        aria-label="umbrella-project-details"
+        value={crtTab}
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, newValue) => {
+          setCrtTab(newValue)
+        }}
+      >
+        {steps.map(({ id, label }) => (
+          <Tab key={id} id={id} aria-controls={id} label={label} />
+        ))}
+      </Tabs>
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {steps
+          .filter((_, index) => index === crtTab)
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
+      </div>
+      {setCurrentTab && (
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NavigationButton
+            type="previous"
+            setCurrentTab={setCurrentTab}
+            isBtnDisabled={isPrevButtonDisabled}
+          />
+          {mode === 'edit' && <NavigationButton {...{ setCurrentTab }} />}
+        </div>
+      )}
+    </>
+  )
+}
+
+export default ProjectUmbrellaProjectDetails

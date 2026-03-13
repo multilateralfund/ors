@@ -13,8 +13,7 @@ const ProjectDocumentation = ({
   projectFiles = [],
   mode,
   setCurrentTab,
-  nextStep,
-  hasNextStep,
+  prevStep,
   isNextButtonDisabled,
   disableV3Edit,
   ...rest
@@ -25,8 +24,7 @@ const ProjectDocumentation = ({
     mode: string
     project?: ProjectTypeApi
     loadedFiles?: boolean
-    nextStep?: number
-    hasNextStep?: boolean
+    prevStep?: number
     isNextButtonDisabled?: boolean
     errors?: Array<{ id: number; message: string } | null>
     allFileErrors?: { message: string }[]
@@ -57,19 +55,17 @@ const ProjectDocumentation = ({
           />
         )}
       </div>
-      {setCurrentTab && nextStep && (
+      {setCurrentTab && prevStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
           <NavigationButton
-            nextTab={nextStep - 1}
+            nextTab={prevStep - 1}
             type="previous"
             setCurrentTab={setCurrentTab}
           />
-          {hasNextStep && (
-            <NavigationButton
-              isBtnDisabled={isNextButtonDisabled}
-              {...{ setCurrentTab }}
-            />
-          )}
+          <NavigationButton
+            isBtnDisabled={isNextButtonDisabled}
+            {...{ setCurrentTab }}
+          />
         </div>
       )}
     </>

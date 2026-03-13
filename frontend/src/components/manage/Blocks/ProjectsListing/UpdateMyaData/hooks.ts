@@ -21,13 +21,30 @@ export const useGetMetaProjects = (
   return { ...rest, ...results }
 }
 export const useGetMetaProjectDetails = (
-  pk?: number,
+  pk?: number | null,
   mode: string = 'edit',
+  country?: number | null,
+  cluster?: number | null,
+  category?: string | null,
 ) => {
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
 
+  const formattedCategory =
+    category === 'MYA' ? 'Multi-year agreement' : 'Individual'
+
   const fetchData = (pk: number) => {
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
+      .then((resp) => resp.json())
+      .then((data) => setData(data))
+  }
+
+  const fetchPossibleData = () => {
+    fetch(
+      formatApiUrl(
+        `/api/meta-projects/country/${country}/cluster/${cluster}/category/${formattedCategory}`,
+      ),
+      { credentials: 'include' },
+    )
       .then((resp) => resp.json())
       .then((data) => setData(data))
   }
@@ -39,10 +56,13 @@ export const useGetMetaProjectDetails = (
   }, [pk])
 
   useEffect(() => {
-    if (pk && mode === 'edit') {
+    if (pk && (mode === 'edit' || mode === 'view')) {
       fetchData(pk)
     }
-  }, [pk])
+    if (!pk && !!country && !!cluster && !!formattedCategory) {
+      fetchPossibleData()
+    }
+  }, [pk, country, cluster, formattedCategory])
 
   return { data, refresh }
 }
