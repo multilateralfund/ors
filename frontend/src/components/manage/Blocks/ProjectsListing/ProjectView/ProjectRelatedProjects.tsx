@@ -28,7 +28,6 @@ const ProjectRelatedProjects = ({
   canDisassociate,
   metaprojectData,
   mode,
-  prevStep,
   isPrevButtonDisabled,
 }: ProjectTabSetters & {
   project?: ProjectTypeApi
@@ -38,8 +37,7 @@ const ProjectRelatedProjects = ({
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
-  mode: string
-  prevStep?: number
+  mode?: string
   isPrevButtonDisabled?: boolean
 }) => {
   const isEditMode = mode === 'edit' && !!project
@@ -172,13 +170,12 @@ const ProjectRelatedProjects = ({
           </div>
         )}
       </div>
-      {setCurrentTab && prevStep && (
+      {setCurrentTab && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
           <NavigationButton
             type="previous"
             setCurrentTab={setCurrentTab}
             isBtnDisabled={isPrevButtonDisabled}
-            nextTab={prevStep - 1}
           />
           {isEditMode && <NavigationButton {...{ setCurrentTab }} />}
         </div>

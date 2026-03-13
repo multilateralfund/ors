@@ -1,5 +1,3 @@
-'use client'
-
 import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
@@ -12,7 +10,7 @@ import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
-import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
@@ -751,7 +749,7 @@ const ProjectsCreate = ({
       label: 'Umbrella project details',
       disabled: areNextSectionsDisabled,
       component: (
-        <ProjectRelatedProjects
+        <ProjectUmbrellaProjectDetails
           canDisassociate={postExComUpdate}
           {...{
             project,
@@ -763,7 +761,6 @@ const ProjectsCreate = ({
             metaprojectData,
             mode,
           }}
-          prevStep={isApprovalTabAvailable ? 6 : 5}
           isPrevButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }

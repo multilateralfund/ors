@@ -1,0 +1,108 @@
+import { useState } from 'react'
+
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+  RelatedProjectsSectionType,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import ProjectRelatedProjects from './ProjectRelatedProjects'
+import { MetaProjectDetailType } from '../UpdateMyaData/types'
+
+import { Tabs, Tab } from '@mui/material'
+
+const ProjectUmbrellaProjectDetails = ({
+  project,
+  relatedProjects,
+  setCurrentTab,
+  metaProjectId,
+  setMetaProjectId,
+  setRefetchRelatedProjects,
+  canDisassociate,
+  metaprojectData,
+  isPrevButtonDisabled,
+}: ProjectTabSetters & {
+  project?: ProjectTypeApi
+  relatedProjects?: RelatedProjectsSectionType[]
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
+  canDisassociate?: boolean
+  metaprojectData?: MetaProjectDetailType | null
+  isPrevButtonDisabled?: boolean
+}) => {
+  const [crtTab, setCrtTab] = useState<number>(0)
+
+  const steps = [
+    {
+      id: 'related-projects',
+      label: 'Components/Associated Projects',
+      component: (
+        <ProjectRelatedProjects
+          {...{
+            project,
+            relatedProjects,
+            metaProjectId,
+            setMetaProjectId,
+            setRefetchRelatedProjects,
+            setCurrentTab,
+            metaprojectData,
+            canDisassociate,
+            isPrevButtonDisabled,
+          }}
+        />
+      ),
+    },
+    {
+      id: 'mya-updates',
+      label: 'MYA updates',
+      component: (
+        <ProjectRelatedProjects
+          {...{
+            project,
+            relatedProjects,
+            metaProjectId,
+            setMetaProjectId,
+            setRefetchRelatedProjects,
+            setCurrentTab,
+            metaprojectData,
+            canDisassociate,
+            isPrevButtonDisabled,
+          }}
+        />
+      ),
+    },
+  ]
+
+  return (
+    <>
+      <Tabs
+        aria-label="umbrella-project-details"
+        value={crtTab}
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, newValue) => {
+          setCrtTab(newValue)
+        }}
+      >
+        {steps.map(({ id, label }) => (
+          <Tab key={id} id={id} aria-controls={id} label={label} />
+        ))}
+      </Tabs>
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {steps
+          .filter((_, index) => index === crtTab)
+          .map(({ id, component }) => {
+            return <span key={id}>{component}</span>
+          })}
+      </div>
+    </>
+  )
+}
+
+export default ProjectUmbrellaProjectDetails
