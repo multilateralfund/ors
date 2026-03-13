@@ -32,7 +32,10 @@ const ProjectMyaUpdatesEdit = ({
 }: {
   metaprojectData?: MetaProjectDetailType | null
 }) => {
-  const projects = getResults<ProjectType>(metaprojectData?.projects ?? [])
+  const projects = getResults<ProjectType>([
+    ...(metaprojectData?.projects ?? []),
+    ...(metaprojectData?.possible_projects ?? []),
+  ])
 
   const formatMetaprojectData = useCallback(() => {
     const result = {} as Record<string, any>
@@ -91,20 +94,22 @@ const ProjectMyaUpdatesEdit = ({
     switch (fd.type) {
       case 'DateTimeField':
         return (
-          <DateInput
-            id={fd.name}
-            className={cx('BPListUpload !ml-0 h-10 w-40', disabledClassName)}
-            value={fieldValue.toString()}
-            formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-            disabled={true}
-          />
+          <div className="w-full">
+            <DateInput
+              id={fd.name}
+              className={cx('BPListUpload !ml-0 h-9', disabledClassName)}
+              value={fieldValue.toString()}
+              formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+              disabled={true}
+            />
+          </div>
         )
       case 'DecimalField':
         return (
           <FormattedNumberInput
             id={fd.name}
             className={cx(
-              '!m-0 h-10 w-full !border-gray-400 p-2.5',
+              '!m-0 h-9 w-full !border-gray-400 p-2.5',
               disabledClassName,
             )}
             withoutDefaultValue={true}
@@ -118,7 +123,7 @@ const ProjectMyaUpdatesEdit = ({
           <FormattedNumberInput
             id={fd.name}
             className={cx(
-              '!m-0 h-10 w-full !border-gray-400 p-2.5',
+              '!m-0 h-9 w-full !border-gray-400 p-2.5',
               disabledClassName,
             )}
             withoutDefaultValue={true}
@@ -136,20 +141,20 @@ const ProjectMyaUpdatesEdit = ({
 
       return (
         <div key={fd.name} className="py-2">
-          <Label htmlFor={fd.name}>
-            <span className="mt-2 flex justify-between">
-              {formatFieldLabel(fd.label)}
-              {isComputed ? (
-                <span
-                  className="border-1 rounded-lg border border-solid border-[#2E708E] px-1 text-[#2E708E]"
-                  title="Based on contained projects."
-                >
-                  Computed
-                </span>
-              ) : null}
-            </span>
+          <Label htmlFor={fd.name} className="mt-2 font-semibold">
+            {formatFieldLabel(fd.label)}
           </Label>
-          {fieldComponent(fd)}
+          <span className="mt-2 flex justify-between">
+            {fieldComponent(fd)}
+            {isComputed ? (
+              <span
+                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-1 italic text-[#2E708E]"
+                title="Based on contained projects."
+              >
+                Computed
+              </span>
+            ) : null}
+          </span>
         </div>
       )
     })

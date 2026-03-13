@@ -17,7 +17,9 @@ const ProjectMyaUpdate = ({
 }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 
-  const hasMetaProject = !!project && !!project.meta_project_id
+  const hasMetaProject = !!metaprojectData && !metaprojectData.detail
+
+  console.log(metaprojectData)
 
   if (!hasMetaProject || !canViewMetaProjects) {
     return <>This project has no metaproject associated.</>

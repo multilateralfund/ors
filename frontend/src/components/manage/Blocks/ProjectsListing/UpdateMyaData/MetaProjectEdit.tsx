@@ -182,7 +182,7 @@ export const MetaProjectEdit = (props: {
         return (
           <DateInput
             id={fd.name}
-            className="BPListUpload !ml-0 h-10 w-40"
+            className="BPListUpload !ml-0 h-9"
             value={fieldValue.toString()}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
             onChange={changeSimpleInput(fd.name)}
@@ -192,7 +192,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className="!m-0 h-10 w-full !border-gray-400 p-2.5"
+            className="!m-0 h-9 w-full !border-gray-400 p-2.5"
             withoutDefaultValue={true}
             prefix={monetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
@@ -203,7 +203,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className={cx('!m-0 h-10 w-full !border-gray-400 p-2.5', {
+            className={cx('!m-0 h-9 w-full !border-gray-400 p-2.5', {
               [disabledClassName]: isFieldDisabled,
             })}
             withoutDefaultValue={true}
@@ -225,22 +225,24 @@ export const MetaProjectEdit = (props: {
         <div key={fd.name} className="py-2">
           <Label htmlFor={fd.name}>
             <span
-              className={cx('mt-2 flex justify-between', {
+              className={cx('mt-2 font-semibold', {
                 'text-red-500': fieldErrors[fd.name],
               })}
             >
               {formatFieldLabel(fd.label)}
-              {isComputed ? (
-                <span
-                  className="border-1 rounded-lg border border-solid border-[#2E708E] px-1 text-[#2E708E]"
-                  title="Based on contained projects."
-                >
-                  Computed
-                </span>
-              ) : null}
             </span>
           </Label>
-          {fieldComponent(fd)}
+          <span className="mt-2 flex justify-between">
+            {fieldComponent(fd)}
+            {isComputed ? (
+              <span
+                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-1 italic text-[#2E708E]"
+                title="Based on contained projects."
+              >
+                Computed
+              </span>
+            ) : null}
+          </span>
           {fieldErrors[fd.name] ? (
             <Typography variant={'subtitle1'} className={'text-red-500'}>
               {fieldErrors[fd.name]}

@@ -36,6 +36,7 @@ import { useStore } from '@ors/store.tsx'
 
 import { enqueueSnackbar } from 'notistack'
 import { debounce, groupBy } from 'lodash'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
@@ -109,6 +110,14 @@ const ProjectsCreateWrapper = () => {
     deletedFilesIds: [],
     newFiles: [],
   })
+
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    null,
+    'add',
+    projIdentifiers.country,
+    projIdentifiers.cluster,
+    projIdentifiers.category,
+  )
 
   const [bpData, setBpData] = useState({
     hasBpData: false,
@@ -261,6 +270,7 @@ const ProjectsCreateWrapper = () => {
           setFilesMetaData,
           shouldValidateTotalFund,
           relatedProjects,
+          metaprojectData,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
