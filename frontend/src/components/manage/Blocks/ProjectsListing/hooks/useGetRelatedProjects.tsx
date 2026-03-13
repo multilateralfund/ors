@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 
+import Link from '@ors/components/ui/Link/Link.tsx'
 import { useGetAssociatedProjects } from './useGetAssociatedProjects'
 import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
-
-import { debounce, isNull } from 'lodash'
 import { formatApiUrl } from '@ors/helpers'
-import Link from '@ors/components/ui/Link/Link.tsx'
+
+import { debounce, isNull, map } from 'lodash'
 
 const useGetRelatedProjects = (
-  project: ProjectTypeApi,
   mode: string,
   metaProjectId: number | null,
   refetchRelatedProjects: boolean,
+  project?: ProjectTypeApi,
 ) => {
   const [componentAssociation, setComponentAssociation] =
     useState<AssociatedProjectsType>({
@@ -38,7 +38,7 @@ const useGetRelatedProjects = (
         <Link
           className="border-primary bg-primary font-bold text-white hover:bg-primary hover:text-mlfs-hlYellow"
           href={formatApiUrl(
-            `/api/projects/v2/export_associated_projects?project_id=${project.id}`,
+            `/api/projects/v2/export_associated_projects?project_id=${project?.id}`,
           )}
           button
         >
@@ -53,6 +53,10 @@ const useGetRelatedProjects = (
   ]
 
   const debouncedGetAssociatedProjects = debounce(() => {
+    if (!project) {
+      return
+    }
+
     relatedProjects.map(({ setData, queryParams }) => {
       useGetAssociatedProjects(
         project.id,
@@ -67,12 +71,20 @@ const useGetRelatedProjects = (
 
   useEffect(() => {
     if (
+      !!project &&
       (mode === 'edit' || mode === 'view') &&
       isNull(project.latest_project)
     ) {
       debouncedGetAssociatedProjects()
     }
   }, [metaProjectId, refetchRelatedProjects])
+
+  if (!['edit', 'view'].includes(mode)) {
+    return map(relatedProjects, (project) => ({
+      ...project,
+      data: { projects: [], loaded: true },
+    }))
+  }
 
   return relatedProjects
 }

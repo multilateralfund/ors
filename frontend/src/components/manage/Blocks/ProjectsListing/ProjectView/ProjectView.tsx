@@ -10,7 +10,7 @@ import ProjectSpecificInfo from './ProjectSpecificInfo'
 import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
-import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectUmbrellaProjectDetails from './ProjectUmbrellaProjectsDetails'
 import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
@@ -165,10 +165,10 @@ const ProjectView = ({
     : []
 
   const relatedProjects = useGetRelatedProjects(
-    project,
     'view',
     metaProjectId,
     refetchRelatedProjects,
+    project,
   )
 
   const { data: metaprojectData } = useGetMetaProjectDetails(
@@ -267,9 +267,9 @@ const ProjectView = ({
       ? [
           {
             id: 'project-related-projects-section',
-            label: 'Related projects',
+            label: 'Umbrella project details',
             component: (
-              <ProjectRelatedProjects
+              <ProjectUmbrellaProjectDetails
                 canDisassociate={
                   canUpdatePostExcom &&
                   getIsUpdatablePostExcom(
@@ -277,6 +277,7 @@ const ProjectView = ({
                     project.status,
                   )
                 }
+                mode="view"
                 {...{
                   project,
                   relatedProjects,

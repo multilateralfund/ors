@@ -1,5 +1,3 @@
-'use client'
-
 import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
@@ -12,7 +10,7 @@ import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
-import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
@@ -104,7 +102,7 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    relatedProjects?: RelatedProjectsSectionType[]
+    relatedProjects: RelatedProjectsSectionType[]
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
     loadedFiles?: boolean
@@ -684,10 +682,9 @@ const ProjectsCreate = ({
             setFilesMetaData,
             disableV3Edit,
           }}
-          nextStep={
+          prevStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
           }
-          hasNextStep={mode === 'edit'}
           isNextButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
@@ -747,29 +744,29 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(isEditMode
-      ? [
-          {
-            id: 'project-related-projects-section',
-            label: 'Related projects',
-            disabled: areNextSectionsDisabled,
-            component: (
-              <ProjectRelatedProjects
-                canDisassociate={postExComUpdate}
-                {...{
-                  project,
-                  relatedProjects,
-                  metaProjectId,
-                  setMetaProjectId,
-                  setRefetchRelatedProjects,
-                  setCurrentTab,
-                  metaprojectData,
-                }}
-              />
-            ),
-          },
-        ]
-      : []),
+    {
+      id: 'project-related-projects-section',
+      label: 'Umbrella project details',
+      disabled: areNextSectionsDisabled,
+      component: (
+        <ProjectUmbrellaProjectDetails
+          canDisassociate={postExComUpdate}
+          {...{
+            project,
+            relatedProjects,
+            metaProjectId,
+            setMetaProjectId,
+            setRefetchRelatedProjects,
+            setCurrentTab,
+            metaprojectData,
+            mode,
+          }}
+          isPrevButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
+          }
+        />
+      ),
+    },
     ...(isEditMode
       ? [
           {

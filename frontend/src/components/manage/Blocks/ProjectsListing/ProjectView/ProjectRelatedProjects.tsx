@@ -1,14 +1,11 @@
 import { useContext } from 'react'
 
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import ProjectRelatedProjectsMetaProject from './ProjectRelatedProjectsMetaProject'
 import ProjectDisassociate from '../ProjectsCreate/ProjectDisassociate'
 import RemoveAssociation from './RemoveAssociation'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
-import { NavigationButton, RelatedProjects } from '../HelperComponents'
-import { MetaProjectDetailType } from '../UpdateMyaData/types'
+import { RelatedProjects } from '../HelperComponents'
 import {
-  ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
@@ -21,41 +18,43 @@ import { isNull, map } from 'lodash'
 const ProjectRelatedProjects = ({
   project,
   relatedProjects,
-  setCurrentTab,
   metaProjectId,
   setMetaProjectId,
   setRefetchRelatedProjects,
   canDisassociate,
-  metaprojectData,
-}: ProjectTabSetters & {
-  project: ProjectTypeApi
-  relatedProjects?: RelatedProjectsSectionType[]
+  mode,
+}: {
+  project?: ProjectTypeApi
+  relatedProjects: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
-  metaprojectData?: MetaProjectDetailType | null
+  mode: string
 }) => {
-  const {
-    canDisassociateProjects,
-    canDisassociateComponents,
-    canViewMetaProjects,
-  } = useContext(PermissionsContext)
+  const isNotCreateMode = ['edit', 'view'].includes(mode) && !!project
 
-  const hasMetaProject = !!project.meta_project_id
+  const { canDisassociateProjects, canDisassociateComponents } =
+    useContext(PermissionsContext)
+
+  const hasMetaProject = isNotCreateMode && !!project.meta_project_id
 
   const canRemoveAssociation =
+    isNotCreateMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
     !!metaProjectId
 
   const canDisassociateComponent =
+    isNotCreateMode &&
     canDisassociateComponents &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
   const hasComponents =
-    project.component && project.component.original_project_id === project.id
+    isNotCreateMode &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const RelatedProjectsList = () =>
     map(
@@ -121,52 +120,33 @@ const ProjectRelatedProjects = ({
     )
 
   return (
-    <>
-      <div className="flex w-full flex-col">
-        {hasMetaProject && (
-          <>
-            <SectionTitle>
-              <div className="flex flex-wrap items-center gap-2">
-                <span>Umbrella metacode:</span>
-                <h4 className="m-0 text-2xl normal-case leading-none text-primary">
-                  {project.umbrella_code}
-                </h4>
-              </div>
-            </SectionTitle>
-            {canRemoveAssociation && (
-              <div className="mb-3 text-lg">
-                If you want this project to be removed from the umbrella
-                metacode, click
-                <RemoveAssociation {...{ setMetaProjectId }} />
-                (In case of removal, the component relationships will be
-                maintained.)
-              </div>
-            )}
-            <Divider className="mb-6" />
-          </>
-        )}
-        {hasMetaProject && canViewMetaProjects ? (
-          <div className="flex w-full flex-wrap gap-4">
-            <div className="flex flex-col gap-y-4 xl:w-auto xl:basis-[55%]">
-              <RelatedProjectsList />
+    <div className="flex w-full flex-col">
+      {isNotCreateMode && hasMetaProject && (
+        <>
+          <SectionTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <span>Umbrella metacode:</span>
+              <h4 className="m-0 text-2xl normal-case leading-none text-primary">
+                {project.umbrella_code}
+              </h4>
             </div>
-            <span className="rounded-lg bg-[#F5F5F5] p-6 xl:flex-1">
-              <ProjectRelatedProjectsMetaProject {...{ metaprojectData }} />
-            </span>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-y-4">
-            <RelatedProjectsList />
-          </div>
-        )}
-      </div>
-      {setCurrentTab && (
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
-          <NavigationButton {...{ setCurrentTab }} />
-        </div>
+          </SectionTitle>
+          {canRemoveAssociation && (
+            <div className="mb-3 text-lg">
+              If you want this project to be removed from the umbrella metacode,
+              click
+              <RemoveAssociation {...{ setMetaProjectId }} />
+              (In case of removal, the component relationships will be
+              maintained.)
+            </div>
+          )}
+          <Divider className="mb-6" />
+        </>
       )}
-    </>
+      <div className="flex flex-col gap-y-4">
+        <RelatedProjectsList />
+      </div>
+    </div>
   )
 }
 
