@@ -267,7 +267,7 @@ const ProjectView = ({
       ? [
           {
             id: 'project-related-projects-section',
-            label: 'Related projects',
+            label: 'Umbrella project details',
             component: (
               <ProjectRelatedProjects
                 canDisassociate={

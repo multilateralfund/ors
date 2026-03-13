@@ -684,10 +684,9 @@ const ProjectsCreate = ({
             setFilesMetaData,
             disableV3Edit,
           }}
-          nextStep={
+          prevStep={
             !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
           }
-          hasNextStep={mode === 'edit'}
           isNextButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
@@ -747,29 +746,30 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(isEditMode
-      ? [
-          {
-            id: 'project-related-projects-section',
-            label: 'Related projects',
-            disabled: areNextSectionsDisabled,
-            component: (
-              <ProjectRelatedProjects
-                canDisassociate={postExComUpdate}
-                {...{
-                  project,
-                  relatedProjects,
-                  metaProjectId,
-                  setMetaProjectId,
-                  setRefetchRelatedProjects,
-                  setCurrentTab,
-                  metaprojectData,
-                }}
-              />
-            ),
-          },
-        ]
-      : []),
+    {
+      id: 'project-related-projects-section',
+      label: 'Umbrella project details',
+      disabled: areNextSectionsDisabled,
+      component: (
+        <ProjectRelatedProjects
+          canDisassociate={postExComUpdate}
+          {...{
+            project,
+            relatedProjects,
+            metaProjectId,
+            setMetaProjectId,
+            setRefetchRelatedProjects,
+            setCurrentTab,
+            metaprojectData,
+            mode,
+          }}
+          prevStep={isApprovalTabAvailable ? 6 : 5}
+          isPrevButtonDisabled={
+            isApprovalTabAvailable ? isApprovalTabDisabled : false
+          }
+        />
+      ),
+    },
     ...(isEditMode
       ? [
           {

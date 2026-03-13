@@ -27,35 +27,47 @@ const ProjectRelatedProjects = ({
   setRefetchRelatedProjects,
   canDisassociate,
   metaprojectData,
+  mode,
+  prevStep,
+  isPrevButtonDisabled,
 }: ProjectTabSetters & {
-  project: ProjectTypeApi
+  project?: ProjectTypeApi
   relatedProjects?: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
+  mode: string
+  prevStep?: number
+  isPrevButtonDisabled?: boolean
 }) => {
+  const isEditMode = mode === 'edit' && !!project
+
   const {
     canDisassociateProjects,
     canDisassociateComponents,
     canViewMetaProjects,
   } = useContext(PermissionsContext)
 
-  const hasMetaProject = !!project.meta_project_id
+  const hasMetaProject = isEditMode && !!project.meta_project_id
 
   const canRemoveAssociation =
+    isEditMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
     !!metaProjectId
 
   const canDisassociateComponent =
+    isEditMode &&
     canDisassociateComponents &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
   const hasComponents =
-    project.component && project.component.original_project_id === project.id
+    isEditMode &&
+    project.component &&
+    project.component.original_project_id === project.id
 
   const RelatedProjectsList = () =>
     map(
@@ -123,7 +135,7 @@ const ProjectRelatedProjects = ({
   return (
     <>
       <div className="flex w-full flex-col">
-        {hasMetaProject && (
+        {isEditMode && hasMetaProject && (
           <>
             <SectionTitle>
               <div className="flex flex-wrap items-center gap-2">
@@ -160,10 +172,15 @@ const ProjectRelatedProjects = ({
           </div>
         )}
       </div>
-      {setCurrentTab && (
+      {setCurrentTab && prevStep && (
         <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
-          <NavigationButton {...{ setCurrentTab }} />
+          <NavigationButton
+            type="previous"
+            setCurrentTab={setCurrentTab}
+            isBtnDisabled={isPrevButtonDisabled}
+            nextTab={prevStep - 1}
+          />
+          {isEditMode && <NavigationButton {...{ setCurrentTab }} />}
         </div>
       )}
     </>
