@@ -50,7 +50,7 @@ const ProjectCrossCutting = ({
   }) as OptionsType
 
   const subsectors =
-    project.subsectors.length > 0
+    project.subsectors?.length > 0
       ? map(project.subsectors, 'name').join(', ')
       : '-'
 
@@ -144,12 +144,12 @@ const ProjectCrossCutting = ({
                 <div className={viewColumnsClassName}>
                   {numberDetailItem(
                     tableColumns.fund_transferred,
-                    project.fund_transferred.toString(),
+                    project.fund_transferred?.toString(),
                     'decimal',
                   )}
                   {numberDetailItem(
                     tableColumns.psc_transferred,
-                    project.psc_transferred.toString(),
+                    project.psc_transferred?.toString(),
                     'decimal',
                   )}
                 </div>
