@@ -24,7 +24,7 @@ import {
 } from '../utils'
 
 import { useSnackbar } from 'notistack'
-import { values } from 'lodash'
+import { filter, split, values } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -182,7 +182,7 @@ export const MetaProjectEdit = (props: {
         return (
           <DateInput
             id={fd.name}
-            className="BPListUpload !ml-0 h-9"
+            className="BPListUpload !ml-0 h-8 w-[130px]"
             value={fieldValue.toString()}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
             onChange={changeSimpleInput(fd.name)}
@@ -192,7 +192,8 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className="!m-0 h-9 w-full !border-gray-400 p-2.5"
+            className="!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5"
+            prefixClassName="h-8"
             withoutDefaultValue={true}
             prefix={monetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
@@ -203,7 +204,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className={cx('!m-0 h-9 w-full !border-gray-400 p-2.5', {
+            className={cx('!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5', {
               [disabledClassName]: isFieldDisabled,
             })}
             withoutDefaultValue={true}
@@ -218,30 +219,37 @@ export const MetaProjectEdit = (props: {
     }
   }
 
-  const renderFieldData = (fieldData: any) => {
+  const renderFieldData = (fieldData: any, withLabel: boolean = true) => {
     return fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
       return (
         <div key={fd.name} className="py-2">
-          <Label htmlFor={fd.name}>
-            <span
-              className={cx('mt-2 font-semibold', {
-                'text-red-500': fieldErrors[fd.name],
-              })}
-            >
-              {formatFieldLabel(fd.label)}
-            </span>
-          </Label>
-          <span className="mt-2 flex gap-2">
+          {withLabel && (
+            <Label htmlFor={fd.name}>
+              <span
+                className={cx('mt-2 font-semibold', {
+                  'text-red-500': fieldErrors[fd.name],
+                })}
+              >
+                {formatFieldLabel(fd.label)}
+              </span>
+            </Label>
+          )}
+          <span className="mt-2 flex gap-3">
             {fieldComponent(fd)}
             {isComputed ? (
               <span
-                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-1 italic text-[#2E708E]"
+                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]"
                 title="Based on contained projects."
               >
                 Computed
               </span>
             ) : null}
+            {!withLabel && (
+              <span className="flex items-center whitespace-nowrap">
+                {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
+              </span>
+            )}
           </span>
           {fieldErrors[fd.name] ? (
             <Typography variant={'subtitle1'} className={'text-red-500'}>
@@ -261,9 +269,28 @@ export const MetaProjectEdit = (props: {
     }
   }
 
+  const getFilteredFields = (label: string) =>
+    filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
+
+  const dateFields = getFilteredFields('date')
+  const baselineFields = getFilteredFields('baseline')
+  const targetFields = getFilteredFields('target')
+  const phaseOutFields = getFilteredFields('phase-out')
+  const startingPointFields = getFilteredFields('starting point')
+  const costEffectivenessFields = getFilteredFields('cost effectiveness')
+
+  const groupFields = (title: string, fields: any) => (
+    <div className="flex flex-col">
+      <Label className="m-auto w-fit font-semibold">{title}</Label>
+      <div className="flex flex-wrap gap-6">
+        {renderFieldData(fields, false)}
+      </div>
+    </div>
+  )
+
   return (
     <>
-      <Dialog open={!!mp?.id} fullWidth={true} maxWidth={'xl'}>
+      <Dialog open={!!mp?.id} fullWidth={true} maxWidth={'2xl'}>
         <DialogTitle>
           MYA: {mp?.umbrella_code}, Lead agency: {mp?.lead_agency?.name || '-'}
         </DialogTitle>
@@ -278,14 +305,20 @@ export const MetaProjectEdit = (props: {
           <Typography variant="h6">Details</Typography>
           <div className="flex gap-x-8">
             <div className="flex-grow">
-              {renderFieldData(
-                fieldData.slice(0, Math.ceil(fieldData.length / 2)),
-              )}
+              {renderFieldData(fieldData.slice(0, 3))}
+              <div className="flex gap-6">{renderFieldData(dateFields)}</div>
+              {renderFieldData(fieldData.slice(5, 6))}
+              {groupFields('Baseline', baselineFields)}
+              {groupFields('Target in the last year', targetFields)}
             </div>
             <div className="flex-grow">
-              {renderFieldData(
-                fieldData.slice(Math.ceil(fieldData.length / 2)),
+              {groupFields('Phase-out', phaseOutFields)}
+              {groupFields(
+                'Starting point for aggregate reductions in consumption or production',
+                startingPointFields,
               )}
+              {renderFieldData(fieldData).slice(16, 20)}
+              {groupFields('Cost effectiveness', costEffectivenessFields)}
             </div>
           </div>
         </DialogContent>

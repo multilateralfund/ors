@@ -23,6 +23,7 @@ export default function FormattedNumberInput(
     withoutInitialValue = false,
     withoutDefaultValue = false,
     prefix,
+    prefixClassName,
     ...rest
   } = props
 
@@ -55,9 +56,13 @@ export default function FormattedNumberInput(
     <div className="relative">
       {prefix && (
         <span
-          className={cx('absolute left-0 flex h-10 items-center px-4 py-2', {
-            '!text-[#9ca3af]': rest.disabled,
-          })}
+          className={cx(
+            'absolute left-0 flex h-10 items-center px-4 py-2',
+            prefixClassName,
+            {
+              '!text-[#9ca3af]': rest.disabled,
+            },
+          )}
         >
           {prefix}
         </span>

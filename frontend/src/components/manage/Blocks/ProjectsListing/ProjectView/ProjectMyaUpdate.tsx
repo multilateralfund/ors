@@ -5,6 +5,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import ProjectMyaUpdatesEdit from './ProjectMyaUpdatesEdit'
+import { Typography } from '@mui/material'
 
 const ProjectMyaUpdate = ({
   project,
@@ -17,12 +18,20 @@ const ProjectMyaUpdate = ({
 }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 
-  const hasMetaProject = !!metaprojectData && !metaprojectData.detail
+  const hasMetaProject =
+    (mode === 'edit' || mode === 'view') && !!project?.meta_project_id
+  const hasNoMetaPossibleMetaProject =
+    !hasMetaProject && !!metaprojectData?.detail
 
-  console.log(metaprojectData)
-
-  if (!hasMetaProject || !canViewMetaProjects) {
-    return <>This project has no metaproject associated.</>
+  if (
+    !canViewMetaProjects ||
+    (!hasMetaProject && hasNoMetaPossibleMetaProject)
+  ) {
+    return (
+      <Typography variant="h6">
+        Could not find a corresponding meta-project.
+      </Typography>
+    )
   }
 
   return (

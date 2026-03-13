@@ -64,6 +64,7 @@ export interface IFormattedNumberInputProps
   withoutInitialValue?: boolean
   withoutDefaultValue?: boolean
   prefix?: string
+  prefixClassName?: string
 }
 
 export interface DateRangeInputProps
