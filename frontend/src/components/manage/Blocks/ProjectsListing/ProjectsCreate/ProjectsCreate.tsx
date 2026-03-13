@@ -102,7 +102,7 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    relatedProjects?: RelatedProjectsSectionType[]
+    relatedProjects: RelatedProjectsSectionType[]
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
     loadedFiles?: boolean

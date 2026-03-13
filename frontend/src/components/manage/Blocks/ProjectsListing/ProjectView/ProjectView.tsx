@@ -165,10 +165,10 @@ const ProjectView = ({
     : []
 
   const relatedProjects = useGetRelatedProjects(
-    project,
     'view',
     metaProjectId,
     refetchRelatedProjects,
+    project,
   )
 
   const { data: metaprojectData } = useGetMetaProjectDetails(

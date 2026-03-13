@@ -6,6 +6,8 @@ import {
   RelatedProjectsSectionType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectMyaUpdate from './ProjectMyaUpdate'
+import { NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 
 import { Tabs, Tab } from '@mui/material'
@@ -19,15 +21,17 @@ const ProjectUmbrellaProjectDetails = ({
   setRefetchRelatedProjects,
   canDisassociate,
   metaprojectData,
+  mode,
   isPrevButtonDisabled,
 }: ProjectTabSetters & {
   project?: ProjectTypeApi
-  relatedProjects?: RelatedProjectsSectionType[]
+  relatedProjects: RelatedProjectsSectionType[]
   metaProjectId?: number | null
   setMetaProjectId?: (id: number | null) => void
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
+  mode?: string
   isPrevButtonDisabled?: boolean
 }) => {
   const [crtTab, setCrtTab] = useState<number>(0)
@@ -44,10 +48,8 @@ const ProjectUmbrellaProjectDetails = ({
             metaProjectId,
             setMetaProjectId,
             setRefetchRelatedProjects,
-            setCurrentTab,
-            metaprojectData,
             canDisassociate,
-            isPrevButtonDisabled,
+            mode,
           }}
         />
       ),
@@ -56,17 +58,11 @@ const ProjectUmbrellaProjectDetails = ({
       id: 'mya-updates',
       label: 'MYA updates',
       component: (
-        <ProjectRelatedProjects
+        <ProjectMyaUpdate
           {...{
             project,
-            relatedProjects,
-            metaProjectId,
-            setMetaProjectId,
-            setRefetchRelatedProjects,
-            setCurrentTab,
             metaprojectData,
-            canDisassociate,
-            isPrevButtonDisabled,
+            mode,
           }}
         />
       ),
@@ -97,10 +93,20 @@ const ProjectUmbrellaProjectDetails = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === crtTab)
-          .map(({ id, component }) => {
-            return <span key={id}>{component}</span>
-          })}
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
       </div>
+      {setCurrentTab && (
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NavigationButton
+            type="previous"
+            setCurrentTab={setCurrentTab}
+            isBtnDisabled={isPrevButtonDisabled}
+          />
+          {mode === 'edit' && <NavigationButton {...{ setCurrentTab }} />}
+        </div>
+      )}
     </>
   )
 }
