@@ -223,7 +223,7 @@ export const MetaProjectEdit = (props: {
     return fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
       return (
-        <div key={fd.name} className="py-2">
+        <div key={fd.name} className="py-1">
           {withLabel && (
             <Label htmlFor={fd.name}>
               <span
@@ -246,7 +246,7 @@ export const MetaProjectEdit = (props: {
               </span>
             ) : null}
             {!withLabel && (
-              <span className="flex items-center whitespace-nowrap">
+              <span className="flex items-center whitespace-nowrap font-semibold">
                 {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
               </span>
             )}
@@ -279,9 +279,11 @@ export const MetaProjectEdit = (props: {
   const startingPointFields = getFilteredFields('starting point')
   const costEffectivenessFields = getFilteredFields('cost effectiveness')
 
-  const groupFields = (title: string, fields: any) => (
-    <div className="flex flex-col">
-      <Label className="m-auto w-fit font-semibold">{title}</Label>
+  const groupFields = (fields: any) => (
+    <div className="flex w-fit flex-col">
+      <Label className="m-auto !mb-0 w-fit font-semibold">
+        {fields[0].label.split('(')[0].trim()}
+      </Label>
       <div className="flex flex-wrap gap-6">
         {renderFieldData(fields, false)}
       </div>
@@ -308,17 +310,14 @@ export const MetaProjectEdit = (props: {
               {renderFieldData(fieldData.slice(0, 3))}
               <div className="flex gap-6">{renderFieldData(dateFields)}</div>
               {renderFieldData(fieldData.slice(5, 6))}
-              {groupFields('Baseline', baselineFields)}
-              {groupFields('Target in the last year', targetFields)}
+              {groupFields(baselineFields)}
+              {groupFields(targetFields)}
             </div>
             <div className="flex-grow">
-              {groupFields('Phase-out', phaseOutFields)}
-              {groupFields(
-                'Starting point for aggregate reductions in consumption or production',
-                startingPointFields,
-              )}
+              {groupFields(phaseOutFields)}
+              {groupFields(startingPointFields)}
               {renderFieldData(fieldData).slice(16, 20)}
-              {groupFields('Cost effectiveness', costEffectivenessFields)}
+              {groupFields(costEffectivenessFields)}
             </div>
           </div>
         </DialogContent>

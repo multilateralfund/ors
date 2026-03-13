@@ -1,9 +1,10 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { MetaProjectDetailType } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
 import { initialParams } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
 import useApi from '@ors/hooks/useApi.ts'
-import { MetaProjectType } from '@ors/types/api_projects.ts'
 import { formatApiUrl, getResults } from '@ors/helpers'
-import { useCallback, useEffect, useState } from 'react'
-import { MetaProjectDetailType } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
+import { MetaProjectType } from '@ors/types/api_projects.ts'
 
 export const useGetMetaProjects = (
   params: typeof initialParams,
@@ -30,7 +31,11 @@ export const useGetMetaProjectDetails = (
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
 
   const formattedCategory =
-    category === 'MYA' ? 'Multi-year agreement' : 'Individual'
+    mode === 'view'
+      ? category
+      : category === 'MYA'
+        ? 'Multi-year agreement'
+        : 'Individual'
 
   const fetchData = (pk: number) => {
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
@@ -59,10 +64,10 @@ export const useGetMetaProjectDetails = (
     if (pk && (mode === 'edit' || mode === 'view')) {
       fetchData(pk)
     }
-    if (!pk && !!country && !!cluster && !!formattedCategory) {
+    if (!pk && !!country && !!cluster && !!category) {
       fetchPossibleData()
     }
-  }, [pk, country, cluster, formattedCategory])
+  }, [pk, country, cluster, category])
 
   return { data, refresh }
 }
