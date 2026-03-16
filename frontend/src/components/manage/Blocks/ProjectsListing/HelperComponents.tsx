@@ -312,6 +312,7 @@ export const RelatedProjects = ({
   withExtraProjectInfo = false,
   canRefreshStatus = true,
   mode = 'edit',
+  displaySubmissionStatus = false,
 }: {
   data?: RelatedProjectsType[]
   getErrors?: () => void
@@ -319,6 +320,7 @@ export const RelatedProjects = ({
   withExtraProjectInfo?: boolean
   canRefreshStatus?: boolean
   mode?: string
+  displaySubmissionStatus?: boolean
 }) => (
   <div className="flex flex-col">
     {map(data, (entry, index) => {
@@ -412,6 +414,15 @@ export const RelatedProjects = ({
                 <span>Project status:</span>
                 <h4 className="m-0"> {entry.status}</h4>
               </div>
+              {displaySubmissionStatus && (
+                <>
+                  <span>|</span>
+                  <div className="flex items-center gap-2.5">
+                    <span>Project submission status:</span>
+                    <h4 className="m-0"> {entry.submission_status}</h4>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             index !== (data?.length ?? 0) - 1 && <Divider className="my-3" />

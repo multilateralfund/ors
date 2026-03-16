@@ -13,16 +13,16 @@ import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import { Tabs, Tab } from '@mui/material'
 
 const ProjectUmbrellaProjectDetails = ({
-  project,
   relatedProjects,
   setCurrentTab,
   metaProjectId,
   setMetaProjectId,
   setRefetchRelatedProjects,
   canDisassociate,
-  metaprojectData,
   mode,
+  isMya,
   isPrevButtonDisabled,
+  ...rest
 }: ProjectTabSetters & {
   project?: ProjectTypeApi
   relatedProjects: RelatedProjectsSectionType[]
@@ -32,6 +32,7 @@ const ProjectUmbrellaProjectDetails = ({
   canDisassociate?: boolean
   metaprojectData?: MetaProjectDetailType | null
   mode: string
+  isMya: boolean
   isPrevButtonDisabled?: boolean
 }) => {
   const [crtTab, setCrtTab] = useState<number>(0)
@@ -43,30 +44,27 @@ const ProjectUmbrellaProjectDetails = ({
       component: (
         <ProjectRelatedProjects
           {...{
-            project,
             relatedProjects,
             metaProjectId,
             setMetaProjectId,
             setRefetchRelatedProjects,
             canDisassociate,
             mode,
+            isMya,
+            ...rest,
           }}
         />
       ),
     },
-    {
-      id: 'mya-updates',
-      label: 'MYA updates',
-      component: (
-        <ProjectMyaUpdate
-          {...{
-            project,
-            metaprojectData,
-            mode,
-          }}
-        />
-      ),
-    },
+    ...(isMya
+      ? [
+          {
+            id: 'mya-updates',
+            label: 'MYA updates',
+            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
+          },
+        ]
+      : []),
   ]
 
   return (
