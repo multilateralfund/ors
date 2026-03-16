@@ -21,6 +21,7 @@ class Command(BaseCommand):
                 "project_resources",
                 "import_project_clusters",
                 "import_project_type",
+                "import_alternative_technologies",
                 "import_sector",
                 "import_subsector",
                 "import_modules",

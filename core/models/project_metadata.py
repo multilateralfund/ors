@@ -43,6 +43,16 @@ class ProjectFieldManager(models.Manager):
         return self
 
 
+class AlternativeTechnology(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Alternative technologies"
+
+
 class ProjectField(models.Model):
     import_name = models.CharField(max_length=255)
     label = models.CharField(max_length=255)

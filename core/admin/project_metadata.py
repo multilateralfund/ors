@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 from core.admin.utils import get_final_display_list
 from core.models.project_metadata import (
+    AlternativeTechnology,
     ProjectCluster,
     ProjectSector,
     ProjectStatus,
@@ -13,6 +14,13 @@ from core.models.project_metadata import (
     ProjectField,
     ProjectSpecificFields,
 )
+
+
+@admin.register(AlternativeTechnology)
+class AlternativeTechnologyAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ["name"]
+    ordering = ["name"]
 
 
 @admin.register(ProjectCluster)

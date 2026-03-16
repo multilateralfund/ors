@@ -441,6 +441,8 @@ cython_debug/
 
 /.fs
 
+/core/import_data_v2/resources/projects/migration_2026/
+
 /docker-compose.override.yml
 
 # venv

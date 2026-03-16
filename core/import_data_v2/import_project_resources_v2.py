@@ -6,6 +6,9 @@ from core.import_data.utils import (
     IMPORT_RESOURCES_V2_DIR,
 )
 from core.import_data_v2.scripts.import_project_type import import_project_type
+from core.import_data_v2.scripts.import_alternative_technologies import (
+    import_alternative_technologies,
+)
 from core.import_data_v2.scripts.generate_new_cluster_type_sector_file import (
     generate_new_cluster_type_sector_file,
 )
@@ -58,6 +61,13 @@ def import_project_resources_v2(option):
         )
         import_project_type(file_path)
         logger.info("✔ project types imported")
+
+    if option in ["all", "import_alternative_technologies"]:
+        file_path = (
+            IMPORT_RESOURCES_V2_DIR / "projects" / "AlternativeTechnologies.json"
+        )
+        import_alternative_technologies(file_path)
+        logger.info("✔ alternative technologies imported")
 
     if option in ["all", "import_sector"]:
         file_path = IMPORT_RESOURCES_V2_DIR / "projects" / "tbSector_15_10_2025.json"
