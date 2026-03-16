@@ -282,6 +282,7 @@ const ProjectView = ({
                   )
                 }
                 mode="view"
+                isMya={project.category === 'Multi-year agreement'}
                 {...{
                   project,
                   relatedProjects,

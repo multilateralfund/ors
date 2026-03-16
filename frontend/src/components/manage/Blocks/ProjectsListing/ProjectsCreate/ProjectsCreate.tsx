@@ -761,6 +761,7 @@ const ProjectsCreate = ({
             metaprojectData,
             mode,
           }}
+          isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
             isApprovalTabAvailable ? isApprovalTabDisabled : false
           }
