@@ -506,6 +506,6 @@ export interface FieldOptsType {
 }
 
 export interface MpDataProps {
-  mpData: any
-  setMpData: any
+  mpData?: any
+  setMpData?: any
 }
