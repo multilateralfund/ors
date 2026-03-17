@@ -44,7 +44,7 @@ export const useGetMetaProjectDetails = (
       .then((data) => setData(data))
   }
 
-  const fetchPossibleData = () => {
+  const fetchPossibleMetaproject = () => {
     fetch(
       formatApiUrl(
         `/api/meta-projects/country/${country}/cluster/${cluster}/category/${formattedCategory}`,
@@ -62,11 +62,12 @@ export const useGetMetaProjectDetails = (
   }, [pk])
 
   useEffect(() => {
-    if (pk && (mode === 'edit' || mode === 'view')) {
+    if (pk) {
       fetchData(pk)
     }
-    if (!pk && !!country && !!cluster && !!category) {
-      fetchPossibleData()
+
+    if (!pk && !!country && !!cluster && category === 'Multi-year agreement') {
+      fetchPossibleMetaproject()
     }
   }, [pk, country, cluster, category])
 

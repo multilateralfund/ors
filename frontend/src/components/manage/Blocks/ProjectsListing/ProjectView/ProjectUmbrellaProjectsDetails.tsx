@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectRelatedProjects from './ProjectRelatedProjects'
+import ProjectMyaUpdate from './ProjectMyaUpdate'
+import { NavigationButton } from '../HelperComponents'
+import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import {
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import ProjectRelatedProjects from './ProjectRelatedProjects'
-import ProjectMyaUpdate from './ProjectMyaUpdate'
-import { NavigationButton } from '../HelperComponents'
-import { MetaProjectDetailType } from '../UpdateMyaData/types'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -35,12 +36,14 @@ const ProjectUmbrellaProjectDetails = ({
   isMya: boolean
   isPrevButtonDisabled?: boolean
 }) => {
+  const { canViewMetaProjects } = useContext(PermissionsContext)
+
   const [crtTab, setCrtTab] = useState<number>(0)
 
   const steps = [
     {
       id: 'related-projects',
-      label: 'Components/Associated Projects',
+      label: 'Components/Associated projects',
       component: (
         <ProjectRelatedProjects
           {...{
@@ -56,7 +59,7 @@ const ProjectUmbrellaProjectDetails = ({
         />
       ),
     },
-    ...(isMya
+    ...(canViewMetaProjects && isMya
       ? [
           {
             id: 'mya-updates',
@@ -85,7 +88,7 @@ const ProjectUmbrellaProjectDetails = ({
         }}
       >
         {steps.map(({ id, label }) => (
-          <Tab key={id} id={id} aria-controls={id} label={label} />
+          <Tab key={id} aria-controls={id} {...{ id, label }} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">

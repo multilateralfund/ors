@@ -1,7 +1,4 @@
-import { useContext } from 'react'
-
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 
@@ -16,13 +13,11 @@ const ProjectMyaUpdate = ({
   metaprojectData: MetaProjectDetailType | null
   mode: string
 }) => {
-  const { canViewMetaProjects } = useContext(PermissionsContext)
-
   const hasMetaProject =
     ['edit', 'view'].includes(mode) && !!project?.meta_project_id
   const hasNoPossibleMetaProject = !hasMetaProject && !!metaprojectData?.detail
 
-  if (!canViewMetaProjects || (!hasMetaProject && hasNoPossibleMetaProject)) {
+  if (!hasMetaProject && hasNoPossibleMetaProject) {
     return (
       <Typography variant="h6">
         Could not find a corresponding meta-project.

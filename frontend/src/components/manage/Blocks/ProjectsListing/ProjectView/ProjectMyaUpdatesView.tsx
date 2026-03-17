@@ -6,7 +6,12 @@ import {
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
-import PListingTable from '../ProjectsListing/PListingTable'
+import {
+  computedTag,
+  getFilteredFields,
+  groupFieldsLabel,
+  groupFieldsMeasurementUnits,
+} from '../HelperComponents'
 import { monetaryFields } from '../UpdateMyaData/constants'
 import { disabledClassName } from '../constants'
 import {
@@ -19,11 +24,8 @@ import {
   MetaProjectDetailType,
   MetaProjectFieldData,
 } from '../UpdateMyaData/types'
-import { getResults } from '@ors/helpers'
-import { ProjectType } from '@ors/types/api_projects'
 
 import { CircularProgress, Typography } from '@mui/material'
-import { filter, split } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -36,14 +38,6 @@ const ProjectMyaUpdatesView = ({
   metaprojectData: MetaProjectDetailType | null
   mode: string
 }) => {
-  const projects = getResults<ProjectType>([
-    ...(metaprojectData?.projects ?? []),
-    ...(filter(
-      metaprojectData?.possible_projects,
-      (project) => project.submission_status !== 'Draft',
-    ) ?? []),
-  ])
-
   const formatMetaprojectData = useCallback(() => {
     const result = {} as Record<string, any>
     const fd = metaprojectData?.field_data ?? ({} as MetaProjectFieldData)
@@ -66,6 +60,14 @@ const ProjectMyaUpdatesView = ({
   }, [formatMetaprojectData, metaprojectData])
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
+  const {
+    dateFields,
+    baselineFields,
+    targetFields,
+    phaseOutFields,
+    startingPointFields,
+    costEffectivenessFields,
+  } = getFilteredFields(fieldData)
 
   const computeProjectDuration = () =>
     getProjectDuration({
@@ -173,83 +175,52 @@ const ProjectMyaUpdatesView = ({
           )}
           <span className="flex gap-3">
             {fieldComponent(fd)}
-            {isComputed ? (
-              <span
-                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]"
-                title="Based on contained projects."
-              >
-                Computed
-              </span>
-            ) : null}
-            {!isIndividualField && (
-              <span className="flex items-center whitespace-nowrap font-semibold">
-                {split(formattedLabel, '(')[1]?.split(')')[0]}
-              </span>
-            )}
+            {computedTag(isComputed)}
+            {!isIndividualField && groupFieldsMeasurementUnits(formattedLabel)}
           </span>
         </div>
       )
     })
 
-  const getFilteredFields = (label: string) =>
-    filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
-
-  const dateFields = getFilteredFields('date')
-  const baselineFields = getFilteredFields('baseline')
-  const targetFields = getFilteredFields('target')
-  const phaseOutFields = getFilteredFields('phase-out')
-  const startingPointFields = getFilteredFields('starting point')
-  const costEffectivenessFields = getFilteredFields('cost effectiveness')
-
   const groupFields = (fields: any) => (
     <div className="flex w-fit flex-col">
-      <Label className="m-auto !mb-0 w-fit font-semibold">
-        {fields[0].label.split('(')[0].trim()}
-      </Label>
-      <div className="flex flex-wrap gap-6">
+      {groupFieldsLabel(fields)}
+      <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
       </div>
     </div>
   )
 
   return (
-    <div>
+    <>
       {!!metaprojectData?.id ? (
         <div className="flex flex-col gap-y-3">
           <Typography variant="h6">
             MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
             {metaprojectData?.lead_agency?.name || '-'}
           </Typography>
-          <Typography variant="h6">Projects under this MYA</Typography>
-          <PListingTable
-            mode="listing"
-            projects={projects as any}
-            filters={{}}
-            enablePagination={false}
-          />
-          <div>
-            <Typography variant="h6">Details</Typography>
-            <div className="flex gap-x-8">
-              <div className="flex-grow">
-                {renderFieldData(fieldData.slice(0, 3))}
-                <div className="flex gap-6">{renderFieldData(dateFields)}</div>
-                {renderFieldData(fieldData.slice(5, 6))}
-                {groupFields(baselineFields)}
-                {groupFields(targetFields)}
+          <div className="flex gap-x-6">
+            <div className="flex-grow">
+              {renderFieldData(fieldData.slice(0, 3))}
+              <div className="flex flex-wrap gap-x-6">
+                {renderFieldData(dateFields)}
               </div>
-              <div className="flex-grow">
-                {groupFields(phaseOutFields)}
-                {groupFields(startingPointFields)}
-                {renderFieldData(fieldData).slice(16, 20)}
-                {groupFields(costEffectivenessFields)}
-              </div>
+              {renderFieldData(fieldData.slice(5, 6))}
+              {groupFields(baselineFields)}
+              {groupFields(targetFields)}
+            </div>
+            <div className="flex-grow">
+              {groupFields(phaseOutFields)}
+              {groupFields(startingPointFields)}
+              {renderFieldData(fieldData).slice(16, 20)}
+              {groupFields(costEffectivenessFields)}
             </div>
           </div>
         </div>
       ) : (
         <CircularProgress color="inherit" size="24px" className="ml-1.5" />
       )}
-    </div>
+    </>
   )
 }
 

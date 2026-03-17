@@ -13,9 +13,9 @@ import {
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 
 import { Divider, CircularProgress } from '@mui/material'
+import { isNull, map, orderBy, uniqBy } from 'lodash'
 import { TbLayersSubtract } from 'react-icons/tb'
 import { IoGridOutline } from 'react-icons/io5'
-import { isNull, map, orderBy, uniqBy } from 'lodash'
 
 const ProjectRelatedProjects = ({
   project,
@@ -24,9 +24,9 @@ const ProjectRelatedProjects = ({
   setMetaProjectId,
   setRefetchRelatedProjects,
   canDisassociate,
+  metaprojectData,
   mode,
   isMya,
-  metaprojectData,
 }: {
   project?: ProjectTypeApi
   relatedProjects: RelatedProjectsSectionType[]
@@ -34,16 +34,14 @@ const ProjectRelatedProjects = ({
   setMetaProjectId?: (id: number | null) => void
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
+  metaprojectData: MetaProjectDetailType | null
   mode: string
   isMya: boolean
-  metaprojectData: MetaProjectDetailType | null
 }) => {
-  const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
-
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
 
-  const hasMetaProject = isVieworEditMode && !!project.meta_project_id
+  const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
 
   const canRemoveAssociation =
     isVieworEditMode &&
@@ -64,8 +62,12 @@ const ProjectRelatedProjects = ({
 
   const hasPossibleAssociatedProjects =
     isMya &&
-    (!isVieworEditMode ||
-      (project.version < 3 && project.submission_status !== 'Withdrawn'))
+    !(
+      isVieworEditMode &&
+      ['Withdrawn', 'Approved', 'Not approved'].includes(
+        project.submission_status,
+      )
+    )
 
   const RelatedProjectsList = () =>
     map(
@@ -75,32 +77,29 @@ const ProjectRelatedProjects = ({
         const showDownloadButton =
           crtData && crtData.length > 0 && downloadButton
 
-        const formattedCrtData =
+        const allCrtData =
           index === 1 && hasPossibleAssociatedProjects
             ? [
                 ...(crtData ?? []),
-                ...(metaprojectData?.possible_projects ?? []).map(
-                  (project) => ({
-                    ...project,
-                    errors: [],
-                    warnings: [],
-                  }),
-                ),
+                ...map(metaprojectData?.possible_projects, (project) => ({
+                  ...project,
+                  errors: [],
+                  warnings: [],
+                })),
               ]
-            : crtData
+            : (crtData ?? [])
 
-        const sortedCrtData = uniqBy(
-          orderBy(
-            formattedCrtData,
-            [(p) => p.submission_status === 'Approved'],
-            ['desc'],
-          ).filter(
-            (p) =>
-              p.submission_status !== 'Draft' &&
-              (!isVieworEditMode || p.id !== project.id),
-          ),
-          'id',
+        const filteredData = allCrtData.filter(
+          (entry) =>
+            entry.submission_status !== 'Draft' &&
+            !(isVieworEditMode && entry.id === project.id),
         )
+        const orderedData = orderBy(
+          filteredData,
+          [(entry) => entry.submission_status === 'Approved'],
+          ['desc'],
+        )
+        const finalData = uniqBy(orderedData, 'id')
 
         return (
           <span key={index} className="bg-common-containerBg rounded-lg p-6">
@@ -123,15 +122,14 @@ const ProjectRelatedProjects = ({
               </div>
             </div>
             {loaded ? (
-              sortedCrtData && sortedCrtData.length > 0 ? (
+              finalData && finalData.length > 0 ? (
                 <>
                   <RelatedProjects
-                    data={sortedCrtData as RelatedProjectsType[]}
+                    data={finalData as RelatedProjectsType[]}
                     isLoaded={true}
                     withExtraProjectInfo={true}
                     canRefreshStatus={false}
                     mode="view"
-                    displaySubmissionStatus={true}
                   />
                   {index === 0 && canDisassociateComponent && (
                     <ProjectDisassociate
@@ -160,7 +158,7 @@ const ProjectRelatedProjects = ({
 
   return (
     <div className="flex w-full flex-col">
-      {isVieworEditMode && hasMetaProject && (
+      {isVieworEditMode && !!project.meta_project_id && (
         <>
           <SectionTitle>
             <div className="flex flex-wrap items-center gap-2">

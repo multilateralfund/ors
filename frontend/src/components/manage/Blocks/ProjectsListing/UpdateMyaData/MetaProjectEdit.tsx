@@ -15,6 +15,12 @@ import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/Project
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import CancelWarningModal from '../ProjectSubmission/CancelWarningModal'
+import {
+  computedTag,
+  getFilteredFields,
+  groupFieldsLabel,
+  groupFieldsMeasurementUnits,
+} from '../HelperComponents'
 import { disabledClassName } from '../constants'
 import { monetaryFields } from './constants'
 import {
@@ -24,7 +30,7 @@ import {
 } from '../utils'
 
 import { useSnackbar } from 'notistack'
-import { filter, split, values } from 'lodash'
+import { values } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -92,6 +98,14 @@ export const MetaProjectEdit = (props: {
   }, [loadInitialState, mp])
 
   const fieldData = orderFieldData(mp?.field_data ?? {})
+  const {
+    dateFields,
+    baselineFields,
+    targetFields,
+    phaseOutFields,
+    startingPointFields,
+    costEffectivenessFields,
+  } = getFilteredFields(fieldData)
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
@@ -239,28 +253,26 @@ export const MetaProjectEdit = (props: {
           )}
           <span className="flex gap-3">
             {fieldComponent(fd)}
-            {isComputed ? (
-              <span
-                className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]"
-                title="Based on contained projects."
-              >
-                Computed
-              </span>
-            ) : null}
-            {!isIndividualField && (
-              <span className="flex items-center whitespace-nowrap font-semibold">
-                {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
-              </span>
-            )}
+            {computedTag(isComputed)}
+            {!isIndividualField && groupFieldsMeasurementUnits(formattedLabel)}
           </span>
           {fieldErrors[fd.name] ? (
-            <Typography variant={'subtitle1'} className={'text-red-500'}>
+            <Typography variant="subtitle1" className="text-red-500">
               {fieldErrors[fd.name]}
             </Typography>
           ) : null}
         </div>
       )
     })
+
+  const groupFields = (fields: any) => (
+    <div className="flex w-fit flex-col">
+      {groupFieldsLabel(fields)}
+      <div className="flex flex-wrap gap-x-6">
+        {renderFieldData(fields, false)}
+      </div>
+    </div>
+  )
 
   const onCancelUpdate = () => {
     if (updatedFields.size > 0) {
@@ -270,30 +282,9 @@ export const MetaProjectEdit = (props: {
     }
   }
 
-  const getFilteredFields = (label: string) =>
-    filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
-
-  const dateFields = getFilteredFields('date')
-  const baselineFields = getFilteredFields('baseline')
-  const targetFields = getFilteredFields('target')
-  const phaseOutFields = getFilteredFields('phase-out')
-  const startingPointFields = getFilteredFields('starting point')
-  const costEffectivenessFields = getFilteredFields('cost effectiveness')
-
-  const groupFields = (fields: any) => (
-    <div className="flex w-fit flex-col">
-      <Label className="m-auto !mb-0 w-fit font-semibold">
-        {fields[0].label.split('(')[0].trim()}
-      </Label>
-      <div className="flex flex-wrap gap-6">
-        {renderFieldData(fields, false)}
-      </div>
-    </div>
-  )
-
   return (
     <>
-      <Dialog open={!!mp?.id} fullWidth={true} maxWidth={'2xl'}>
+      <Dialog open={!!mp?.id} fullWidth={true} maxWidth="2xl">
         <DialogTitle>
           MYA: {mp?.umbrella_code}, Lead agency: {mp?.lead_agency?.name || '-'}
         </DialogTitle>
@@ -308,10 +299,12 @@ export const MetaProjectEdit = (props: {
           <Typography variant="h6" className="mt-3">
             Details
           </Typography>
-          <div className="flex gap-x-8">
+          <div className="flex gap-x-6">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}
-              <div className="flex gap-6">{renderFieldData(dateFields)}</div>
+              <div className="flex flex-wrap gap-x-6">
+                {renderFieldData(dateFields)}
+              </div>
               {renderFieldData(fieldData.slice(5, 6))}
               {groupFields(baselineFields)}
               {groupFields(targetFields)}
