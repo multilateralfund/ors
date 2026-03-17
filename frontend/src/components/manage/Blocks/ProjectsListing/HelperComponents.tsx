@@ -1,5 +1,6 @@
 import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react'
 
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import CustomLink from '@ors/components/ui/Link/Link'
@@ -18,7 +19,7 @@ import {
 } from './interfaces'
 import { debounce } from '@ors/helpers'
 
-import { filter, lowerCase, map, upperCase } from 'lodash'
+import { filter, lowerCase, map, split, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -312,7 +313,6 @@ export const RelatedProjects = ({
   withExtraProjectInfo = false,
   canRefreshStatus = true,
   mode = 'edit',
-  displaySubmissionStatus = false,
 }: {
   data?: RelatedProjectsType[]
   getErrors?: () => void
@@ -320,7 +320,6 @@ export const RelatedProjects = ({
   withExtraProjectInfo?: boolean
   canRefreshStatus?: boolean
   mode?: string
-  displaySubmissionStatus?: boolean
 }) => (
   <div className="flex flex-col">
     {map(data, (entry, index) => {
@@ -414,15 +413,11 @@ export const RelatedProjects = ({
                 <span>Project status:</span>
                 <h4 className="m-0"> {entry.status}</h4>
               </div>
-              {displaySubmissionStatus && (
-                <>
-                  <span>|</span>
-                  <div className="flex items-center gap-2.5">
-                    <span>Project submission status:</span>
-                    <h4 className="m-0"> {entry.submission_status}</h4>
-                  </div>
-                </>
-              )}
+              <span>|</span>
+              <div className="flex items-center gap-2.5">
+                <span>Project submission status:</span>
+                <h4 className="m-0"> {entry.submission_status}</h4>
+              </div>
             </div>
           ) : (
             index !== (data?.length ?? 0) - 1 && <Divider className="my-3" />
@@ -700,3 +695,39 @@ export const displaySearchTerm = (
       />
     </Typography>
   )
+
+export const computedTag = (isComputed: boolean) =>
+  isComputed ? (
+    <span
+      className="border-1 flex items-center rounded-lg border border-solid border-[#2E708E] px-3 font-semibold italic text-[#2E708E]"
+      title="Based on contained projects."
+    >
+      Computed
+    </span>
+  ) : null
+
+export const groupFieldsLabel = (fields: any) => (
+  <Label className="m-auto !mb-0 w-fit font-semibold">
+    {fields[0].label.split('(')[0].trim()}
+  </Label>
+)
+
+export const groupFieldsMeasurementUnits = (label: string) => (
+  <span className="flex items-center whitespace-nowrap font-semibold">
+    {split(label, '(')[1]?.split(')')[0]}
+  </span>
+)
+
+export const getFilteredFields = (fieldData: any) => {
+  const groupFields = (label: string) =>
+    filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
+
+  return {
+    dateFields: groupFields('date'),
+    baselineFields: groupFields('baseline'),
+    targetFields: groupFields('target'),
+    phaseOutFields: groupFields('phase-out'),
+    startingPointFields: groupFields('starting point'),
+    costEffectivenessFields: groupFields('cost effectiveness'),
+  }
+}

@@ -15,9 +15,9 @@ export type MetaProjectFieldData = Record<
 
 export type MetaProjectDetailType = {
   projects: ProjectType[]
+  possible_projects?: ProjectType[]
   field_data: MetaProjectFieldData
   computed_field_data: Record<string, number | string | null>
-  possible_projects?: ProjectType[]
   detail?: string
 } & MetaProjectType
 
