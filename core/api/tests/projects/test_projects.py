@@ -764,7 +764,6 @@ class TestCreateProjects(BaseTest):
             project_type,
             sector,
             meeting,
-            None,
             1,
         )
 

@@ -906,16 +906,26 @@ def fill_total_phase_out_values_in_project(dry_run=True):
         if not dry_run:
             project.save()
 
+
 def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
     meta_projects = MetaProject.objects.all()
     for meta_project in meta_projects:
-        all_data_per_agreement = set(meta_project.projects.filter(date_per_agreement__isnull=False).values_list("date_per_agreement", flat=True))
+        all_data_per_agreement = set(
+            meta_project.projects.filter(date_per_agreement__isnull=False).values_list(
+                "date_per_agreement", flat=True
+            )
+        )
         if len(all_data_per_agreement) == 1:
             date_per_agreement = all_data_per_agreement.pop()
             if date_per_agreement:
-                if meta_project.end_date and meta_project.end_date != date_per_agreement:
+                if (
+                    meta_project.end_date
+                    and meta_project.end_date != date_per_agreement
+                ):
                     logger.warning(
-                        f"""⚠️ MetaProject with id '{meta_project.id}' has an end_date different than date_per_agreement while trying to fill project_end_date"""
+                        f"""⚠️ MetaProject with id '{meta_project.id}' has an end_date different than
+                        date_per_agreement while trying to fill project_end_date
+                    """
                     )
                 else:
                     meta_project.end_date = date_per_agreement
@@ -923,12 +933,17 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
                         meta_project.save()
             else:
                 logger.warning(
-                    f"""⚠️ MetaProject with id '{meta_project.id}' has a null date_per_agreement in its projects while trying to fill project_end_date"""
+                    f"""⚠️ MetaProject with id '{meta_project.id}' has a null date_per_agreement in
+                    its projects while trying to fill project_end_date
+                    """
                 )
         elif len(all_data_per_agreement) > 1:
             logger.warning(
-                f"""⚠️ MetaProject with id '{meta_project.id}' has multiple different date_per_agreement values in its projects while trying to fill project_end_date"""
+                f"""⚠️ MetaProject with id '{meta_project.id}' has multiple different
+                date_per_agreement values in its projects while trying to fill project_end_date
+                """
             )
+
 
 @transaction.atomic
 def migrate_projects_2026(option, dry_run=True):
