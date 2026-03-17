@@ -602,7 +602,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             project.project_type,
             project.sector,
             project.meeting,
-            project.meeting_transf,
             project.serial_number,
         )
         project.save()
@@ -650,7 +649,6 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             instance.project_type,
             instance.sector,
             instance.meeting,
-            instance.meeting_transf,
             instance.serial_number,
         )
         instance.save()

@@ -68,3 +68,5 @@ python manage.py migrate_projects_2026 ods_production_fields
 python manage.py migrate_projects_2026 funding_fields
 python manage.py migrate_projects_2026 transfer_fields
 python manage.py migrate_projects_2026 c_and_p
+python manage.py migrate_projects_2026 fill_total_phase_out_values_in_project
+python manage.py migrate_projects_2026 fill_project_end_date_mya_with_date_per_agreement

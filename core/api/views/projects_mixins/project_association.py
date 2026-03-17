@@ -100,7 +100,6 @@ class ProjectAssociationMixin:
                 project.project_type,
                 project.sector,
                 project.meeting,
-                project.transfer_meeting,
                 project.serial_number,
                 project.metacode,
             )

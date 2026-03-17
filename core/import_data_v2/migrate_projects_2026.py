@@ -20,6 +20,7 @@ from core.models import (
     Meeting,
     Project,
     ProjectOdsOdp,
+    MetaProject,
 )
 from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
 from core.models.project_metadata import (
@@ -432,7 +433,6 @@ def process_set_new_code(dry_run=True):
             project.project_type,
             project.sector,
             project.meeting,
-            project.transfer_meeting,
             project.serial_number,
             project.metacode,
         )
@@ -906,6 +906,29 @@ def fill_total_phase_out_values_in_project(dry_run=True):
         if not dry_run:
             project.save()
 
+def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
+    meta_projects = MetaProject.objects.all()
+    for meta_project in meta_projects:
+        all_data_per_agreement = set(meta_project.projects.filter(date_per_agreement__isnull=False).values_list("date_per_agreement", flat=True))
+        if len(all_data_per_agreement) == 1:
+            date_per_agreement = all_data_per_agreement.pop()
+            if date_per_agreement:
+                if meta_project.end_date and meta_project.end_date != date_per_agreement:
+                    logger.warning(
+                        f"""⚠️ MetaProject with id '{meta_project.id}' has an end_date different than date_per_agreement while trying to fill project_end_date"""
+                    )
+                else:
+                    meta_project.end_date = date_per_agreement
+                    if not dry_run:
+                        meta_project.save()
+            else:
+                logger.warning(
+                    f"""⚠️ MetaProject with id '{meta_project.id}' has a null date_per_agreement in its projects while trying to fill project_end_date"""
+                )
+        elif len(all_data_per_agreement) > 1:
+            logger.warning(
+                f"""⚠️ MetaProject with id '{meta_project.id}' has multiple different date_per_agreement values in its projects while trying to fill project_end_date"""
+            )
 
 @transaction.atomic
 def migrate_projects_2026(option, dry_run=True):
@@ -943,3 +966,5 @@ def migrate_projects_2026(option, dry_run=True):
         process_c_and_p_production_sheet(dry_run=dry_run)
     elif option == "fill_total_phase_out_values_in_project":
         fill_total_phase_out_values_in_project(dry_run=dry_run)
+    elif option == "fill_project_end_date_mya_with_date_per_agreement":
+        fill_project_end_date_mya_with_date_per_agreement(dry_run=dry_run)

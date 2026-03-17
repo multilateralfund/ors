@@ -34,7 +34,6 @@ def set_serial_number():
                 project.project_type,
                 project.sector,
                 project.meeting,
-                project.meeting_transf,
                 i + 1,
             )
             project.serial_number = i + 1

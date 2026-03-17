@@ -1692,7 +1692,6 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.project_type,
             new_transfer_project.sector,
             new_transfer_project.meeting,
-            new_transfer_project.meeting_transf,
             new_transfer_project.serial_number,
             new_transfer_project.metacode,
         )

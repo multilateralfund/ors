@@ -20,6 +20,7 @@ class Command(BaseCommand):
                 "ods_phaseout_fields",
                 "ods_production_fields",
                 "fill_total_phase_out_values_in_project",
+                "fill_project_end_date_mya_with_date_per_agreement",
                 "funding_fields",
                 "transfer_fields",
                 "c_and_p",

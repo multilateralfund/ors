@@ -46,7 +46,6 @@ def get_project_sub_code(
     project_type,
     sector,
     meeting_appr,
-    meeting_transf=None,
     serial_number=None,
     metacode=None,
 ):
@@ -59,7 +58,6 @@ def get_project_sub_code(
     @param project_type: ProjectType
     @param sector: Sector
     @param meeting_appr: Meeting
-    @param meeting_transf: Meeting
     @param serial_number: int
 
     @return: str
@@ -69,8 +67,7 @@ def get_project_sub_code(
     project_type_code = project_type.code if project_type else "-"
     sector_code = sector.code if sector else "-"
     meeting_appr_code = meeting_appr.number if meeting_appr else "-"
-    meeting_transf_code = f".{meeting_transf.number}" if meeting_transf else ""
-    meetings_code = f"{meeting_appr_code}{meeting_transf_code}"
+    meetings_code = f"{meeting_appr_code}"
     if not serial_number:
         serial_number = Project.objects.get_next_serial_number(country.id)
     if not metacode:
@@ -153,7 +150,6 @@ def post_approval_changes(project):
         project.project_type,
         project.sector,
         project.meeting,
-        project.transfer_meeting,
         project.serial_number,
         project.metacode,
     )

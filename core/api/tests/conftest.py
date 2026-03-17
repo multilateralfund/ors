@@ -1397,7 +1397,6 @@ def setup_project_list(
                 project_data["project_type"],
                 project_data["sector"],
                 project_data["meeting"],
-                project_data["meeting"],
                 i + 1,
             )
 
@@ -1416,7 +1415,6 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["meeting"],
         project_data["meeting"],
         25,
     )
@@ -1437,7 +1435,6 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["meeting"],
         project_data["meeting"],
         26,
     )
