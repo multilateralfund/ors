@@ -13,20 +13,16 @@ const ProjectMyaUpdate = ({
   mode,
 }: {
   project?: ProjectTypeApi
-  metaprojectData?: MetaProjectDetailType | null
+  metaprojectData: MetaProjectDetailType | null
   mode: string
 }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 
   const hasMetaProject =
-    (mode === 'edit' || mode === 'view') && !!project?.meta_project_id
-  const hasNoMetaPossibleMetaProject =
-    !hasMetaProject && !!metaprojectData?.detail
+    ['edit', 'view'].includes(mode) && !!project?.meta_project_id
+  const hasNoPossibleMetaProject = !hasMetaProject && !!metaprojectData?.detail
 
-  if (
-    !canViewMetaProjects ||
-    (!hasMetaProject && hasNoMetaPossibleMetaProject)
-  ) {
+  if (!canViewMetaProjects || (!hasMetaProject && hasNoPossibleMetaProject)) {
     return (
       <Typography variant="h6">
         Could not find a corresponding meta-project.
@@ -35,10 +31,8 @@ const ProjectMyaUpdate = ({
   }
 
   return (
-    <div className="flex w-full flex-wrap gap-4">
-      <span className="flex-1 rounded-lg bg-[#F5F5F5] px-6 py-2">
-        <ProjectMyaUpdatesView {...{ metaprojectData, mode }} />
-      </span>
+    <div className="bg-common-containerBg rounded-lg px-6 py-2">
+      <ProjectMyaUpdatesView {...{ metaprojectData, mode }} />
     </div>
   )
 }

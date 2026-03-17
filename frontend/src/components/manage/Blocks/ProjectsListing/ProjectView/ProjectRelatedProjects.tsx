@@ -36,7 +36,7 @@ const ProjectRelatedProjects = ({
   canDisassociate?: boolean
   mode: string
   isMya: boolean
-  metaprojectData?: MetaProjectDetailType | null
+  metaprojectData: MetaProjectDetailType | null
 }) => {
   const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
 
@@ -103,7 +103,7 @@ const ProjectRelatedProjects = ({
         )
 
         return (
-          <span key={index} className="rounded-lg bg-[#F5F5F5] p-6">
+          <span key={index} className="bg-common-containerBg rounded-lg p-6">
             <div className="flex flex-wrap items-center gap-2.5">
               {index === 0 ? (
                 <IoGridOutline className="mb-4 rotate-45" size={16} />

@@ -110,7 +110,7 @@ export default function PListingWrapper() {
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Copy project
         </Typography>
-        <div className="mb-4 flex flex-col gap-2.5 bg-[#F5F5F5] p-6">
+        <div className="bg-common-containerBg mb-4 flex flex-col gap-2.5 p-6">
           <span className="text-lg">
             You are about to copy the following project and start a new
             submission.

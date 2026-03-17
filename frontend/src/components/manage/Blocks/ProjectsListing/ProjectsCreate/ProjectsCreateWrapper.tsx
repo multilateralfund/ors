@@ -7,10 +7,11 @@ import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import ProjectFormFooter from '../ProjectFormFooter.tsx'
-import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
-import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
+import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
+import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 import {
   getDefaultValues,
   getNonFieldErrors,
@@ -36,7 +37,6 @@ import { useStore } from '@ors/store.tsx'
 
 import { enqueueSnackbar } from 'notistack'
 import { debounce, groupBy } from 'lodash'
-import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
@@ -111,14 +111,6 @@ const ProjectsCreateWrapper = () => {
     newFiles: [],
   })
 
-  const { data: metaprojectData } = useGetMetaProjectDetails(
-    null,
-    'add',
-    projIdentifiers.country,
-    projIdentifiers.cluster,
-    projIdentifiers.category,
-  )
-
   const [bpData, setBpData] = useState({
     hasBpData: false,
     bpDataLoading: false,
@@ -133,6 +125,11 @@ const ProjectsCreateWrapper = () => {
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    null,
+    'add',
+    projIdentifiers,
+  )
   const relatedProjects = useGetRelatedProjects('add', null, false)
 
   useEffect(() => {

@@ -33,12 +33,15 @@ const ProjectMyaUpdatesView = ({
   metaprojectData,
   mode,
 }: {
-  metaprojectData?: MetaProjectDetailType | null
+  metaprojectData: MetaProjectDetailType | null
   mode: string
 }) => {
   const projects = getResults<ProjectType>([
     ...(metaprojectData?.projects ?? []),
-    ...(metaprojectData?.possible_projects ?? []),
+    ...(filter(
+      metaprojectData?.possible_projects,
+      (project) => project.submission_status !== 'Draft',
+    ) ?? []),
   ])
 
   const formatMetaprojectData = useCallback(() => {
@@ -156,18 +159,19 @@ const ProjectMyaUpdatesView = ({
     }
   }
 
-  const renderFieldData = (fieldData: any, withLabel: boolean = true) => {
-    return fieldData.map((fd: any) => {
+  const renderFieldData = (fieldData: any, isIndividualField: boolean = true) =>
+    fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
+      const formattedLabel = formatFieldLabel(fd.label)
 
       return (
-        <div key={fd.name} className="py-1">
-          {withLabel && (
-            <Label htmlFor={fd.name} className="mt-2 font-semibold">
-              {formatFieldLabel(fd.label)}
+        <div key={fd.name} className="py-2">
+          {isIndividualField && (
+            <Label htmlFor={fd.name} className="font-semibold">
+              {formattedLabel}
             </Label>
           )}
-          <span className="mt-2 flex gap-3">
+          <span className="flex gap-3">
             {fieldComponent(fd)}
             {isComputed ? (
               <span
@@ -177,16 +181,15 @@ const ProjectMyaUpdatesView = ({
                 Computed
               </span>
             ) : null}
-            {!withLabel && (
+            {!isIndividualField && (
               <span className="flex items-center whitespace-nowrap font-semibold">
-                {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
+                {split(formattedLabel, '(')[1]?.split(')')[0]}
               </span>
             )}
           </span>
         </div>
       )
     })
-  }
 
   const getFilteredFields = (label: string) =>
     filter(fieldData, (entry) => entry.label.toLowerCase().includes(label))
