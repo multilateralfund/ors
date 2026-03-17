@@ -111,7 +111,7 @@ const ProjectsCreate = ({
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
     setRefetchRelatedProjects?: (refetch: boolean) => void
-    metaprojectData?: MetaProjectDetailType | null
+    metaprojectData: MetaProjectDetailType | null
     shouldValidateTotalFund: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()

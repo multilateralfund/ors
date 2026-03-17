@@ -189,7 +189,7 @@ export const NavigationButton = ({
         'border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
           type === 'next' && !isBtnDisabled,
         'border-solid border-primary bg-white text-primary':
-          type === 'previous',
+          type === 'previous' && !isBtnDisabled,
       })}
       disabled={isBtnDisabled}
       size="large"

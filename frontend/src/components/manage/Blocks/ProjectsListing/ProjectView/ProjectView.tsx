@@ -171,12 +171,15 @@ const ProjectView = ({
     project,
   )
 
+  const metaProjectDetailsProps = {
+    country: project.country_id,
+    cluster: project.cluster_id,
+    category: project.category,
+  }
   const { data: metaprojectData } = useGetMetaProjectDetails(
     project.meta_project_id,
     'view',
-    project.country_id,
-    project.cluster_id,
-    project.category,
+    metaProjectDetailsProps,
   )
 
   const hasComponents =

@@ -219,23 +219,25 @@ export const MetaProjectEdit = (props: {
     }
   }
 
-  const renderFieldData = (fieldData: any, withLabel: boolean = true) => {
-    return fieldData.map((fd: any) => {
+  const renderFieldData = (fieldData: any, isIndividualField: boolean = true) =>
+    fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
+      const formattedLabel = formatFieldLabel(fd.label)
+
       return (
-        <div key={fd.name} className="py-1">
-          {withLabel && (
+        <div key={fd.name} className="py-2">
+          {isIndividualField && (
             <Label htmlFor={fd.name}>
               <span
-                className={cx('mt-2 font-semibold', {
+                className={cx('font-semibold', {
                   'text-red-500': fieldErrors[fd.name],
                 })}
               >
-                {formatFieldLabel(fd.label)}
+                {formattedLabel}
               </span>
             </Label>
           )}
-          <span className="mt-2 flex gap-3">
+          <span className="flex gap-3">
             {fieldComponent(fd)}
             {isComputed ? (
               <span
@@ -245,7 +247,7 @@ export const MetaProjectEdit = (props: {
                 Computed
               </span>
             ) : null}
-            {!withLabel && (
+            {!isIndividualField && (
               <span className="flex items-center whitespace-nowrap font-semibold">
                 {split(formatFieldLabel(fd.label), '(')[1]?.split(')')[0]}
               </span>
@@ -259,7 +261,6 @@ export const MetaProjectEdit = (props: {
         </div>
       )
     })
-  }
 
   const onCancelUpdate = () => {
     if (updatedFields.size > 0) {
@@ -304,7 +305,9 @@ export const MetaProjectEdit = (props: {
             filters={{}}
             enablePagination={false}
           />
-          <Typography variant="h6">Details</Typography>
+          <Typography variant="h6" className="mt-3">
+            Details
+          </Typography>
           <div className="flex gap-x-8">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}

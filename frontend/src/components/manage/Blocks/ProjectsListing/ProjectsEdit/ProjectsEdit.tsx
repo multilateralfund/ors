@@ -244,12 +244,11 @@ const ProjectsEdit = ({
     project,
   )
 
+  const meta_project_id = mode === 'edit' ? project.meta_project_id : null
   const { data: metaprojectData } = useGetMetaProjectDetails(
-    project.meta_project_id,
+    meta_project_id,
     mode,
-    projIdentifiers.country,
-    projIdentifiers.cluster,
-    projIdentifiers.category,
+    projIdentifiers,
   )
 
   const [bpData, setBpData] = useState({

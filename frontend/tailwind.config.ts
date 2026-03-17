@@ -158,6 +158,10 @@ const originalColors = {
   },
 }
 
+const common = {
+  containerBg: '#F5F5F5',
+}
+
 const config: Config = {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -306,6 +310,7 @@ const config: Config = {
       colors: {
         gray,
         mlfs,
+        common,
       },
       zIndex: {
         absolute: '9999',

@@ -5,6 +5,7 @@ import { initialParams } from '@ors/components/manage/Blocks/ProjectsListing/Upd
 import useApi from '@ors/hooks/useApi.ts'
 import { formatApiUrl, getResults } from '@ors/helpers'
 import { MetaProjectType } from '@ors/types/api_projects.ts'
+import { ProjIdentifiers } from '../interfaces'
 
 export const useGetMetaProjects = (
   params: typeof initialParams,
@@ -24,11 +25,11 @@ export const useGetMetaProjects = (
 export const useGetMetaProjectDetails = (
   pk?: number | null,
   mode: string = 'edit',
-  country?: number | null,
-  cluster?: number | null,
-  category?: string | null,
+  metaProjectIdentifiers?: Partial<ProjIdentifiers>,
 ) => {
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
+
+  const { country, cluster, category } = metaProjectIdentifiers ?? {}
 
   const formattedCategory =
     mode === 'view'

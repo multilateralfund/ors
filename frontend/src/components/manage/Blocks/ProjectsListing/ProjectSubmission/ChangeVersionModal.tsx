@@ -71,7 +71,7 @@ const ChangeVersionModal = ({
           <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
             {capitalize(mode)} project
           </Typography>
-          <div className="mb-4 flex flex-col gap-6 bg-[#F5F5F5] p-6">
+          <div className="bg-common-containerBg mb-4 flex flex-col gap-6 p-6">
             <div className="flex flex-col">
               <span className="text-lg">
                 {hasAssociatedPojects
