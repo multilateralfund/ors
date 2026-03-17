@@ -504,3 +504,8 @@ export interface FieldOptsType {
   crtSubsectorsOpts: ProjectSubSectorType[]
   subsectors: ProjectSubSectorType[]
 }
+
+export interface MpDataProps {
+  mpData: any
+  setMpData: any
+}

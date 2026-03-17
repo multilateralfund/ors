@@ -1,4 +1,11 @@
-import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -15,7 +22,10 @@ import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
-import { projectPhaseOutFields } from '../constants.ts'
+import {
+  defaultMetaprojectFieldData,
+  projectPhaseOutFields,
+} from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -47,6 +57,7 @@ import {
   formatOptions,
   getOdsOdpFields,
   getPostExcomMeetingErrors,
+  getFormattedDecimalValue,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -158,6 +169,24 @@ const ProjectsCreate = ({
   const groupField = getFieldData(overviewFields, 'group')
   const specificFieldsIdentifiers = 'projectSpecificFields'
   const specificFieldsData = projectData[specificFieldsIdentifiers] || []
+
+  const formatMetaprojectData = useCallback(() => {
+    const result = {} as Record<string, any>
+
+    for (const key of Object.keys(defaultMetaprojectFieldData) as Array<
+      keyof typeof defaultMetaprojectFieldData
+    >) {
+      const fdEntry = defaultMetaprojectFieldData[key]
+      result[key] =
+        fdEntry.type === 'DecimalField'
+          ? getFormattedDecimalValue(fdEntry.value)
+          : fdEntry.value
+    }
+
+    return result
+  }, [metaprojectData])
+
+  const [mpData, setMpData] = useState(formatMetaprojectData)
 
   useEffect(() => {
     if (groupField) {
@@ -760,6 +789,8 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
+            mpData,
+            setMpData,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={

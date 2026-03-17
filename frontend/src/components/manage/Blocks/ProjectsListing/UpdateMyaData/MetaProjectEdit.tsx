@@ -196,7 +196,7 @@ export const MetaProjectEdit = (props: {
         return (
           <DateInput
             id={fd.name}
-            className="BPListUpload !ml-0 h-8 w-[130px]"
+            className="BPListUpload !ml-0 h-8 w-[125px]"
             value={fieldValue.toString()}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
             onChange={changeSimpleInput(fd.name)}
@@ -206,7 +206,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className="!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5"
+            className="!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5"
             prefixClassName="h-8"
             withoutDefaultValue={true}
             prefix={monetaryFields.includes(fd.name) ? '$' : ''}
@@ -218,7 +218,7 @@ export const MetaProjectEdit = (props: {
         return (
           <FormattedNumberInput
             id={fd.name}
-            className={cx('!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5', {
+            className={cx('!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5', {
               [disabledClassName]: isFieldDisabled,
             })}
             withoutDefaultValue={true}
@@ -266,7 +266,7 @@ export const MetaProjectEdit = (props: {
     })
 
   const groupFields = (fields: any) => (
-    <div className="flex w-fit flex-col">
+    <div className="flex w-fit flex-col py-2">
       {groupFieldsLabel(fields)}
       <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
@@ -302,7 +302,7 @@ export const MetaProjectEdit = (props: {
           <div className="flex gap-x-6">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}
-              <div className="flex flex-wrap gap-x-6">
+              <div className="flex flex-wrap gap-x-6 py-2">
                 {renderFieldData(dateFields)}
               </div>
               {renderFieldData(fieldData.slice(5, 6))}
