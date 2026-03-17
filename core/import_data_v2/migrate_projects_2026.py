@@ -886,7 +886,7 @@ def process_c_and_p_production_sheet(dry_run=True):
 
 
 def fill_total_phase_out_values_in_project(dry_run=True):
-    projects = Project.objects.really_all()
+    projects = Project.objects.really_all().filter(submission_status__name="Approved")
     for project in projects:
         ods_odps = project.ods_odp.all()
         if not project.total_phase_out_metric_tonnes:
