@@ -66,7 +66,12 @@ export const useGetMetaProjectDetails = (
       fetchData(pk)
     }
 
-    if (!pk && !!country && !!cluster && category === 'Multi-year agreement') {
+    if (
+      !pk &&
+      !!country &&
+      !!cluster &&
+      formattedCategory === 'Multi-year agreement'
+    ) {
       fetchPossibleMetaproject()
     }
   }, [pk, country, cluster, category])

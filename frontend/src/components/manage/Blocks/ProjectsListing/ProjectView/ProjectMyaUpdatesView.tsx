@@ -5,6 +5,7 @@ import {
   DateInput,
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
 import {
   computedTag,
@@ -14,6 +15,7 @@ import {
 } from '../HelperComponents'
 import { monetaryFields } from '../UpdateMyaData/constants'
 import { disabledClassName } from '../constants'
+import { MpDataProps } from '../interfaces'
 import {
   formatFieldLabel,
   getFormattedDecimalValue,
@@ -33,11 +35,20 @@ const projectDuration = 'project_duration'
 
 const ProjectMyaUpdatesView = ({
   metaprojectData,
+  mpData,
+  setMpData,
   mode,
-}: {
-  metaprojectData: MetaProjectDetailType | null
+}: MpDataProps & {
+  metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
 }) => {
+  const { addUpdatedField } = useUpdatedFields()
+
+  const isNewMetaProject = !!metaprojectData?.field_data && !metaprojectData?.id
+
+  const isFieldDisabled = (field: string) =>
+    field === projectDuration || !isNewMetaProject
+
   const formatMetaprojectData = useCallback(() => {
     const result = {} as Record<string, any>
     const fd = metaprojectData?.field_data ?? ({} as MetaProjectFieldData)
@@ -53,10 +64,12 @@ const ProjectMyaUpdatesView = ({
     return result
   }, [metaprojectData])
 
-  const [mpData, setMpData] = useState(formatMetaprojectData)
+  const [crtMpData, setCrtMpData] = useState(formatMetaprojectData)
 
   useEffect(() => {
-    setMpData(formatMetaprojectData)
+    if (!isNewMetaProject) {
+      setCrtMpData(formatMetaprojectData)
+    }
   }, [formatMetaprojectData, metaprojectData])
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
@@ -69,6 +82,23 @@ const ProjectMyaUpdatesView = ({
     costEffectivenessFields,
   } = getFilteredFields(fieldData)
 
+  const changeSimpleInput = useCallback(
+    (name: string, opts?: { numeric?: boolean }) => {
+      return (evt: any) => {
+        setMpData((prev: any) => {
+          addUpdatedField(name)
+
+          let newValue = evt.target.value || null
+          if (opts?.numeric && isNaN(Number(newValue))) {
+            newValue = prev[name]
+          }
+          return { ...prev, [name]: newValue }
+        })
+      }
+    },
+    [setMpData],
+  )
+
   const computeProjectDuration = () =>
     getProjectDuration({
       project_start_date: getBaseFieldValue('start_date'),
@@ -76,7 +106,7 @@ const ProjectMyaUpdatesView = ({
     })
 
   const getBaseFieldValue = (name: string) => {
-    const formValue = mpData[name]
+    const formValue = isNewMetaProject ? mpData?.[name] : crtMpData?.[name]
     const computedValue = metaprojectData?.computed_field_data?.[name]
 
     return formValue === null ? computedValue : formValue
@@ -88,7 +118,7 @@ const ProjectMyaUpdatesView = ({
       : getBaseFieldValue(name) || ''
 
   const valueIsComputed = (name: string) => {
-    const formValue = mpData[name]
+    const formValue = isNewMetaProject ? mpData?.[name] : crtMpData?.[name]
     const computedValue = metaprojectData?.computed_field_data?.[name]
 
     return (
@@ -96,6 +126,13 @@ const ProjectMyaUpdatesView = ({
       (formValue === null && computedValue !== undefined)
     )
   }
+
+  useEffect(() => {
+    setMpData?.((prev: any) => ({
+      ...prev,
+      [projectDuration]: computeProjectDuration(),
+    }))
+  }, [mpData?.start_date, mpData?.end_date])
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
@@ -118,13 +155,13 @@ const ProjectMyaUpdatesView = ({
             <div className="w-unset">
               <DateInput
                 id={fd.name}
-                className={cx(
-                  'BPListUpload !ml-0 h-8 w-[130px]',
-                  disabledClassName,
-                )}
+                className={cx('BPListUpload !ml-0 h-8 w-[125px]', {
+                  [disabledClassName]: isFieldDisabled(fd.name),
+                })}
                 value={fieldValue.toString()}
+                onChange={changeSimpleInput(fd.name)}
                 formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-                disabled={true}
+                disabled={isFieldDisabled(fd.name)}
               />
             </div>
           )
@@ -133,14 +170,17 @@ const ProjectMyaUpdatesView = ({
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
-                disabledClassName,
+                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                {
+                  [disabledClassName]: isFieldDisabled(fd.name),
+                },
               )}
               prefixClassName="h-8"
               withoutDefaultValue={true}
               prefix={monetaryFields.includes(fd.name) ? '$' : ''}
               value={fieldValue}
-              disabled={true}
+              onChange={changeSimpleInput(fd.name, { numeric: true })}
+              disabled={isFieldDisabled(fd.name)}
             />
           )
         default:
@@ -148,13 +188,18 @@ const ProjectMyaUpdatesView = ({
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[130px] w-full !border-gray-400 p-2.5',
-                disabledClassName,
+                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                {
+                  [disabledClassName]: isFieldDisabled(fd.name),
+                },
               )}
               withoutDefaultValue={true}
               value={fieldValue}
+              onChange={changeSimpleInput(fd.name, {
+                numeric: ['IntegerField'].includes(fd.type),
+              })}
               decimalDigits={0}
-              disabled={true}
+              disabled={isFieldDisabled(fd.name)}
             />
           )
       }
@@ -183,7 +228,7 @@ const ProjectMyaUpdatesView = ({
     })
 
   const groupFields = (fields: any) => (
-    <div className="flex w-fit flex-col">
+    <div className="flex w-fit flex-col py-2">
       {groupFieldsLabel(fields)}
       <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
@@ -193,16 +238,18 @@ const ProjectMyaUpdatesView = ({
 
   return (
     <>
-      {!!metaprojectData?.id ? (
+      {!!metaprojectData?.field_data ? (
         <div className="flex flex-col gap-y-3">
-          <Typography variant="h6">
-            MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
-            {metaprojectData?.lead_agency?.name || '-'}
-          </Typography>
+          {!!metaprojectData?.id && (
+            <Typography variant="h6">
+              MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
+              {metaprojectData?.lead_agency?.name || '-'}
+            </Typography>
+          )}
           <div className="flex gap-x-6">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}
-              <div className="flex flex-wrap gap-x-6">
+              <div className="flex flex-wrap gap-x-6 py-2">
                 {renderFieldData(dateFields)}
               </div>
               {renderFieldData(fieldData.slice(5, 6))}

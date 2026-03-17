@@ -182,3 +182,141 @@ export const defaultTrancheErrors = {
 }
 
 export const projectPhaseOutFields = ['co2_mt', 'odp', 'phase_out_mt']
+
+export const defaultMetaprojectFieldData = {
+  project_funding: {
+    value: null,
+    label: 'MYA Total agreed funding in principle (US $)',
+    order: 0,
+    type: 'DecimalField',
+  },
+  support_cost: {
+    value: null,
+    label: 'MYA Total support costs in principle (US $)',
+    order: 1,
+    type: 'DecimalField',
+  },
+  project_cost: {
+    value: null,
+    label: 'MYA Total agreed costs in principle (US $)',
+    order: 2,
+    type: 'DecimalField',
+  },
+  start_date: {
+    value: null,
+    label: 'Start date (MYA)',
+    order: 3,
+    type: 'DateTimeField',
+  },
+  end_date: {
+    value: null,
+    label: 'End date (MYA)',
+    order: 4,
+    type: 'DateTimeField',
+  },
+  project_duration: {
+    value: null,
+    label: 'Project duration (months)',
+    order: 5,
+    type: 'IntegerField',
+  },
+  phase_out_co2_eq_t: {
+    value: null,
+    label: 'Phase-out (CO2-eq tonnes) (MYA)',
+    order: 6,
+    type: 'DecimalField',
+  },
+  phase_out_odp: {
+    value: null,
+    label: 'Phase-out (ODP tonnes) (MYA)',
+    order: 7,
+    type: 'DecimalField',
+  },
+  phase_out_mt: {
+    value: null,
+    label: 'Phase-out (metric tonnes) (MYA)',
+    order: 8,
+    type: 'DecimalField',
+  },
+  target_reduction: {
+    value: null,
+    label: 'Target in the last year (reduction in %)',
+    order: 9,
+    type: 'DecimalField',
+  },
+  target_co2_eq_t: {
+    value: null,
+    label: 'Target in the last year (CO2-eq tonnes)',
+    order: 10,
+    type: 'DecimalField',
+  },
+  target_odp: {
+    value: null,
+    label: 'Target in the last year (ODP tonnes)',
+    order: 11,
+    type: 'DecimalField',
+  },
+  starting_point_odp: {
+    value: null,
+    label:
+      'Starting point for aggregate reductions in consumption or production (ODP tonnes)',
+    order: 12,
+    type: 'DecimalField',
+  },
+  starting_point_co2_eq_t: {
+    value: null,
+    label:
+      'Starting point for aggregate reductions in consumption or production (CO2-eq tonnes)',
+    order: 13,
+    type: 'DecimalField',
+  },
+  baseline_odp: {
+    value: null,
+    label: 'Baseline (ODP tonnes)',
+    order: 14,
+    type: 'DecimalField',
+  },
+  baseline_co2_eq_t: {
+    value: null,
+    label: 'Baseline (CO2-eq tonnes)',
+    order: 15,
+    type: 'DecimalField',
+  },
+  number_of_smes_directly_funded: {
+    value: null,
+    label: 'Number of SMEs directly funded',
+    order: 16,
+    type: 'IntegerField',
+  },
+  number_of_non_sme_directly_funded: {
+    value: null,
+    label: 'Number of non-SMEs directly funded',
+    order: 17,
+    type: 'IntegerField',
+  },
+  number_of_both_sme_non_sme_not_directly_funded: {
+    value: null,
+    label:
+      'Number of both SMEs and non-SMEs included in the project but not directly funded',
+    order: 18,
+    type: 'IntegerField',
+  },
+  number_of_production_lines_assisted: {
+    value: null,
+    label: 'Production sector: number of production lines assisted',
+    order: 19,
+    type: 'IntegerField',
+  },
+  cost_effectiveness_kg: {
+    value: null,
+    label: 'Cost effectiveness (US $/kg)',
+    order: 20,
+    type: 'DecimalField',
+  },
+  cost_effectiveness_co2: {
+    value: null,
+    label: 'Cost effectiveness (US $/CO2-eq tonnes) ',
+    order: 21,
+    type: 'DecimalField',
+  },
+}
