@@ -885,6 +885,28 @@ def process_c_and_p_production_sheet(dry_run=True):
                 new_project_ods_odp.save()
 
 
+def fill_total_phase_out_values_in_project(dry_run=True):
+    projects = Project.objects.really_all()
+    for project in projects:
+        ods_odps = project.ods_odp.all()
+        if not project.total_phase_out_metric_tonnes:
+            project.total_phase_out_metric_tonnes = sum(
+                ods_odps.filter(phase_out_mt__isnull=False).values_list(
+                    "phase_out_mt", flat=True
+                )
+            )
+        if not project.total_phase_out_odp_tonnes:
+            project.total_phase_out_odp_tonnes = sum(
+                ods_odps.filter(odp__isnull=False).values_list("odp", flat=True)
+            )
+        if not project.total_phase_out_co2_tonnes:
+            project.total_phase_out_co2_tonnes = sum(
+                ods_odps.filter(co2_mt__isnull=False).values_list("co2_mt", flat=True)
+            )
+        if not dry_run:
+            project.save()
+
+
 @transaction.atomic
 def migrate_projects_2026(option, dry_run=True):
     consumption_and_production_projects_legacy_codes = (
@@ -919,3 +941,5 @@ def migrate_projects_2026(option, dry_run=True):
     elif option == "c_and_p":
         process_c_and_p_consumption_sheet(dry_run=dry_run)
         process_c_and_p_production_sheet(dry_run=dry_run)
+    elif option == "fill_total_phase_out_values_in_project":
+        fill_total_phase_out_values_in_project(dry_run=dry_run)
