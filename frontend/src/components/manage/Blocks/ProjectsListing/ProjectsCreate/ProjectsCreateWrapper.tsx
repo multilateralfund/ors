@@ -106,7 +106,6 @@ const ProjectsCreateWrapper = () => {
   const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [projectId, setProjectId] = useState<number | null>(null)
   const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
@@ -213,17 +212,6 @@ const ProjectsCreateWrapper = () => {
     setBpData(bpData)
   }
 
-  useEffect(() => {
-    if (projectId) {
-      setSuccessMessage({
-        type: 'success',
-        message: 'Project created successfully.',
-        redirectMessage: 'View project.',
-        hrefRedirect: `/projects-listing/${projectId}`,
-      })
-    }
-  }, [projectId])
-
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
     fieldName?: string,
@@ -248,7 +236,6 @@ const ProjectsCreateWrapper = () => {
         {...{
           projectData,
           files,
-          setProjectId,
           setErrors,
           setFileErrors,
           setOtherErrors,

@@ -60,7 +60,6 @@ const EditActionButtons = ({
   project,
   files,
   projectFiles,
-  setProjectId,
   setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
@@ -308,7 +307,6 @@ const EditActionButtons = ({
       }
     }
 
-    setProjectId(null)
     enqueueSnackbar(<>An error occurred. Please try again.</>, {
       variant: 'error',
     })
@@ -339,7 +337,6 @@ const EditActionButtons = ({
           method: 'PUT',
         })
 
-        setProjectId(result.id)
         clearUpdatedFields()
       } catch (error) {
         await handleErrors(error)
@@ -529,7 +526,6 @@ const EditActionButtons = ({
         }
       }
 
-      setProjectId(result.id)
       setProjectTitle(result.title)
 
       setSuccessMessage({
@@ -662,13 +658,11 @@ const EditActionButtons = ({
         method: 'PUT',
       })
 
-      setProjectId(result.id)
       clearUpdatedFields()
 
       return true
     } catch (error) {
       await handleErrors(error)
-      setProjectId(null)
       return false
     } finally {
       setIsLoading(false)

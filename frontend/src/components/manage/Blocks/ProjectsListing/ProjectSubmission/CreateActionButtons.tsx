@@ -18,7 +18,6 @@ const CreateActionButtons = ({
   projectData,
   setProjectData,
   files,
-  setProjectId,
   isSaveDisabled,
   setIsLoading,
   setErrors,
@@ -84,7 +83,6 @@ const CreateActionButtons = ({
             : data,
         method: 'POST',
       })
-      setProjectId(result.id)
       setWarnings({ id: result.id, warnings: result.warnings })
 
       if (newFiles.length > 0) {
@@ -120,7 +118,6 @@ const CreateActionButtons = ({
         }
       }
 
-      setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })

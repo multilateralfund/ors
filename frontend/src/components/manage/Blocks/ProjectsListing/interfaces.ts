@@ -302,7 +302,6 @@ export interface ProjectHeader {
   trancheErrors?: TrancheErrorType
   getTrancheErrors?: () => Promise<boolean | undefined>
   files: ProjectFilesObject
-  setProjectId: (id: number | null) => void
   setErrors: (value: { [key: string]: [] }) => void
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void

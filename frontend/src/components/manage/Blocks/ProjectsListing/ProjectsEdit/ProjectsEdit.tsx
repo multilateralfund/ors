@@ -257,9 +257,7 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
 
-  const [projectId, setProjectId] = useState<number | null>(null)
   const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
-
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -535,18 +533,6 @@ const ProjectsEdit = ({
       debouncedGetTrancheErrors()
     }
   }, [country, cluster, tranche, project_id, specificFields])
-
-  useEffect(() => {
-    if (projectId && !isEditMode) {
-      setSuccessMessage({
-        type: 'success',
-        message:
-          (isEditMode ? 'Updated' : 'Created') + ' project successfully.',
-        redirectMessage: 'View project.',
-        hrefRedirect: `/projects-listing/${projectId}`,
-      })
-    }
-  }, [projectId])
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,

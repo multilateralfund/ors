@@ -165,7 +165,7 @@ const ProjectsHeader = ({
             />
           ) : (
             <EditActionButtons
-              project={project as ProjectTypeApi}
+              project={project!}
               {...{
                 projectData,
                 isSaveDisabled,
