@@ -81,7 +81,7 @@ def _build_project_dict(apr):
     return data
 
 
-def _generate_project_dicts(projects):
+def _generate_project_dicts(projects, year):
     """
     Generator that yields one APR-style dict per project.
 
@@ -110,6 +110,8 @@ def _generate_project_dicts(projects):
         # The default Project queryset returns only final versions (latest_project=None),
         # so `project` is the all-time latest version.
         apr.__dict__["latest_project_version_for_year"] = project
+        # Also set the report year as it's used in `populate_derived_fields`
+        apr.__dict__["report_year"] = year
 
         # Compute all derived/denormalized fields from the project
         apr.populate_derived_fields()
@@ -147,7 +149,7 @@ class Command(BaseCommand):
         total = projects.count()
         self.stdout.write(f"Found {total} projects. Building export data...")
 
-        project_data = list(_generate_project_dicts(projects))
+        project_data = list(_generate_project_dicts(projects, year))
 
         self.stdout.write(f"Writing {len(project_data)} rows to {output}...")
 
