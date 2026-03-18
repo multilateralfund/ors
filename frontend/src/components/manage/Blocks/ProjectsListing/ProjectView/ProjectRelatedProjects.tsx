@@ -77,11 +77,29 @@ const ProjectRelatedProjects = ({
         const showDownloadButton =
           crtData && crtData.length > 0 && downloadButton
 
-        const allCrtData =
-          index === 1 && hasPossibleAssociatedProjects
+        const getFinalData = () => {
+          if (index === 0) {
+            if (mode.includes('link')) {
+              return [
+                ...(crtData ?? []),
+                { ...project, errors: [], warnings: [] },
+              ]
+            }
+            return crtData ?? []
+          }
+
+          const metaProjectProjects = metaprojectData?.projects ?? []
+          const metaProjectPossibleProjects =
+            metaprojectData?.possible_projects ?? []
+          const allMetaprojectProjects = [
+            ...metaProjectProjects,
+            ...metaProjectPossibleProjects,
+          ]
+
+          const allCrtData = hasPossibleAssociatedProjects
             ? [
                 ...(crtData ?? []),
-                ...map(metaprojectData?.possible_projects, (project) => ({
+                ...map(allMetaprojectProjects, (project) => ({
                   ...project,
                   errors: [],
                   warnings: [],
@@ -89,20 +107,23 @@ const ProjectRelatedProjects = ({
               ]
             : (crtData ?? [])
 
-        const filteredData = allCrtData.filter(
-          (entry) =>
-            entry.submission_status !== 'Draft' &&
-            !(isVieworEditMode && entry.id === project.id),
-        )
-        const orderedData = orderBy(
-          filteredData,
-          [(entry) => entry.submission_status === 'Approved'],
-          ['desc'],
-        )
-        const finalData = uniqBy(orderedData, 'id')
+          const filteredData = allCrtData.filter(
+            (entry) =>
+              entry.submission_status !== 'Draft' &&
+              !(isVieworEditMode && entry.id === project.id),
+          )
+          const orderedData = orderBy(
+            filteredData,
+            [(entry) => entry.submission_status === 'Approved'],
+            ['desc'],
+          )
+          return uniqBy(orderedData, 'id')
+        }
+
+        const finalData = getFinalData()
 
         return (
-          <span key={index} className="bg-common-containerBg rounded-lg p-6">
+          <span key={index} className="rounded-lg bg-common-containerBg p-6">
             <div className="flex flex-wrap items-center gap-2.5">
               {index === 0 ? (
                 <IoGridOutline className="mb-4 rotate-45" size={16} />
