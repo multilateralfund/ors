@@ -129,6 +129,11 @@ class SheetWriter:
                 "id": "legacy_code",
                 "headerName": "Project legacy code",
             },
+            {
+                "id": "status",
+                "headerName": "Project status",
+                "method": lambda p, h: get_value_fk(None, p, h),
+            },
         ]
 
     def get_base_row(self, p):
@@ -143,23 +148,31 @@ class ProjectsFundsWriter(SheetWriter):
     @staticmethod
     def calc_total_fund(p, _):
         result = None
+        tf = p.fund_transferred or 0
         if p.version == 3:
-            result = p.total_fund
+            result = (p.total_fund or 0) + tf
         elif p.version > 3:
             prev_version = p.get_version(p.version - 1)
             if prev_version:
-                result = p.total_fund - prev_version.total_fund
+                prev_tf = prev_version.fund_transferred or 0
+                result = ((p.total_fund or 0) + tf) - (
+                    (prev_version.total_fund or 0) + prev_tf
+                )
         return result
 
     @staticmethod
     def calc_support_cost_psc(p, _):
         result = None
+        tpsc = p.psc_transferred or 0
         if p.version == 3:
-            result = p.support_cost_psc
+            result = (p.support_cost_psc or 0) + tpsc
         elif p.version > 3:
             prev_version = p.get_version(p.version - 1)
             if prev_version:
-                result = p.support_cost_psc - prev_version.support_cost_psc
+                prev_tpsc = prev_version.psc_transferred or 0
+                result = ((p.support_cost_psc or 0) + prev_tpsc) - (
+                    (prev_version.support_cost_psc or 0) + prev_tpsc
+                )
         return result
 
     @property
@@ -417,9 +430,9 @@ class ProjectsV2Dump:
         t0 = time()
         odp_writer = ProjectsOdsOdpWriter(self._make_sheet("Substances"))
         funds_writer = ProjectsFundsWriter(self._make_sheet("Funds"))
-        meeting_updates_writer = ProjectsMeetingUpdatesWriter(
-            self._make_sheet("Meeting updates")
-        )
+        # meeting_updates_writer = ProjectsMeetingUpdatesWriter(
+        #     self._make_sheet("Meeting updates")
+        # )
         ProjectsV2DumpWriter(
             self.sheet_projects,
             self.project_fields,
@@ -428,7 +441,7 @@ class ProjectsV2Dump:
             self.queryset,
             odp_writer.write,
             funds_writer.write,
-            meeting_updates_writer.write,
+            # meeting_updates_writer.write,
         )
         print(f"Done in {time() - t0:.2f} seconds.")
         return workbook_response("Projects database dump", self.wb)
