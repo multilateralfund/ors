@@ -140,7 +140,6 @@ class SheetWriter:
 
 
 class ProjectsFundsWriter(SheetWriter):
-
     @staticmethod
     def calc_total_fund(p, _):
         result = None
@@ -148,7 +147,8 @@ class ProjectsFundsWriter(SheetWriter):
             result = p.total_fund
         elif p.version > 3:
             pv3 = p.get_version(3)
-            result = p.total_fund - pv3.total_fund
+            if pv3:
+                result = p.total_fund - pv3.total_fund
         return result
 
     @staticmethod
@@ -158,7 +158,8 @@ class ProjectsFundsWriter(SheetWriter):
             result = p.support_cost_psc
         elif p.version > 3:
             pv3 = p.get_version(3)
-            result = p.support_cost_psc - pv3.support_cost_psc
+            if pv3:
+                result = p.support_cost_psc - pv3.support_cost_psc
         return result
 
     @property
@@ -245,7 +246,6 @@ class ProjectsMeetingUpdatesWriter(SheetWriter):
 
 
 class ProjectsOdsOdpWriter(SheetWriter):
-
     def write(self, p):
         base_row = self.get_base_row(p)
 
