@@ -281,6 +281,20 @@ class ProjectsV2DumpWriter:
     def __init__(self, sheet, project_fields, metaproject_fields):
         self.sheet = sheet
         project_headers = self._build_headers(project_fields)
+        version_pos = 0
+        for idx, h in enumerate(project_headers):
+            if h["id"] == "version":
+                version_pos = idx
+                break
+
+        project_headers.insert(
+            version_pos + 1,
+            {
+                "id": "latest_project_id",
+                "headerName": "Is latest version",
+                "method": lambda p, h: bool(getattr(p, h["id"])),
+            },
+        )
         metaproject_headers = self._build_headers(
             metaproject_fields, source="meta_project"
         )
@@ -302,14 +316,9 @@ class ProjectsV2DumpWriter:
             ).values("write_field_name", "label")
         }
         for f in fields:
-            header_name = field_names.get(f.name)
-            if not header_name and f.help_text:
-                header_name = f"{f.name} ({f.help_text})"
-            else:
-                header_name = f.name
             header = {
                 "id": f.name,
-                "headerName": header_name,
+                "headerName": field_names.get(f.name, f.name),
                 "method": get_field_value,
                 "source": source,
             }
