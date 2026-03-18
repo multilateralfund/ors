@@ -33,7 +33,7 @@ from core.models.project_metadata import (
 from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches
+# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines
 
 logger = logging.getLogger(__name__)
 
@@ -938,6 +938,24 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
                     """
                 )
         elif len(all_data_per_agreement) > 1:
+            # get the latest date_per_agreement and use it to fill the end_date,
+            # but log a warning as it means there are different date_per_agreement
+            # values in the projects of the same meta project
+            latest_date_per_agreement = max(all_data_per_agreement)
+            if (
+                meta_project.end_date
+                and meta_project.end_date != latest_date_per_agreement
+            ):
+                logger.warning(
+                    f"""⚠️ MetaProject with id '{meta_project.id}' has an end_date different than
+                    the latest date_per_agreement while trying to fill project_end_date
+                """
+                )
+            else:
+
+                meta_project.end_date = latest_date_per_agreement
+                if not dry_run:
+                    meta_project.save()
             logger.warning(
                 f"""⚠️ MetaProject with id '{meta_project.id}' has multiple different
                 date_per_agreement values in its projects while trying to fill project_end_date

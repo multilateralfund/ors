@@ -233,6 +233,7 @@ class ProjectsV2Dump:
     def get_valid_fields(self):
         old_fields_included = [
             "additional_funding",
+            "date_comp_revised",
         ]
         non_reverse = (
             f for f in Project._meta.get_fields() if not isinstance(f, ForeignObjectRel)
