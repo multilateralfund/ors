@@ -27,7 +27,6 @@ const ProjectUmbrellaProjectDetails = ({
   isPrevButtonDisabled,
   mpData,
   setMpData,
-  setSuccessMessage,
   ...rest
 }: ProjectTabSetters &
   MpDataProps & {
@@ -61,7 +60,6 @@ const ProjectUmbrellaProjectDetails = ({
             canDisassociate,
             mode,
             isMya,
-            setSuccessMessage,
             ...rest,
           }}
         />

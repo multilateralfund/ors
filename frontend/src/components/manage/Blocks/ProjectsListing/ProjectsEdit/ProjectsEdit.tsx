@@ -537,7 +537,7 @@ const ProjectsEdit = ({
   }, [country, cluster, tranche, project_id, specificFields])
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && !isEditMode) {
       setSuccessMessage({
         type: 'success',
         message:
@@ -590,6 +590,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
+            setSuccessMessage,
           }}
           loadedFiles={areFilesLoaded}
         />

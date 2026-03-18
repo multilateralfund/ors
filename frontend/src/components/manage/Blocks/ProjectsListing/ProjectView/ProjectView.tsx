@@ -364,7 +364,9 @@ const ProjectView = ({
             <span key={id}>
               {!!successMessage &&
                 (!successMessage.tabId || successMessage.tabId === id) && (
-                  <ProjectsInlineMessage {...{ successMessage }} />
+                  <ProjectsInlineMessage
+                    {...{ successMessage, setSuccessMessage }}
+                  />
                 )}
               {component}
             </span>

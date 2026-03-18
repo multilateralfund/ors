@@ -260,6 +260,7 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
+          setSuccessMessage,
         }}
       />
       <ProjectsCreate

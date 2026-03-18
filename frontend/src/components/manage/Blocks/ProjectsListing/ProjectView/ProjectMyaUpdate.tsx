@@ -1,4 +1,5 @@
 import {
+  InlineMessageType,
   MpDataProps,
   ProjectTypeApi,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
@@ -12,10 +13,12 @@ const ProjectMyaUpdate = ({
   mpData,
   setMpData,
   mode,
+  setSuccessMessage,
 }: MpDataProps & {
   project?: ProjectTypeApi
   metaprojectData: MetaProjectDetailType | null
   mode: string
+  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const hasMetaProject =
     ['edit', 'view'].includes(mode) && !!project?.meta_project_id
@@ -29,10 +32,10 @@ const ProjectMyaUpdate = ({
     : metaprojectData
 
   return (
-    <div className="bg-common-containerBg rounded-lg px-6 py-2">
+    <div className="rounded-lg bg-common-containerBg px-6 py-2">
       <ProjectMyaUpdatesView
         metaprojectData={formattedMetaprojectData}
-        {...{ mode, mpData, setMpData }}
+        {...{ mode, mpData, setMpData, setSuccessMessage }}
       />
     </div>
   )

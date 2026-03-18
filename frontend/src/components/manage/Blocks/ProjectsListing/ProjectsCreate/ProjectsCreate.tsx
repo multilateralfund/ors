@@ -881,6 +881,12 @@ const ProjectsCreate = ({
                       }
                     />
                   )}
+                {!!successMessage &&
+                  (!successMessage.tabId || successMessage.tabId === id) && (
+                    <ProjectsInlineMessage
+                      {...{ successMessage, setSuccessMessage }}
+                    />
+                  )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -919,10 +925,6 @@ const ProjectsCreate = ({
                     }
                   />
                 )}
-                {!!successMessage &&
-                  (!successMessage.tabId || successMessage.tabId === id) && (
-                    <ProjectsInlineMessage {...{ successMessage }} />
-                  )}
                 {component}
               </span>
             )
