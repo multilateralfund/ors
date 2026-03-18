@@ -76,9 +76,9 @@ def get_value_fk(_f, project, header, attr_name="name"):
 def get_value_m2m(_f, project, header):
     value = get_field_value(project, header)
     if value:
-        values = value.values()
+        values = value.all()
         if values:
-            return ", ".join(v.get("name", str(v)) for v in values)
+            return ", ".join(getattr(v, "name", str(v)) for v in values)
     return ""
 
 
@@ -381,11 +381,11 @@ class ProjectsV2Dump:
 
     @staticmethod
     def get_fk_fields(fields):
-        return (f.name for f in fields if isinstance(f, ForeignKey))
+        return [f.name for f in fields if isinstance(f, ForeignKey)]
 
     @staticmethod
     def get_m2m_fields(fields):
-        return (f.name for f in fields if isinstance(f, ManyToManyField))
+        return [f.name for f in fields if isinstance(f, ManyToManyField)]
 
     def get_metaproject_fields(self, names=None):
         names = names if names else []
