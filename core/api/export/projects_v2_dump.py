@@ -146,9 +146,9 @@ class ProjectsFundsWriter(SheetWriter):
         if p.version == 3:
             result = p.total_fund
         elif p.version > 3:
-            pv3 = p.get_version(3)
-            if pv3:
-                result = p.total_fund - pv3.total_fund
+            prev_version = p.get_version(p.version - 1)
+            if prev_version:
+                result = p.total_fund - prev_version.total_fund
         return result
 
     @staticmethod
@@ -157,9 +157,9 @@ class ProjectsFundsWriter(SheetWriter):
         if p.version == 3:
             result = p.support_cost_psc
         elif p.version > 3:
-            pv3 = p.get_version(3)
-            if pv3:
-                result = p.support_cost_psc - pv3.support_cost_psc
+            prev_version = p.get_version(p.version - 1)
+            if prev_version:
+                result = p.support_cost_psc - prev_version.support_cost_psc
         return result
 
     @property
