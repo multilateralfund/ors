@@ -11,12 +11,12 @@ const ProjectFormFooter = ({
   successMessage,
   successRedirectMessage,
 }: {
-  id: number | null
-  href: string
+  id?: number | null
+  href?: string
   nonFieldsErrors: string[]
   otherErrors: string
-  successMessage: string
-  successRedirectMessage: string
+  successMessage?: string
+  successRedirectMessage?: string
 }) => (
   <>
     {id ? (

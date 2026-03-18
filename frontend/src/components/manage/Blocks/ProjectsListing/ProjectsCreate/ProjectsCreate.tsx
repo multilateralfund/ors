@@ -18,6 +18,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
+import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
@@ -36,6 +37,7 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
+  InlineMessageProps,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -99,11 +101,14 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   metaprojectData,
   shouldValidateTotalFund,
+  successMessage,
+  setSuccessMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
   TrancheErrors &
-  FileMetaDataProps & {
+  FileMetaDataProps &
+  InlineMessageProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -791,6 +796,7 @@ const ProjectsCreate = ({
             mode,
             mpData,
             setMpData,
+            setSuccessMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
@@ -913,6 +919,10 @@ const ProjectsCreate = ({
                     }
                   />
                 )}
+                {!!successMessage &&
+                  (!successMessage.tabId || successMessage.tabId === id) && (
+                    <ProjectsInlineMessage {...{ successMessage }} />
+                  )}
                 {component}
               </span>
             )

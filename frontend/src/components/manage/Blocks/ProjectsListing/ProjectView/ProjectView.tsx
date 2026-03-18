@@ -11,17 +11,18 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectUmbrellaProjectDetails from './ProjectUmbrellaProjectsDetails'
+import ProjectsInlineMessage from '../ProjectsCreate/ProjectsInlineMessage'
 import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
+import { InlineMessageType, ProjectFile, ProjectViewProps } from '../interfaces'
 import {
   filterApprovalFields,
   getIsUpdatablePostExcom,
   getSectionFields,
   hasFields,
 } from '../utils'
-import { ProjectFile, ProjectViewProps } from '../interfaces'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -110,6 +111,7 @@ const ProjectView = ({
   const { canUpdatePostExcom } = useContext(PermissionsContext)
 
   const [activeTab, setActiveTab] = useState(0)
+  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
@@ -293,6 +295,7 @@ const ProjectView = ({
                   setMetaProjectId,
                   setRefetchRelatedProjects,
                   metaprojectData,
+                  setSuccessMessage,
                 }}
               />
             ),
@@ -358,7 +361,13 @@ const ProjectView = ({
         {tabs
           .filter((_, index) => index === activeTab)
           .map(({ id, component }) => (
-            <span key={id}>{component}</span>
+            <span key={id}>
+              {!!successMessage &&
+                (!successMessage.tabId || successMessage.tabId === id) && (
+                  <ProjectsInlineMessage {...{ successMessage }} />
+                )}
+              {component}
+            </span>
           ))}
       </div>
     </>

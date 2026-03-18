@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton } from '../HelperComponents'
+import { InlineMessageType } from '../interfaces'
 import { api } from '@ors/helpers'
 
 import { Typography, Box, Modal, CircularProgress, Button } from '@mui/material'
@@ -10,12 +11,14 @@ import { useParams } from 'wouter'
 
 type RemoveAssociationProps = {
   setMetaProjectId?: (id: number | null) => void
+  setSuccessMessage: (message: InlineMessageType) => void
 }
 
 const RemoveAssociationModal = ({
   isModalOpen,
   setIsModalOpen,
   setMetaProjectId,
+  setSuccessMessage,
 }: RemoveAssociationProps & {
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
@@ -34,9 +37,16 @@ const RemoveAssociationModal = ({
         },
       )
 
+      const message = 'Project association removed successfully.'
+
       setMetaProjectId?.(result.meta_project_id)
-      enqueueSnackbar(<>Project association removed successfully.</>, {
+      enqueueSnackbar(<>{message}</>, {
         variant: 'success',
+      })
+      setSuccessMessage({
+        type: 'success',
+        message: message,
+        tabId: 'project-related-projects-section',
       })
     } catch (error) {
       if (error.status === 400) {
