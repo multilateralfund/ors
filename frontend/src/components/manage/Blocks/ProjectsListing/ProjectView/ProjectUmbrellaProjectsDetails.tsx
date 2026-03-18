@@ -6,6 +6,7 @@ import ProjectMyaUpdate from './ProjectMyaUpdate'
 import { NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import {
+  InlineMessageType,
   MpDataProps,
   ProjectTabSetters,
   ProjectTypeApi,
@@ -39,6 +40,7 @@ const ProjectUmbrellaProjectDetails = ({
     mode: string
     isMya: boolean
     isPrevButtonDisabled?: boolean
+    setSuccessMessage: (message: InlineMessageType) => void
   }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 

@@ -15,7 +15,7 @@ import {
 } from '../HelperComponents'
 import { disabledClassName, enabledButtonClassname } from '../constants'
 import { monetaryFields } from '../UpdateMyaData/constants'
-import { MpDataProps } from '../interfaces'
+import { InlineMessageType, MpDataProps } from '../interfaces'
 import {
   formatFieldLabel,
   getFormattedDecimalValue,
@@ -38,9 +38,11 @@ const ProjectMyaUpdatesView = ({
   mpData,
   setMpData,
   mode,
+  setSuccessMessage,
 }: MpDataProps & {
   metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
+  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const { addUpdatedField } = useUpdatedFields()
 
@@ -236,7 +238,14 @@ const ProjectMyaUpdatesView = ({
     </div>
   )
 
-  const onMyaUpdate = () => {}
+  const onMyaUpdate = () => {
+    setSuccessMessage({
+      type: 'success',
+      message:
+        'The MYA data is saved as draft. The information will be reviewed and approved by the Secretariat.',
+      tabId: 'project-related-projects-section',
+    })
+  }
 
   return (
     <>

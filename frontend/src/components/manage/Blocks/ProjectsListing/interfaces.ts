@@ -509,3 +509,16 @@ export interface MpDataProps {
   mpData?: any
   setMpData?: any
 }
+
+export type InlineMessageType = {
+  type: 'success' | 'error'
+  message: string
+  tabId?: string
+  redirectMessage?: string
+  hrefRedirect?: string
+} | null
+
+export interface InlineMessageProps {
+  successMessage: InlineMessageType
+  setSuccessMessage: (message: InlineMessageType) => void
+}

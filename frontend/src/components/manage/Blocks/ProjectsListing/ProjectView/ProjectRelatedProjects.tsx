@@ -9,6 +9,7 @@ import {
   ProjectTypeApi,
   RelatedProjectsSectionType,
   RelatedProjectsType,
+  InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 
@@ -27,6 +28,7 @@ const ProjectRelatedProjects = ({
   metaprojectData,
   mode,
   isMya,
+  setSuccessMessage,
 }: {
   project?: ProjectTypeApi
   relatedProjects: RelatedProjectsSectionType[]
@@ -37,6 +39,7 @@ const ProjectRelatedProjects = ({
   metaprojectData: MetaProjectDetailType | null
   mode: string
   isMya: boolean
+  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
@@ -155,6 +158,7 @@ const ProjectRelatedProjects = ({
                       {...{
                         project,
                         setRefetchRelatedProjects,
+                        setSuccessMessage,
                         hasComponents,
                       }}
                     />
@@ -191,7 +195,7 @@ const ProjectRelatedProjects = ({
             <div className="mb-3 text-lg">
               If you want this project to be removed from the umbrella metacode,
               click
-              <RemoveAssociation {...{ setMetaProjectId }} />
+              <RemoveAssociation {...{ setMetaProjectId, setSuccessMessage }} />
               (In case of removal, the component relationships will be
               maintained.)
             </div>

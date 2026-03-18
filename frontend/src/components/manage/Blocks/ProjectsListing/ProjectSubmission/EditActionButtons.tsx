@@ -40,6 +40,7 @@ import {
   ProjectSpecificFields,
   BpDataProps,
   FileMetaDataType,
+  InlineMessageType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -77,6 +78,7 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
+  setSuccessMessage,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -87,6 +89,7 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
+  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -514,9 +517,6 @@ const EditActionButtons = ({
         })
       }
 
-      setProjectId(result.id)
-      setProjectTitle(result.title)
-
       if (navigationPage) {
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
@@ -528,6 +528,16 @@ const EditActionButtons = ({
           return
         }
       }
+
+      setProjectId(result.id)
+      setProjectTitle(result.title)
+
+      setSuccessMessage({
+        type: 'success',
+        message: 'Updated project successfully.',
+        redirectMessage: 'View project.',
+        hrefRedirect: `/projects-listing/${result.id}`,
+      })
 
       if (postExComUpdate) {
         enqueueSnackbar(<>Post ExCom update was successful.</>, {
