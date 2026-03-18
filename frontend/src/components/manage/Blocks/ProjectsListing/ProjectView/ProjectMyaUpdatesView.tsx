@@ -13,8 +13,8 @@ import {
   groupFieldsLabel,
   groupFieldsMeasurementUnits,
 } from '../HelperComponents'
+import { disabledClassName, enabledButtonClassname } from '../constants'
 import { monetaryFields } from '../UpdateMyaData/constants'
-import { disabledClassName } from '../constants'
 import { MpDataProps } from '../interfaces'
 import {
   formatFieldLabel,
@@ -27,7 +27,7 @@ import {
   MetaProjectFieldData,
 } from '../UpdateMyaData/types'
 
-import { CircularProgress, Typography } from '@mui/material'
+import { CircularProgress, Typography, Button } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -236,16 +236,34 @@ const ProjectMyaUpdatesView = ({
     </div>
   )
 
+  const onMyaUpdate = () => {}
+
   return (
     <>
       {!!metaprojectData?.field_data ? (
         <div className="flex flex-col gap-y-3">
-          {!!metaprojectData?.id && (
-            <Typography variant="h6">
-              MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
-              {metaprojectData?.lead_agency?.name || '-'}
-            </Typography>
-          )}
+          <div className="flex items-center justify-between">
+            {!!metaprojectData?.id && (
+              <Typography variant="h6">
+                MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
+                {metaprojectData?.lead_agency?.name || '-'}
+              </Typography>
+            )}
+            {mode !== 'view' && (
+              <Button
+                className={cx('ml-auto h-8 px-4 py-2 shadow-none', {
+                  [enabledButtonClassname]: isNewMetaProject,
+                })}
+                size="large"
+                variant="contained"
+                onClick={onMyaUpdate}
+                disabled={!isNewMetaProject}
+              >
+                Save
+              </Button>
+            )}
+          </div>
+
           <div className="flex gap-x-6">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}

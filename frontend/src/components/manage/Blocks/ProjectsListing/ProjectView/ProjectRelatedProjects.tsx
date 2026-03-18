@@ -42,6 +42,7 @@ const ProjectRelatedProjects = ({
     useContext(PermissionsContext)
 
   const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
+  const isAddOrCopyMode = ['add', 'copy'].includes(mode)
 
   const canRemoveAssociation =
     isVieworEditMode &&
@@ -73,27 +74,24 @@ const ProjectRelatedProjects = ({
     map(
       relatedProjects,
       ({ data, title, noResultsText, downloadButton }, index) => {
+        if (isAddOrCopyMode && index === 0) {
+          return
+        }
+
         const { projects: crtData = [], loaded } = data
         const showDownloadButton =
           crtData && crtData.length > 0 && downloadButton
 
         const getFinalData = () => {
           if (index === 0) {
-            if (mode.includes('link')) {
-              return [
-                ...(crtData ?? []),
-                { ...project, errors: [], warnings: [] },
-              ]
-            }
-            return crtData ?? []
+            return mode.includes('link')
+              ? [{ ...project, errors: [], warnings: [] }]
+              : (crtData ?? [])
           }
 
-          const metaProjectProjects = metaprojectData?.projects ?? []
-          const metaProjectPossibleProjects =
-            metaprojectData?.possible_projects ?? []
           const allMetaprojectProjects = [
-            ...metaProjectProjects,
-            ...metaProjectPossibleProjects,
+            ...(metaprojectData?.projects ?? []),
+            ...(metaprojectData?.possible_projects ?? []),
           ]
 
           const allCrtData = hasPossibleAssociatedProjects
@@ -205,7 +203,7 @@ const ProjectRelatedProjects = ({
         {hasPossibleAssociatedProjects && (
           <div className="text-xl">
             Should this project get approved, it will have the following
-            components and associated projects:
+            {!isAddOrCopyMode ? ' components and' : ''} associated projects:
           </div>
         )}
         <RelatedProjectsList />
