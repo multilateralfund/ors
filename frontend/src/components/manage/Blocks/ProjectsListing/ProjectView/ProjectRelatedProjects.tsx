@@ -28,7 +28,7 @@ const ProjectRelatedProjects = ({
   metaprojectData,
   mode,
   isMya,
-  setSuccessMessage,
+  setInlineMessage,
 }: {
   project?: ProjectTypeApi
   relatedProjects: RelatedProjectsSectionType[]
@@ -39,7 +39,7 @@ const ProjectRelatedProjects = ({
   metaprojectData: MetaProjectDetailType | null
   mode: string
   isMya: boolean
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
@@ -158,8 +158,8 @@ const ProjectRelatedProjects = ({
                       {...{
                         project,
                         setRefetchRelatedProjects,
-                        setSuccessMessage,
                         hasComponents,
+                        setInlineMessage,
                       }}
                     />
                   )}
@@ -195,7 +195,7 @@ const ProjectRelatedProjects = ({
             <div className="mb-3 text-lg">
               If you want this project to be removed from the umbrella metacode,
               click
-              <RemoveAssociation {...{ setMetaProjectId, setSuccessMessage }} />
+              <RemoveAssociation {...{ setMetaProjectId, setInlineMessage }} />
               (In case of removal, the component relationships will be
               maintained.)
             </div>

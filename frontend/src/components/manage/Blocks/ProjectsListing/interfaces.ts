@@ -518,6 +518,6 @@ export type InlineMessageType = {
 } | null
 
 export interface InlineMessageProps {
-  successMessage: InlineMessageType
-  setSuccessMessage: (message: InlineMessageType) => void
+  inlineMessage: InlineMessageType
+  setInlineMessage: (message: InlineMessageType) => void
 }

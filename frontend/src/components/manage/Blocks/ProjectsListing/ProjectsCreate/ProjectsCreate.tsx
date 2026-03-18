@@ -101,8 +101,8 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   metaprojectData,
   shouldValidateTotalFund,
-  successMessage,
-  setSuccessMessage,
+  inlineMessage,
+  setInlineMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -796,7 +796,7 @@ const ProjectsCreate = ({
             mode,
             mpData,
             setMpData,
-            setSuccessMessage,
+            setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
@@ -881,10 +881,10 @@ const ProjectsCreate = ({
                       }
                     />
                   )}
-                {!!successMessage &&
-                  (!successMessage.tabId || successMessage.tabId === id) && (
+                {!!inlineMessage &&
+                  (!inlineMessage.tabId || inlineMessage.tabId === id) && (
                     <ProjectsInlineMessage
-                      {...{ successMessage, setSuccessMessage }}
+                      {...{ inlineMessage, setInlineMessage }}
                     />
                   )}
                 {mode === 'edit' &&

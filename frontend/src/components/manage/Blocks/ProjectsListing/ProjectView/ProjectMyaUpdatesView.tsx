@@ -38,11 +38,11 @@ const ProjectMyaUpdatesView = ({
   mpData,
   setMpData,
   mode,
-  setSuccessMessage,
+  setInlineMessage,
 }: MpDataProps & {
   metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const { addUpdatedField } = useUpdatedFields()
 
@@ -239,7 +239,7 @@ const ProjectMyaUpdatesView = ({
   )
 
   const onMyaUpdate = () => {
-    setSuccessMessage({
+    setInlineMessage({
       type: 'success',
       message:
         'The MYA data is saved as draft. The information will be reviewed and approved by the Secretariat.',

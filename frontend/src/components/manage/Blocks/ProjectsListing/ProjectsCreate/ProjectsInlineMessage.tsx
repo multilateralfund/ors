@@ -3,17 +3,19 @@ import Link from '@ors/components/ui/Link/Link'
 import { InlineMessageProps } from '../interfaces'
 
 import { IoMdClose } from 'react-icons/io'
+import cx from 'classnames'
 
 const ProjectsInlineMessage = ({
-  successMessage,
-  setSuccessMessage,
+  inlineMessage,
+  setInlineMessage,
 }: InlineMessageProps) => {
   const {
     type = 'success',
     message,
     redirectMessage,
     hrefRedirect,
-  } = successMessage ?? {}
+  } = inlineMessage ?? {}
+  const messageClassname = 'm-0 mt-0.5 text-lg text-inherit'
 
   return (
     <CustomAlert
@@ -23,21 +25,17 @@ const ProjectsInlineMessage = ({
         <div className="flex items-center gap-1.5">
           {hrefRedirect ? (
             <Link
-              className="text-xl text-inherit no-underline"
+              className={cx('no-underline', messageClassname)}
               href={hrefRedirect}
             >
-              <p className="m-0 mt-0.5 text-lg">
-                {message} <span className="underline">{redirectMessage}</span>
-              </p>
+              {message} <span className="underline">{redirectMessage}</span>
             </Link>
           ) : (
-            <div className="text-xl text-inherit">
-              <p className="m-0 mt-0.5 text-lg">{message}</p>
-            </div>
+            <div className={messageClassname}>{message}</div>
           )}
           <span
             className="cursor-pointer"
-            onClick={() => setSuccessMessage(null)}
+            onClick={() => setInlineMessage(null)}
           >
             <IoMdClose size={18} />
           </span>

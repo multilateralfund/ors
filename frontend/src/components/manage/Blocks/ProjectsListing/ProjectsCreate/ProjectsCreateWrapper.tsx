@@ -106,7 +106,7 @@ const ProjectsCreateWrapper = () => {
   const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
+  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -247,7 +247,7 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
-          setSuccessMessage,
+          setInlineMessage,
         }}
       />
       <ProjectsCreate
@@ -269,8 +269,8 @@ const ProjectsCreateWrapper = () => {
           shouldValidateTotalFund,
           relatedProjects,
           metaprojectData,
-          successMessage,
-          setSuccessMessage,
+          inlineMessage,
+          setInlineMessage,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

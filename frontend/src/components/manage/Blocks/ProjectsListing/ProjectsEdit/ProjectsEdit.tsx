@@ -257,7 +257,7 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
 
-  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
+  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
@@ -562,7 +562,6 @@ const ProjectsEdit = ({
             projectData,
             projectFiles,
             files,
-            setProjectId,
             setErrors,
             setFileErrors,
             setOtherErrors,
@@ -576,7 +575,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
-            setSuccessMessage,
+            setInlineMessage,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -607,8 +606,8 @@ const ProjectsEdit = ({
             setRefetchRelatedProjects,
             metaprojectData,
             shouldValidateTotalFund,
-            successMessage,
-            setSuccessMessage,
+            inlineMessage,
+            setInlineMessage,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

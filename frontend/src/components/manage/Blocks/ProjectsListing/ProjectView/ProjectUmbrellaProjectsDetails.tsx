@@ -6,11 +6,11 @@ import ProjectMyaUpdate from './ProjectMyaUpdate'
 import { NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import {
-  InlineMessageType,
   MpDataProps,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
+  InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 import { Tabs, Tab } from '@mui/material'
@@ -40,7 +40,7 @@ const ProjectUmbrellaProjectDetails = ({
     mode: string
     isMya: boolean
     isPrevButtonDisabled?: boolean
-    setSuccessMessage: (message: InlineMessageType) => void
+    setInlineMessage: (message: InlineMessageType) => void
   }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 

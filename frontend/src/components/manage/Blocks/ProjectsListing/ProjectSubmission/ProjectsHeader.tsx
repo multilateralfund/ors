@@ -42,7 +42,7 @@ const ProjectsHeader = ({
   filesMetaData,
   loadedFiles,
   shouldValidateTotalFund,
-  setSuccessMessage,
+  setInlineMessage,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -53,7 +53,7 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
   shouldValidateTotalFund: boolean
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -182,7 +182,7 @@ const ProjectsHeader = ({
                 bpData,
                 filesMetaData,
                 shouldValidateTotalFund,
-                setSuccessMessage,
+                setInlineMessage,
               }}
               {...rest}
             />

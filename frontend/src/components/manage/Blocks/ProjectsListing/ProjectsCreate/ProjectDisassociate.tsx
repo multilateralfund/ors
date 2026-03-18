@@ -11,12 +11,12 @@ const ProjectDisassociate = ({
   project,
   hasComponents,
   setRefetchRelatedProjects,
-  setSuccessMessage,
+  setInlineMessage,
 }: {
   project: ProjectTypeApi
   hasComponents: boolean
   setRefetchRelatedProjects?: (refetch: boolean) => void
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [showWarning, setShowWarning] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -34,7 +34,7 @@ const ProjectDisassociate = ({
       enqueueSnackbar(<>{message}</>, {
         variant: 'success',
       })
-      setSuccessMessage({
+      setInlineMessage({
         type: 'success',
         message: message,
         tabId: 'project-related-projects-section',

@@ -77,7 +77,7 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
-  setSuccessMessage,
+  setInlineMessage,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -88,7 +88,7 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -514,6 +514,8 @@ const EditActionButtons = ({
         })
       }
 
+      setProjectTitle(result.title)
+
       if (navigationPage) {
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
@@ -526,9 +528,7 @@ const EditActionButtons = ({
         }
       }
 
-      setProjectTitle(result.title)
-
-      setSuccessMessage({
+      setInlineMessage({
         type: 'success',
         message: 'Updated project successfully.',
         redirectMessage: 'View project.',
