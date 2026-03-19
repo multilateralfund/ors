@@ -1,6 +1,7 @@
 from functools import cached_property
 from functools import partial
 from itertools import chain
+from itertools import pairwise
 from time import time
 from typing import Sequence
 
@@ -223,6 +224,13 @@ class ProjectsFundsWriter(SheetWriter):
                     ),
                 },
                 {
+                    "id": "transfer_meeting",
+                    "headerName": "Transfer meeting ID",
+                    "method": lambda p, _: (
+                        p.transfer_meeting.id if p.transfer_meeting else None
+                    ),
+                },
+                {
                     "id": "date_approved",
                     "headerName": "Date approved",
                 },
@@ -332,14 +340,17 @@ class ProjectsV2DumpWriter:
         result = []
         field_names = {
             f["write_field_name"]: f["label"]
-            for f in ProjectField.objects.filter(
-                write_field_name__in=[f.name for f in fields],
-            ).values("write_field_name", "label")
+            for f in ProjectField.objects.all().values("write_field_name", "label")
         }
+
         for f in fields:
+            if isinstance(f, tuple):
+                f, title = f
+            else:
+                title = field_names.get(f.name, f.name)
             header = {
                 "id": f.name,
-                "headerName": field_names.get(f.name, f.name),
+                "headerName": title,
                 "method": get_field_value,
                 "source": source,
             }
@@ -373,7 +384,9 @@ class ProjectsV2Dump:
     def __init__(self, view):
         self.view = view
         self.project_fields = self.get_project_fields()
-        self.metaproject_fields = self.get_metaproject_fields(["end_date"])
+        self.metaproject_fields = self.get_metaproject_fields(
+            [("end_date", "End date (MYA)")]
+        )
         queryset = (
             Project.objects.really_all()
             .select_related(*self.get_fk_fields(self.project_fields))
@@ -411,29 +424,54 @@ class ProjectsV2Dump:
 
     def get_metaproject_fields(self, names=None):
         names = names if names else []
-        return [
-            f
-            for f in MetaProject._meta.get_fields()
-            if f.name in names and not isinstance(f, ForeignObjectRel)
-        ]
+        result = []
+        for name, title in names:
+            field = MetaProject._meta.get_field(name)
+            if field and not isinstance(field, ForeignObjectRel):
+                result.append((field, title))
+        return result
 
     def get_project_fields(self):
         old_fields_included = [
             "additional_funding",
             "date_comp_revised",
         ]
-        non_reverse = (
-            f for f in Project._meta.get_fields() if not isinstance(f, ForeignObjectRel)
-        )
-        non_old = [
-            f
-            for f in non_reverse
-            if (
-                getattr(f, "help_text", None) != OLD_FIELD_HELP_TEXT
-                or f.name in old_fields_included
-            )
+        exclude_fields = [
+            "serial_number_legacy",
+            "serial_number",
+            "additional_funding",
+            "total_fund_transferred",
+            "total_psc_transferred",
         ]
-        return non_old
+        want_order = [
+            "sector",
+            "subsectors",
+        ]
+
+        result = []
+        order = []
+
+        for f in Project._meta.get_fields():
+            if f.name in exclude_fields:
+                continue
+
+            elif isinstance(f, ForeignObjectRel):
+                continue
+
+            is_old = getattr(f, "help_text", None) == OLD_FIELD_HELP_TEXT
+            skip_old = is_old and f.name not in old_fields_included
+            if skip_old:
+                continue
+
+            result.append(f)
+            order.append(f.name)
+
+        for before, after in pairwise(want_order):
+            idx_before = order.index(before)
+            idx_after = order.index(after)
+            order.insert(idx_before + 1, order.pop(idx_after))
+            result.insert(idx_before + 1, result.pop(idx_after))
+        return result
 
     def export(self):
         t0 = time()
