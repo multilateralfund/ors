@@ -26,6 +26,7 @@ import {
   getCrossCuttingErrors,
   getDefaultImpactErrors,
   getHasNoFiles,
+  getNonFieldErrors,
   getPostExcomApprovalErrors,
   getPostExcomMeetingErrors,
   getSpecificFieldsErrors,
@@ -65,7 +66,6 @@ const EditActionButtons = ({
   isSubmitDisabled,
   setIsLoading,
   setFileErrors,
-  setOtherErrors,
   setErrors,
   setProjectFiles,
   specificFields,
@@ -290,6 +290,14 @@ const EditActionButtons = ({
     if (error.status === 400) {
       setErrors(errors)
 
+      const nonFieldErrors = getNonFieldErrors(errors)
+      if (nonFieldErrors.length > 0) {
+        setInlineMessage({
+          type: 'error',
+          errorMessages: nonFieldErrors,
+        })
+      }
+
       if (errors?.files) {
         setFileErrors(errors.files)
       }
@@ -299,7 +307,10 @@ const EditActionButtons = ({
       }
 
       if (errors?.details) {
-        setOtherErrors(errors.details)
+        setInlineMessage({
+          type: 'error',
+          message: errors.details,
+        })
       }
 
       if (type === 'files' && errors?.error) {
@@ -317,8 +328,8 @@ const EditActionButtons = ({
 
     setIsLoading(true)
     setFileErrors('')
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     const formattedProjectFields = formatProjectFields(projectFields)
     const actualData = isApproved
@@ -643,8 +654,8 @@ const EditActionButtons = ({
 
   const editApprovalFields = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     try {
       const data = formatApprovalData(

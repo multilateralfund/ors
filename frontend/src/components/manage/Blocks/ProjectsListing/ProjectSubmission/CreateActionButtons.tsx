@@ -5,8 +5,12 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
-import { formatProjectFields, formatSubmitData } from '../utils'
 import { ActionButtons } from '../interfaces'
+import {
+  formatProjectFields,
+  formatSubmitData,
+  getNonFieldErrors,
+} from '../utils'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -22,11 +26,11 @@ const CreateActionButtons = ({
   setIsLoading,
   setErrors,
   setFileErrors,
-  setOtherErrors,
   specificFields,
   specificFieldsLoaded,
   mode,
   filesMetaData,
+  setInlineMessage,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
@@ -51,8 +55,8 @@ const CreateActionButtons = ({
   const createProject = async () => {
     setIsLoading(true)
     setFileErrors('')
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     try {
       const data = formatSubmitData(
@@ -105,12 +109,23 @@ const CreateActionButtons = ({
       if (error.status === 400) {
         setErrors(errors)
 
+        const nonFieldErrors = getNonFieldErrors(errors)
+        if (nonFieldErrors.length > 0) {
+          setInlineMessage({
+            type: 'error',
+            errorMessages: nonFieldErrors,
+          })
+        }
+
         if (errors?.files) {
           setFileErrors(errors.files)
         }
 
         if (errors?.details) {
-          setOtherErrors(errors.details)
+          setInlineMessage({
+            type: 'error',
+            message: errors.details,
+          })
         }
 
         if (errors?.metadata) {

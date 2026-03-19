@@ -6,17 +6,12 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.ts
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
-import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
-import {
-  getDefaultValues,
-  getNonFieldErrors,
-  hasSpecificField,
-} from '../utils.ts'
+import { getDefaultValues, hasSpecificField } from '../utils.ts'
 import {
   defaultTrancheErrors,
   initialCrossCuttingFields,
@@ -120,11 +115,8 @@ const ProjectsCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [otherErrors, setOtherErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
-
-  const nonFieldsErrors = getNonFieldErrors(errors)
 
   const { data: metaprojectData } = useGetMetaProjectDetails(
     null,
@@ -238,7 +230,6 @@ const ProjectsCreateWrapper = () => {
           files,
           setErrors,
           setFileErrors,
-          setOtherErrors,
           specificFields,
           trancheErrors,
           getTrancheErrors,
@@ -274,7 +265,6 @@ const ProjectsCreateWrapper = () => {
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
-      <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
     </>
   )
 }

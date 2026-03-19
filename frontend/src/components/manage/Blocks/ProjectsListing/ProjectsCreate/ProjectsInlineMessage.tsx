@@ -3,6 +3,7 @@ import Link from '@ors/components/ui/Link/Link'
 import { InlineMessageProps } from '../interfaces'
 
 import { IoMdClose } from 'react-icons/io'
+import { map } from 'lodash'
 import cx from 'classnames'
 
 const ProjectsInlineMessage = ({
@@ -12,6 +13,7 @@ const ProjectsInlineMessage = ({
   const {
     type = 'success',
     message,
+    errorMessages,
     redirectMessage,
     hrefRedirect,
   } = inlineMessage ?? {}
@@ -28,17 +30,25 @@ const ProjectsInlineMessage = ({
               className={cx('no-underline', messageClassname)}
               href={hrefRedirect}
             >
-              {message} <span className="underline">{redirectMessage}</span>
+              {message}{' '}
+              <span className="underline">
+                {redirectMessage}
+                {map(errorMessages, (err, idx) => (
+                  <div key={idx}>{err}</div>
+                ))}
+              </span>
             </Link>
           ) : (
             <div className={messageClassname}>{message}</div>
           )}
-          <span
-            className="cursor-pointer"
-            onClick={() => setInlineMessage(null)}
-          >
-            <IoMdClose size={18} />
-          </span>
+          {type === 'success' && (
+            <span
+              className="cursor-pointer"
+              onClick={() => setInlineMessage(null)}
+            >
+              <IoMdClose size={18} />
+            </span>
+          )}
         </div>
       }
     />

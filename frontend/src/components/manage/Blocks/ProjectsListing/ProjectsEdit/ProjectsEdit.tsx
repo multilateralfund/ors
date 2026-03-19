@@ -3,7 +3,6 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
@@ -16,7 +15,6 @@ import {
   getFieldData,
   getFileFromMetadata,
   getFormattedDecimalValue,
-  getNonFieldErrors,
   getOdsOdpFields,
   getProjectDuration,
   hasSpecificField,
@@ -260,11 +258,8 @@ const ProjectsEdit = ({
   const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [otherErrors, setOtherErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
-
-  const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -564,7 +559,6 @@ const ProjectsEdit = ({
             files,
             setErrors,
             setFileErrors,
-            setOtherErrors,
             setProjectFiles,
             specificFields,
             trancheErrors,
@@ -616,7 +610,6 @@ const ProjectsEdit = ({
           }
           loadedFiles={areFilesLoaded}
         />
-        <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
       </>
     )
   )

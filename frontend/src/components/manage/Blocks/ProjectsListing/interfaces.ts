@@ -304,10 +304,10 @@ export interface ProjectHeader {
   files: ProjectFilesObject
   setErrors: (value: { [key: string]: [] }) => void
   setFileErrors: (value: string) => void
-  setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
   filesMetaData?: FileMetaDataType[]
+  setInlineMessage: (message: InlineMessageType) => void
 }
 
 export type ActionButtons = ProjectHeader & {
@@ -511,7 +511,8 @@ export interface MpDataProps {
 
 export type InlineMessageType = {
   type: 'success' | 'error'
-  message: string
+  message?: string
+  errorMessages?: string[]
   tabId?: string
   redirectMessage?: string
   hrefRedirect?: string

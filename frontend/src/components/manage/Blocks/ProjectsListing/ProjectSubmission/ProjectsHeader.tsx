@@ -19,7 +19,6 @@ import {
   ProjectTypeApi,
   ProjectHeader,
   BpDataProps,
-  InlineMessageType,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -42,7 +41,6 @@ const ProjectsHeader = ({
   filesMetaData,
   loadedFiles,
   shouldValidateTotalFund,
-  setInlineMessage,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -53,7 +51,6 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
   shouldValidateTotalFund: boolean
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -182,7 +179,6 @@ const ProjectsHeader = ({
                 bpData,
                 filesMetaData,
                 shouldValidateTotalFund,
-                setInlineMessage,
               }}
               {...rest}
             />
