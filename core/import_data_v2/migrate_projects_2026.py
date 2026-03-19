@@ -641,7 +641,9 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         ids_already_updated.append(project.id)
 
 
-def process_transfer_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
+def process_transfer_fields_sheet(
+    dry_run=True, only_transfered=False, legacy_codes_to_ignore=[]
+):
     file_path = (
         IMPORT_RESOURCES_V2_DIR
         / "projects"
@@ -701,37 +703,24 @@ def process_transfer_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                         f"⚠️ Error saving project with legacy code '{row['CODE']}': {e}"
                     )
         else:
-            if project.id in ids_already_updated:
-                if not dry_run:
-                    project.increase_version(import_user)
-                    log_project_history(
-                        project,
-                        import_user,
-                        HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
-                    )
-                project.transfer_meeting = meeting
-                try:
-                    project.fund_transferred += row["FUND_TRANSFERRED"] or 0
-                except TypeError:
-                    project.fund_transferred = row["FUND_TRANSFERRED"] or 0
-                try:
-                    project.psc_transferred += row["SUPPORT_13_TRANSFERRED"] or 0
-                except TypeError:
-                    project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
-                if not dry_run:
-                    project.save()
-            else:
-                project.transfer_meeting = meeting
-                try:
-                    project.fund_transferred += row["FUND_TRANSFERRED"] or 0
-                except TypeError:
-                    project.fund_transferred = row["FUND_TRANSFERRED"] or 0
-                try:
-                    project.psc_transferred += row["SUPPORT_13_TRANSFERRED"] or 0
-                except TypeError:
-                    project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
-                if not dry_run:
-                    project.save()
+            if not dry_run:
+                project.increase_version(import_user)
+                log_project_history(
+                    project,
+                    import_user,
+                    HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
+                )
+            project.transfer_meeting = meeting
+            try:
+                project.fund_transferred += row["FUND_TRANSFERRED"] or 0
+            except TypeError:
+                project.fund_transferred = row["FUND_TRANSFERRED"] or 0
+            try:
+                project.psc_transferred += row["SUPPORT_13_TRANSFERRED"] or 0
+            except TypeError:
+                project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
+            if not dry_run:
+                project.save()
         ids_already_updated.append(project.id)
 
 
@@ -964,7 +953,7 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
 
 
 @transaction.atomic
-def migrate_projects_2026(option, dry_run=True):
+def migrate_projects_2026(option, dry_run=True, only_transfered=False):
     consumption_and_production_projects_legacy_codes = (
         extract_consumption_and_production_projects_to_ignore_list()
     )
@@ -992,6 +981,7 @@ def migrate_projects_2026(option, dry_run=True):
     elif option == "transfer_fields":
         process_transfer_fields_sheet(
             dry_run=dry_run,
+            only_transfered=only_transfered,
             legacy_codes_to_ignore=consumption_and_production_projects_legacy_codes,
         )
     elif option == "c_and_p":

@@ -31,8 +31,14 @@ class Command(BaseCommand):
             type=bool,
             help="Run the migration without saving any changes to the database",
         )
+        parser.add_argument(
+            "--run-only-transfered",
+            type=bool,
+            help="Run only the transfer_fields method for projects with status Transferred",
+        )
 
     def handle(self, *args, **kwargs):
         dry_run = kwargs["dry_run"]
         option = kwargs["option"]
-        migrate_projects_2026(option, dry_run=dry_run)
+        only_transfered = kwargs["run_only_transfered"]
+        migrate_projects_2026(option, dry_run=dry_run, only_transfered=only_transfered)
