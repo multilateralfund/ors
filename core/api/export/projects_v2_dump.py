@@ -145,8 +145,15 @@ class SheetWriter:
 
 
 class ProjectsFundsWriter(SheetWriter):
-    @staticmethod
-    def calc_total_fund(p, _):
+    def __init__(self, sheet, version_map):
+        super().__init__(sheet)
+        self.version_map = version_map
+
+    def get_version(self, p, version):
+        key = (p.final_version.id, version)
+        return self.version_map.get(key)
+
+    def calc_total_fund(self, p, _):
         result = None
         if p.status.name == "Transferred":
             tf = p.fund_transferred or 0
@@ -155,13 +162,12 @@ class ProjectsFundsWriter(SheetWriter):
         if p.version == 3:
             result = p.total_fund or 0
         elif p.version > 3:
-            prev_version = p.get_version(p.version - 1)
+            prev_version = self.get_version(p, p.version - 1)
             if prev_version:
                 result = (p.total_fund or 0) - (prev_version.total_fund or 0)
         return result
 
-    @staticmethod
-    def calc_support_cost_psc(p, _):
+    def calc_support_cost_psc(self, p, _):
         result = None
         if p.status.name == "Transferred":
             tpsc = p.psc_transferred or 0
@@ -170,7 +176,7 @@ class ProjectsFundsWriter(SheetWriter):
         if p.version == 3:
             result = p.support_cost_psc or 0
         elif p.version > 3:
-            prev_version = p.get_version(p.version - 1)
+            prev_version = self.get_version(p, p.version - 1)
             if prev_version:
                 result = (p.support_cost_psc or 0) - (
                     prev_version.support_cost_psc or 0
@@ -315,9 +321,9 @@ class ProjectsV2DumpWriter:
         )
         self.headers = project_headers[:2] + metaproject_headers + project_headers[2:]
 
-    def write(self, queryset, *with_project):
+    def write(self, projects, *with_project):
         self.sheet.append([h["headerName"] for h in self.headers])
-        for p in queryset.iterator(chunk_size=1000):
+        for p in projects:
             self.sheet.append([h["method"](p, h) for h in self.headers])
             for writer in with_project:
                 writer(p)
@@ -373,6 +379,7 @@ class ProjectsV2Dump:
             .select_related(*self.get_fk_fields(self.project_fields))
             .prefetch_related(
                 *self.get_m2m_fields(self.project_fields),
+                "component__projects",
                 Prefetch(
                     "ods_odp",
                     queryset=ProjectOdsOdp.objects.all().select_related(
@@ -430,8 +437,15 @@ class ProjectsV2Dump:
 
     def export(self):
         t0 = time()
+
+        # Do this once here, since we need to iterate over
+        # the queryset twice (once to build the version map).
+        projects = list(self.queryset)
+        print(f"Projects queried in {time() - t0:.2f} seconds.")
+
+        version_map = {(p.final_version.id, p.version): p for p in projects}
         odp_writer = ProjectsOdsOdpWriter(self._make_sheet("Substances"))
-        funds_writer = ProjectsFundsWriter(self._make_sheet("Funds"))
+        funds_writer = ProjectsFundsWriter(self._make_sheet("Funds"), version_map)
         # meeting_updates_writer = ProjectsMeetingUpdatesWriter(
         #     self._make_sheet("Meeting updates")
         # )
@@ -440,7 +454,7 @@ class ProjectsV2Dump:
             self.project_fields,
             self.metaproject_fields,
         ).write(
-            self.queryset,
+            projects,
             odp_writer.write,
             funds_writer.write,
             # meeting_updates_writer.write,
