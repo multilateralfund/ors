@@ -148,30 +148,32 @@ class ProjectsFundsWriter(SheetWriter):
     @staticmethod
     def calc_total_fund(p, _):
         result = None
-        tf = p.fund_transferred or 0
-        if p.version == 3:
+        if p.status.name == "Transferred":
+            tf = p.fund_transferred or 0
             result = (p.total_fund or 0) + tf
+            return result
+        if p.version == 3:
+            result = p.total_fund or 0
         elif p.version > 3:
             prev_version = p.get_version(p.version - 1)
             if prev_version:
-                prev_tf = prev_version.fund_transferred or 0
-                result = ((p.total_fund or 0) + tf) - (
-                    (prev_version.total_fund or 0) + prev_tf
-                )
+                result = (p.total_fund or 0) - (prev_version.total_fund or 0)
         return result
 
     @staticmethod
     def calc_support_cost_psc(p, _):
         result = None
-        tpsc = p.psc_transferred or 0
-        if p.version == 3:
+        if p.status.name == "Transferred":
+            tpsc = p.psc_transferred or 0
             result = (p.support_cost_psc or 0) + tpsc
+            return result
+        if p.version == 3:
+            result = p.support_cost_psc or 0
         elif p.version > 3:
             prev_version = p.get_version(p.version - 1)
             if prev_version:
-                prev_tpsc = prev_version.psc_transferred or 0
-                result = ((p.support_cost_psc or 0) + prev_tpsc) - (
-                    (prev_version.support_cost_psc or 0) + prev_tpsc
+                result = (p.support_cost_psc or 0) - (
+                    prev_version.support_cost_psc or 0
                 )
         return result
 
