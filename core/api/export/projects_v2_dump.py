@@ -455,7 +455,7 @@ class ProjectsV2Dump:
             if f.name in exclude_fields:
                 continue
 
-            elif isinstance(f, ForeignObjectRel):
+            if isinstance(f, ForeignObjectRel):
                 continue
 
             is_old = getattr(f, "help_text", None) == OLD_FIELD_HELP_TEXT
