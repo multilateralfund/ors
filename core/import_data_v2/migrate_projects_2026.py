@@ -676,6 +676,8 @@ def process_transfer_fields_sheet(
             meeting = None
 
         if project.status != transfer_status:
+            if only_transfered:
+                continue
             if not dry_run:
                 project.increase_version(import_user)
                 log_project_history(
