@@ -30,16 +30,15 @@ const ProjectsInlineMessage = ({
               className={cx('no-underline', messageClassname)}
               href={hrefRedirect}
             >
-              {message}{' '}
-              <span className="underline">
-                {redirectMessage}
-                {map(errorMessages, (err, idx) => (
-                  <div key={idx}>{err}</div>
-                ))}
-              </span>
+              {message} <span className="underline">{redirectMessage}</span>
             </Link>
           ) : (
-            <div className={messageClassname}>{message}</div>
+            <div className={messageClassname}>
+              {message}
+              {map(errorMessages, (err, idx) => (
+                <div key={idx}>{err}</div>
+              ))}
+            </div>
           )}
           {type === 'success' && (
             <span
