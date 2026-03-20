@@ -120,7 +120,7 @@ class SheetWriter:
             {
                 "id": "latest_project_id",
                 "headerName": "Is latest version",
-                "method": lambda p, h: bool(getattr(p, h["id"])),
+                "method": lambda p, h: not bool(getattr(p, h["id"])),
             },
             {
                 "id": "code",
@@ -321,7 +321,7 @@ class ProjectsV2DumpWriter:
             {
                 "id": "latest_project_id",
                 "headerName": "Is latest version",
-                "method": lambda p, h: bool(getattr(p, h["id"])),
+                "method": lambda p, h: not bool(getattr(p, h["id"])),
             },
         )
         metaproject_headers = self._build_headers(
