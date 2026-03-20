@@ -223,6 +223,7 @@ export const AutocompleteWidget = <T,>(
     hasField ? fields[sectionIdentifier] : undefined,
   )
   const fieldName = field.write_field_name
+  const isOdsReplacement = fieldName === 'ods_replacement'
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   const formattedValue = isBoolean(value)
@@ -298,14 +299,16 @@ export const AutocompleteWidget = <T,>(
               }
             : {})}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(index)
-              ? (errors as { [key: string]: string[] }[])[index]
-              : errors
-          }
-          field={field.label}
-        />
+        {!(isOdsReplacement && value === 'Other') && (
+          <FieldErrorIndicator
+            errors={
+              !isNil(index)
+                ? (errors as { [key: string]: string[] }[])[index]
+                : errors
+            }
+            field={field.label}
+          />
+        )}
       </div>
     </div>
   )
@@ -381,7 +384,7 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-  const isOdsReplacement = fieldName === 'ods_replacement'
+  const isOdsReplacement = fieldName === 'ods_replacement_custom'
   const isDestructionTech = fieldName === 'destruction_technology'
   const isCustomField = isOdsReplacement || isDestructionTech
   const nrChars = isCustomField ? 256 : 500
@@ -394,7 +397,9 @@ export const TextAreaWidget = <T,>(
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
-          disabled={!canEditField(editableFields, fieldName)}
+          disabled={
+            !isOdsReplacement && !canEditField(editableFields, fieldName)
+          }
           onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler[field.data_type]<T, SpecificFields>(

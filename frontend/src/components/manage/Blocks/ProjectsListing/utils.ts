@@ -235,6 +235,21 @@ const formatActualData = (data: Record<string, any>) =>
     Object.entries(data).map(([key, value]) => [key, !value ? null : value]),
   )
 
+const getFinalOdsOdpData = (
+  odsOdpData: OdsOdpFields[],
+  specificFieldsAvailable: string[],
+  specificFields: SpecificFields,
+) =>
+  map(odsOdpData, (ods_odp, index) => ({
+    ...ods_odp,
+    ...(specificFieldsAvailable.includes('ods_replacement') &&
+    isOtherOdsReplacement([], ods_odp.ods_replacement)
+      ? {
+          ods_replacement: specificFields.ods_odp[index].ods_replacement_custom,
+        }
+      : {}),
+  }))
+
 export const formatSubmitData = (
   projectData: ProjectData,
   setProjectData: Dispatch<SetStateAction<ProjectData>>,
@@ -293,13 +308,19 @@ export const formatSubmitData = (
     },
   }))
 
+  const finalOdsOdpData = getFinalOdsOdpData(
+    updatedOdsOdpValues,
+    specificFieldsAvailable,
+    projectSpecificFields,
+  )
+
   return {
     ...projIdentifiers,
     bp_activity: bpLinking.bpId,
     ...normalizeValues(crossCuttingFields),
     ...normalizeValues(crtProjectSpecificFields),
     ...updatedOldSpecificFieldsValues,
-    ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+    ods_odp: map(finalOdsOdpData, (ods_odp) =>
       omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),
   }
@@ -356,9 +377,15 @@ export const formatApprovalData = (
     },
   }))
 
+  const finalOdsOdpData = getFinalOdsOdpData(
+    updatedOdsOdpValues,
+    specificFieldsAvailable,
+    projectSpecificFields,
+  )
+
   return {
     ...normalizeValues(crtProjectSpecificFields),
-    ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+    ods_odp: map(finalOdsOdpData, (ods_odp) =>
       omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),
   }
@@ -1303,3 +1330,6 @@ export const orderDecisions = (decision: string) =>
   decision.toLowerCase().includes('paragraph')
     ? getOldFormatOrder(decision)
     : getNewFormatOrder(decision)
+
+export const isOtherOdsReplacement = (opts: any[], value: any) =>
+  value === 'Other'
