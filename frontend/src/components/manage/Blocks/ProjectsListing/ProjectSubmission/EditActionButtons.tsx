@@ -32,6 +32,7 @@ import {
   getSpecificFieldsErrors,
   hasSectionErrors,
   hasSpecificField,
+  isOtherOdsReplacement,
 } from '../utils'
 import {
   ProjectFile,
@@ -206,10 +207,19 @@ const EditActionButtons = ({
 
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) =>
+    (odsOdpData.some((data, index) =>
       Object.entries(data)
         .filter(([key]) => !projectPhaseOutFields.includes(key))
-        .some(([, value]) => checkInvalidValue(value)),
+        .some(([field, value]) => {
+          const formattedVal =
+            field === 'ods_replacement' && isOtherOdsReplacement([], value)
+              ? projectSpecificFields?.ods_odp?.[index]?.[
+                  'ods_replacement_custom'
+                ]
+              : value
+
+          return checkInvalidValue(formattedVal)
+        }),
     ) ||
       odsOdpData.length === 0)
 
