@@ -16,7 +16,7 @@ import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
-import { InlineMessageType, ProjectFile, ProjectViewProps } from '../interfaces'
+import { ProjectFile, ProjectViewProps, InlineMessageType } from '../interfaces'
 import {
   filterApprovalFields,
   getIsUpdatablePostExcom,
@@ -111,7 +111,7 @@ const ProjectView = ({
   const { canUpdatePostExcom } = useContext(PermissionsContext)
 
   const [activeTab, setActiveTab] = useState(0)
-  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
+  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
@@ -295,7 +295,7 @@ const ProjectView = ({
                   setMetaProjectId,
                   setRefetchRelatedProjects,
                   metaprojectData,
-                  setSuccessMessage,
+                  setInlineMessage,
                 }}
               />
             ),
@@ -362,10 +362,10 @@ const ProjectView = ({
           .filter((_, index) => index === activeTab)
           .map(({ id, component }) => (
             <span key={id}>
-              {!!successMessage &&
-                (!successMessage.tabId || successMessage.tabId === id) && (
+              {!!inlineMessage &&
+                (!inlineMessage.tabId || inlineMessage.tabId === id) && (
                   <ProjectsInlineMessage
-                    {...{ successMessage, setSuccessMessage }}
+                    {...{ inlineMessage, setInlineMessage }}
                   />
                 )}
               {component}

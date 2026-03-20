@@ -6,17 +6,12 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.ts
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
-import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
-import {
-  getDefaultValues,
-  getNonFieldErrors,
-  hasSpecificField,
-} from '../utils.ts'
+import { getDefaultValues, hasSpecificField } from '../utils.ts'
 import {
   defaultTrancheErrors,
   initialCrossCuttingFields,
@@ -106,8 +101,7 @@ const ProjectsCreateWrapper = () => {
   const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [projectId, setProjectId] = useState<number | null>(null)
-  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
+  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -121,11 +115,8 @@ const ProjectsCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [otherErrors, setOtherErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
-
-  const nonFieldsErrors = getNonFieldErrors(errors)
 
   const { data: metaprojectData } = useGetMetaProjectDetails(
     null,
@@ -213,17 +204,6 @@ const ProjectsCreateWrapper = () => {
     setBpData(bpData)
   }
 
-  useEffect(() => {
-    if (projectId) {
-      setSuccessMessage({
-        type: 'success',
-        message: 'Project created successfully.',
-        redirectMessage: 'View project.',
-        hrefRedirect: `/projects-listing/${projectId}`,
-      })
-    }
-  }, [projectId])
-
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
     fieldName?: string,
@@ -248,10 +228,8 @@ const ProjectsCreateWrapper = () => {
         {...{
           projectData,
           files,
-          setProjectId,
           setErrors,
           setFileErrors,
-          setOtherErrors,
           specificFields,
           trancheErrors,
           getTrancheErrors,
@@ -260,7 +238,7 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
-          setSuccessMessage,
+          setInlineMessage,
         }}
       />
       <ProjectsCreate
@@ -282,12 +260,11 @@ const ProjectsCreateWrapper = () => {
           shouldValidateTotalFund,
           relatedProjects,
           metaprojectData,
-          successMessage,
-          setSuccessMessage,
+          inlineMessage,
+          setInlineMessage,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
-      <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
     </>
   )
 }

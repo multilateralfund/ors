@@ -19,7 +19,6 @@ import {
   ProjectTypeApi,
   ProjectHeader,
   BpDataProps,
-  InlineMessageType,
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -42,7 +41,6 @@ const ProjectsHeader = ({
   filesMetaData,
   loadedFiles,
   shouldValidateTotalFund,
-  setSuccessMessage,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -53,7 +51,6 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
   shouldValidateTotalFund: boolean
-  setSuccessMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -165,7 +162,7 @@ const ProjectsHeader = ({
             />
           ) : (
             <EditActionButtons
-              project={project as ProjectTypeApi}
+              project={project!}
               {...{
                 projectData,
                 isSaveDisabled,
@@ -182,7 +179,6 @@ const ProjectsHeader = ({
                 bpData,
                 filesMetaData,
                 shouldValidateTotalFund,
-                setSuccessMessage,
               }}
               {...rest}
             />

@@ -11,14 +11,14 @@ import { useParams } from 'wouter'
 
 type RemoveAssociationProps = {
   setMetaProjectId?: (id: number | null) => void
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }
 
 const RemoveAssociationModal = ({
   isModalOpen,
   setIsModalOpen,
   setMetaProjectId,
-  setSuccessMessage,
+  setInlineMessage,
 }: RemoveAssociationProps & {
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
@@ -43,7 +43,7 @@ const RemoveAssociationModal = ({
       enqueueSnackbar(<>{message}</>, {
         variant: 'success',
       })
-      setSuccessMessage({
+      setInlineMessage({
         type: 'success',
         message: message,
         tabId: 'project-related-projects-section',
