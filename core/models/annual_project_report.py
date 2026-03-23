@@ -693,10 +693,12 @@ class AnnualProjectReport(models.Model):
 
     @property
     def balance(self):
-        if self.approved_funding_denorm is None:
+        if self.approved_funding_plus_adjustment_denorm is None:
             return None
 
-        return self.approved_funding_denorm - (self.funds_disbursed or 0)
+        return self.approved_funding_plus_adjustment_denorm - (
+            self.funds_disbursed or 0
+        )
 
     @cached_property
     def support_cost_approved(self):

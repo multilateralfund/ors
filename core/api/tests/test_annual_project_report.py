@@ -4637,7 +4637,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
-        version3 = multiple_project_versions_for_apr[0]
+        # There is a version 3 in `multiple_project_versions_for_apr`
         latest_version = multiple_project_versions_for_apr[2]
 
         funds_disbursed = 80000.0
@@ -4673,7 +4673,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         assert project_data is not None
 
-        expected_balance = version3.total_fund - funds_disbursed
+        expected_balance = latest_version.total_fund - funds_disbursed
         assert project_data["balance"] == expected_balance
 
         expected_percentage = funds_disbursed / latest_version.total_fund
@@ -4885,7 +4885,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         annual_agency_report,
         multiple_project_versions_for_apr,
     ):
-        version3 = multiple_project_versions_for_apr[0]
+        # There is a version 3 in `multiple_project_versions_for_apr`
         latest_version = multiple_project_versions_for_apr[2]
 
         AnnualProjectReportFactory(
@@ -4916,7 +4916,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert project_data["per_cent_funds_disbursed"] is None
 
         # balance should treat None as 0
-        assert project_data["balance"] == version3.total_fund
+        assert project_data["balance"] == latest_version.total_fund
 
     def test_all_derived_fields_via_mlfs_export(
         self,
