@@ -10,6 +10,7 @@ import {
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -31,8 +32,8 @@ import {
   ProjectFile,
   ProjectSpecificFields,
   ProjectTypeApi,
-  ProjectFiles,
   ProjectDataProps,
+  ProjectFiles,
   TrancheErrors,
   RelatedProjectsSectionType,
   BpDataProps,
@@ -328,6 +329,8 @@ const ProjectsCreate = ({
   ])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
+  const { altTechs } = useContext(ProjectsDataContext)
+
   const hasV3EditPermissions =
     !!project && mode === 'edit' && canEditApprovedProjects
   const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
@@ -404,10 +407,10 @@ const ProjectsCreate = ({
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) => {
             const formattedField =
-              field === 'ods_replacement' &&
-              isOtherOdsReplacement([], odsOdp[field])
-                ? field + '_custom'
-                : field
+              field === 'ods_replacement_text' &&
+              isOtherOdsReplacement(altTechs, odsOdp[field])
+                ? field
+                : 'ods_replacement'
 
             return mode === 'edit' &&
               checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])

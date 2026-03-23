@@ -13,6 +13,7 @@ import {
   canEditField,
   formatOptions,
   getFieldExtraLabel,
+  isOtherOdsReplacement,
   onTextareaFocus,
 } from '../utils'
 import {
@@ -259,7 +260,9 @@ export const AutocompleteWidget = <T,>(
         <Field
           widget="autocomplete"
           options={options}
-          disabled={!canEditField(editableFields, fieldName)}
+          disabled={
+            !isOdsReplacement && !canEditField(editableFields, fieldName)
+          }
           value={normalizedValue}
           onChange={(_: React.SyntheticEvent, value) =>
             changeHandler[field.data_type]<T, SpecificFields>(
@@ -299,7 +302,7 @@ export const AutocompleteWidget = <T,>(
               }
             : {})}
         />
-        {!(isOdsReplacement && value === 'Other') && (
+        {!(isOdsReplacement && isOtherOdsReplacement(options, value)) && (
           <FieldErrorIndicator
             errors={
               !isNil(index)
@@ -384,7 +387,7 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-  const isOdsReplacement = fieldName === 'ods_replacement_custom'
+  const isOdsReplacement = fieldName === 'ods_replacement_text'
   const isDestructionTech = fieldName === 'destruction_technology'
   const isCustomField = isOdsReplacement || isDestructionTech
   const nrChars = isCustomField ? 256 : 500
@@ -397,9 +400,7 @@ export const TextAreaWidget = <T,>(
       <div className="flex items-center">
         <TextareaAutosize
           value={value as string}
-          disabled={
-            !isOdsReplacement && !canEditField(editableFields, fieldName)
-          }
+          disabled={!canEditField(editableFields, fieldName)}
           onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
             changeHandler[field.data_type]<T, SpecificFields>(

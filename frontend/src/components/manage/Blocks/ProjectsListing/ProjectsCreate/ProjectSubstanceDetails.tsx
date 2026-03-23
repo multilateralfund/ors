@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
 import {
@@ -36,6 +37,8 @@ const ProjectSubstanceDetails = ({
   odsOdpErrors: { [key: string]: [] }[]
   disableV3Edit: boolean
 }) => {
+  const { altTechs } = useContext(ProjectsDataContext)
+
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
   const crtSectionData = projectData[sectionIdentifier] || []
@@ -161,20 +164,32 @@ const ProjectSubstanceDetails = ({
                       <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
                         {odsOdpFields.map((odsOdpField) => {
                           const fieldName = odsOdpField.write_field_name
+                          const odsReplacementFieldName = 'ods_replacement_text'
+
                           const isOdsReplacement =
-                            fieldName === 'ods_replacement'
+                            fieldName === odsReplacementFieldName
+                          const formattedOdsOdpField = isOdsReplacement
+                            ? ({
+                                ...odsOdpField,
+                                read_field_name: 'ods_replacement',
+                                write_field_name: 'ods_replacement',
+                              } as ProjectSpecificFields)
+                            : odsOdpField
                           const customField = isOdsReplacement
                             ? ({
                                 ...odsOdpField,
-                                read_field_name: 'ods_replacement_custom',
-                                write_field_name: 'ods_replacement_custom',
+                                read_field_name: odsReplacementFieldName,
+                                write_field_name: odsReplacementFieldName,
                                 data_type: 'text',
                               } as ProjectSpecificFields)
                             : null
 
                           const shouldDisplayCustomField =
                             !!customField &&
-                            isOtherOdsReplacement([], entry.ods_replacement)
+                            isOtherOdsReplacement(
+                              altTechs,
+                              entry.ods_replacement,
+                            )
 
                           const renderWidget = (
                             fieldConfig: typeof odsOdpField,
@@ -197,7 +212,7 @@ const ProjectSubstanceDetails = ({
                           return (
                             canViewField(viewableFields, fieldName) && (
                               <React.Fragment key={fieldName}>
-                                {renderWidget(odsOdpField)}
+                                {renderWidget(formattedOdsOdpField)}
                                 {shouldDisplayCustomField &&
                                   renderWidget(customField)}
                               </React.Fragment>
