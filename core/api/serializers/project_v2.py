@@ -471,6 +471,7 @@ class ProjectV2OdsOdpListSerializer(serializers.ModelSerializer):
             "ods_display_name",
             "ods_substance_name",
             "odp",
+            "ods_replacement_text",
             "ods_replacement",
             "co2_mt",
             "phase_out_mt",
@@ -1429,7 +1430,10 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                         "Ods name is required for submission."
                                     )
                             elif field.write_field_name == "replacement_technology":
-                                if getattr(ods_odp, field.write_field_name) is None:
+                                if (
+                                    getattr(ods_odp, field.write_field_name) is None
+                                    and getattr(ods_odp, "replacement_technology_text") is None
+                                ):
                                     errors[f"{field.write_field_name}_ods_odp"] = (
                                         f"{field.label} is required for submission."
                                     )

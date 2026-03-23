@@ -46,7 +46,7 @@ def create_project_ODS_ODP(project, project_json, fields_mapping):
     for i in range(1, MAX_ODP_COIMT + 1):
         odp_field = f"{fields_mapping['odp']}{i}"
         ods_name_field = f"{fields_mapping['ods_name']}{i}"
-        ods_repl_field = f"{fields_mapping['ods_replacement']}{i}"
+        ods_repl_field = f"{fields_mapping['ods_replacement_text']}{i}"
         co2mt_field = f"{fields_mapping['co2mt']}{i}"
 
         if not project_json.get(odp_field):
@@ -68,7 +68,7 @@ def create_project_ODS_ODP(project, project_json, fields_mapping):
             "ods_display_name": project_json.get(ods_name_field),
             "odp": project_json[odp_field],
             "co2_mt": project_json.get(co2mt_field),
-            "ods_replacement": project_json.get(ods_repl_field),
+            "ods_replacement_text": project_json.get(ods_repl_field),
             "sort_order": i,
             "ods_type": fields_mapping["ods_type"],
         }
@@ -98,7 +98,7 @@ def parse_project_ODS_ODP(project, project_json):
         "ods_name": "ODS_NAME",
         "odp": "ODP",
         "co2mt": "CO2MT",
-        "ods_replacement": "ODS_REPLACEMENT",
+        "ods_replacement_text": "ODS_REPLACEMENT",
         "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
     }
     create_project_ODS_ODP(project, project_json, ods_fields)
@@ -108,7 +108,7 @@ def parse_project_ODS_ODP(project, project_json):
         "ods_name": "ODS_PRODUCTION",
         "odp": "ODP_PRODUCTION",
         "co2mt": "CO2MT_PRODUCTION",
-        "ods_replacement": "ODS_ProRepla",
+        "ods_replacement_text": "ODS_ProRepla",
         "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
     }
     create_project_ODS_ODP(project, project_json, ods_prod_fields)
@@ -118,7 +118,7 @@ def parse_project_ODS_ODP(project, project_json):
         "ods_name": "ODS_INDIRECTNAME",
         "odp": "ODP_INDIRECT",
         "co2mt": "N/A",
-        "ods_replacement": "ODS_INDIRECTREPLACE",
+        "ods_replacement_text": "ODS_INDIRECTREPLACE",
         "ods_type": ProjectOdsOdp.ProjectOdsOdpType.INDIRECT,
     }
     create_project_ODS_ODP(project, project_json, ods_indirect_fields)

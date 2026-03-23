@@ -472,7 +472,7 @@ def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
             ProjectOdsOdp.objects.filter(project=project), row["ODS_NAME"]
         )
         if existing_project_ods_odp:
-            existing_project_ods_odp.ods_replacement = row["ODS_REPLACEMENT"]
+            existing_project_ods_odp.ods_replacement_text = row["ODS_REPLACEMENT"]
             existing_project_ods_odp.co2_mt = row["CO2MT"] or None
             existing_project_ods_odp.odp = row["ODP"] or None
             existing_project_ods_odp.phase_out_mt = row["Mt"] or None
@@ -487,7 +487,7 @@ def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                 ods_display_name=ods_display_name,
                 ods_substance=substance,
                 ods_blend=blend,
-                ods_replacement=row["ODS_REPLACEMENT"],
+                ods_replacement_text=row["ODS_REPLACEMENT"],
                 co2_mt=row["CO2MT"] or None,
                 odp=row["ODP"] or None,
                 phase_out_mt=row["Mt"] or None,
@@ -531,7 +531,7 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
             ProjectOdsOdp.objects.filter(project=project), row["ODS_PRODUCTION"]
         )
         if existing_project_ods_odp:
-            existing_project_ods_odp.ods_replacement = row["ODS_REPLACEMENT"]
+            existing_project_ods_odp.ods_replacement_text = row["ODS_REPLACEMENT"]
             existing_project_ods_odp.co2_mt = row["CO2MT"] or None
             existing_project_ods_odp.odp = row["ODP"] or None
             if not dry_run:
@@ -545,7 +545,7 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
                 ods_display_name=ods_display_name,
                 ods_substance=substance,
                 ods_blend=blend,
-                ods_replacement=row["ODS_REPLACEMENT"],
+                ods_replacement_text=row["ODS_REPLACEMENT"],
                 co2_mt=row["CO2MT"] or None,
                 odp=row["ODP"] or None,
             )
@@ -773,7 +773,9 @@ def process_c_and_p_consumption_sheet(dry_run=True):
             row["Substance - baseline technology"],
         )
         if existing_project_ods_odp:
-            existing_project_ods_odp.ods_replacement = row["Replacement technology/ies"]
+            existing_project_ods_odp.ods_replacement_text = row[
+                "Replacement technology/ies"
+            ]
             existing_project_ods_odp.co2_mt = row["total_phase_out_co2_tonnes"] or None
             existing_project_ods_odp.odp = row["total_phase_out_odp_tonnes"] or None
         else:
@@ -785,7 +787,7 @@ def process_c_and_p_consumption_sheet(dry_run=True):
                 ods_display_name=ods_display_name,
                 ods_substance=substance,
                 ods_blend=blend,
-                ods_replacement=row["Replacement technology/ies"],
+                ods_replacement_text=row["Replacement technology/ies"],
                 co2_mt=row["total_phase_out_co2_tonnes"] or None,
                 odp=row["total_phase_out_odp_tonnes"] or None,
             )
@@ -856,7 +858,9 @@ def process_c_and_p_production_sheet(dry_run=True):
             row["Substance - baseline technology"],
         )
         if existing_project_ods_odp:
-            existing_project_ods_odp.ods_replacement = row["Replacement technology/ies"]
+            existing_project_ods_odp.ods_replacement_text = row[
+                "Replacement technology/ies"
+            ]
             existing_project_ods_odp.co2_mt = row["total_phase_out_co2_tonnes"] or None
             existing_project_ods_odp.odp = row["total_phase_out_odp_tonnes"] or None
         else:
@@ -868,7 +872,7 @@ def process_c_and_p_production_sheet(dry_run=True):
                 ods_display_name=ods_display_name,
                 ods_substance=substance,
                 ods_blend=blend,
-                ods_replacement=row["Replacement technology/ies"],
+                ods_replacement_text=row["Replacement technology/ies"],
                 co2_mt=row["total_phase_out_co2_tonnes"] or None,
                 odp=row["total_phase_out_odp_tonnes"] or None,
             )

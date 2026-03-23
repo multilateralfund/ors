@@ -3,10 +3,20 @@ from rest_framework.exceptions import ValidationError
 from core.api.utils import SECTION_ANNEX_MAPPING
 
 from core.models import (
+    AlternativeTechnology,
     Blend,
     Group,
     Substance,
 )
+
+
+class AlternativeTechnologySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlternativeTechnology
+        fields = [
+            "id",
+            "name",
+        ]
 
 
 class GroupSerializer(serializers.ModelSerializer):

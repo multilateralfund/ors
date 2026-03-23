@@ -2,6 +2,7 @@ import factory.fuzzy
 from django.contrib.auth import get_user_model
 
 from core.models import (
+    AlternativeTechnology,
     ProjectComponents,
     Replenishment,
     ScaleOfAssessment,
@@ -130,6 +131,11 @@ class SubstanceAltNameFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=100)
     substance = factory.SubFactory(SubstanceFactory)
 
+class AlternativeTechnologyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AlternativeTechnology
+
+    name = factory.Faker("pystr", max_chars=100)
 
 class BlendFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -562,7 +568,8 @@ class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
 
     project = factory.SubFactory(ProjectFactory)
     odp = factory.Faker("random_int", min=1, max=100)
-    ods_replacement = factory.Faker("pystr", max_chars=100)
+    ods_replacement_text = factory.Faker("pystr", max_chars=100)
+    ods_replacement = factory.SubFactory(AlternativeTechnologyFactory)
     co2_mt = factory.Faker("random_int", min=1, max=100)
     sort_order = factory.Faker("random_int", min=1, max=100)
 

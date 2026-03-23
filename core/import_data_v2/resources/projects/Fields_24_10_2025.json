@@ -447,10 +447,10 @@
     {
         "IMPORT_NAME": "Replacement technology/ies",
         "LABEL": "Replacement technologies",
-        "WRITE_FIELD_NAME": "ods_replacement",
-        "READ_FIELD_NAME": "ods_replacement",
+        "WRITE_FIELD_NAME": "ods_replacement_text",
+        "READ_FIELD_NAME": "ods_replacement_text",
         "TABLE": "ods_odp",
-        "DATA_TYPE": "text",
+        "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details",
         "SORT_ORDER": 38,
         "EDITABLE_IN_VERSIONS": [1,2,3],

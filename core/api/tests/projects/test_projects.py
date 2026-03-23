@@ -645,13 +645,13 @@ def setup_project_create(
             {
                 "odp": 3.14,
                 "ods_substance_id": substance.id,
-                "ods_replacement": "replacement",
+                "ods_replacement_text": "replacement",
                 "ods_type": ProjectOdsOdp.ProjectOdsOdpType.GENERAL,
             },
             {
                 "odp": 3.14,
                 "ods_blend_id": blend.id,
-                "ods_replacement": "replacement",
+                "ods_replacement_text": "replacement",
                 "ods_type": ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION,
             },
         ],
@@ -771,7 +771,7 @@ class TestCreateProjects(BaseTest):
         assert len(ods_odp) == 2
         assert ods_odp[0]["odp"] == 3.14
         assert ods_odp[0]["ods_display_name"] == substance.name
-        assert ods_odp[0]["ods_replacement"] == "replacement"
+        assert ods_odp[0]["ods_replacement_text"] == "replacement"
         assert ods_odp[0]["ods_type"] == "general"
         assert ods_odp[1]["ods_display_name"] == blend.name
 
