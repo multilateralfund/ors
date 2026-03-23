@@ -527,11 +527,11 @@ class TestProjectListAssocitatedProjects:
         _test_user_permissions(viewer_user, 200)
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
-        _test_user_permissions(secretariat_viewer_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 404)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
         _test_user_permissions(admin_user, 200)
 
     def test_list_associated_projects(
@@ -541,9 +541,9 @@ class TestProjectListAssocitatedProjects:
         project2,
         project3,
         project_approved_status,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         self._prepare_projects(project, project2, project_draft_status)
 
         project.tranche = 2
@@ -667,19 +667,19 @@ class TestProjectListAssocitatedProjects:
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
         _test_user_permissions(agency_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
+        _test_user_permissions(secretariat_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
         _test_user_permissions(admin_user, 200)
 
     def test_remove_association(
         self,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
         project,
         project2,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-remove-association", args=(project.id,))
         agency = AgencyFactory.create(code="Test agency 1")
         # associate project

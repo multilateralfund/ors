@@ -72,10 +72,8 @@ class TestProjectVersioning:
         _set_project_back_to_v1()
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _set_project_back_to_v1()
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _set_project_back_to_v1()
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
         _test_user_permissions(secretariat_v3_edit_access_user, 403)
         _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
@@ -302,12 +300,12 @@ class TestProjectVersioning:
 
     def test_recommend_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
         project,
         project_file,
         project_submitted_status,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-recommend", args=(project.id,))
 
         # submit project and expect failure due to missing required fields
@@ -327,7 +325,7 @@ class TestProjectVersioning:
         project.blanket_or_individual_consideration = "individual"
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-recommend", args=(project.id,))
 
         # recommend project
@@ -469,11 +467,11 @@ class TestProjectVersioning:
 
     def test_withdraw_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
         project,
         project_submitted_status,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-withdraw", args=(project.id,))
 
         # submit project and expect failure due to bad submission status
@@ -486,7 +484,7 @@ class TestProjectVersioning:
         project.submission_status = project_submitted_status
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-withdraw", args=(project.id,))
 
         response = self.client.post(url)
@@ -545,12 +543,12 @@ class TestProjectVersioning:
 
     def test_reject_project(
         self,
-        secretariat_v3_edit_access_user,
+        admin_user,
         project,
         project_recommended_status,
         project_not_approved_status,
     ):
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-reject", args=(project.id,))
 
         # submit project and expect failure due to bad submission status
@@ -563,7 +561,7 @@ class TestProjectVersioning:
         project.submission_status = project_recommended_status
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-reject", args=(project.id,))
 
         response = self.client.post(url)
@@ -628,14 +626,14 @@ class TestProjectVersioning:
 
     def test_approve_project(
         self,
-        secretariat_v3_edit_access_user,
+        admin_user,
         project,
         decision,
         project_recommended_status,
         project_approved_status,
         project_ongoing_status,
     ):
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-approve", args=(project.id,))
 
         # submit project and expect failure due to bad submission status
@@ -649,7 +647,7 @@ class TestProjectVersioning:
         project.save()
 
         # submit project and expect failure due to missing required fields
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-approve", args=(project.id,))
 
         response = self.client.post(url)
@@ -660,7 +658,7 @@ class TestProjectVersioning:
         project.date_completion = datetime.date(2024, 9, 30)
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-approve", args=(project.id,))
         response = self.client.post(url)
         assert response.status_code == 200
@@ -718,11 +716,11 @@ class TestProjectVersioning:
 
     def test_send_back_to_draft_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
         project,
         project_submitted_status,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-send-back-to-draft", args=(project.id,))
 
         # submit project and expect failure due to bad submission status
@@ -735,7 +733,7 @@ class TestProjectVersioning:
         project.submission_status = project_submitted_status
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-send-back-to-draft", args=(project.id,))
 
         response = self.client.post(url)
@@ -745,7 +743,7 @@ class TestProjectVersioning:
 
     def test_send_back_to_draft_components(
         self,
-        secretariat_v1_v2_edit_access_user,
+        admin_user,
         project,
         project2,
         project_submitted_status,
@@ -760,7 +758,7 @@ class TestProjectVersioning:
         project.component = project2.component
         project.save()
 
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         url = reverse("project-v2-send-back-to-draft", args=(project.id,))
 
         response = self.client.post(url)
