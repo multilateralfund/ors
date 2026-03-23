@@ -1432,7 +1432,8 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                             elif field.write_field_name == "replacement_technology":
                                 if (
                                     getattr(ods_odp, field.write_field_name) is None
-                                    and getattr(ods_odp, "replacement_technology_text") is None
+                                    and getattr(ods_odp, "replacement_technology_text")
+                                    is None
                                 ):
                                     errors[f"{field.write_field_name}_ods_odp"] = (
                                         f"{field.label} is required for submission."

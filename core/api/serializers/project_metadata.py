@@ -1,10 +1,12 @@
 from rest_framework import serializers
 
 from core.models import (
+    AlternativeTechnology,
     Substance,
     ProjectOdsOdp,
 )
 from core.api.serializers.chemicals import (
+    AlternativeTechnologySerializer,
     GroupSerializer,
     SubstanceSerializer,
     BlendSerializer,
@@ -292,6 +294,14 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
                 entry["baseline_type"] = "blend"
 
             return data
+
+        if obj.read_field_name == "ods_replacement_text":
+            alternative_technologies = AlternativeTechnology.objects.all().order_by(
+                "name"
+            )
+            return AlternativeTechnologySerializer(
+                alternative_technologies, many=True
+            ).data
 
         if obj.read_field_name == "tranche":
             return [{"id": index, "name": str(index)} for index in range(1, 11)]

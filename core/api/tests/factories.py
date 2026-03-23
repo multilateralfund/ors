@@ -131,11 +131,13 @@ class SubstanceAltNameFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=100)
     substance = factory.SubFactory(SubstanceFactory)
 
+
 class AlternativeTechnologyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AlternativeTechnology
 
     name = factory.Faker("pystr", max_chars=100)
+
 
 class BlendFactory(factory.django.DjangoModelFactory):
     class Meta:

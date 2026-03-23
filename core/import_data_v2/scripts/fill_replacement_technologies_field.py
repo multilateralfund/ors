@@ -31,8 +31,9 @@ def fill_replacement_technologies_field():
             project_ods_odp.save()
         except AlternativeTechnology.DoesNotExist:
             logger.warning(
-                f"Replacement technology '{replacement_technology_name}' not found for ProjectOdsOdp with id {project_ods_odp.id}. Setting to 'Other alternatives - specify'."
+                f"""Replacement technology '{replacement_technology_name}' not found for
+                    ProjectOdsOdp with id {project_ods_odp.id}. Setting to 'Other alternatives - specify'.
+                """
             )
             project_ods_odp.ods_replacement = other_alternative
             project_ods_odp.save()
-        pass
