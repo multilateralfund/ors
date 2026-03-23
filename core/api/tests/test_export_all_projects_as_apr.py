@@ -162,9 +162,34 @@ class TestGenerateProjectDicts:
         dicts = list(_generate_project_dicts([project_v3], 2024))
         assert dicts[0]["project_code"] == project_v3.code
 
-    def test_balance_is_approved_funding_when_no_disbursement(self, project_v3):
-        dicts = list(_generate_project_dicts([project_v3], 2024))
-        assert dicts[0]["balance"] == project_v3.total_fund
+    def test_balance_is_approved_funding_plus_adjustment(self, ongoing_status):
+        v3 = ProjectFactory(
+            code="TST/ADJ/003/INV/01",
+            version=3,
+            latest_project=None,
+            total_fund=10000.0,
+            status=ongoing_status,
+        )
+        v4 = ProjectFactory(
+            code="TST/ADJ/003/INV/01",
+            version=4,
+            latest_project=v3,
+            total_fund=12000.0,
+            status=ongoing_status,
+        )
+        # Inject v4 as latest version so adjustment = 12000 - 10000 = 2000
+        apr = AnnualProjectReport(project=v3)
+        apr.project_id = v3.id
+        apr.status = v3.status.name
+        apr.__dict__["latest_project_version_for_year"] = v4
+        apr.__dict__["report_year"] = 2024
+        apr.populate_derived_fields()
+        data = _build_project_dict(apr)
+
+        # balance must use approved_funding_plus_adjustment (12000), not approved_funding (10000)
+        assert data["approved_funding"] == 10000.0
+        assert data["approved_funding_plus_adjustment"] == 12000.0
+        assert data["balance"] == 12000.0
 
     def test_per_cent_funds_disbursed_none_without_disbursement(self, project_v3):
         dicts = list(_generate_project_dicts([project_v3], 2024))
