@@ -84,10 +84,11 @@ const ProjectRelatedProjects = ({
         const { projects: crtData = [], loaded } = data
         const showDownloadButton =
           crtData && crtData.length > 0 && downloadButton
+        const isLinkMode = mode.includes('link') && !!project
 
         const getFinalData = () => {
           if (index === 0) {
-            return mode.includes('link')
+            return isLinkMode
               ? [{ ...project, errors: [], warnings: [] }]
               : (crtData ?? [])
           }
@@ -111,7 +112,8 @@ const ProjectRelatedProjects = ({
           const filteredData = allCrtData.filter(
             (entry) =>
               entry.submission_status !== 'Draft' &&
-              !(isVieworEditMode && entry.id === project.id),
+              !(isVieworEditMode && entry.id === project.id) &&
+              !(isLinkMode && entry.id === project.id),
           )
           const orderedData = orderBy(
             filteredData,
