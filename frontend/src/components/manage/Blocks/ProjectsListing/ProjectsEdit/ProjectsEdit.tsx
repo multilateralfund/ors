@@ -3,7 +3,6 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
@@ -16,7 +15,6 @@ import {
   getFieldData,
   getFileFromMetadata,
   getFormattedDecimalValue,
-  getNonFieldErrors,
   getOdsOdpFields,
   getProjectDuration,
   hasSpecificField,
@@ -257,16 +255,11 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
 
-  const [projectId, setProjectId] = useState<number | null>(null)
-  const [successMessage, setSuccessMessage] = useState<InlineMessageType>(null)
-
+  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [otherErrors, setOtherErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
-
-  const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -536,18 +529,6 @@ const ProjectsEdit = ({
     }
   }, [country, cluster, tranche, project_id, specificFields])
 
-  useEffect(() => {
-    if (projectId && !isEditMode) {
-      setSuccessMessage({
-        type: 'success',
-        message:
-          (isEditMode ? 'Updated' : 'Created') + ' project successfully.',
-        redirectMessage: 'View project.',
-        hrefRedirect: `/projects-listing/${projectId}`,
-      })
-    }
-  }, [projectId])
-
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,
     fieldName?: string,
@@ -576,10 +557,8 @@ const ProjectsEdit = ({
             projectData,
             projectFiles,
             files,
-            setProjectId,
             setErrors,
             setFileErrors,
-            setOtherErrors,
             setProjectFiles,
             specificFields,
             trancheErrors,
@@ -590,7 +569,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
-            setSuccessMessage,
+            setInlineMessage,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -621,8 +600,8 @@ const ProjectsEdit = ({
             setRefetchRelatedProjects,
             metaprojectData,
             shouldValidateTotalFund,
-            successMessage,
-            setSuccessMessage,
+            inlineMessage,
+            setInlineMessage,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={
@@ -631,7 +610,6 @@ const ProjectsEdit = ({
           }
           loadedFiles={areFilesLoaded}
         />
-        <ProjectFormFooter {...{ nonFieldsErrors, otherErrors }} />
       </>
     )
   )

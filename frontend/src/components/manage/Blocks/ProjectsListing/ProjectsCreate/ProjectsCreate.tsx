@@ -38,6 +38,7 @@ import {
   BpDataProps,
   FileMetaDataProps,
   InlineMessageProps,
+  OdsOdpFields,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -60,6 +61,7 @@ import {
   getOdsOdpFields,
   getPostExcomMeetingErrors,
   getFormattedDecimalValue,
+  isOtherOdsReplacement,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -101,8 +103,8 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   metaprojectData,
   shouldValidateTotalFund,
-  successMessage,
-  setSuccessMessage,
+  inlineMessage,
+  setInlineMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -400,11 +402,18 @@ const ProjectsCreate = ({
   const odsOpdDataErrors =
     odsOdpFields.length > 0
       ? map(odsOdpData, (odsOdp) => {
-          const errors = map(fieldsForValidation, (field) =>
-            mode === 'edit' && checkInvalidValue(odsOdp[field])
+          const errors = map(fieldsForValidation, (field) => {
+            const formattedField =
+              field === 'ods_replacement' &&
+              isOtherOdsReplacement([], odsOdp[field])
+                ? field + '_custom'
+                : field
+
+            return mode === 'edit' &&
+              checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])
               ? [field, [`This field is required${errorMessageExtension}.`]]
-              : null,
-          ).filter(Boolean) as [string, string[]][]
+              : null
+          }).filter(Boolean) as [string, string[]][]
 
           return Object.fromEntries(errors)
         })
@@ -796,7 +805,7 @@ const ProjectsCreate = ({
             mode,
             mpData,
             setMpData,
-            setSuccessMessage,
+            setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
@@ -881,10 +890,10 @@ const ProjectsCreate = ({
                       }
                     />
                   )}
-                {!!successMessage &&
-                  (!successMessage.tabId || successMessage.tabId === id) && (
+                {!!inlineMessage &&
+                  (!inlineMessage.tabId || inlineMessage.tabId === id) && (
                     <ProjectsInlineMessage
-                      {...{ successMessage, setSuccessMessage }}
+                      {...{ inlineMessage, setInlineMessage }}
                     />
                   )}
                 {mode === 'edit' &&

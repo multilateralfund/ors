@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
@@ -9,6 +9,7 @@ import {
   getFieldData,
   getOdsOdpFields,
   hasFields,
+  isOtherOdsReplacement,
 } from '../utils'
 import {
   OdsOdpFields,
@@ -155,30 +156,54 @@ const ProjectSubstanceDetails = ({
                     (field1, field2) =>
                       (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
                   )
-                  .map((_, index) => (
+                  .map((entry, index) => (
                     <span key={index}>
                       <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
-                        {odsOdpFields.map(
-                          (odsOdpField) =>
-                            canViewField(
-                              viewableFields,
-                              odsOdpField.write_field_name,
-                            ) && (
-                              <span key={odsOdpField.write_field_name}>
-                                {widgets[odsOdpField.data_type]<ProjectData>(
-                                  projectData,
-                                  setProjectData,
-                                  odsOdpField,
-                                  odsOdpErrors,
-                                  editableFields,
-                                  sectionIdentifier,
-                                  field,
-                                  index,
-                                  !!groupField,
-                                )}
-                              </span>
-                            ),
-                        )}
+                        {odsOdpFields.map((odsOdpField) => {
+                          const fieldName = odsOdpField.write_field_name
+                          const isOdsReplacement =
+                            fieldName === 'ods_replacement'
+                          const customField = isOdsReplacement
+                            ? ({
+                                ...odsOdpField,
+                                read_field_name: 'ods_replacement_custom',
+                                write_field_name: 'ods_replacement_custom',
+                                data_type: 'text',
+                              } as ProjectSpecificFields)
+                            : null
+
+                          const shouldDisplayCustomField =
+                            !!customField &&
+                            isOtherOdsReplacement([], entry.ods_replacement)
+
+                          const renderWidget = (
+                            fieldConfig: typeof odsOdpField,
+                          ) => (
+                            <span>
+                              {widgets[fieldConfig.data_type]<ProjectData>(
+                                projectData,
+                                setProjectData,
+                                fieldConfig,
+                                odsOdpErrors,
+                                editableFields,
+                                sectionIdentifier,
+                                field,
+                                index,
+                                !!groupField,
+                              )}
+                            </span>
+                          )
+
+                          return (
+                            canViewField(viewableFields, fieldName) && (
+                              <React.Fragment key={fieldName}>
+                                {renderWidget(odsOdpField)}
+                                {shouldDisplayCustomField &&
+                                  renderWidget(customField)}
+                              </React.Fragment>
+                            )
+                          )
+                        })}
                         {odsDisplayField && !disableV3Edit && (
                           <IoTrash
                             className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"

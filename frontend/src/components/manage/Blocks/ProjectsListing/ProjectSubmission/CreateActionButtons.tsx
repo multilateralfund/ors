@@ -5,8 +5,12 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
-import { formatProjectFields, formatSubmitData } from '../utils'
 import { ActionButtons } from '../interfaces'
+import {
+  formatProjectFields,
+  formatSubmitData,
+  getNonFieldErrors,
+} from '../utils'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -18,16 +22,15 @@ const CreateActionButtons = ({
   projectData,
   setProjectData,
   files,
-  setProjectId,
   isSaveDisabled,
   setIsLoading,
   setErrors,
   setFileErrors,
-  setOtherErrors,
   specificFields,
   specificFieldsLoaded,
   mode,
   filesMetaData,
+  setInlineMessage,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
@@ -52,8 +55,8 @@ const CreateActionButtons = ({
   const createProject = async () => {
     setIsLoading(true)
     setFileErrors('')
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     try {
       const data = formatSubmitData(
@@ -84,7 +87,6 @@ const CreateActionButtons = ({
             : data,
         method: 'POST',
       })
-      setProjectId(result.id)
       setWarnings({ id: result.id, warnings: result.warnings })
 
       if (newFiles.length > 0) {
@@ -107,12 +109,23 @@ const CreateActionButtons = ({
       if (error.status === 400) {
         setErrors(errors)
 
+        const nonFieldErrors = getNonFieldErrors(errors)
+        if (nonFieldErrors.length > 0) {
+          setInlineMessage({
+            type: 'error',
+            errorMessages: nonFieldErrors,
+          })
+        }
+
         if (errors?.files) {
           setFileErrors(errors.files)
         }
 
         if (errors?.details) {
-          setOtherErrors(errors.details)
+          setInlineMessage({
+            type: 'error',
+            message: errors.details,
+          })
         }
 
         if (errors?.metadata) {
@@ -120,7 +133,6 @@ const CreateActionButtons = ({
         }
       }
 
-      setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })

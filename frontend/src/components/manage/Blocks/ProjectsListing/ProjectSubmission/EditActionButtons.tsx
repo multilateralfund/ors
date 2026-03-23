@@ -26,11 +26,13 @@ import {
   getCrossCuttingErrors,
   getDefaultImpactErrors,
   getHasNoFiles,
+  getNonFieldErrors,
   getPostExcomApprovalErrors,
   getPostExcomMeetingErrors,
   getSpecificFieldsErrors,
   hasSectionErrors,
   hasSpecificField,
+  isOtherOdsReplacement,
 } from '../utils'
 import {
   ProjectFile,
@@ -60,13 +62,11 @@ const EditActionButtons = ({
   project,
   files,
   projectFiles,
-  setProjectId,
   setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
   setFileErrors,
-  setOtherErrors,
   setErrors,
   setProjectFiles,
   specificFields,
@@ -78,7 +78,7 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
-  setSuccessMessage,
+  setInlineMessage,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -89,7 +89,7 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
-  setSuccessMessage: (message: InlineMessageType) => void
+  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -207,10 +207,19 @@ const EditActionButtons = ({
 
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) =>
+    (odsOdpData.some((data, index) =>
       Object.entries(data)
         .filter(([key]) => !projectPhaseOutFields.includes(key))
-        .some(([, value]) => checkInvalidValue(value)),
+        .some(([field, value]) => {
+          const formattedVal =
+            field === 'ods_replacement' && isOtherOdsReplacement([], value)
+              ? projectSpecificFields?.ods_odp?.[index]?.[
+                  'ods_replacement_custom'
+                ]
+              : value
+
+          return checkInvalidValue(formattedVal)
+        }),
     ) ||
       odsOdpData.length === 0)
 
@@ -291,6 +300,14 @@ const EditActionButtons = ({
     if (error.status === 400) {
       setErrors(errors)
 
+      const nonFieldErrors = getNonFieldErrors(errors)
+      if (nonFieldErrors.length > 0) {
+        setInlineMessage({
+          type: 'error',
+          errorMessages: nonFieldErrors,
+        })
+      }
+
       if (errors?.files) {
         setFileErrors(errors.files)
       }
@@ -300,7 +317,10 @@ const EditActionButtons = ({
       }
 
       if (errors?.details) {
-        setOtherErrors(errors.details)
+        setInlineMessage({
+          type: 'error',
+          message: errors.details,
+        })
       }
 
       if (type === 'files' && errors?.error) {
@@ -308,7 +328,6 @@ const EditActionButtons = ({
       }
     }
 
-    setProjectId(null)
     enqueueSnackbar(<>An error occurred. Please try again.</>, {
       variant: 'error',
     })
@@ -319,8 +338,8 @@ const EditActionButtons = ({
 
     setIsLoading(true)
     setFileErrors('')
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     const formattedProjectFields = formatProjectFields(projectFields)
     const actualData = isApproved
@@ -339,7 +358,6 @@ const EditActionButtons = ({
           method: 'PUT',
         })
 
-        setProjectId(result.id)
         clearUpdatedFields()
       } catch (error) {
         await handleErrors(error)
@@ -517,6 +535,8 @@ const EditActionButtons = ({
         })
       }
 
+      setProjectTitle(result.title)
+
       if (navigationPage) {
         setLocation(`/projects-listing/${id}/${navigationPage}`)
       }
@@ -529,10 +549,7 @@ const EditActionButtons = ({
         }
       }
 
-      setProjectId(result.id)
-      setProjectTitle(result.title)
-
-      setSuccessMessage({
+      setInlineMessage({
         type: 'success',
         message: 'Updated project successfully.',
         redirectMessage: 'View project.',
@@ -647,8 +664,8 @@ const EditActionButtons = ({
 
   const editApprovalFields = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setInlineMessage(null)
 
     try {
       const data = formatApprovalData(
@@ -662,13 +679,11 @@ const EditActionButtons = ({
         method: 'PUT',
       })
 
-      setProjectId(result.id)
       clearUpdatedFields()
 
       return true
     } catch (error) {
       await handleErrors(error)
-      setProjectId(null)
       return false
     } finally {
       setIsLoading(false)
