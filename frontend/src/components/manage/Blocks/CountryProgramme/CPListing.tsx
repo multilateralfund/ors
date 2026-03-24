@@ -678,8 +678,8 @@ const CPResources = ({ resources }: any) => {
       )}
       <div className="relative aspect-video max-h-[296px] w-full max-w-[526px]">
         <iframe
-          src="https://www.youtube.com/embed/1RCXRcD_TKY?si=qgRdgSLvEPtv0luJ"
-          title="CP Demonstration"
+          src="https://www.youtube.com/embed/kT9u4--wZXk"
+          title="CP Data Demo Mar 2026"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute left-0 top-0 h-full w-full"

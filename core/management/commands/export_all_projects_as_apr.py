@@ -25,6 +25,14 @@ from core.models import AnnualProjectReport, Project
 # Fields excluded from the export.
 EXCLUDE_FIELDS = {"pcr_due"}
 
+# Calculated fields - not stored as "denorm" fields, but computable after
+# populate_derived_fields() populates them
+COMPUTED_FIELDS = {
+    "per_cent_funds_disbursed",
+    "balance",
+    "support_cost_balance",
+}
+
 # Mapping from serializer excel field names to APR denormalized attribute names.
 # All APR input fields are not in the mapping (they're left as None).
 DENORM_FIELD_MAP = {
@@ -72,6 +80,8 @@ def _build_project_dict(apr):
             if isinstance(value, (date, datetime)):
                 value = value.isoformat()
             data[field_name] = value
+        elif field_name in COMPUTED_FIELDS:
+            data[field_name] = getattr(apr, field_name, None)
         elif field_name == "status":
             data[field_name] = apr.status
         else:

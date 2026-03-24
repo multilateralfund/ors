@@ -157,6 +157,17 @@ class ProjectsFundsWriter(SheetWriter):
     def calc_total_fund(self, p, _):
         result = None
         if p.status.name == "Transferred":
+            if p.version == 3:
+                return p.total_fund or 0
+            if p.version > 3:
+                prev_version = self.get_version(p, p.version - 1)
+                if prev_version:
+                    tf = p.fund_transferred or 0
+                    prev_tf = prev_version.fund_transferred or 0
+                    result = ((p.total_fund or 0) + tf) - (
+                        (prev_version.total_fund or 0) + prev_tf
+                    )
+                    return result
             tf = p.fund_transferred or 0
             result = (p.total_fund or 0) + tf
             return result
@@ -171,6 +182,17 @@ class ProjectsFundsWriter(SheetWriter):
     def calc_support_cost_psc(self, p, _):
         result = None
         if p.status.name == "Transferred":
+            if p.version == 3:
+                return p.support_cost_psc or 0
+            if p.version > 3:
+                prev_version = self.get_version(p, p.version - 1)
+                if prev_version:
+                    tpsc = p.psc_transferred or 0
+                    prev_tpsc = prev_version.psc_transferred or 0
+                    result = ((p.support_cost_psc or 0) + tpsc) - (
+                        (prev_version.support_cost_psc or 0) + prev_tpsc
+                    )
+                    return result
             tpsc = p.psc_transferred or 0
             result = (p.support_cost_psc or 0) + tpsc
             return result
@@ -183,6 +205,20 @@ class ProjectsFundsWriter(SheetWriter):
                     prev_version.support_cost_psc or 0
                 )
         return result
+
+    def display_total_fund(self, p, _):
+        if p.status.name == "Transferred":
+            tf = p.fund_transferred or 0
+            result = (p.total_fund or 0) + tf
+            return result
+        return p.total_fund or 0
+
+    def display_support_cost_psc(self, p, _):
+        if p.status.name == "Transferred":
+            tpsc = p.psc_transferred or 0
+            result = (p.support_cost_psc or 0) + tpsc
+            return result
+        return p.support_cost_psc or 0
 
     @property
     def headers(self):
@@ -206,10 +242,12 @@ class ProjectsFundsWriter(SheetWriter):
                 {
                     "id": "total_fund",
                     "headerName": "Total funds",
+                    "method": self.display_total_fund,
                 },
                 {
                     "id": "support_cost_psc",
                     "headerName": "Support cost",
+                    "method": self.display_support_cost_psc,
                 },
                 {
                     "id": "meeting",
@@ -329,6 +367,20 @@ class ProjectsV2DumpWriter:
         )
         self.headers = project_headers[:2] + metaproject_headers + project_headers[2:]
 
+    def display_total_fund(self, p, _):
+        if p.status.name == "Transferred":
+            tf = p.fund_transferred or 0
+            result = (p.total_fund or 0) + tf
+            return result
+        return p.total_fund or 0
+
+    def display_support_cost_psc(self, p, _):
+        if p.status.name == "Transferred":
+            tpsc = p.psc_transferred or 0
+            result = (p.support_cost_psc or 0) + tpsc
+            return result
+        return p.support_cost_psc or 0
+
     def write(self, projects, *with_project):
         self.sheet.append([h["headerName"] for h in self.headers])
         for p in projects:
@@ -377,6 +429,20 @@ class ProjectsV2DumpWriter:
                 header["method"] = partial(get_value_m2m, f)
 
             result.append(header)
+        result.append(
+            {
+                "id": "actual_total_fund",  # dummy value here, this column does not exist
+                "headerName": "Actual funds",
+                "method": lambda p, _: self.display_total_fund(p, None),
+            },
+        )
+        result.append(
+            {
+                "id": "actual_psc",  # dummy value here, this column does not exist
+                "headerName": "Actual PSC",
+                "method": lambda p, _: self.display_support_cost_psc(p, None),
+            }
+        )
         return result
 
 

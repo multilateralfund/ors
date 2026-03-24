@@ -67,10 +67,15 @@ class InvoiceFilter(filters.FilterSet):
     opted_for_ferm = filters.BooleanFilter(field_name="is_ferm")
 
     def filter_status(self, queryset, _name, value):
-        if value == "pending":
-            return queryset.filter(date_paid__isnull=True)
-        if value == "paid":
-            return queryset.filter(date_paid__isnull=False)
+        if value == "not_paid":
+            return queryset.filter(
+                status__in=[
+                    Invoice.InvoiceStatus.PENDING,
+                    Invoice.InvoiceStatus.PARTIALLY_PAID,
+                ]
+            )
+        if value in Invoice.InvoiceStatus.values:
+            return queryset.filter(status=value)
         return queryset
 
     def filter_reminders_sent(self, queryset, _name, value):
