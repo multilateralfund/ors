@@ -2766,3 +2766,20 @@ class TestInvoiceStatusFilter(BaseTest):
         # Only country_d does not have an issued invoice
         assert r.data[0]["country"]["id"] == country_d.id
         assert r.data[0].get("number") is None
+
+        # Check that not_issued is not overridden even if the FE sends
+        # hide_no_invoice=true (which it does by default).
+        r = self.client.get(
+            self.url,
+            {
+                "year_min": self.year,
+                "year_max": self.year,
+                "status": "not_issued",
+                "hide_no_invoice": "true",
+                "ordering": "country",
+            },
+        )
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        assert r.data[0]["country"]["id"] == country_d.id
+        assert r.data[0].get("number") is None

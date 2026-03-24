@@ -1878,7 +1878,10 @@ class ReplenishmentInvoiceViewSet(
             "search" in request.query_params
             or "country_id" in request.query_params
             or "date_of_issuance" in request.query_params.get("ordering", "")
-            or request.query_params.get("hide_no_invoice") == "true"
+            or (
+                request.query_params.get("hide_no_invoice") == "true"
+                and request.query_params.get("status") != "not_issued"
+            )
             or (
                 request.query_params.get("status", None) is not None
                 and request.query_params.get("status") != "not_issued"
