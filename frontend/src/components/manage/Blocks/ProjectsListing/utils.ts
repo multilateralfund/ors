@@ -234,9 +234,10 @@ const normalizeOdsOdp = (
       projectFields,
     )
 
+    const crtOdsOdpData = projectSpecificFields?.ods_odp?.[index]
     const hasOtherReplacement = isOtherOdsReplacement(
       altTechs,
-      projectSpecificFields.ods_odp[index].ods_replacement,
+      crtOdsOdpData?.ods_replacement,
     )
 
     return {
@@ -247,14 +248,12 @@ const normalizeOdsOdp = (
       ...oldData,
       ...(specificFieldsAvailable.includes('ods_replacement_text')
         ? {
-            ods_replacement:
-              projectSpecificFields.ods_odp[index].ods_replacement,
+            ods_replacement: crtOdsOdpData?.ods_replacement,
             ods_replacement_text: hasOtherReplacement
-              ? projectSpecificFields.ods_odp[index].ods_replacement_text
+              ? crtOdsOdpData?.ods_replacement_text
               : null,
           }
         : {}),
-
       sort_order: index + 1,
     }
   })
@@ -1337,5 +1336,10 @@ export const orderDecisions = (decision: string) =>
     ? getOldFormatOrder(decision)
     : getNewFormatOrder(decision)
 
-export const isOtherOdsReplacement = (opts: OptionsType[], value: any) =>
-  find(opts, (opt) => opt.id === value)?.name.includes('Other alternatives')
+export const isOtherOdsReplacement = (
+  opts: OptionsType[],
+  value: number | null,
+) => {
+  const crtOdsReplacementName = find(opts, (opt) => opt.id === value)?.name
+  return crtOdsReplacementName?.includes('Other alternatives') ?? false
+}

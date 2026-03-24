@@ -225,6 +225,9 @@ export const AutocompleteWidget = <T,>(
   )
   const fieldName = field.write_field_name
   const isOdsReplacement = fieldName === 'ods_replacement'
+  const disabledFieldName = isOdsReplacement
+    ? 'ods_replacement_text'
+    : fieldName
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   const formattedValue = isBoolean(value)
@@ -260,9 +263,7 @@ export const AutocompleteWidget = <T,>(
         <Field
           widget="autocomplete"
           options={options}
-          disabled={
-            !isOdsReplacement && !canEditField(editableFields, fieldName)
-          }
+          disabled={!canEditField(editableFields, disabledFieldName)}
           value={normalizedValue}
           onChange={(_: React.SyntheticEvent, value) =>
             changeHandler[field.data_type]<T, SpecificFields>(

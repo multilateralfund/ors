@@ -107,7 +107,7 @@ export type OdsOdpFields = {
   ods_display_name: string | null
   ods_substance_id: number | null
   odp: string
-  ods_replacement: string
+  ods_replacement: number | null
   ods_replacement_text: string
   co2_mt: string
   phase_out_mt: string

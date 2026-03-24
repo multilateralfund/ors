@@ -407,8 +407,8 @@ const ProjectsCreate = ({
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) => {
             const formattedField =
-              field === 'ods_replacement_text' &&
-              isOtherOdsReplacement(altTechs, odsOdp[field])
+              field !== 'ods_replacement_text' ||
+              isOtherOdsReplacement(altTechs, odsOdp['ods_replacement'])
                 ? field
                 : 'ods_replacement'
 

@@ -213,11 +213,14 @@ const EditActionButtons = ({
       Object.entries(data)
         .filter(([key]) => !projectPhaseOutFields.includes(key))
         .some(([field, value]) => {
+          const odsReplacementValue =
+            projectSpecificFields?.ods_odp?.[index]?.['ods_replacement']
+
           const formattedVal =
-            field === 'ods_replacement_text' &&
-            isOtherOdsReplacement(altTechs, value)
+            field !== 'ods_replacement_text' ||
+            isOtherOdsReplacement(altTechs, odsReplacementValue)
               ? value
-              : projectSpecificFields?.ods_odp?.[index]?.['ods_replacement']
+              : odsReplacementValue
 
           return checkInvalidValue(formattedVal)
         }),
