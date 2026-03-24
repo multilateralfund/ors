@@ -198,7 +198,7 @@ class ProjectsV2ProjectExportDocx:
         data_fields = [
             "ods_display_name",
             "???",
-            "ods_replacement",
+            "ods_display_replacement",
         ]
 
         for field, label in [

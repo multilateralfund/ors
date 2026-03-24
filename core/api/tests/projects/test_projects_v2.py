@@ -82,6 +82,7 @@ def setup_project_create(
         sort_order=1,
     )
     blend.components.create(substance=substA, percentage=0.2)
+    alternative_substance = None
     return {
         "ad_hoc_pcr": True,
         "number_of_both_sme_non_sme_not_directly_funded": Decimal(943),
@@ -157,7 +158,8 @@ def setup_project_create(
             {
                 "ods_substance_id": substA.id,
                 "odp": 11.11,
-                "ods_replacement": "ods replacement test",
+                "ods_replacement_text": "ods replacement test",
+                "ods_replacement": None,
                 "co2_mt": 323.23,
                 "phase_out_mt": 123.23,
                 "ods_type": "production",
@@ -166,7 +168,8 @@ def setup_project_create(
             {
                 "ods_blend_id": blend.id,
                 "odp": 41.41,
-                "ods_replacement": "ods replacement test 2",
+                "ods_replacement_text": "",
+                "ods_replacement": alternative_substance,
                 "co2_mt": 543.23,
                 "phase_out_mt": 223.23,
                 "ods_type": "general",
@@ -668,9 +671,10 @@ class TestCreateProjects(BaseTest):
         )
         assert response.data["ods_odp"][0]["odp"] == data["ods_odp"][0]["odp"]
         assert (
-            response.data["ods_odp"][0]["ods_replacement"]
-            == data["ods_odp"][0]["ods_replacement"]
+            response.data["ods_odp"][0]["ods_replacement_text"]
+            == data["ods_odp"][0]["ods_replacement_text"]
         )
+        # todo add ods_replacement
         assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
         assert (
             response.data["ods_odp"][0]["phase_out_mt"]
@@ -689,9 +693,11 @@ class TestCreateProjects(BaseTest):
         assert response.data["ods_odp"][1]["odp"] == data["ods_odp"][1]["odp"]
 
         assert (
-            response.data["ods_odp"][1]["ods_replacement"]
-            == data["ods_odp"][1]["ods_replacement"]
+            response.data["ods_odp"][1]["ods_replacement_text"]
+            == data["ods_odp"][1]["ods_replacement_text"]
         )
+        # todo add ods_replacement
+
         assert response.data["ods_odp"][1]["co2_mt"] == data["ods_odp"][1]["co2_mt"]
         assert (
             response.data["ods_odp"][1]["phase_out_mt"]
@@ -892,7 +898,7 @@ class TestProjectsV2Update:
             "ods_odp": [
                 {
                     "odp": 0.01,
-                    "ods_replacement": "test replacement",
+                    "ods_replacement_text": "test replacement",
                 },
                 {
                     "id": project_ods_odp_subst.id,
@@ -1016,7 +1022,7 @@ class TestProjectsV2Update:
                 {
                     "ods_substance_id": substance.id,
                     "odp": 0.05,
-                    "ods_replacement": "test replacement",
+                    "ods_replacement_text": "test replacement",
                     "co2_mt": 100.0,
                     "phase_out_mt": 50.0,
                     "sort_order": 1,
@@ -1039,8 +1045,8 @@ class TestProjectsV2Update:
         assert response.data["ods_odp"][0]["ods_substance_id"] == substance.id
         assert response.data["ods_odp"][0]["odp"] == data["ods_odp"][0]["odp"]
         assert (
-            response.data["ods_odp"][0]["ods_replacement"]
-            == data["ods_odp"][0]["ods_replacement"]
+            response.data["ods_odp"][0]["ods_replacement_text"]
+            == data["ods_odp"][0]["ods_replacement_text"]
         )
         assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
         assert (

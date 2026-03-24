@@ -47,7 +47,6 @@ The scripts should be run in the following order when installing locally or when
     python manage.py import_resources_v2 import_cluster_type_sector_links
     python manage.py import_resources_v2 import_project_specific_fields
 
-    python manage.py import_resources_v2 import_alternative_technologies
     python manage.py import_resources_v2 fill_replacement_technologies_field
 
 You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and

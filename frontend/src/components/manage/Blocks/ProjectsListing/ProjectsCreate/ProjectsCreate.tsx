@@ -10,6 +10,7 @@ import {
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -31,13 +32,14 @@ import {
   ProjectFile,
   ProjectSpecificFields,
   ProjectTypeApi,
-  ProjectFiles,
   ProjectDataProps,
+  ProjectFiles,
   TrancheErrors,
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
   InlineMessageProps,
+  OdsOdpFields,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -60,6 +62,7 @@ import {
   getOdsOdpFields,
   getPostExcomMeetingErrors,
   getFormattedDecimalValue,
+  isOtherOdsReplacement,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -326,6 +329,8 @@ const ProjectsCreate = ({
   ])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
+  const { altTechs } = useContext(ProjectsDataContext)
+
   const hasV3EditPermissions =
     !!project && mode === 'edit' && canEditApprovedProjects
   const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
@@ -400,11 +405,18 @@ const ProjectsCreate = ({
   const odsOpdDataErrors =
     odsOdpFields.length > 0
       ? map(odsOdpData, (odsOdp) => {
-          const errors = map(fieldsForValidation, (field) =>
-            mode === 'edit' && checkInvalidValue(odsOdp[field])
+          const errors = map(fieldsForValidation, (field) => {
+            const formattedField =
+              field !== 'ods_replacement_text' ||
+              isOtherOdsReplacement(altTechs, odsOdp['ods_replacement'])
+                ? field
+                : 'ods_replacement'
+
+            return mode === 'edit' &&
+              checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])
               ? [field, [`This field is required${errorMessageExtension}.`]]
-              : null,
-          ).filter(Boolean) as [string, string[]][]
+              : null
+          }).filter(Boolean) as [string, string[]][]
 
           return Object.fromEntries(errors)
         })

@@ -66,13 +66,17 @@ export const textAreaClassname =
   'rounded-lg border bg-white p-2 pb-10 shadow-none text-base' +
   textFieldClassName
 
-export const additionalProperties: Record<string, Record<string, unknown>> = {
-  ods_display_name: {
-    FieldProps: {
-      className:
-        defaultProps.FieldProps.className + ' w-full min-w-56 md:min-w-64',
-    },
+const baseClassName = defaultProps.FieldProps.className
+const formatClassName = (className: string) => ({
+  FieldProps: {
+    className: `${baseClassName} ${className}`,
   },
+})
+const wideFieldStyle = formatClassName('w-full min-w-56 md:min-w-64')
+
+export const additionalProperties: Record<string, Record<string, unknown>> = {
+  ods_display_name: wideFieldStyle,
+  ods_replacement: wideFieldStyle,
   ods_type: {
     FieldProps: { className: defaultProps.FieldProps.className + ' w-[145px]' },
   },

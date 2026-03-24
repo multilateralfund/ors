@@ -13,6 +13,7 @@ import {
   canEditField,
   formatOptions,
   getFieldExtraLabel,
+  isOtherOdsReplacement,
   onTextareaFocus,
 } from '../utils'
 import {
@@ -43,6 +44,7 @@ import {
   isNil,
   omit,
   isUndefined,
+  lowerFirst,
 } from 'lodash'
 
 const getFieldDefaultProps = (
@@ -223,6 +225,10 @@ export const AutocompleteWidget = <T,>(
     hasField ? fields[sectionIdentifier] : undefined,
   )
   const fieldName = field.write_field_name
+  const isOdsReplacement = fieldName === 'ods_replacement'
+  const disabledFieldName = isOdsReplacement
+    ? 'ods_replacement_text'
+    : fieldName
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   const formattedValue = isBoolean(value)
@@ -258,7 +264,7 @@ export const AutocompleteWidget = <T,>(
         <Field
           widget="autocomplete"
           options={options}
-          disabled={!canEditField(editableFields, fieldName)}
+          disabled={!canEditField(editableFields, disabledFieldName)}
           value={normalizedValue}
           onChange={(_: React.SyntheticEvent, value) =>
             changeHandler[field.data_type]<T, SpecificFields>(
@@ -298,14 +304,16 @@ export const AutocompleteWidget = <T,>(
               }
             : {})}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(index)
-              ? (errors as { [key: string]: string[] }[])[index]
-              : errors
-          }
-          field={field.label}
-        />
+        {!(isOdsReplacement && isOtherOdsReplacement(options, value)) && (
+          <FieldErrorIndicator
+            errors={
+              !isNil(index)
+                ? (errors as { [key: string]: string[] }[])[index]
+                : errors
+            }
+            field={field.label}
+          />
+        )}
       </div>
     </div>
   )
@@ -381,15 +389,18 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-  const isOdsReplacement = fieldName === 'ods_replacement'
+  const isOdsReplacement = fieldName === 'ods_replacement_text'
   const isDestructionTech = fieldName === 'destruction_technology'
   const isCustomField = isOdsReplacement || isDestructionTech
   const nrChars = isCustomField ? 256 : 500
+  const label = isOdsReplacement
+    ? 'Other ' + lowerFirst(field.label)
+    : field.label
 
   return (
     <div className={cx('w-full', { 'md:w-auto': isCustomField })}>
       <Label>
-        {field.label} (max {nrChars} characters)
+        {label} (max {nrChars} characters)
       </Label>
       <div className="flex items-center">
         <TextareaAutosize

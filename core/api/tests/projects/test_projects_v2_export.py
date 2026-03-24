@@ -142,7 +142,8 @@ def _project_with_linked_bp(
     ods_odp = {
         "ods_substance_id": substance.id,
         "odp": 11.11,
-        "ods_replacement": "ods replacement test",
+        "ods_replacement_text": "ods replacement test",
+        "ods_replacement": None,
         "co2_mt": 323.23,
         "phase_out_mt": 123.23,
         "ods_type": "production",
