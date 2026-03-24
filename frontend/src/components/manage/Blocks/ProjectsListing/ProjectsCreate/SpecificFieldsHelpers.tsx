@@ -44,6 +44,7 @@ import {
   isNil,
   omit,
   isUndefined,
+  lowerFirst,
 } from 'lodash'
 
 const getFieldDefaultProps = (
@@ -392,11 +393,14 @@ export const TextAreaWidget = <T,>(
   const isDestructionTech = fieldName === 'destruction_technology'
   const isCustomField = isOdsReplacement || isDestructionTech
   const nrChars = isCustomField ? 256 : 500
+  const label = isOdsReplacement
+    ? 'Other ' + lowerFirst(field.label)
+    : field.label
 
   return (
     <div className={cx('w-full', { 'md:w-auto': isCustomField })}>
       <Label>
-        {field.label} (max {nrChars} characters)
+        {label} (max {nrChars} characters)
       </Label>
       <div className="flex items-center">
         <TextareaAutosize
