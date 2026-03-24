@@ -42,9 +42,12 @@ The scripts should be run in the following order when installing locally or when
 
     python manage.py import_resources_v2 clean_up_project_meta_project_attributes
 
+
     python manage.py import_resources_v2 import_fields
     python manage.py import_resources_v2 import_cluster_type_sector_links
     python manage.py import_resources_v2 import_project_specific_fields
+
+    python manage.py import_resources_v2 fill_replacement_technologies_field
 
 You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and
 the `generate_new_cluster_type_sector_file` function from `import_project_resources_v2.py`

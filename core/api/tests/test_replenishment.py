@@ -2690,3 +2690,96 @@ class TestExternalIncome(BaseTest):
 
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 201
+
+
+class TestInvoiceStatusFilter(BaseTest):
+    """Tests for the invoice status filter, including the special 'not_issued' value."""
+
+    url = reverse("replenishment-invoices-list")
+    year = 2021
+
+    def _setup(self):
+        replenishment = ReplenishmentFactory.create(
+            start_year=self.year, end_year=self.year + 2
+        )
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment, version=0, is_final=True
+        )
+        country_a = CountryFactory.create(name="Country A", iso3="TSA")
+        country_b = CountryFactory.create(name="Country B", iso3="TSB")
+        country_c = CountryFactory.create(name="Country C", iso3="TSC")
+        # no invoice for country_d
+        country_d = CountryFactory.create(name="Country D", iso3="TSD")
+
+        for country in [country_a, country_b, country_c, country_d]:
+            ScaleOfAssessmentFactory.create(country=country, version=version)
+
+        InvoiceFactory.create(
+            country=country_a, year=self.year, status=Invoice.InvoiceStatus.PENDING
+        )
+        InvoiceFactory.create(
+            country=country_b,
+            year=self.year,
+            status=Invoice.InvoiceStatus.PARTIALLY_PAID,
+        )
+        InvoiceFactory.create(
+            country=country_c, year=self.year, status=Invoice.InvoiceStatus.PAID
+        )
+
+        return country_a, country_b, country_c, country_d
+
+    def test_status_filter(self, treasurer_user):
+        country_a, country_b, country_c, _ = self._setup()
+        self.client.force_authenticate(user=treasurer_user)
+        p = {"year_min": self.year, "year_max": self.year}
+
+        r = self.client.get(self.url, {**p, "status": "pending"})
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        assert r.data[0]["country"]["id"] == country_a.id
+
+        r = self.client.get(self.url, {**p, "status": "partially_paid"})
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        assert r.data[0]["country"]["id"] == country_b.id
+
+        r = self.client.get(self.url, {**p, "status": "paid"})
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        assert r.data[0]["country"]["id"] == country_c.id
+
+        r = self.client.get(self.url, {**p, "status": "not_paid"})
+        assert r.status_code == 200
+        assert len(r.data) == 2
+        assert {row["country"]["id"] for row in r.data} == {country_a.id, country_b.id}
+
+    def test_status_not_issued(self, treasurer_user):
+        _, _, _, country_d = self._setup()
+        self.client.force_authenticate(user=treasurer_user)
+
+        r = self.client.get(
+            self.url,
+            {"year_min": self.year, "year_max": self.year, "status": "not_issued"},
+        )
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        # Only country_d does not have an issued invoice
+        assert r.data[0]["country"]["id"] == country_d.id
+        assert r.data[0].get("number") is None
+
+        # Check that not_issued is not overridden even if the FE sends
+        # hide_no_invoice=true (which it does by default).
+        r = self.client.get(
+            self.url,
+            {
+                "year_min": self.year,
+                "year_max": self.year,
+                "status": "not_issued",
+                "hide_no_invoice": "true",
+                "ordering": "country",
+            },
+        )
+        assert r.status_code == 200
+        assert len(r.data) == 1
+        assert r.data[0]["country"]["id"] == country_d.id
+        assert r.data[0].get("number") is None

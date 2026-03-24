@@ -82,6 +82,7 @@ def setup_project_create(
         sort_order=1,
     )
     blend.components.create(substance=substA, percentage=0.2)
+    alternative_substance = None
     return {
         "ad_hoc_pcr": True,
         "number_of_both_sme_non_sme_not_directly_funded": Decimal(943),
@@ -157,7 +158,8 @@ def setup_project_create(
             {
                 "ods_substance_id": substA.id,
                 "odp": 11.11,
-                "ods_replacement": "ods replacement test",
+                "ods_replacement_text": "ods replacement test",
+                "ods_replacement": None,
                 "co2_mt": 323.23,
                 "phase_out_mt": 123.23,
                 "ods_type": "production",
@@ -166,7 +168,8 @@ def setup_project_create(
             {
                 "ods_blend_id": blend.id,
                 "odp": 41.41,
-                "ods_replacement": "ods replacement test 2",
+                "ods_replacement_text": "",
+                "ods_replacement": alternative_substance,
                 "co2_mt": 543.23,
                 "phase_out_mt": 223.23,
                 "ods_type": "general",
@@ -233,11 +236,11 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is False
 
-        response_data = _test_user_permissions(secretariat_viewer_user, 200, 12)
+        response_data = _test_user_permissions(secretariat_viewer_user, 200, 6)
         for project in response_data:
             assert project["editable"] is False
         response_data = _test_user_permissions(
-            secretariat_v1_v2_edit_access_user, 200, 12
+            secretariat_v1_v2_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
@@ -245,14 +248,14 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is False
         response_data = _test_user_permissions(
-            secretariat_production_v1_v2_edit_access_user, 200, 13
+            secretariat_production_v1_v2_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is True
             else:
                 assert project["editable"] is False
-        response_data = _test_user_permissions(secretariat_v3_edit_access_user, 200, 12)
+        response_data = _test_user_permissions(secretariat_v3_edit_access_user, 200, 6)
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
@@ -261,7 +264,7 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is True
         response_data = _test_user_permissions(
-            secretariat_production_v3_edit_access_user, 200, 13
+            secretariat_production_v3_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
@@ -271,7 +274,7 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is True
 
-        response_data = _test_user_permissions(mlfs_admin_user, 200, 13)
+        response_data = _test_user_permissions(mlfs_admin_user, 200, 6)
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is True
@@ -285,12 +288,12 @@ class TestProjectV2List(BaseTest):
             assert project["editable"] is True
 
     def test_project_list_agency_filter(
-        self, secretariat_viewer_user, agency, new_agency, _setup_project_list
+        self, admin_user, agency, new_agency, _setup_project_list
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["agency"] == agency.name
 
@@ -298,15 +301,15 @@ class TestProjectV2List(BaseTest):
             self.url, {"agency_id": f"{agency.id},{new_agency.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 12
+        assert len(response.data) == 13
 
     def test_project_list_type_filter(
-        self, secretariat_viewer_user, project_type, _setup_project_list
+        self, admin_user, project_type, _setup_project_list
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["project_type"]["id"] == project_type.id
             assert project["project_type"]["name"] == project_type.name
@@ -314,15 +317,15 @@ class TestProjectV2List(BaseTest):
 
     def test_project_list_status_filter(
         self,
-        secretariat_viewer_user,
+        admin_user,
         project_status,
         submitted_status,
         _setup_project_list,
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["status"] == project_status.name
 
@@ -330,22 +333,22 @@ class TestProjectV2List(BaseTest):
             self.url, {"status_id": f"{project_status.id},{submitted_status.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 12
+        assert len(response.data) == 13
 
     def test_project_list_submission_status_filter(
         self,
-        secretariat_viewer_user,
+        admin_user,
         project_draft_status,
         project_submitted_status,
         _setup_project_list,
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(
             self.url, {"submission_status_id": project_draft_status.id}
         )
         assert response.status_code == 200
-        assert len(response.data) == 6
+        assert len(response.data) == 7
         for project in response.data:
             assert project["submission_status"] == project_draft_status.name
 
@@ -356,16 +359,16 @@ class TestProjectV2List(BaseTest):
             },
         )
         assert response.status_code == 200
-        assert len(response.data) == 11
+        assert len(response.data) == 12
 
     def test_project_list_sector_filter(
-        self, secretariat_viewer_user, sector, new_sector, _setup_project_list
+        self, admin_user, sector, new_sector, _setup_project_list
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
-        assert len(response.data) == 7
+        assert len(response.data) == 8
         for project in response.data:
             assert project["sector"]["id"] == sector.id
             assert project["sector"]["name"] == sector.name
@@ -375,38 +378,36 @@ class TestProjectV2List(BaseTest):
             self.url, {"sector_id": f"{sector.id},{new_sector.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 11
+        assert len(response.data) == 12
 
     def test_project_list_subsector_filter(
-        self, secretariat_viewer_user, subsector, _setup_project_list
+        self, admin_user, subsector, _setup_project_list
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
-        assert len(response.data) == 7
+        assert len(response.data) == 8
         for project in response.data:
             assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
-    def test_project_list_subs_type_filter(
-        self, secretariat_viewer_user, _setup_project_list
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+    def test_project_list_subs_type_filter(self, admin_user, _setup_project_list):
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
     def test_project_list_meet_filter(
-        self, secretariat_viewer_user, new_meeting, _setup_project_list, meeting
+        self, admin_user, new_meeting, _setup_project_list, meeting
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"meeting_id": meeting.id})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["meeting"] == meeting.number
 
@@ -414,23 +415,21 @@ class TestProjectV2List(BaseTest):
             self.url, {"meeting_id": f"{new_meeting.id},{meeting.id}"}
         )
         assert response.status_code == 200
-        assert len(response.data) == 12
+        assert len(response.data) == 13
 
     def test_project_list_country_filter(
-        self, secretariat_viewer_user, country_ro, _setup_project_list
+        self, admin_user, country_ro, _setup_project_list
     ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"country_id": country_ro.id})
         assert response.status_code == 200
-        assert len(response.data) == 8
+        assert len(response.data) == 9
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_search_filter(
-        self, secretariat_viewer_user, _setup_project_list
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+    def test_project_list_search_filter(self, admin_user, _setup_project_list):
+        self.client.force_authenticate(user=admin_user)
 
         response = self.client.get(self.url, {"search": "Project 26"})
         assert response.status_code == 200
@@ -444,6 +443,7 @@ class TestProjectsRetrieve:
     def test_projest_retrieve_permissions(
         self,
         project,
+        project_submitted_status,
         new_agency,
         project_url,
         user,
@@ -475,6 +475,8 @@ class TestProjectsRetrieve:
         _test_user_permissions(viewer_user, 200)
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
+        project.submission_status = project_submitted_status
+        project.save()
         _test_user_permissions(secretariat_viewer_user, 200)
         _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
         _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
@@ -490,18 +492,16 @@ class TestProjectsRetrieve:
         _test_user_permissions(agency_user, 404)
         _test_user_permissions(agency_inputter_user, 404)
 
-    def test_project_get(self, secretariat_viewer_user, project_url, project):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+    def test_project_get(self, admin_user, project_url, project):
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["id"] == project.id
         assert response.data["substance_category"] == "Production"
         assert response.data["latest_file"] is None
 
-    def test_project_files_get(
-        self, secretariat_viewer_user, project_url, project_file
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
+    def test_project_files_get(self, admin_user, project_url, project_file):
+        self.client.force_authenticate(user=admin_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["latest_file"]["id"] == project_file.id
@@ -671,9 +671,10 @@ class TestCreateProjects(BaseTest):
         )
         assert response.data["ods_odp"][0]["odp"] == data["ods_odp"][0]["odp"]
         assert (
-            response.data["ods_odp"][0]["ods_replacement"]
-            == data["ods_odp"][0]["ods_replacement"]
+            response.data["ods_odp"][0]["ods_replacement_text"]
+            == data["ods_odp"][0]["ods_replacement_text"]
         )
+        # todo add ods_replacement
         assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
         assert (
             response.data["ods_odp"][0]["phase_out_mt"]
@@ -692,9 +693,11 @@ class TestCreateProjects(BaseTest):
         assert response.data["ods_odp"][1]["odp"] == data["ods_odp"][1]["odp"]
 
         assert (
-            response.data["ods_odp"][1]["ods_replacement"]
-            == data["ods_odp"][1]["ods_replacement"]
+            response.data["ods_odp"][1]["ods_replacement_text"]
+            == data["ods_odp"][1]["ods_replacement_text"]
         )
+        # todo add ods_replacement
+
         assert response.data["ods_odp"][1]["co2_mt"] == data["ods_odp"][1]["co2_mt"]
         assert (
             response.data["ods_odp"][1]["phase_out_mt"]
@@ -775,6 +778,7 @@ class TestProjectsV2Update:
         _setup_project_create,
         user,
         project,
+        project_submitted_status,
         project_url,
         viewer_user,
         agency_user,
@@ -823,6 +827,9 @@ class TestProjectsV2Update:
         )
         secretariat_viewer_user.agency = agency_user.agency
         secretariat_viewer_user.save()
+
+        project.submission_status = project_submitted_status
+        project.save()
         _test_permissions_for_different_project_agency(
             secretariat_viewer_user, 403, 403, 403
         )
@@ -891,7 +898,7 @@ class TestProjectsV2Update:
             "ods_odp": [
                 {
                     "odp": 0.01,
-                    "ods_replacement": "test replacement",
+                    "ods_replacement_text": "test replacement",
                 },
                 {
                     "id": project_ods_odp_subst.id,
@@ -950,6 +957,7 @@ class TestProjectsV2Update:
     def test_edit_approval_fields_permissions(
         self,
         project,
+        project_submitted_status,
         user,
         viewer_user,
         agency_user,
@@ -984,6 +992,8 @@ class TestProjectsV2Update:
         _test_user_permissions(viewer_user, 403)
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
+        project.submission_status = project_submitted_status
+        project.save()
         _test_user_permissions(secretariat_viewer_user, 403)
         _test_user_permissions(secretariat_v1_v2_edit_access_user, 403)
         _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 403)
@@ -993,7 +1003,7 @@ class TestProjectsV2Update:
 
     def test_edit_approval_fields_success(
         self,
-        secretariat_v3_edit_access_user,
+        admin_user,
         meeting,
         decision,
         substance,
@@ -1012,7 +1022,7 @@ class TestProjectsV2Update:
                 {
                     "ods_substance_id": substance.id,
                     "odp": 0.05,
-                    "ods_replacement": "test replacement",
+                    "ods_replacement_text": "test replacement",
                     "co2_mt": 100.0,
                     "phase_out_mt": 50.0,
                     "sort_order": 1,
@@ -1021,7 +1031,7 @@ class TestProjectsV2Update:
             "pcr_waived": True,
             "ad_hoc_pcr": False,
         }
-        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        self.client.force_authenticate(user=admin_user)
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
         assert response.data["meeting_id"] == meeting.id
@@ -1035,8 +1045,8 @@ class TestProjectsV2Update:
         assert response.data["ods_odp"][0]["ods_substance_id"] == substance.id
         assert response.data["ods_odp"][0]["odp"] == data["ods_odp"][0]["odp"]
         assert (
-            response.data["ods_odp"][0]["ods_replacement"]
-            == data["ods_odp"][0]["ods_replacement"]
+            response.data["ods_odp"][0]["ods_replacement_text"]
+            == data["ods_odp"][0]["ods_replacement_text"]
         )
         assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
         assert (
@@ -1061,11 +1071,11 @@ class TestProjectsV2Update:
             ("agency_user", 204),
             ("agency_inputter_user", 204),
             ("secretariat_viewer_user", 403),
-            ("secretariat_v1_v2_edit_access_user", 204),
-            ("secretariat_production_v1_v2_edit_access_user", 204),
+            ("secretariat_v1_v2_edit_access_user", 404),
+            ("secretariat_production_v1_v2_edit_access_user", 404),
             ("secretariat_v3_edit_access_user", 403),
             ("secretariat_production_v3_edit_access_user", 403),
-            ("mlfs_admin_user", 204),
+            ("mlfs_admin_user", 404),
             ("admin_user", 204),
         ],
     )

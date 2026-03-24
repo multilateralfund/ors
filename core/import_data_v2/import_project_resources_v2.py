@@ -39,6 +39,9 @@ from core.import_data_v2.scripts.clean_up_countries import (
     clean_up_countries,
 )
 from core.import_data_v2.scripts.import_modules import import_modules
+from core.import_data_v2.scripts.fill_replacement_technologies_field import (
+    fill_replacement_technologies_field,
+)
 
 # pylint: disable=too-many-branches, too-many-statements
 
@@ -125,6 +128,9 @@ def import_project_resources_v2(option):
     ]:
         clean_up_countries()
         logger.info("✔ countries cleaned up")
+    if option in ["all", "fill_replacement_technologies_field"]:
+        fill_replacement_technologies_field()
+        logger.info("✔ replacement technologies field filled")
 
     if option == "generate_new_cluster_type_sector_file":
         # use to generate new ClusterTypeSectorLinks.json file

@@ -2,6 +2,7 @@ import { useContext, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CancelWarningModal from './CancelWarningModal'
 import { SubmitButton } from '../HelperComponents'
@@ -36,6 +37,7 @@ const CreateActionButtons = ({
   const { project_id } = useParams<Record<string, string>>()
 
   const { canUpdateProjects } = useContext(PermissionsContext)
+  const { altTechs } = useContext(ProjectsDataContext)
   const { setWarnings } = useStore((state) => state.projectWarnings)
   const { projectFields } = useStore((state) => state.projectFields)
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
@@ -64,6 +66,7 @@ const CreateActionButtons = ({
         setProjectData,
         specificFields,
         formatProjectFields(projectFields),
+        altTechs,
       )
 
       const formattedFilesMetadata = fromPairs(

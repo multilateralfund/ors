@@ -1767,8 +1767,19 @@ class ProjectOdsOdp(models.Model):
     )
 
     ods_display_name = models.CharField(max_length=256, null=True, blank=True)
-    ods_replacement = models.CharField(
-        max_length=256, null=True, blank=True, help_text="Replacement technologies"
+    ods_replacement = models.ForeignKey(
+        "core.AlternativeTechnology",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="project_ods_replacements",
+        help_text="Replacement technologies",
+    )
+    ods_replacement_text = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="Replacement technologies text for custom values",
     )
     co2_mt = models.FloatField(
         null=True, blank=True, help_text="Phase-out (CO2-eq tonnes)"
@@ -1791,8 +1802,10 @@ class ProjectOdsOdp(models.Model):
 
     def __str__(self):
         return_str = self.ods_display_name or ""
-        if self.ods_replacement:
-            return_str = f"{return_str} replacement: {self.ods_replacement}"
+        if self.ods_replacement_text:
+            return_str = f"{return_str} replacements: {self.ods_replacement_text}"
+        elif self.ods_replacement:
+            return_str = f"{return_str} replacements: {', '.join([alt.name for alt in self.ods_replacements.all()])}"
         return return_str
 
     def get_ods_display_name(self, obj):

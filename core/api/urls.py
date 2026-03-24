@@ -6,6 +6,7 @@ from drf_yasg import openapi
 from core.api.views import MetaProjectClusterListView
 from core.api.views import MetaProjectLeadAgencyListView
 from core.api.views import (
+    AlternativeTechnologyView,
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
     ReplenishmentCountriesSOAViewSet,
@@ -336,6 +337,11 @@ urlpatterns = [
         "project-cluster-types-sectors/",
         ProjectClusterTypeSectorAssociationView.as_view(),
         name="project-cluster-type-sector-association",
+    ),
+    path(
+        "alternative-technologies/",
+        AlternativeTechnologyView.as_view(),
+        name="alternative-technology-list",
     ),
     path("blends/", BlendsListView.as_view(), name="blends-list"),
     path("blends/similar/", SimilarBlendsListView.as_view(), name="blends-similar"),

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { widgets } from './SpecificFieldsHelpers'
 import { SubmitButton } from '../HelperComponents'
 import {
@@ -9,6 +10,7 @@ import {
   getFieldData,
   getOdsOdpFields,
   hasFields,
+  isOtherOdsReplacement,
 } from '../utils'
 import {
   OdsOdpFields,
@@ -35,6 +37,8 @@ const ProjectSubstanceDetails = ({
   odsOdpErrors: { [key: string]: [] }[]
   disableV3Edit: boolean
 }) => {
+  const { altTechs } = useContext(ProjectsDataContext)
+
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
   const crtSectionData = projectData[sectionIdentifier] || []
@@ -155,30 +159,68 @@ const ProjectSubstanceDetails = ({
                     (field1, field2) =>
                       (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
                   )
-                  .map((_, index) => (
+                  .map((entry, index) => (
                     <span key={index}>
                       <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
-                        {odsOdpFields.map(
-                          (odsOdpField) =>
-                            canViewField(
-                              viewableFields,
-                              odsOdpField.write_field_name,
-                            ) && (
-                              <span key={odsOdpField.write_field_name}>
-                                {widgets[odsOdpField.data_type]<ProjectData>(
-                                  projectData,
-                                  setProjectData,
-                                  odsOdpField,
-                                  odsOdpErrors,
-                                  editableFields,
-                                  sectionIdentifier,
-                                  field,
-                                  index,
-                                  !!groupField,
-                                )}
-                              </span>
-                            ),
-                        )}
+                        {odsOdpFields.map((odsOdpField) => {
+                          const fieldName = odsOdpField.write_field_name
+                          const ODS_REPLACEMENT_TEXT = 'ods_replacement_text'
+                          const ODS_REPLACEMENT = 'ods_replacement'
+
+                          const isOdsReplacement =
+                            fieldName === ODS_REPLACEMENT_TEXT
+
+                          const formattedField = isOdsReplacement
+                            ? ({
+                                ...odsOdpField,
+                                read_field_name: ODS_REPLACEMENT,
+                                write_field_name: ODS_REPLACEMENT,
+                              } as ProjectSpecificFields)
+                            : odsOdpField
+                          const customField = isOdsReplacement
+                            ? ({
+                                ...odsOdpField,
+                                read_field_name: ODS_REPLACEMENT_TEXT,
+                                write_field_name: ODS_REPLACEMENT_TEXT,
+                                data_type: 'text',
+                              } as ProjectSpecificFields)
+                            : null
+
+                          const shouldDisplayCustomField =
+                            !!customField &&
+                            isOtherOdsReplacement(
+                              altTechs,
+                              entry[ODS_REPLACEMENT],
+                            )
+
+                          const renderWidget = (
+                            fieldConfig: typeof odsOdpField,
+                          ) => (
+                            <span>
+                              {widgets[fieldConfig.data_type]<ProjectData>(
+                                projectData,
+                                setProjectData,
+                                fieldConfig,
+                                odsOdpErrors,
+                                editableFields,
+                                sectionIdentifier,
+                                field,
+                                index,
+                                !!groupField,
+                              )}
+                            </span>
+                          )
+
+                          return (
+                            canViewField(viewableFields, fieldName) && (
+                              <React.Fragment key={fieldName}>
+                                {renderWidget(formattedField)}
+                                {shouldDisplayCustomField &&
+                                  renderWidget(customField)}
+                              </React.Fragment>
+                            )
+                          )
+                        })}
                         {odsDisplayField && !disableV3Edit && (
                           <IoTrash
                             className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"

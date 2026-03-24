@@ -19,7 +19,7 @@ def project_ods_subst_create(project, substance):
         "project_id": project.id,
         "ods_substance_id": substance.id,
         "odp": 0.02,
-        "ods_replacement": "N-are cine sa-mi ia locu",
+        "ods_replacement_text": "N-are cine sa-mi ia locu",
     }
 
 
@@ -29,7 +29,7 @@ def project_ods_blend_create(project, blend):
         "project_id": project.id,
         "ods_blend_id": blend.id,
         "odp": 0.02,
-        "ods_replacement": "Ca ma iubeste norocu",
+        "ods_replacement_text": "Ca ma iubeste norocu",
     }
 
 
@@ -53,7 +53,10 @@ class TestOdsOdpCreate(BaseProjectUtilityCreate):
         assert response.status_code == 201
         assert response.data["ods_blend_id"] == blend_ods_odp["ods_blend_id"]
         assert response.data["odp"] == blend_ods_odp["odp"]
-        assert response.data["ods_replacement"] == blend_ods_odp["ods_replacement"]
+        assert (
+            response.data["ods_replacement_text"]
+            == blend_ods_odp["ods_replacement_text"]
+        )
 
         assert project.ods_odp.count() == 1
 

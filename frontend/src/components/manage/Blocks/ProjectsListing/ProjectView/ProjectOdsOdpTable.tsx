@@ -1,11 +1,19 @@
+import { useContext } from 'react'
+
 import ViewTable from '@ors/components/manage/Form/ViewTable'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   ProjectSpecificFields,
   OdsOdpFields,
   FieldType,
   OptionsType,
 } from '../interfaces'
-import { formatNumberColumns, formatOptions } from '../utils'
+import {
+  formatFieldLabel,
+  formatNumberColumns,
+  formatOptions,
+  isOtherOdsReplacement,
+} from '../utils'
 
 import { cloneDeep, find, isEqual, map, omit } from 'lodash'
 import {
@@ -23,6 +31,8 @@ const ProjectOdsOdpTable = ({
   fields: ProjectSpecificFields[]
   history: any
 }) => {
+  const { altTechs } = useContext(ProjectsDataContext)
+
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
@@ -91,22 +101,47 @@ const ProjectOdsOdpTable = ({
     )
   }
 
+  const getOdsReplacementValue = (
+    params: ValueGetterParams | ITooltipParams,
+  ) => {
+    const odsReplacementValue = params?.data?.ods_replacement
+    const hasOtherReplacement = isOtherOdsReplacement(
+      altTechs,
+      odsReplacementValue,
+    )
+
+    if (hasOtherReplacement) {
+      return params?.data?.ods_replacement_text
+    }
+
+    const replacementTechName =
+      find(altTechs, (tech) => tech.id === odsReplacementValue)?.name ?? ''
+
+    return formatFieldLabel(replacementTechName)
+  }
+
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
       const field = fieldObj.write_field_name
       const options = formatOptions(fieldObj)
 
+      const getValue = (params: ValueGetterParams | ITooltipParams) => {
+        if (field === 'ods_display_name') {
+          return getOdsDisplayName(params)
+        }
+
+        if (field === 'ods_replacement_text') {
+          return getOdsReplacementValue(params)
+        }
+
+        return getFieldName(params, options, field)
+      }
+
       return {
         headerName: fieldObj.label,
         field: field,
-        valueGetter: (params: ValueGetterParams) =>
-          field === 'ods_display_name'
-            ? getOdsDisplayName(params)
-            : getFieldName(params, options, field),
-        tooltipValueGetter: (params: ITooltipParams) =>
-          field === 'ods_display_name'
-            ? getOdsDisplayName(params)
-            : getFieldName(params, options, field),
+        valueGetter: getValue,
+        tooltipValueGetter: getValue,
         initialWidth: 140,
         minWidth: 140,
         ...defaultColDef,

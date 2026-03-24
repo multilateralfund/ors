@@ -121,6 +121,13 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
     [initialConsumptionLevelStatuses],
   )
 
+  const { data: altTechs } = useApi({
+    options: {
+      withStoreCache: true,
+    },
+    path: 'api/alternative-technologies/',
+  })
+
   return (
     <ProjectsDataContext.Provider
       value={{
@@ -134,6 +141,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
         blends,
         fileTypes,
         consumptionLevelStatuses,
+        altTechs,
       }}
     >
       {children}

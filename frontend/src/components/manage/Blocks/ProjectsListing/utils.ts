@@ -77,22 +77,35 @@ export const getDefaultValues = <T>(
   reduce(
     fields,
     (acc: any, field) => {
-      const dataType = field.data_type
-      const fieldName = field.write_field_name
+      const { data_type, write_field_name } = field
+      const odsReplacementFieldName = 'ods_replacement_text' as keyof T
+      const hasData = !!data
 
-      if (data) {
-        acc[fieldName] =
-          dataType === 'drop_down'
-            ? getFieldId<T>(field, data, projectData)
-            : dataType === 'decimal'
-              ? getFormattedDecimalValue(data[fieldName])
-              : dataType === 'boolean'
-                ? (data[fieldName] ?? false)
-                : data[fieldName]
-      } else {
-        acc[fieldName] =
-          dataType === 'text' ? '' : dataType === 'boolean' ? false : null
+      if (write_field_name === odsReplacementFieldName) {
+        const dropdownField = 'ods_replacement' as keyof T
+
+        acc[dropdownField] = hasData ? data[dropdownField] : null
+        acc[odsReplacementFieldName] = hasData
+          ? data[odsReplacementFieldName]
+          : ''
+
+        return acc
       }
+
+      if (hasData) {
+        acc[write_field_name] =
+          data_type === 'drop_down'
+            ? getFieldId<T>(field, data, projectData)
+            : data_type === 'decimal'
+              ? getFormattedDecimalValue(data[write_field_name])
+              : data_type === 'boolean'
+                ? (data[write_field_name] ?? false)
+                : data[write_field_name]
+      } else {
+        acc[write_field_name] =
+          data_type === 'text' ? '' : data_type === 'boolean' ? false : null
+      }
+
       return acc
     },
     {},
@@ -151,25 +164,35 @@ export const formatOptions = (
 
   const groupValue = data ? data.group_id || data.group : null
 
-  return field.write_field_name === 'ods_display_name' && !isArray(options)
-    ? concat(
-        data
-          ? filterSubstancesOptions(options.substances, groupValue)
-          : options.substances,
-        data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
-      ).map((option) => {
-        return {
-          ...option,
-          id: `${option.baseline_type}-${option.id}`,
-          label:
-            option.baseline_type === 'blend'
-              ? option.name + ' (' + option.composition + ')'
-              : option.name,
-        }
-      })
-    : map(options, (option) =>
-        isArray(option) ? { id: option[0], name: option[1] } : option,
-      )
+  if (field.write_field_name === 'ods_display_name' && !isArray(options)) {
+    return concat(
+      data
+        ? filterSubstancesOptions(options.substances, groupValue)
+        : options.substances,
+      data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
+    ).map((option) => {
+      return {
+        ...option,
+        id: `${option.baseline_type}-${option.id}`,
+        label:
+          option.baseline_type === 'blend'
+            ? option.name + ' (' + option.composition + ')'
+            : option.name,
+      }
+    })
+  }
+
+  return map(options, (option: OptionsType | [string, string]) => {
+    if (isArray(option)) {
+      return { id: option[0], name: option[1] }
+    }
+
+    if (field.write_field_name === 'ods_replacement') {
+      return { ...option, name: formatFieldLabel(option.name) }
+    }
+
+    return option
+  })
 }
 
 export const getSectionFields = (
@@ -206,6 +229,7 @@ const normalizeOdsOdp = (
   projectSpecificFields: SpecificFields,
   specificFieldsAvailable: string[],
   projectFields: ProjectSpecificFields[],
+  altTechs: OptionsType[],
 ) =>
   map(projectSpecificFields.ods_odp, (field, index) => {
     const odsDisplayName = get(field, 'ods_display_name') ?? ''
@@ -220,12 +244,26 @@ const normalizeOdsOdp = (
       projectFields,
     )
 
+    const crtOdsOdpData = projectSpecificFields?.ods_odp?.[index]
+    const hasOtherReplacement = isOtherOdsReplacement(
+      altTechs,
+      crtOdsOdpData?.ods_replacement,
+    )
+
     return {
       ...pick(field, specificFieldsAvailable),
       ...(specificFieldsAvailable.includes('ods_display_name')
         ? baselineTechObj
         : {}),
       ...oldData,
+      ...(specificFieldsAvailable.includes('ods_replacement_text')
+        ? {
+            ods_replacement: crtOdsOdpData?.ods_replacement,
+            ods_replacement_text: hasOtherReplacement
+              ? crtOdsOdpData?.ods_replacement_text
+              : null,
+          }
+        : {}),
       sort_order: index + 1,
     }
   })
@@ -240,6 +278,7 @@ export const formatSubmitData = (
   setProjectData: Dispatch<SetStateAction<ProjectData>>,
   specificFields: ProjectSpecificFields[],
   projectFields: ProjectSpecificFields[],
+  altTechs: OptionsType[],
 ) => {
   const {
     projIdentifiers,
@@ -279,6 +318,7 @@ export const formatSubmitData = (
         projectSpecificFields,
         specificFieldsAvailable,
         projectFields,
+        altTechs,
       )
     : []
 
@@ -310,6 +350,7 @@ export const formatApprovalData = (
   setProjectData: Dispatch<SetStateAction<ProjectData>>,
   specificFields: ProjectSpecificFields[],
   projectFields: ProjectSpecificFields[],
+  altTechs: OptionsType[],
 ) => {
   const { crossCuttingFields, projectSpecificFields, approvalFields } =
     projectData
@@ -338,6 +379,7 @@ export const formatApprovalData = (
         projectSpecificFields,
         specificFieldsAvailable,
         projectFields,
+        altTechs,
       )
     : []
 
@@ -1303,3 +1345,11 @@ export const orderDecisions = (decision: string) =>
   decision.toLowerCase().includes('paragraph')
     ? getOldFormatOrder(decision)
     : getNewFormatOrder(decision)
+
+export const isOtherOdsReplacement = (
+  opts: OptionsType[],
+  value: number | null,
+) => {
+  const crtOdsReplacementName = find(opts, (opt) => opt.id === value)?.name
+  return crtOdsReplacementName?.includes('Other alternatives') ?? false
+}

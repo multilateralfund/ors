@@ -19,6 +19,7 @@ interface ProjectsDataContextProps {
   blends: ApiBlend[]
   fileTypes: string[]
   consumptionLevelStatuses: OptionsType[]
+  altTechs: OptionsType[]
 }
 
 const ProjectsDataContext = createContext<ProjectsDataContextProps>(

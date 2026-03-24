@@ -117,6 +117,7 @@ export type ProjectType = {
     ods_blend_id: any
     ods_display_name: string
     ods_replacement: any
+    ods_replacement_text: string
     ods_substance_id: number
     ods_type: number
     project_id: number

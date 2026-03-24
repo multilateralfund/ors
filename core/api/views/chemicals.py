@@ -10,11 +10,13 @@ from rest_framework.response import Response
 
 
 from core.api.serializers.chemicals import (
+    AlternativeTechnologySerializer,
     BlendSerializer,
     GroupSerializer,
     SubstanceSerializer,
 )
 from core.api.utils import SECTION_ANNEX_MAPPING
+from core.models import AlternativeTechnology
 from core.models.blend import Blend, BlendComponents
 from core.models.group import Group
 from core.models.project import Project
@@ -599,3 +601,12 @@ class BlendNextCustNameView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         name = Blend.objects.get_next_cust_mx_name()
         return Response({"name": name}, status=status.HTTP_200_OK)
+
+
+class AlternativeTechnologyView(generics.ListAPIView):
+    """
+    View to return a list of all Alternative Technologies entries
+    """
+
+    queryset = AlternativeTechnology.objects.all()
+    serializer_class = AlternativeTechnologySerializer

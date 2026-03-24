@@ -267,6 +267,9 @@ class ProjectV2ViewSet(
         if user.is_superuser:
             return queryset
 
+        if user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
         if self.action == "edit_actual_fields" or results_for_edit_actual_fields:
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:

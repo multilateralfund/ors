@@ -142,7 +142,8 @@ def _project_with_linked_bp(
     ods_odp = {
         "ods_substance_id": substance.id,
         "odp": 11.11,
-        "ods_replacement": "ods replacement test",
+        "ods_replacement_text": "ods replacement test",
+        "ods_replacement": None,
         "co2_mt": 323.23,
         "phase_out_mt": 123.23,
         "ods_type": "production",
@@ -194,9 +195,11 @@ class TestProjectV2ExportXLSX(BaseTest):
         validate_single_project_export(project_with_linked_bp, response)
 
     def test_export_project_secretariat(
-        self, project_with_linked_bp, secretariat_viewer_user
+        self, project_with_linked_bp, secretariat_viewer_user, project_submitted_status
     ):
         self.client.force_authenticate(user=secretariat_viewer_user)
+        project_with_linked_bp.submission_status = project_submitted_status
+        project_with_linked_bp.save()
         response: FileResponse = self.client.get(
             self.url, {"project_id": project_with_linked_bp.id}
         )
@@ -204,12 +207,18 @@ class TestProjectV2ExportXLSX(BaseTest):
         validate_single_project_export(project_with_linked_bp, response)
 
     def test_export_project_deleted_activity_secretariat(
-        self, project_with_deleted_linked_bp, secretariat_viewer_user
+        self,
+        project_with_deleted_linked_bp,
+        secretariat_viewer_user,
+        project_submitted_status,
     ):
         self.client.force_authenticate(user=secretariat_viewer_user)
+        project_with_deleted_linked_bp.submission_status = project_submitted_status
+        project_with_deleted_linked_bp.save()
         response: FileResponse = self.client.get(
             self.url, {"project_id": project_with_deleted_linked_bp.id}
         )
+
         assert response.status_code == HTTPStatus.OK
         assert (
             project_with_deleted_linked_bp.bp_activity is None

@@ -32,6 +32,7 @@ import {
   getSpecificFieldsErrors,
   hasSectionErrors,
   hasSpecificField,
+  isOtherOdsReplacement,
 } from '../utils'
 import {
   ProjectFile,
@@ -44,6 +45,7 @@ import {
   InlineMessageType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -101,6 +103,7 @@ const EditActionButtons = ({
     canEditApprovedProjects,
     canViewBp,
   } = useContext(PermissionsContext)
+  const { altTechs } = useContext(ProjectsDataContext)
 
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
@@ -206,10 +209,21 @@ const EditActionButtons = ({
 
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) =>
+    (odsOdpData.some((data, index) =>
       Object.entries(data)
         .filter(([key]) => !projectPhaseOutFields.includes(key))
-        .some(([, value]) => checkInvalidValue(value)),
+        .some(([field, value]) => {
+          const odsReplacementValue =
+            projectSpecificFields?.ods_odp?.[index]?.['ods_replacement']
+
+          const formattedVal =
+            field !== 'ods_replacement_text' ||
+            isOtherOdsReplacement(altTechs, odsReplacementValue)
+              ? value
+              : odsReplacementValue
+
+          return checkInvalidValue(formattedVal)
+        }),
     ) ||
       odsOdpData.length === 0)
 
@@ -415,6 +429,7 @@ const EditActionButtons = ({
         setProjectData,
         specificFields,
         formattedProjectFields,
+        altTechs,
       )
 
       if (postExComUpdate) {
@@ -442,6 +457,7 @@ const EditActionButtons = ({
           setProjectData,
           [...specificFields, ...approvalFields],
           formattedProjectFields,
+          altTechs,
         )
         await api(`api/projects/v2/${id}/edit_approval_fields/`, {
           data: { ...data, validate_request: true },
@@ -663,6 +679,7 @@ const EditActionButtons = ({
         setProjectData,
         [...specificFields, ...approvalFields],
         formatProjectFields(projectFields),
+        altTechs,
       )
       const result = await api(`api/projects/v2/${id}/edit_approval_fields/`, {
         data: data,
