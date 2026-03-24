@@ -1,5 +1,5 @@
 export type ConstantsType = {
-  [key in 'I' | 'II' | 'III' | 'IV' | 'V']?: {
+  [key in 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI']?: {
     [key in 'adm_d' | 'section_a' | 'section_c']?: {
       label?: string
       title?: string

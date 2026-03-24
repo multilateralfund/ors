@@ -130,7 +130,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['V'], model)
+        ...(includes(['V', 'VI'], model)
           ? [
               {
                 dataType: 'number',
@@ -141,7 +141,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -173,10 +173,10 @@ function useGridOptions(props: {
             'ag-cell-hashed theme-dark:bg-gray-900/40':
               includes(props.data?.excluded_usages || [], props.colDef.id) ||
               (props.column.getColId() === 'manufacturing_blends' &&
-                includes(['V'], model) &&
+                includes(['V', 'VI'], model) &&
                 props.data?.substance_id) ||
               (props.column.getColId() === 'production' &&
-                includes(['V'], model) &&
+                includes(['V', 'VI'], model) &&
                 props.data?.blend_id),
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-center': !includes(['display_name'], props.colDef.field),
@@ -189,10 +189,10 @@ function useGridOptions(props: {
             includes(['total_usages'], props.colDef.id) ||
             includes(props.data?.excluded_usages || [], props.colDef.id) ||
             (props.column.getColId() === 'manufacturing_blends' &&
-              includes(['V'], model) &&
+              includes(['V', 'VI'], model) &&
               props.data?.substance_id) ||
             (props.column.getColId() === 'production' &&
-              includes(['V'], model) &&
+              includes(['V', 'VI'], model) &&
               props.data?.blend_id)
           ) {
             return false

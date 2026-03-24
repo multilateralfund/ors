@@ -44,7 +44,7 @@ function useGridOptions(props: { model: string }) {
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
-      ...(includes(['V'], model)
+      ...(includes(['V', 'VI'], model)
         ? [
             {
               cellRendererParams: () => {

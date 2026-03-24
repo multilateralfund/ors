@@ -55,7 +55,7 @@ function getRowData(
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !includes(['V', 'VI'], model)
         ? [
             {
               display_name: 'Other',

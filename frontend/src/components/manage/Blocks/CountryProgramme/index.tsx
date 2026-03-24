@@ -36,7 +36,6 @@ import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/ViewDiff'
 
 import { DefaultComponentType, SectionMeta } from './types'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 const constants: ConstantsType = {
   I: undefined,
@@ -191,10 +190,13 @@ export function getSections(
 ): SectionMeta[] {
   const { model } = variant
   const ids = [
-    ...((includes(['I', 'II', 'III', 'IV', 'V'], model) && ['section_a']) ||
+    ...((includes(['I', 'II', 'III', 'IV', 'V', 'VI'], model) && [
+      'section_a',
+    ]) ||
       []),
-    ...((includes(['II', 'III', 'IV', 'V'], model) && ['section_c']) || []),
-    ...((includes(['IV', 'V'], model) && [
+    ...((includes(['II', 'III', 'IV', 'V', 'VI'], model) && ['section_c']) ||
+      []),
+    ...((includes(['IV', 'V', 'VI'], model) && [
       'section_b',
       'section_d',
       'section_e',
@@ -202,7 +204,8 @@ export function getSections(
     ]) ||
       []),
     ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
-    ...((model === 'V' && mode !== 'diff' && ['report_info']) || []),
+    ...((['V', 'VI'].includes(model) && mode !== 'diff' && ['report_info']) ||
+      []),
   ]
 
   return filter(
@@ -272,7 +275,7 @@ export function getSections(
           'D. Qualitative assessment of the operation of HPMP',
       },
 
-      shouldEnableNewCPDataFormatting(model)
+      ['VI'].includes(model)
         ? {
             id: 'section_d',
             allowFullScreen: true,
@@ -293,7 +296,7 @@ export function getSections(
             title:
               'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
           },
-      shouldEnableNewCPDataFormatting(model)
+      ['VI'].includes(model)
         ? {
             id: 'section_e',
             allowFullScreen: true,

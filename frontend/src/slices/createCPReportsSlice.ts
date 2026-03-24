@@ -44,9 +44,14 @@ export const variants: ReportVariant[] = [
     model: 'IV',
   },
   {
-    maxYear: Infinity,
+    maxYear: 2024,
     minYear: 2023,
     model: 'V',
+  },
+  {
+    maxYear: Infinity,
+    minYear: 2025,
+    model: 'VI',
   },
 ]
 

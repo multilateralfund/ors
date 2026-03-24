@@ -145,7 +145,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -169,7 +169,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['IV', 'V'], model)
+        ...(includes(['IV', 'V', 'VI'], model)
           ? [
               {
                 cellEditor: 'agDateCellEditor',
@@ -179,7 +179,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
           ? [
               {
                 cellEditor: 'agTextCellEditor',

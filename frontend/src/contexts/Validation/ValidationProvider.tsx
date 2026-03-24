@@ -39,7 +39,7 @@ const ValidationProvider = (props: IValidationProvider) => {
     path: '/api/usages/',
   })
 
-  const enableValidation = ['V'].includes(model || '')
+  const enableValidation = ['V', 'VI'].includes(model || '')
 
   const errors = useMemo(
     () =>

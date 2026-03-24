@@ -91,7 +91,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['current_year_price'],
         },
-        ...(includes(['V'], model)
+        ...(includes(['V', 'VI'], model)
           ? [
               {
                 ...sectionColDefById['is_fob'],

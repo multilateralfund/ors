@@ -101,7 +101,7 @@ function useGridOptions(props: {
         orsAggFunc: 'sumTotal',
         // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
       },
-      ...(includes(['II', 'III', 'IV', 'V'], model)
+      ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
         ? [
             {
               ...sectionColDefById['import_quotas'],
@@ -125,7 +125,7 @@ function useGridOptions(props: {
             },
           ]
         : []),
-      ...(includes(['IV', 'V'], model)
+      ...(includes(['IV', 'V', 'VI'], model)
         ? [
             {
               ...sectionColDefById['banned_date'],
@@ -135,7 +135,7 @@ function useGridOptions(props: {
             },
           ]
         : []),
-      ...(includes(['II', 'III', 'IV', 'V'], model)
+      ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
         ? [
             {
               ...sectionColDefById['remarks'],

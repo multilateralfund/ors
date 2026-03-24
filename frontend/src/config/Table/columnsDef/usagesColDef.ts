@@ -80,7 +80,7 @@ export default function getUsagesColDef() {
         const model = props.context?.variant.model
         return {
           footnote: {
-            id: includes(['V'], model) ? '2' : '3',
+            id: includes(['V', 'VI'], model) ? '2' : '3',
             content:
               'Uses in other sectors that do not fall specifically within the listed sectors in the table.',
             icon: false,

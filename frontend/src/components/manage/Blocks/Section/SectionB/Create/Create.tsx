@@ -37,7 +37,7 @@ import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 function getGroupName(substance: any, model: string) {
   if (substance.group.startsWith('Blends')) {
-    return includes(['IV', 'V'], model)
+    return includes(['IV', 'V', 'VI'], model)
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -84,7 +84,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V'], variant?.model)
+      group.startsWith('Blends') && !includes(['V', 'VI'], variant?.model)
         ? [
             {
               display_name: 'Other',
@@ -116,7 +116,7 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
       tooltip: true,
     },
   ]
-  if (!includes(['V'], model)) {
+  if (!includes(['V', 'VI'], model)) {
     pinnedBottomRowData = pinnedBottomRowData.concat([
       {
         display_name: '',
@@ -351,7 +351,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
       >
         <Footnotes />
       </Alert>
-      {includes(['V'], variant.model) && (
+      {includes(['V', 'VI'], variant.model) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -416,7 +416,8 @@ export default function SectionBCreate(props: SectionBCreateProps) {
               component="h2"
               variant="h4"
             >
-              {includes(['V'], variant.model) && modalTab === 'existing_blends'
+              {includes(['V', 'VI'], variant.model) &&
+              modalTab === 'existing_blends'
                 ? 'Add substance/blend'
                 : 'Add blend'}
             </Typography>
@@ -436,7 +437,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
                   standard: 'bg-white text-primary',
                 }}
               >
-                {includes(['V'], variant.model)
+                {includes(['V', 'VI'], variant.model)
                   ? 'Existing substance/blend'
                   : 'Existing blend'}
               </ToggleButton>
@@ -451,7 +452,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
                 New blend
               </ToggleButton>
             </ToggleButtonGroup>
-            {includes(['V'], variant.model) ? (
+            {includes(['V', 'VI'], variant.model) ? (
               modalTab === 'existing_blends' && (
                 <>
                   <Typography>

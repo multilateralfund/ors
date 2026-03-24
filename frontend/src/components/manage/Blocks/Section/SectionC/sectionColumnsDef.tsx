@@ -17,7 +17,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     cellRenderer: (props: ICellRendererParams) => {
       const model = props.context?.variant.model
       if (
-        includes(['IV', 'V'], model) &&
+        includes(['IV', 'V', 'VI'], model) &&
         props.data?.row_id?.startsWith('blend_')
       ) {
         const newProps = {

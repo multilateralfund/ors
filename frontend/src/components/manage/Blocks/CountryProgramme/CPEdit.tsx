@@ -17,7 +17,6 @@ import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import { CPCommentsForEdit } from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -177,7 +176,7 @@ function CPEdit() {
 
   const variant = useMemo(() => report.variant, [report])
   const isNewFormat = useMemo(
-    () => !!variant && shouldEnableNewCPDataFormatting(variant.model),
+    () => !!variant && ['VI'].includes(variant.model),
     [variant],
   )
 
@@ -255,19 +254,19 @@ function CPEdit() {
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
-    section_a: includes(['V'], variant?.model)
+    section_a: includes(['V', 'VI'], variant?.model)
       ? Sections.section_a
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_a.getData(),
-    section_b: includes(['V'], variant?.model)
+    section_b: includes(['V', 'VI'], variant?.model)
       ? Sections.section_b
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_b.getData(),
-    section_c: includes(['V'], variant?.model)
+    section_c: includes(['V', 'VI'], variant?.model)
       ? Sections.section_c
           .getData()
           .filter((row) => row.id !== 0)
@@ -405,7 +404,7 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [renderedSections.length, activeTab])
 
-  const showComments = variant?.model === 'V'
+  const showComments = ['V', 'VI'].includes(variant?.model ?? '')
 
   return (
     <ValidationProvider
@@ -469,7 +468,8 @@ function CPEdit() {
                 sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
                 false
               const showSectionSelect =
-                variant?.model === 'V' && section.id !== 'report_info'
+                ['V', 'VI'].includes(variant?.model ?? '') &&
+                section.id !== 'report_info'
               const Section: EditSectionTypes =
                 section.component as EditSectionTypes
               return (
@@ -518,7 +518,8 @@ function CPEdit() {
                         }}
                         onSectionCheckChange={onSectionCheckChange}
                       />
-                      {!isSectionChecked && variant?.model === 'V' ? (
+                      {!isSectionChecked &&
+                      ['V', 'VI'].includes(variant?.model ?? '') ? (
                         <SectionOverlay />
                       ) : null}
                     </FootnotesProvider>

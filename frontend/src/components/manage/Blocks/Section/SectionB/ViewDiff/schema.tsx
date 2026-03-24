@@ -56,11 +56,11 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
           'ag-cell-hashed theme-dark:bg-gray-900/40':
             includes(props.data?.excluded_usages || [], props.colDef.id) ||
             (props.column.getColId() === 'manufacturing_blends' &&
-              includes(['V'], model) &&
+              includes(['V', 'VI'], model) &&
               props.data?.substance_id &&
               !parseFloat(props.value)) ||
             (props.column.getColId() === 'production' &&
-              includes(['V'], model) &&
+              includes(['V', 'VI'], model) &&
               props.data?.blend_id &&
               !parseFloat(props.value)),
           'ag-text-center': !includes(['display_name'], props.colDef.field),
@@ -114,7 +114,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
         orsAggFunc: 'sumTotal',
         // ...(standalone ? { flex: 1 } : { initialWidth: 100, maxWidth: 100 }),
       },
-      ...(includes(['V'], model)
+      ...(includes(['V', 'VI'], model)
         ? [
             {
               ...sectionColDefById['manufacturing_blends'],
@@ -128,7 +128,7 @@ function useGridOptions(props: { model: string; usages: Array<any> }) {
             },
           ]
         : []),
-      ...(includes(['II', 'III', 'IV', 'V'], model)
+      ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
         ? [
             {
               ...sectionColDefById['import_quotas'],

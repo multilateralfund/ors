@@ -48,7 +48,7 @@ function getRowData(
       rowData,
       [{ display_name: group, group, row_id: group, rowType: 'group' }],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !includes(['V', 'VI'], model)
         ? [
             {
               display_name: 'Other',
@@ -129,11 +129,11 @@ export default function SectionAView(props: SectionAViewProps) {
       </Alert>
       <div
         className={cx('flex', {
-          'justify-between': includes(['IV', 'V'], variant.model),
-          'justify-end': !includes(['IV', 'V'], variant.model),
+          'justify-between': includes(['IV', 'V', 'VI'], variant.model),
+          'justify-end': !includes(['IV', 'V', 'VI'], variant.model),
         })}
       >
-        {includes(['IV', 'V'], variant.model) && (
+        {includes(['IV', 'V', 'VI'], variant.model) && (
           <TableDataSelector
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}

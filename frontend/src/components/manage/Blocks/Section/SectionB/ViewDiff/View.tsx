@@ -15,7 +15,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getGroupName(substance: any, model: string) {
   if (substance.blend_id) {
-    return includes(['IV', 'V'], model)
+    return includes(['IV', 'V', 'VI'], model)
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -67,7 +67,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V'], variant?.model)
+      group.startsWith('Blends') && !includes(['V', 'VI'], variant?.model)
         ? [
             {
               display_name: 'Other',

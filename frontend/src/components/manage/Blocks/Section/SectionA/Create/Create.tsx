@@ -51,7 +51,7 @@ function getRowData(
         },
       ],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !includes(['V', 'VI'], model)
         ? [
             {
               display_name: 'Other',
@@ -85,7 +85,7 @@ function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
       tooltip: true,
     },
   ]
-  if (!includes(['V'], model)) {
+  if (!includes(['V', 'VI'], model)) {
     pinnedBottomRowData.push({
       display_name: '',
       mandatory: false,
@@ -244,7 +244,7 @@ export default function SectionACreate(props: SectionACreateProps) {
       >
         <Footnotes />
       </Alert>
-      {includes(['V'], variant.model) && (
+      {includes(['V', 'VI'], variant.model) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -303,7 +303,7 @@ export default function SectionACreate(props: SectionACreateProps) {
           keepMounted
         >
           <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            {includes(['V'], variant.model) ? (
+            {includes(['V', 'VI'], variant.model) ? (
               <NewAddSubstanceDropdowns
                 mandatoryOptions={mandatorySubstances}
                 optionalOptions={optionalSubstances}

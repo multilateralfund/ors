@@ -23,7 +23,7 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getGroupName(substance: CPReport['section_b'][0], model: string) {
   if (substance.blend_id && substance.group.startsWith('Blends')) {
-    return includes(['IV', 'V'], model)
+    return includes(['IV', 'V', 'VI'], model)
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -69,7 +69,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V'], variant?.model)
+      group.startsWith('Blends') && !includes(['V', 'VI'], variant?.model)
         ? [
             {
               display_name: 'Other',
@@ -149,11 +149,11 @@ export default function SectionBView(props: SectionBViewProps) {
       </Alert>
       <div
         className={cx('flex', {
-          'justify-between': includes(['IV', 'V'], variant.model),
-          'justify-end': !includes(['IV', 'V'], variant.model),
+          'justify-between': includes(['IV', 'V', 'VI'], variant.model),
+          'justify-end': !includes(['IV', 'V', 'VI'], variant.model),
         })}
       >
-        {includes(['IV', 'V'], variant.model) && (
+        {includes(['IV', 'V', 'VI'], variant.model) && (
           <TableDataSelector
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}

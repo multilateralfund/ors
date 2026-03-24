@@ -36,7 +36,7 @@ export default function AgFloatCellRenderer(
   }
   if (
     props.column?.getColId() === 'manufacturing_blends' &&
-    includes(['V'], props.context.variant.model) &&
+    includes(['V', 'VI'], props.context.variant.model) &&
     props.data?.substance_id &&
     !parseFloat(props.value)
   ) {
@@ -44,7 +44,7 @@ export default function AgFloatCellRenderer(
   }
   if (
     props.column?.getColId() === 'production' &&
-    includes(['V'], props.context.variant.model) &&
+    includes(['V', 'VI'], props.context.variant.model) &&
     props.data?.blend_id &&
     !parseFloat(props.value)
   ) {

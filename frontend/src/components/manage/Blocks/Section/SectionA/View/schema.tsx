@@ -58,7 +58,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
   }, [usages, sectionColDefById])
 
   const bySubstanceTrade = useCallback(
-    // eslint-disable-next-line
     (standalone = false) => {
       return [
         {
@@ -85,7 +84,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           orsAggFunc: 'sumTotal',
           // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
           ? [
               {
                 ...sectionColDefById['import_quotas'],
@@ -109,7 +108,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['IV', 'V'], model)
+        ...(includes(['IV', 'V', 'VI'], model)
           ? [
               {
                 ...sectionColDefById['banned_date'],
@@ -119,7 +118,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
           ? [
               {
                 ...sectionColDefById['remarks'],

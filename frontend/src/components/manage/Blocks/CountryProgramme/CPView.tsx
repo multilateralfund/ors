@@ -213,7 +213,7 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  const showComments = variant?.model === 'V'
+  const showComments = ['V', 'VI'].includes(variant?.model ?? '')
 
   const formForValidation = getFormForValidation(report?.data || {})
 
@@ -310,7 +310,8 @@ function CPView(props: { archive?: boolean }) {
                       section,
                     }}
                   />
-                  {!isSectionChecked && variant?.model === 'V' ? (
+                  {!isSectionChecked &&
+                  ['V', 'VI'].includes(variant?.model ?? '') ? (
                     <SectionOverlay />
                   ) : null}
                 </FootnotesProvider>

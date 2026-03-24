@@ -39,8 +39,3 @@ export const getMeetingNr = (meeting_id?: number) => {
 
   return find(meetings, (option) => option.id === meeting_id)?.number
 }
-
-const SHOULD_ENABLE_NEW_CP_DATA_FORMATTING = true
-export const shouldEnableNewCPDataFormatting = (model: string) => {
-  return SHOULD_ENABLE_NEW_CP_DATA_FORMATTING && model === 'V'
-}

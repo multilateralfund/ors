@@ -19,7 +19,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     headerName: 'Date ban commenced',
-    // ...(includes(['IV', 'V'], model)
+    // ...(includes(['IV', 'V', 'VI'], model)
     //   ? { initialWidth: 100, minWidth: 100 }
     //   : {}),
   },
@@ -34,7 +34,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           ),
         }),
         ...(props.data?.row_id === 'other-new_substance' &&
-        !includes(['V'], model)
+        !includes(['V', 'VI'], model)
           ? {
               footnote: {
                 id: includes(['II', 'III'], model) ? '3' : '2',
@@ -119,7 +119,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           }
         : {
             footnote: {
-              id: includes(['V'], model) ? 2 : 3,
+              id: includes(['V', 'VI'], model) ? 2 : 3,
               content:
                 'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
               icon: false,

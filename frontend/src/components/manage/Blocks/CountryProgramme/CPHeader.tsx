@@ -70,7 +70,7 @@ const ReportDiffButton = (props: any) => {
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
 
   if (!showButton) return null
-  if (report.variant?.model !== 'V') return null
+  if (!['V', 'VI'].includes(report.variant?.model)) return null
 
   return (
     <Link
@@ -476,7 +476,8 @@ const EditHeaderActions = ({
   const isDraft = report.data?.status === 'draft'
   const isFinal = report.data?.status === 'final'
 
-  const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
+  const showDraftFromFinalButton =
+    isFinal && ['V', 'VI'].includes(report.variant?.model ?? '')
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1

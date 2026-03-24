@@ -26,7 +26,7 @@ const sectionColDefById: Record<string, ColDef> = {
     cellRenderer: (props: ICellRendererParams) => {
       const model = props.context?.variant.model
       if (
-        includes(['IV', 'V'], model) &&
+        includes(['IV', 'V', 'VI'], model) &&
         props.data?.row_id?.startsWith('blend_')
       ) {
         const newProps = {
@@ -57,7 +57,7 @@ const sectionColDefById: Record<string, ColDef> = {
           ? {
               footnote: {
                 id: '1',
-                content: includes(['IV', 'V'], model)
+                content: includes(['IV', 'V', 'VI'], model)
                   ? 'Mixture of Controlled Substances - When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.'
                   : 'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
                 icon: false,
@@ -66,7 +66,7 @@ const sectionColDefById: Record<string, ColDef> = {
             }
           : {}),
         ...(props.data.row_id === 'other-new_substance' &&
-        !includes(['V'], model)
+        !includes(['V', 'VI'], model)
           ? {
               footnote: {
                 id: '2',
@@ -98,11 +98,11 @@ const sectionColDefById: Record<string, ColDef> = {
       const model = props.context?.variant.model
       return {
         footnote: {
-          id: includes(['V'], model) ? '3' : '5',
+          id: includes(['V', 'VI'], model) ? '3' : '5',
           content:
             'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
           icon: false,
-          order: includes(['V'], model) ? 3 : 5,
+          order: includes(['V', 'VI'], model) ? 3 : 5,
         },
       }
     },

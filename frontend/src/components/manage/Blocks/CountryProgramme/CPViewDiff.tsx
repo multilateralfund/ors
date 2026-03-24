@@ -323,7 +323,8 @@ function CPDiffView() {
                       section,
                     }}
                   />
-                  {!isSectionChecked && variant?.model === 'V' ? (
+                  {!isSectionChecked &&
+                  ['V', 'VI'].includes(variant?.model ?? '') ? (
                     <SectionOverlay />
                   ) : null}
                 </FootnotesProvider>

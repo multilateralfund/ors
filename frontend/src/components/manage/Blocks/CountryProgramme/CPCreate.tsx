@@ -21,7 +21,6 @@ import { useSnackbar } from 'notistack'
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
@@ -216,7 +215,7 @@ const CPCreate: React.FC = () => {
   ])
 
   const initialVariant = getCrtVariant(new Date().getFullYear() - 1)
-  const isNewFormat = shouldEnableNewCPDataFormatting(initialVariant.model)
+  const isNewFormat = ['VI'].includes(initialVariant.model)
 
   const defaultDataSectionD = {
     all_uses: '0.000',
@@ -294,13 +293,13 @@ const CPCreate: React.FC = () => {
         reporting_email: user.data.email,
         reporting_entry: user.data.full_name,
       },
-      section_a: includes(['V'], lastYearVariant?.model)
+      section_a: includes(['V', 'VI'], lastYearVariant?.model)
         ? []
         : Sections.section_a.getData(),
-      section_b: includes(['V'], lastYearVariant?.model)
+      section_b: includes(['V', 'VI'], lastYearVariant?.model)
         ? []
         : Sections.section_b.getData(),
-      section_c: includes(['V'], lastYearVariant?.model)
+      section_c: includes(['V', 'VI'], lastYearVariant?.model)
         ? []
         : Sections.section_c.getData(),
       section_d: Sections.section_d.getData(),
@@ -391,7 +390,7 @@ const CPCreate: React.FC = () => {
     name: 'year',
     onChange: (_event: any, value: WidgetYear) => {
       const variant = getCrtVariant(value.id)
-      const isNewFormat = shouldEnableNewCPDataFormatting(variant.model)
+      const isNewFormat = ['VI'].includes(variant.model)
 
       handleSetForm((oldForm: any) => {
         const updatedSectionDData =
@@ -751,7 +750,8 @@ const CPCreate: React.FC = () => {
               sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
               false
             const showSectionSelect =
-              variant?.model === 'V' && section.id !== 'report_info'
+              ['V', 'VI'].includes(variant?.model) &&
+              section.id !== 'report_info'
             const Section: CreateSectionTypes =
               section.component as CreateSectionTypes
             return (
@@ -804,7 +804,8 @@ const CPCreate: React.FC = () => {
                       }
                       onSectionCheckChange={onSectionCheckChange}
                     />
-                    {!isSectionChecked && variant?.model === 'V' ? (
+                    {!isSectionChecked &&
+                    ['V', 'VI'].includes(variant?.model) ? (
                       <SectionOverlay />
                     ) : null}
                   </FootnotesProvider>

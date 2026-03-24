@@ -259,7 +259,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
     [variant.model, form, emptyForm, substancePrices.data],
   )
   const [pinnedBottomRowData] = useState(
-    includes(['V'], variant.model) ? [] : [{ rowType: 'control' }],
+    includes(['V', 'VI'], variant.model) ? [] : [{ rowType: 'control' }],
   )
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
@@ -457,7 +457,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
       newNode.current = substanceNode
     }
 
-    if (!includes(['V'], variant.model)) {
+    if (!includes(['V', 'VI'], variant.model)) {
       setAddChemicalModal(false)
     }
   }
@@ -473,7 +473,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
           <Footnotes />
         </Alert>
       )}
-      {includes(['V'], variant.model) && (
+      {includes(['V', 'VI'], variant.model) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -539,7 +539,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
             >
               Add substance/blend
             </Typography>
-            {includes(['V'], variant.model) ? (
+            {includes(['V', 'VI'], variant.model) ? (
               <>
                 <ToggleButtonGroup
                   className="my-4"
