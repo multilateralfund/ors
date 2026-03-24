@@ -109,9 +109,11 @@ const ProjectRelatedProjects = ({
               ]
             : (crtData ?? [])
 
+          const componentsIds = map(relatedProjects[0].data.projects, 'id')
           const filteredData = allCrtData.filter(
             (entry) =>
               entry.submission_status !== 'Draft' &&
+              !componentsIds.includes(entry.id) &&
               !(isVieworEditMode && entry.id === project.id) &&
               !(isLinkMode && entry.id === project.id),
           )
