@@ -9,6 +9,7 @@ import {
   OptionsType,
 } from '../interfaces'
 import {
+  formatFieldLabel,
   formatNumberColumns,
   formatOptions,
   isOtherOdsReplacement,
@@ -109,9 +110,14 @@ const ProjectOdsOdpTable = ({
       odsReplacementValue,
     )
 
-    return hasOtherReplacement
-      ? params?.data?.ods_replacement_text
-      : find(altTechs, (tech) => tech.id === odsReplacementValue)?.name
+    if (hasOtherReplacement) {
+      return params?.data?.ods_replacement_text
+    }
+
+    const replacementTechName =
+      find(altTechs, (tech) => tech.id === odsReplacementValue)?.name ?? ''
+
+    return formatFieldLabel(replacementTechName)
   }
 
   const fieldColumnMapping = {

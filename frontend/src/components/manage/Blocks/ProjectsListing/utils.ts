@@ -164,25 +164,35 @@ export const formatOptions = (
 
   const groupValue = data ? data.group_id || data.group : null
 
-  return field.write_field_name === 'ods_display_name' && !isArray(options)
-    ? concat(
-        data
-          ? filterSubstancesOptions(options.substances, groupValue)
-          : options.substances,
-        data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
-      ).map((option) => {
-        return {
-          ...option,
-          id: `${option.baseline_type}-${option.id}`,
-          label:
-            option.baseline_type === 'blend'
-              ? option.name + ' (' + option.composition + ')'
-              : option.name,
-        }
-      })
-    : map(options, (option) =>
-        isArray(option) ? { id: option[0], name: option[1] } : option,
-      )
+  if (field.write_field_name === 'ods_display_name' && !isArray(options)) {
+    return concat(
+      data
+        ? filterSubstancesOptions(options.substances, groupValue)
+        : options.substances,
+      data ? filterBlendsOptions(options.blends, groupValue) : options.blends,
+    ).map((option) => {
+      return {
+        ...option,
+        id: `${option.baseline_type}-${option.id}`,
+        label:
+          option.baseline_type === 'blend'
+            ? option.name + ' (' + option.composition + ')'
+            : option.name,
+      }
+    })
+  }
+
+  return map(options, (option: OptionsType | [string, string]) => {
+    if (isArray(option)) {
+      return { id: option[0], name: option[1] }
+    }
+
+    if (field.write_field_name === 'ods_replacement') {
+      return { ...option, name: formatFieldLabel(option.name) }
+    }
+
+    return option
+  })
 }
 
 export const getSectionFields = (
