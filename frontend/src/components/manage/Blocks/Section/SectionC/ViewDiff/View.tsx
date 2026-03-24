@@ -9,6 +9,7 @@ import { DeserializedDataC } from '@ors/models/SectionC'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 export type RowData = {
   count?: number
@@ -17,7 +18,7 @@ export type RowData = {
   tooltip?: boolean
 } & DeserializedDataC
 
-function getRowData(report: any, model: string): RowData[] {
+function getRowData(report: any, variant: ReportVariant): RowData[] {
   let rowData: Array<any> = []
   const dataByGroup: Record<string, any> = {}
   const groups: Array<string> = []
@@ -38,7 +39,7 @@ function getRowData(report: any, model: string): RowData[] {
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
-      ['IV'].includes(model) && group === 'Alternatives'
+      variant.match([CPModel.IV]) && group === 'Alternatives'
         ? [
             {
               display_name: 'Other alternatives (optional):',
@@ -57,10 +58,10 @@ function getRowData(report: any, model: string): RowData[] {
 export default function SectionCViewDiff(props: any) {
   const { TableProps, report, reportDiff, variant } = props
   const gridOptions = useGridOptions({
-    model: variant.model,
+    variant: variant,
   })
   const grid = useRef<any>()
-  const rowData = getRowData(reportDiff, variant.model)
+  const rowData = getRowData(reportDiff, variant)
 
   const isLatestVersion = !report.data?.final_version_id
   const version = report.data?.version

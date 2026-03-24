@@ -1,4 +1,4 @@
-import { CPReport } from '@ors/types/api_country-programme_records'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 
 import React, { useRef, useState } from 'react'
 
@@ -7,14 +7,13 @@ import { Alert } from '@mui/material'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
-
-import { IBaseSectionViewProps } from '../../types'
 import { SectionDRowData, SectionDViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { CPModel } from '@ors/types/variants.ts'
 
-function getRowData(report: CPReport): SectionDRowData[] {
+function getRowData(report: ApiCPReport): SectionDRowData[] {
   return (report.section_d || []).map((item) => ({
     ...item,
   }))
@@ -22,7 +21,7 @@ function getRowData(report: CPReport): SectionDRowData[] {
 
 export default function SectionDView(props: SectionDViewProps) {
   const { Comments, TableProps, report, showComments, variant } = props
-  const gridOptions = useGridOptions({ model: variant.model })
+  const gridOptions = useGridOptions({ variant: variant })
   const grid = useRef<any>()
   const [rowData] = useState<SectionDRowData[]>(() => getRowData(report))
 
@@ -33,7 +32,7 @@ export default function SectionDView(props: SectionDViewProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        {['VI'].includes(variant.model) ? (
+        {variant.match([CPModel.VI]) ? (
           <Footnotes />
         ) : (
           <Footnote id="" index="">

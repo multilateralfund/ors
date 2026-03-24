@@ -1,4 +1,4 @@
-import { CPReport } from '@ors/types/api_country-programme_records'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 
 import React, { useRef, useState } from 'react'
 
@@ -14,7 +14,7 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getRowData(report: CPReport): SectionERowData[] {
+function getRowData(report: ApiCPReport): SectionERowData[] {
   return [...report.section_e]
 }
 
@@ -33,7 +33,7 @@ function getPinnedRowData(rowData: SectionERowData[]): SectionERowData[] {
 
 export default function SectionEView(props: SectionEViewProps) {
   const { Comments, TableProps, report, showComments, variant } = props
-  const gridOptions = useGridOptions({ model: variant.model })
+  const gridOptions = useGridOptions({ variant: variant })
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report))
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))

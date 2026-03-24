@@ -20,14 +20,15 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function useGridOptions(props: {
-  model: string
+  variant: ReportVariant
   onRemoveSubstance: (props: ICellRendererParams) => void
   openAddChemicalModal: () => void
 }) {
-  const { model, onRemoveSubstance, openAddChemicalModal } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
+  const { variant, onRemoveSubstance, openAddChemicalModal } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -69,9 +70,9 @@ function useGridOptions(props: {
           }),
           field: 'display_name',
           headerClass: 'ag-text-left',
-          headerName: includes(['IV'], model) ? 'Description' : 'Substance',
+          headerName: variant.match([CPModel.IV]) ? 'Description' : 'Substance',
         },
-        ...(!includes(['II', 'III'], model)
+        ...(!variant.match([CPModel.II, CPModel.III])
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -91,7 +92,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['current_year_price'],
         },
-        ...(includes(['V', 'VI'], model)
+        ...(variant.match([CPModel.V, CPModel.VI])
           ? [
               {
                 ...sectionColDefById['is_fob'],

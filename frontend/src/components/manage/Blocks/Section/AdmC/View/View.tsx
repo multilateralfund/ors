@@ -1,4 +1,4 @@
-import { CPReport } from '@ors/types/api_country-programme_records'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 import { AdmRow, EmptyFormType } from '@ors/types/api_empty-form'
 
 import { useMemo, useRef } from 'react'
@@ -11,7 +11,7 @@ import { ITableProps } from '../../../CountryProgramme/typesCPView'
 import { AdmCRow } from '../types'
 import useGridOptions from './schema'
 
-function getRowData(report: CPReport, rows: AdmRow[]) {
+function getRowData(report: ApiCPReport, rows: AdmRow[]) {
   const dataByRowId = groupBy(report.adm_c, 'row_id')
   const result: AdmCRow[] = []
   for (let i = 0; i < rows.length; i++) {
@@ -43,7 +43,7 @@ function getRowData(report: CPReport, rows: AdmRow[]) {
 interface AdmCProps {
   TableProps: ITableProps
   emptyForm: EmptyFormType
-  report: CPReport
+  report: ApiCPReport
 }
 
 export default function AdmC(props: AdmCProps) {

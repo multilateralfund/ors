@@ -5,10 +5,11 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
+function useGridOptions(props: { variant: ReportVariant }) {
+  const { variant } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -23,10 +24,10 @@ function useGridOptions(props: { model: string }) {
         }),
         field: 'display_name',
         headerClass: 'ag-text-left',
-        headerName: includes(['IV'], model) ? 'Description' : 'Substance',
+        headerName: variant.match([CPModel.IV]) ? 'Description' : 'Substance',
         ...sectionColDefById['display_name'],
       },
-      ...(!includes(['II', 'III'], model)
+      ...(!variant.match([CPModel.II, CPModel.III])
         ? [
             {
               dataType: 'number',
@@ -44,7 +45,7 @@ function useGridOptions(props: { model: string }) {
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
-      ...(includes(['V', 'VI'], model)
+      ...(variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               cellRendererParams: () => {

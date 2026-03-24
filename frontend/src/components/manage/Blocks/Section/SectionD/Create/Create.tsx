@@ -12,11 +12,12 @@ import { SectionDCreateProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { CPModel } from '@ors/types/variants.ts'
 
 export default function SectionDCreate(props: SectionDCreateProps) {
   const { TableProps, form, setForm, variant } = props
   const grid = useRef<AgGridReact>()
-  const gridOptions = useGridOptions({ model: variant.model })
+  const gridOptions = useGridOptions({ variant: variant })
   const [initialRowData] = useState(form.section_d)
 
   return (
@@ -26,7 +27,7 @@ export default function SectionDCreate(props: SectionDCreateProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        {['VI'].includes(variant.model) ? (
+        {variant.match([CPModel.VI]) ? (
           <Footnotes />
         ) : (
           <Footnote id="" index="">

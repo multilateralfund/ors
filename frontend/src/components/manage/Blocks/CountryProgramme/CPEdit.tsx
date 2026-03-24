@@ -51,6 +51,7 @@ import { useEditLocalStorage } from './useLocalStorage'
 import { IoClose, IoExpand } from 'react-icons/io5'
 import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseComments.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { CPModel } from '@ors/types/variants.ts'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -176,7 +177,7 @@ function CPEdit() {
 
   const variant = useMemo(() => report.variant, [report])
   const isNewFormat = useMemo(
-    () => !!variant && ['VI'].includes(variant.model),
+    () => !!variant && variant.match([CPModel.VI]),
     [variant],
   )
 
@@ -254,19 +255,19 @@ function CPEdit() {
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
-    section_a: includes(['V', 'VI'], variant?.model)
+    section_a: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_a
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_a.getData(),
-    section_b: includes(['V', 'VI'], variant?.model)
+    section_b: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_b
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_b.getData(),
-    section_c: includes(['V', 'VI'], variant?.model)
+    section_c: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_c
           .getData()
           .filter((row) => row.id !== 0)
@@ -404,13 +405,13 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [renderedSections.length, activeTab])
 
-  const showComments = ['V', 'VI'].includes(variant?.model ?? '')
+  const showComments = variant.match([CPModel.V, CPModel.VI])
 
   return (
     <ValidationProvider
       activeSection={sections[activeTab].id}
       form={form}
-      model={variant?.model}
+      variant={variant}
     >
       <Loading
         className="!fixed bg-action-disabledBackground"
@@ -468,7 +469,7 @@ function CPEdit() {
                 sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
                 false
               const showSectionSelect =
-                ['V', 'VI'].includes(variant?.model ?? '') &&
+                variant.match([CPModel.V, CPModel.VI]) &&
                 section.id !== 'report_info'
               const Section: EditSectionTypes =
                 section.component as EditSectionTypes
@@ -519,7 +520,7 @@ function CPEdit() {
                         onSectionCheckChange={onSectionCheckChange}
                       />
                       {!isSectionChecked &&
-                      ['V', 'VI'].includes(variant?.model ?? '') ? (
+                      variant.match([CPModel.V, CPModel.VI]) ? (
                         <SectionOverlay />
                       ) : null}
                     </FootnotesProvider>

@@ -39,3 +39,10 @@ export const getMeetingNr = (meeting_id?: number) => {
 
   return find(meetings, (option) => option.id === meeting_id)?.number
 }
+
+export const isOneOf = <T>(
+  value: T | null | undefined,
+  options: readonly T[],
+): value is T => {
+  return value != null && options.includes(value as T)
+}

@@ -4,14 +4,15 @@ import { GridOptions } from 'ag-grid-community'
 
 import {
   sectionColDefByIdFunc,
-  sectionDefaultColDef,
   sectionColGroupDefById,
+  sectionDefaultColDef,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
+function useGridOptions(props: { variant: ReportVariant }) {
+  const { variant } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -21,7 +22,7 @@ function useGridOptions(props: { model: string }) {
         headerName: 'Substance',
         ...sectionColDefById['display_name'],
       },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
@@ -40,7 +41,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for all uses',
             ...sectionColDefById['all_uses'],
           },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
@@ -59,7 +60,7 @@ function useGridOptions(props: { model: string }) {
             headerName: 'Captured for feedstock uses within your country',
             ...sectionColDefById['feedstock'],
           },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             children: [
               {

@@ -6,14 +6,15 @@ import { includes } from 'lodash'
 
 import {
   sectionColDefByIdFunc,
-  sectionDefaultColDef,
   sectionColGroupDefById,
+  sectionDefaultColDef,
 } from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
+function useGridOptions(props: { variant: ReportVariant }) {
+  const { variant } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -31,7 +32,7 @@ function useGridOptions(props: { model: string }) {
         headerName: 'Substance',
         ...sectionColDefById['display_name'],
       },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             dataType: 'number',
             field: 'all_uses',
@@ -46,7 +47,7 @@ function useGridOptions(props: { model: string }) {
             orsAggFunc: 'sumTotal',
             ...sectionColDefById['all_uses'],
           },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             dataType: 'number',
             field: 'feedstock',
@@ -61,7 +62,7 @@ function useGridOptions(props: { model: string }) {
             orsAggFunc: 'sumTotal',
             ...sectionColDefById['feedstock'],
           },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             children: [
               {

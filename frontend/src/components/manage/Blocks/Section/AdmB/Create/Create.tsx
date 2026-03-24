@@ -10,7 +10,7 @@ import useGridOptions from './schema'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default function AdmBCreate(props: any) {
-  const { TableProps, emptyForm, form, setForm, variant } = props
+  const { TableProps, emptyForm, form, setForm } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const grid = useRef<any>()
   const [initialRowData] = useState(() => {
@@ -27,7 +27,6 @@ export default function AdmBCreate(props: any) {
 
   const gridOptions = useGridOptions({
     adm_columns: columns,
-    model: variant.model,
   })
 
   return (

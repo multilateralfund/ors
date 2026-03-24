@@ -1,8 +1,7 @@
-import type { ITableProps } from '../../../CountryProgramme/typesCPView'
 import type { SectionBRowData } from '../types'
-import { CPReport } from '@ors/types/api_country-programme_records'
-import { EmptyFormType } from '@ors/types/api_empty-form'
-import { ReportVariant } from '@ors/types/variants'
+import { SectionBViewProps } from '../types'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
 
@@ -16,14 +15,16 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import TableDataSelector, {
   useTableDataSelector,
 } from '../../SectionA/TableDataSelector'
-import { SectionBViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: CPReport['section_b'][0], model: string) {
+function getGroupName(
+  substance: ApiCPReport['section_b'][0],
+  variant: ReportVariant,
+) {
   if (substance.blend_id && substance.group.startsWith('Blends')) {
-    return includes(['IV', 'V', 'VI'], model)
+    return variant.match([CPModel.IV, CPModel.V, CPModel.VI])
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -31,7 +32,7 @@ function getGroupName(substance: CPReport['section_b'][0], model: string) {
 }
 
 function getRowData(
-  report: CPReport,
+  report: ApiCPReport,
   variant: ReportVariant,
   showOnlyReported: boolean,
 ): SectionBRowData[] {
@@ -45,7 +46,7 @@ function getRowData(
   }
 
   each(data, (item) => {
-    const group = getGroupName(item, variant.model)
+    const group = getGroupName(item, variant)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
     }
@@ -58,7 +59,7 @@ function getRowData(
     rowData = union(
       rowData,
       [{ display_name: group, group, row_id: group, rowType: 'group' }],
-      group.startsWith('Annex F') && includes(variant?.model, 'IV')
+      group.startsWith('Annex F') && variant.match([CPModel.IV])
         ? [
             {
               display_name: 'Controlled substances',
@@ -69,7 +70,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V', 'VI'], variant?.model)
+      group.startsWith('Blends') && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -110,7 +111,7 @@ export default function SectionBView(props: SectionBViewProps) {
     props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =
     useGridOptions({
-      model: variant.model,
+      variant: variant,
       usages: emptyForm.usage_columns?.section_b || [],
     })
   const grid = useRef<any>()
@@ -149,11 +150,11 @@ export default function SectionBView(props: SectionBViewProps) {
       </Alert>
       <div
         className={cx('flex', {
-          'justify-between': includes(['IV', 'V', 'VI'], variant.model),
-          'justify-end': !includes(['IV', 'V', 'VI'], variant.model),
+          'justify-between': variant.match([CPModel.IV, CPModel.V, CPModel.VI]),
+          'justify-end': !variant.match([CPModel.IV, CPModel.V, CPModel.VI]),
         })}
       >
-        {includes(['IV', 'V', 'VI'], variant.model) && (
+        {variant.match([CPModel.IV, CPModel.V, CPModel.VI]) && (
           <TableDataSelector
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}

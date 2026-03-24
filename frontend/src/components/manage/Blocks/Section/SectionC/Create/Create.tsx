@@ -35,6 +35,7 @@ import CreateSubstance from './CreateSubstance'
 import useGridOptions from './schema'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function indexKey(elem: {
   blend_id?: null | number
@@ -49,7 +50,7 @@ function getRowData(
   data: SectionC['data'],
   substanceRows: EmptyFormSubstance[],
   substancePrices: SubstancePrices,
-  model: string,
+  variant: ReportVariant,
 ): SectionCRowData[] {
   let rowData: SectionCRowData[] = []
   const dataByGroup: Record<string, SectionCRowData[]> = {}
@@ -111,7 +112,7 @@ function getRowData(
       dataByGroup[group].sort(
         (a, b) => substanceOrder[indexKey(a)] - substanceOrder[indexKey(b)],
       ),
-      ['IV'].includes(model) && group === 'Alternatives'
+      variant.match([CPModel.IV]) && group === 'Alternatives'
         ? [
             {
               display_name: 'Other alternatives (optional):',
@@ -254,12 +255,12 @@ export default function SectionCCreate(props: SectionCCreateProps) {
         form.section_c,
         emptyForm.substance_rows?.section_c || [],
         substancePrices.data || [],
-        variant.model,
+        variant,
       ),
-    [variant.model, form, emptyForm, substancePrices.data],
+    [variant, form, emptyForm, substancePrices.data],
   )
   const [pinnedBottomRowData] = useState(
-    includes(['V', 'VI'], variant.model) ? [] : [{ rowType: 'control' }],
+    variant.match([CPModel.V, CPModel.VI]) ? [] : [{ rowType: 'control' }],
   )
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
@@ -365,7 +366,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
   }, [Section, blends, chemicalsInForm, mandatorySubstances, substances])
 
   const gridOptions = useGridOptions({
-    model: variant.model,
+    variant: variant,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_c]
@@ -457,14 +458,14 @@ export default function SectionCCreate(props: SectionCCreateProps) {
       newNode.current = substanceNode
     }
 
-    if (!includes(['V', 'VI'], variant.model)) {
+    if (!variant.match([CPModel.V, CPModel.VI])) {
       setAddChemicalModal(false)
     }
   }
 
   return (
     <>
-      {includes(['II', 'III'], variant.model) ? null : (
+      {variant.match([CPModel.II, CPModel.III]) ? null : (
         <Alert
           className="bg-mlfs-bannerColor"
           icon={<IoInformationCircleOutline size={24} />}
@@ -473,7 +474,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
           <Footnotes />
         </Alert>
       )}
-      {includes(['V', 'VI'], variant.model) && (
+      {variant.match([CPModel.V, CPModel.VI]) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -539,7 +540,7 @@ export default function SectionCCreate(props: SectionCCreateProps) {
             >
               Add substance/blend
             </Typography>
-            {includes(['V', 'VI'], variant.model) ? (
+            {variant.match([CPModel.V, CPModel.VI]) ? (
               <>
                 <ToggleButtonGroup
                   className="my-4"

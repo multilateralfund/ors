@@ -1,5 +1,7 @@
 import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import type { ApiUsage } from '@ors/types/api_usages'
+import { ReportVariant } from '@ors/types/variants.ts'
+import React from 'react'
 
 export interface IUsage {
   quantity: number
@@ -138,7 +140,7 @@ export interface IValidationProvider {
   activeSection?: string
   children: React.ReactNode
   form: CPValidationForm
-  model?: string
+  variant: ReportVariant
   silent?: boolean
 }
 

@@ -5,8 +5,11 @@ import { includes, startsWith } from 'lodash'
 import { colDefById } from '@ors/config/Table/columnsDef'
 
 import { SectionARowData } from './types'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
+const sectionColDefByIdFunc = (
+  variant: ReportVariant,
+): Record<string, ColDef> => ({
   ...colDefById,
   banned_date: {
     ...colDefById['banned_date'],
@@ -19,7 +22,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       },
     },
     headerName: 'Date ban commenced',
-    // ...(includes(['IV', 'V', 'VI'], model)
+    // ...(variant.match([CPModel.IV, CPModel.V, CPModel.VI])
     //   ? { initialWidth: 100, minWidth: 100 }
     //   : {}),
   },
@@ -34,10 +37,10 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           ),
         }),
         ...(props.data?.row_id === 'other-new_substance' &&
-        !includes(['V', 'VI'], model)
+        !variant.match([CPModel.V, CPModel.VI])
           ? {
               footnote: {
-                id: includes(['II', 'III'], model) ? '3' : '2',
+                id: variant.match([CPModel.II, CPModel.III]) ? '3' : '2',
                 content: 'Indicate relevant controlled substances.',
                 icon: true,
               },
@@ -61,7 +64,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     headerComponentParams: {
       footnote: {
         id: '1',
-        content: includes(['II'], model)
+        content: variant.match([CPModel.II])
           ? 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately, e.g.: For R502 consisting of 51.2% CFC-115 and 48.8% HCFC-22, indicate the total quantity of each controlled substance (i.e.., CFC-115 and HCFC-22) in the appropriate row.'
           : 'Where the data involves a blend of two or more substances, the quantities of individual components of controlled substances must be indicated separately.',
         icon: false,
@@ -72,9 +75,9 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     // initialWidth: 80,
   },
   exports: {
-    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.I]) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      ...(includes(['II', 'III'], model)
+      ...(variant.match([CPModel.II, CPModel.III])
         ? {
             footnote: {
               id: '2',
@@ -86,14 +89,14 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     },
   },
   imports: {
-    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.I]) ? { maxWidth: 100, minWidth: 100 } : {}),
   },
   production: {
-    // ...(includes(['III'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
-    // ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
-    // ...(includes(['I'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.III]) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.II]) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.I]) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      ...(includes(['II', 'III'], model)
+      ...(variant.match([CPModel.II, CPModel.III])
         ? {
             footnote: {
               id: '2',
@@ -106,9 +109,9 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   remarks: {
     ...colDefById['remarks'],
-    // ...(includes(['II'], model) ? { maxWidth: 100, minWidth: 100 } : {}),
+    // ...(variant.match([CPModel.II]) ? { maxWidth: 100, minWidth: 100 } : {}),
     headerComponentParams: {
-      ...(includes(['II', 'III'], model)
+      ...(variant.match([CPModel.II, CPModel.III])
         ? {
             footnote: {
               content: 'e.g., stockpiling if use is different from consumption',
@@ -119,7 +122,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           }
         : {
             footnote: {
-              id: includes(['V', 'VI'], model) ? 2 : 3,
+              id: variant.match([CPModel.V, CPModel.VI]) ? 2 : 3,
               content:
                 'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
               icon: false,

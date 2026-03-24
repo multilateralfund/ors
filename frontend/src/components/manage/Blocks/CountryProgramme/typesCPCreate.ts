@@ -1,5 +1,5 @@
 import type { TableProps } from '@ors/components/manage/Form/Table'
-import { CPReport } from '@ors/types/api_country-programme_records'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
 import React from 'react'
@@ -92,9 +92,9 @@ export interface CPBaseForm {
 }
 
 export interface CPEditForm extends Omit<CPBaseForm, 'country' | 'year'> {
-  adm_b: CPReport['adm_b']
-  adm_c: CPReport['adm_c']
-  adm_d: CPReport['adm_d']
+  adm_b: ApiCPReport['adm_b']
+  adm_c: ApiCPReport['adm_c']
+  adm_d: ApiCPReport['adm_d']
   comments_section_a?: CPCommentState
   comments_section_b?: CPCommentState
   comments_section_c?: CPCommentState

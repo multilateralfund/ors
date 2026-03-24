@@ -1,7 +1,7 @@
 import type { CPCommentState } from '@ors/components/manage/Blocks/CountryProgramme/CPCommentsTypes.ts'
-import type { Report } from '@ors/types/store'
+import type { CPReport } from '@ors/types/store'
 
-const parseComments = (section: string, report: Report) => {
+const parseComments = (section: string, report: CPReport) => {
   const texts: CPCommentState = { country: '', mlfs: '' }
 
   if (report.data?.comments) {

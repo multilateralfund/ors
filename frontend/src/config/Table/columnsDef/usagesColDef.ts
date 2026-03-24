@@ -1,8 +1,8 @@
-import { includes } from 'lodash'
-
 import defaultColGroupDef from '@ors/config/Table/columnsDef/defaultColGroupDef'
 
 import { IAgHeaderParams } from '@ors/components/manage/AgComponents/AgHeaderComponent'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
+import { unknownVariant } from '@ors/slices/createCPReportsSlice.ts'
 
 export default function getUsagesColDef() {
   return {
@@ -77,10 +77,11 @@ export default function getUsagesColDef() {
     },
     Other: {
       headerComponentParams: (props: IAgHeaderParams) => {
-        const model = props.context?.variant.model
+        const variant = (props.context?.variant ??
+          unknownVariant) as ReportVariant
         return {
           footnote: {
-            id: includes(['V', 'VI'], model) ? '2' : '3',
+            id: variant.match([CPModel.V, CPModel.VI]) ? '2' : '3',
             content:
               'Uses in other sectors that do not fall specifically within the listed sectors in the table.',
             icon: false,

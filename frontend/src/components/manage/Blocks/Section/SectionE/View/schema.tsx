@@ -8,11 +8,12 @@ import {
   sectionColDefByIdFunc,
   sectionColGroupDefByIdFunc,
 } from '../sectionColumnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-function useGridOptions(props: { model: string }) {
-  const { model } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
-  const sectionColGroupDefById = sectionColGroupDefByIdFunc(model)
+function useGridOptions(props: { variant: ReportVariant }) {
+  const { variant } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
+  const sectionColGroupDefById = sectionColGroupDefByIdFunc(variant)
   const [gridOptions] = useState<GridOptions>({
     columnDefs: [
       {
@@ -33,13 +34,13 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'total',
-        headerName: ['VI'].includes(model)
+        headerName: variant.match([CPModel.VI])
           ? 'Total amount generated (tonnes)'
           : 'Total amount generated',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['total_amount_generated'],
       },
-      ...(['VI'].includes(model)
+      ...(variant.match([CPModel.VI])
         ? [
             {
               dataType: 'number',
@@ -62,7 +63,7 @@ function useGridOptions(props: { model: string }) {
           {
             dataType: 'number',
             field: 'feedstock_gc',
-            headerName: ['VI'].includes(model)
+            headerName: variant.match([CPModel.VI])
               ? 'For feedstock use in your country'
               : 'For all uses',
             orsAggFunc: 'sumTotal',
@@ -78,7 +79,7 @@ function useGridOptions(props: { model: string }) {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName: ['VI'].includes(model)
+        headerName: variant.match([CPModel.VI])
           ? 'Amount generated and captured (tonnes)'
           : 'Amount generated and captured',
         marryChildren: true,
@@ -87,7 +88,7 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'feedstock_wpc',
-        headerName: ['VI'].includes(model)
+        headerName: variant.match([CPModel.VI])
           ? 'Amount used for feedstock without prior capture (tonnes)'
           : 'Amount used for feedstock without prior capture',
         orsAggFunc: 'sumTotal',
@@ -96,7 +97,7 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'destruction_wpc',
-        headerName: ['VI'].includes(model)
+        headerName: variant.match([CPModel.VI])
           ? 'Amount destroyed in the facility without prior capture (tonnes)'
           : 'Amount destroyed without prior capture',
         orsAggFunc: 'sumTotal',
@@ -105,13 +106,13 @@ function useGridOptions(props: { model: string }) {
       {
         dataType: 'number',
         field: 'generated_emissions',
-        headerName: ['VI'].includes(model)
+        headerName: variant.match([CPModel.VI])
           ? 'Amount of generated emissions (tonnes)'
           : 'Amount of generated emissions',
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['generated_emissions'],
       },
-      ...(['VI'].includes(model)
+      ...(variant.match([CPModel.VI])
         ? [
             {
               cellDataType: 'number',

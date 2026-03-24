@@ -1,4 +1,4 @@
-import { ConstantsType } from '@ors/types/variants'
+import { ConstantsType, CPModel, ReportVariant } from '@ors/types/variants'
 
 import { filter, includes } from 'lodash'
 
@@ -38,8 +38,8 @@ import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/Vie
 import { DefaultComponentType, SectionMeta } from './types'
 
 const constants: ConstantsType = {
-  I: undefined,
-  II: {
+  [CPModel.I]: undefined,
+  [CPModel.II]: {
     adm_d: {
       title: 'D. Qualitative assessment of the operation of RMP/NPP/TPMP',
     },
@@ -52,7 +52,7 @@ const constants: ConstantsType = {
         'AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
   },
-  III: {
+  [CPModel.III]: {
     section_a: {
       label: 'Datasheet',
     },
@@ -62,13 +62,13 @@ const constants: ConstantsType = {
         'AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
     },
   },
-  IV: {
+  [CPModel.IV]: {
     section_a: {
       title:
         'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
     },
   },
-  V: {
+  [CPModel.V]: {
     section_a: {
       title:
         'SECTION A. ANNEX A, ANNEX B, ANNEX C - GROUP I AND ANNEX E - DATA ON CONTROLLED SUBSTANCES (METRIC TONNES)',
@@ -181,30 +181,42 @@ export type ViewSectionTypes = ComponentsView[keyof ComponentsView]
 const DefaultComponent = () => <div>Not implemented</div>
 
 export function getSections(
-  variant: {
-    maxYear: number
-    minYear: number
-    model: keyof ConstantsType
-  },
+  variant: ReportVariant,
   mode: keyof typeof components = 'view',
 ): SectionMeta[] {
-  const { model } = variant
   const ids = [
-    ...((includes(['I', 'II', 'III', 'IV', 'V', 'VI'], model) && [
-      'section_a',
-    ]) ||
+    ...((variant.match([
+      CPModel.I,
+      CPModel.II,
+      CPModel.III,
+      CPModel.IV,
+      CPModel.V,
+      CPModel.VI,
+    ]) && ['section_a']) ||
       []),
-    ...((includes(['II', 'III', 'IV', 'V', 'VI'], model) && ['section_c']) ||
+    ...((variant.match([
+      CPModel.II,
+      CPModel.III,
+      CPModel.IV,
+      CPModel.V,
+      CPModel.VI,
+    ]) && ['section_c']) ||
       []),
-    ...((includes(['IV', 'V', 'VI'], model) && [
+    ...((variant.match([CPModel.IV, CPModel.V, CPModel.VI]) && [
       'section_b',
       'section_d',
       'section_e',
       'section_f',
     ]) ||
       []),
-    ...((includes(['II', 'III'], model) && ['adm_b', 'adm_c', 'adm_d']) || []),
-    ...((['V', 'VI'].includes(model) && mode !== 'diff' && ['report_info']) ||
+    ...((variant.match([CPModel.II, CPModel.III]) && [
+      'adm_b',
+      'adm_c',
+      'adm_d',
+    ]) ||
+      []),
+    ...((variant.match([CPModel.V, CPModel.VI]) &&
+      mode !== 'diff' && ['report_info']) ||
       []),
   ]
 
@@ -221,10 +233,10 @@ export function getSections(
         id: 'section_a',
         allowFullScreen: true,
         component: components[mode].section_a || DefaultComponent,
-        label: constants[model]?.section_a?.label || 'Section A',
+        label: constants[variant.model]?.section_a?.label || 'Section A',
         panelId: 'section-A-panel',
         title:
-          constants[model]?.section_a?.title ||
+          constants[variant.model]?.section_a?.title ||
           'A. Data on Controlled Substances (in METRIC TONNES)',
       },
       {
@@ -258,10 +270,10 @@ export function getSections(
         id: 'section_c',
         allowFullScreen: true,
         component: components[mode].section_c || DefaultComponent,
-        label: constants[model]?.section_c?.label || 'Section C',
+        label: constants[variant.model]?.section_c?.label || 'Section C',
         panelId: 'section-C-panel',
         title:
-          constants[model]?.section_c?.title ||
+          constants[variant.model]?.section_c?.title ||
           'SECTION C. AVERAGE ESTIMATED PRICE OF HCFCs, HFCs AND ALTERNATIVES (US $/kg)',
       },
       {
@@ -271,11 +283,11 @@ export function getSections(
         label: 'Adm D-E',
         panelId: 'adm-D-panel',
         title:
-          constants[model]?.adm_d?.title ||
+          constants[variant.model]?.adm_d?.title ||
           'D. Qualitative assessment of the operation of HPMP',
       },
 
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             id: 'section_d',
             allowFullScreen: true,
@@ -296,7 +308,7 @@ export function getSections(
             title:
               'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',
           },
-      ['VI'].includes(model)
+      variant.match([CPModel.VI])
         ? {
             id: 'section_e',
             allowFullScreen: true,

@@ -1,11 +1,10 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
 
-import { useContext } from 'react'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 
 import { Button, ButtonProps, Divider, MenuProps, Tooltip } from '@mui/material'
 import cx from 'classnames'
-import { Dictionary, capitalize, orderBy } from 'lodash'
+import { capitalize, Dictionary, orderBy } from 'lodash'
 import { useLocation } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -26,6 +25,7 @@ import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { MdKeyboardArrowDown } from 'react-icons/md'
+import { CPModel } from '@ors/types/variants.ts'
 
 const DropDownButtonProps: ButtonProps = {
   endIcon: <MdKeyboardArrowDown />,
@@ -70,7 +70,7 @@ const ReportDiffButton = (props: any) => {
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
 
   if (!showButton) return null
-  if (!['V', 'VI'].includes(report.variant?.model)) return null
+  if (!report.variant.match([CPModel.V, CPModel.VI])) return null
 
   return (
     <Link
@@ -477,7 +477,7 @@ const EditHeaderActions = ({
   const isFinal = report.data?.status === 'final'
 
   const showDraftFromFinalButton =
-    isFinal && ['V', 'VI'].includes(report.variant?.model ?? '')
+    isFinal && report.variant.match([CPModel.V, CPModel.VI])
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1

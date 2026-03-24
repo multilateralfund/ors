@@ -1,10 +1,10 @@
 import { ProjectSpecificFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
-import type { CPReport, CPReportDiff } from './api_country-programme_records'
+import type { ApiCPReport, CPReportDiff } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
 import { ApiUser } from '@ors/types/api_auth_user'
 import { ApiBlend } from '@ors/types/api_blends'
-import type { DataType, SliceData } from '@ors/types/primitives'
+import type { SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
 
 import { StoreApi } from 'zustand'
@@ -20,6 +20,7 @@ import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 import { MeetingType } from '@ors/types/api_meetings.ts'
+import React from 'react'
 
 type StoreProviderProps = {
   children: React.ReactNode
@@ -44,13 +45,13 @@ export type BPFiltersType = {
   range: string
 }
 
-export type Report = {
+export type CPReport = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
   files: SliceData<File[]>
-  variant?: ReportVariant
+  variant: ReportVariant
   versions: SliceData<CPVersionInfo[]>
-} & SliceData<CPReport | null, Record<string, any> | null>
+} & SliceData<ApiCPReport | null, Record<string, any> | null>
 
 type ReportDiff = SliceData<CPReportDiff | null, Record<string, any> | null>
 
@@ -87,17 +88,17 @@ export interface CPReportsSlice {
     version: number,
     report_id?: number,
   ) => void
-  fetchEmptyForm: (report: CPReport | null, view: boolean) => void
+  fetchEmptyForm: (report: ApiCPReport | null, view: boolean) => void
   fetchFiles: (country_id: number, year: number) => void
   fetchReport: (country_id: number, year: number) => Promise<void>
   fetchReportDiff: (country_id: number, year: number, version: number) => void
   fetchVersions: (country_id: number, year: number) => void
-  report: Report
+  report: CPReport
   reportDiff: ReportDiff
-  setReport: (report: Partial<Report>) => void
-  setReportCountry: (report: CPReport) => void
-  setReportDiff: (reportDiff: Partial<CPReport>) => void
-  setReportVariant: (report: CPReport) => void
+  setReport: (report: Partial<CPReport>) => void
+  setReportCountry: (report: ApiCPReport) => void
+  setReportDiff: (reportDiff: Partial<ApiCPReport>) => void
+  setReportVariant: (report: ApiCPReport) => void
   substances: SliceData<ApiSubstance[]>
 }
 

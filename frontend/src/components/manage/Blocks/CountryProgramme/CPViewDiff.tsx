@@ -21,6 +21,7 @@ import CPSectionWrapper from './CPSectionWrapper'
 import { ITableProps } from './typesCPView'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
+import { CPModel } from '@ors/types/variants.ts'
 
 type SectionId =
   | 'section_a'
@@ -324,7 +325,7 @@ function CPDiffView() {
                     }}
                   />
                   {!isSectionChecked &&
-                  ['V', 'VI'].includes(variant?.model ?? '') ? (
+                  variant.match([CPModel.V, CPModel.VI]) ? (
                     <SectionOverlay />
                   ) : null}
                 </FootnotesProvider>

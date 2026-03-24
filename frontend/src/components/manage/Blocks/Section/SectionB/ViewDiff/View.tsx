@@ -1,5 +1,5 @@
 import { CPReportDiff } from '@ors/types/api_country-programme_records'
-import { ReportVariant } from '@ors/types/variants'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import React, { useRef } from 'react'
 
@@ -13,9 +13,9 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: any, model: string) {
+function getGroupName(substance: any, variant: ReportVariant) {
   if (substance.blend_id) {
-    return includes(['IV', 'V', 'VI'], model)
+    return variant.match([CPModel.IV, CPModel.V, CPModel.VI])
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -43,7 +43,7 @@ function getRowData(
   const data = reportDiff.section_b
 
   each(data, (item) => {
-    const group = getGroupName(item, variant.model)
+    const group = getGroupName(item, variant)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
     }
@@ -56,7 +56,7 @@ function getRowData(
     rowData = union(
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
-      group.startsWith('Annex F') && includes(variant?.model, 'IV')
+      group.startsWith('Annex F') && variant.match([CPModel.IV])
         ? [
             {
               display_name: 'Controlled substances',
@@ -67,7 +67,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V', 'VI'], variant?.model)
+      group.startsWith('Blends') && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -85,7 +85,7 @@ function getRowData(
 export default function SectionBViewDiff(props: any) {
   const { TableProps, emptyForm, report, reportDiff, variant } = props
   const { gridOptionsAll } = useGridOptions({
-    model: variant.model,
+    variant: variant,
     usages: emptyForm.usage_columns?.section_b || [],
   })
   const grid = useRef<any>()

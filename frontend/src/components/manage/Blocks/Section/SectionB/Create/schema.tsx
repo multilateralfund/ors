@@ -21,14 +21,15 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { sectionColDefById } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function useGridOptions(props: {
-  model: string
+  variant: ReportVariant
   onRemoveSubstance: (props: ICellRendererParams) => void
   openAddChemicalModal: () => void
   usages: EmptyFormUsageColumn[]
 }) {
-  const { model, onRemoveSubstance, openAddChemicalModal, usages } = props
+  const { variant, onRemoveSubstance, openAddChemicalModal, usages } = props
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -83,7 +84,7 @@ function useGridOptions(props: {
           field: 'display_name',
           flex: 2,
           headerClass: 'ag-text-left',
-          headerName: includes(['IV'], model) ? '' : 'Substance',
+          headerName: variant.match([CPModel.IV]) ? '' : 'Substance',
         },
         ...(usages.length
           ? [
@@ -130,7 +131,7 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['V', 'VI'], model)
+        ...(variant.match([CPModel.V, CPModel.VI])
           ? [
               {
                 dataType: 'number',
@@ -141,7 +142,13 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V', 'VI'], model)
+        ...(variant.match([
+          CPModel.II,
+          CPModel.III,
+          CPModel.IV,
+          CPModel.V,
+          CPModel.VI,
+        ])
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -173,10 +180,10 @@ function useGridOptions(props: {
             'ag-cell-hashed theme-dark:bg-gray-900/40':
               includes(props.data?.excluded_usages || [], props.colDef.id) ||
               (props.column.getColId() === 'manufacturing_blends' &&
-                includes(['V', 'VI'], model) &&
+                variant.match([CPModel.V, CPModel.VI]) &&
                 props.data?.substance_id) ||
               (props.column.getColId() === 'production' &&
-                includes(['V', 'VI'], model) &&
+                variant.match([CPModel.V, CPModel.VI]) &&
                 props.data?.blend_id),
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-center': !includes(['display_name'], props.colDef.field),
@@ -189,10 +196,10 @@ function useGridOptions(props: {
             includes(['total_usages'], props.colDef.id) ||
             includes(props.data?.excluded_usages || [], props.colDef.id) ||
             (props.column.getColId() === 'manufacturing_blends' &&
-              includes(['V', 'VI'], model) &&
+              variant.match([CPModel.V, CPModel.VI]) &&
               props.data?.substance_id) ||
             (props.column.getColId() === 'production' &&
-              includes(['V', 'VI'], model) &&
+              variant.match([CPModel.V, CPModel.VI]) &&
               props.data?.blend_id)
           ) {
             return false
