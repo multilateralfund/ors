@@ -434,7 +434,9 @@ const ProjectsCreate = ({
   const formatFieldName = (field: string) =>
     ['ods_substance_id', 'ods_blend_id'].includes(field)
       ? 'ods_display_name'
-      : field
+      : field === 'ods_replacement'
+        ? 'ods_replacement_text'
+        : field
 
   const formattedOdsOdpErrors = map(
     filteredOdsOdpErrors,
