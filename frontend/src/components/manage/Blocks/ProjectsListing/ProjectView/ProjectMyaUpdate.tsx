@@ -1,6 +1,5 @@
 import {
   ProjectTypeApi,
-  MpDataProps,
   InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
@@ -12,7 +11,7 @@ const ProjectMyaUpdate = ({
   metaprojectData,
   mode,
   ...rest
-}: MpDataProps & {
+}: {
   project?: ProjectTypeApi
   metaprojectData: MetaProjectDetailType | null
   mode: string

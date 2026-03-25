@@ -6,7 +6,6 @@ import ProjectMyaUpdate from './ProjectMyaUpdate'
 import { NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import {
-  MpDataProps,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
@@ -25,23 +24,20 @@ const ProjectUmbrellaProjectDetails = ({
   mode,
   isMya,
   isPrevButtonDisabled,
-  mpData,
-  setMpData,
   ...rest
-}: ProjectTabSetters &
-  MpDataProps & {
-    project?: ProjectTypeApi
-    relatedProjects: RelatedProjectsSectionType[]
-    metaProjectId?: number | null
-    setMetaProjectId?: (id: number | null) => void
-    setRefetchRelatedProjects?: (refetch: boolean) => void
-    canDisassociate?: boolean
-    metaprojectData: MetaProjectDetailType | null
-    mode: string
-    isMya: boolean
-    isPrevButtonDisabled?: boolean
-    setInlineMessage: (message: InlineMessageType) => void
-  }) => {
+}: ProjectTabSetters & {
+  project?: ProjectTypeApi
+  relatedProjects: RelatedProjectsSectionType[]
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
+  canDisassociate?: boolean
+  metaprojectData: MetaProjectDetailType | null
+  mode: string
+  isMya: boolean
+  isPrevButtonDisabled?: boolean
+  setInlineMessage: (message: InlineMessageType) => void
+}) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
 
   const [crtTab, setCrtTab] = useState<number>(0)
@@ -70,9 +66,7 @@ const ProjectUmbrellaProjectDetails = ({
           {
             id: 'mya-updates',
             label: 'MYA updates',
-            component: (
-              <ProjectMyaUpdate {...{ mode, mpData, setMpData, ...rest }} />
-            ),
+            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
           },
         ]
       : []),

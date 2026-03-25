@@ -61,8 +61,8 @@ import {
   formatOptions,
   getOdsOdpFields,
   getPostExcomMeetingErrors,
-  getFormattedDecimalValue,
   isOtherOdsReplacement,
+  formatMetaprojectData,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -178,23 +178,15 @@ const ProjectsCreate = ({
   const specificFieldsIdentifiers = 'projectSpecificFields'
   const specificFieldsData = projectData[specificFieldsIdentifiers] || []
 
-  const formatMetaprojectData = useCallback(() => {
-    const result = {} as Record<string, any>
+  const { setMpData } = useStore((state) => state.mpData)
+  const getFormattedMpdata = useCallback(
+    () => formatMetaprojectData(defaultMetaprojectFieldData),
+    [metaprojectData],
+  )
 
-    for (const key of Object.keys(defaultMetaprojectFieldData) as Array<
-      keyof typeof defaultMetaprojectFieldData
-    >) {
-      const fdEntry = defaultMetaprojectFieldData[key]
-      result[key] =
-        fdEntry.type === 'DecimalField'
-          ? getFormattedDecimalValue(fdEntry.value)
-          : fdEntry.value
-    }
-
-    return result
-  }, [metaprojectData])
-
-  const [mpData, setMpData] = useState(formatMetaprojectData)
+  useEffect(() => {
+    setMpData(getFormattedMpdata)
+  }, [])
 
   useEffect(() => {
     if (groupField) {
@@ -808,8 +800,6 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
-            mpData,
-            setMpData,
             setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}

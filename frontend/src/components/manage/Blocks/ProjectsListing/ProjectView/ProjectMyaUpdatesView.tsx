@@ -15,10 +15,10 @@ import {
 } from '../HelperComponents'
 import { disabledClassName, enabledButtonClassname } from '../constants'
 import { monetaryFields } from '../UpdateMyaData/constants'
-import { InlineMessageType, MpDataProps } from '../interfaces'
+import { InlineMessageType } from '../interfaces'
 import {
   formatFieldLabel,
-  getFormattedDecimalValue,
+  formatMetaprojectData,
   getFormattedNumericValue,
   getProjectDuration,
 } from '../utils'
@@ -26,6 +26,7 @@ import {
   MetaProjectDetailType,
   MetaProjectFieldData,
 } from '../UpdateMyaData/types'
+import { useStore } from '@ors/store'
 
 import { CircularProgress, Typography, Button } from '@mui/material'
 import cx from 'classnames'
@@ -35,15 +36,15 @@ const projectDuration = 'project_duration'
 
 const ProjectMyaUpdatesView = ({
   metaprojectData,
-  mpData,
-  setMpData,
   mode,
   setInlineMessage,
-}: MpDataProps & {
+}: {
   metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
   setInlineMessage: (message: InlineMessageType) => void
 }) => {
+  const { mpData, setMpData } = useStore((state) => state.mpData)
+
   const { addUpdatedField } = useUpdatedFields()
 
   const isNewMetaProject = !!metaprojectData?.field_data && !metaprojectData?.id
@@ -51,28 +52,21 @@ const ProjectMyaUpdatesView = ({
   const isFieldDisabled = (field: string) =>
     field === projectDuration || !isNewMetaProject
 
-  const formatMetaprojectData = useCallback(() => {
-    const result = {} as Record<string, any>
-    const fd = metaprojectData?.field_data ?? ({} as MetaProjectFieldData)
+  const getFormattedMpdata = useCallback(
+    () =>
+      formatMetaprojectData(
+        metaprojectData?.field_data ?? ({} as MetaProjectFieldData),
+      ),
+    [metaprojectData],
+  )
 
-    for (const key of Object.keys(fd)) {
-      const fdEntry = fd[key as keyof MetaProjectFieldData]
-      result[key] =
-        fdEntry.type === 'DecimalField'
-          ? getFormattedDecimalValue(fdEntry.value as string)
-          : fdEntry.value
-    }
-
-    return result
-  }, [metaprojectData])
-
-  const [crtMpData, setCrtMpData] = useState(formatMetaprojectData)
+  const [crtMpData, setCrtMpData] = useState(getFormattedMpdata)
 
   useEffect(() => {
     if (!isNewMetaProject) {
-      setCrtMpData(formatMetaprojectData)
+      setCrtMpData(getFormattedMpdata)
     }
-  }, [formatMetaprojectData, metaprojectData])
+  }, [getFormattedMpdata, metaprojectData])
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
   const {
@@ -87,7 +81,7 @@ const ProjectMyaUpdatesView = ({
   const changeSimpleInput = useCallback(
     (name: string, opts?: { numeric?: boolean }) => {
       return (evt: any) => {
-        setMpData((prev: any) => {
+        setMpData((prev) => {
           addUpdatedField(name)
 
           let newValue = evt.target.value || null
@@ -130,7 +124,7 @@ const ProjectMyaUpdatesView = ({
   }
 
   useEffect(() => {
-    setMpData?.((prev: any) => ({
+    setMpData((prev) => ({
       ...prev,
       [projectDuration]: computeProjectDuration(),
     }))

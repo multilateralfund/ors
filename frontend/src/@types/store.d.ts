@@ -221,6 +221,11 @@ export interface ProjectFieldHistorySlice {
   fetchFieldHistory: (projectId: number) => Promise<void>
 }
 
+export interface MpDataSlice {
+  mpData: Record<string, any>
+  setMpData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+}
+
 export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
@@ -301,6 +306,7 @@ export type StoreState = {
   projectFields: ProjectsFieldsSlice
   projectWarnings: ProjectWarningsTypeSlice
   projectFieldHistory: ProjectFieldHistorySlice
+  mpData: MpDataSlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

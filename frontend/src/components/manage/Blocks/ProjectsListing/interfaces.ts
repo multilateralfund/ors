@@ -505,11 +505,6 @@ export interface FieldOptsType {
   subsectors: ProjectSubSectorType[]
 }
 
-export interface MpDataProps {
-  mpData?: any
-  setMpData?: any
-}
-
 export type InlineMessageType = {
   type: 'success' | 'error'
   message?: string

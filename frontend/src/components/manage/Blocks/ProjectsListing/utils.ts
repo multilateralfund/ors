@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { getMeetingNr } from '../../Utils/utilFunctions'
+import { MetaProjectFieldData } from './UpdateMyaData/types'
 import {
   approvalOdsFields,
   approvalToOdsMap,
@@ -1352,4 +1353,18 @@ export const isOtherOdsReplacement = (
 ) => {
   const crtOdsReplacementName = find(opts, (opt) => opt.id === value)?.name
   return crtOdsReplacementName?.includes('Other alternatives') ?? false
+}
+
+export const formatMetaprojectData = (fd: MetaProjectFieldData) => {
+  const result = {} as Record<string, any>
+
+  for (const key of Object.keys(fd)) {
+    const fdEntry = fd[key as keyof MetaProjectFieldData]
+    result[key] =
+      fdEntry.type === 'DecimalField'
+        ? getFormattedDecimalValue(fdEntry.value as string)
+        : fdEntry.value
+  }
+
+  return result
 }
