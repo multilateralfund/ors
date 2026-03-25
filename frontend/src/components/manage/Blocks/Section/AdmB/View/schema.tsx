@@ -6,7 +6,7 @@ import { includes } from 'lodash'
 
 import { colDefByDataType, colDefById } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { adm_columns: any; model: string }) {
+function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {

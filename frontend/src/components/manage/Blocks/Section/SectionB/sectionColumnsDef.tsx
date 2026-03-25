@@ -6,6 +6,8 @@ import { colDefById } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { IAgHeaderParams } from '@ors/components/manage/AgComponents/AgHeaderComponent'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
+import { unknownVariant } from '@ors/slices/createCPReportsSlice.ts'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
@@ -24,9 +26,10 @@ const sectionColDefById: Record<string, ColDef> = {
   display_name: {
     ...colDefById['display_name'],
     cellRenderer: (props: ICellRendererParams) => {
-      const model = props.context?.variant.model
+      const variant = (props.context?.variant ??
+        unknownVariant) as ReportVariant
       if (
-        includes(['IV', 'V'], model) &&
+        variant.match([CPModel.IV, CPModel.V, CPModel.VI]) &&
         props.data?.row_id?.startsWith('blend_')
       ) {
         const newProps = {
@@ -39,7 +42,8 @@ const sectionColDefById: Record<string, ColDef> = {
       return <AgCellRenderer {...props} />
     },
     cellRendererParams: (props: ICellRendererParams) => {
-      const model = props.context?.variant.model
+      const variant = (props.context?.variant ??
+        unknownVariant) as ReportVariant
       return {
         className: cx({
           'font-bold': includes(
@@ -57,7 +61,7 @@ const sectionColDefById: Record<string, ColDef> = {
           ? {
               footnote: {
                 id: '1',
-                content: includes(['IV', 'V'], model)
+                content: variant.match([CPModel.IV, CPModel.V, CPModel.VI])
                   ? 'Mixture of Controlled Substances - When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.'
                   : 'When reporting blends/mixtures, reporting of controlled substances should not be duplicated. For the CP report, countries should report use of individual controlled substances and quantities of blends/mixtures used, separately, while ensuring that the amounts of controlled substances are not reported more than once.',
                 icon: false,
@@ -66,7 +70,7 @@ const sectionColDefById: Record<string, ColDef> = {
             }
           : {}),
         ...(props.data.row_id === 'other-new_substance' &&
-        !includes(['V'], model)
+        !variant.match([CPModel.V, CPModel.VI])
           ? {
               footnote: {
                 id: '2',
@@ -95,14 +99,15 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['remarks'],
     headerClass: 'ag-text-center',
     headerComponentParams: (props: IAgHeaderParams) => {
-      const model = props.context?.variant.model
+      const variant = (props.context?.variant ??
+        unknownVariant) as ReportVariant
       return {
         footnote: {
-          id: includes(['V'], model) ? '3' : '5',
+          id: variant.match([CPModel.V, CPModel.VI]) ? '3' : '5',
           content:
             'Provide explanation if total sector use and consumption (import-export+production) is different (e.g, stockpiling).',
           icon: false,
-          order: includes(['V'], model) ? 3 : 5,
+          order: variant.match([CPModel.V, CPModel.VI]) ? 3 : 5,
         },
       }
     },

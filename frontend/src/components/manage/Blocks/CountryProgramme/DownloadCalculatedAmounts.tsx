@@ -1,6 +1,6 @@
 'use client'
 
-import { Report } from '@ors/types/store'
+import { CPReport } from '@ors/types/store'
 
 import { useState } from 'react'
 
@@ -13,7 +13,7 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 
-function DownloadCalculatedAmounts(props: { report: Report }) {
+function DownloadCalculatedAmounts(props: { report: CPReport }) {
   const { report } = props
 
   const [showMenu, setShowMenu] = useState(false)

@@ -5,11 +5,12 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-function useGridOptions(props: { model: string; usages: object[] }) {
-  const { model, usages } = props
+function useGridOptions(props: { variant: ReportVariant; usages: object[] }) {
+  const { variant, usages } = props
 
-  const sectionColDefById = sectionColDefByIdFunc(model)
+  const sectionColDefById = sectionColDefByIdFunc(variant)
 
   const substanceColumn = useMemo(
     () => ({
@@ -18,7 +19,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
       headerName: 'Substance',
       ...sectionColDefById['display_name'],
       editable: false,
-      // ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
+      // ...(variant.match([CPModel.I, CPModel.II, CPModel.III]) ? { initialWidth: 165 } : {}),
     }),
     [sectionColDefById],
   )
@@ -58,7 +59,6 @@ function useGridOptions(props: { model: string; usages: object[] }) {
   }, [usages, sectionColDefById])
 
   const bySubstanceTrade = useCallback(
-    // eslint-disable-next-line
     (standalone = false) => {
       return [
         {
@@ -85,7 +85,13 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           orsAggFunc: 'sumTotal',
           // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
         },
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(variant.match([
+          CPModel.II,
+          CPModel.III,
+          CPModel.IV,
+          CPModel.V,
+          CPModel.VI,
+        ])
           ? [
               {
                 ...sectionColDefById['import_quotas'],
@@ -97,7 +103,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['I', 'II', 'III'], model)
+        ...(variant.match([CPModel.I, CPModel.II, CPModel.III])
           ? [
               {
                 ...sectionColDefById['export_quotas'],
@@ -109,7 +115,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['IV', 'V'], model)
+        ...(variant.match([CPModel.IV, CPModel.V, CPModel.VI])
           ? [
               {
                 ...sectionColDefById['banned_date'],
@@ -119,7 +125,13 @@ function useGridOptions(props: { model: string; usages: object[] }) {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(variant.match([
+          CPModel.II,
+          CPModel.III,
+          CPModel.IV,
+          CPModel.V,
+          CPModel.VI,
+        ])
           ? [
               {
                 ...sectionColDefById['remarks'],
@@ -131,7 +143,7 @@ function useGridOptions(props: { model: string; usages: object[] }) {
           : []),
       ]
     },
-    [model, sectionColDefById],
+    [variant, sectionColDefById],
   )
 
   const gridOptionsAll: GridOptions = useMemo(() => {

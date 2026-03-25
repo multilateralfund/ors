@@ -89,7 +89,7 @@ export default function SectionECreate(props: SectionECreateProps) {
   const gridOptions = useGridOptions({
     addFacility,
     removeFacility,
-    model: variant.model,
+    variant: variant,
   })
 
   return (

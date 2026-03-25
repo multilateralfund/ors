@@ -1,6 +1,5 @@
 'use client'
-import { Tooltip } from '@mui/material'
-import { Typography } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
 import { get, includes, isNull, isUndefined } from 'lodash'
 
@@ -13,6 +12,7 @@ import {
   getUnitAwareValue,
   parseNumber,
 } from '@ors/helpers/Utils/Utils'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 export default function AgFloatCellRenderer(
   props: CustomCellRendererProps & {
@@ -36,7 +36,7 @@ export default function AgFloatCellRenderer(
   }
   if (
     props.column?.getColId() === 'manufacturing_blends' &&
-    includes(['V'], props.context.variant.model) &&
+    (props.context.variant as ReportVariant).match([CPModel.V, CPModel.VI]) &&
     props.data?.substance_id &&
     !parseFloat(props.value)
   ) {
@@ -44,7 +44,7 @@ export default function AgFloatCellRenderer(
   }
   if (
     props.column?.getColId() === 'production' &&
-    includes(['V'], props.context.variant.model) &&
+    (props.context.variant as ReportVariant).match([CPModel.V, CPModel.VI]) &&
     props.data?.blend_id &&
     !parseFloat(props.value)
   ) {

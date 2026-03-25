@@ -1,11 +1,11 @@
-import { CPReport } from '@ors/types/api_country-programme_records'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType, EmptyFormUsageColumn } from '@ors/types/api_empty-form'
 import type {
-  CPReportsSlice,
   Country,
+  CPReportsSlice,
   CreateSliceProps,
 } from '@ors/types/store'
-import { ReportVariant } from '@ors/types/variants'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import { ColDef } from 'ag-grid-community'
 import { produce } from 'immer'
@@ -22,36 +22,60 @@ import {
   setSlice,
 } from '@ors/helpers/Store/Store'
 
+const makeReportVariant = (args: {
+  minYear: number
+  maxYear: number
+  model: CPModel
+}) => {
+  return {
+    ...args,
+    match(models: CPModel[]) {
+      return models.includes(args.model)
+    },
+  }
+}
+
 export const variants: ReportVariant[] = [
-  {
+  makeReportVariant({
     maxYear: 2004,
     minYear: 1995,
-    model: 'I',
-  },
-  {
+    model: CPModel.I,
+  }),
+  makeReportVariant({
     maxYear: 2011,
     minYear: 2005,
-    model: 'II',
-  },
-  {
+    model: CPModel.II,
+  }),
+  makeReportVariant({
     maxYear: 2018,
     minYear: 2012,
-    model: 'III',
-  },
-  {
+    model: CPModel.III,
+  }),
+  makeReportVariant({
     maxYear: 2022,
     minYear: 2019,
-    model: 'IV',
-  },
-  {
-    maxYear: Infinity,
+    model: CPModel.IV,
+  }),
+  makeReportVariant({
+    maxYear: 2024,
     minYear: 2023,
-    model: 'V',
-  },
+    model: CPModel.V,
+  }),
+  makeReportVariant({
+    maxYear: Infinity,
+    minYear: 2025,
+    model: CPModel.VI,
+  }),
 ]
 
-export const getVariant = (report: CPReport | null): ReportVariant | null => {
-  let found = null
+export const unknownVariant = makeReportVariant({
+  minYear: -Infinity,
+  maxYear: -Infinity,
+  model: CPModel.UNKNOWN,
+})
+
+export const getVariant = (report: ApiCPReport | null): ReportVariant => {
+  let found: ReportVariant
   if (report) {
     found = filter(
       variants,
@@ -61,12 +85,12 @@ export const getVariant = (report: CPReport | null): ReportVariant | null => {
   } else {
     found = variants[variants.length - 1]
   }
-  return found || null
+  return found
 }
 
 function mapUsage(
   usage: EmptyFormUsageColumn,
-  variant: ReportVariant | null,
+  variant: ReportVariant,
   view = true,
 ): ColDef {
   const children = usage.children || []
@@ -77,9 +101,7 @@ function mapUsage(
     headerName: usage.headerName,
     // initialWidth: defaultColDef.minWidth,
     ...(colDefById[usage.full_name] || {}),
-    ...(variant?.model
-      ? colDefById[`${usage.full_name} ${variant.model}`] || {}
-      : {}),
+    ...(colDefById[`${usage.full_name} ${variant.model}`] || {}),
     ...(children.length
       ? {
           children: map(children, (usage) => mapUsage(usage, variant, view)),
@@ -130,7 +152,7 @@ export const createCPReportsSlice = ({
         setReportVariant,
       } = get().cp_reports
       await fetchArchivedReport(report_id)
-      const report = getSlice<CPReport>('cp_reports.report.data')
+      const report = getSlice<ApiCPReport>('cp_reports.report.data')
       setReportCountry(report)
       setReportVariant(report)
       fetchEmptyForm(report, view)
@@ -198,7 +220,7 @@ export const createCPReportsSlice = ({
         setReportVariant,
       } = get().cp_reports
       await fetchReport(country_id, year)
-      const report = getSlice<CPReport>('cp_reports.report.data')
+      const report = getSlice<ApiCPReport>('cp_reports.report.data')
       setReportCountry(report)
       setReportVariant(report)
       fetchEmptyForm(report, view)
@@ -221,7 +243,7 @@ export const createCPReportsSlice = ({
         await fetchReport(country_id, year)
       }
 
-      const report = getSlice<CPReport>('cp_reports.report.data')
+      const report = getSlice<ApiCPReport>('cp_reports.report.data')
 
       setReportCountry(report)
       setReportVariant(report)
@@ -353,6 +375,7 @@ export const createCPReportsSlice = ({
       emptyForm: getInitialSliceData(),
       files: getInitialSliceData(),
       versions: getInitialSliceData(),
+      variant: unknownVariant,
     },
     reportDiff: { ...defaultSliceData },
     setReport: (report) => {

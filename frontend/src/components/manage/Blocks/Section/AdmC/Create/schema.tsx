@@ -26,7 +26,7 @@ function getCellEditor(type: string) {
   }
 }
 
-function useGridOptions(props: { adm_columns: any; model: string }) {
+function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {

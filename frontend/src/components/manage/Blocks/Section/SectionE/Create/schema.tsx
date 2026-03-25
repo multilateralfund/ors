@@ -18,7 +18,7 @@ import {
 } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function FacilityCellRenderer({ addFacility, ...props }: any) {
   const validation =
@@ -51,11 +51,11 @@ function FacilityCellRenderer({ addFacility, ...props }: any) {
 function useGridOptions(props: {
   addFacility: () => void
   removeFacility: (props: any) => void
-  model: string
+  variant: ReportVariant
 }) {
-  const { addFacility, removeFacility, model } = props
-  const sectionColDefById = sectionColDefByIdFunc(model)
-  const sectionColGroupDefById = sectionColGroupDefByIdFunc(model)
+  const { addFacility, removeFacility, variant } = props
+  const sectionColDefById = sectionColDefByIdFunc(variant)
+  const sectionColGroupDefById = sectionColGroupDefByIdFunc(variant)
   const gridOptions: GridOptions = useMemo(
     () => ({
       columnDefs: [
@@ -96,13 +96,13 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'total',
-          headerName: shouldEnableNewCPDataFormatting(model)
+          headerName: variant.match([CPModel.VI])
             ? 'Total amount generated (tonnes)'
             : 'Total amount generated',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['total_amount_generated'],
         },
-        ...(shouldEnableNewCPDataFormatting(model)
+        ...(variant.match([CPModel.VI])
           ? [
               {
                 cellDataType: 'number',
@@ -123,7 +123,7 @@ function useGridOptions(props: {
               cellEditor: 'agNumberCellEditor',
               dataType: 'number',
               field: 'all_uses',
-              headerName: shouldEnableNewCPDataFormatting(model)
+              headerName: variant.match([CPModel.VI])
                 ? 'For uses excluding feedstocks'
                 : 'For all uses',
               orsAggFunc: 'sumTotal',
@@ -150,7 +150,7 @@ function useGridOptions(props: {
           ],
           groupId: 'amount_generated_and_captured',
           headerGroupComponent: 'agColumnHeaderGroup',
-          headerName: shouldEnableNewCPDataFormatting(model)
+          headerName: variant.match([CPModel.VI])
             ? 'Amount generated and captured (tonnes)'
             : 'Amount generated and captured',
           marryChildren: true,
@@ -161,7 +161,7 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'feedstock_wpc',
-          headerName: shouldEnableNewCPDataFormatting(model)
+          headerName: variant.match([CPModel.VI])
             ? 'Amount used for feedstock without prior capture (tonnes)'
             : 'Amount used for feedstock without prior capture',
           orsAggFunc: 'sumTotal',
@@ -172,7 +172,7 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'destruction_wpc',
-          headerName: shouldEnableNewCPDataFormatting(model)
+          headerName: variant.match([CPModel.VI])
             ? 'Amount destroyed in the facility without prior capture (tonnes)'
             : 'Amount destroyed without prior capture',
           orsAggFunc: 'sumTotal',
@@ -183,13 +183,13 @@ function useGridOptions(props: {
           cellEditor: 'agNumberCellEditor',
           dataType: 'number',
           field: 'generated_emissions',
-          headerName: shouldEnableNewCPDataFormatting(model)
+          headerName: variant.match([CPModel.VI])
             ? 'Amount of generated emissions (tonnes)'
             : 'Amount of generated emissions',
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['generated_emissions'],
         },
-        ...(shouldEnableNewCPDataFormatting(model)
+        ...(variant.match([CPModel.VI])
           ? [
               {
                 cellDataType: 'number',

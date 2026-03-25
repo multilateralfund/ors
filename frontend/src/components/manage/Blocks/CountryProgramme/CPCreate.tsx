@@ -21,7 +21,6 @@ import { useSnackbar } from 'notistack'
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Link from '@ors/components/ui/Link/Link'
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
@@ -64,6 +63,7 @@ import {
 import { useCreateLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
+import { CPModel } from '@ors/types/variants.ts'
 
 const TableProps: CPCreateTableProps = {
   Toolbar: ({
@@ -216,7 +216,7 @@ const CPCreate: React.FC = () => {
   ])
 
   const initialVariant = getCrtVariant(new Date().getFullYear() - 1)
-  const isNewFormat = shouldEnableNewCPDataFormatting(initialVariant.model)
+  const isNewFormat = initialVariant.match([CPModel.VI])
 
   const defaultDataSectionD = {
     all_uses: '0.000',
@@ -294,13 +294,13 @@ const CPCreate: React.FC = () => {
         reporting_email: user.data.email,
         reporting_entry: user.data.full_name,
       },
-      section_a: includes(['V'], lastYearVariant?.model)
+      section_a: lastYearVariant.match([CPModel.V, CPModel.VI])
         ? []
         : Sections.section_a.getData(),
-      section_b: includes(['V'], lastYearVariant?.model)
+      section_b: lastYearVariant.match([CPModel.V, CPModel.VI])
         ? []
         : Sections.section_b.getData(),
-      section_c: includes(['V'], lastYearVariant?.model)
+      section_c: lastYearVariant.match([CPModel.V, CPModel.VI])
         ? []
         : Sections.section_c.getData(),
       section_d: Sections.section_d.getData(),
@@ -391,7 +391,7 @@ const CPCreate: React.FC = () => {
     name: 'year',
     onChange: (_event: any, value: WidgetYear) => {
       const variant = getCrtVariant(value.id)
-      const isNewFormat = shouldEnableNewCPDataFormatting(variant.model)
+      const isNewFormat = variant.match([CPModel.VI])
 
       handleSetForm((oldForm: any) => {
         const updatedSectionDData =
@@ -621,7 +621,7 @@ const CPCreate: React.FC = () => {
     <ValidationProvider
       activeSection={sections[activeTab].id}
       form={form}
-      model={variant.model}
+      variant={variant}
     >
       <Loading
         className="!fixed bg-action-disabledBackground"
@@ -751,7 +751,8 @@ const CPCreate: React.FC = () => {
               sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
               false
             const showSectionSelect =
-              variant?.model === 'V' && section.id !== 'report_info'
+              variant.match([CPModel.V, CPModel.VI]) &&
+              section.id !== 'report_info'
             const Section: CreateSectionTypes =
               section.component as CreateSectionTypes
             return (
@@ -804,7 +805,8 @@ const CPCreate: React.FC = () => {
                       }
                       onSectionCheckChange={onSectionCheckChange}
                     />
-                    {!isSectionChecked && variant?.model === 'V' ? (
+                    {!isSectionChecked &&
+                    variant.match([CPModel.V, CPModel.VI]) ? (
                       <SectionOverlay />
                     ) : null}
                   </FootnotesProvider>

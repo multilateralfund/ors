@@ -1,5 +1,5 @@
 import { ApiSubstance } from '@ors/types/api_substances'
-import { ReportVariant } from '@ors/types/variants'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import React, { useMemo, useRef, useState } from 'react'
 
@@ -23,7 +23,7 @@ import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(
   data: SectionA['data'],
-  model: ReportVariant['model'],
+  variant: ReportVariant,
 ): SectionARowData[] {
   let rowData: SectionARowData[] = []
   const dataByGroup: Record<string, any[]> = {}
@@ -51,7 +51,7 @@ function getRowData(
         },
       ],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -74,7 +74,9 @@ function getRowData(
   return rowData
 }
 
-function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
+function getInitialPinnedBottomRowData(
+  variant: ReportVariant,
+): SectionARowData[] {
   const pinnedBottomRowData: SectionARowData[] = [
     {
       display_name: 'TOTAL',
@@ -85,7 +87,7 @@ function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
       tooltip: true,
     },
   ]
-  if (!includes(['V'], model)) {
+  if (!variant.match([CPModel.V, CPModel.VI])) {
     pinnedBottomRowData.push({
       display_name: '',
       mandatory: false,
@@ -107,15 +109,15 @@ export default function SectionACreate(props: SectionACreateProps) {
 
   const grid = useRef<any>()
   const [pinnedBottomRowData] = useState<SectionARowData[]>(
-    getInitialPinnedBottomRowData(variant.model),
+    getInitialPinnedBottomRowData(variant),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
 
   const rowData = useMemo(() => {
-    return [...getRowData(form.section_a, variant.model)].sort(
+    return [...getRowData(form.section_a, variant)].sort(
       (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
     )
-  }, [form.section_a, variant.model])
+  }, [form.section_a, variant])
 
   const substancesInForm = useMemo(() => {
     return form.section_a.map((substance) => substance.row_id)
@@ -179,7 +181,7 @@ export default function SectionACreate(props: SectionACreateProps) {
   }, [Section, mandatorySubstances, substances, substancesInForm])
 
   const gridOptions = useGridOptions({
-    model: variant.model,
+    variant: variant,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_a]
@@ -244,7 +246,7 @@ export default function SectionACreate(props: SectionACreateProps) {
       >
         <Footnotes />
       </Alert>
-      {includes(['V'], variant.model) && (
+      {variant.match([CPModel.V, CPModel.VI]) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -303,7 +305,7 @@ export default function SectionACreate(props: SectionACreateProps) {
           keepMounted
         >
           <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            {includes(['V'], variant.model) ? (
+            {variant.match([CPModel.V, CPModel.VI]) ? (
               <NewAddSubstanceDropdowns
                 mandatoryOptions={mandatorySubstances}
                 optionalOptions={optionalSubstances}

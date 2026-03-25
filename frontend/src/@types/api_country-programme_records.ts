@@ -231,8 +231,8 @@ type ApiBaseDiff = {
 }
 
 // The server response contains the cp_report property which is destructured into the root by the client.
-export type ApiCPReport = { cp_report: cp_report } & ApiBase
-export type CPReport = ApiBase & cp_report
+// export type ApiCPReport = { cp_report: cp_report } & ApiBase
+export type ApiCPReport = ApiBase & cp_report
 export type CPReportDiff = ApiBaseDiff
 export type CPReportUsage = {
   quantity: string

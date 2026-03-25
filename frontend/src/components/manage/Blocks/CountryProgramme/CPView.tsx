@@ -18,7 +18,7 @@ import ValidationProvider from '@ors/contexts/Validation/ValidationProvider'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import { useStore } from '@ors/store'
 
-import { ViewSectionTypes, getSections } from '.'
+import { getSections, ViewSectionTypes } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
@@ -29,6 +29,7 @@ import { CPBaseForm } from './typesCPCreate'
 import { ITableProps } from './typesCPView'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
+import { CPModel } from '@ors/types/variants.ts'
 
 const TableProps: ITableProps = {
   Toolbar: ({
@@ -213,14 +214,14 @@ function CPView(props: { archive?: boolean }) {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [activeTab, renderedSections])
 
-  const showComments = variant?.model === 'V'
+  const showComments = variant.match([CPModel.V, CPModel.VI])
 
   const formForValidation = getFormForValidation(report?.data || {})
 
   return (
     <ValidationProvider
       form={formForValidation as CPBaseForm}
-      model={variant?.model}
+      variant={variant}
       silent={true}
     >
       <Loading
@@ -310,7 +311,8 @@ function CPView(props: { archive?: boolean }) {
                       section,
                     }}
                   />
-                  {!isSectionChecked && variant?.model === 'V' ? (
+                  {!isSectionChecked &&
+                  variant.match([CPModel.V, CPModel.VI]) ? (
                     <SectionOverlay />
                   ) : null}
                 </FootnotesProvider>

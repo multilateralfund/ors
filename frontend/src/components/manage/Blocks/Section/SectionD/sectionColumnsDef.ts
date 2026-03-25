@@ -3,15 +3,17 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
+const sectionColDefByIdFunc = (
+  variant: ReportVariant,
+): Record<string, ColDef> => ({
   ...colDefById,
   all_uses: {
     ...colDefById['all_uses'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    ...(shouldEnableNewCPDataFormatting(model)
+    ...(variant.match([CPModel.VI])
       ? {}
       : {
           headerComponentParams: {
@@ -26,7 +28,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
         }),
     // initialWidth: 200,
   },
-  ...(shouldEnableNewCPDataFormatting(model)
+  ...(variant.match([CPModel.VI])
     ? {}
     : {
         destruction: {
@@ -44,7 +46,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           },
         },
       }),
-  ...(shouldEnableNewCPDataFormatting(model)
+  ...(variant.match([CPModel.VI])
     ? {
         display_name: {
           ...colDefById['display_name'],
@@ -85,7 +87,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           }),
         },
       }),
-  ...(shouldEnableNewCPDataFormatting(model)
+  ...(variant.match([CPModel.VI])
     ? {
         feedstock: {
           ...colDefById['feedstock'],
@@ -109,7 +111,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
           },
         },
       }),
-  ...(shouldEnableNewCPDataFormatting(model)
+  ...(variant.match([CPModel.VI])
     ? {
         other_uses_remarks: {
           ...colDefById['other_uses_remarks'],

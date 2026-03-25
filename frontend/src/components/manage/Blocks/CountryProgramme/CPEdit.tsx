@@ -17,7 +17,6 @@ import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
 import { CPCommentsForEdit } from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -52,6 +51,7 @@ import { useEditLocalStorage } from './useLocalStorage'
 import { IoClose, IoExpand } from 'react-icons/io5'
 import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseComments.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { CPModel } from '@ors/types/variants.ts'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -177,7 +177,7 @@ function CPEdit() {
 
   const variant = useMemo(() => report.variant, [report])
   const isNewFormat = useMemo(
-    () => !!variant && shouldEnableNewCPDataFormatting(variant.model),
+    () => !!variant && variant.match([CPModel.VI]),
     [variant],
   )
 
@@ -255,19 +255,19 @@ function CPEdit() {
       reporting_email: report.data?.report_info?.reporting_email || null,
       reporting_entry: report.data?.report_info?.reporting_entry || null,
     },
-    section_a: includes(['V'], variant?.model)
+    section_a: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_a
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_a.getData(),
-    section_b: includes(['V'], variant?.model)
+    section_b: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_b
           .getData()
           .filter((row) => row.id !== 0)
           .map((row) => ({ ...row, mandatory: false }))
       : Sections.section_b.getData(),
-    section_c: includes(['V'], variant?.model)
+    section_c: variant.match([CPModel.V, CPModel.VI])
       ? Sections.section_c
           .getData()
           .filter((row) => row.id !== 0)
@@ -405,13 +405,13 @@ function CPEdit() {
     indicator.addEventListener('transitionend', handleTransitionEnd)
   }, [renderedSections.length, activeTab])
 
-  const showComments = variant?.model === 'V'
+  const showComments = variant.match([CPModel.V, CPModel.VI])
 
   return (
     <ValidationProvider
       activeSection={sections[activeTab].id}
       form={form}
-      model={variant?.model}
+      variant={variant}
     >
       <Loading
         className="!fixed bg-action-disabledBackground"
@@ -469,7 +469,8 @@ function CPEdit() {
                 sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
                 false
               const showSectionSelect =
-                variant?.model === 'V' && section.id !== 'report_info'
+                variant.match([CPModel.V, CPModel.VI]) &&
+                section.id !== 'report_info'
               const Section: EditSectionTypes =
                 section.component as EditSectionTypes
               return (
@@ -518,7 +519,8 @@ function CPEdit() {
                         }}
                         onSectionCheckChange={onSectionCheckChange}
                       />
-                      {!isSectionChecked && variant?.model === 'V' ? (
+                      {!isSectionChecked &&
+                      variant.match([CPModel.V, CPModel.VI]) ? (
                         <SectionOverlay />
                       ) : null}
                     </FootnotesProvider>

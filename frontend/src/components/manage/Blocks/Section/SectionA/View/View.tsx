@@ -1,6 +1,7 @@
 import type { SectionARowData } from '../types'
-import { CPReport } from '@ors/types/api_country-programme_records'
-import { ReportVariant } from '@ors/types/variants'
+import { SectionAViewProps } from '../types'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -14,15 +15,14 @@ import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
-import { SectionAViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(
-  report: CPReport,
+  report: ApiCPReport,
   showOnlyReported: boolean,
-  model: ReportVariant['model'],
+  variant: ReportVariant,
 ): SectionARowData[] {
   let rowData: SectionARowData[] = []
   const dataByGroup: Record<string, any[]> = {}
@@ -48,7 +48,7 @@ function getRowData(
       rowData,
       [{ display_name: group, group, row_id: group, rowType: 'group' }],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -89,7 +89,7 @@ export default function SectionAView(props: SectionAViewProps) {
     props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =
     useGridOptions({
-      model: variant.model,
+      variant: variant,
       usages: emptyForm.usage_columns?.section_a || [],
     })
   const grid = useRef<any>()
@@ -97,7 +97,7 @@ export default function SectionAView(props: SectionAViewProps) {
   const { setValue: setTableDataValue, value: tableDataValue } =
     useTableDataSelector()
 
-  const rowData = getRowData(report, showOnlyReported, variant.model)
+  const rowData = getRowData(report, showOnlyReported, variant)
   const [pinnedBottomRowData] = useState(() => getPinnedRowData(rowData))
 
   const gridOptions = useMemo(() => {
@@ -129,11 +129,11 @@ export default function SectionAView(props: SectionAViewProps) {
       </Alert>
       <div
         className={cx('flex', {
-          'justify-between': includes(['IV', 'V'], variant.model),
-          'justify-end': !includes(['IV', 'V'], variant.model),
+          'justify-between': variant.match([CPModel.IV, CPModel.V, CPModel.VI]),
+          'justify-end': !variant.match([CPModel.IV, CPModel.V, CPModel.VI]),
         })}
       >
-        {includes(['IV', 'V'], variant.model) && (
+        {variant.match([CPModel.IV, CPModel.V, CPModel.VI]) && (
           <TableDataSelector
             changeHandler={(_, value) => setTableDataValue(value)}
             value={tableDataValue}

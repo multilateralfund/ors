@@ -11,7 +11,7 @@ import {
 } from '@ors/config/Table/columnsDef'
 import { NON_EDITABLE_ROWS } from '@ors/config/Table/columnsDef/settings'
 
-function useGridOptions(props: { adm_columns: any; model: string }) {
+function useGridOptions(props: { adm_columns: any }) {
   const { adm_columns } = props
 
   const mapAdmColumn = useCallback((column: any) => {

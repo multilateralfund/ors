@@ -28,11 +28,10 @@ function getRowData(report: any, rows: any) {
 }
 
 export default function AdmB(props: any) {
-  const { TableProps, emptyForm, report, variant } = props
+  const { TableProps, emptyForm, report } = props
   const { columns = [], rows = [] } = emptyForm.adm_b || {}
   const gridOptions = useGridOptions({
     adm_columns: columns,
-    model: variant.model,
   })
   const grid = useRef<any>()
   const [rowData] = useState(() => getRowData(report, rows))

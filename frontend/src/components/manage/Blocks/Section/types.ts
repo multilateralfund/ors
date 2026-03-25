@@ -1,5 +1,5 @@
 import type { CPRowData } from '@ors/components/manage/Blocks/CountryProgramme/types'
-import type { CPReport } from '@ors/types/api_country-programme_records'
+import type { ApiCPReport } from '@ors/types/api_country-programme_records'
 import type { EmptyFormType } from '@ors/types/api_empty-form'
 import type { ReportVariant } from '@ors/types/variants'
 
@@ -13,6 +13,7 @@ import {
   CPEditForm,
   PassedCPCreateTableProps,
 } from '../CountryProgramme/typesCPCreate'
+import React from 'react'
 
 export interface IBaseSectionProps<T> {
   Section: T
@@ -38,7 +39,7 @@ export interface IBaseSectionEditProps<T> extends IBaseSectionProps<T> {
 
 export interface IBaseSectionViewProps<T> extends IBaseSectionProps<T> {
   Comments: CPCommentsType
-  report: CPReport
+  report: ApiCPReport
   showComments: boolean
 }
 

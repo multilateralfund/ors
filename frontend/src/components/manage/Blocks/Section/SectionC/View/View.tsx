@@ -1,6 +1,4 @@
-import type { ITableProps } from '../../../CountryProgramme/typesCPView'
-import { CPReport } from '@ors/types/api_country-programme_records'
-import { ReportVariant } from '@ors/types/variants'
+import { ApiCPReport } from '@ors/types/api_country-programme_records'
 
 import React, { useRef, useState } from 'react'
 
@@ -10,15 +8,15 @@ import { each, includes, union } from 'lodash'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 
-import { SectionCViewProps } from '../types'
-import { SectionCRowData } from '../types'
+import { SectionCRowData, SectionCViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function getRowData(
-  report: CPReport,
-  model: string,
+  report: ApiCPReport,
+  variant: ReportVariant,
   showOnlyReported: boolean,
 ): SectionCRowData[] {
   let rowData: SectionCRowData[] = []
@@ -44,7 +42,7 @@ function getRowData(
       rowData,
       [{ display_name: group, group, row_id: group, rowType: 'group' }],
       dataByGroup[group],
-      ['IV'].includes(model) && group === 'Alternatives'
+      variant.match([CPModel.IV]) && group === 'Alternatives'
         ? [
             {
               display_name: 'Other alternatives (optional):',
@@ -63,15 +61,15 @@ function getRowData(
 export default function SectionCView(props: SectionCViewProps) {
   const { Comments, TableProps, report, showComments, variant } = props
   const gridOptions = useGridOptions({
-    model: variant.model,
+    variant: variant,
   })
   const grid = useRef<any>()
   const [showOnlyReported, setShowOnlyReported] = useState(false)
-  const rowData = getRowData(report, variant.model, showOnlyReported)
+  const rowData = getRowData(report, variant, showOnlyReported)
 
   return (
     <>
-      {includes(['II', 'III'], variant.model) ? null : (
+      {variant.match([CPModel.II, CPModel.III]) ? null : (
         <Alert
           className="bg-mlfs-bannerColor"
           icon={<IoInformationCircleOutline size={24} />}

@@ -1,5 +1,5 @@
 import { CPReportDiff } from '@ors/types/api_country-programme_records'
-import { ReportVariant } from '@ors/types/variants'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import { useRef } from 'react'
 
@@ -29,7 +29,7 @@ export type RowData = {
 function getRowData(
   reportDiff: CPReportDiff,
   showOnlyReported: boolean,
-  model: ReportVariant['model'],
+  variant: ReportVariant,
 ): RowData[] {
   let rowData: RowData[] = []
   const dataByGroup: Record<string, any[]> = {}
@@ -55,7 +55,7 @@ function getRowData(
       rowData,
       [{ display_name: group, group, rowType: 'group' }],
       dataByGroup[group],
-      group === 'Annex C, Group I' && !includes(['V'], model)
+      group === 'Annex C, Group I' && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -73,12 +73,12 @@ function getRowData(
 export default function SectionAViewDiff(props: any) {
   const { TableProps, emptyForm, report, reportDiff, variant } = props
   const { gridOptionsAll } = useGridOptions({
-    model: variant.model,
+    variant: variant,
     usages: emptyForm.usage_columns?.section_a || [],
   })
   const grid = useRef<any>()
 
-  const rowData = getRowData(reportDiff, false, variant.model)
+  const rowData = getRowData(reportDiff, false, variant)
 
   const isLatestVersion = !report.data?.final_version_id
   const version = report.data?.version

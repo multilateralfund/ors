@@ -40,7 +40,9 @@ export const getMeetingNr = (meeting_id?: number) => {
   return find(meetings, (option) => option.id === meeting_id)?.number
 }
 
-const SHOULD_ENABLE_NEW_CP_DATA_FORMATTING = true
-export const shouldEnableNewCPDataFormatting = (model: string) => {
-  return SHOULD_ENABLE_NEW_CP_DATA_FORMATTING && model === 'V'
+export const isOneOf = <T>(
+  value: T | null | undefined,
+  options: readonly T[],
+): value is T => {
+  return value != null && options.includes(value as T)
 }

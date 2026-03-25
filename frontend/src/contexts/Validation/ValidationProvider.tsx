@@ -12,6 +12,7 @@ import useApi from '@ors/hooks/useApi'
 
 import ValidationContext from './ValidationContext'
 import validateForm from './validateForm'
+import { CPModel } from '@ors/types/variants.ts'
 
 function hasErrors(
   errors: Record<ValidationSchemaKeys, ValidateSectionResult>,
@@ -30,7 +31,7 @@ function hasErrors(
 }
 
 const ValidationProvider = (props: IValidationProvider) => {
-  const { activeSection, children, form, model, silent = false } = props
+  const { activeSection, children, form, variant, silent = false } = props
 
   const [openDrawer, setOpenDrawer] = useState(false)
 
@@ -39,7 +40,7 @@ const ValidationProvider = (props: IValidationProvider) => {
     path: '/api/usages/',
   })
 
-  const enableValidation = ['V'].includes(model || '')
+  const enableValidation = variant.match([CPModel.V, CPModel.VI])
 
   const errors = useMemo(
     () =>

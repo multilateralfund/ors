@@ -1,11 +1,13 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community'
-import { includes } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
-const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
+const sectionColDefByIdFunc = (
+  variant: ReportVariant,
+): Record<string, ColDef> => ({
   ...colDefById,
   current_year_price: {
     cellClass: 'ag-text-center',
@@ -13,11 +15,10 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   display_name: {
     ...colDefById['display_name'],
-    ...(includes(['II', 'III'], model) ? { minWidth: 300 } : {}),
+    ...(variant.match([CPModel.II, CPModel.III]) ? { minWidth: 300 } : {}),
     cellRenderer: (props: ICellRendererParams) => {
-      const model = props.context?.variant.model
       if (
-        includes(['IV', 'V'], model) &&
+        variant.match([CPModel.IV, CPModel.V, CPModel.VI]) &&
         props.data?.row_id?.startsWith('blend_')
       ) {
         const newProps = {
@@ -57,7 +58,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
     headerComponentParams: {
-      ...(includes(['II', 'III'], model)
+      ...(variant.match([CPModel.II, CPModel.III])
         ? {}
         : {
             footnote: {

@@ -20,16 +20,17 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
 
 import { IoTrash } from 'react-icons/io5'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function useGridOptions(props: {
-  model: string
+  variant: ReportVariant
   onRemoveSubstance: any
   openAddSubstanceModal: any
   usages: any
 }) {
-  const { model, onRemoveSubstance, openAddSubstanceModal, usages } = props
+  const { variant, onRemoveSubstance, openAddSubstanceModal, usages } = props
 
-  const sectionColDefById = sectionColDefByIdFunc(model)
+  const sectionColDefById = sectionColDefByIdFunc(variant)
 
   const gridOptions: GridOptions = useMemo(
     () => ({
@@ -145,7 +146,13 @@ function useGridOptions(props: {
           orsAggFunc: 'sumTotal',
           ...sectionColDefById['production'],
         },
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(variant.match([
+          CPModel.II,
+          CPModel.III,
+          CPModel.IV,
+          CPModel.V,
+          CPModel.VI,
+        ])
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -157,7 +164,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['II', 'III'], model)
+        ...(variant.match([CPModel.II, CPModel.III])
           ? [
               {
                 cellEditor: 'agNumberCellEditor',
@@ -169,7 +176,7 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['IV', 'V'], model)
+        ...(variant.match([CPModel.IV, CPModel.V, CPModel.VI])
           ? [
               {
                 cellEditor: 'agDateCellEditor',
@@ -179,7 +186,13 @@ function useGridOptions(props: {
               },
             ]
           : []),
-        ...(includes(['II', 'III', 'IV', 'V'], model)
+        ...(variant.match([
+          CPModel.II,
+          CPModel.III,
+          CPModel.IV,
+          CPModel.V,
+          CPModel.VI,
+        ])
           ? [
               {
                 cellEditor: 'agTextCellEditor',

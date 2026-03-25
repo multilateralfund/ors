@@ -1,12 +1,14 @@
 import { ColDef, ColGroupDef } from 'ag-grid-community'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
-import { shouldEnableNewCPDataFormatting } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 const VOLUNTARY_CLASS =
   'bg-gray-200 theme-dark:bg-gray-900/40 text-inherit ag-text-center'
 
-const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
+const sectionColDefByIdFunc = (
+  variant: ReportVariant,
+): Record<string, ColDef> => ({
   ...colDefById,
   all_uses: {
     ...colDefById['all_uses'],
@@ -21,7 +23,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(shouldEnableNewCPDataFormatting(model)
+    ...(variant.match([CPModel.VI])
       ? {
           headerComponentParams: {
             footnote: {
@@ -40,7 +42,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(shouldEnableNewCPDataFormatting(model)
+    ...(variant.match([CPModel.VI])
       ? {}
       : {
           headerComponentParams: {
@@ -70,7 +72,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    ...(shouldEnableNewCPDataFormatting(model)
+    ...(variant.match([CPModel.VI])
       ? {}
       : {
           headerComponentParams: {
@@ -88,7 +90,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
   },
-  ...(shouldEnableNewCPDataFormatting(model)
+  ...(variant.match([CPModel.VI])
     ? {
         stored_at_start_of_year: {
           headerClass: VOLUNTARY_CLASS,
@@ -116,7 +118,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
     },
     // flex: 1.2,
     headerClass: VOLUNTARY_CLASS,
-    ...(shouldEnableNewCPDataFormatting(model)
+    ...(variant.match([CPModel.VI])
       ? {
           headerComponentParams: {
             footnote: {
@@ -145,13 +147,13 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
 })
 
 const sectionColGroupDefByIdFunc = (
-  model: string,
+  variant: ReportVariant,
 ): Record<string, Omit<ColGroupDef, 'children'>> => ({
   amount_generated_and_captured: {
     headerClass: VOLUNTARY_CLASS,
     headerGroupComponentParams: {
       ...defaultColGroupDef.headerGroupComponentParams,
-      ...(shouldEnableNewCPDataFormatting(model)
+      ...(variant.match([CPModel.VI])
         ? {}
         : {
             footnote: {

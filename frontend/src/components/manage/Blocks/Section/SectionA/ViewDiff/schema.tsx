@@ -5,12 +5,13 @@ import cx from 'classnames'
 import { includes } from 'lodash'
 
 import { sectionColDefByIdFunc } from '../sectionColumnsDef'
+import { CPModel, ReportVariant } from '@ors/types/variants.ts'
 
 function useGridOptions(props: {
-  model: string
+  variant: ReportVariant
   usages: Record<string, any>[]
 }) {
-  const { model, usages } = props
+  const { variant, usages } = props
   const usagesDiff = usages.map(function (item) {
     const itemDiff = { ...item }
     const children: Record<string, any>[] = itemDiff?.children
@@ -26,7 +27,7 @@ function useGridOptions(props: {
     return itemDiff
   })
 
-  const sectionColDefById = sectionColDefByIdFunc(model)
+  const sectionColDefById = sectionColDefByIdFunc(variant)
 
   const substanceColumn = useMemo(
     () => ({
@@ -37,7 +38,7 @@ function useGridOptions(props: {
       ...sectionColDefById['display_name'],
       editable: false,
       // minWidth: 130,
-      // ...(includes(['I', 'II', 'III'], model) ? { initialWidth: 165 } : {}),
+      // ...(variant.match([CPModel.I, CPModel.II, CPModel.III]) ? { initialWidth: 165 } : {}),
     }),
     [sectionColDefById],
   )
@@ -101,7 +102,13 @@ function useGridOptions(props: {
         orsAggFunc: 'sumTotal',
         // ...(standalone ? { flex: 1 } : { flex: 0.5 }),
       },
-      ...(includes(['II', 'III', 'IV', 'V'], model)
+      ...(variant.match([
+        CPModel.II,
+        CPModel.III,
+        CPModel.IV,
+        CPModel.V,
+        CPModel.VI,
+      ])
         ? [
             {
               ...sectionColDefById['import_quotas'],
@@ -113,7 +120,7 @@ function useGridOptions(props: {
             },
           ]
         : []),
-      ...(includes(['I', 'II', 'III'], model)
+      ...(variant.match([CPModel.I, CPModel.II, CPModel.III])
         ? [
             {
               ...sectionColDefById['export_quotas'],
@@ -125,7 +132,7 @@ function useGridOptions(props: {
             },
           ]
         : []),
-      ...(includes(['IV', 'V'], model)
+      ...(variant.match([CPModel.IV, CPModel.V, CPModel.VI])
         ? [
             {
               ...sectionColDefById['banned_date'],
@@ -135,7 +142,13 @@ function useGridOptions(props: {
             },
           ]
         : []),
-      ...(includes(['II', 'III', 'IV', 'V'], model)
+      ...(variant.match([
+        CPModel.II,
+        CPModel.III,
+        CPModel.IV,
+        CPModel.V,
+        CPModel.VI,
+      ])
         ? [
             {
               ...sectionColDefById['remarks'],
@@ -148,7 +161,7 @@ function useGridOptions(props: {
           ]
         : []),
     ]
-  }, [model, sectionColDefById])
+  }, [variant, sectionColDefById])
 
   const gridOptionsAll: GridOptions = useMemo(() => {
     return {

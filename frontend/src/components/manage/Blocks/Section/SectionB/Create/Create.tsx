@@ -1,6 +1,6 @@
 import { ApiBlend, ApiCreatedBlend } from '@ors/types/api_blends'
 import { ApiSubstance } from '@ors/types/api_substances'
-import { ReportVariant } from '@ors/types/variants'
+import { CPModel, ReportVariant } from '@ors/types/variants'
 
 import { useMemo, useRef, useState } from 'react'
 
@@ -35,9 +35,9 @@ import useGridOptions from './schema'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: any, model: string) {
+function getGroupName(substance: any, variant: ReportVariant) {
   if (substance.group.startsWith('Blends')) {
-    return includes(['IV', 'V'], model)
+    return variant.match([CPModel.IV, CPModel.V, CPModel.VI])
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'
   }
@@ -52,7 +52,7 @@ function getRowData(
   const dataByGroup: Record<string, any[]> = {}
   const groups: string[] = []
   each(data, (item) => {
-    const group = getGroupName(item, variant.model)
+    const group = getGroupName(item, variant)
     if (!dataByGroup[group]) {
       dataByGroup[group] = []
     }
@@ -73,7 +73,7 @@ function getRowData(
           rowType: 'group',
         },
       ],
-      group.startsWith('Annex F') && includes(variant?.model, 'IV')
+      group.startsWith('Annex F') && variant.match([CPModel.IV])
         ? [
             {
               display_name: 'Controlled substances',
@@ -84,7 +84,7 @@ function getRowData(
           ]
         : [],
       dataByGroup[group],
-      group.startsWith('Blends') && !includes(['V'], variant?.model)
+      group.startsWith('Blends') && !variant.match([CPModel.V, CPModel.VI])
         ? [
             {
               display_name: 'Other',
@@ -107,7 +107,9 @@ function getRowData(
   return rowData
 }
 
-function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
+function getInitialPinnedBottomRowData(
+  variant: ReportVariant,
+): PinnedBottomRowData[] {
   let pinnedBottomRowData: PinnedBottomRowData[] = [
     {
       display_name: 'TOTAL',
@@ -116,7 +118,7 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
       tooltip: true,
     },
   ]
-  if (!includes(['V'], model)) {
+  if (!variant.match([CPModel.V, CPModel.VI])) {
     pinnedBottomRowData = pinnedBottomRowData.concat([
       {
         display_name: '',
@@ -153,7 +155,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
   const rowData = [...getRowData(form.section_b, variant)].sort(
     (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
   )
-  const pinnedRowData = getInitialPinnedBottomRowData(variant.model)
+  const pinnedRowData = getInitialPinnedBottomRowData(variant)
 
   const [addChemicalModal, setAddChemicalModal] = useState(false)
   const [modalTab, setModalTab] = useState<'existing_blends' | 'new_blend'>(
@@ -236,7 +238,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
   }, [Section, blends, chemicalsInForm, emptyForm.substance_rows.section_b])
 
   const gridOptions = useGridOptions({
-    model: variant.model,
+    variant: variant,
     onRemoveSubstance: (props: any) => {
       const removedSubstance = props.data
       const newData = [...form.section_b]
@@ -351,7 +353,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
       >
         <Footnotes />
       </Alert>
-      {includes(['V'], variant.model) && (
+      {variant.match([CPModel.V, CPModel.VI]) && (
         <div className="sticky top-0 z-50 flex justify-end">
           <Button
             className="rounded-lg border-[1.5px] border-solid border-primary bg-white px-3 py-2.5 text-base hover:bg-primary"
@@ -416,7 +418,8 @@ export default function SectionBCreate(props: SectionBCreateProps) {
               component="h2"
               variant="h4"
             >
-              {includes(['V'], variant.model) && modalTab === 'existing_blends'
+              {variant.match([CPModel.V, CPModel.VI]) &&
+              modalTab === 'existing_blends'
                 ? 'Add substance/blend'
                 : 'Add blend'}
             </Typography>
@@ -436,7 +439,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
                   standard: 'bg-white text-primary',
                 }}
               >
-                {includes(['V'], variant.model)
+                {variant.match([CPModel.V, CPModel.VI])
                   ? 'Existing substance/blend'
                   : 'Existing blend'}
               </ToggleButton>
@@ -451,7 +454,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
                 New blend
               </ToggleButton>
             </ToggleButtonGroup>
-            {includes(['V'], variant.model) ? (
+            {variant.match([CPModel.V, CPModel.VI]) ? (
               modalTab === 'existing_blends' && (
                 <>
                   <Typography>
