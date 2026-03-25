@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import requests
 from celery.utils.log import get_task_logger
 from constance import config
@@ -341,12 +343,24 @@ def synchronize_decisions():
     if not settings.DRUPAL_DECISIONS_API:
         return
 
+    session = requests.sessions.Session()
+
     meetings = {m.internal_api_id: m.id for m in Meeting.objects.all()}
+
+    def get_decision_text(relationships, included):
+        result = ""
+        field = relationships.get("field_content", {})
+        field_id = field.get("data", [{}])[0].get("id")
+        if field_id:
+            attributes = included.get(field_id, {}).get("attributes", {})
+            result = attributes.get("field_body", {}).get("value", "")
+        return result
 
     def get_decisions(json_data):
         """
         Extract Decisions attributes for all node--decision items in the JSON data.
         """
+        included = {i["id"]: i for i in json_data.get("included", [])}
         for item in json_data.get("data", []):
             if item.get("type") == "node--decision":
                 attributes = item.get("attributes", {})
@@ -367,17 +381,22 @@ def synchronize_decisions():
                         (title, number, internal_api_id),
                     )
                     continue
+
+                # Decision text.
+                pseudo_content_preview = attributes.get("pseudo_content_preview")
+                decision_text = get_decision_text(relationships, included)
+
                 meeting_id = meetings.get(meeting_internal_api_id, None)
                 yield Decision(
                     number=number,
                     title=title,
                     meeting_id=meeting_id,
                     internal_api_id=internal_api_id,
+                    pseudo_content_preview=pseudo_content_preview,
+                    text=decision_text,
                 )
 
     logger.info("Synchronizing decisions...")
-
-    session = requests.sessions.Session()
 
     def fetch_decisions(url):
         logger.info("Fetching from %s...", url)
@@ -389,12 +408,23 @@ def synchronize_decisions():
         if next_url:
             yield from fetch_decisions(next_url)
 
-    decisions_objects = fetch_decisions(settings.DRUPAL_DECISIONS_API)
+    decisions_url_params = {
+        "include": "field_content",
+        "fields[paragraph--edw_rich_text]": "field_body",
+    }
+    decisions_url = f"{settings.DRUPAL_DECISIONS_API}?{urlencode(decisions_url_params)}"
+    decisions_objects = fetch_decisions(decisions_url)
 
     Decision.objects.bulk_create(
         decisions_objects,
         update_conflicts=True,
         unique_fields=["internal_api_id"],
-        update_fields=["title", "number", "meeting_id"],
+        update_fields=[
+            "title",
+            "number",
+            "meeting_id",
+            "pseudo_content_preview",
+            "text",
+        ],
     )
     logger.info("Decisions synchronized successfully")
