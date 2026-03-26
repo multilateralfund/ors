@@ -840,6 +840,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
+            inlineMessage,
             setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}

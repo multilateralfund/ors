@@ -2,16 +2,17 @@ import { useContext, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectsInlineMessage from '../ProjectsCreate/ProjectsInlineMessage'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import ProjectMyaUpdate from './ProjectMyaUpdate'
 import { ErrorsList, NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import { formatErrors, hasSectionErrors } from '../utils'
 import {
+  InlineMessageProps,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
-  InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { useStore } from '@ors/store'
 
@@ -27,20 +28,22 @@ const ProjectUmbrellaProjectDetails = ({
   mode,
   isMya,
   isPrevButtonDisabled,
+  inlineMessage,
+  setInlineMessage,
   ...rest
-}: ProjectTabSetters & {
-  project?: ProjectTypeApi
-  relatedProjects: RelatedProjectsSectionType[]
-  metaProjectId?: number | null
-  setMetaProjectId?: (id: number | null) => void
-  setRefetchRelatedProjects?: (refetch: boolean) => void
-  canDisassociate?: boolean
-  metaprojectData: MetaProjectDetailType | null
-  mode: string
-  isMya: boolean
-  isPrevButtonDisabled?: boolean
-  setInlineMessage: (message: InlineMessageType) => void
-}) => {
+}: ProjectTabSetters &
+  InlineMessageProps & {
+    project?: ProjectTypeApi
+    relatedProjects: RelatedProjectsSectionType[]
+    metaProjectId?: number | null
+    setMetaProjectId?: (id: number | null) => void
+    setRefetchRelatedProjects?: (refetch: boolean) => void
+    canDisassociate?: boolean
+    metaprojectData: MetaProjectDetailType | null
+    mode: string
+    isMya: boolean
+    isPrevButtonDisabled?: boolean
+  }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
   const { allMpErrors } = useStore((state) => state.mpData)
   const [crtTab, setCrtTab] = useState<number>(0)
@@ -59,6 +62,7 @@ const ProjectUmbrellaProjectDetails = ({
             canDisassociate,
             mode,
             isMya,
+            setInlineMessage,
             ...rest,
           }}
         />
@@ -76,7 +80,9 @@ const ProjectUmbrellaProjectDetails = ({
                 )}
               </div>
             ),
-            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
+            component: (
+              <ProjectMyaUpdate {...{ mode, setInlineMessage, ...rest }} />
+            ),
             errors: formatErrors(allMpErrors),
           },
         ]
@@ -109,6 +115,11 @@ const ProjectUmbrellaProjectDetails = ({
           .filter((_, index) => index === crtTab)
           .map(({ id, component, errors }) => (
             <span key={id}>
+              {!!inlineMessage && inlineMessage.tabId === id && (
+                <ProjectsInlineMessage
+                  {...{ inlineMessage, setInlineMessage }}
+                />
+              )}
               {errors && errors.length > 0 && <ErrorsList {...{ errors }} />}
               {component}
             </span>

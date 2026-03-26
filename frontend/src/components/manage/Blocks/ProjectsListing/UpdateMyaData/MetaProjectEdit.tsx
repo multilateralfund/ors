@@ -237,6 +237,7 @@ export const MetaProjectEdit = (props: {
     fieldData.map((fd: any) => {
       const isComputed = valueIsComputed(fd.name)
       const formattedLabel = formatFieldLabel(fd.label)
+      const errors = fieldErrors[fd.name]
 
       return (
         <div key={fd.name} className="py-2">
@@ -244,7 +245,7 @@ export const MetaProjectEdit = (props: {
             <Label htmlFor={fd.name}>
               <span
                 className={cx('font-semibold', {
-                  'text-red-500': fieldErrors[fd.name],
+                  'text-red-500': errors,
                 })}
               >
                 {formattedLabel}
@@ -254,11 +255,12 @@ export const MetaProjectEdit = (props: {
           <span className="flex gap-3">
             {fieldComponent(fd)}
             {computedTag(isComputed)}
-            {!isIndividualField && groupFieldsMeasurementUnits(formattedLabel)}
+            {!isIndividualField &&
+              groupFieldsMeasurementUnits(formattedLabel, errors)}
           </span>
-          {fieldErrors[fd.name] ? (
+          {errors ? (
             <Typography variant="subtitle1" className="text-red-500">
-              {fieldErrors[fd.name]}
+              {errors}
             </Typography>
           ) : null}
         </div>
@@ -267,7 +269,7 @@ export const MetaProjectEdit = (props: {
 
   const groupFields = (fields: any) => (
     <div className="flex w-fit flex-col py-2">
-      {groupFieldsLabel(fields)}
+      {groupFieldsLabel(fields, fieldErrors)}
       <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
       </div>

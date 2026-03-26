@@ -20,7 +20,7 @@ import {
 } from './interfaces'
 import { debounce } from '@ors/helpers'
 
-import { filter, lowerCase, map, split, upperCase } from 'lodash'
+import { filter, lowerCase, map, some, split, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -707,14 +707,29 @@ export const computedTag = (isComputed: boolean) =>
     </span>
   ) : null
 
-export const groupFieldsLabel = (fields: any) => (
-  <Label className="m-auto !mb-0 w-fit font-semibold">
-    {fields[0].label.split('(')[0].trim()}
-  </Label>
-)
+export const groupFieldsLabel = (
+  fields: any,
+  errors?: Record<string, string>,
+) => {
+  const hasErrors = some(fields, (field) => errors?.[field.name])
 
-export const groupFieldsMeasurementUnits = (label: string) => (
-  <span className="flex items-center whitespace-nowrap font-semibold">
+  return (
+    <Label
+      className={cx('m-auto !mb-0 w-fit font-semibold', {
+        'text-red-500': hasErrors,
+      })}
+    >
+      {fields[0].label.split('(')[0].trim()}
+    </Label>
+  )
+}
+
+export const groupFieldsMeasurementUnits = (label: string, errors?: string) => (
+  <span
+    className={cx('flex items-center whitespace-nowrap font-semibold', {
+      'text-red-500': !!errors,
+    })}
+  >
     {split(label, '(')[1]?.split(')')[0]}
   </span>
 )

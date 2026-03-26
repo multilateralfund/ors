@@ -243,7 +243,7 @@ const ProjectMyaUpdatesView = ({
       type: 'success',
       message:
         'The MYA data is saved as draft. The information will be reviewed and approved by the Secretariat.',
-      tabId: 'project-related-projects-section',
+      tabId: 'mya-updates',
     })
   }
 
@@ -251,7 +251,7 @@ const ProjectMyaUpdatesView = ({
     <>
       {!!metaprojectData?.field_data ? (
         <div className="flex flex-col gap-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             {!!metaprojectData?.id && (
               <Typography variant="h6">
                 MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
