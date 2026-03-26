@@ -109,6 +109,7 @@ const EditActionButtons = ({
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
   )
 
+  const { defaultMpErrors } = useStore((state) => state.mpData)
   const { projectFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -294,6 +295,8 @@ const EditActionButtons = ({
     hasSectionErrors(approvalErrors) ||
     crossCuttingErrors?.['total_fund']?.length > 0 ||
     crossCuttingErrors['support_cost_psc'].length > 0
+
+  const disableApprove = hasSectionErrors(defaultMpErrors)
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -793,7 +796,7 @@ const EditActionButtons = ({
           label={<>Approval</>}
         >
           <Dropdown.Item
-            disabled={disableApprovalActions}
+            disabled={disableApprovalActions || disableApprove}
             className={cx(dropdownItemClassname, 'text-primary')}
             onClick={() => onApproveRejectProject('approve')}
           >

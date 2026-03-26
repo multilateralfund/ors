@@ -224,6 +224,10 @@ export interface ProjectFieldHistorySlice {
 export interface MpDataSlice {
   mpData: Record<string, any>
   setMpData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  defaultMpErrors: { [key: string]: string[] }
+  setDefaultMpErrors: (defaultMpErrors: { [key: string]: string[] }) => void
+  allMpErrors: { [key: string]: string[] }
+  setAllMpErrors: (allMpErrors: { [key: string]: string[] }) => void
 }
 
 export interface BusinessPlanSlice {

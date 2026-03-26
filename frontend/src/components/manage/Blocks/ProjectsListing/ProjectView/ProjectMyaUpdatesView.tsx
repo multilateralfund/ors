@@ -9,6 +9,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
 import {
   computedTag,
+  FieldErrorIndicator,
   getFilteredFields,
   groupFieldsLabel,
   groupFieldsMeasurementUnits,
@@ -21,6 +22,7 @@ import {
   formatMetaprojectData,
   getFormattedNumericValue,
   getProjectDuration,
+  hasSectionErrors,
 } from '../utils'
 import {
   MetaProjectDetailType,
@@ -43,11 +45,14 @@ const ProjectMyaUpdatesView = ({
   mode: string
   setInlineMessage: (message: InlineMessageType) => void
 }) => {
-  const { mpData, setMpData } = useStore((state) => state.mpData)
+  const { mpData, setMpData, defaultMpErrors, allMpErrors } = useStore(
+    (state) => state.mpData,
+  )
 
   const { addUpdatedField } = useUpdatedFields()
 
   const isNewMetaProject = !!metaprojectData?.field_data && !metaprojectData?.id
+  const isSaveDisabled = !isNewMetaProject || hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) =>
     field === projectDuration || !isNewMetaProject
@@ -148,18 +153,16 @@ const ProjectMyaUpdatesView = ({
       switch (fd.type) {
         case 'DateTimeField':
           return (
-            <div className="w-unset">
-              <DateInput
-                id={fd.name}
-                className={cx('BPListUpload !ml-0 h-8 w-[125px]', {
-                  [disabledClassName]: isFieldDisabled(fd.name),
-                })}
-                value={fieldValue.toString()}
-                onChange={changeSimpleInput(fd.name)}
-                formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-                disabled={isFieldDisabled(fd.name)}
-              />
-            </div>
+            <DateInput
+              id={fd.name}
+              className={cx('BPListUpload !ml-0 h-8 w-[125px]', {
+                [disabledClassName]: isFieldDisabled(fd.name),
+              })}
+              value={fieldValue.toString()}
+              onChange={changeSimpleInput(fd.name)}
+              formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+              disabled={isFieldDisabled(fd.name)}
+            />
           )
         case 'DecimalField':
           return (
@@ -215,7 +218,10 @@ const ProjectMyaUpdatesView = ({
             </Label>
           )}
           <span className="flex gap-3">
-            {fieldComponent(fd)}
+            <div className="flex items-center">
+              {fieldComponent(fd)}
+              <FieldErrorIndicator errors={allMpErrors} field={fd.label} />
+            </div>
             {computedTag(isComputed)}
             {!isIndividualField && groupFieldsMeasurementUnits(formattedLabel)}
           </span>
@@ -255,12 +261,12 @@ const ProjectMyaUpdatesView = ({
             {mode !== 'view' && (
               <Button
                 className={cx('ml-auto h-8 px-4 py-2 shadow-none', {
-                  [enabledButtonClassname]: isNewMetaProject,
+                  [enabledButtonClassname]: !isSaveDisabled,
                 })}
                 size="large"
                 variant="contained"
                 onClick={onMyaUpdate}
-                disabled={!isNewMetaProject}
+                disabled={isSaveDisabled}
               >
                 Save
               </Button>

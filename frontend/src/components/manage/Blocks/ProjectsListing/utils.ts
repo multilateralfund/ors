@@ -1,10 +1,14 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { getMeetingNr } from '../../Utils/utilFunctions'
-import { MetaProjectFieldData } from './UpdateMyaData/types'
+import {
+  MetaProjectDetailType,
+  MetaProjectFieldData,
+} from './UpdateMyaData/types'
 import {
   approvalOdsFields,
   approvalToOdsMap,
+  defaultMetaprojectFieldData,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
@@ -662,6 +666,64 @@ export const getPostExcomApprovalErrors = (
   }
 
   return getFormattedErrors(allErrors, specificFields)
+}
+
+export const getMpErrors = (
+  mpData: Record<string, any>,
+  metaprojectData: MetaProjectDetailType | null,
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+  mode: string,
+) => {
+  const hasNoMetaproject = getHasNoMetaproject(metaprojectData, project, mode)
+
+  if (
+    !(
+      mode === 'edit' &&
+      project?.submission_status === 'Recommended' &&
+      hasNoMetaproject
+    )
+  ) {
+    return {}
+  }
+
+  const allFields = keys(mpData)
+  const requiredFields = [
+    'project_funding',
+    'support_cost',
+    'start_date',
+    'end_date',
+  ]
+
+  const { start_date, end_date } = mpData
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => allFields.includes(key)),
+  )
+
+  const allErrors = {
+    ...getFieldErrors(requiredFields, mpData, project),
+    ...(dayjs(end_date).isBefore(dayjs(start_date)) && {
+      end_date: ['Start date cannot be later than end date.'],
+    }),
+    ...filteredErrors,
+  }
+
+  return Object.entries(allErrors).reduce(
+    (acc, [key, errMsg]) => {
+      const field =
+        defaultMetaprojectFieldData[
+          key as keyof typeof defaultMetaprojectFieldData
+        ].label
+
+      if (field) {
+        acc[field] = errMsg as string[]
+      }
+
+      return acc
+    },
+    {} as Record<string, string[]>,
+  )
 }
 
 export const hasSpecificField = (
@@ -1367,4 +1429,16 @@ export const formatMetaprojectData = (fd: MetaProjectFieldData) => {
   }
 
   return result
+}
+
+export const getHasNoMetaproject = (
+  metaprojectData: MetaProjectDetailType | null,
+  project: ProjectTypeApi | undefined,
+  mode: string,
+) => {
+  const hasMetaProject =
+    ['edit', 'view'].includes(mode) && !!project?.meta_project_id
+  const hasNoPossibleMetaProject = !hasMetaProject && !!metaprojectData?.detail
+
+  return !hasMetaProject && hasNoPossibleMetaProject
 }

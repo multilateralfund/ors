@@ -2,6 +2,7 @@ import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
@@ -731,3 +732,32 @@ export const getFilteredFields = (fieldData: any) => {
     costEffectivenessFields: groupFields('cost effectiveness'),
   }
 }
+
+export const ErrorsList = ({
+  errors,
+}: {
+  errors: ({ message: string } | null)[]
+}) => (
+  <CustomAlert
+    type="error"
+    alertClassName="mb-5"
+    content={
+      <>
+        <Typography className="text-lg">
+          Please make sure all the sections are valid.
+        </Typography>
+        <Typography component="div">
+          <div className="mt-1">
+            {errors.map((err, idx) =>
+              err ? (
+                <div key={idx} className="py-1.5">
+                  {'\u2022'} {err.message}
+                </div>
+              ) : null,
+            )}
+          </div>
+        </Typography>
+      </>
+    }
+  />
+)
