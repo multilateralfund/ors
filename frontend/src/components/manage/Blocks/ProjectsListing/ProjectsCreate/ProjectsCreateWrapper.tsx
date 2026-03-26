@@ -20,7 +20,6 @@ import {
 import {
   BpDataProps,
   FileMetaDataType,
-  InlineMessageType,
   ProjectData,
   ProjectFilesObject,
   ProjectSpecificFields,
@@ -101,7 +100,6 @@ const ProjectsCreateWrapper = () => {
   const { country, agency, cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -238,7 +236,6 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
-          setInlineMessage,
         }}
       />
       <ProjectsCreate
@@ -260,8 +257,6 @@ const ProjectsCreateWrapper = () => {
           shouldValidateTotalFund,
           relatedProjects,
           metaprojectData,
-          inlineMessage,
-          setInlineMessage,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

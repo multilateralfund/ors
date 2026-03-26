@@ -30,7 +30,6 @@ import {
   TrancheErrorType,
   BpDataProps,
   FileMetaDataType,
-  InlineMessageType,
 } from '../interfaces'
 import {
   approvalOdsFields,
@@ -255,7 +254,6 @@ const ProjectsEdit = ({
     bpDataLoading: false,
   })
 
-  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
@@ -569,7 +567,6 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
-            setInlineMessage,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -600,8 +597,6 @@ const ProjectsEdit = ({
             setRefetchRelatedProjects,
             metaprojectData,
             shouldValidateTotalFund,
-            inlineMessage,
-            setInlineMessage,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

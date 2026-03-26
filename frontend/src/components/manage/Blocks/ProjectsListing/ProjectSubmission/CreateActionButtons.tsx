@@ -31,10 +31,10 @@ const CreateActionButtons = ({
   specificFieldsLoaded,
   mode,
   filesMetaData,
-  setInlineMessage,
 }: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
 
   const { canUpdateProjects } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)

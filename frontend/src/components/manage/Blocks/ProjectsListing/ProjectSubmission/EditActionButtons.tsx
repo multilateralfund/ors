@@ -42,7 +42,6 @@ import {
   ProjectSpecificFields,
   BpDataProps,
   FileMetaDataType,
-  InlineMessageType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
@@ -79,7 +78,6 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
-  setInlineMessage,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -90,9 +88,9 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
 
   const {
     canUpdateProjects,

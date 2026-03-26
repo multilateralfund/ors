@@ -16,7 +16,6 @@ import {
 } from '../HelperComponents'
 import { disabledClassName, enabledButtonClassname } from '../constants'
 import { monetaryFields } from '../UpdateMyaData/constants'
-import { InlineMessageType } from '../interfaces'
 import {
   formatFieldLabel,
   formatMetaprojectData,
@@ -39,15 +38,14 @@ const projectDuration = 'project_duration'
 const ProjectMyaUpdatesView = ({
   metaprojectData,
   mode,
-  setInlineMessage,
 }: {
   metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const { mpData, setMpData, defaultMpErrors, allMpErrors } = useStore(
     (state) => state.mpData,
   )
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
 
   const { addUpdatedField } = useUpdatedFields()
 

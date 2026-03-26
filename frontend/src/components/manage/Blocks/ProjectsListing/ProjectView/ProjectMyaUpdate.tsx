@@ -1,7 +1,4 @@
-import {
-  ProjectTypeApi,
-  InlineMessageType,
-} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectMyaUpdatesView from './ProjectMyaUpdatesView'
 import { defaultMetaprojectFieldData } from '../constants'
 import { getHasNoMetaproject } from '../utils'
@@ -16,7 +13,6 @@ const ProjectMyaUpdate = ({
   project?: ProjectTypeApi
   metaprojectData: MetaProjectDetailType | null
   mode: string
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const hasNoMetaproject = getHasNoMetaproject(metaprojectData, project, mode)
   const formattedMetaprojectData = hasNoMetaproject

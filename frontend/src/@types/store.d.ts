@@ -230,6 +230,20 @@ export interface MpDataSlice {
   setAllMpErrors: (allMpErrors: { [key: string]: string[] }) => void
 }
 
+type InlineMessage = {
+  type: 'success' | 'error'
+  message?: string
+  errorMessages?: string[]
+  tabId?: string
+  redirectMessage?: string
+  hrefRedirect?: string
+} | null
+
+export interface InlineMessageSlice {
+  inlineMessage: InlineMessage
+  setInlineMessage: (message: InlineMessage) => void
+}
+
 export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
@@ -311,6 +325,7 @@ export type StoreState = {
   projectWarnings: ProjectWarningsTypeSlice
   projectFieldHistory: ProjectFieldHistorySlice
   mpData: MpDataSlice
+  inlineMessage: InlineMessageSlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

@@ -38,7 +38,6 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
-  InlineMessageProps,
   OdsOdpFields,
 } from '../interfaces.ts'
 import {
@@ -105,14 +104,11 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   metaprojectData,
   shouldValidateTotalFund,
-  inlineMessage,
-  setInlineMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
   TrancheErrors &
-  FileMetaDataProps &
-  InlineMessageProps & {
+  FileMetaDataProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -194,6 +190,14 @@ const ProjectsCreate = ({
 
   useEffect(() => {
     setMpData(getFormattedMpdata)
+  }, [])
+
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
+
+  useEffect(() => {
+    setInlineMessage(null)
   }, [])
 
   useEffect(() => {
@@ -840,8 +844,6 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
-            inlineMessage,
-            setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
@@ -928,9 +930,7 @@ const ProjectsCreate = ({
                   )}
                 {!!inlineMessage &&
                   (!inlineMessage.tabId || inlineMessage.tabId === id) && (
-                    <ProjectsInlineMessage
-                      {...{ inlineMessage, setInlineMessage }}
-                    />
+                    <ProjectsInlineMessage />
                   )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&

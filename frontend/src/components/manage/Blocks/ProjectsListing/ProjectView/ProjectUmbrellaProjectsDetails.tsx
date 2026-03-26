@@ -9,7 +9,6 @@ import { ErrorsList, NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import { formatErrors, hasSectionErrors } from '../utils'
 import {
-  InlineMessageProps,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
@@ -28,24 +27,23 @@ const ProjectUmbrellaProjectDetails = ({
   mode,
   isMya,
   isPrevButtonDisabled,
-  inlineMessage,
-  setInlineMessage,
   ...rest
-}: ProjectTabSetters &
-  InlineMessageProps & {
-    project?: ProjectTypeApi
-    relatedProjects: RelatedProjectsSectionType[]
-    metaProjectId?: number | null
-    setMetaProjectId?: (id: number | null) => void
-    setRefetchRelatedProjects?: (refetch: boolean) => void
-    canDisassociate?: boolean
-    metaprojectData: MetaProjectDetailType | null
-    mode: string
-    isMya: boolean
-    isPrevButtonDisabled?: boolean
-  }) => {
+}: ProjectTabSetters & {
+  project?: ProjectTypeApi
+  relatedProjects: RelatedProjectsSectionType[]
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
+  canDisassociate?: boolean
+  metaprojectData: MetaProjectDetailType | null
+  mode: string
+  isMya: boolean
+  isPrevButtonDisabled?: boolean
+}) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
   const { allMpErrors } = useStore((state) => state.mpData)
+  const { inlineMessage } = useStore((state) => state.inlineMessage)
+
   const [crtTab, setCrtTab] = useState<number>(0)
 
   const steps = [
@@ -62,7 +60,6 @@ const ProjectUmbrellaProjectDetails = ({
             canDisassociate,
             mode,
             isMya,
-            setInlineMessage,
             ...rest,
           }}
         />
@@ -80,9 +77,7 @@ const ProjectUmbrellaProjectDetails = ({
                 )}
               </div>
             ),
-            component: (
-              <ProjectMyaUpdate {...{ mode, setInlineMessage, ...rest }} />
-            ),
+            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
             errors: formatErrors(allMpErrors),
           },
         ]
@@ -116,9 +111,7 @@ const ProjectUmbrellaProjectDetails = ({
           .map(({ id, component, errors }) => (
             <span key={id}>
               {!!inlineMessage && inlineMessage.tabId === id && (
-                <ProjectsInlineMessage
-                  {...{ inlineMessage, setInlineMessage }}
-                />
+                <ProjectsInlineMessage />
               )}
               {errors && errors.length > 0 && <ErrorsList {...{ errors }} />}
               {component}
