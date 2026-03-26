@@ -715,7 +715,7 @@ export const groupFieldsLabel = (
 
   return (
     <Label
-      className={cx('m-auto !mb-0 w-fit font-semibold', {
+      className={cx('m-auto w-fit font-semibold', {
         'text-red-500': hasErrors,
       })}
     >
@@ -726,9 +726,12 @@ export const groupFieldsLabel = (
 
 export const groupFieldsMeasurementUnits = (label: string, errors?: string) => (
   <span
-    className={cx('flex items-center whitespace-nowrap font-semibold', {
-      'text-red-500': !!errors,
-    })}
+    className={cx(
+      'flex min-w-20 items-center whitespace-nowrap font-semibold',
+      {
+        'text-red-500': !!errors,
+      },
+    )}
   >
     {split(label, '(')[1]?.split(')')[0]}
   </span>

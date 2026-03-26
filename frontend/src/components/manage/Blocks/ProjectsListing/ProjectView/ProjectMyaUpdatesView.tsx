@@ -155,7 +155,7 @@ const ProjectMyaUpdatesView = ({
           return (
             <DateInput
               id={fd.name}
-              className={cx('BPListUpload !ml-0 h-8 w-[125px]', {
+              className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
                 [disabledClassName]: isFieldDisabled(fd.name),
               })}
               value={fieldValue.toString()}
@@ -169,7 +169,7 @@ const ProjectMyaUpdatesView = ({
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                '!m-0 h-8 !w-[125px] w-full !border-gray-400 p-2.5',
                 {
                   [disabledClassName]: isFieldDisabled(fd.name),
                 },
@@ -187,7 +187,7 @@ const ProjectMyaUpdatesView = ({
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                '!m-0 h-8 !w-[125px] w-full !border-gray-400 p-2.5',
                 {
                   [disabledClassName]: isFieldDisabled(fd.name),
                 },
@@ -217,7 +217,7 @@ const ProjectMyaUpdatesView = ({
               {formattedLabel}
             </Label>
           )}
-          <span className="flex gap-3">
+          <span className="flex flex-wrap gap-x-3 gap-y-1.5 sm:flex-nowrap">
             <div className="flex items-center">
               {fieldComponent(fd)}
               <FieldErrorIndicator errors={allMpErrors} field={fd.label} />
@@ -230,7 +230,7 @@ const ProjectMyaUpdatesView = ({
     })
 
   const groupFields = (fields: any) => (
-    <div className="flex w-fit flex-col py-2">
+    <div className="flex w-fit flex-col">
       {groupFieldsLabel(fields)}
       <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
@@ -273,10 +273,10 @@ const ProjectMyaUpdatesView = ({
             )}
           </div>
 
-          <div className="flex gap-x-6">
+          <div className="flex flex-wrap gap-x-6 lg:flex-nowrap">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}
-              <div className="flex flex-wrap gap-x-6 py-2">
+              <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
               {renderFieldData(fieldData.slice(5, 6))}

@@ -295,6 +295,7 @@ const ProjectView = ({
                   setMetaProjectId,
                   setRefetchRelatedProjects,
                   metaprojectData,
+                  inlineMessage,
                   setInlineMessage,
                 }}
               />
