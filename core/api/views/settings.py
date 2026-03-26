@@ -1,4 +1,5 @@
 from constance import config
+from django.conf import settings
 from django.db.models import Min, Max
 from rest_framework import status, views
 from rest_framework.response import Response
@@ -97,7 +98,7 @@ class ProjectSettingsView(views.APIView):
 
     permission_classes = [HasProjectSettingsAccess]
 
-    def get(self, *args, **kwargs):
+    def get_saved_values(self):
         project_settings = {
             "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
             "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
@@ -106,7 +107,16 @@ class ProjectSettingsView(views.APIView):
             "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
             "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
         }
-        return Response(project_settings)
+        project_settings.update(
+            {
+                name.lower(): getattr(config, name)
+                for name in settings.PROJECTS_GLOBAL_FIELDS
+            }
+        )
+        return project_settings
+
+    def get(self, *args, **kwargs):
+        return Response(self.get_saved_values())
 
     def post(self, request, *args, **kwargs):
         config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
@@ -127,14 +137,10 @@ class ProjectSettingsView(views.APIView):
         config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
             "apr_agency_submission_notifications_emails", ""
         )
-        return Response(
-            {
-                "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
-                "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
-                "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
-                "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
-                "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
-                "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
-            },
-            status=status.HTTP_200_OK,
-        )
+
+        for name in settings.PROJECTS_GLOBAL_FIELDS:
+            value = request.data.get(name.lower(), None)
+            if value is not None:
+                setattr(config, name, value)
+
+        return Response(self.get_saved_values(), status=status.HTTP_200_OK)
