@@ -33,6 +33,7 @@ class Decision(models.Model):
     text = models.TextField(blank=True, default="")
 
     internal_api_id = models.IntegerField(unique=True, null=True, blank=True)
+    api_changed = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Decisions"

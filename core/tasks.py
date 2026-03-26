@@ -1,4 +1,5 @@
 from urllib.parse import urlencode
+from datetime import datetime
 
 import requests
 from celery.utils.log import get_task_logger
@@ -346,6 +347,11 @@ def synchronize_decisions():
     session = requests.sessions.Session()
 
     meetings = {m.internal_api_id: m.id for m in Meeting.objects.all()}
+    latest_decision = (
+        Decision.objects.filter(api_changed__isnull=False)
+        .order_by("-api_changed")
+        .first()
+    )
 
     def get_decision_text(relationships, included):
         result = ""
@@ -367,6 +373,7 @@ def synchronize_decisions():
                 title = attributes.get("title")
                 number = attributes.get("field_decision_number")
                 internal_api_id = attributes.get("drupal_internal__nid")
+                api_changed = datetime.fromisoformat(attributes.get("changed"))
                 relationships = item.get("relationships", {})
                 try:
                     meeting_internal_api_id = (
@@ -392,6 +399,7 @@ def synchronize_decisions():
                     title=title,
                     meeting_id=meeting_id,
                     internal_api_id=internal_api_id,
+                    api_changed=api_changed,
                     pseudo_content_preview=pseudo_content_preview,
                     text=decision_text,
                 )
@@ -411,7 +419,17 @@ def synchronize_decisions():
     decisions_url_params = {
         "include": "field_content",
         "fields[paragraph--edw_rich_text]": "field_body",
+        "sort": "-changed",
     }
+
+    if latest_decision and latest_decision.api_changed:
+        decisions_url_params.update(
+            {
+                "filter[changed][operator]": ">",
+                "filter[changed][value]": latest_decision.api_changed.isoformat(),
+            }
+        )
+
     decisions_url = f"{settings.DRUPAL_DECISIONS_API}?{urlencode(decisions_url_params)}"
     decisions_objects = fetch_decisions(decisions_url)
 
@@ -425,6 +443,7 @@ def synchronize_decisions():
             "meeting_id",
             "pseudo_content_preview",
             "text",
+            "api_changed",
         ],
     )
     logger.info("Decisions synchronized successfully")
