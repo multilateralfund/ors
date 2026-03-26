@@ -22,7 +22,6 @@ class ProjectApprovalSummaryViewSet(
     """ViewSet for approval summary."""
 
     filterset_class = ProjectApprovalSummaryFilter
-    queryset = Project.objects.really_all()
     permission_classes = (HasProjectV2ApproveAccess,)
 
     _template_path = (
@@ -31,6 +30,15 @@ class ProjectApprovalSummaryViewSet(
         / "templates"
         / "approval_summary_template.xlsx"
     )
+
+    def get_queryset(self):
+        queryset = Project.objects.really_all()
+
+        # Requested in #35434.
+        if self.request.user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
+        return queryset
 
     def _extract_data(self):
         queryset = self.filter_queryset(self.get_queryset())

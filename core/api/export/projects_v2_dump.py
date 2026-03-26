@@ -4,6 +4,7 @@ from itertools import chain
 from itertools import pairwise
 from time import time
 from typing import Sequence
+from typing import TYPE_CHECKING
 
 import openpyxl
 from django.db.models import JSONField
@@ -25,6 +26,9 @@ from core.models import Project
 from core.models import ProjectOdsOdp
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
+
+if TYPE_CHECKING:
+    from core.api.views import ProjectV2ViewSet
 
 
 def get_field_value(project, header):
@@ -447,7 +451,9 @@ class ProjectsV2DumpWriter:
 
 
 class ProjectsV2Dump:
-    def __init__(self, view):
+    """MYA Warehouse"""
+
+    def __init__(self, view: "ProjectV2ViewSet"):
         self.view = view
         self.project_fields = self.get_project_fields()
         self.metaproject_fields = self.get_metaproject_fields(
@@ -467,6 +473,11 @@ class ProjectsV2Dump:
                 ),
             )
         )
+
+        # Requested in #35434.
+        if view.request.user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
         self.queryset = self.view.filter_queryset(queryset)
         self.setup_workbook()
 

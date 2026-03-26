@@ -1,13 +1,13 @@
 import typing
 from functools import partial
 from itertools import chain
+from typing import TYPE_CHECKING
 
 import openpyxl
 from dataclasses import dataclass
 from dataclasses import field
 
 from django.db.models import Model
-from rest_framework.viewsets import GenericViewSet
 
 from core.models.country import Country
 from core.models.agency import Agency
@@ -32,11 +32,15 @@ from core.api.utils import workbook_response, workbook_pdf_response
 from core.api.export.business_plan import ModelNameCodeWriter
 from core.api.export.business_plan import ModelNameWriter
 
+if TYPE_CHECKING:
+    from core.api.views import ProjectViewSet
+    from core.api.views import ProjectV2ViewSet
+
 
 class ProjectsExport:
-    view: GenericViewSet
+    view: "ProjectViewSet"
 
-    def __init__(self, view: GenericViewSet):
+    def __init__(self, view: "ProjectViewSet"):
         self.view = view
 
     def export_xls(self):
@@ -92,8 +96,11 @@ class MultiModelSheetDefinition(SheetDefinition):
 
 
 class ProjectsV2Export(ProjectsExport):
+    """Projects warehouse"""
+
     wb: openpyxl.Workbook
     sheet: openpyxl.worksheet.worksheet.Worksheet
+    view: "ProjectV2ViewSet"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
