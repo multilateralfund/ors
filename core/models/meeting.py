@@ -29,8 +29,11 @@ class Decision(models.Model):
     )
     number = models.CharField(max_length=255, blank=True, null=True, default="")
     title = models.CharField(max_length=255, blank=True, default="")
+    pseudo_content_preview = models.TextField(blank=True, default="")
+    text = models.TextField(blank=True, default="")
 
     internal_api_id = models.IntegerField(unique=True, null=True, blank=True)
+    api_changed = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Decisions"

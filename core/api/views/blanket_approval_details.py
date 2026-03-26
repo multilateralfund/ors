@@ -9,6 +9,7 @@ from django.db.models import F
 from django.db.models import QuerySet
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
+from django.utils.html import strip_tags
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -109,7 +110,7 @@ class BlanketApprovalDetailsViewset(
         filtered_projects: Iterable[ProjectData] = queryset.values(  # type: ignore[assignment]
             project_id=F("id"),
             project_title=F("title"),
-            project_description=F("excom_provision"),
+            project_description=Coalesce(F("excom_provision"), F("decision__text")),
             agency_name=F("agency__name"),
             country_pk=F("country"),
             country_name=F("country__name"),
@@ -126,6 +127,8 @@ class BlanketApprovalDetailsViewset(
 
         for project in filtered_projects:
             key = f"{project['project_type_pk']}, {project['cluster_pk']}"
+
+            project["project_description"] = strip_tags(project["project_description"])
 
             per_country.setdefault(
                 project["country_pk"],
