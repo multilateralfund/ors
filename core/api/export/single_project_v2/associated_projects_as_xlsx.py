@@ -139,6 +139,10 @@ class ProjectsV2AssociatedProjectsExport:
 
         result = Project.objects.filter(project_filters).exclude(id=self.project.id)
 
+        # Requested in #35434.
+        if self.user.has_perm("core.is_mlfs_user"):
+            result = result.exclude(submission_status__name="Draft")
+
         return result
 
     def build_xls(self):
