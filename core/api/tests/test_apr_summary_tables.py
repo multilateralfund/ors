@@ -132,12 +132,17 @@ class TestAPRSummaryTablesExport(BaseTest):
         # B4 = Number of Approvals — should be 2 (both projects)
         assert summary_sheet.cell(4, 2).value == 2
 
-    def test_export_has_all_sheets(
+    def test_export_structure_and_metadata(
         self,
         apr_agency_viewer_user,
         annual_progress_report,
         annual_agency_report,
     ):
+        """
+        Consolidates 6 structural/metadata checks into a single export call.
+        Covers: sheet names, hidden-sheet removal, Annex I (a)/(b)/(c) headers,
+        flat-layout structure, and Content-Disposition filename.
+        """
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -152,10 +157,23 @@ class TestAPRSummaryTablesExport(BaseTest):
         response = self.client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
+        assert (
+            response["Content-Type"]
+            == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        # Content-Disposition includes agency name, year, and extension
+        content_disposition = response["Content-Disposition"]
+        assert "APR_Summary_Tables_Cumulative" in content_disposition
+        assert (
+            apr_agency_viewer_user.agency.name.replace(" ", "_") in content_disposition
+        )
+        assert ".xlsx" in content_disposition
 
         workbook = load_workbook(BytesIO(response.content))
         sheet_names = workbook.sheetnames
 
+        # All expected sheets are present
         assert APRSummaryTablesExportWriter.SHEET_SUMMARY in sheet_names
         assert APRSummaryTablesExportWriter.SHEET_SUMMARY_CLUSTER in sheet_names
         assert APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR in sheet_names
@@ -167,61 +185,39 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert "Annex I (f)" in sheet_names
         assert "Annex I (g)" in sheet_names
 
-    def test_no_hidden_sheets_in_export(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        for sheet_name in workbook.sheetnames:
+        # No hidden sheets
+        for sheet_name in sheet_names:
             assert workbook[sheet_name].sheet_state != "hidden"
 
-    def test_annual_summary_sheet_structure(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
+        # Annex I (a): header row structure
+        sheet_a = workbook["Annex I (a)"]
+        assert sheet_a["A1"].value == "(a) Annual summary data"
+        assert "Year approval" in str(sheet_a["A3"].value)
+        assert "Number of Approvals" in str(sheet_a["B3"].value)
+        assert "Number of completed" in str(sheet_a["C3"].value)
+        assert "Per cent completed" in str(sheet_a["D3"].value)
+        assert "Approved funding" in str(sheet_a["E3"].value)
+        assert "Funds disbursed" in str(sheet_a["F3"].value)
+        assert "Balance" in str(sheet_a["G3"].value)
+
+        # Annex I (b): flat layout structure
+        sheet_b = workbook["Annex I (b)"]
+        assert sheet_b["A1"].value == "(b) Cumulative completed investment projects"
+        assert "Item" in str(sheet_b.cell(3, 1).value)
+        assert sheet_b.cell(4, 1).value == "Total"
+        assert any(
+            "Region" in str(sheet_b.cell(row, 1).value or "")
+            for row in range(5, sheet_b.max_row + 1)
         )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
+        assert any(
+            "Sector" in str(sheet_b.cell(row, 1).value or "")
+            for row in range(5, sheet_b.max_row + 1)
         )
 
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook["Annex I (a)"]
-
-        assert sheet["A1"].value == "(a) Annual summary data"
-
-        # Headers are now at row 3
-        assert "Year approval" in str(sheet["A3"].value)
-        assert "Number of Approvals" in str(sheet["B3"].value)
-        assert "Number of completed" in str(sheet["C3"].value)
-        assert "Per cent completed" in str(sheet["D3"].value)
-        assert "Approved funding" in str(sheet["E3"].value)
-        assert "Funds disbursed" in str(sheet["F3"].value)
-        assert "Balance" in str(sheet["G3"].value)
+        # Annex I (c): flat layout structure
+        sheet_c = workbook["Annex I (c)"]
+        assert sheet_c["A1"].value == "(c) Cumulative completed non-investment projects"
+        assert sheet_c.cell(4, 1).value == "Total"
 
     def test_annual_summary_aggregation_by_year(
         self,
@@ -305,13 +301,16 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert sheet.cell(year_2023_row, 5).value == 125000
         assert sheet.cell(year_2023_row, 6).value == 100000
 
-    def test_annual_summary_has_total_row(
+    def test_completed_project_summary_and_totals(
         self,
         apr_agency_viewer_user,
         annual_progress_report,
         annual_agency_report,
         project_completed_status,
     ):
+        """
+        Testing summary and totals for completed projects in a single export.
+        """
         project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
             date_approved=date(2023, 1, 15),
@@ -324,6 +323,12 @@ class TestAPRSummaryTablesExport(BaseTest):
             project=project,
             status="COM",
             funds_disbursed=80000,
+            consumption_phased_out_odp=10,
+            production_phased_out_odp=5,
+            consumption_phased_out_mt=100,
+            production_phased_out_mt=50,
+            consumption_phased_out_co2=1000,
+            production_phased_out_co2=500,
         )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
@@ -331,178 +336,122 @@ class TestAPRSummaryTablesExport(BaseTest):
         response = self.client.get(url)
 
         workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook["Annex I (a)"]
 
-        # Find the Total row
+        # I.1 Summary Data sheet structure
+        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        assert "Summary data" in str(summary_sheet["A1"].value)
+        # Number of Approvals
+        assert summary_sheet.cell(4, 2).value == 1
+        # Number of completed
+        assert summary_sheet.cell(5, 2).value == 1
+        # Total funds disbursed
+        assert summary_sheet.cell(7, 2).value == 80000
+        # ODP = 10 + 5
+        assert summary_sheet.cell(9, 2).value == 15
+        # MT = 100 + 50
+        assert summary_sheet.cell(11, 2).value == 150
+        # CO2 = 1000 + 500
+        assert summary_sheet.cell(13, 2).value == 1500
+
+        # Annex I (a): Total row
+        sheet_a = workbook["Annex I (a)"]
         total_row = None
         for row in range(
-            APRSummaryTablesExportWriter.DATA_START_ROW, sheet.max_row + 1
+            APRSummaryTablesExportWriter.DATA_START_ROW, sheet_a.max_row + 1
         ):
-            if sheet.cell(row, 1).value == "Total":
+            if sheet_a.cell(row, 1).value == "Total":
                 total_row = row
                 break
-
         assert total_row is not None
-        # Approved
-        assert sheet.cell(total_row, 2).value == 1
-        # Completed
-        assert sheet.cell(total_row, 3).value == 1
+        # Number of approvals & completed
+        assert sheet_a.cell(total_row, 2).value == 1
+        assert sheet_a.cell(total_row, 3).value == 1
 
-    def test_investment_projects_sheet_flat_layout(
+    def test_project_type_sheet_routing(
         self,
         apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook["Annex I (b)"]
-
-        assert sheet["A1"].value == "(b) Cumulative completed investment projects"
-
-        # Header at row 3
-        assert "Item" in str(sheet.cell(3, 1).value)
-
-        # Flat layout: Total at row 4, Region label, then Sector label
-        assert sheet.cell(4, 1).value == "Total"
-        # Find Region and Sector labels
-        region_found = False
-        sector_found = False
-        for row in range(5, sheet.max_row + 1):
-            val = sheet.cell(row, 1).value
-            if val and "Region" in str(val):
-                region_found = True
-            if val and "Sector" in str(val):
-                sector_found = True
-        assert region_found
-        assert sector_found
-
-    def test_non_investment_projects_sheet_flat_layout(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook["Annex I (c)"]
-
-        assert sheet["A1"].value == "(c) Cumulative completed non-investment projects"
-        assert sheet.cell(4, 1).value == "Total"
-
-    def test_investment_projects_filtered_by_type_and_status(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
         annual_agency_report,
         project_completed_status,
         project_ongoing_status,
     ):
+        """
+        Testing that various sheets correctly filter which types of projects they include
+        """
         inv_type = ProjectType.objects.create(
             name="Investment", code="INV", sort_order=1
         )
-        non_inv_type = ProjectType.objects.create(
+        prp_type = ProjectType.objects.create(
             name="Preparation", code="PRP", sort_order=2
         )
+        oth_type = ProjectType.objects.create(name="Other", code="OTH", sort_order=3)
 
-        # Completed investment project - should appear on sheet (b)
-        project1 = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
-            status=project_completed_status,
-            project_type=inv_type,
-        )
+        # COM+INV -> sheet (b): completed investment
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=project1,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=inv_type,
+            ),
         )
-
-        # Ongoing investment project - should *not* appear on sheet (b)
-        project2 = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 2, 15),
-            status=project_ongoing_status,
-            project_type=inv_type,
-        )
+        # ONG+INV -> sheet (e): ongoing investment, excluded from (b)
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=project2,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_ongoing_status,
+                project_type=inv_type,
+            ),
         )
-
-        # Completed non-investment - should *not* appear on sheet (b)
-        project3 = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 3, 15),
-            status=project_completed_status,
-            project_type=non_inv_type,
-        )
+        # COM+PRP -> sheet (d): completed preparation, excluded from (b) and (c)
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=project3,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=prp_type,
+            ),
+        )
+        # COM+OTH -> sheet (c): completed non-investment, excluded from (b) and (d)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                status=project_completed_status,
+                project_type=oth_type,
+            ),
         )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        sheet_b = workbook["Annex I (b)"]
-
-        # Total row (row 4) should show 1 completed investment project
-        total_count = sheet_b.cell(4, 2).value
-        assert total_count == 1
-
-    def test_filename_includes_year_and_agency(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
+        wb = load_workbook(
+            BytesIO(self.client.get(reverse("apr-summary-tables-export")).content)
         )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-        )
+        data_row = APRSummaryTablesExportWriter.DATA_START_ROW
 
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-
-        content_disposition = response["Content-Disposition"]
-        assert "APR_Summary_Tables_Cumulative" in content_disposition
+        # Sheet (b): only COM+INV are included
         assert (
-            apr_agency_viewer_user.agency.name.replace(" ", "_") in content_disposition
+            wb[APRSummaryTablesExportWriter.SHEET_INVESTMENT].cell(data_row, 2).value
+            == 1
         )
-        assert ".xlsx" in content_disposition
+        # Sheet (c): only COM+OTH are included
+        assert (
+            wb[APRSummaryTablesExportWriter.SHEET_NON_INVESTMENT]
+            .cell(data_row, 2)
+            .value
+            == 1
+        )
+        # Sheet (d): only COM+PRP are included
+        assert (
+            wb[APRSummaryTablesExportWriter.SHEET_PREPARATION].cell(data_row, 2).value
+            == 1
+        )
+        # Sheet (e): only ONG+INV are included
+        assert (
+            wb[APRSummaryTablesExportWriter.SHEET_ONGOING_INVESTMENT]
+            .cell(data_row, 2)
+            .value
+            == 1
+        )
 
     def test_includes_all_statuses_in_summary(
         self,
@@ -550,57 +499,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         # B4 = Number of Approvals — should include all statuses
         num_approvals = summary_sheet.cell(4, 2).value
         assert num_approvals == 3
-
-    # ── New sheet tests ───────────────────────────────────────────────────
-
-    def test_summary_data_sheet_structure(
-        self,
-        apr_agency_viewer_user,
-        annual_progress_report,
-        annual_agency_report,
-        project_completed_status,
-    ):
-        project = ProjectFactory(
-            agency=apr_agency_viewer_user.agency,
-            date_approved=date(2023, 1, 15),
-            status=project_completed_status,
-            version=3,
-            total_fund=100000,
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=project,
-            status="COM",
-            funds_disbursed=80000,
-            consumption_phased_out_odp=10,
-            production_phased_out_odp=5,
-            consumption_phased_out_mt=100,
-            production_phased_out_mt=50,
-            consumption_phased_out_co2=1000,
-            production_phased_out_co2=500,
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
-
-        assert "Summary data" in str(sheet["A1"].value)
-
-        # Row 4: Number of Approvals
-        assert sheet.cell(4, 2).value == 1
-        # Row 5: Number of completed
-        assert sheet.cell(5, 2).value == 1
-        # Row 7: Total funds disbursed
-        assert sheet.cell(7, 2).value == 80000
-        # Row 9: Total actual phase-out (ODP) = consumption + production
-        assert sheet.cell(9, 2).value == 15  # 10 + 5
-        # Row 11: Total actual phase-out (MT)
-        assert sheet.cell(11, 2).value == 150  # 100 + 50
-        # Row 13: Total actual phase-out (CO2-eq)
-        assert sheet.cell(13, 2).value == 1500  # 1000 + 500
 
     def test_summary_by_cluster_sheet(
         self,
@@ -828,89 +726,3 @@ class TestAPRSummaryTablesExport(BaseTest):
         )
         assert str(ws.cell(expected_total_row, 1).value or "").strip() == "Total"
         assert ws.cell(expected_total_row, 2).value == num_clusters
-
-    def test_ongoing_investment_excludes_completed_projects(
-        self,
-        apr_agency_viewer_user,
-        annual_agency_report,
-        project_completed_status,
-        project_ongoing_status,
-    ):
-        inv_type = ProjectTypeFactory(code="INV", sort_order=1)
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=ProjectFactory(
-                agency=apr_agency_viewer_user.agency,
-                status=project_completed_status,
-                project_type=inv_type,
-            ),
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=ProjectFactory(
-                agency=apr_agency_viewer_user.agency,
-                status=project_ongoing_status,
-                project_type=inv_type,
-            ),
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        response = self.client.get(reverse("apr-summary-tables-export"))
-        data_row = APRSummaryTablesExportWriter.DATA_START_ROW
-        wb = load_workbook(BytesIO(response.content))
-        # Each sheet sees exactly its one qualifying project and not the other's
-        # Sheet (b): COM+INV only
-        num_projects = (
-            wb[APRSummaryTablesExportWriter.SHEET_INVESTMENT].cell(data_row, 2).value
-        )
-        assert num_projects == 1
-        # Sheet (e): ONG+INV only
-        num_projects = (
-            wb[APRSummaryTablesExportWriter.SHEET_ONGOING_INVESTMENT]
-            .cell(data_row, 2)
-            .value
-        )
-        assert num_projects == 1
-
-    def test_non_investment_sheet_excludes_prp(
-        self,
-        apr_agency_viewer_user,
-        annual_agency_report,
-        project_completed_status,
-    ):
-        prp_type = ProjectTypeFactory(code="PRP", sort_order=2)
-        oth_type = ProjectTypeFactory(code="OTH", sort_order=3)
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=ProjectFactory(
-                agency=apr_agency_viewer_user.agency,
-                status=project_completed_status,
-                project_type=prp_type,
-            ),
-        )
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=ProjectFactory(
-                agency=apr_agency_viewer_user.agency,
-                status=project_completed_status,
-                project_type=oth_type,
-            ),
-        )
-
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        response = self.client.get(reverse("apr-summary-tables-export"))
-        data_row = APRSummaryTablesExportWriter.DATA_START_ROW
-        wb = load_workbook(BytesIO(response.content))
-        # Each sheet sees exactly its one qualifying project and not the other's
-        # Sheet (c): COM+OTH only
-        num_projects = (
-            wb[APRSummaryTablesExportWriter.SHEET_NON_INVESTMENT]
-            .cell(data_row, 2)
-            .value
-        )
-        assert num_projects == 1
-        # Sheet (d): COM+PRP only
-        num_projects = (
-            wb[APRSummaryTablesExportWriter.SHEET_PREPARATION].cell(data_row, 2).value
-        )
-        assert num_projects == 1
