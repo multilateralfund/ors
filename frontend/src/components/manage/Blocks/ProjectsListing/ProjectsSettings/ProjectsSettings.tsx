@@ -1,11 +1,12 @@
-'use client'
-
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
-
-import api from '@ors/helpers/Api/_api'
-import { Settings } from '@ors/types/store'
-
-import { useSnackbar } from 'notistack'
+import React, {
+  ChangeEventHandler,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
+import * as mui from '@mui/material'
 import {
   Box,
   Button,
@@ -18,6 +19,16 @@ import {
   TextField,
 } from '@mui/material'
 
+import api from '@ors/helpers/Api/_api'
+
+import { useSnackbar } from 'notistack'
+import { useGetProjectSettings } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjectSettings.ts'
+import {
+  ApiProjectSettings,
+  ApiProjectSettingsForFrontend,
+} from '@ors/types/api_project_settings.ts'
+import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { MdOutlineHistory } from 'react-icons/md'
 type EmailSettingsType = {
   withNotifications: boolean
   emailAddresses: string
@@ -25,13 +36,19 @@ type EmailSettingsType = {
 }
 type SetEmailSettingsType = Dispatch<SetStateAction<EmailSettingsType>>
 
-const ProjectsSettings = ({
-  data,
-  setParams,
-}: {
-  data: any
-  setParams: any
-}) => {
+type ProjectSettingsParams = {
+  data: ApiProjectSettingsForFrontend
+  refetch: ReturnType<typeof useGetProjectSettings>['refetch']
+}
+
+type ProjectFieldSettings = Pick<
+  ApiProjectSettings,
+  ApiProjectSettingsForFrontend['sections']['Projects'][number]
+>
+
+const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
+  const refetch = props.refetch
+  const data = props.data.data
   const { enqueueSnackbar } = useSnackbar()
 
   const {
@@ -151,7 +168,9 @@ const ProjectsSettings = ({
 
       setEmailSettings((prev) => ({
         ...prev,
-        withNotifications: newSettings[field as keyof Settings] as boolean,
+        withNotifications: newSettings[
+          field as keyof ApiProjectSettings
+        ] as boolean,
         errors: null,
       }))
 
@@ -165,7 +184,7 @@ const ProjectsSettings = ({
         }))
       }
 
-      setParams((prev: any) => ({ ...prev }))
+      refetch()
 
       enqueueSnackbar('Email settings updated successfully', {
         variant: 'success',
@@ -212,15 +231,19 @@ const ProjectsSettings = ({
 
       setEmailSettings((prev) => ({
         ...prev,
-        emailAddresses: newSettings[field as keyof Settings] as string,
+        emailAddresses: newSettings[
+          field as keyof ApiProjectSettings
+        ] as string,
         errors: null,
       }))
-      setParams((prev: any) => ({ ...prev }))
+      refetch()
 
       if (type === 'submission' && areSameEmails) {
         setRecommendationEmail((prev) => ({
           ...prev,
-          emailAddresses: newSettings[field as keyof Settings] as string,
+          emailAddresses: newSettings[
+            field as keyof ApiProjectSettings
+          ] as string,
         }))
       }
 
@@ -274,9 +297,7 @@ const ProjectsSettings = ({
                     <Checkbox
                       name={`send_${type}_email`}
                       checked={emailSettings.withNotifications}
-                      onChange={(
-                        event: React.ChangeEvent<HTMLInputElement>,
-                      ) => {
+                      onChange={(event) => {
                         handleWithNotificationsChange(
                           event.target.checked,
                           setEmailSettings,
@@ -364,4 +385,131 @@ const ProjectsSettings = ({
   )
 }
 
-export default ProjectsSettings
+const submitData = async <DT,>(
+  data: DT,
+  msgSuccess: string,
+  enqueueSnackbar: ReturnType<typeof useSnackbar>['enqueueSnackbar'],
+) => {
+  try {
+    await api(`api/project-settings`, {
+      data: data,
+      method: 'POST',
+    })
+
+    enqueueSnackbar(msgSuccess, {
+      variant: 'success',
+    })
+  } catch (error) {
+    console.error('Error updating data:', error)
+
+    const errors = await error.json()
+    if (errors.detail) {
+      enqueueSnackbar('Something went wrong. Please try again.', {
+        variant: 'error',
+      })
+    }
+  }
+}
+
+const ProjectsSettingsGlobalFields = ({
+  data,
+  refetch,
+}: ProjectSettingsParams) => {
+  const { enqueueSnackbar } = useSnackbar()
+
+  const fields = data.sections.Projects
+
+  const [form, setForm] = useState<ProjectFieldSettings>(() => {
+    const entries = Object.entries(data.data).filter(([k]) =>
+      (fields as readonly string[]).includes(k),
+    ) as [keyof ProjectFieldSettings, string][]
+
+    return Object.fromEntries(entries) as ProjectFieldSettings
+  })
+
+  const handleInput: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (evt) => {
+      setForm((prev) => ({ ...prev, [evt.target.name]: evt.target.value }))
+    },
+    [setForm],
+  )
+  const resetValue = useCallback(
+    (name: keyof typeof data.data) => {
+      setForm((prev) => ({ ...prev, [name]: data.data[name] }))
+    },
+    [data],
+  )
+  const handleSubmit = async () => {
+    await submitData<ProjectFieldSettings>(
+      form,
+      'Fields updated successfully.',
+      enqueueSnackbar,
+    )
+    refetch()
+  }
+  return (
+    <mui.Box className="mt-5">
+      {fields.map((f) => {
+        return (
+          <div className="my-2 flex items-center">
+            <label className="inline-block w-96" htmlFor={f}>
+              {data.fields[f].title}
+            </label>
+            <FormattedNumberInput
+              id={f}
+              value={form[f]}
+              onChange={handleInput}
+              className={'w-72'}
+            />
+            {data.data[f] !== form[f] ? (
+              <mui.Tooltip placement="top" title="Revert value.">
+                <div
+                  className="flex cursor-pointer items-center gap-2 text-xl normal-case leading-none"
+                  onClick={() => resetValue(f)}
+                >
+                  <MdOutlineHistory />
+                </div>
+              </mui.Tooltip>
+            ) : null}
+          </div>
+        )
+      })}
+      <mui.Button onClick={handleSubmit} variant="contained">
+        Save changes
+      </mui.Button>
+    </mui.Box>
+  )
+}
+
+enum Tab {
+  Emails = 0,
+  GlobalFields = 1,
+}
+
+const ProjectsSettings = ({ data, refetch }: ProjectSettingsParams) => {
+  const [currentTab, setCurrentTab] = useState<Tab>(Tab.Emails)
+  const tabContent = useMemo(() => {
+    switch (currentTab) {
+      case Tab.Emails:
+        return <ProjectsSettingsEmails data={data} refetch={refetch} />
+      case Tab.GlobalFields:
+        return <ProjectsSettingsGlobalFields data={data} refetch={refetch} />
+    }
+  }, [currentTab, data, refetch])
+  return (
+    <div>
+      <mui.Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
+        <mui.Tab label="Emails" />
+        <mui.Tab label="Global fields" />
+      </mui.Tabs>
+      {tabContent}
+    </div>
+  )
+}
+
+const ProjectSettingsWrapper = () => {
+  const { data, refetch } = useGetProjectSettings(true)
+
+  return data ? <ProjectsSettings data={data} refetch={refetch} /> : null
+}
+export default ProjectSettingsWrapper

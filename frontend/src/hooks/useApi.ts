@@ -25,7 +25,7 @@ export type ApiSettings = {
   reactivePath?: boolean
 } & IApi
 
-export interface UseApiReturn<DT> {
+export interface UseApiReturn<DT, PT = Record<string, any>> {
   apiSettings: ApiSettings
   data: DT | null | undefined
   error: ErrorType
@@ -33,13 +33,13 @@ export interface UseApiReturn<DT> {
   loading: boolean
   params: Record<string, any>
   setApiSettings: Dispatch<SetStateAction<ApiSettings>>
-  setParams: (params: Record<string, any>) => void
+  setParams: (params: PT) => void
   refetch: () => void
 }
 
-export default function useApi<DT = DataType>(
+export default function useApi<DT = DataType, PT = Record<string, any>>(
   props: ApiSettings,
-): UseApiReturn<DT> {
+): UseApiReturn<DT, PT> {
   const id = useId()
   const [fetchIndex, setFetchIndex] = useState(0)
   const [apiSettings, setApiSettings] = useState(props)
@@ -78,7 +78,7 @@ export default function useApi<DT = DataType>(
   }
 
   const setParams = useCallback(
-    (params: Record<string, any>) => {
+    (params: PT) => {
       setApiSettings(
         produce((apiSettings) => {
           apiSettings.options.params = {
