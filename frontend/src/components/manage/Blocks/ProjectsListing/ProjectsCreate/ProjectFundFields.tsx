@@ -19,10 +19,12 @@ const ProjectFundFields = ({
   setProjectData,
   project,
   errors = {},
+  mode,
   postExComUpdate,
   type,
 }: ProjectDataProps & {
   project?: ProjectTypeApi
+  mode?: string
   postExComUpdate?: boolean
   type: string
 }) => {
@@ -33,11 +35,26 @@ const ProjectFundFields = ({
 
   const isRecommended = project?.submission_status === 'Recommended'
   const shouldDisplayPostExcomFields =
-    project?.submission_status === 'Approved' && type === 'crossCutting'
+    mode === 'edit' &&
+    project?.submission_status === 'Approved' &&
+    type === 'crossCutting'
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
+  const handleChangeBooleanValue = (value: boolean, field: string) => {
+    setProjectData(
+      (prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          [field]: value,
+        },
+      }),
+      field,
+    )
+  }
 
   const getFieldDefaultProps = (field: string) => ({
     ...{
@@ -97,18 +114,9 @@ const ProjectFundFields = ({
                   !canEditField(editableFields, 'adjustment') ||
                   !postExComUpdate
                 }
-                onChange={(_: React.SyntheticEvent, value) => {
-                  setProjectData(
-                    (prevData) => ({
-                      ...prevData,
-                      [sectionIdentifier]: {
-                        ...prevData[sectionIdentifier],
-                        adjustment: value,
-                      },
-                    }),
-                    'adjustment',
-                  )
-                }}
+                onChange={(_: React.SyntheticEvent, value) =>
+                  handleChangeBooleanValue(value, 'adjustment')
+                }
                 inputProps={{ tabIndex: 0 }}
                 sx={{
                   '&.Mui-focusVisible': {

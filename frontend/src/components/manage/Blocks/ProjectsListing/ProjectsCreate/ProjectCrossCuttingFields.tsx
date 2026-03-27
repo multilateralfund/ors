@@ -399,6 +399,7 @@ const ProjectCrossCuttingFields = ({
                   setProjectData,
                   project,
                   errors,
+                  mode,
                   postExComUpdate,
                 }}
                 type="crossCutting"
