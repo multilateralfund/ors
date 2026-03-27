@@ -23,7 +23,7 @@ const ProjectFundFields = ({
   type,
 }: ProjectDataProps & {
   project?: ProjectTypeApi
-  postExComUpdate: boolean
+  postExComUpdate?: boolean
   type: string
 }) => {
   const sectionIdentifier = 'crossCuttingFields'
