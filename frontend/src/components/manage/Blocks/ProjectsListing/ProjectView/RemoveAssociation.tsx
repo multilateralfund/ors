@@ -45,7 +45,7 @@ const RemoveAssociationModal = ({
       setInlineMessage({
         type: 'success',
         message: message,
-        tabId: 'project-related-projects-section',
+        tabId: 'related-projects',
       })
     } catch (error) {
       if (error.status === 400) {

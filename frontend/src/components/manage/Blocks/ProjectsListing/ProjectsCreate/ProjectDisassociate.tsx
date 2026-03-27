@@ -38,7 +38,7 @@ const ProjectDisassociate = ({
       setInlineMessage({
         type: 'success',
         message: message,
-        tabId: 'project-related-projects-section',
+        tabId: 'related-projects',
       })
       setRefetchRelatedProjects?.(true)
     } catch (e) {
