@@ -386,9 +386,21 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
             </div>
-            <div className="flex w-fit grid-cols-2 flex-wrap gap-x-20 gap-y-2 md:grid">
+            <div
+              className={cx('flex w-fit flex-wrap gap-x-20 gap-y-2', {
+                'grid-cols-2 md:grid': !(
+                  mode === 'edit' && submission_status === 'Approved'
+                ),
+              })}
+            >
               <ProjectFundFields
-                {...{ projectData, setProjectData, project, errors }}
+                {...{
+                  projectData,
+                  setProjectData,
+                  project,
+                  errors,
+                  postExComUpdate,
+                }}
                 type="crossCutting"
               />
             </div>

@@ -321,6 +321,11 @@ const ProjectsEdit = ({
                         project.blanket_or_individual_consideration,
                     )?.id ?? null)
                   : null,
+              ...(isEditMode &&
+                project.submission_status === 'Approved' && {
+                  adjustment: project.adjustment ?? false,
+                  interest: getFormattedDecimalValue(project.interest ?? null),
+                }),
             },
           }
         : {

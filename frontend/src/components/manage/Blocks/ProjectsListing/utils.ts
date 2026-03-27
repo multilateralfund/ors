@@ -286,6 +286,10 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
+  const crossCuttingFieldsForEdit = omit(crossCuttingFields, [
+    'adjustment',
+    'interest',
+  ])
 
   const filteredFields = filter(specificFields, (field) => !field.is_actual)
   const specificFieldsAvailable = map(filteredFields, 'write_field_name')
@@ -336,7 +340,7 @@ export const formatSubmitData = (
   return {
     ...projIdentifiers,
     bp_activity: bpLinking.bpId,
-    ...normalizeValues(crossCuttingFields),
+    ...normalizeValues(crossCuttingFieldsForEdit),
     ...normalizeValues(crtProjectSpecificFields),
     ...updatedOldSpecificFieldsValues,
     ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
@@ -542,6 +546,12 @@ export const getCrossCuttingErrors = (
     'project_end_date',
     'project_duration',
   ]
+  const nonRequiredFields = [
+    'subsector_ids',
+    'blanket_or_individual_consideration',
+    'interest',
+    'adjustment',
+  ]
 
   const requiredFields = shouldValidateTotalFund
     ? allRequiredFields
@@ -554,11 +564,7 @@ export const getCrossCuttingErrors = (
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) =>
-      [
-        ...allRequiredFields,
-        'subsector_ids',
-        'blanket_or_individual_consideration',
-      ].includes(key),
+      [...allRequiredFields, ...nonRequiredFields].includes(key),
     ),
   )
 

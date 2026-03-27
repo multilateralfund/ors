@@ -47,6 +47,8 @@ export const tableColumns: { [key: string]: string } = {
   psc_transferred: 'Transferred project support costs (US $)',
   lead_agency_submitting_on_behalf:
     'Confirm you are the lead agency submitting on behalf of a cooperating agency',
+  adjustment: 'Adjustment',
+  interest: 'Interest (US $)',
 }
 
 export const defaultProps = {

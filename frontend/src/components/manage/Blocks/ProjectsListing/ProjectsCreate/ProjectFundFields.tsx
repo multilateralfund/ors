@@ -10,6 +10,7 @@ import {
 } from '../constants'
 import { useStore } from '@ors/store'
 
+import { Checkbox } from '@mui/material'
 import { omit } from 'lodash'
 import cx from 'classnames'
 
@@ -18,16 +19,21 @@ const ProjectFundFields = ({
   setProjectData,
   project,
   errors = {},
+  postExComUpdate,
   type,
 }: ProjectDataProps & {
   project?: ProjectTypeApi
+  postExComUpdate: boolean
   type: string
 }) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
-  const { total_fund, support_cost_psc } = crossCuttingFields
+  const { total_fund, support_cost_psc, adjustment, interest } =
+    crossCuttingFields
 
   const isRecommended = project?.submission_status === 'Recommended'
+  const shouldDisplayPostExcomFields =
+    project?.submission_status === 'Approved' && type === 'crossCutting'
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -42,7 +48,8 @@ const ProjectFundFields = ({
           (type === 'crossCutting'
             ? ['fund_transferred', 'psc_transferred'].includes(field)
             : ['total_fund', 'support_cost_psc'].includes(field) &&
-              !isRecommended),
+              !isRecommended) ||
+          (['adjustment', 'interest'].includes(field) && !postExComUpdate),
       }),
     },
   })
@@ -78,6 +85,44 @@ const ProjectFundFields = ({
           </div>
         </div>
       )}
+      {canViewField(viewableFields, 'adjustment') &&
+        shouldDisplayPostExcomFields && (
+          <div>
+            <Label>{tableColumns.adjustment}</Label>
+            <div className="flex">
+              <Checkbox
+                className="w-40 justify-start pb-2 pl-0 pt-1"
+                checked={Boolean(adjustment)}
+                disabled={
+                  !canEditField(editableFields, 'adjustment') ||
+                  !postExComUpdate
+                }
+                onChange={(_: React.SyntheticEvent, value) => {
+                  setProjectData(
+                    (prevData) => ({
+                      ...prevData,
+                      [sectionIdentifier]: {
+                        ...prevData[sectionIdentifier],
+                        adjustment: value,
+                      },
+                    }),
+                    'adjustment',
+                  )
+                }}
+                inputProps={{ tabIndex: 0 }}
+                sx={{
+                  '&.Mui-focusVisible': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                  },
+                  color: 'black',
+                }}
+              />
+              <div className="w-8">
+                <FieldErrorIndicator errors={errors} field="adjustment" />
+              </div>
+            </div>
+          </div>
+        )}
       {canViewField(viewableFields, 'support_cost_psc') && (
         <div>
           <Label>{tableColumns.support_cost_psc} (US $)</Label>
@@ -101,10 +146,39 @@ const ProjectFundFields = ({
               }
               {...getFieldDefaultProps('support_cost_psc')}
             />
-            <FieldErrorIndicator errors={errors} field="support_cost_psc" />
+            <div className="w-8">
+              <FieldErrorIndicator errors={errors} field="support_cost_psc" />
+            </div>
           </div>
         </div>
       )}
+      {canViewField(viewableFields, 'interest') &&
+        shouldDisplayPostExcomFields && (
+          <div>
+            <Label>{tableColumns.interest}</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="interest"
+                value={interest ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(
+                    event,
+                    'interest',
+                    sectionIdentifier,
+                    setProjectData,
+                  )
+                }
+                disabled={
+                  !canEditField(editableFields, 'interest') || !postExComUpdate
+                }
+                {...getFieldDefaultProps('interest')}
+              />
+              <FieldErrorIndicator errors={errors} field="interest" />
+            </div>
+          </div>
+        )}
     </>
   )
 }
