@@ -2036,90 +2036,41 @@ class TestAPRExportView(BaseTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_export_data_correctness(
+    def test_export_data_correctness_and_nulls(
         self,
         apr_agency_viewer_user,
         annual_agency_report,
         project_ongoing_status,
     ):
-        project = ProjectFactory(
-            code="TEST/CODE/2024/001",
+        """
+        Tests output correctness for one project with full data and one with null fields.
+        """
+        project_full = ProjectFactory(
+            code="TEST/CODE/FULL/001",
             title="Test Project Title",
             agency=annual_agency_report.agency,
             status=project_ongoing_status,
             version=3,
             date_approved=date(2022, 4, 5),
         )
-
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=project,
+            project=project_full,
             funds_disbursed=123456.78,
             last_year_remarks="Test remarkss",
             consumption_phased_out_odp=45.67,
             date_first_disbursement="2024-03-15",
         )
 
-        self.client.force_authenticate(user=apr_agency_viewer_user)
-        url = reverse(
-            "apr-export",
-            kwargs={
-                "year": annual_agency_report.progress_report.year,
-                "agency_id": annual_agency_report.agency.id,
-            },
-        )
-        response = self.client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-
-        workbook = load_workbook(BytesIO(response.content))
-        worksheet = workbook[APRExportWriter.SHEET_NAME]
-        columns = APRExportWriter.build_column_mapping()
-        first_data_row = APRExportWriter.FIRST_DATA_ROW
-
-        # All project data gets written to first data row; check it matches
-        project_code_col = columns["project_code"]
-        assert (
-            worksheet.cell(first_data_row, project_code_col).value
-            == "TEST/CODE/2024/001"
-        )
-
-        project_title_col = columns["project_title"]
-        assert (
-            worksheet.cell(first_data_row, project_title_col).value
-            == "Test Project Title"
-        )
-
-        funds_disbursed_col = columns["funds_disbursed"]
-        assert worksheet.cell(first_data_row, funds_disbursed_col).value == 123456.78
-
-        odp_col = columns["consumption_phased_out_odp"]
-        assert worksheet.cell(first_data_row, odp_col).value == 45.67
-
-        date_col = columns["date_first_disbursement"]
-        cell_value = worksheet.cell(first_data_row, date_col).value
-        assert cell_value == datetime(2024, 3, 15, 0, 0)
-
-        remarks_col = columns["last_year_remarks"]
-        assert worksheet.cell(first_data_row, remarks_col).value == "Test remarkss"
-
-        agency_col = columns["agency_name"]
-        assert worksheet.cell(first_data_row, agency_col).value == project.agency.name
-
-        country_col = columns["country_name"]
-        assert worksheet.cell(first_data_row, country_col).value == project.country.name
-
-    def test_export_null_values(
-        self, apr_agency_viewer_user, annual_agency_report, project_ongoing_status
-    ):
-        project = ProjectFactory(
-            code="TEST/CODE/2024/001",
+        project_null = ProjectFactory(
+            code="TEST/CODE/NULL/001",
             title="Test Project Title",
             agency=annual_agency_report.agency,
             status=project_ongoing_status,
         )
         AnnualProjectReportFactory(
             report=annual_agency_report,
-            project=project,
+            project=project_null,
             funds_disbursed=None,
             consumption_phased_out_odp=45.67,
             last_year_remarks="",
@@ -2135,23 +2086,56 @@ class TestAPRExportView(BaseTest):
             },
         )
         response = self.client.get(url)
-
         assert response.status_code == status.HTTP_200_OK
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
         columns = APRExportWriter.build_column_mapping()
-        first_data_row = APRExportWriter.FIRST_DATA_ROW
+        project_code_col = columns["project_code"]
 
-        funds_col = columns["funds_disbursed"]
-        assert worksheet.cell(first_data_row, funds_col).value is None
+        # Find each project's row by code
+        full_row = null_row = None
+        for row_idx in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1):
+            code = worksheet.cell(row_idx, project_code_col).value
+            if code == "TEST/CODE/FULL/001":
+                full_row = row_idx
+            elif code == "TEST/CODE/NULL/001":
+                null_row = row_idx
+        assert full_row is not None
+        assert null_row is not None
 
-        date_col = columns["date_first_disbursement"]
-        assert worksheet.cell(first_data_row, date_col).value is None
+        # Check full-data project fields
+        assert (
+            worksheet.cell(full_row, columns["project_title"]).value
+            == "Test Project Title"
+        )
+        assert worksheet.cell(full_row, columns["funds_disbursed"]).value == 123456.78
+        assert (
+            worksheet.cell(full_row, columns["consumption_phased_out_odp"]).value
+            == 45.67
+        )
+        assert worksheet.cell(
+            full_row, columns["date_first_disbursement"]
+        ).value == datetime(2024, 3, 15, 0, 0)
+        assert (
+            worksheet.cell(full_row, columns["last_year_remarks"]).value
+            == "Test remarkss"
+        )
+        assert (
+            worksheet.cell(full_row, columns["agency_name"]).value
+            == project_full.agency.name
+        )
+        assert (
+            worksheet.cell(full_row, columns["country_name"]).value
+            == project_full.country.name
+        )
 
-        remarks_col = columns["last_year_remarks"]
-        cell_value = worksheet.cell(first_data_row, remarks_col).value
-        assert cell_value is None
+        # Check null-data project fields
+        assert worksheet.cell(null_row, columns["funds_disbursed"]).value is None
+        assert (
+            worksheet.cell(null_row, columns["date_first_disbursement"]).value is None
+        )
+        assert worksheet.cell(null_row, columns["last_year_remarks"]).value is None
 
 
 @pytest.mark.django_db
@@ -2166,11 +2150,9 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         multiple_project_versions_for_apr,
     ):
         version3 = multiple_project_versions_for_apr[0]
-        # just a sanity check
         assert version3.version == 3
 
         middle_version = multiple_project_versions_for_apr[1]
-        # just a sanity check
         assert middle_version.total_fund == 125000.0
 
         latest_version = multiple_project_versions_for_apr[2]
@@ -2184,7 +2166,7 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
-        # Set values, then look at the model instance again
+        # Set values, then look at the model instance again to test everything
         funds_disbursed = 80000.0
         support_cost_disbursed = 8000.0
         annual_report = AnnualProjectReport.objects.filter(
@@ -3770,9 +3752,12 @@ class TestAPRMLFSExportView(BaseTest):
         ).value
         assert {first_code, second_code} == {project1.code, project2.code}
 
-    def test_empty_export_with_headers(
+    def test_empty_export_returns_template_row(
         self, mlfs_admin_user, apr_year, annual_progress_report
     ):
+        """
+        Tests that a real year with no submitted reports produces an empty template row.
+        """
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
         response = self.client.get(url)
@@ -3782,9 +3767,8 @@ class TestAPRMLFSExportView(BaseTest):
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
 
-        # Should have headers but no data rows (or one empty template row)
+        # Should have headers, but no data rows (just one empty template row)
         data_rows = worksheet.max_row - APRExportWriter.FIRST_DATA_ROW + 1
-        # This is just an empty "template" data row
         assert data_rows == 1
         first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
         columns = APRExportWriter.build_column_mapping()
@@ -3874,30 +3858,13 @@ class TestAPRMLFSExportView(BaseTest):
         assert worksheet.cell(first_row + 1, agency_col).value == "Omega"
         assert worksheet.cell(first_row + 2, agency_col).value == "Zero"
 
-    def test_empty_export_nonexistent_year(self, mlfs_admin_user):
-        self.client.force_authenticate(user=mlfs_admin_user)
-        url = reverse("apr-mlfs-export", kwargs={"year": 9999})
-        response = self.client.get(url)
-
-        # Should return empty export (no reports for that year)
-        assert response.status_code == status.HTTP_200_OK
-        workbook = load_workbook(BytesIO(response.content))
-        worksheet = workbook[APRExportWriter.SHEET_NAME]
-        data_rows = worksheet.max_row - APRExportWriter.HEADER_ROW
-
-        # This is just an empty "template" data row
-        assert data_rows == 1
-        first_data_row = APRExportWriter.FIRST_DATA_ROW + 1
-        columns = APRExportWriter.build_column_mapping()
-        row_values = [
-            worksheet.cell(first_data_row, col).value
-            for col in range(1, len(columns) + 1)
-        ]
-        assert all(value is None or value == "" for value in row_values)
-
-    def test_derived_fields_with_multiple_versions(
+    def test_derived_fields_from_project_versions(
         self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
     ):
+        """
+        Testing how both single-version and multi-version project data is exported,
+        in one single Excel export.
+        """
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
@@ -3928,6 +3895,7 @@ class TestAPRMLFSExportView(BaseTest):
         columns = APRExportWriter.build_column_mapping()
         first_data_row = APRExportWriter.FIRST_DATA_ROW
 
+        # Financial and support-cost derived fields
         assert (
             worksheet.cell(first_data_row, columns["approved_funding"]).value
             == version3.total_fund
@@ -3958,6 +3926,67 @@ class TestAPRMLFSExportView(BaseTest):
             worksheet.cell(first_data_row, columns["support_cost_adjustment"]).value
             == expected_sc_adjustment
         )
+
+        # Phase-out proposal fields should come from version 3
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_odp_proposal"]
+            ).value
+            == version3.consumption_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_co2_proposal"]
+            ).value
+            == version3.consumption_phase_out_co2
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_odp_proposal"]
+            ).value
+            == version3.production_phase_out_odp
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_co2_proposal"]
+            ).value
+            == version3.production_phase_out_co2
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["consumption_phased_out_mt_proposal"]
+            ).value
+            == version3.consumption_phase_out_mt
+        )
+
+        assert (
+            worksheet.cell(
+                first_data_row, columns["production_phased_out_mt_proposal"]
+            ).value
+            == version3.production_phase_out_mt
+        )
+
+        # Date fields: date_approved and date_completion_proposal from version 3;
+        # date_of_completion_per_agreement_or_decisions from latest version
+        date_approved_cell = worksheet.cell(
+            first_data_row, columns["date_approved"]
+        ).value
+        assert date_approved_cell.date() == version3.date_approved
+
+        date_completion_proposal_cell = worksheet.cell(
+            first_data_row, columns["date_completion_proposal"]
+        ).value
+        assert date_completion_proposal_cell.date() == version3.date_completion
+
+        date_completion_agreement_cell = worksheet.cell(
+            first_data_row,
+            columns["date_of_completion_per_agreement_or_decisions"],
+        ).value
+        assert date_completion_agreement_cell.date() == latest_version.date_completion
 
     def test_derived_fields_with_archive_version_apr(
         self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
@@ -4084,127 +4113,6 @@ class TestAPRMLFSExportView(BaseTest):
             ).value
             == version3.total_fund
         )
-
-    def test_phaseout_fields_from_version3(
-        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
-    ):
-        version3 = multiple_project_versions_for_apr[0]
-        latest_version = multiple_project_versions_for_apr[2]
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=latest_version,
-        )
-
-        annual_agency_report.status = (
-            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
-        )
-        annual_agency_report.save()
-
-        self.client.force_authenticate(user=mlfs_admin_user)
-        url = reverse(
-            "apr-mlfs-export",
-            kwargs={"year": annual_agency_report.progress_report.year},
-        )
-
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-
-        workbook = load_workbook(BytesIO(response.content))
-        worksheet = workbook[APRExportWriter.SHEET_NAME]
-        columns = APRExportWriter.build_column_mapping()
-        first_data_row = APRExportWriter.FIRST_DATA_ROW
-
-        # All phase-out proposal fields should come from version 3
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_odp_proposal"]
-            ).value
-            == version3.consumption_phase_out_odp
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_co2_proposal"]
-            ).value
-            == version3.consumption_phase_out_co2
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_odp_proposal"]
-            ).value
-            == version3.production_phase_out_odp
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_co2_proposal"]
-            ).value
-            == version3.production_phase_out_co2
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["consumption_phased_out_mt_proposal"]
-            ).value
-            == version3.consumption_phase_out_mt
-        )
-
-        assert (
-            worksheet.cell(
-                first_data_row, columns["production_phased_out_mt_proposal"]
-            ).value
-            == version3.production_phase_out_mt
-        )
-
-    def test_date_fields_from_different_versions(
-        self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
-    ):
-        version3 = multiple_project_versions_for_apr[0]
-        latest_version = multiple_project_versions_for_apr[2]
-
-        AnnualProjectReportFactory(
-            report=annual_agency_report,
-            project=latest_version,
-        )
-
-        annual_agency_report.status = (
-            AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
-        )
-        annual_agency_report.save()
-
-        self.client.force_authenticate(user=mlfs_admin_user)
-        url = reverse(
-            "apr-mlfs-export",
-            kwargs={"year": annual_agency_report.progress_report.year},
-        )
-
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-
-        workbook = load_workbook(BytesIO(response.content))
-        worksheet = workbook[APRExportWriter.SHEET_NAME]
-        columns = APRExportWriter.build_column_mapping()
-        first_data_row = APRExportWriter.FIRST_DATA_ROW
-
-        date_approved_cell = worksheet.cell(
-            first_data_row, columns["date_approved"]
-        ).value
-        assert date_approved_cell.date() == version3.date_approved
-
-        date_completion_proposal_cell = worksheet.cell(
-            first_data_row, columns["date_completion_proposal"]
-        ).value
-        assert date_completion_proposal_cell.date() == version3.date_completion
-
-        date_completion_agreement_cell = worksheet.cell(
-            first_data_row,
-            columns["date_of_completion_per_agreement_or_decisions"],
-        ).value
-        assert date_completion_agreement_cell.date() == latest_version.date_completion
 
 
 @pytest.mark.django_db

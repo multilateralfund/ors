@@ -218,14 +218,41 @@ class TestExportAllProjectsAsAprCommand:
             if os.path.exists(path):
                 os.unlink(path)
 
-    def test_produces_xlsx_with_correct_sheet(self, project_v3):
+    def test_xlsx_output_structure_and_field_values(self, project_v3):
+        """
+        Consolidates 4 single-project export checks: correct sheet name,
+        balance/approved_funding values, per_cent_funds_disbursed=None without
+        disbursements, and APR input columns are empty.
+        """
         with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as f:
             path = f.name
         try:
             call_command("export_all_projects_as_apr", output=path)
             assert os.path.exists(path)
             wb = load_workbook(path)
+            ws = wb[APRExportWriter.SHEET_NAME]
             assert APRExportWriter.SHEET_NAME in wb.sheetnames
+
+            col_map = APRExportWriter.build_column_mapping()
+            row = APRExportWriter.FIRST_DATA_ROW
+
+            # balance and approved_funding should equal total_fund (no disbursements)
+            assert (
+                ws.cell(row, col_map["approved_funding"]).value == project_v3.total_fund
+            )
+            assert ws.cell(row, col_map["balance"]).value == project_v3.total_fund
+
+            # per_cent_funds_disbursed should be None without disbursements
+            assert ws.cell(row, col_map["per_cent_funds_disbursed"]).value is None
+
+            # APR input columns should be empty
+            for field in [
+                "funds_disbursed",
+                "funds_committed",
+                "support_cost_disbursed",
+            ]:
+                val = ws.cell(row, col_map[field]).value
+                assert val is None, f"Column '{field}' should be empty, got {val!r}"
         finally:
             os.unlink(path)
 
@@ -247,64 +274,5 @@ class TestExportAllProjectsAsAprCommand:
         try:
             call_command("export_all_projects_as_apr", output=path)
             assert os.path.exists(path)
-        finally:
-            os.unlink(path)
-
-    def test_balance_column_equals_approved_funding(self, project_v3):
-        """balance cell = total_fund when no disbursements."""
-        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as f:
-            path = f.name
-        try:
-            call_command("export_all_projects_as_apr", output=path)
-            wb = load_workbook(path)
-            ws = wb[APRExportWriter.SHEET_NAME]
-
-            col_map = APRExportWriter.build_column_mapping()
-            balance_val = ws.cell(
-                APRExportWriter.FIRST_DATA_ROW, col_map["balance"]
-            ).value
-            funding_val = ws.cell(
-                APRExportWriter.FIRST_DATA_ROW, col_map["approved_funding"]
-            ).value
-
-            assert funding_val == project_v3.total_fund
-            assert balance_val == project_v3.total_fund
-        finally:
-            os.unlink(path)
-
-    def test_per_cent_funds_disbursed_empty_without_disbursements(self, project_v3):
-        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as f:
-            path = f.name
-        try:
-            call_command("export_all_projects_as_apr", output=path)
-            wb = load_workbook(path)
-            ws = wb[APRExportWriter.SHEET_NAME]
-
-            col_map = APRExportWriter.build_column_mapping()
-            pct_val = ws.cell(
-                APRExportWriter.FIRST_DATA_ROW, col_map["per_cent_funds_disbursed"]
-            ).value
-            assert pct_val is None
-        finally:
-            os.unlink(path)
-
-    def test_apr_input_columns_are_empty(self, project_v3):
-        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as f:
-            path = f.name
-        try:
-            call_command("export_all_projects_as_apr", output=path)
-            wb = load_workbook(path)
-            ws = wb[APRExportWriter.SHEET_NAME]
-
-            col_map = APRExportWriter.build_column_mapping()
-            row = APRExportWriter.FIRST_DATA_ROW
-
-            for field in [
-                "funds_disbursed",
-                "funds_committed",
-                "support_cost_disbursed",
-            ]:
-                val = ws.cell(row, col_map[field]).value
-                assert val is None, f"Column '{field}' should be empty, got {val!r}"
         finally:
             os.unlink(path)
