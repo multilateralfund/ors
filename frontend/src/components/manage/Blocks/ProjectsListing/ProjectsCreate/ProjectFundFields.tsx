@@ -106,9 +106,9 @@ const ProjectFundFields = ({
         shouldDisplayPostExcomFields && (
           <div>
             <Label>{tableColumns.adjustment}</Label>
-            <div className="flex">
+            <div className="flex w-48 items-center">
               <Checkbox
-                className="w-40 justify-start pb-2 pl-0 pt-1"
+                className="justify-start pb-1.5 pl-0 pt-1.5"
                 checked={Boolean(adjustment)}
                 disabled={
                   !canEditField(editableFields, 'adjustment') ||
