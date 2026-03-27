@@ -1,6 +1,15 @@
+from collections import OrderedDict
+from decimal import Decimal
+from itertools import chain
+
 from constance import config
-from django.db.models import Min, Max
-from rest_framework import status, views
+from django.conf import settings
+from django.db.models import Max
+from django.db.models import Min
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework import views
 from rest_framework.response import Response
 
 from core.api.permissions import (
@@ -9,8 +18,12 @@ from core.api.permissions import (
 from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.models import CPReport
 from core.models.blend import Blend
-from core.models.business_plan import BPActivity, BusinessPlan
-from core.models.project import Project, ProjectFund, ProjectOdsOdp, SubmissionAmount
+from core.models.business_plan import BPActivity
+from core.models.business_plan import BusinessPlan
+from core.models.project import Project
+from core.models.project import ProjectFund
+from core.models.project import ProjectOdsOdp
+from core.models.project import SubmissionAmount
 from core.models.utils import SubstancesType
 
 
@@ -97,44 +110,63 @@ class ProjectSettingsView(views.APIView):
 
     permission_classes = [HasProjectSettingsAccess]
 
+    _managed_fields = OrderedDict(
+        chain(
+            settings.EMAILS_CONSTANCE_FIELDS.items(),
+            settings.PROJECTS_GLOBAL_FIELDS.items(),
+        )
+    )
+
+    def get_saved_values(self):
+        result = {}
+        for name in self._managed_fields:
+            value = getattr(config, name)
+            if isinstance(value, Decimal):
+                value = value.to_eng_string()
+            result[name.lower()] = value
+        return result
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "for_frontend",
+                openapi.IN_QUERY,
+                description="Returns field information useful for rendering in frontend.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ]
+    )
     def get(self, *args, **kwargs):
-        project_settings = {
-            "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
-            "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
-            "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
-            "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
-            "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
-            "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
+        if self.request.query_params.get("for_frontend"):
+            return self.for_frontend()
+        return Response(self.get_saved_values())
+
+    def for_frontend(self):
+        sections = {
+            k: [x.lower() for x in v]
+            for k, v in settings.CONSTANCE_CONFIG_FIELDSETS.items()
+            if k != "Unclassified"
         }
-        return Response(project_settings)
+        fields = OrderedDict({})
+        for f_name, f_def in self._managed_fields.items():
+            f_default, f_title, d_type = f_def
+            if d_type == Decimal:
+                f_default = f_default.to_eng_string()
+
+            fields[f_name.lower()] = {
+                "default": f_default,
+                "title": f_title,
+                "type": d_type.__name__,
+            }
+
+        return Response(
+            {"data": self.get_saved_values(), "sections": sections, "fields": fields}
+        )
 
     def post(self, request, *args, **kwargs):
-        config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
-            "project_submission_notifications_emails", ""
-        )
-        config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED = request.data.get(
-            "project_submission_notifications_enabled", False
-        )
-        config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED = request.data.get(
-            "project_recommendation_notifications_enabled", False
-        )
-        config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS = request.data.get(
-            "project_recommendation_notifications_emails", ""
-        )
-        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED = request.data.get(
-            "apr_agency_submission_notifications_enabled", False
-        )
-        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
-            "apr_agency_submission_notifications_emails", ""
-        )
-        return Response(
-            {
-                "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
-                "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
-                "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
-                "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
-                "apr_agency_submission_notifications_enabled": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED,
-                "apr_agency_submission_notifications_emails": config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS,
-            },
-            status=status.HTTP_200_OK,
-        )
+        for name in self._managed_fields:
+            value = request.data.get(name.lower(), None)
+            if value is not None:
+                setattr(config, name, value)
+
+        return Response(self.get_saved_values(), status=status.HTTP_200_OK)

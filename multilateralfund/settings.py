@@ -10,12 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import environ
-import socket
 import os
-from celery.schedules import crontab
+import socket
+from collections import OrderedDict
+from datetime import date
+from datetime import timedelta
+from decimal import Decimal
 from pathlib import Path
-from datetime import datetime, timedelta
+
+import environ
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -227,49 +231,120 @@ MIN_VALID_YEAR = 1985
 
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
-CONSTANCE_CONFIG = {
-    "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
-    "SEND_MAIL": (True, "Send email notifications to users?", bool),
-    "CP_NOTIFICATION_EMAILS": (
-        "",
-        "Email addresses that receive email notifications (comma-separated)",
-        str,
-    ),
-    "PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED": (
-        False,
-        "Enable project submission notifications",
-        bool,
-    ),
-    "PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS": (
-        "",
-        "Email addresses that receive project submission notifications (comma-separated)",
-        str,
-    ),
-    "PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED": (
-        False,
-        "Enable project recommendation notifications",
-        bool,
-    ),
-    "PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS": (
-        "",
-        "Email addresses that receive project recommendation notifications (comma-separated)",
-        str,
-    ),
-    "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
-        datetime(2024, 5, 27),
-        "Default 'As Of Date' for replenishment",
-    ),
-    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED": (
-        False,
-        "Enable agency submission notifications",
-        bool,
-    ),
-    "APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS": (
-        "",
-        "Email addresses that receive agency submission notifications (comma-separated)",
-        str,
-    ),
-}
+CONSTANCE_CONFIG = OrderedDict()
+
+UNCLASSIFIED_CONSTANCE_FIELDS = OrderedDict(
+    {
+        "CP_NR_REPORTS": (
+            9,
+            "Number of reports to display in the country programme page",
+            int,
+        ),
+        "SEND_MAIL": (True, "Send email notifications to users?", bool),
+        "CP_NOTIFICATION_EMAILS": (
+            "",
+            "Email addresses that receive email notifications (comma-separated)",
+            str,
+        ),
+        "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
+            date(2024, 5, 27),
+            "Default 'As Of Date' for replenishment",
+            date,
+        ),
+    }
+)
+
+CONSTANCE_CONFIG.update(UNCLASSIFIED_CONSTANCE_FIELDS)
+
+EMAILS_CONSTANCE_FIELDS = OrderedDict(
+    {
+        "PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED": (
+            False,
+            "Enable project submission notifications",
+            bool,
+        ),
+        "PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS": (
+            "",
+            "Email addresses that receive project submission notifications (comma-separated)",
+            str,
+        ),
+        "PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED": (
+            False,
+            "Enable project recommendation notifications",
+            bool,
+        ),
+        "PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS": (
+            "",
+            "Email addresses that receive project recommendation notifications (comma-separated)",
+            str,
+        ),
+        "APR_AGENCY_SUBMISSION_NOTIFICATIONS_ENABLED": (
+            False,
+            "Enable agency submission notifications",
+            bool,
+        ),
+        "APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS": (
+            "",
+            "Email addresses that receive agency submission notifications (comma-separated)",
+            str,
+        ),
+    }
+)
+
+CONSTANCE_CONFIG.update(EMAILS_CONSTANCE_FIELDS)
+
+PROJECTS_GLOBAL_FIELDS = OrderedDict(
+    {
+        "TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR": (
+            Decimal(0),
+            "Total savings to society in US $",
+            Decimal,
+        ),
+        "TOTAL_AVOIDED_EMISSIONS_OF_ODS_IN_ODP_TONNES": (
+            Decimal(0),
+            "Total avoided emissions of ODS in ODP tonnes",
+            Decimal,
+        ),
+        "TOTAL_AVOIDED_EMISSIONS_OF_CONTROLLED_SUBSTANCES_IN_CO2_EQ_TONNES": (
+            Decimal(0),
+            "Total avoided emissions of controlled substances in CO2-eq tonnes",
+            Decimal,
+        ),
+        "COST_TO_THE_FUND_TO_REMOVE_1_ODP_TONNE_FROM_ODS": (
+            Decimal(0),
+            "Cost to the Fund to remove 1 ODP tonne from ODS",
+            Decimal,
+        ),
+        "COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_CONTROLLED_SUBSTANCES": (
+            Decimal(0),
+            "Cost to the Fund to remove 1 CO2-eq tonne from controlled substances",
+            Decimal,
+        ),
+        "EXPECTED_AVOIDED_EMISSIONS_FROM_HFCS_IN_CO2_EQ_TONNES": (
+            Decimal(0),
+            "Expected avoided emissions from HFCs in CO2-eq tonnes",
+            Decimal,
+        ),
+        "EXPECTED_COST_TO_THE_FUND_TO_REMOVE_1_CO2_EQ_TONNE_FROM_HFCS": (
+            Decimal(0),
+            "Expected cost to the Fund to remove 1 CO2-eq tonne from HFCs",
+            Decimal,
+        ),
+        "GLOBAL_FIELD_1": ("", "Global field 1", str),
+        "GLOBAL_FIELD_2": ("", "Global field 2", str),
+        "GLOBAL_FIELD_3": ("", "Global field 3", str),
+    }
+)
+
+CONSTANCE_CONFIG.update(PROJECTS_GLOBAL_FIELDS)
+
+CONSTANCE_CONFIG_FIELDSETS = OrderedDict(
+    {
+        "Unclassified": tuple(UNCLASSIFIED_CONSTANCE_FIELDS),
+        "Emails": tuple(EMAILS_CONSTANCE_FIELDS),
+        "Projects": tuple(PROJECTS_GLOBAL_FIELDS),
+    }
+)
 
 # Logging
 LOG_LEVEL = env.get_value("DJANGO_LOG_LEVEL", default="DEBUG" if DEBUG else "INFO")
