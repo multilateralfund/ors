@@ -326,5 +326,167 @@
     "SORT_SUBSECTOR": 51,
     "ACTION": "RENAME",
     "OLD_NAME": "End User"
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Other",
+    "SORT_SUBSECTOR": 52,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Network",
+    "SORT_SUBSECTOR": 53,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CFC-113",
+    "SORT_SUBSECTOR": 54,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Combined CFC-113 and TCA",
+    "SORT_SUBSECTOR": 55,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CTC subsector",
+    "SORT_SUBSECTOR": 56,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Tobacco fluffing",
+    "SORT_SUBSECTOR": 57,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "ODS closure",
+    "SORT_SUBSECTOR": 58,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "TCA closure",
+    "SORT_SUBSECTOR": 59,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Phase out Plan",
+    "SORT_SUBSECTOR": 60,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Rigid PU, flexible",
+    "SORT_SUBSECTOR": 61,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Rigid PU, XPS subsector",
+    "SORT_SUBSECTOR": 62,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "End user, commercial air conditioning, commercial refrigeration",
+    "SORT_SUBSECTOR": 63,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Air-conditioning",
+    "SORT_SUBSECTOR": 64,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Methyl bromide",
+    "SORT_SUBSECTOR": 65,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Non-investment programme",
+    "SORT_SUBSECTOR": 66,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Halon conversion",
+    "SORT_SUBSECTOR": 67,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CTC phase out",
+    "SORT_SUBSECTOR": 68,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CFC closure",
+    "SORT_SUBSECTOR": 69,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Halon closure",
+    "SORT_SUBSECTOR": 70,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "MB closure",
+    "SORT_SUBSECTOR": 71,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Production Plant Closure",
+    "SORT_SUBSECTOR": 72,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "HFC closure subsector",
+    "SORT_SUBSECTOR": 73,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "TCA",
+    "SORT_SUBSECTOR": 74,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Sterilant",
+    "SORT_SUBSECTOR": 75,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Policy paper",
+    "SORT_SUBSECTOR": 76,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Industrial and commercial refrigeration (ICR)",
+    "SORT_SUBSECTOR": 77,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CFC conversion",
+    "SORT_SUBSECTOR": 78,
+    "OBSOLETE": true
   }
 ]
