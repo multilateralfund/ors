@@ -7,7 +7,11 @@ import openpyxl
 from django.conf import settings
 from django.db.models import F
 from django.db.models import QuerySet
+from django.db.models import TextField
+from django.db.models import Value
 from django.db.models.functions import Coalesce
+from django.db.models.functions import Concat
+from django.db.models.functions import NullIf
 from django.http import JsonResponse
 from django.utils.html import strip_tags
 from rest_framework import mixins
@@ -79,12 +83,6 @@ class BlanketApprovalDetailsViewset(
     """ViewSet for blanket approval details."""
 
     filterset_class = BlanketApprovalDetailsFilter
-    queryset = Project.objects.really_all().filter(
-        submission_status__name__in=[
-            "Recommended",
-            "Approved",
-        ],
-    )
     permission_classes = (HasProjectV2ViewAccess,)
 
     _template_path = (
@@ -93,6 +91,25 @@ class BlanketApprovalDetailsViewset(
         / "templates"
         / "blanket_approval_details_template.xlsx"
     )
+
+    def get_queryset(self):
+        queryset = (
+            Project.objects.really_all().filter(
+                submission_status__name__in=[
+                    "Recommended",
+                    "Approved",
+                ],
+            )
+            # Avoid duplication caused by project being in Approval (draft)
+            # as it's submission_status is still Recommended until being approved.
+            .exclude(submission_status__name="Recommended", version__gte=3)
+        )
+
+        # Requested in #35434.
+        if self.request.user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
+        return queryset
 
     def _extract_data(self):
         queryset: QuerySet[Project] = self.filter_queryset(self.get_queryset())
@@ -110,7 +127,19 @@ class BlanketApprovalDetailsViewset(
         filtered_projects: Iterable[ProjectData] = queryset.values(  # type: ignore[assignment]
             project_id=F("id"),
             project_title=F("title"),
-            project_description=Coalesce(F("excom_provision"), F("decision__text")),
+            project_description=Coalesce(
+                NullIf(F("excom_provision"), Value("")),
+                NullIf(
+                    Concat(
+                        F("decision__number"),
+                        Value(": "),
+                        F("decision__text"),
+                        output_field=TextField(),
+                    ),
+                    Value(": "),
+                ),
+                output_field=TextField(),
+            ),
             agency_name=F("agency__name"),
             country_pk=F("country"),
             country_name=F("country__name"),
@@ -128,7 +157,11 @@ class BlanketApprovalDetailsViewset(
         for project in filtered_projects:
             key = f"{project['project_type_pk']}, {project['cluster_pk']}"
 
-            project["project_description"] = strip_tags(project["project_description"])
+            project["project_description"] = (
+                strip_tags(project["project_description"])
+                if project["project_description"]
+                else ""
+            )
 
             per_country.setdefault(
                 project["country_pk"],
