@@ -31,6 +31,9 @@ from core.import_data_v2.scripts.clean_up_project_statuses import (
 from core.import_data_v2.scripts.clean_up_project_meta_project_attributes import (
     clean_up_project_meta_project_attributes,
 )
+from core.import_data_v2.scripts.fill_meta_project_for_projects_in_submission import (
+    fill_meta_project_for_projects_in_submission,
+)
 from core.import_data_v2.scripts.import_sector_subsector import (
     import_sector,
     import_subsector,
@@ -141,3 +144,7 @@ def import_project_resources_v2(option):
         )
         generate_new_cluster_type_sector_file(file_path)
         logger.info("✔ new cluster type sector file generated")
+
+    if option == "fill_meta_project_for_projects_in_submission":
+        fill_meta_project_for_projects_in_submission()
+        logger.info("✔ meta project field filled for projects in submission")
