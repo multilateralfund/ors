@@ -107,6 +107,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canApproveProjectEnterprise = user_permissions.includes(
     'has_project_enterprise_approval_access',
   )
+  const canViewFundingWindows = true
+  const canEditFundingWindows = true
 
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
@@ -175,6 +177,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canApproveEnterprise,
         canEditProjectEnterprise,
         canApproveProjectEnterprise,
+        canViewFundingWindows,
+        canEditFundingWindows,
         canSetProjectSettings,
         isMlfsUser,
         canCommentCPCountry,

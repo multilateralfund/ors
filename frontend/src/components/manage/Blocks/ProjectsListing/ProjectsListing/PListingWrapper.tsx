@@ -22,17 +22,8 @@ import { LuCopy } from 'react-icons/lu'
 import cx from 'classnames'
 
 export default function PListingWrapper() {
-  const {
-    canViewBp,
-    canUpdateBp,
-    canViewEnterprises,
-    canEditProjectEnterprise,
-    canUpdateProjects,
-    canAssociateProjects,
-    canUpdatePostExcom,
-    canTransferProjects,
-    canViewMetaProjects,
-  } = useContext(PermissionsContext)
+  const permissions = useContext(PermissionsContext)
+  const { canUpdateProjects, canAssociateProjects } = permissions
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
   const [projectData, setProjectData] = useState<ListingProjectData>(
@@ -110,7 +101,7 @@ export default function PListingWrapper() {
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Copy project
         </Typography>
-        <div className="bg-common-containerBg mb-4 flex flex-col gap-2.5 p-6">
+        <div className="mb-4 flex flex-col gap-2.5 bg-common-containerBg p-6">
           <span className="text-lg">
             You are about to copy the following project and start a new
             submission.
@@ -146,21 +137,11 @@ export default function PListingWrapper() {
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
-          {getMenus(
-            {
-              canViewBp,
-              canUpdateBp,
-              canViewEnterprises,
-              canEditProjectEnterprise,
-              canUpdatePostExcom,
-              canTransferProjects,
-              canViewMetaProjects,
-            },
-            projectData,
-            handleTransferModalOpen,
-          ).map((menu) => (
-            <ExpandableMenu key={menu.title} menu={menu} />
-          ))}
+          {getMenus(permissions, projectData, handleTransferModalOpen).map(
+            (menu) => (
+              <ExpandableMenu key={menu.title} menu={menu} />
+            ),
+          )}
         </div>
         {canUpdateProjects && (
           <CreateButton

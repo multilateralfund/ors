@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { PermissionsContextProps } from '@ors/contexts/PermissionsContext'
 import { getMeetingNr } from '../../Utils/utilFunctions'
 import {
   approvalOdsFields,
@@ -883,7 +884,7 @@ export const getIsUpdatablePostExcom = (
   status !== 'Transferred'
 
 export const getMenus = (
-  permissions: Record<string, boolean>,
+  permissions: PermissionsContextProps,
   projectData?: ListingProjectData,
   onTransferProject?: () => void,
 ) => {
@@ -895,7 +896,9 @@ export const getMenus = (
     canUpdatePostExcom,
     canTransferProjects,
     canViewMetaProjects,
+    canViewFundingWindows,
   } = permissions
+
   const {
     projectId,
     projectSubmissionStatus,
@@ -959,6 +962,11 @@ export const getMenus = (
             !projectId ||
             !projectEditable ||
             projectSubmissionStatus !== 'Approved',
+        },
+        {
+          title: 'Funding windows',
+          url: `/projects-listing/funding-windows`,
+          disabled: !canViewFundingWindows,
         },
       ],
     },

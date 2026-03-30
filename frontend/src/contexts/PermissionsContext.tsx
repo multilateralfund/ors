@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 
-interface PermissionsContextProps {
+export interface PermissionsContextProps {
   canViewCPReports: boolean
   canEditCPReports: boolean
   canSubmitFinalCPReport: boolean
@@ -33,6 +33,8 @@ interface PermissionsContextProps {
   canApproveEnterprise: boolean
   canEditProjectEnterprise: boolean
   canApproveProjectEnterprise: boolean
+  canViewFundingWindows: boolean
+  canEditFundingWindows: boolean
   canSetProjectSettings: boolean
   isMlfsUser: boolean
   canCommentCPCountry: boolean

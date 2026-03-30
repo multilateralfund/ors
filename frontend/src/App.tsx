@@ -74,6 +74,8 @@ import ProjectsEnterprisesPage from '@ors/app/projects_listing/projects_enterpri
 import ProjectsEnterprisesCreatePage from '@ors/app/projects_listing/projects_enterprises/[project_id]/create/page'
 import ProjectsEnterprisesViewPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/view/[enterprise_id]/page'
 import ProjectsEnterprisesEditPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/edit/[enterprise_id]/page'
+import ProjectsFundingWindowsViewPage from '@ors/app/projects_listing/funding-windows/page'
+import ProjectsFundingWindowsCreatePage from '@ors/app/projects_listing/funding-windows/create/page'
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
@@ -384,6 +386,16 @@ export default function App() {
         <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
           <ProjectsDataProvider>
             <ProjectsEnterprisesEditPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/funding-windows">
+          <ProjectsDataProvider>
+            <ProjectsFundingWindowsViewPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/funding-windows/create">
+          <ProjectsDataProvider>
+            <ProjectsFundingWindowsCreatePage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
