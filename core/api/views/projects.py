@@ -121,6 +121,7 @@ class MetaProjectCountryListView(generics.ListAPIView):
         meta_projects = MetaProject.objects.filter(
             type=MetaProject.MetaProjectType.MYA,
             projects__submission_status__name="Approved",
+            is_draft=False,
         ).distinct()
 
         return Country.objects.filter(meta_projects__in=meta_projects).distinct()
@@ -138,6 +139,7 @@ class MetaProjectClusterListView(generics.ListAPIView):
         meta_projects = MetaProject.objects.filter(
             type=MetaProject.MetaProjectType.MYA,
             projects__submission_status__name="Approved",
+            is_draft=False,
         ).distinct()
 
         return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
