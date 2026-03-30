@@ -1,15 +1,16 @@
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import Link from '@ors/components/ui/Link/Link'
-import { InlineMessageProps } from '../interfaces'
+import { useStore } from '@ors/store'
 
 import { IoMdClose } from 'react-icons/io'
 import { map } from 'lodash'
 import cx from 'classnames'
 
-const ProjectsInlineMessage = ({
-  inlineMessage,
-  setInlineMessage,
-}: InlineMessageProps) => {
+const ProjectsInlineMessage = () => {
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
+
   const {
     type = 'success',
     message,

@@ -1,17 +1,19 @@
 import { useContext, useState } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ProjectsInlineMessage from '../ProjectsCreate/ProjectsInlineMessage'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import ProjectMyaUpdate from './ProjectMyaUpdate'
-import { NavigationButton } from '../HelperComponents'
+import { ErrorsList, NavigationButton } from '../HelperComponents'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
+import { formatErrors, hasSectionErrors } from '../utils'
 import {
-  MpDataProps,
   ProjectTabSetters,
   ProjectTypeApi,
   RelatedProjectsSectionType,
-  InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { useStore } from '@ors/store'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -25,24 +27,22 @@ const ProjectUmbrellaProjectDetails = ({
   mode,
   isMya,
   isPrevButtonDisabled,
-  mpData,
-  setMpData,
   ...rest
-}: ProjectTabSetters &
-  MpDataProps & {
-    project?: ProjectTypeApi
-    relatedProjects: RelatedProjectsSectionType[]
-    metaProjectId?: number | null
-    setMetaProjectId?: (id: number | null) => void
-    setRefetchRelatedProjects?: (refetch: boolean) => void
-    canDisassociate?: boolean
-    metaprojectData: MetaProjectDetailType | null
-    mode: string
-    isMya: boolean
-    isPrevButtonDisabled?: boolean
-    setInlineMessage: (message: InlineMessageType) => void
-  }) => {
+}: ProjectTabSetters & {
+  project?: ProjectTypeApi
+  relatedProjects: RelatedProjectsSectionType[]
+  metaProjectId?: number | null
+  setMetaProjectId?: (id: number | null) => void
+  setRefetchRelatedProjects?: (refetch: boolean) => void
+  canDisassociate?: boolean
+  metaprojectData: MetaProjectDetailType | null
+  mode: string
+  isMya: boolean
+  isPrevButtonDisabled?: boolean
+}) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
+  const { allMpErrors } = useStore((state) => state.mpData)
+  const { inlineMessage } = useStore((state) => state.inlineMessage)
 
   const [crtTab, setCrtTab] = useState<number>(0)
 
@@ -69,10 +69,16 @@ const ProjectUmbrellaProjectDetails = ({
       ? [
           {
             id: 'mya-updates',
-            label: 'MYA updates',
-            component: (
-              <ProjectMyaUpdate {...{ mode, mpData, setMpData, ...rest }} />
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">MYA updates</div>
+                {hasSectionErrors(allMpErrors) && (
+                  <SectionErrorIndicator errors={[]} />
+                )}
+              </div>
             ),
+            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
+            errors: formatErrors(allMpErrors),
           },
         ]
       : []),
@@ -102,8 +108,14 @@ const ProjectUmbrellaProjectDetails = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === crtTab)
-          .map(({ id, component }) => (
-            <span key={id}>{component}</span>
+          .map(({ id, component, errors }) => (
+            <span key={id}>
+              {!!inlineMessage && inlineMessage.tabId === id && (
+                <ProjectsInlineMessage />
+              )}
+              {errors && errors.length > 0 && <ErrorsList {...{ errors }} />}
+              {component}
+            </span>
           ))}
       </div>
       {setCurrentTab && (

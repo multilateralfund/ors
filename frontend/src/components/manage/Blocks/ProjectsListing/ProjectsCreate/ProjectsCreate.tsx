@@ -21,7 +21,7 @@ import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
 import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
-import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
+import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
 import {
@@ -38,7 +38,6 @@ import {
   RelatedProjectsSectionType,
   BpDataProps,
   FileMetaDataProps,
-  InlineMessageProps,
   OdsOdpFields,
 } from '../interfaces.ts'
 import {
@@ -61,12 +60,13 @@ import {
   formatOptions,
   getOdsOdpFields,
   getPostExcomMeetingErrors,
-  getFormattedDecimalValue,
   isOtherOdsReplacement,
+  formatMetaprojectData,
+  getMpErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, has, isEmpty, map, mapKeys, pick } from 'lodash'
+import { find, has, isEmpty, isEqual, map, mapKeys, pick } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -104,14 +104,11 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   metaprojectData,
   shouldValidateTotalFund,
-  inlineMessage,
-  setInlineMessage,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
   TrancheErrors &
-  FileMetaDataProps &
-  InlineMessageProps & {
+  FileMetaDataProps & {
     specificFields: ProjectSpecificFields[]
     mode: string
     postExComUpdate?: boolean
@@ -178,23 +175,30 @@ const ProjectsCreate = ({
   const specificFieldsIdentifiers = 'projectSpecificFields'
   const specificFieldsData = projectData[specificFieldsIdentifiers] || []
 
-  const formatMetaprojectData = useCallback(() => {
-    const result = {} as Record<string, any>
+  const {
+    mpData,
+    setMpData,
+    defaultMpErrors,
+    setDefaultMpErrors,
+    allMpErrors,
+    setAllMpErrors,
+  } = useStore((state) => state.mpData)
+  const getFormattedMpdata = useCallback(
+    () => formatMetaprojectData(defaultMetaprojectFieldData),
+    [metaprojectData],
+  )
 
-    for (const key of Object.keys(defaultMetaprojectFieldData) as Array<
-      keyof typeof defaultMetaprojectFieldData
-    >) {
-      const fdEntry = defaultMetaprojectFieldData[key]
-      result[key] =
-        fdEntry.type === 'DecimalField'
-          ? getFormattedDecimalValue(fdEntry.value)
-          : fdEntry.value
-    }
+  useEffect(() => {
+    setMpData(getFormattedMpdata)
+  }, [])
 
-    return result
-  }, [metaprojectData])
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
 
-  const [mpData, setMpData] = useState(formatMetaprojectData)
+  useEffect(() => {
+    setInlineMessage(null)
+  }, [])
 
   useEffect(() => {
     if (groupField) {
@@ -217,10 +221,10 @@ const ProjectsCreate = ({
     }
   }, [groupField])
 
+  const isTabDisabled = areNextSectionsDisabled || bpData.bpDataLoading
+
   const isCrossCuttingTabDisabled =
-    areNextSectionsDisabled ||
-    bpData.bpDataLoading ||
-    !hasFields(projectFields, viewableFields, 'Cross-Cutting')
+    isTabDisabled || !hasFields(projectFields, viewableFields, 'Cross-Cutting')
 
   const hasNoSpecificInfoFields =
     overviewFields.length < 1 && substanceDetailsFields.length < 1
@@ -327,6 +331,28 @@ const ProjectsCreate = ({
     errors,
     crossCuttingErrors,
   ])
+
+  const myaDefaultErrors = useMemo(
+    () => getMpErrors(mpData, metaprojectData, {}, project, mode),
+    [mpData, metaprojectData],
+  )
+
+  const myaAllErrors = useMemo(
+    () => getMpErrors(mpData, metaprojectData, errors, project, mode),
+    [mpData, metaprojectData, errors],
+  )
+
+  useEffect(() => {
+    if (!isEqual(myaDefaultErrors, defaultMpErrors)) {
+      setDefaultMpErrors(myaDefaultErrors)
+    }
+  }, [myaDefaultErrors, defaultMpErrors])
+
+  useEffect(() => {
+    if (!isEqual(myaAllErrors, allMpErrors)) {
+      setAllMpErrors(myaAllErrors)
+    }
+  }, [myaAllErrors, allMpErrors])
 
   const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
@@ -794,7 +820,17 @@ const ProjectsCreate = ({
       : []),
     {
       id: 'project-related-projects-section',
-      label: 'Umbrella project details',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Umbrella project details</div>
+          {hasSectionErrors(myaAllErrors) &&
+            (isTabDisabled || bpData.bpDataLoading ? (
+              DisabledAlert
+            ) : (
+              <SectionErrorIndicator errors={[]} />
+            ))}
+        </div>
+      ),
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectUmbrellaProjectDetails
@@ -808,9 +844,6 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
-            mpData,
-            setMpData,
-            setInlineMessage,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
@@ -897,9 +930,7 @@ const ProjectsCreate = ({
                   )}
                 {!!inlineMessage &&
                   (!inlineMessage.tabId || inlineMessage.tabId === id) && (
-                    <ProjectsInlineMessage
-                      {...{ inlineMessage, setInlineMessage }}
-                    />
+                    <ProjectsInlineMessage />
                   )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
@@ -915,30 +946,7 @@ const ProjectsCreate = ({
                       }
                     />
                   )}
-                {errors && errors.length > 0 && (
-                  <CustomAlert
-                    type="error"
-                    alertClassName="mb-5"
-                    content={
-                      <>
-                        <Typography className="text-lg">
-                          Please make sure all the sections are valid.
-                        </Typography>
-                        <Typography component="div">
-                          <div className="mt-1">
-                            {errors.map((err, idx) =>
-                              err ? (
-                                <div key={idx} className="py-1.5">
-                                  {'\u2022'} {err.message}
-                                </div>
-                              ) : null,
-                            )}
-                          </div>
-                        </Typography>
-                      </>
-                    }
-                  />
-                )}
+                {errors && errors.length > 0 && <ErrorsList {...{ errors }} />}
                 {component}
               </span>
             )

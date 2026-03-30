@@ -2,6 +2,7 @@ import { Dispatch, ReactNode, RefObject, SetStateAction } from 'react'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import CustomLink from '@ors/components/ui/Link/Link'
 import Link from '@ors/components/ui/Link/Link'
@@ -19,7 +20,7 @@ import {
 } from './interfaces'
 import { debounce } from '@ors/helpers'
 
-import { filter, lowerCase, map, split, upperCase } from 'lodash'
+import { filter, lowerCase, map, some, split, upperCase } from 'lodash'
 import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -706,14 +707,32 @@ export const computedTag = (isComputed: boolean) =>
     </span>
   ) : null
 
-export const groupFieldsLabel = (fields: any) => (
-  <Label className="m-auto !mb-0 w-fit font-semibold">
-    {fields[0].label.split('(')[0].trim()}
-  </Label>
-)
+export const groupFieldsLabel = (
+  fields: any,
+  errors?: Record<string, string>,
+) => {
+  const hasErrors = some(fields, (field) => errors?.[field.name])
 
-export const groupFieldsMeasurementUnits = (label: string) => (
-  <span className="flex items-center whitespace-nowrap font-semibold">
+  return (
+    <Label
+      className={cx('m-auto w-fit font-semibold', {
+        'text-red-500': hasErrors,
+      })}
+    >
+      {fields[0].label.split('(')[0].trim()}
+    </Label>
+  )
+}
+
+export const groupFieldsMeasurementUnits = (label: string, errors?: string) => (
+  <span
+    className={cx(
+      'flex min-w-20 items-center whitespace-nowrap font-semibold',
+      {
+        'text-red-500': !!errors,
+      },
+    )}
+  >
     {split(label, '(')[1]?.split(')')[0]}
   </span>
 )
@@ -731,3 +750,32 @@ export const getFilteredFields = (fieldData: any) => {
     costEffectivenessFields: groupFields('cost effectiveness'),
   }
 }
+
+export const ErrorsList = ({
+  errors,
+}: {
+  errors: ({ message: string } | null)[]
+}) => (
+  <CustomAlert
+    type="error"
+    alertClassName="mb-5"
+    content={
+      <>
+        <Typography className="text-lg">
+          Please make sure all the sections are valid.
+        </Typography>
+        <Typography component="div">
+          <div className="mt-1">
+            {errors.map((err, idx) =>
+              err ? (
+                <div key={idx} className="py-1.5">
+                  {'\u2022'} {err.message}
+                </div>
+              ) : null,
+            )}
+          </div>
+        </Typography>
+      </>
+    }
+  />
+)

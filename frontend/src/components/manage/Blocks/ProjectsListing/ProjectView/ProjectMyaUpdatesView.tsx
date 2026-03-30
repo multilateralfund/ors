@@ -9,23 +9,25 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import { orderFieldData } from '../UpdateMyaData/MetaProjectEdit'
 import {
   computedTag,
+  FieldErrorIndicator,
   getFilteredFields,
   groupFieldsLabel,
   groupFieldsMeasurementUnits,
 } from '../HelperComponents'
 import { disabledClassName, enabledButtonClassname } from '../constants'
 import { monetaryFields } from '../UpdateMyaData/constants'
-import { InlineMessageType, MpDataProps } from '../interfaces'
 import {
   formatFieldLabel,
-  getFormattedDecimalValue,
+  formatMetaprojectData,
   getFormattedNumericValue,
   getProjectDuration,
+  hasSectionErrors,
 } from '../utils'
 import {
   MetaProjectDetailType,
   MetaProjectFieldData,
 } from '../UpdateMyaData/types'
+import { useStore } from '@ors/store'
 
 import { CircularProgress, Typography, Button } from '@mui/material'
 import cx from 'classnames'
@@ -35,44 +37,39 @@ const projectDuration = 'project_duration'
 
 const ProjectMyaUpdatesView = ({
   metaprojectData,
-  mpData,
-  setMpData,
   mode,
-  setInlineMessage,
-}: MpDataProps & {
+}: {
   metaprojectData: Partial<MetaProjectDetailType> | null
   mode: string
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
+  const { mpData, setMpData, defaultMpErrors, allMpErrors } = useStore(
+    (state) => state.mpData,
+  )
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
+
   const { addUpdatedField } = useUpdatedFields()
 
   const isNewMetaProject = !!metaprojectData?.field_data && !metaprojectData?.id
+  const isSaveDisabled = !isNewMetaProject || hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) =>
     field === projectDuration || !isNewMetaProject
 
-  const formatMetaprojectData = useCallback(() => {
-    const result = {} as Record<string, any>
-    const fd = metaprojectData?.field_data ?? ({} as MetaProjectFieldData)
+  const getFormattedMpdata = useCallback(
+    () =>
+      formatMetaprojectData(
+        metaprojectData?.field_data ?? ({} as MetaProjectFieldData),
+      ),
+    [metaprojectData],
+  )
 
-    for (const key of Object.keys(fd)) {
-      const fdEntry = fd[key as keyof MetaProjectFieldData]
-      result[key] =
-        fdEntry.type === 'DecimalField'
-          ? getFormattedDecimalValue(fdEntry.value as string)
-          : fdEntry.value
-    }
-
-    return result
-  }, [metaprojectData])
-
-  const [crtMpData, setCrtMpData] = useState(formatMetaprojectData)
+  const [crtMpData, setCrtMpData] = useState(getFormattedMpdata)
 
   useEffect(() => {
     if (!isNewMetaProject) {
-      setCrtMpData(formatMetaprojectData)
+      setCrtMpData(getFormattedMpdata)
     }
-  }, [formatMetaprojectData, metaprojectData])
+  }, [getFormattedMpdata, metaprojectData])
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
   const {
@@ -87,7 +84,7 @@ const ProjectMyaUpdatesView = ({
   const changeSimpleInput = useCallback(
     (name: string, opts?: { numeric?: boolean }) => {
       return (evt: any) => {
-        setMpData((prev: any) => {
+        setMpData((prev) => {
           addUpdatedField(name)
 
           let newValue = evt.target.value || null
@@ -130,7 +127,7 @@ const ProjectMyaUpdatesView = ({
   }
 
   useEffect(() => {
-    setMpData?.((prev: any) => ({
+    setMpData((prev) => ({
       ...prev,
       [projectDuration]: computeProjectDuration(),
     }))
@@ -154,25 +151,23 @@ const ProjectMyaUpdatesView = ({
       switch (fd.type) {
         case 'DateTimeField':
           return (
-            <div className="w-unset">
-              <DateInput
-                id={fd.name}
-                className={cx('BPListUpload !ml-0 h-8 w-[125px]', {
-                  [disabledClassName]: isFieldDisabled(fd.name),
-                })}
-                value={fieldValue.toString()}
-                onChange={changeSimpleInput(fd.name)}
-                formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-                disabled={isFieldDisabled(fd.name)}
-              />
-            </div>
+            <DateInput
+              id={fd.name}
+              className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
+                [disabledClassName]: isFieldDisabled(fd.name),
+              })}
+              value={fieldValue.toString()}
+              onChange={changeSimpleInput(fd.name)}
+              formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+              disabled={isFieldDisabled(fd.name)}
+            />
           )
         case 'DecimalField':
           return (
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                '!m-0 h-8 !w-[125px] w-full !border-gray-400 p-2.5',
                 {
                   [disabledClassName]: isFieldDisabled(fd.name),
                 },
@@ -190,7 +185,7 @@ const ProjectMyaUpdatesView = ({
             <FormattedNumberInput
               id={fd.name}
               className={cx(
-                '!m-0 h-8 w-[125px] w-full !border-gray-400 p-2.5',
+                '!m-0 h-8 !w-[125px] w-full !border-gray-400 p-2.5',
                 {
                   [disabledClassName]: isFieldDisabled(fd.name),
                 },
@@ -220,8 +215,11 @@ const ProjectMyaUpdatesView = ({
               {formattedLabel}
             </Label>
           )}
-          <span className="flex gap-3">
-            {fieldComponent(fd)}
+          <span className="flex flex-wrap gap-x-3 gap-y-1.5 sm:flex-nowrap">
+            <div className="flex items-center">
+              {fieldComponent(fd)}
+              <FieldErrorIndicator errors={allMpErrors} field={fd.label} />
+            </div>
             {computedTag(isComputed)}
             {!isIndividualField && groupFieldsMeasurementUnits(formattedLabel)}
           </span>
@@ -230,7 +228,7 @@ const ProjectMyaUpdatesView = ({
     })
 
   const groupFields = (fields: any) => (
-    <div className="flex w-fit flex-col py-2">
+    <div className="flex w-fit flex-col">
       {groupFieldsLabel(fields)}
       <div className="flex flex-wrap gap-x-6">
         {renderFieldData(fields, false)}
@@ -243,7 +241,7 @@ const ProjectMyaUpdatesView = ({
       type: 'success',
       message:
         'The MYA data is saved as draft. The information will be reviewed and approved by the Secretariat.',
-      tabId: 'project-related-projects-section',
+      tabId: 'mya-updates',
     })
   }
 
@@ -251,7 +249,7 @@ const ProjectMyaUpdatesView = ({
     <>
       {!!metaprojectData?.field_data ? (
         <div className="flex flex-col gap-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             {!!metaprojectData?.id && (
               <Typography variant="h6">
                 MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
@@ -261,22 +259,22 @@ const ProjectMyaUpdatesView = ({
             {mode !== 'view' && (
               <Button
                 className={cx('ml-auto h-8 px-4 py-2 shadow-none', {
-                  [enabledButtonClassname]: isNewMetaProject,
+                  [enabledButtonClassname]: !isSaveDisabled,
                 })}
                 size="large"
                 variant="contained"
                 onClick={onMyaUpdate}
-                disabled={!isNewMetaProject}
+                disabled={isSaveDisabled}
               >
                 Save
               </Button>
             )}
           </div>
 
-          <div className="flex gap-x-6">
+          <div className="flex flex-wrap gap-x-6 lg:flex-nowrap">
             <div className="flex-grow">
               {renderFieldData(fieldData.slice(0, 3))}
-              <div className="flex flex-wrap gap-x-6 py-2">
+              <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
               {renderFieldData(fieldData.slice(5, 6))}
