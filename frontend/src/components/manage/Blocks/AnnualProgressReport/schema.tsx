@@ -79,6 +79,7 @@ interface APRTableColumn {
 
 interface BaseColumnDefOptions {
   inlineEdit?: boolean
+  showDerivedColumns?: boolean
   year: string
 }
 
@@ -100,6 +101,7 @@ export default function useGetColumnDefs({
   year,
   inlineEdit = false,
   clipboardEdit = false,
+  showDerivedColumns = true,
   rows,
   setRows,
 }: ColumnDefOptions) {
@@ -673,7 +675,9 @@ export default function useGetColumnDefs({
     },
   }
 
-  const columns = Object.values(tableColumns)
+  const columns = Object.values(tableColumns).filter(
+    (c) => showDerivedColumns || c.input || c.fieldName === 'project_code',
+  )
   const columnDefs = columns.map((c) => {
     const canBeEdited = c.input && (clipboardEdit || inlineEdit)
 

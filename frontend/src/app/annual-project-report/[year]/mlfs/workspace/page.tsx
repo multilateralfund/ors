@@ -7,7 +7,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
+  FormControlLabel,
   Link,
   Tabs,
 } from '@mui/material'
@@ -86,6 +88,7 @@ export default function APRMLFSWorkspace() {
 
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
+  const [showDerivedColumns, setShowDerivedColumns] = useState(true)
 
   const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
@@ -228,6 +231,7 @@ export default function APRMLFSWorkspace() {
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
     inlineEdit: isMlfsUser && canUpdateAPR,
+    showDerivedColumns,
   })
 
   // Redirect non-MLFS users to the agency workspace
@@ -652,6 +656,17 @@ export default function APRMLFSWorkspace() {
             </div>
           </div>
 
+          <div className="flex justify-end">
+            <FormControlLabel
+              label="Derived columns"
+              control={
+                <Checkbox
+                  checked={showDerivedColumns}
+                  onChange={(e) => setShowDerivedColumns(e.target.checked)}
+                />
+              }
+            />
+          </div>
           {loaded && (
             <EditTable
               noRowsOverlayComponentParams={{

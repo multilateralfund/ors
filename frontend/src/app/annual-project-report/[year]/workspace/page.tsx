@@ -5,7 +5,7 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import React, { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import { Box, Chip } from '@mui/material'
+import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
@@ -45,6 +45,7 @@ export default function APRWorkspace() {
   } = useStore((state) => state.projects)
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS)
+  const [showDerivedColumns, setShowDerivedColumns] = useState(true)
   const {
     data: apr,
     loading,
@@ -61,7 +62,7 @@ export default function APRWorkspace() {
     reactivePath: true,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })
+  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year!, showDerivedColumns })
 
   if (!canViewAPR) {
     return <NotFoundPage />
@@ -210,6 +211,17 @@ export default function APRWorkspace() {
               Generate summary tables
             </Button>
           </div>
+        </div>
+        <div className="flex justify-end">
+          <FormControlLabel
+            label="Show derived columns"
+            control={
+              <Checkbox
+                checked={showDerivedColumns}
+                onChange={(e) => setShowDerivedColumns(e.target.checked)}
+              />
+            }
+          />
         </div>
         {loaded && (
           <ViewTable

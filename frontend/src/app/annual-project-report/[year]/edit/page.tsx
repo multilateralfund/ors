@@ -3,7 +3,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import { useLocation, useParams } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { Alert, Box, Tab, Tabs } from '@mui/material'
+import { Alert, Box, Checkbox, FormControlLabel, Tab, Tabs } from '@mui/material'
 import useApi from '@ors/hooks/useApi.ts'
 import NotFoundPage from '@ors/app/not-found.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -64,6 +64,7 @@ export default function APREdit() {
     Record<string, string[]>[]
   >([])
   const hasValidationErrors = validationErrors.length > 0
+  const [showDerivedColumns, setShowDerivedColumns] = useState(true)
 
   const getPath = isMlfsUser
     ? `api/annual-project-report/mlfs/${year}/agencies/`
@@ -99,6 +100,7 @@ export default function APREdit() {
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
     clipboardEdit: true,
+    showDerivedColumns,
     rows,
     setRows,
   })
@@ -244,6 +246,17 @@ export default function APREdit() {
               Save
             </Button>
           </div>
+        </div>
+        <div className="flex justify-end">
+          <FormControlLabel
+            label="Derived columns"
+            control={
+              <Checkbox
+                checked={showDerivedColumns}
+                onChange={(e) => setShowDerivedColumns(e.target.checked)}
+              />
+            }
+          />
         </div>
         {TABS.map((tab, index) => (
           <div
