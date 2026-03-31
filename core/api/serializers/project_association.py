@@ -63,7 +63,7 @@ class AssociateProjectSerializer(serializers.Serializer):
 
         if "meta_project_id" in validated_data:
             validated_data["meta_project"] = MetaProject.objects.filter(
-                id=validated_data.get("meta_project_id")
+                id=validated_data.get("meta_project_id"), is_draft=False
             ).first()
             if not validated_data["meta_project"]:
                 raise serializers.ValidationError("meta_project_id does not exist.")
@@ -94,7 +94,7 @@ class AssociateProjectSerializer(serializers.Serializer):
 
         if len(meta_projects) == 1 and validated_data.get("meta_project_id") is None:
             validated_data["meta_project"] = MetaProject.objects.filter(
-                id=list(meta_projects)[0]
+                id=list(meta_projects)[0], is_draft=False
             ).first()
 
         validated_data["lead_agency"] = Agency.objects.filter(
