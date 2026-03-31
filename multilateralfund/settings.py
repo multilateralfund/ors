@@ -83,7 +83,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "admin_auto_filters",
-    "drf_yasg",
+    "drf_spectacular",
     "constance",
     "constance.backends.database",
     "explorer",
@@ -413,6 +413,19 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Multilateral Fund API",
+    "DESCRIPTION": "Multilateral Fund API",
+    "VERSION": "v1",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # This ensures the 'Authorize' button appears for JWT/Session
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "SERVE_AUTHENTICATION": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
 }
 
 SIMPLE_JWT = {

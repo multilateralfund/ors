@@ -1,11 +1,14 @@
 import urllib
 
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 from rest_framework import viewsets, mixins, parsers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -23,7 +26,6 @@ from core.api.serializers.project_v2 import (
     ProjectV2FileSerializer,
 )
 
-from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
     Project,
     ProjectFile,
@@ -186,34 +188,32 @@ class ProjectFileV2ViewSet(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="Upload multiple files...",
-        auto_schema=FileUploadAutoSchema,
-        manual_parameters=[
-            openapi.Parameter(
-                name="files",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(type=openapi.TYPE_FILE),
-                required=True,
-                description="List of documents",
-            ),
-            openapi.Parameter(
-                name="metadata",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_STRING,
-                required=True,
-                description=(
-                    """
-                    JSON metadata string.(map by filename):
-                        {
-                            "test_document_1.xlsx": "verification_report",
-                            "test_document_2.xlsx": "transferred_project_proposal"
-                        }
-                """
-                ),
-            ),
-        ],
+    @extend_schema(
+        description="Upload multiple files...",
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesUploadRequest",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=True,
+                        help_text="List of documents",
+                    ),
+                    "metadata": serializers.CharField(
+                        required=True,
+                        help_text=(
+                            """
+                            JSON metadata string.(map by filename):
+                                {
+                                  "test_document_1.xlsx": "verification_report",
+                                  "test_document_2.xlsx": "transferred_project_proposal"
+                                }
+                        """
+                        ),
+                    ),
+                },
+            )
+        },
     )
     def create(self, request, *args, **kwargs):
         self.get_queryset()
@@ -224,17 +224,16 @@ class ProjectFileV2ViewSet(
             **kwargs,
         )
 
-    @swagger_auto_schema(
-        operation_description="Receives a list of files ids and deletes them.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "file_ids": openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+    @extend_schema(
+        description="Receives a list of files ids and deletes them.",
+        request=inline_serializer(
+            name="DeleteFilesRequest",
+            fields={
+                "file_ids": serializers.ListField(
+                    child=serializers.IntegerField(),
+                    required=True,
                 ),
             },
-            required=["file_ids"],
         ),
     )
     @action(methods=["DELETE"], detail=False)
@@ -281,16 +280,15 @@ class ProjectFileV2ViewSet(
         serializer = self.get_serializer(projects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="API endpoint to set the project file type",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["file_type"],
-            properties={
-                "file_type": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="The new file type to set for the project file.",
-                ),
+    @extend_schema(
+        description="API endpoint to set the project file type",
+        request=inline_serializer(
+            name="ProjectFiletypeRequest",
+            fields={
+                "file_type": serializers.CharField(
+                    required=True,
+                    help_text="The new file type to set for the project file.",
+                )
             },
         ),
     )
@@ -316,38 +314,36 @@ class ProjectFileV2ViewSet(
 class ProjectFilesValidationView(ProjectFileCreateMixin, APIView):
     permission_classes = [HasProjectV2EditPlusV3Access]
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         This endpoint is used to validate the files that are being uploaded.
         It checks if the files have valid extensions.
         Returns a 200 status code if the files are valid, otherwise return a 400 status code with an error message.
         """,
-        auto_schema=FileUploadAutoSchema,
-        manual_parameters=[
-            openapi.Parameter(
-                name="files",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(type=openapi.TYPE_FILE),
-                required=True,
-                description="List of documents",
-            ),
-            openapi.Parameter(
-                name="metadata",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_STRING,
-                required=True,
-                description=(
-                    """
-                    JSON metadata string.(map by filename):
-                        {
-                            "test_document_1.xlsx": "verification_report",
-                            "test_document_2.xlsx": "project_review_comments"
-                        }
-                """
-                ),
-            ),
-        ],
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesValidationRequest",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=True,
+                        help_text="List of documents",
+                    ),
+                    "metadata": serializers.CharField(
+                        required=True,
+                        help_text=(
+                            """
+                            JSON metadata string.(map by filename):
+                                {
+                                  "test_document_1.xlsx": "verification_report",
+                                  "test_document_2.xlsx": "project_review_comments"
+                                }
+                        """
+                        ),
+                    ),
+                },
+            )
+        },
     )
     def post(self, request, *args, **kwargs):
         response = self._file_create(
@@ -369,13 +365,13 @@ class FileTypeView(APIView):
     View to return a list of all ProjectFile FileTypes choices
     """
 
-    @swagger_auto_schema(
-        operation_description="Get a list of all ProjectFile FileTypes choices",
-        manual_parameters=[
-            openapi.Parameter(
-                "include_transferred_options",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_BOOLEAN,
+    @extend_schema(
+        description="Get a list of all ProjectFile FileTypes choices",
+        parameters=[
+            OpenApiParameter(
+                name="include_transferred_options",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.BOOL,
                 description="Include the transferred project proposal file type. By default, it is excluded.",
                 default=False,
             ),

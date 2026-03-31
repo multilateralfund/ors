@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework.response import Response
 
@@ -28,8 +28,8 @@ class CPPricesView(generics.ListAPIView):
         DjangoFilterBackend,
     ]
 
-    @swagger_auto_schema(
-        operation_description="Get CP Prices for a specific country and a specific year"
+    @extend_schema(
+        description="Get CP Prices for a specific country and a specific year"
         "This endpoint will only return the prices that are not archived (from the latest version)",
     )
     def get(self, request, *args, **kwargs):
@@ -61,8 +61,8 @@ class DashboardsCPPricesView(generics.ListAPIView):
         DjangoFilterBackend,
     ]
 
-    @swagger_auto_schema(
-        operation_description="Get all CP Prices including the archive data",
+    @extend_schema(
+        description="Get all CP Prices including the archive data",
     )
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

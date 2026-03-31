@@ -2,9 +2,12 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 from rest_framework import mixins, generics, status
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -126,47 +129,47 @@ class SubstancesListView(ChemicalBaseListView):
                 queryset = queryset.none()
         return queryset.order_by("group__name", "sort_order")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "section",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="section",
+                location=OpenApiParameter.QUERY,
                 description="Filter by section",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=["A", "B", "C"],
             ),
-            openapi.Parameter(
-                "include_user_substances",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_user_substances",
+                location=OpenApiParameter.QUERY,
                 description="Add substances created by user",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "with_alt_names",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="with_alt_names",
+                location=OpenApiParameter.QUERY,
                 description="Add alternative names to the substances",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "with_usages",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="with_usages",
+                location=OpenApiParameter.QUERY,
                 description="Add excluded usages ids list to the substances",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "filter_by_project",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="filter_by_project",
+                location=OpenApiParameter.QUERY,
                 description="Include only substances of that are part of the project's cluster accepted annex groups.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "for_year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="for_year",
+                location=OpenApiParameter.QUERY,
                 description=(
                     "year filter for excluded usages "
                     "(if true, add only excluded usages for this year)"
                 ),
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )
@@ -226,36 +229,36 @@ class BlendsListView(ChemicalBaseListView):
 
         return queryset.order_by("sort_order")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "with_alt_names",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="with_alt_names",
+                location=OpenApiParameter.QUERY,
                 description="Add alternative names to the blends",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "with_usages",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="with_usages",
+                location=OpenApiParameter.QUERY,
                 description="Add excluded usages ids list to the blends",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "filter_by_project",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="filter_by_project",
+                location=OpenApiParameter.QUERY,
                 description="""
                     Include only blends that have at least one substance
                     in their composition of the project's cluster accepted annex groups.""",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "for_year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="for_year",
+                location=OpenApiParameter.QUERY,
                 description=(
                     "Year filter for excluded usages "
                     "(if true, add only excluded usages for this year)"
                 ),
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )
@@ -329,32 +332,32 @@ class SimilarBlendsListView(ChemicalBaseListView):
 
         return queryset.order_by("sort_order")
 
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["components"],
-            properties={
-                "components": openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    description="Array of objects",
-                    items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        required=["substance_id", "component_name", "percentage"],
-                        properties={
-                            "substance_id": openapi.Schema(
-                                type=openapi.TYPE_INTEGER,
-                                description="Substance id",
+    @extend_schema(
+        request=inline_serializer(
+            name="SimilarBlendCreateRequest",
+            fields={
+                "components": serializers.ListField(
+                    child=inline_serializer(
+                        name="SimilarBlendComponentSerializer",
+                        fields={
+                            "substance_id": serializers.IntegerField(
+                                help_text="Substance id",
+                                required=True,
                             ),
-                            "component_name": openapi.Schema(
-                                type=openapi.TYPE_STRING,
-                                description="Component name",
+                            "component_name": serializers.CharField(
+                                help_text="Component name",
+                                required=True,
                             ),
-                            "percentage": openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description="Percentage",
+                            "percentage": serializers.DecimalField(
+                                max_digits=30,
+                                decimal_places=15,
+                                help_text="Percentage",
+                                required=True,
                             ),
                         },
                     ),
+                    required=True,
+                    help_text="Array of objects",
                 ),
             },
         ),
@@ -503,36 +506,36 @@ class BlendCreateView(generics.CreateAPIView):
 
         return None
 
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["other_names", "components"],
-            properties={
-                "other_names": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Blend name",
+    @extend_schema(
+        request=inline_serializer(
+            name="BlendCreateRequest",
+            fields={
+                "other_names": serializers.CharField(
+                    help_text="Blend name",
+                    required=True,
                 ),
-                "components": openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    description="Array of objects",
-                    items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        required=["substance_id", "component_name", "percentage"],
-                        properties={
-                            "substance_id": openapi.Schema(
-                                type=openapi.TYPE_INTEGER,
-                                description="Substance id",
+                "components": serializers.ListField(
+                    child=inline_serializer(
+                        name="BlendCreateComponentSerializer",
+                        fields={
+                            "substance_id": serializers.IntegerField(
+                                help_text="Substance id",
+                                required=True,
                             ),
-                            "component_name": openapi.Schema(
-                                type=openapi.TYPE_STRING,
-                                description="Component name",
+                            "component_name": serializers.CharField(
+                                help_text="Component name",
+                                required=True,
                             ),
-                            "percentage": openapi.Schema(
-                                type=openapi.TYPE_NUMBER,
-                                description="Percentage",
+                            "percentage": serializers.DecimalField(
+                                max_digits=30,
+                                decimal_places=15,
+                                help_text="Percentage",
+                                required=True,
                             ),
                         },
                     ),
+                    required=True,
+                    help_text="Array of objects",
                 ),
             },
         ),

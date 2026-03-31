@@ -4,8 +4,9 @@ import openpyxl
 
 from django.db.models import Prefetch
 from django.db import models
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import views
 from rest_framework.exceptions import ValidationError
 
@@ -106,19 +107,19 @@ class CPRecordExportView(CPRecordListByReportView):
             **empty_form,
         }
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cp_report_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cp_report_id",
+                location=OpenApiParameter.QUERY,
                 description="Country programme report id",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "convert_data",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="convert_data",
+                location=OpenApiParameter.QUERY,
                 description="Convert values to ODP tonnes (SectionA) Co2-eq (SectionB)",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )
@@ -145,14 +146,14 @@ class CPRecordPrintView(CPRecordExportView):
 
 
 class CPEmptyExportView(CPRecordExportView):
-    @swagger_auto_schema(
-        required=["year"],
-        manual_parameters=[
-            openapi.Parameter(
-                "year",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="year",
+                location=OpenApiParameter.QUERY,
                 description="What year to generate the empty report for",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
+                required=True,
             ),
         ],
     )
@@ -215,19 +216,19 @@ class CPEmptyExportView(CPRecordExportView):
 class CPReportListExportView(views.APIView):
     permission_classes = [HasCPReportExportPermission]
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "min_year",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="min_year",
+                location=OpenApiParameter.QUERY,
                 description="Minimum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "max_year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="max_year",
+                location=OpenApiParameter.QUERY,
                 description="Maximum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )
@@ -250,13 +251,13 @@ class CPReportListExportView(views.APIView):
 
 
 class CPCalculatedAmountExportView(CPRecordListByReportView):
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cp_report_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cp_report_id",
+                location=OpenApiParameter.QUERY,
                 description="Country programme report id",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )
@@ -428,19 +429,19 @@ class CPHFCHCFCExportBaseView(views.APIView):
     def get_response(self, name, wb):
         return workbook_response(name, wb)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "min_year",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="min_year",
+                location=OpenApiParameter.QUERY,
                 description="Minimum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "max_year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="max_year",
+                location=OpenApiParameter.QUERY,
                 description="Maximum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )
@@ -544,19 +545,19 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
 class CPDataExtractionAllExport(views.APIView):
     permission_classes = [HasCPReportExportPermission]
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "min_year",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="min_year",
+                location=OpenApiParameter.QUERY,
                 description="Minimum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "max_year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="max_year",
+                location=OpenApiParameter.QUERY,
                 description="Maximum year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )

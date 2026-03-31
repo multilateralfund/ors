@@ -1,6 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, filters
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -105,19 +106,19 @@ class CPRecordArchiveExportView(CPRecordsArchiveListView):
             **empty_form,
         }
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cp_report_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cp_report_id",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
                 description="Country programme report archive id",
-                type=openapi.TYPE_INTEGER,
             ),
-            openapi.Parameter(
-                "convert_data",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="convert_data",
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
                 description="Convert values to ODP tonnes (SectionA) Co2-eq (SectionB)",
-                type=openapi.TYPE_BOOLEAN,
             ),
         ],
     )

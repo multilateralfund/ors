@@ -6,8 +6,9 @@ from constance import config
 from django.conf import settings
 from django.db.models import Max
 from django.db.models import Min
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework import views
 from rest_framework.response import Response
@@ -126,13 +127,13 @@ class ProjectSettingsView(views.APIView):
             result[name.lower()] = value
         return result
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "for_frontend",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="for_frontend",
+                location=OpenApiParameter.QUERY,
                 description="Returns field information useful for rendering in frontend.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ]
     )

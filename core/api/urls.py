@@ -1,7 +1,7 @@
 from django.urls import path, re_path
-from rest_framework import routers, permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+from drf_spectacular.views import SpectacularAPIView
+from drf_spectacular.views import SpectacularSwaggerView
+from rest_framework import routers
 
 from core.api.views import MetaProjectClusterListView
 from core.api.views import MetaProjectLeadAgencyListView
@@ -278,24 +278,11 @@ router.register(
     basename="apr-mlfs",
 )
 
-schema_view = get_schema_view(
-    openapi.Info(
-        title="Multilateral Fund API",
-        default_version="v1",
-    ),
-    public=True,
-    permission_classes=[permissions.AllowAny],
-)
-
 urlpatterns = [
-    re_path(
-        r"^docs(?P<format>\.json|\.yaml)$",
-        schema_view.without_ui(cache_timeout=0),
-        name="schema-json",
-    ),
-    re_path(
-        r"^docs/$",
-        schema_view.with_ui("swagger", cache_timeout=0),
+    path("docs/schema/", SpectacularAPIView.as_view(), name="schema-json"),
+    path(
+        "docs/",
+        SpectacularSwaggerView.as_view(url_name="schema-json"),
         name="schema-swagger-ui",
     ),
     path(

@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -56,20 +57,20 @@ class AgencyListView(generics.ListAPIView):
 
         return queryset.order_by("name")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_all_agencies_option",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_all_agencies_option",
+                location=OpenApiParameter.QUERY,
                 description="Includes 'All Agencies' option in the response",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
                 default=False,
             ),
-            openapi.Parameter(
-                "values_exclusive_for",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="values_exclusive_for",
+                location=OpenApiParameter.QUERY,
                 description="Give the module for which the agencies are being requested",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=["business_plan", "projects", "all"],
             ),
         ],

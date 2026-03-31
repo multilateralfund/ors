@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import mixins, generics
 
@@ -59,13 +60,13 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return queryset.order_by("name")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "values_exclusive_for",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="values_exclusive_for",
+                location=OpenApiParameter.QUERY,
                 description="Give the module for which the countries are being requested",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=[
                     "business_plan",
                     "meta_project",
