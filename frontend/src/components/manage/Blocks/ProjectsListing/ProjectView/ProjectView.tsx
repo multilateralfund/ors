@@ -16,9 +16,10 @@ import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
-import { ProjectFile, ProjectViewProps, InlineMessageType } from '../interfaces'
+import { ProjectFile, ProjectViewProps } from '../interfaces'
 import {
   filterApprovalFields,
+  formatMetaprojectData,
   getIsUpdatablePostExcom,
   getSectionFields,
   hasFields,
@@ -109,9 +110,15 @@ const ProjectView = ({
   loadedFiles: boolean
 }) => {
   const { canUpdatePostExcom } = useContext(PermissionsContext)
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
+
+  useEffect(() => {
+    setInlineMessage(null)
+  }, [])
 
   const [activeTab, setActiveTab] = useState(0)
-  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [metaProjectId, setMetaProjectId] = useState<number | null>(
     project.meta_project_id,
   )
@@ -183,6 +190,13 @@ const ProjectView = ({
     'view',
     metaProjectDetailsProps,
   )
+
+  const { setMpData } = useStore((state) => state.mpData)
+
+  useEffect(() => {
+    const formattedMpdata = formatMetaprojectData(metaprojectData)
+    setMpData(formattedMpdata)
+  }, [metaprojectData])
 
   const hasComponents =
     project.component && project.component.original_project_id === project.id
@@ -295,7 +309,6 @@ const ProjectView = ({
                   setMetaProjectId,
                   setRefetchRelatedProjects,
                   metaprojectData,
-                  setInlineMessage,
                 }}
               />
             ),
@@ -364,9 +377,7 @@ const ProjectView = ({
             <span key={id}>
               {!!inlineMessage &&
                 (!inlineMessage.tabId || inlineMessage.tabId === id) && (
-                  <ProjectsInlineMessage
-                    {...{ inlineMessage, setInlineMessage }}
-                  />
+                  <ProjectsInlineMessage />
                 )}
               {component}
             </span>

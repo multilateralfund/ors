@@ -30,12 +30,14 @@ from core.models.rbm_measures import RBMMeasure
 class MetaProjectAdmin(admin.ModelAdmin):
     search_fields = [
         "projects__title",
+        "umbrella_code",
         "code",
     ]
     list_filter = [
         "type",
         "projects__country",
         "projects__cluster",
+        "is_draft",
     ]
 
     def get_list_display(self, request):

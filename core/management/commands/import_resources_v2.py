@@ -35,6 +35,7 @@ class Command(BaseCommand):
                 "import_project_specific_fields",
                 "fill_replacement_technologies_field",
                 "generate_new_cluster_type_sector_file",
+                "fill_meta_project_for_projects_in_submission",
             ],
         )
 

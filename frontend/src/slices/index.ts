@@ -11,6 +11,8 @@ import { createProjectSlice } from '@ors/slices/createProjectSlice'
 import { createProjectFieldsSlice } from './createProjectFieldsSlice'
 import { createProjectWarningsSlice } from './createProjectWarningsSlice'
 import { createProjectFieldHistorySlice } from './createProjectFieldHistorySlice'
+import { createMpDataSlice } from './createMpDataSlice'
+import { createInlineMessageSlice } from './createInlineMessageSlice'
 import { createSettingsSlice } from '@ors/slices/createSettingsSlice'
 import { createThemeSlice } from '@ors/slices/createThemeSlice'
 import { createUserSlice } from '@ors/slices/createUserSlice'
@@ -44,6 +46,8 @@ export default function createSlices(props: CreateSliceProps) {
     projectFieldHistory: { ...createProjectFieldHistorySlice(props) },
     projectFields: { ...createProjectFieldsSlice(props) },
     projectWarnings: { ...createProjectWarningsSlice(props) },
+    mpData: { ...createMpDataSlice(props) },
+    inlineMessage: { ...createInlineMessageSlice(props) },
     settings: { ...createSettingsSlice(props) },
     theme: { ...createThemeSlice(props) },
     user: { ...createUserSlice(props) },

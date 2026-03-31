@@ -74,6 +74,15 @@ class MetaProject(models.Model):
             Format: meta-/<country-3-letter-code>/<8-digit-unique-number>
         """,
     )
+    is_draft = models.BooleanField(
+        help_text="""
+            True if the MetaProject is created for a project that is not yet approved.
+            When the project is approved, the MetaProject will be converted to a final
+            MetaProject and the is_draft field will be set to False.
+        """,
+        default=False,
+    )
+
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -1805,7 +1814,7 @@ class ProjectOdsOdp(models.Model):
         if self.ods_replacement_text:
             return_str = f"{return_str} replacements: {self.ods_replacement_text}"
         elif self.ods_replacement:
-            return_str = f"{return_str} replacements: {', '.join([alt.name for alt in self.ods_replacements.all()])}"
+            return_str = f"{return_str} replacements: {self.ods_replacement.name}"
         return return_str
 
     def get_ods_display_name(self, obj):

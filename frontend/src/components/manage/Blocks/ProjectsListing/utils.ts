@@ -1,6 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { getMeetingNr } from '../../Utils/utilFunctions'
+import { MetaProjectDetailType } from './UpdateMyaData/types'
 import {
   approvalOdsFields,
   approvalToOdsMap,
@@ -661,6 +662,61 @@ export const getPostExcomApprovalErrors = (
   }
 
   return getFormattedErrors(allErrors, specificFields)
+}
+
+export const getMpErrors = (
+  mpData: Record<string, any>,
+  metaprojectData: MetaProjectDetailType | null,
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+  mode: string,
+) => {
+  const allKeys = keys(mpData)
+
+  if (!metaprojectData || allKeys.length === 0) {
+    return {}
+  }
+
+  const hasDefaultErrors =
+    mode === 'edit' &&
+    project?.submission_status === 'Recommended' &&
+    metaprojectData.is_draft
+
+  const requiredFields = [
+    'project_funding',
+    'support_cost',
+    'start_date',
+    'end_date',
+  ]
+
+  const { start_date, end_date } = mpData
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => allKeys.includes(key)),
+  )
+
+  const allErrors = {
+    ...(hasDefaultErrors && {
+      ...getFieldErrors(requiredFields, mpData, project),
+    }),
+    ...(dayjs(end_date).isBefore(dayjs(start_date)) && {
+      end_date: ['Start date cannot be later than end date.'],
+    }),
+    ...filteredErrors,
+  }
+
+  return Object.entries(allErrors).reduce(
+    (acc, [key, errMsg]) => {
+      const field = metaprojectData.field_data[key].label
+
+      if (field) {
+        acc[field] = errMsg as string[]
+      }
+
+      return acc
+    },
+    {} as Record<string, string[]>,
+  )
 }
 
 export const hasSpecificField = (
@@ -1352,4 +1408,32 @@ export const isOtherOdsReplacement = (
 ) => {
   const crtOdsReplacementName = find(opts, (opt) => opt.id === value)?.name
   return crtOdsReplacementName?.includes('Other alternatives') ?? false
+}
+
+export const formatMetaprojectData = (
+  metaprojectData: MetaProjectDetailType | null,
+) => {
+  const result = {} as Record<string, any>
+
+  if (!metaprojectData) {
+    return result
+  }
+
+  const fd = metaprojectData.field_data ?? {}
+  const cfd = metaprojectData.computed_field_data ?? {}
+
+  for (const key of Object.keys(fd)) {
+    const fdEntry = fd[key]
+
+    const fdValue = fdEntry.value
+    const computedValue = cfd[key]
+    const finalValue = fdValue === null ? computedValue : fdValue
+
+    result[key] =
+      fdEntry.type === 'DecimalField'
+        ? getFormattedDecimalValue(finalValue as string)
+        : finalValue
+  }
+
+  return result
 }

@@ -49,6 +49,7 @@ from core.api.views.projects_mixins import (
     ProjectWithdrawMixin,
 )
 from core.api.views.utils import log_project_history, get_available_values
+from core.utils import get_meta_project
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
@@ -497,6 +498,8 @@ class ProjectV2ViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project, warnings = serializer.save(request=request)
+        project.meta_project = get_meta_project(project)
+        project.save()
         response_data = ProjectDetailsV2Serializer(project).data
         headers = self.get_success_headers(response_data)
         response_data["warnings"] = warnings

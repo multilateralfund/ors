@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
 import ProjectDeleteModal from './ProjectDeleteModal'
-import { InlineMessageType, ProjectTypeApi } from '../interfaces'
+import { ProjectTypeApi } from '../interfaces'
+import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { enqueueSnackbar } from 'notistack'
@@ -11,13 +12,13 @@ const ProjectDisassociate = ({
   project,
   hasComponents,
   setRefetchRelatedProjects,
-  setInlineMessage,
 }: {
   project: ProjectTypeApi
   hasComponents: boolean
   setRefetchRelatedProjects?: (refetch: boolean) => void
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
+
   const [showWarning, setShowWarning] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -37,7 +38,7 @@ const ProjectDisassociate = ({
       setInlineMessage({
         type: 'success',
         message: message,
-        tabId: 'project-related-projects-section',
+        tabId: 'related-projects',
       })
       setRefetchRelatedProjects?.(true)
     } catch (e) {
