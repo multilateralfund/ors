@@ -266,6 +266,7 @@ export default function APRWorkspace() {
                 }}
               />
             </div>
+
             {Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
             ) && (
