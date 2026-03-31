@@ -65,6 +65,7 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.funding_window import FundingWindowListCreateView
 from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
 from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
 from core.api.views.projects_metadata import (
@@ -505,6 +506,11 @@ urlpatterns = [
         "file-types/",
         FileTypeView.as_view(),
         name="file-type-list",
+    ),
+    path(
+        "funding-window/",
+        FundingWindowListCreateView.as_view(),
+        name="meta-project-list",
     ),
     path(
         "meta-projects/",
