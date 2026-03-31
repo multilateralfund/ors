@@ -231,11 +231,11 @@ export default function APRMLFSWorkspace() {
 
   const editHref = (() => {
     const sp = new URLSearchParams()
-    if (filters.status.length > 0) sp.set('status', filters.status.map((f) => f.code!).join(','))
-    if (filters.agency.length > 0) sp.set('agency', filters.agency.map((f) => String(f.id)).join(','))
-    if (filters.region.length > 0) sp.set('region', filters.region.map((f) => String(f.id)).join(','))
-    if (filters.country.length > 0) sp.set('country', filters.country.map((f) => String(f.id)).join(','))
-    if (filters.cluster.length > 0) sp.set('cluster', filters.cluster.map((f) => String(f.id)).join(','))
+    Object.entries(filters).forEach(([key, values]) => {
+      if (values.length > 0) {
+        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+      }
+    })
     const q = sp.toString()
     return `/${year}/edit${q ? `?${q}` : ''}`
   })()
