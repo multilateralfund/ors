@@ -169,27 +169,51 @@ class APRWorkspaceView(RetrieveAPIView):
         user = self.request.user
         year = int(self.kwargs.get("year"))
 
+        # Build filter params from query params to filter nested project_reports
+        filter_params = {}
+
+        country_param = self.request.query_params.get("country")
+        if country_param:
+            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
+            filter_params["country"] = Country.objects.filter(
+                name__in=country_names, location_type=Country.LocationType.COUNTRY
+            )
+
+        region_param = self.request.query_params.get("region")
+        if region_param:
+            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
+            filter_params["region"] = Country.objects.filter(
+                name__in=region_names,
+                location_type__in=[
+                    Country.LocationType.REGION,
+                    Country.LocationType.SUBREGION,
+                ],
+            )
+
+        cluster_param = self.request.query_params.get("cluster")
+        if cluster_param:
+            filter_params["cluster"] = cluster_param
+
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            filter_params["status"] = status_param
+
+        project_reports_qs = build_filtered_project_reports_queryset(filter_params)
+        project_reports_qs = project_reports_qs.select_related("project__meta_project")
+
         queryset = AnnualAgencyProjectReport.objects.select_related(
             "progress_report",
             "agency",
             "created_by",
             "submitted_by",
         ).prefetch_related(
-            "project_reports",
-            "project_reports__project__meta_project",
-            "project_reports__project__agency",
-            "project_reports__project__country__parent",
-            "project_reports__project__country",
-            "project_reports__project__cluster",
-            "project_reports__project__sector",
-            "project_reports__project__project_type",
+            Prefetch("project_reports", queryset=project_reports_qs),
             get_version_3_prefetch(),
             get_latest_version_prefetch(year),
             get_all_versions_for_year_prefetch(year),
             "files",
         )
 
-        user = self.request.user
         if not user.is_superuser and not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
                 queryset = queryset.filter(agency=user.agency)

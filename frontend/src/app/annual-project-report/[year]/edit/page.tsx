@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
-import { useLocation, useParams } from 'wouter'
+import { useLocation, useParams, useSearch } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { Alert, Box, Checkbox, FormControlLabel, Tab, Tabs } from '@mui/material'
+import { Alert, Box, Checkbox, Chip, FormControlLabel, Tab, Tabs } from '@mui/material'
 import useApi from '@ors/hooks/useApi.ts'
 import NotFoundPage from '@ors/app/not-found.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -60,11 +60,24 @@ export default function APREdit() {
   const [activeTab, setActiveTab] = useState(0)
   const { canEditAPR, isMlfsUser } = useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
+  const {
+    statuses: { data: projectStatuses },
+  } = useStore((state) => state.projects)
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string[]>[]
   >([])
   const hasValidationErrors = validationErrors.length > 0
   const [showDerivedColumns, setShowDerivedColumns] = useState(true)
+
+  const search = useSearch()
+  const [initialFilterParams] = useState<Record<string, string>>(() => {
+    const sp = new URLSearchParams(search)
+    const result: Record<string, string> = {}
+    sp.forEach((value, key) => {
+      if (value) result[key] = value
+    })
+    return result
+  })
 
   const getPath = isMlfsUser
     ? `api/annual-project-report/mlfs/${year}/agencies/`
@@ -78,6 +91,7 @@ export default function APREdit() {
     options: {
       withStoreCache: false,
       triggerIf: canEditAPR,
+      params: initialFilterParams,
     },
     path: getPath,
   })
@@ -249,7 +263,7 @@ export default function APREdit() {
         </div>
         <div className="flex justify-end">
           <FormControlLabel
-            label="Derived columns"
+            label="Show derived columns"
             control={
               <Checkbox
                 checked={showDerivedColumns}
@@ -314,6 +328,29 @@ export default function APREdit() {
                     </Alert>
                     {hasValidationErrors && (
                       <ValidationErrors validationErrors={validationErrors} />
+                    )}
+                    {Object.keys(initialFilterParams).length > 0 && (
+                      <ul className="m-0 flex list-none flex-wrap gap-x-2 px-0 py-2">
+                        {Object.entries(initialFilterParams).flatMap(
+                          ([key, value]) =>
+                            value
+                              .split(',')
+                              .filter(Boolean)
+                              .map((v) => (
+                                <li key={`${key}-${v}`}>
+                                  <Chip
+                                    label={
+                                      key === 'status'
+                                        ? (projectStatuses.find(
+                                            (s: any) => s.code === v,
+                                          )?.name ?? v)
+                                        : v
+                                    }
+                                  />
+                                </li>
+                              )),
+                        )}
+                      </ul>
                     )}
                     <div>Total rows: {rows.length ?? 0}</div>
                   </>

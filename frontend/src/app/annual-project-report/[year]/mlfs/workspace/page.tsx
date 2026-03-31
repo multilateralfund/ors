@@ -228,6 +228,18 @@ export default function APRMLFSWorkspace() {
   const canKickstartAPR = Boolean(
     canEditAPR && kickstartAPR && kickstartAPR.can_kick_start,
   )
+
+  const editHref = (() => {
+    const sp = new URLSearchParams()
+    Object.entries(filters).forEach(([key, values]) => {
+      if (values.length > 0) {
+        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+      }
+    })
+    const q = sp.toString()
+    return `/${year}/edit${q ? `?${q}` : ''}`
+  })()
+
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
     inlineEdit: isMlfsUser && canUpdateAPR,
@@ -639,7 +651,7 @@ export default function APRMLFSWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/${year}/edit`}
+                href={editHref}
                 disabled={!canUpdateAPR}
               >
                 Update APR (tabs)
@@ -658,7 +670,7 @@ export default function APRMLFSWorkspace() {
 
           <div className="flex justify-end">
             <FormControlLabel
-              label="Derived columns"
+              label="Show derived columns"
               control={
                 <Checkbox
                   checked={showDerivedColumns}
