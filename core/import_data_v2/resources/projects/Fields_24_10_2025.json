@@ -385,6 +385,18 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Adjustment",
+        "LABEL": "Adjustment",
+        "WRITE_FIELD_NAME": "adjustment",
+        "READ_FIELD_NAME": "adjustment",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 33,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    }
+    {
         "IMPORT_NAME": "Annex group of substances",
         "LABEL": "Annex group of substances",
         "WRITE_FIELD_NAME": "group",

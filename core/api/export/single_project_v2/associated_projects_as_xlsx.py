@@ -71,6 +71,12 @@ class ProjectWriter(WriteOnlyBase):
                 "headerName": "Duration of project (months)",
             },
             {
+                "id": "adjustment",
+                "headerName": "Adjustment",
+                "type": "boolean",
+                "align": "center",
+            },
+            {
                 "id": "total_fund",
                 "headerName": "Project funding",
                 "type": "number",
