@@ -110,6 +110,14 @@ def get_headers_cross_cutting(
             "headerName": "Duration of project (months)",
         },
         {
+            "id": "interest",
+            "headerName": "Interest",
+            "type": "number",
+            "align": "right",
+            "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
+        },
+        {
             "id": "adjustment",
             "headerName": "Adjustment",
         },

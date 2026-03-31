@@ -661,6 +661,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "computed_total_phase_out_co2_tonnes",
             "transferred_from",
             "adjustment",
+            "interest",
         ]
 
     def get_editable(self, obj):
@@ -1031,6 +1032,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "project_start_date",
             "project_duration",
             "adjustment",
+            "interest",
             "project_type",
             "production",
             "quantity_controlled_substances_destroyed_mt",
@@ -1357,6 +1359,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "end_users",
             "energy_savings",
             "adjustment",
+            "interest",
         ]
 
         mandatory_fields_at_submission = [

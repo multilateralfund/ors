@@ -786,7 +786,7 @@ class Project(models.Model):
         help_text=OLD_FIELD_HELP_TEXT,
     )  # obsolete
     remarks = models.TextField(null=True, blank=True)
-
+    interest = models.FloatField(null=True, blank=True)
     # other fields
     umbrella_project = models.BooleanField(
         default=False,

@@ -393,8 +393,20 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Cross-Cutting",
         "SORT_ORDER": 33,
-        "EDITABLE_IN_VERSIONS": [1,2,3],
-        "VISIBLE_IN_VERSIONS": [1,2,3]
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Adjustment",
+        "LABEL": "Adjustment",
+        "WRITE_FIELD_NAME": "interest",
+        "READ_FIELD_NAME": "interest",
+        "TABLE": "project",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 34,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Annex group of substances",
