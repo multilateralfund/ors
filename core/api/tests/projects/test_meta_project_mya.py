@@ -12,13 +12,14 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="_setup_metaprojects_list")
-def setup_metaprojects_list(_setup_project_list):
+def setup_metaprojects_list(_setup_project_list, project_approved_status):
     project: Project = _setup_project_list[0]
     meta_project: MetaProject = MetaProjectFactory.create(
         type=MetaProject.MetaProjectType.MYA,
     )
     for project in _setup_project_list:
         project.category = Project.Category.MYA
+        project.submission_status = project_approved_status
         project.lead_agency = project.agency
         project.meta_project = meta_project
         project.save()
