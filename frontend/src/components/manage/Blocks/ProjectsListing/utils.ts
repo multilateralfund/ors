@@ -983,7 +983,11 @@ export const getMenus = (
           title: 'Update MYA data',
           url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
           disabled:
-            !canViewMetaProjects || (!!projectId && !projectMetaprojectId),
+            !canViewMetaProjects ||
+            (!!projectId &&
+              !(
+                projectSubmissionStatus === 'Approved' && !!projectMetaprojectId
+              )),
         },
         {
           title: 'Update post ExCom fields',
