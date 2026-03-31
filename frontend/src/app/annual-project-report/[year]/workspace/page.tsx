@@ -93,6 +93,15 @@ export default function APRWorkspace() {
   const isDraft = apr?.status === 'draft' || apr?.is_unlocked
   const canUpdateAPR = canEditAPR && isDraft
 
+  const editHref = (() => {
+    const sp = new URLSearchParams()
+    if (filters.status.length > 0) {
+      sp.set('status', filters.status.map((f) => f.code!).join(','))
+    }
+    const q = sp.toString()
+    return `/${year}/edit${q ? `?${q}` : ''}`
+  })()
+
   return (
     <PageWrapper>
       {/* "~" means absolute, outside the nested context */}
@@ -196,7 +205,7 @@ export default function APRWorkspace() {
               button
               variant="text"
               startIcon={<FiEdit size={18} />}
-              href={`/${year}/edit`}
+              href={editHref}
               disabled={!canUpdateAPR}
             >
               Update APR

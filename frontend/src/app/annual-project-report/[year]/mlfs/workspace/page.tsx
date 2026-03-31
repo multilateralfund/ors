@@ -228,6 +228,18 @@ export default function APRMLFSWorkspace() {
   const canKickstartAPR = Boolean(
     canEditAPR && kickstartAPR && kickstartAPR.can_kick_start,
   )
+
+  const editHref = (() => {
+    const sp = new URLSearchParams()
+    if (filters.status.length > 0) sp.set('status', filters.status.map((f) => f.code!).join(','))
+    if (filters.agency.length > 0) sp.set('agency', filters.agency.map((f) => String(f.id)).join(','))
+    if (filters.region.length > 0) sp.set('region', filters.region.map((f) => String(f.id)).join(','))
+    if (filters.country.length > 0) sp.set('country', filters.country.map((f) => String(f.id)).join(','))
+    if (filters.cluster.length > 0) sp.set('cluster', filters.cluster.map((f) => String(f.id)).join(','))
+    const q = sp.toString()
+    return `/${year}/edit${q ? `?${q}` : ''}`
+  })()
+
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
     inlineEdit: isMlfsUser && canUpdateAPR,
@@ -639,7 +651,7 @@ export default function APRMLFSWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/${year}/edit`}
+                href={editHref}
                 disabled={!canUpdateAPR}
               >
                 Update APR (tabs)
@@ -658,7 +670,7 @@ export default function APRMLFSWorkspace() {
 
           <div className="flex justify-end">
             <FormControlLabel
-              label="Derived columns"
+              label="Show derived columns"
               control={
                 <Checkbox
                   checked={showDerivedColumns}
