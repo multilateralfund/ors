@@ -48,11 +48,13 @@ const ProjectRelatedProjects = ({
     isVieworEditMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
+    !metaprojectData?.is_draft &&
     !!metaProjectId
 
   const canDisassociateComponent =
     isVieworEditMode &&
     canDisassociateComponents &&
+    !metaprojectData?.is_draft &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
@@ -109,7 +111,6 @@ const ProjectRelatedProjects = ({
           const componentsIds = map(relatedProjects[0].data.projects, 'id')
           const filteredData = allCrtData.filter(
             (entry) =>
-              entry.submission_status !== 'Draft' &&
               !componentsIds.includes(entry.id) &&
               !(isVieworEditMode && entry.id === project.id) &&
               !(isLinkMode && entry.id === project.id),

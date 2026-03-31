@@ -18,6 +18,7 @@ import { useStore } from '@ors/store'
 import { Tabs, Tab } from '@mui/material'
 
 const ProjectUmbrellaProjectDetails = ({
+  project,
   relatedProjects,
   setCurrentTab,
   metaProjectId,
@@ -27,6 +28,7 @@ const ProjectUmbrellaProjectDetails = ({
   mode,
   isMya,
   isPrevButtonDisabled,
+  setErrors,
   ...rest
 }: ProjectTabSetters & {
   project?: ProjectTypeApi
@@ -39,6 +41,7 @@ const ProjectUmbrellaProjectDetails = ({
   mode: string
   isMya: boolean
   isPrevButtonDisabled?: boolean
+  setErrors?: (value: { [key: string]: [] }) => void
 }) => {
   const { canViewMetaProjects } = useContext(PermissionsContext)
   const { allMpErrors } = useStore((state) => state.mpData)
@@ -53,6 +56,7 @@ const ProjectUmbrellaProjectDetails = ({
       component: (
         <ProjectRelatedProjects
           {...{
+            project,
             relatedProjects,
             metaProjectId,
             setMetaProjectId,
@@ -77,7 +81,7 @@ const ProjectUmbrellaProjectDetails = ({
                 )}
               </div>
             ),
-            component: <ProjectMyaUpdate {...{ mode, ...rest }} />,
+            component: <ProjectMyaUpdate {...{ mode, setErrors, ...rest }} />,
             errors: formatErrors(allMpErrors),
           },
         ]

@@ -4,7 +4,6 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
-import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -240,13 +239,6 @@ const ProjectsEdit = ({
     metaProjectId,
     refetchRelatedProjects,
     project,
-  )
-
-  const meta_project_id = mode === 'edit' ? project.meta_project_id : null
-  const { data: metaprojectData } = useGetMetaProjectDetails(
-    meta_project_id,
-    mode,
-    projIdentifiers,
   )
 
   const [bpData, setBpData] = useState({
@@ -595,8 +587,8 @@ const ProjectsEdit = ({
             metaProjectId,
             setMetaProjectId,
             setRefetchRelatedProjects,
-            metaprojectData,
             shouldValidateTotalFund,
+            setErrors,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

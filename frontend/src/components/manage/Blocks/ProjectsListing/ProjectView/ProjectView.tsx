@@ -19,6 +19,7 @@ import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import {
   filterApprovalFields,
+  formatMetaprojectData,
   getIsUpdatablePostExcom,
   getSectionFields,
   hasFields,
@@ -189,6 +190,13 @@ const ProjectView = ({
     'view',
     metaProjectDetailsProps,
   )
+
+  const { setMpData } = useStore((state) => state.mpData)
+
+  useEffect(() => {
+    const formattedMpdata = formatMetaprojectData(metaprojectData)
+    setMpData(formattedMpdata)
+  }, [metaprojectData])
 
   const hasComponents =
     project.component && project.component.original_project_id === project.id

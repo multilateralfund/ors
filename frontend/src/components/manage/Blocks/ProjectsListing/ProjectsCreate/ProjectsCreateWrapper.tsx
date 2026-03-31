@@ -10,7 +10,6 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
-import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 import { getDefaultValues, hasSpecificField } from '../utils.ts'
 import {
   defaultTrancheErrors,
@@ -116,11 +115,6 @@ const ProjectsCreateWrapper = () => {
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
 
-  const { data: metaprojectData } = useGetMetaProjectDetails(
-    null,
-    'add',
-    projIdentifiers,
-  )
   const relatedProjects = useGetRelatedProjects('add', null, false)
 
   useEffect(() => {
@@ -256,7 +250,7 @@ const ProjectsCreateWrapper = () => {
           setFilesMetaData,
           shouldValidateTotalFund,
           relatedProjects,
-          metaprojectData,
+          setErrors,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

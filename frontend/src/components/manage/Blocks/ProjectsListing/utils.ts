@@ -1,14 +1,10 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { getMeetingNr } from '../../Utils/utilFunctions'
-import {
-  MetaProjectDetailType,
-  MetaProjectFieldData,
-} from './UpdateMyaData/types'
+import { MetaProjectDetailType } from './UpdateMyaData/types'
 import {
   approvalOdsFields,
   approvalToOdsMap,
-  defaultMetaprojectFieldData,
   initialTranferedProjectData,
   PROJECTS_PER_PAGE,
   tableColumns,
@@ -675,19 +671,17 @@ export const getMpErrors = (
   project: ProjectTypeApi | undefined,
   mode: string,
 ) => {
-  const hasNoMetaproject = getHasNoMetaproject(metaprojectData, project, mode)
+  const allKeys = keys(mpData)
 
-  if (
-    !(
-      mode === 'edit' &&
-      project?.submission_status === 'Recommended' &&
-      hasNoMetaproject
-    )
-  ) {
+  if (!metaprojectData || allKeys.length === 0) {
     return {}
   }
 
-  const allFields = keys(mpData)
+  const hasDefaultErrors =
+    mode === 'edit' &&
+    project?.submission_status === 'Recommended' &&
+    metaprojectData.is_draft
+
   const requiredFields = [
     'project_funding',
     'support_cost',
@@ -698,11 +692,13 @@ export const getMpErrors = (
   const { start_date, end_date } = mpData
 
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => allFields.includes(key)),
+    Object.entries(errors).filter(([key]) => allKeys.includes(key)),
   )
 
   const allErrors = {
-    ...getFieldErrors(requiredFields, mpData, project),
+    ...(hasDefaultErrors && {
+      ...getFieldErrors(requiredFields, mpData, project),
+    }),
     ...(dayjs(end_date).isBefore(dayjs(start_date)) && {
       end_date: ['Start date cannot be later than end date.'],
     }),
@@ -711,10 +707,7 @@ export const getMpErrors = (
 
   return Object.entries(allErrors).reduce(
     (acc, [key, errMsg]) => {
-      const field =
-        defaultMetaprojectFieldData[
-          key as keyof typeof defaultMetaprojectFieldData
-        ].label
+      const field = metaprojectData.field_data[key].label
 
       if (field) {
         acc[field] = errMsg as string[]
@@ -1417,28 +1410,30 @@ export const isOtherOdsReplacement = (
   return crtOdsReplacementName?.includes('Other alternatives') ?? false
 }
 
-export const formatMetaprojectData = (fd: MetaProjectFieldData) => {
+export const formatMetaprojectData = (
+  metaprojectData: MetaProjectDetailType | null,
+) => {
   const result = {} as Record<string, any>
 
+  if (!metaprojectData) {
+    return result
+  }
+
+  const fd = metaprojectData.field_data ?? {}
+  const cfd = metaprojectData.computed_field_data ?? {}
+
   for (const key of Object.keys(fd)) {
-    const fdEntry = fd[key as keyof MetaProjectFieldData]
+    const fdEntry = fd[key]
+
+    const fdValue = fdEntry.value
+    const computedValue = cfd[key]
+    const finalValue = fdValue === null ? computedValue : fdValue
+
     result[key] =
       fdEntry.type === 'DecimalField'
-        ? getFormattedDecimalValue(fdEntry.value as string)
-        : fdEntry.value
+        ? getFormattedDecimalValue(finalValue as string)
+        : finalValue
   }
 
   return result
-}
-
-export const getHasNoMetaproject = (
-  metaprojectData: MetaProjectDetailType | null,
-  project: ProjectTypeApi | undefined,
-  mode: string,
-) => {
-  const hasMetaProject =
-    ['edit', 'view'].includes(mode) && !!project?.meta_project_id
-  const hasNoPossibleMetaProject = !hasMetaProject && !!metaprojectData?.detail
-
-  return !hasMetaProject && hasNoPossibleMetaProject
 }

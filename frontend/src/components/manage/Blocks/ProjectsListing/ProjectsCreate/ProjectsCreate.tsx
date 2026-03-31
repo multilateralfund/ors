@@ -1,11 +1,4 @@
-import {
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -23,11 +16,8 @@ import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
-import { MetaProjectDetailType } from '../UpdateMyaData/types.ts'
-import {
-  defaultMetaprojectFieldData,
-  projectPhaseOutFields,
-} from '../constants.ts'
+import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
+import { projectPhaseOutFields } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -102,8 +92,8 @@ const ProjectsCreate = ({
   metaProjectId,
   setMetaProjectId,
   setRefetchRelatedProjects,
-  metaprojectData,
   shouldValidateTotalFund,
+  setErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -127,8 +117,8 @@ const ProjectsCreate = ({
     metaProjectId?: number | null
     setMetaProjectId?: (id: number | null) => void
     setRefetchRelatedProjects?: (refetch: boolean) => void
-    metaprojectData: MetaProjectDetailType | null
     shouldValidateTotalFund: boolean
+    setErrors: (value: { [key: string]: [] }) => void
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -175,6 +165,14 @@ const ProjectsCreate = ({
   const specificFieldsIdentifiers = 'projectSpecificFields'
   const specificFieldsData = projectData[specificFieldsIdentifiers] || []
 
+  const meta_project_id =
+    project && mode === 'edit' ? project.meta_project_id : null
+  const { data: metaprojectData } = useGetMetaProjectDetails(
+    meta_project_id,
+    mode,
+    projIdentifiers,
+  )
+
   const {
     mpData,
     setMpData,
@@ -183,14 +181,11 @@ const ProjectsCreate = ({
     allMpErrors,
     setAllMpErrors,
   } = useStore((state) => state.mpData)
-  const getFormattedMpdata = useCallback(
-    () => formatMetaprojectData(defaultMetaprojectFieldData),
-    [metaprojectData],
-  )
 
   useEffect(() => {
-    setMpData(getFormattedMpdata)
-  }, [])
+    const formattedMpdata = formatMetaprojectData(metaprojectData)
+    setMpData(formattedMpdata)
+  }, [metaprojectData])
 
   const { inlineMessage, setInlineMessage } = useStore(
     (state) => state.inlineMessage,
@@ -844,6 +839,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             metaprojectData,
             mode,
+            setErrors,
           }}
           isMya={projIdentifiers.category === 'MYA'}
           isPrevButtonDisabled={
