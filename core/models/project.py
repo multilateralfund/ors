@@ -630,7 +630,11 @@ class Project(models.Model):
     project_duration = models.IntegerField(
         null=True,
         blank=True,
-        help_text=OLD_FIELD_HELP_TEXT,
+        help_text="Duration of project (months)",
+    )
+    adjustment = models.BooleanField(
+        default=False,
+        help_text="Marked as true on a post excom update if the update resulted in a fund adjustment.",
     )
     stage = models.IntegerField(
         null=True,
@@ -782,7 +786,7 @@ class Project(models.Model):
         help_text=OLD_FIELD_HELP_TEXT,
     )  # obsolete
     remarks = models.TextField(null=True, blank=True)
-
+    interest = models.FloatField(null=True, blank=True)
     # other fields
     umbrella_project = models.BooleanField(
         default=False,
@@ -966,11 +970,6 @@ class Project(models.Model):
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)
-    project_duration = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Duration of project (months)",
-    )
     group = models.ForeignKey(
         "core.Group",
         on_delete=models.CASCADE,

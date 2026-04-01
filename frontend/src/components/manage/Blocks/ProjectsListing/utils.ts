@@ -287,6 +287,10 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
+  const crossCuttingFieldsForEdit = omit(crossCuttingFields, [
+    'adjustment',
+    'interest',
+  ])
 
   const filteredFields = filter(specificFields, (field) => !field.is_actual)
   const specificFieldsAvailable = map(filteredFields, 'write_field_name')
@@ -337,7 +341,7 @@ export const formatSubmitData = (
   return {
     ...projIdentifiers,
     bp_activity: bpLinking.bpId,
-    ...normalizeValues(crossCuttingFields),
+    ...normalizeValues(crossCuttingFieldsForEdit),
     ...normalizeValues(crtProjectSpecificFields),
     ...updatedOldSpecificFieldsValues,
     ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
@@ -543,6 +547,12 @@ export const getCrossCuttingErrors = (
     'project_end_date',
     'project_duration',
   ]
+  const nonRequiredFields = [
+    'subsector_ids',
+    'blanket_or_individual_consideration',
+    'interest',
+    'adjustment',
+  ]
 
   const requiredFields = shouldValidateTotalFund
     ? allRequiredFields
@@ -555,11 +565,7 @@ export const getCrossCuttingErrors = (
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) =>
-      [
-        ...allRequiredFields,
-        'subsector_ids',
-        'blanket_or_individual_consideration',
-      ].includes(key),
+      [...allRequiredFields, ...nonRequiredFields].includes(key),
     ),
   )
 
@@ -767,7 +773,7 @@ export const getTransferErrors = (
   project: ProjectTypeApi,
   shouldValidateTotalFund: boolean,
 ) => {
-  const { fund_transferred, psc_transferred } = projectData
+  const { fund_transferred, psc_transferred, psc_received } = projectData
   const initialFieldsToValidate = keys(initialTranferedProjectData).filter(
     (field) => field !== 'transfer_excom_provision',
   )
@@ -784,9 +790,23 @@ export const getTransferErrors = (
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
       psc_transferred: ['Value cannot be greater than project support costs.'],
     }),
+    ...(Number(psc_received) > Number(project.support_cost_psc) && {
+      psc_received: ['Value cannot be greater than project support costs.'],
+    }),
+    ...(Number(psc_received) > Number(psc_transferred) && {
+      psc_received: [
+        'Value cannot be greater than transferred project support costs.',
+      ],
+    }),
     ...(shouldValidateTotalFund &&
       Number(psc_transferred) > Number(fund_transferred) && {
         psc_transferred: [
+          'Value cannot be greater than transferred project funding.',
+        ],
+      }),
+    ...(shouldValidateTotalFund &&
+      Number(psc_received) > Number(fund_transferred) && {
+        psc_received: [
           'Value cannot be greater than transferred project funding.',
         ],
       }),

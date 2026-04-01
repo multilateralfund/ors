@@ -45,8 +45,11 @@ export const tableColumns: { [key: string]: string } = {
   transfer_excom_provision: 'Transfer Executive Committee provision',
   fund_transferred: 'Transferred project funding (US $)',
   psc_transferred: 'Transferred project support costs (US $)',
+  psc_received: 'Receiving project support costs (US $)',
   lead_agency_submitting_on_behalf:
     'Confirm you are the lead agency submitting on behalf of a cooperating agency',
+  adjustment: 'Adjustment',
+  interest: 'Interest (US $)',
 }
 
 export const defaultProps = {
@@ -117,6 +120,7 @@ export const initialTranferedProjectData = {
   transfer_excom_provision: '',
   fund_transferred: null,
   psc_transferred: null,
+  psc_received: null,
 }
 
 export const considerationOpts = [

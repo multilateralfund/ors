@@ -435,6 +435,8 @@ const EditActionButtons = ({
 
       if (postExComUpdate) {
         data['post-excom-update'] = true
+        data['adjustment'] = crossCuttingFields.adjustment
+        data['interest'] = crossCuttingFields.interest
 
         // main fields validation before edit
         await api(`api/projects/v2/${id}`, {

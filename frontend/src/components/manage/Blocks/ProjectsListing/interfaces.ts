@@ -45,6 +45,8 @@ export interface CrossCuttingFields {
   total_fund: string | null
   support_cost_psc: string | null
   blanket_or_individual_consideration: string | null
+  adjustment?: boolean
+  interest?: string | null
 }
 
 export interface SpecificFields {
@@ -274,6 +276,7 @@ export interface ProjectTransferData {
   transfer_excom_provision: string
   fund_transferred: string | null
   psc_transferred: string | null
+  psc_received: string | null
 }
 
 export type SetEnterpriseData<T> = (

@@ -71,6 +71,18 @@ class ProjectWriter(WriteOnlyBase):
                 "headerName": "Duration of project (months)",
             },
             {
+                "id": "interest",
+                "headerName": "Interest",
+                "align": "right",
+                "cell_format": "$###,###,##0.00#############",
+            },
+            {
+                "id": "adjustment",
+                "headerName": "Adjustment",
+                "type": "boolean",
+                "align": "center",
+            },
+            {
                 "id": "total_fund",
                 "headerName": "Project funding",
                 "type": "number",

@@ -142,6 +142,7 @@ const ProjectTransferWrapper = ({
       ...prevData,
       fund_transferred: getFormattedDecimalValue(project.total_fund),
       psc_transferred: getFormattedDecimalValue(project.support_cost_psc),
+      psc_received: getFormattedDecimalValue(project.support_cost_psc),
     }))
   }, [])
 

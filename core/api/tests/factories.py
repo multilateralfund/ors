@@ -644,6 +644,8 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     planned_completion_date = factory.Faker("date")
     actual_completion_date = factory.Faker("date")
     project_duration = factory.Faker("random_int", min=1, max=120)
+    adjustment = factory.Faker("pybool")
+    interest = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     status = EnterpriseStatus.PENDING
     chemical_phased_out = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     impact = factory.Faker("pystr", max_chars=200, prefix="Impact ")
