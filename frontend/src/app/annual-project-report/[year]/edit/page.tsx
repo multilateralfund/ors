@@ -190,7 +190,11 @@ export default function APREdit() {
   return (
     <PageWrapper>
       <BackLink
-        url={`/${year}/workspace`}
+        url={
+          search
+            ? `/${year}/workspace?${search}`
+            : `/${year}/workspace`
+        }
         text="Annual Progress Report Workspace"
       />
       <PageHeading className="min-w-fit">
