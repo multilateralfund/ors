@@ -93,15 +93,6 @@ const ProjectMyaUpdate = ({
   const getFieldValue = (name: string) =>
     name === projectDuration ? computeProjectDuration() : mpData?.[name] || ''
 
-  const valueIsComputed = (name: string) => {
-    const computedValue = metaprojectData?.computed_field_data?.[name]
-
-    return (
-      name === projectDuration ||
-      (!isDraftMetaProject && !mpData?.[name] && !!computedValue)
-    )
-  }
-
   useEffect(() => {
     setMpData((prev) => ({
       ...prev,
@@ -181,7 +172,7 @@ const ProjectMyaUpdate = ({
 
   const renderFieldData = (fieldData: any, isIndividualField: boolean = true) =>
     fieldData.map((fd: any) => {
-      const isComputed = valueIsComputed(fd.name)
+      const isComputed = fd.name === projectDuration && mode !== 'view'
       const formattedLabel = formatFieldLabel(fd.label)
 
       return (
