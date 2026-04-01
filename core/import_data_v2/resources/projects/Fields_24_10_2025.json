@@ -397,8 +397,8 @@
         "VISIBLE_IN_VERSIONS": [3]
     },
     {
-        "IMPORT_NAME": "Adjustment",
-        "LABEL": "Adjustment",
+        "IMPORT_NAME": "Interest",
+        "LABEL": "Interest",
         "WRITE_FIELD_NAME": "interest",
         "READ_FIELD_NAME": "interest",
         "TABLE": "project",
