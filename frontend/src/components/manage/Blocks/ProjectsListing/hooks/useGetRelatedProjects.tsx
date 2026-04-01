@@ -30,6 +30,7 @@ const useGetRelatedProjects = (
       data: componentAssociation,
       setData: setComponentAssociation,
       queryParams: 'only_components',
+      only_approved: false,
       noResultsText: "This project doesn't have additional components.",
     },
     {
@@ -48,6 +49,7 @@ const useGetRelatedProjects = (
       data: associatedProjectsAssociation,
       setData: setassociatedProjectsAssociation,
       queryParams: 'exclude_components',
+      only_approved: true,
       noResultsText: 'No associated projects available.',
     },
   ]
@@ -57,7 +59,7 @@ const useGetRelatedProjects = (
       return
     }
 
-    relatedProjects.map(({ setData, queryParams }) => {
+    relatedProjects.map(({ setData, queryParams, only_approved }) => {
       useGetAssociatedProjects(
         project.id,
         setData,
@@ -65,6 +67,7 @@ const useGetRelatedProjects = (
         false,
         false,
         false,
+        only_approved,
       )
     })
   }, 0)

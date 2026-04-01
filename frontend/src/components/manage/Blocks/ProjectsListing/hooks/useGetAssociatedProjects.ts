@@ -12,6 +12,7 @@ export const useGetAssociatedProjects = async (
   include_validation: boolean = false,
   include_project: boolean = false,
   filter_by_project_status: boolean = true,
+  only_approved: boolean = false,
 ) => {
   try {
     setAssociatedProjects((prev) => ({
@@ -20,7 +21,7 @@ export const useGetAssociatedProjects = async (
     }))
 
     const projects = await api(
-      `/api/projects/v2/${id}/list_associated_projects/?included_entries=${included_entries}&include_validation=${include_validation}&include_project=${include_project}&filter_by_project_status=${filter_by_project_status}`,
+      `/api/projects/v2/${id}/list_associated_projects/?included_entries=${included_entries}&include_validation=${include_validation}&include_project=${include_project}&filter_by_project_status=${filter_by_project_status}&only_approved=${only_approved}`,
     )
 
     const formattedProjects = map(projects, (project) => {
