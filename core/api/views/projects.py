@@ -213,6 +213,11 @@ class MetaProjectMyaDetailsViewSet(
     queryset = MetaProject.objects.all()
     permission_classes = [HasProjectV2MyaAccess]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def update(self, request, *args, **kwargs):
         mp = self.get_object()
 
