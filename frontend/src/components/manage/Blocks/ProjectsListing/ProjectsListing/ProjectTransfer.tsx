@@ -290,7 +290,7 @@ const ProjectTransfer = ({
               <FieldErrorIndicator errors={errors} field="psc_transferred" />
             </div>
           </div>
-          <div className="mr-[1.7rem]">
+          <div>
             <Label>{tableColumns.psc_received}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
