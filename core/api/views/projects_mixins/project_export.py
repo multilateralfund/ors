@@ -1,6 +1,7 @@
 from django.http import HttpResponseBadRequest
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 
 from core.api.export.projects_v2_dump import ProjectsV2Dump
@@ -14,40 +15,37 @@ from core.models import Project
 
 
 class ProjectExportMixin:
-
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         V2 projects endpoint for exporting projects.
         """,
-        manual_parameters=[
-            openapi.Parameter(
-                "project_id",
-                openapi.IN_QUERY,
+        parameters=[
+            OpenApiParameter(
+                name="project_id",
+                location=OpenApiParameter.QUERY,
                 description="ID of the project to export. If not provided, all projects will be exported.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "output_format",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="output_format",
+                location=OpenApiParameter.QUERY,
                 description="ID of the project to export. If not provided, all projects will be exported.",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=["xlsx", "docx"],
                 default="xlsx",
             ),
-            openapi.Parameter(
-                "category",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(
-                    type=openapi.TYPE_STRING,
-                    enum=Project.Category.values,
-                ),
+            OpenApiParameter(
+                name="category",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.STR,
+                many=True,
+                enum=Project.Category.values,
             ),
-            openapi.Parameter(
-                "really_all",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="really_all",
+                location=OpenApiParameter.QUERY,
                 description="Queries ALL projects.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )
@@ -66,16 +64,16 @@ class ProjectExportMixin:
             return ProjectsV2Dump(self).export()
         return ProjectsV2Export(self).export_xls()
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         V2 projects endpoint for exporting associated projects.
         """,
-        manual_parameters=[
-            openapi.Parameter(
-                "project_id",
-                openapi.IN_QUERY,
+        parameters=[
+            OpenApiParameter(
+                name="project_id",
+                location=OpenApiParameter.QUERY,
                 description="ID of the project to export. If not provided, all projects will be exported.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )

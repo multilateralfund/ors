@@ -1,7 +1,10 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 
 from django.db.models import Q
+from rest_framework import serializers
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -25,19 +28,18 @@ from core.utils import get_project_sub_code
 
 
 class ProjectAssociationMixin:
-
     @action(methods=["POST"], detail=False)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Receives a list of project ids and associates them under the same meta project.
         """,
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "projects_to_associate": openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Items(type=openapi.TYPE_INTEGER),
-                    description="""
+        request=inline_serializer(
+            name="ProjectAssociationRequest",
+            fields={
+                "projects_to_associate": serializers.ListField(
+                    child=serializers.IntegerField(),
+                    required=True,
+                    help_text="""
                         List of project IDs to associate under the same meta project.
                         If any of the projects have a meta project, it will be used for the association.
                         If none of the projects have a meta project, a new meta project will be created.
@@ -45,24 +47,22 @@ class ProjectAssociationMixin:
                         meta_project_id field will be used to associate all projects to that meta project.
                     """,
                 ),
-                "meta_project_id": openapi.Schema(
-                    type=openapi.TYPE_INTEGER,
-                    description="""
+                "meta_project_id": serializers.IntegerField(
+                    help_text="""
                         ID of the meta project to associate the projects to.
                         If not provided, and none of the projects have a meta project,
                         a new meta project will be created.
                     """,
                 ),
-                "lead_agency_id": openapi.Schema(
-                    type=openapi.TYPE_INTEGER,
-                    description="""
+                "lead_agency_id": serializers.IntegerField(
+                    required=True,
+                    help_text="""
                         ID of the lead agency to be used in the projects.
                         TBD: should this be updated in the lead agency of the metaproject as well?
                         Right now the field is not used anymore.
                     """,
                 ),
             },
-            required=["project_ids", "lead_agency_id"],
         ),
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
@@ -127,11 +127,11 @@ class ProjectAssociationMixin:
         )
 
     @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Receives a project id and removes it from its meta project association.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=OpenApiTypes.OBJECT,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
@@ -154,23 +154,23 @@ class ProjectAssociationMixin:
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_validation",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_validation",
+                location=OpenApiParameter.QUERY,
                 description="If set to true, the response will include validation information for the projects.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "include_project",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_project",
+                location=OpenApiParameter.QUERY,
                 description="If set to true, the response will include the project details.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "included_entries",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="included_entries",
+                location=OpenApiParameter.QUERY,
                 description=(
                     "Filter associated projects by 'component' status.\n"
                     "* 'all' (default): all associated projects; components and non-components;\n"
@@ -178,20 +178,20 @@ class ProjectAssociationMixin:
                     "* 'exclude_components': exclude component projects.\n"
                     "* 'only_project': only the current project."
                 ),
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=["all", "only_components", "exclude_components", "only_project"],
             ),
-            openapi.Parameter(
-                "filter_by_project_status",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="filter_by_project_status",
+                location=OpenApiParameter.QUERY,
                 description="""
                     If set to true, the response will include only projects with
                     the same submission status as the current project.
                 """,
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
-        operation_description="""
+        description="""
             List all projects associated with the meta project, with the
             option to retrieve components, non-components or all.
             This endpoint can be used to get all projects associated with the meta project.
@@ -285,8 +285,8 @@ class ProjectAssociationMixin:
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
             Disassociate a project from the component group.
         """,
     )

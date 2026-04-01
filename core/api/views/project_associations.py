@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from django.db.models import Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -115,12 +116,12 @@ class ProjectAssociationViewSet(
         queryset = [meta for meta in queryset if getattr(meta, "filtered_projects", [])]
         return queryset
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "project_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="project_id",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.INT,
                 description="""
                     Project given for association. The entries will be filtered based on this project's country
                     and its meta project will be excluded from the results.

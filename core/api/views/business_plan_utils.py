@@ -5,7 +5,8 @@ import pandas as pd
 import traceback
 from django.core.exceptions import ValidationError
 from django.db.models import F
-from drf_yasg import openapi
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
 from rest_framework import status
 
 from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
@@ -32,34 +33,34 @@ from core.models import (
 logger = logging.getLogger(__name__)
 
 IMPORT_PARAMETERS = [
-    openapi.Parameter(
-        "year_start",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_INTEGER,
+    OpenApiParameter(
+        name="year_start",
+        location=OpenApiParameter.QUERY,
+        type=OpenApiTypes.INT,
         required=True,
     ),
-    openapi.Parameter(
-        "year_end",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_INTEGER,
+    OpenApiParameter(
+        name="year_end",
+        location=OpenApiParameter.QUERY,
+        type=OpenApiTypes.INT,
         required=True,
     ),
-    openapi.Parameter(
-        "status",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
+    OpenApiParameter(
+        name="status",
+        location=OpenApiParameter.QUERY,
+        type=OpenApiTypes.STR,
         required=True,
     ),
-    openapi.Parameter(
-        "meeting_id",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_INTEGER,
+    OpenApiParameter(
+        name="meeting_id",
+        location=OpenApiParameter.QUERY,
+        type=OpenApiTypes.INT,
         required=True,
     ),
-    openapi.Parameter(
-        "decision_id",
-        openapi.IN_QUERY,
-        type=openapi.TYPE_INTEGER,
+    OpenApiParameter(
+        name="decision_id",
+        location=OpenApiParameter.QUERY,
+        type=OpenApiTypes.INT,
     ),
 ]
 

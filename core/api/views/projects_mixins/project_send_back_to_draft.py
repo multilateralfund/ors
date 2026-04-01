@@ -1,5 +1,5 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,13 +19,13 @@ from core.api.views.utils import log_project_history
 
 class ProjectSendBackToDraftMixin:
     @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Send the project back to draft.
         The project is checked for validity (status should be 'Submitted' and version should be 2).
         The status is set to 'Draft', but the version is not changed back to 1.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=OpenApiTypes.OBJECT,
         responses={
             status.HTTP_200_OK: ProjectListV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",

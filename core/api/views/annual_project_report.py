@@ -7,8 +7,9 @@ from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
@@ -638,14 +639,14 @@ class APRSummaryTablesExportView(APIView):
 
     permission_classes = [IsAuthenticated, HasAPRViewAccess]
 
-    @swagger_auto_schema(
-        operation_description="Export APR Summary Tables as Excel",
-        manual_parameters=[
-            openapi.Parameter(
-                "year",
-                openapi.IN_QUERY,
+    @extend_schema(
+        description="Export APR Summary Tables as Excel",
+        parameters=[
+            OpenApiParameter(
+                name="year",
+                location=OpenApiParameter.QUERY,
                 description="APR Year",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
                 required=True,
             ),
         ],

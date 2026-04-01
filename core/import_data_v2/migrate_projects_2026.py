@@ -33,7 +33,7 @@ from core.models.project_metadata import (
 from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines
+# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +240,7 @@ def create_new_project(row, dry_run=True):
     meeting = Meeting.objects.filter(number=meeting_number).first()
     if not meeting:
         logger.warning(
-            f"""⚠️ Meeting with number '{meeting_number}' not found while 
+            f"""⚠️ Meeting with number '{meeting_number}' not found while
             processing project with legacy code '{row['CODE']}'
             """
         )
@@ -438,7 +438,7 @@ def process_set_new_code(dry_run=True):
         )
         if project.code != new_project_code:
             logger.warning(
-                f"""⚠️ Updating project code for project with legacy code '{project.legacy_code}' 
+                f"""⚠️ Updating project code for project with legacy code '{project.legacy_code}'
                 from '{project.code}' to '{new_project_code}'
                 """
             )
@@ -609,7 +609,7 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         meeting = Meeting.objects.filter(number=row["MEETING"]).first()
         if not meeting:
             logger.warning(
-                f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing 
+                f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing
                 Funding Fields sheet for project with legacy code '{row['CODE']}'
                 """
             )

@@ -1,6 +1,7 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 from django.db import transaction
+from rest_framework import serializers
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework import parsers
@@ -13,87 +14,65 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_CREATE_TRANSFER,
     HISTORY_DESCRIPTION_TRANSFER,
 )
-from core.api.swagger import FileUploadAutoSchema
 from core.api.views.utils import log_project_history
 
 
 class ProjectTransferMixin:
-
     @action(
         methods=["POST"],
         detail=True,
         parser_classes=[parsers.MultiPartParser, parsers.FormParser],
     )
-    @swagger_auto_schema(
-        operation_description="Transfer the project to a new agency.",
-        auto_schema=FileUploadAutoSchema,
-        manual_parameters=[
-            openapi.Parameter(
-                name="files",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(type=openapi.TYPE_FILE),
-                required=True,
-                description="List of documents",
-            ),
-            openapi.Parameter(
-                name="metadata",
-                in_=openapi.IN_FORM,
-                type=openapi.TYPE_STRING,
-                required=True,
-                description=(
-                    """
-                    JSON metadata string.(map by filename):
-                        {
-                            "test_document_1.xlsx": "endorsement_letter",
-                            "test_document_2.xlsx": "verification_report"
-                        }
-                """
-                ),
-            ),
-            openapi.Parameter(
-                "agency",
-                openapi.IN_FORM,
-                description="Agency ID",
-                type=openapi.TYPE_INTEGER,
-                required=True,
-            ),
-            openapi.Parameter(
-                "transfer_meeting",
-                openapi.IN_FORM,
-                description="Meeting ID",
-                type=openapi.TYPE_INTEGER,
-                required=False,
-            ),
-            openapi.Parameter(
-                "transfer_decision",
-                openapi.IN_FORM,
-                description="Transfer decision",
-                type=openapi.TYPE_STRING,
-                required=False,
-            ),
-            openapi.Parameter(
-                "transfer_excom_provision",
-                openapi.IN_FORM,
-                description="Executive Committee provision",
-                type=openapi.TYPE_STRING,
-                required=False,
-            ),
-            openapi.Parameter(
-                "fund_transferred",
-                openapi.IN_FORM,
-                description="Fund transferred",
-                type=openapi.TYPE_NUMBER,
-                required=False,
-            ),
-            openapi.Parameter(
-                "psc_transferred",
-                openapi.IN_FORM,
-                description="PSC transferred",
-                type=openapi.TYPE_NUMBER,
-                required=False,
-            ),
-        ],
+    @extend_schema(
+        description="Transfer the project to a new agency.",
+        request={
+            "multipart/form-data": inline_serializer(
+                name="ProjectTransferRequest",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        help_text="List of documents",
+                        required=True,
+                    ),
+                    "metadata": serializers.CharField(
+                        help_text=(
+                            """
+                            JSON metadata string.(map by filename):
+                                {
+                                    "test_document_1.xlsx": "endorsement_letter",
+                                    "test_document_2.xlsx": "verification_report"
+                                }
+                        """
+                        ),
+                        required=True,
+                    ),
+                    "agency": serializers.IntegerField(
+                        help_text="Agency ID", required=True
+                    ),
+                    "transfer_meeting": serializers.IntegerField(
+                        required=False, help_text="Meeting ID"
+                    ),
+                    "transfer_decision": serializers.CharField(
+                        required=False, help_text="Transfer decision"
+                    ),
+                    "transfer_excom_provision": serializers.CharField(
+                        required=False, help_text="Executive Committee provision"
+                    ),
+                    "fund_transferred": serializers.DecimalField(
+                        max_digits=30,
+                        decimal_places=15,
+                        required=False,
+                        help_text="Fund transferred",
+                    ),
+                    "psc_transferred": serializers.DecimalField(
+                        max_digits=30,
+                        decimal_places=15,
+                        required=False,
+                        help_text="PSC transferred",
+                    ),
+                },
+            )
+        },
         responses={
             status.HTTP_200_OK: ProjectV2TransferSerializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",

@@ -1,8 +1,8 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
-
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 
 from core.api.permissions import (
     DenyAll,
@@ -111,25 +111,25 @@ class ProjectSectorView(SectorSubsectorBaseView):
                 queryset = queryset.filter(obsolete=False)
         return queryset
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cluster_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cluster_id",
+                location=OpenApiParameter.QUERY,
                 description="Filter sector by cluster ID. Must be used with type_id.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "type_id",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="type_id",
+                location=OpenApiParameter.QUERY,
                 description="Filter sector by type ID. Must be used with cluster_id.",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "include_obsoletes",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_obsoletes",
+                location=OpenApiParameter.QUERY,
                 description="Include obsolete sectors in the response",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
                 default=False,
             ),
         ]
@@ -178,25 +178,25 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
             return queryset
         return queryset.filter(sectors__id=sector_id).order_by("sort_order")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "sector_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="sector_id",
+                location=OpenApiParameter.QUERY,
                 description="Filter sub-sectors by sector ID",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "name",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="name",
+                location=OpenApiParameter.QUERY,
                 description="Filter sub-sectors by name",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
             ),
-            openapi.Parameter(
-                "include_obsoletes",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_obsoletes",
+                location=OpenApiParameter.QUERY,
                 description="Include obsolete sub-sectors in the response. Defaults to false.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
                 default=False,
             ),
         ]
