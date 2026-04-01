@@ -186,6 +186,7 @@ export type ProjectAssociationType = {
   code: string
   pcr_project_id: string
   umbrella_code: string
+  is_draft: boolean
   projects: ProjectType[]
 }
 

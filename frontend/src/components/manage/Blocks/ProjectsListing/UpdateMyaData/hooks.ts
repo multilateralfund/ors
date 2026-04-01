@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MetaProjectDetailType } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
 import { initialParams } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
@@ -27,7 +27,11 @@ export const useGetMetaProjectDetails = (
   mode: string = 'edit',
   metaProjectIdentifiers?: Partial<ProjIdentifiers>,
 ) => {
+  const isFirstInitialRender = useRef(true)
+  const isFirstChangedDataRender = useRef(true)
+
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
+  const [hasData, setHasData] = useState<boolean | null>(null)
 
   const { country, cluster, category } = metaProjectIdentifiers ?? {}
 
@@ -37,7 +41,10 @@ export const useGetMetaProjectDetails = (
   const fetchData = (pk: number) => {
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
       .then((resp) => resp.json())
-      .then((data) => setData(data))
+      .then((data) => {
+        setData(data)
+        setHasData(true)
+      })
   }
 
   const fetchPossibleMetaproject = () => {
@@ -48,7 +55,10 @@ export const useGetMetaProjectDetails = (
       { credentials: 'include' },
     )
       .then((resp) => resp.json())
-      .then((data) => setData(data))
+      .then((data) => {
+        setData(data)
+        setHasData(true)
+      })
   }
 
   const refresh = useCallback(() => {
@@ -68,6 +78,11 @@ export const useGetMetaProjectDetails = (
   }
 
   useEffect(() => {
+    if (isFirstInitialRender.current) {
+      isFirstInitialRender.current = false
+      return
+    }
+
     if (pk) {
       fetchData(pk)
     } else {
@@ -76,7 +91,14 @@ export const useGetMetaProjectDetails = (
   }, [pk])
 
   useEffect(() => {
-    getPossibleMetaproject()
+    if (isFirstChangedDataRender.current) {
+      isFirstChangedDataRender.current = false
+      return
+    }
+
+    if (!pk || hasData) {
+      getPossibleMetaproject()
+    }
   }, [country, cluster, category])
 
   return { data, refresh }
