@@ -1,6 +1,6 @@
 from constance import config
-from drf_spectacular.types import OpenApiTypes
 from django.db import transaction
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 
 from rest_framework import status
