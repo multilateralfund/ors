@@ -596,16 +596,7 @@ class APRExportView(APIView):
         year = int(year)
 
         agency_report = get_object_or_404(
-            AnnualAgencyProjectReport.objects.prefetch_related(
-                "project_reports",
-                "project_reports__project__meta_project",
-                "project_reports__project__agency",
-                "project_reports__project__country__parent",
-                "project_reports__project__country",
-                "project_reports__project__cluster",
-                "project_reports__project__sector",
-                "project_reports__project__project_type",
-            ),
+            AnnualAgencyProjectReport,
             progress_report__year=year,
             agency_id=agency_id,
         )
@@ -615,8 +606,9 @@ class APRExportView(APIView):
         status_codes = request.query_params.get("status", "ONG,COM")
         status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
 
-        project_reports = agency_report.project_reports.filter(
-            project__status__code__in=status_codes
+        project_reports = AnnualProjectReport.objects.filter(
+            report=agency_report,
+            project__status__code__in=status_codes,
         )
 
         serializer = AnnualProjectReportReadSerializer(

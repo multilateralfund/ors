@@ -26,6 +26,17 @@ class APRExportWriter:
     TEMPLATE_PATH = (
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRAnnexI.xlsx"
     )
+
+    # Caching the raw template bytes so disk I/O only happens once per process.
+    _template_bytes = None
+
+    @classmethod
+    def _get_template_workbook(cls):
+        if cls._template_bytes is None:
+            cls._template_bytes = cls.TEMPLATE_PATH.read_bytes()
+
+        return load_workbook(BytesIO(cls._template_bytes))
+
     SHEET_NAME = "Annex I APR report "
     STATUS_SHEET_NAME = "Status Values"
     # Last header row
@@ -133,7 +144,7 @@ class APRExportWriter:
 
     def _build_workbook(self):
         """Build the workbook with all data, formatting, and validation."""
-        self.workbook = load_workbook(str(self.TEMPLATE_PATH))
+        self.workbook = self._get_template_workbook()
         self.worksheet = self.workbook[self.SHEET_NAME]
 
         # Remove hidden sheets & extra columns; create status reference sheet
