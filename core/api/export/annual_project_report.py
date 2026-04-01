@@ -6,7 +6,6 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.conf import settings
-from django.db.models import Count
 from django.http import HttpResponse
 from openpyxl import load_workbook
 from openpyxl.styles import Font
@@ -27,6 +26,17 @@ class APRExportWriter:
     TEMPLATE_PATH = (
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRAnnexI.xlsx"
     )
+
+    # Caching the raw template bytes so disk I/O only happens once per process.
+    _template_bytes = None
+
+    @classmethod
+    def _get_template_workbook(cls):
+        if cls._template_bytes is None:
+            cls._template_bytes = cls.TEMPLATE_PATH.read_bytes()
+
+        return load_workbook(BytesIO(cls._template_bytes))
+
     SHEET_NAME = "Annex I APR report "
     STATUS_SHEET_NAME = "Status Values"
     # Last header row
@@ -134,7 +144,7 @@ class APRExportWriter:
 
     def _build_workbook(self):
         """Build the workbook with all data, formatting, and validation."""
-        self.workbook = load_workbook(str(self.TEMPLATE_PATH))
+        self.workbook = self._get_template_workbook()
         self.worksheet = self.workbook[self.SHEET_NAME]
 
         # Remove hidden sheets & extra columns; create status reference sheet
@@ -389,6 +399,25 @@ class APRSummaryTablesExportWriter:
         settings.ROOT_DIR / "api" / "export" / "templates" / "APRSummaryTables.xlsx"
     )
 
+    # Caching the raw template bytes so disk I/O only happens once per process.
+    _template_bytes = None
+
+    @classmethod
+    def _get_template_workbook(cls):
+        if cls._template_bytes is None:
+            cls._template_bytes = cls.TEMPLATE_PATH.read_bytes()
+
+        return load_workbook(BytesIO(cls._template_bytes))
+
+    @staticmethod
+    def _get_field_value(obj, field_path):
+        """Utility to traverse a double-underscore field path on a Django ORM object"""
+        for part in field_path.split("__"):
+            obj = getattr(obj, part, None)
+            if obj is None:
+                return None
+        return obj
+
     # Sheet name constants
     SHEET_SUMMARY = "I.1 Summary Data "
     SHEET_SUMMARY_CLUSTER = "I.2 Summary data by cluster"
@@ -450,13 +479,15 @@ class APRSummaryTablesExportWriter:
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
         self.queryset = queryset
+        # Materialize the queryset once so we don't keep re-querying the DB for each tab
+        self.records = list(queryset)
 
         self.serialized_data = AnnualProjectReportReadSerializer(
-            self.queryset, many=True
+            self.records, many=True
         ).data
 
     def generate(self):
-        self.workbook = load_workbook(self.TEMPLATE_PATH)
+        self.workbook = self._get_template_workbook()
 
         # Remove hidden sheets from the template
         self._remove_hidden_sheets()
@@ -562,41 +593,45 @@ class APRSummaryTablesExportWriter:
         """I.1: Overall summary data"""
         ws = self.workbook[self.SHEET_SUMMARY]
 
-        num_approvals = self.queryset.count()
-        num_completed = self.queryset.filter(project__status__code="COM").count()
+        num_approvals = len(self.records)
+        num_completed = sum(
+            1
+            for apr in self.records
+            if apr.project.status and apr.project.status.code == "COM"
+        )
 
         total_funds_approved = sum(
-            apr.approved_funding_plus_adjustment or 0 for apr in self.queryset
+            apr.approved_funding_plus_adjustment_denorm or 0 for apr in self.records
         )
-        total_funds_disbursed = sum(apr.funds_disbursed or 0 for apr in self.queryset)
+        total_funds_disbursed = sum(apr.funds_disbursed or 0 for apr in self.records)
 
         # Approved phase-out = sum of proposal/denorm values (consumption + production)
         total_approved_odp = sum(
             (apr.consumption_phased_out_odp_proposal_denorm or 0)
             + (apr.production_phased_out_odp_proposal_denorm or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
         total_actual_odp = sum(
             (apr.consumption_phased_out_odp or 0) + (apr.production_phased_out_odp or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
         total_approved_mt = sum(
             (apr.consumption_phased_out_mt_proposal_denorm or 0)
             + (apr.production_phased_out_mt_proposal_denorm or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
         total_actual_mt = sum(
             (apr.consumption_phased_out_mt or 0) + (apr.production_phased_out_mt or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
         total_approved_co2 = sum(
             (apr.consumption_phased_out_co2_proposal_denorm or 0)
             + (apr.production_phased_out_co2_proposal_denorm or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
         total_actual_co2 = sum(
             (apr.consumption_phased_out_co2 or 0) + (apr.production_phased_out_co2 or 0)
-            for apr in self.queryset
+            for apr in self.records
         )
 
         # Write values to column B, rows 4-13
@@ -621,12 +656,16 @@ class APRSummaryTablesExportWriter:
         """I.2: Summary data by cluster"""
         ws = self.workbook[self.SHEET_SUMMARY_CLUSTER]
 
-        cluster_groups = (
-            self.queryset.exclude(project__cluster__isnull=True)
-            .values("project__cluster__name", "project__cluster__sort_order")
-            .annotate(count=Count("id"))
-            .order_by("project__cluster__sort_order", "project__cluster__name")
-        )
+        # Group the in-memory objects list by cluster, sorted by (sort_order, name)
+        cluster_buckets = {}
+        for apr in self.records:
+            cluster = apr.project.cluster
+            if cluster is None:
+                continue
+            key = (getattr(cluster, "sort_order", 0) or 0, cluster.name)
+            if key not in cluster_buckets:
+                cluster_buckets[key] = []
+            cluster_buckets[key].append(apr)
 
         # Pre-compute all rows before touching the sheet structure
         rows_data = []
@@ -637,19 +676,21 @@ class APRSummaryTablesExportWriter:
             "disbursed": 0,
             "balance": 0,
         }
-        for group in cluster_groups:
-            cluster_name = group["project__cluster__name"]
-            cluster_qs = self.queryset.filter(project__cluster__name=cluster_name)
-
-            num_approved = cluster_qs.count()
-            num_completed = cluster_qs.filter(project__status__code="COM").count()
+        for (_, cluster_name), cluster_records in sorted(cluster_buckets.items()):
+            num_approved = len(cluster_records)
+            num_completed = sum(
+                1
+                for apr in cluster_records
+                if apr.project.status and apr.project.status.code == "COM"
+            )
             pct_completed = (
                 round(num_completed / num_approved * 100) if num_approved else 0
             )
             approved_funding = sum(
-                apr.approved_funding_plus_adjustment or 0 for apr in cluster_qs
+                apr.approved_funding_plus_adjustment_denorm or 0
+                for apr in cluster_records
             )
-            disbursed = sum(apr.funds_disbursed or 0 for apr in cluster_qs)
+            disbursed = sum(apr.funds_disbursed or 0 for apr in cluster_records)
             balance = approved_funding - disbursed
             pct_disbursed = (
                 round(disbursed / approved_funding * 100) if approved_funding else 0
@@ -734,42 +775,53 @@ class APRSummaryTablesExportWriter:
         """Project completion in the reporting year, grouped by cluster"""
         ws = self.workbook[self.SHEET_COMPLETION_YEAR]
 
+        # Filter and group by cluster in-memory, to avoid repeated DB hits
         if self.year:
-            completed_qs = self.queryset.filter(
-                report__progress_report__year=self.year,
-                project__status__code="COM",
-            )
+            completed_records = [
+                apr
+                for apr in self.records
+                if apr.project.status
+                and apr.project.status.code == "COM"
+                and apr.report
+                and apr.report.progress_report
+                and apr.report.progress_report.year == self.year
+            ]
         else:
-            completed_qs = self.queryset.filter(project__status__code="COM")
+            completed_records = [
+                apr
+                for apr in self.records
+                if apr.project.status and apr.project.status.code == "COM"
+            ]
 
-        cluster_groups = (
-            completed_qs.exclude(project__cluster__isnull=True)
-            .values("project__cluster__name", "project__cluster__sort_order")
-            .annotate(count=Count("id"))
-            .order_by("project__cluster__sort_order", "project__cluster__name")
-        )
+        cluster_buckets = {}
+        for apr in completed_records:
+            cluster = apr.project.cluster
+            if cluster is None:
+                continue
+            key = (getattr(cluster, "sort_order", 0) or 0, cluster.name)
+            if key not in cluster_buckets:
+                cluster_buckets[key] = []
+            cluster_buckets[key].append(apr)
 
         # Pre-compute all rows before touching the sheet structure
         rows_data = []
         totals = {"num_completed": 0, "odp": 0, "mt": 0, "co2": 0}
-        for group in cluster_groups:
-            cluster_name = group["project__cluster__name"]
-            cluster_qs = completed_qs.filter(project__cluster__name=cluster_name)
-            num_completed = cluster_qs.count()
+        for (_, cluster_name), cluster_records in sorted(cluster_buckets.items()):
+            num_completed = len(cluster_records)
             total_odp = sum(
                 (apr.consumption_phased_out_odp or 0)
                 + (apr.production_phased_out_odp or 0)
-                for apr in cluster_qs
+                for apr in cluster_records
             )
             total_mt = sum(
                 (apr.consumption_phased_out_mt or 0)
                 + (apr.production_phased_out_mt or 0)
-                for apr in cluster_qs
+                for apr in cluster_records
             )
             total_co2 = sum(
                 (apr.consumption_phased_out_co2 or 0)
                 + (apr.production_phased_out_co2 or 0)
-                for apr in cluster_qs
+                for apr in cluster_records
             )
             rows_data.append(
                 (cluster_name, num_completed, total_odp, total_mt, total_co2)
@@ -941,50 +993,60 @@ class APRSummaryTablesExportWriter:
             bold=True,
         )
 
+    def _filter_records(self, status_code=None, type_code=None, exclude_type_codes=()):
+        """Returns a filtered sub-list of self.records, using in-memory filtering"""
+        result = []
+        for apr in self.records:
+            if status_code and not (
+                apr.project.status and apr.project.status.code == status_code
+            ):
+                continue
+            pt_code = (
+                apr.project.project_type.code if apr.project.project_type else None
+            )
+            if type_code and pt_code != type_code:
+                continue
+            if exclude_type_codes and pt_code in exclude_type_codes:
+                continue
+            result.append(apr)
+        return result
+
     def _write_investment_projects_sheet(self):
         """Sheet (b): Cumulative completed investment projects"""
         ws = self.workbook[self.SHEET_INVESTMENT]
-        completed_investment = self.queryset.filter(
-            project__status__code="COM",
-            project__project_type__code="INV",
-        )
         self._write_flat_aggregation_sheet(
-            ws, completed_investment, include_odp_co2=True, sheet_type="cumulative"
+            ws,
+            self._filter_records(status_code="COM", type_code="INV"),
+            include_odp_co2=True,
+            sheet_type="cumulative",
         )
 
     def _write_non_investment_projects_sheet(self):
         """Sheet (c): Cumulative completed non-investment projects"""
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
-        completed_non_investment = (
-            self.queryset.filter(project__status__code="COM")
-            .exclude(project__project_type__code="INV")
-            .exclude(project__project_type__code="PRP")
-        )
         self._write_flat_aggregation_sheet(
-            ws, completed_non_investment, include_odp_co2=False, sheet_type="cumulative"
+            ws,
+            self._filter_records(status_code="COM", exclude_type_codes=("INV", "PRP")),
+            include_odp_co2=False,
+            sheet_type="cumulative",
         )
 
     def _write_preparation_activities_sheet(self):
         """Sheet (d): Cumulative completed project preparation activities"""
         ws = self.workbook[self.SHEET_PREPARATION]
-        completed_preparation = self.queryset.filter(
-            project__status__code="COM",
-            project__project_type__code="PRP",
-        )
         self._write_flat_aggregation_sheet(
-            ws, completed_preparation, include_odp_co2=False, sheet_type="cumulative"
+            ws,
+            self._filter_records(status_code="COM", type_code="PRP"),
+            include_odp_co2=False,
+            sheet_type="cumulative",
         )
 
     def _write_ongoing_investment_sheet(self):
         """Sheet (e): Cumulative ongoing investment projects"""
         ws = self.workbook[self.SHEET_ONGOING_INVESTMENT]
-        ongoing_investment = self.queryset.filter(
-            project__status__code="ONG",
-            project__project_type__code="INV",
-        )
         self._write_flat_aggregation_sheet(
             ws,
-            ongoing_investment,
+            self._filter_records(status_code="ONG", type_code="INV"),
             include_odp_co2=True,
             sheet_type="ongoing_investment",
         )
@@ -992,14 +1054,9 @@ class APRSummaryTablesExportWriter:
     def _write_ongoing_non_investment_sheet(self):
         """Sheet (f): Cumulative ongoing non-investment projects"""
         ws = self.workbook[self.SHEET_ONGOING_NON_INVESTMENT]
-        ongoing_non_investment = (
-            self.queryset.filter(project__status__code="ONG")
-            .exclude(project__project_type__code="INV")
-            .exclude(project__project_type__code="PRP")
-        )
         self._write_flat_aggregation_sheet(
             ws,
-            ongoing_non_investment,
+            self._filter_records(status_code="ONG", exclude_type_codes=("INV", "PRP")),
             include_odp_co2=False,
             sheet_type="ongoing_non_investment",
         )
@@ -1007,18 +1064,14 @@ class APRSummaryTablesExportWriter:
     def _write_ongoing_preparation_sheet(self):
         """Sheet (g): Cumulative ongoing preparation activities"""
         ws = self.workbook[self.SHEET_ONGOING_PREPARATION]
-        ongoing_preparation = self.queryset.filter(
-            project__status__code="ONG",
-            project__project_type__code="PRP",
-        )
         self._write_flat_aggregation_sheet(
             ws,
-            ongoing_preparation,
+            self._filter_records(status_code="ONG", type_code="PRP"),
             include_odp_co2=False,
             sheet_type="ongoing_preparation",
         )
 
-    def _write_flat_aggregation_sheet(self, ws, queryset, include_odp_co2, sheet_type):
+    def _write_flat_aggregation_sheet(self, ws, records, include_odp_co2, sheet_type):
         """
         Write flat aggregation layout, as used by sheets (b)-(g).
         Structure: Total row, "Region" label, region data, "Sector" label, sector data.
@@ -1027,10 +1080,10 @@ class APRSummaryTablesExportWriter:
         column_specs = self._get_column_specs(sheet_type, include_odp_co2)
 
         # Pre-compute all data before touching the sheet structure
-        total_data = self._compute_group_data(queryset, include_odp_co2, sheet_type)
+        total_data = self._compute_group_data(records, include_odp_co2, sheet_type)
         region_items = list(
             self._compute_grouped_data(
-                queryset,
+                records,
                 "project__country__parent__name",
                 include_odp_co2,
                 sheet_type,
@@ -1038,7 +1091,7 @@ class APRSummaryTablesExportWriter:
         )
         sector_items = list(
             self._compute_grouped_data(
-                queryset,
+                records,
                 "project__sector__code",
                 include_odp_co2,
                 sheet_type,
@@ -1179,13 +1232,13 @@ class APRSummaryTablesExportWriter:
                 specs.append(("cost_effectiveness", "#,##0.00"))
             return specs
 
-    def _compute_group_data(self, queryset, include_odp_co2, sheet_type):
+    def _compute_group_data(self, records, include_odp_co2, sheet_type):
         """
-        Helper for computing aggregation data for an entire queryset;
+        Helper for computing aggregation data for a list of records;
         used for Total and per-group.
         """
         data = {}
-        count = queryset.count()
+        count = len(records)
 
         is_ongoing = sheet_type in [
             "ongoing_investment",
@@ -1199,15 +1252,13 @@ class APRSummaryTablesExportWriter:
             data["num_completed"] = count
 
         data["total_approved_funding"] = sum(
-            apr.approved_funding_plus_adjustment or 0 for apr in queryset
+            apr.approved_funding_plus_adjustment_denorm or 0 for apr in records
         )
-        data["total_funds_disbursed"] = sum(
-            apr.funds_disbursed or 0 for apr in queryset
-        )
+        data["total_funds_disbursed"] = sum(apr.funds_disbursed or 0 for apr in records)
 
         pct_values = [
             apr.per_cent_funds_disbursed * 100
-            for apr in queryset
+            for apr in records
             if apr.per_cent_funds_disbursed is not None
         ]
         data["avg_pct_disbursed"] = (
@@ -1215,50 +1266,50 @@ class APRSummaryTablesExportWriter:
         )
 
         data["avg_months_to_disbursement"] = self._calculate_avg_months(
-            queryset, "project__date_approved", "date_first_disbursement"
+            records, "project__date_approved", "date_first_disbursement"
         )
 
         if is_ongoing:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                queryset, "project__date_approved", "date_planned_completion"
+                records, "project__date_approved", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
-                queryset,
+                records,
                 "date_of_completion_per_agreement_or_decisions_denorm",
                 "date_planned_completion",
             )
             num_disbursing = sum(
-                1 for apr in queryset if apr.funds_disbursed and apr.funds_disbursed > 0
+                1 for apr in records if apr.funds_disbursed and apr.funds_disbursed > 0
             )
             data["num_disbursing"] = num_disbursing
             data["pct_disbursing"] = (num_disbursing / count) if count > 0 else 0
         else:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                queryset, "project__date_approved", "date_actual_completion"
+                records, "project__date_approved", "date_actual_completion"
             )
 
         if include_odp_co2:
             total_consumption_odp = sum(
-                apr.consumption_phased_out_odp or 0 for apr in queryset
+                apr.consumption_phased_out_odp or 0 for apr in records
             )
             total_production_odp = sum(
-                apr.production_phased_out_odp or 0 for apr in queryset
+                apr.production_phased_out_odp or 0 for apr in records
             )
             data["total_consumption_odp"] = total_consumption_odp
             data["total_production_odp"] = total_production_odp
 
             data["total_consumption_mt"] = sum(
-                apr.consumption_phased_out_mt or 0 for apr in queryset
+                apr.consumption_phased_out_mt or 0 for apr in records
             )
             data["total_production_mt"] = sum(
-                apr.production_phased_out_mt or 0 for apr in queryset
+                apr.production_phased_out_mt or 0 for apr in records
             )
 
             data["total_consumption_co2"] = sum(
-                apr.consumption_phased_out_co2 or 0 for apr in queryset
+                apr.consumption_phased_out_co2 or 0 for apr in records
             )
             data["total_production_co2"] = sum(
-                apr.production_phased_out_co2 or 0 for apr in queryset
+                apr.production_phased_out_co2 or 0 for apr in records
             )
 
             total_odp = total_consumption_odp + total_production_odp
@@ -1271,7 +1322,7 @@ class APRSummaryTablesExportWriter:
                 total_phaseout_combined = sum(
                     (apr.consumption_phased_out_odp_proposal_denorm or 0)
                     + (apr.production_phased_out_odp_proposal_denorm or 0)
-                    for apr in queryset
+                    for apr in records
                 )
                 data["total_phaseout_combined_kg"] = total_phaseout_combined * 1000
                 data["cost_effectiveness"] = (
@@ -1282,50 +1333,37 @@ class APRSummaryTablesExportWriter:
 
         return data
 
-    def _compute_grouped_data(self, queryset, group_field, include_odp_co2, sheet_type):
+    def _compute_grouped_data(self, records, group_field, include_odp_co2, sheet_type):
         """
         Helper for computing aggregation data grouped by a field.
-        Returns list of (name, data) tuples.
+        Returns list of (name, data) tuples, sorted by group value.
         """
-        groups = (
-            queryset.values(group_field)
-            .annotate(count=Count("id"))
-            .order_by(group_field)
-        )
+        buckets = {}
+        for apr in records:
+            val = self._get_field_value(apr, group_field)
+            key = val if val is not None else ""
+            if key not in buckets:
+                buckets[key] = []
+            buckets[key].append(apr)
 
         result = []
-        for group in groups:
-            group_name = group[group_field] or "Unknown"
-            group_qs = queryset.filter(**{group_field: group[group_field]})
-            group_data = self._compute_group_data(group_qs, include_odp_co2, sheet_type)
+        for group_val in sorted(buckets.keys(), key=lambda x: (x == "", str(x))):
+            group_name = group_val or "Unknown"
+            group_data = self._compute_group_data(
+                buckets[group_val], include_odp_co2, sheet_type
+            )
             result.append((group_name, group_data))
 
         return result
 
-    def _calculate_avg_months(self, queryset, start_date_field, end_date_field):
-        """Helper for all month averaging perfomed throughout the file."""
-        projects = (
-            queryset.select_related("project")
-            .exclude(**{f"{start_date_field}__isnull": True})
-            .exclude(**{f"{end_date_field}__isnull": True})
-        )
-
+    def _calculate_avg_months(self, records, start_date_field, end_date_field):
+        """Helper for all month averaging performed throughout the file"""
         total_months = 0
         count = 0
 
-        for apr in projects:
-            start_date = apr
-            end_date = apr
-
-            for field in start_date_field.split("__"):
-                start_date = getattr(start_date, field, None)
-                if start_date is None:
-                    break
-
-            for field in end_date_field.split("__"):
-                end_date = getattr(end_date, field, None)
-                if end_date is None:
-                    break
+        for apr in records:
+            start_date = self._get_field_value(apr, start_date_field)
+            end_date = self._get_field_value(apr, end_date_field)
 
             if start_date and end_date:
                 delta = relativedelta(end_date, start_date)
