@@ -104,7 +104,7 @@ def _generate_project_dicts(projects, year):
     post_excom_decision__meeting__date).
     Instead we inject the project itself as latest_project_version_for_year,
     to obtain correct all-time derived values:
-      - adjustment         (final.total_fund − version_3.total_fund, or None if v≤3)
+      - adjustment         (final.total_fund − version_3.total_fund, or None if v <= 3)
       - approved_funding_plus_adjustment  (final.total_fund)
       - support_cost_adjustment / support_cost_approved_plus_adjustment
       - date_of_completion_per_agreement_or_decisions  (final.date_completion)

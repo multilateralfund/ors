@@ -1,4 +1,4 @@
-import { Redirect, useParams } from 'wouter'
+import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
@@ -46,8 +46,32 @@ export default function APRWorkspace() {
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
-  const [filters, setFilters] =
-    useState<Record<string, Filter[]>>(INITIAL_PARAMS)
+  const search = useSearch()
+  const [initialSearch] = useState(search)
+  const [filters, setFilters] = useState<Record<string, Filter[]>>(() => {
+    const sp = new URLSearchParams(initialSearch)
+    const restored: Record<string, Filter[]> = { ...INITIAL_PARAMS }
+    const statusParam = sp.get('status')
+    if (statusParam) {
+      restored.status = statusParam
+        .split(',')
+        .filter(Boolean)
+        .flatMap((code) => {
+          const found = projectStatuses.find((s: any) => s.code === code)
+          return found ? [found] : []
+        })
+    }
+    for (const key of ['region', 'country', 'cluster']) {
+      const val = sp.get(key)
+      if (val) {
+        restored[key] = val
+          .split(',')
+          .filter(Boolean)
+          .map((v) => ({ id: v as unknown as number, name: v }))
+      }
+    }
+    return restored
+  })
   const [showDerivedColumns, setShowDerivedColumns] = useState(true)
   const {
     data: apr,
@@ -60,6 +84,9 @@ export default function APRWorkspace() {
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR,
+      params: Object.fromEntries(
+        [...new URLSearchParams(initialSearch)].filter(([, v]) => v),
+      ),
     },
     path: `api/annual-project-report/${year}/workspace/`,
     reactivePath: true,
