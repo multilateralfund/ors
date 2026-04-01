@@ -186,7 +186,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div>
+          <div className="mr-[0.5rem]">
             <Label>{tableColumns.transfer_meeting}</Label>
             <div className="flex items-center">
               <div className="w-40">
@@ -274,7 +274,7 @@ const ProjectTransfer = ({
               </div>
             </div>
           </div>
-          <div className="mr-[1.7rem]">
+          <div className="mr-[1.5rem]">
             <Label>{tableColumns.psc_transferred}</Label>
             <div className="flex items-center">
               <FormattedNumberInput
@@ -288,6 +288,22 @@ const ProjectTransfer = ({
                 {...numberFieldDefaultProps}
               />
               <FieldErrorIndicator errors={errors} field="psc_transferred" />
+            </div>
+          </div>
+          <div className="mr-[1.7rem]">
+            <Label>{tableColumns.psc_received}</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="psc_received"
+                value={projectData.psc_received ?? ''}
+                prefix="$"
+                withoutDefaultValue={true}
+                onChange={(event) =>
+                  handleChangeNumericValues(event, 'psc_received')
+                }
+                {...numberFieldDefaultProps}
+              />
+              <FieldErrorIndicator errors={errors} field="psc_received" />
             </div>
           </div>
         </div>

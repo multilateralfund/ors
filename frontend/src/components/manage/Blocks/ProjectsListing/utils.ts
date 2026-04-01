@@ -717,7 +717,7 @@ export const getTransferErrors = (
   project: ProjectTypeApi,
   shouldValidateTotalFund: boolean,
 ) => {
-  const { fund_transferred, psc_transferred } = projectData
+  const { fund_transferred, psc_transferred, psc_received } = projectData
   const initialFieldsToValidate = keys(initialTranferedProjectData).filter(
     (field) => field !== 'transfer_excom_provision',
   )
@@ -734,9 +734,23 @@ export const getTransferErrors = (
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
       psc_transferred: ['Value cannot be greater than project support costs.'],
     }),
+    ...(Number(psc_received) > Number(project.support_cost_psc) && {
+      psc_received: ['Value cannot be greater than project support costs.'],
+    }),
+    ...(Number(psc_received) > Number(psc_transferred) && {
+      psc_received: [
+        'Value cannot be greater than transferred project support costs.',
+      ],
+    }),
     ...(shouldValidateTotalFund &&
       Number(psc_transferred) > Number(fund_transferred) && {
         psc_transferred: [
+          'Value cannot be greater than transferred project funding.',
+        ],
+      }),
+    ...(shouldValidateTotalFund &&
+      Number(psc_received) > Number(fund_transferred) && {
+        psc_received: [
           'Value cannot be greater than transferred project funding.',
         ],
       }),
