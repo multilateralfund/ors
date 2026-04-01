@@ -93,17 +93,6 @@ const ProjectMyaUpdate = ({
   const getFieldValue = (name: string) =>
     name === projectDuration ? computeProjectDuration() : mpData?.[name] || ''
 
-  const valueIsComputed = (name: string) => {
-    const computedValue = metaprojectData?.computed_field_data?.[name]
-
-    return (
-      name === projectDuration ||
-      (!isDraftMetaProject &&
-        mpData?.[name] === null &&
-        computedValue !== undefined)
-    )
-  }
-
   useEffect(() => {
     setMpData((prev) => ({
       ...prev,
@@ -183,7 +172,7 @@ const ProjectMyaUpdate = ({
 
   const renderFieldData = (fieldData: any, isIndividualField: boolean = true) =>
     fieldData.map((fd: any) => {
-      const isComputed = valueIsComputed(fd.name)
+      const isComputed = fd.name === projectDuration && mode !== 'view'
       const formattedLabel = formatFieldLabel(fd.label)
 
       return (
@@ -262,15 +251,14 @@ const ProjectMyaUpdate = ({
 
   return (
     <div className="rounded-lg bg-common-containerBg px-6 py-2">
-      {!!metaprojectData?.field_data ? (
+      {!!metaprojectData?.id ? (
         <div className="flex flex-col gap-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {!!metaprojectData?.id && (
-              <Typography variant="h6">
-                MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
-                {metaprojectData?.lead_agency?.name || '-'}
-              </Typography>
-            )}
+            <Typography variant="h6">
+              MYA: {metaprojectData?.umbrella_code}, Lead agency:{' '}
+              {metaprojectData?.lead_agency?.name || '-'}
+            </Typography>
+
             {mode !== 'view' && (
               <Button
                 className={cx('ml-auto h-8 px-4 py-2 shadow-none', {

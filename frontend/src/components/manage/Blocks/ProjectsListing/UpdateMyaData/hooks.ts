@@ -32,11 +32,7 @@ export const useGetMetaProjectDetails = (
   const { country, cluster, category } = metaProjectIdentifiers ?? {}
 
   const formattedCategory =
-    mode === 'view'
-      ? category
-      : category === 'MYA'
-        ? 'Multi-year agreement'
-        : 'Individual'
+    mode === 'view' || category !== 'MYA' ? category : 'Multi-year agreement'
 
   const fetchData = (pk: number) => {
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })

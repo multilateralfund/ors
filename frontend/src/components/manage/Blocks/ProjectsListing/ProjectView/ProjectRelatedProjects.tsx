@@ -43,18 +43,19 @@ const ProjectRelatedProjects = ({
 
   const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
   const isAddOrCopyMode = ['add', 'copy'].includes(mode)
+  const isExistingMetaproject = !!metaprojectData && !metaprojectData.is_draft
 
   const canRemoveAssociation =
     isVieworEditMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
-    !metaprojectData?.is_draft &&
+    isExistingMetaproject &&
     !!metaProjectId
 
   const canDisassociateComponent =
     isVieworEditMode &&
     canDisassociateComponents &&
-    !metaprojectData?.is_draft &&
+    isExistingMetaproject &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
@@ -182,7 +183,7 @@ const ProjectRelatedProjects = ({
 
   return (
     <div className="flex w-full flex-col">
-      {isVieworEditMode && !!project.meta_project_id && (
+      {isVieworEditMode && !!metaprojectData?.id && (
         <>
           <SectionTitle>
             <div className="flex flex-wrap items-center gap-2">
