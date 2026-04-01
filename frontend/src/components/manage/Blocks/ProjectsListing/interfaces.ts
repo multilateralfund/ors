@@ -45,6 +45,8 @@ export interface CrossCuttingFields {
   total_fund: string | null
   support_cost_psc: string | null
   blanket_or_individual_consideration: string | null
+  adjustment?: boolean
+  interest?: string | null
 }
 
 export interface SpecificFields {

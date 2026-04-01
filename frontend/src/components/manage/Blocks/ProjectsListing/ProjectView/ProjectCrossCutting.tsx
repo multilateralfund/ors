@@ -3,6 +3,7 @@ import { useCallback, useContext } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import {
+  booleanDetailItem,
   dateDetailItem,
   detailItem,
   numberDetailItem,
@@ -30,6 +31,8 @@ const ProjectCrossCutting = ({
     (state) => state.projectFields,
   )
   const { consumptionLevelStatuses } = useContext(ProjectsDataContext)
+
+  const isApproved = project.submission_status === 'Approved'
 
   const canViewAboutSection =
     canViewField(viewableFields, 'title') ||
@@ -130,12 +133,27 @@ const ProjectCrossCutting = ({
                     'decimal',
                     getFieldHistory('total_fund'),
                   )}
+                {canViewField(viewableFields, 'adjustment') &&
+                  isApproved &&
+                  booleanDetailItem(
+                    tableColumns.adjustment,
+                    project.adjustment ?? false,
+                    getFieldHistory('adjustment'),
+                  )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
                     tableColumns.support_cost_psc + ' (US $)',
                     project.support_cost_psc as string,
                     'decimal',
                     getFieldHistory('support_cost_psc'),
+                  )}
+                {canViewField(viewableFields, 'interest') &&
+                  isApproved &&
+                  numberDetailItem(
+                    tableColumns.interest,
+                    project.interest as string,
+                    'decimal',
+                    getFieldHistory('interest'),
                   )}
               </div>
             </div>
