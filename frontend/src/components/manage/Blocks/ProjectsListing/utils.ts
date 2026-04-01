@@ -1035,6 +1035,11 @@ export const getMenus = (
             !projectEditable ||
             projectSubmissionStatus !== 'Approved',
         },
+        {
+          title: 'Funding window',
+          url: '/projects-listing/funding-window',
+          disabled: !canViewMetaProjects,
+        },
       ],
     },
     {
