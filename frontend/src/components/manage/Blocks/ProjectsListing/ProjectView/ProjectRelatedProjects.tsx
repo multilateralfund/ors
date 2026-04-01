@@ -64,14 +64,21 @@ const ProjectRelatedProjects = ({
     project.component &&
     project.component.original_project_id === project.id
 
-  const hasPossibleAssociatedProjects =
-    isMya &&
-    !(
-      isVieworEditMode &&
-      ['Withdrawn', 'Approved', 'Not approved'].includes(
-        project.submission_status,
+  const getHasPossibleAssociatedProjects = (type: string) => {
+    const commonSubmissionStatuses = ['Withdrawn', 'Not approved']
+    const submissionStatuses =
+      type === 'message'
+        ? [...commonSubmissionStatuses, 'Approved']
+        : commonSubmissionStatuses
+
+    return (
+      isMya &&
+      !(
+        isVieworEditMode &&
+        submissionStatuses.includes(project.submission_status)
       )
     )
+  }
 
   const RelatedProjectsList = () =>
     map(
@@ -98,7 +105,7 @@ const ProjectRelatedProjects = ({
             ...(metaprojectData?.possible_projects ?? []),
           ]
 
-          const allCrtData = hasPossibleAssociatedProjects
+          const allCrtData = getHasPossibleAssociatedProjects('data')
             ? [
                 ...(crtData ?? []),
                 ...map(allMetaprojectProjects, (project) => ({
@@ -206,7 +213,7 @@ const ProjectRelatedProjects = ({
         </>
       )}
       <div className="flex flex-col gap-y-4">
-        {hasPossibleAssociatedProjects && (
+        {getHasPossibleAssociatedProjects('message') && (
           <div className="text-xl">
             Should this project get approved, it will have the following
             {!isAddOrCopyMode ? ' components and' : ''} associated projects:
