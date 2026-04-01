@@ -253,7 +253,7 @@ class MetaProjectMyaDetailsViewSet(
             cluster_id=kwargs["cluster_id"],
             type=Project.Category.MYA,
         )
-        serializer = MetaProjecMyaDetailsSerializer(obj)
+        serializer = MetaProjecMyaDetailsSerializer(obj, context={"request": request})
         return Response(serializer.data)
 
 

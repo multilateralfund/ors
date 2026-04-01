@@ -100,10 +100,10 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         return ProjectListV2Serializer(approved_projects, many=True).data
 
     def get_possible_projects(self, obj):
-        if not "request" in self.context:
+        try:
+            user = self.context["request"].user
+        except KeyError:
             return []
-
-        user = self.context["request"].user
         # projects not yet approved are considered possible projects
         possible_projects = obj.projects.exclude(submission_status__name="Approved")
         if user.has_perm("core.is_mlfs_user") and not user.is_superuser:
