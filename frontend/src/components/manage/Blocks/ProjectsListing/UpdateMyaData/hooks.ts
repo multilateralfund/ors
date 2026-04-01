@@ -57,20 +57,27 @@ export const useGetMetaProjectDetails = (
     }
   }, [pk])
 
-  useEffect(() => {
-    if (pk) {
-      fetchData(pk)
-    }
-
+  const getPossibleMetaproject = () => {
     if (
-      !pk &&
       !!country &&
       !!cluster &&
       formattedCategory === 'Multi-year agreement'
     ) {
       fetchPossibleMetaproject()
     }
-  }, [pk, country, cluster, category])
+  }
+
+  useEffect(() => {
+    if (pk) {
+      fetchData(pk)
+    } else {
+      getPossibleMetaproject()
+    }
+  }, [pk])
+
+  useEffect(() => {
+    getPossibleMetaproject()
+  }, [country, cluster, category])
 
   return { data, refresh }
 }
