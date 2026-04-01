@@ -41,7 +41,7 @@ const getColumnDefs = (
 
   const getCellClass = (data: any) => {
     const projectTypeClass = data.isMetaproject
-      ? 'metaproject'
+      ? `${'metaproject ' + (data.isDraftMetaproject ? 'draft' : '')}`
       : data.isOnly !== false
         ? 'single-project'
         : 'multiple-projects'

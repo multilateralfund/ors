@@ -270,6 +270,10 @@
 
       span {
         font-size: 14px;
+
+        &:has(.draft) {
+          @apply italic;
+        }
       }
     }
   }
