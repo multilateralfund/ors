@@ -423,6 +423,7 @@ const ProjectsEdit = ({
           meeting: project.meeting_id,
           decision: project.decision_id,
           date_completion: project.project_end_date,
+          funding_window: project.funding_window,
           ...computedFieldsValues,
           ...totalFieldsValues,
         },

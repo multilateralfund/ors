@@ -34,6 +34,8 @@ import { ApiDecision } from '@ors/types/api_meetings.ts'
 
 import { find, map, omit } from 'lodash'
 import cx from 'classnames'
+import { useGetFundingWindow } from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/hooks.ts'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
 type DecisionOption = {
   name: string
@@ -55,6 +57,17 @@ const ProjectApprovalFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
+
+  const { results: getFundingWindowResults } = useGetFundingWindow()
+
+  const fundingWindowOptions = useMemo(() => {
+    return (
+      getFundingWindowResults?.map((fw) => ({
+        name: `$${formatNumberValue(fw.amount)} (${fw.decision.number})`,
+        id: fw.id,
+      })) || []
+    )
+  }, [getFundingWindowResults])
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
@@ -183,15 +196,21 @@ const ProjectApprovalFields = ({
           )
           .map((field) => {
             const fieldName = field.write_field_name
-            const dataType = ['programme_officer', 'funding_window'].includes(
+            const dataType = ['programme_officer'].includes(
               field.write_field_name,
             )
               ? 'simpleText'
               : field.data_type
-
+            let newField = field
+            if (
+              fieldName == 'funding_window' &&
+              field.data_type == 'drop_down'
+            ) {
+              newField = { ...field, options: fundingWindowOptions }
+            }
             return (
               <React.Fragment key={fieldName}>
-                {approvalField(field, dataType)}
+                {approvalField(newField, dataType)}
                 {fieldName === 'date_completion' &&
                   canViewField(viewableFields, 'project_duration') && (
                     <div key="project_duration">

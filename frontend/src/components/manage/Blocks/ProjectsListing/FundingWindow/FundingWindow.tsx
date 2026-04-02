@@ -42,7 +42,6 @@ export default function FundingWindow() {
   const meetings = useMeetingOptions()
   const decisionsApi = useDecisionOptions(requestParams.meeting_id)
   const decisions = useMemo(() => decisionsApi.results, [decisionsApi.results])
-  console.log(requestParams)
 
   const columnDefs: GridOptions<FundingWindowType>['columnDefs'] = [
     {
@@ -132,7 +131,6 @@ export default function FundingWindow() {
                   options={meetings}
                   withClear={true}
                   onChange={(value: string) => {
-                    console.log(value)
                     decisionsApi.setApiSettings((prev) => ({
                       ...prev,
                       options: { ...prev.options, triggerIf: true },

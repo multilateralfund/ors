@@ -269,7 +269,7 @@
         "WRITE_FIELD_NAME": "funding_window",
         "READ_FIELD_NAME": "funding_window",
         "TABLE": "project",
-        "DATA_TYPE": "text",
+        "DATA_TYPE": "drop_down",
         "SECTION": "Approval",
         "SORT_ORDER": 23,
         "EDITABLE_IN_VERSIONS": [3],
