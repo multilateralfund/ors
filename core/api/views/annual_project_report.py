@@ -194,9 +194,8 @@ class APRWorkspaceView(RetrieveAPIView):
         if cluster_param:
             filter_params["cluster"] = cluster_param
 
-        status_param = self.request.query_params.get("status")
-        if status_param:
-            filter_params["status"] = status_param
+        # Default the status to ONG,COM to match the workspace creation logic
+        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related("project__meta_project")
@@ -728,9 +727,8 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         if cluster_param:
             filter_params["cluster"] = cluster_param
 
-        status_param = self.request.query_params.get("status")
-        if status_param:
-            filter_params["status"] = status_param
+        # Default the status to ONG,COM to match the workspace creation logic
+        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related(
