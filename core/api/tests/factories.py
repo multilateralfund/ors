@@ -493,7 +493,7 @@ class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
         model = AnnualProgressReport
 
     year = factory.Sequence(lambda n: n + 2025)
-    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    meeting_endorsed = None
     date_endorsed = factory.Faker("date")
     remarks_endorsed = factory.Faker("pystr", max_chars=400)
     endorsed = factory.Faker("pybool")

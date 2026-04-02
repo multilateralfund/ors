@@ -1284,7 +1284,13 @@ class TestAPRGlobalViewSet(BaseTest):
         assert agency2_data["project_reports"][0]["status"] == "Closed"
 
     def test_filter_by_country(
-        self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        country_ro,
+        new_country,
+        project_ongoing_status,
     ):
         agency = AgencyFactory()
         annual_agency_report = AnnualAgencyProjectReportFactory(
@@ -1293,8 +1299,12 @@ class TestAPRGlobalViewSet(BaseTest):
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
             is_unlocked=False,
         )
-        project = ProjectFactory(country=country_ro, agency=agency)
-        project_new = ProjectFactory(country=new_country, agency=agency)
+        project = ProjectFactory(
+            country=country_ro, agency=agency, status=project_ongoing_status
+        )
+        project_new = ProjectFactory(
+            country=new_country, agency=agency, status=project_ongoing_status
+        )
 
         AnnualProjectReportFactory(report=annual_agency_report, project=project)
         AnnualProjectReportFactory(report=annual_agency_report, project=project_new)
