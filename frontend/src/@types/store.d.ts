@@ -224,6 +224,8 @@ export interface ProjectFieldHistorySlice {
 export interface MpDataSlice {
   mpData: Record<string, any>
   setMpData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  loadingMpData: boolean
+  setLoadingMpData: (loadingMpData: boolean) => void
   defaultMpErrors: { [key: string]: string[] }
   setDefaultMpErrors: (defaultMpErrors: { [key: string]: string[] }) => void
   allMpErrors: { [key: string]: string[] }

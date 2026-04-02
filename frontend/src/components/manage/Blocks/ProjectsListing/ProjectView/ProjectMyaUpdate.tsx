@@ -43,9 +43,8 @@ const ProjectMyaUpdate = ({
   mode: string
   setErrors?: (value: { [key: string]: [] }) => void
 }) => {
-  const { mpData, setMpData, defaultMpErrors, allMpErrors } = useStore(
-    (state) => state.mpData,
-  )
+  const { mpData, setMpData, loadingMpData, defaultMpErrors, allMpErrors } =
+    useStore((state) => state.mpData)
   const { setInlineMessage } = useStore((state) => state.inlineMessage)
 
   const { addUpdatedField, clearUpdatedFields } = useUpdatedFields()
@@ -256,7 +255,7 @@ const ProjectMyaUpdate = ({
 
   return (
     <div className="rounded-lg bg-common-containerBg px-6 py-2">
-      {!!metaprojectData?.id ? (
+      {!loadingMpData && !!metaprojectData?.id ? (
         <div className="flex flex-col gap-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Typography variant="h6">
