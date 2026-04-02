@@ -68,6 +68,26 @@ export default function FundingWindow() {
       },
     },
     {
+      headerName: 'Total project funding approved (US$)',
+      field: 'total_project_funding_approved',
+      tooltipField: 'total_project_funding_approved',
+      valueGetter: (params) => {
+        return (
+          dollarValueOrNull(
+            params?.data?.total_project_funding_approved ?? 0,
+          ) ?? '0'
+        )
+      },
+    },
+    {
+      headerName: 'Balance (US$)',
+      field: 'balance',
+      tooltipField: 'balance',
+      valueGetter: (params) => {
+        return dollarValueOrNull(params?.data?.balance ?? 0)
+      },
+    },
+    {
       headerName: 'Remarks',
       field: 'remarks',
       tooltipField: 'remarks',

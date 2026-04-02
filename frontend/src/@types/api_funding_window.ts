@@ -7,6 +7,8 @@ export type FundingWindowType = {
   description: string
   amount: string
   remarks: string
+  total_project_funding_approved: string
+  balance: string
 }
 
 export type FundingWindowPostType = {

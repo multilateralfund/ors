@@ -1062,6 +1062,7 @@ class Project(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
+        related_name="projects",
         help_text="Funding window",
     )
     ad_hoc_pcr = models.BooleanField(
