@@ -9,7 +9,7 @@ export const useMeetingOptions = () => {
   const meetings = projectSlice.meetings.data
   const formattedMeetings = meetings?.map((meeting: any) => ({
     label: meeting.number,
-    value: meeting.id.toString(),
+    value: meeting.id,
     year: meeting.date ? new Date(meeting.date).getFullYear().toString() : '-',
   }))
 
@@ -17,7 +17,7 @@ export const useMeetingOptions = () => {
 }
 
 export const useDecisionOptions = (
-  meeting_id: number | string | (number | string)[],
+  meeting_id: number | string | (number | string)[] | null,
 ) => {
   const { data, ...rest } = useApi<ApiDecision[]>({
     options: {
@@ -34,7 +34,7 @@ export const useDecisionOptions = (
     results.loaded && results.results
       ? results.results.map((d: ApiDecision) => ({
           name: d.number,
-          value: d.id.toString(),
+          value: d.id,
         }))
       : []
   return { ...rest, ...results, results: formattedResults }

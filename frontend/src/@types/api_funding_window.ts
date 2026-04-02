@@ -12,8 +12,8 @@ export type FundingWindowType = {
 }
 
 export type FundingWindowPostType = {
-  meeting_id: string
-  decision_id: string
+  meeting_id: number | null
+  decision_id: number | null
   description: string
   amount: string
   remarks: string

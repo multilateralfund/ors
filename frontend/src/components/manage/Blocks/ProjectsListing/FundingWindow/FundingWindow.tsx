@@ -8,40 +8,51 @@ import {
 } from '@ors/types/api_funding_window.ts'
 import { useGetFundingWindow } from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/hooks.ts'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
-import { FaPlusCircle } from 'react-icons/fa'
-import React, { useMemo, useState } from 'react'
-import {
-  useDecisionOptions,
-  useMeetingOptions,
-} from '@ors/components/manage/Utils/utilFunctions.ts'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
-import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput.tsx'
-import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import Field from '@ors/components/manage/Form/Field.tsx'
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers.tsx'
+import { FaPlusCircle, FaEdit } from 'react-icons/fa'
+import React, { useState } from 'react'
+import FundingWindowModal from './FundingWindowModal.tsx'
 import api from '../../../../../helpers/Api/_api.ts'
 
 const dollarValueOrNull = (value: number | string) =>
   value ? `$${formatNumberValue(value)}` : null
 
-const initialParams: FundingWindowPostType = {
-  meeting_id: '',
-  decision_id: '',
-  description: '',
-  amount: '',
-  remarks: '',
-}
-
 export default function FundingWindow() {
   const [modalOpen, setModalOpen] = useState(false)
-  const [requestParams, setRequestParams] =
-    useState<FundingWindowPostType>(initialParams)
+  const [editData, setEditData] = useState<FundingWindowType | null>(null)
   const { loaded, loading, results, count, refetch, setParams } =
     useGetFundingWindow()
 
-  const meetings = useMeetingOptions()
-  const decisionsApi = useDecisionOptions(requestParams.meeting_id)
-  const decisions = useMemo(() => decisionsApi.results, [decisionsApi.results])
+  const handleOpenCreate = () => {
+    setEditData(null)
+    setModalOpen(true)
+  }
+
+  const handleOpenEdit = (data: FundingWindowType) => {
+    setEditData(data)
+    setModalOpen(true)
+  }
+
+  const handleModalClose = () => {
+    setModalOpen(false)
+    setEditData(null)
+    refetch()
+  }
+
+  const handleSubmit = async (
+    requestParams: FundingWindowPostType,
+    id?: number,
+  ) => {
+    const url = id ? `api/funding-window/${id}/` : 'api/funding-window'
+    const method = id ? 'PUT' : 'POST'
+
+    console.log(requestParams)
+
+    await api(url, {
+      data: requestParams,
+      method,
+    })
+    handleModalClose()
+  }
 
   const columnDefs: GridOptions<FundingWindowType>['columnDefs'] = [
     {
@@ -93,21 +104,22 @@ export default function FundingWindow() {
       tooltipField: 'remarks',
       sortable: false,
     },
+    {
+      headerName: 'Actions',
+      sortable: false,
+      filter: false,
+      width: 100,
+      cellRenderer: (params: { data: FundingWindowType }) => (
+        <mui.IconButton
+          size="small"
+          onClick={() => handleOpenEdit(params.data)}
+          title="Edit"
+        >
+          <FaEdit size={16} />
+        </mui.IconButton>
+      ),
+    },
   ]
-
-  const handleModalClose = () => {
-    setRequestParams(initialParams)
-    setModalOpen(false)
-    refetch()
-  }
-
-  const handleAddFundingWindow = async () => {
-    await api('api/funding-window', {
-      data: requestParams,
-      method: 'POST',
-    })
-    handleModalClose()
-  }
 
   return (
     <>
@@ -117,138 +129,18 @@ export default function FundingWindow() {
             variant="contained"
             color="primary"
             startIcon={<FaPlusCircle size={14} />}
-            onClick={() => setModalOpen(true)}
+            onClick={handleOpenCreate}
           >
             Add funding window
           </mui.Button>
         </div>
 
-        <mui.Modal
-          aria-labelledby="add-funding-window"
+        <FundingWindowModal
           open={modalOpen}
           onClose={handleModalClose}
-        >
-          <mui.Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
-            <mui.Typography
-              id="add-funding-window"
-              className="mb-4 text-typography-secondary"
-              component="h2"
-              variant="h6"
-            >
-              Add funding window
-            </mui.Typography>
-            <div className="flex w-full gap-3">
-              <div className="w-full md:w-[7.76rem]">
-                <Label htmlFor="meetingPopover">Meeting</Label>
-                <PopoverInput
-                  id="meetingPopover"
-                  className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate !py-1 !pr-0 text-[16px] md:w-[7.76rem]"
-                  label={
-                    meetings.filter(
-                      (o) => o.value === requestParams.meeting_id,
-                    )[0]?.label ?? ''
-                  }
-                  options={meetings}
-                  withClear={true}
-                  onChange={(value: string) => {
-                    decisionsApi.setApiSettings((prev) => ({
-                      ...prev,
-                      options: { ...prev.options, triggerIf: true },
-                    }))
-                    decisionsApi.setParams({ meeting_id: value })
-                    decisionsApi.refetch()
-                    setRequestParams((prev) => ({
-                      ...prev,
-                      meeting_id: value ?? '',
-                    }))
-                  }}
-                  onClear={() => {
-                    setRequestParams((prev) => ({
-                      ...prev,
-                      meeting_id: '',
-                    }))
-                  }}
-                />
-              </div>
-              <div className="w-full md:w-[7.76rem]">
-                <Label htmlFor="decisionField">Decision</Label>
-                <Field<any>
-                  id="decisionField"
-                  widget="autocomplete"
-                  options={decisions}
-                  value={requestParams.decision_id ?? null}
-                  onChange={(_, value: (typeof decisions)[0]) => {
-                    setRequestParams((prev) => ({
-                      ...prev,
-                      decision_id: value?.value ?? '',
-                    }))
-                  }}
-                  getOptionLabel={(option) =>
-                    getOptionLabel(decisions, option, 'value')
-                  }
-                />
-              </div>
-            </div>
-            <div className="w-full">
-              <Label htmlFor="amountInput">Amount</Label>
-              <FormattedNumberInput
-                id="amountInput"
-                className="!ml-0 w-80"
-                value={requestParams.amount}
-                onChange={(evt) =>
-                  setRequestParams((prev) => ({
-                    ...prev,
-                    amount: evt.target.value ?? '',
-                  }))
-                }
-              />
-            </div>
-            <div className="w-full">
-              <Label htmlFor="descriptionField">Description</Label>
-              <mui.TextareaAutosize
-                id="descriptionField"
-                className="w-full"
-                value={requestParams.description}
-                onChange={(event) =>
-                  setRequestParams((prev) => ({
-                    ...prev,
-                    description: event.target?.value ?? '',
-                  }))
-                }
-                maxLength={1000}
-                minRows={6}
-              />
-            </div>{' '}
-            <div className="w-full">
-              <Label htmlFor="remarksField">Remarks</Label>
-              <mui.TextareaAutosize
-                id="remarksField"
-                className="w-full"
-                value={requestParams.remarks}
-                onChange={(event) =>
-                  setRequestParams((prev) => ({
-                    ...prev,
-                    remarks: event.target?.value ?? '',
-                  }))
-                }
-                maxLength={1000}
-                minRows={6}
-              />
-            </div>
-            <div className="mt-4 flex w-full items-center justify-between">
-              <mui.Button
-                variant="contained"
-                startIcon={<FaPlusCircle size={14} />}
-                onClick={handleAddFundingWindow}
-              >
-                Add funding window
-              </mui.Button>
-              <mui.Button variant="text" onClick={handleModalClose}>
-                Cancel
-              </mui.Button>
-            </div>
-          </mui.Box>
-        </mui.Modal>
+          onSubmit={handleSubmit}
+          editData={editData}
+        />
 
         <ViewTable
           columnDefs={[...columnDefs]}

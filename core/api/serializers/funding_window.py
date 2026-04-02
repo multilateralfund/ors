@@ -14,10 +14,7 @@ from core.models import Meeting
 from core.models.funding_window import FundingWindow
 
 
-class FundingWindowSerializer(serializers.ModelSerializer):
-    meeting = MeetingSerializer(read_only=True)
-    decision = DecisionSerializer(read_only=True)
-
+class FundingWindowSerializerForCreateUpdate(serializers.ModelSerializer):
     meeting_id = serializers.PrimaryKeyRelatedField(
         source="meeting",
         queryset=Meeting.objects.all(),
@@ -29,6 +26,22 @@ class FundingWindowSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    class Meta:
+        model = FundingWindow
+        fields = [
+            "id",
+            "meeting_id",
+            "decision_id",
+            "description",
+            "amount",
+            "remarks",
+        ]
+
+
+class FundingWindowSerializerForListing(serializers.ModelSerializer):
+    meeting = MeetingSerializer(read_only=True)
+    decision = DecisionSerializer(read_only=True)
+
     total_project_funding_approved = SerializerMethodField(read_only=True)
     balance = SerializerMethodField(read_only=True)
 
@@ -38,8 +51,6 @@ class FundingWindowSerializer(serializers.ModelSerializer):
             "id",
             "meeting",
             "decision",
-            "meeting_id",
-            "decision_id",
             "description",
             "amount",
             "remarks",
