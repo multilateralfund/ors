@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     ProjectSubmissionStatusFactory,
     SubstanceFactory,
 )
+from core.api.tests.factories import FundingWindowFactory
 from core.models import BPActivity
 from core.models.project import Project, ProjectFile
 
@@ -83,6 +84,9 @@ def setup_project_create(
     )
     blend.components.create(substance=substA, percentage=0.2)
     alternative_substance = None
+
+    fw = FundingWindowFactory.create()
+
     return {
         "ad_hoc_pcr": True,
         "number_of_both_sme_non_sme_not_directly_funded": Decimal(943),
@@ -97,7 +101,7 @@ def setup_project_create(
         "decision": decision.id,
         "destruction_technology": "D1",
         "excom_provision": "test executive committee provision",
-        "funding_window": "test funding window",
+        "funding_window": fw.id,
         "group": groupHCFC.id,
         "blanket_or_individual_consideration": None,
         "consumption_level_status": "Non-LVC",
