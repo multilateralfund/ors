@@ -246,7 +246,12 @@ const ProjectMyaUpdate = ({
   }
 
   if (metaprojectData?.detail) {
-    return <>Could not find a corresponding metaproject.</>
+    return (
+      <>
+        No corresponding metaproject was found. A metaproject will be created
+        automatically when the project is created.
+      </>
+    )
   }
 
   return (
