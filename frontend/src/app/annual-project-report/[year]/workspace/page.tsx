@@ -196,7 +196,7 @@ export default function APRWorkspace() {
       </div>
       <Box className="shadow-none">
         <Loader active={loading} />
-        <div className="mb-2 flex justify-between">
+        <div className="mb-2 flex items-start justify-between">
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-wrap items-center gap-2">
               {/* Region filter */}

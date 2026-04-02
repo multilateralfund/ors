@@ -305,6 +305,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionMTProposal: {
@@ -315,6 +316,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionODPCO2Proposal: {
@@ -325,6 +327,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionODPMTProposal: {
@@ -335,6 +338,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionMTProposal: {
@@ -345,6 +349,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionODPCO2Proposal: {
@@ -355,6 +360,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionODPMTActual: {
