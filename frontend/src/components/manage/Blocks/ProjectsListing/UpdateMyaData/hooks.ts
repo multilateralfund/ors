@@ -87,10 +87,10 @@ export const useGetMetaProjectDetails = (
   }
 
   useEffect(() => {
-    if (isFirstInitialRender.current) {
-      isFirstInitialRender.current = false
-      return
-    }
+    // if (isFirstInitialRender.current) {
+    //   isFirstInitialRender.current = false
+    //   return
+    // }
 
     if (pk) {
       fetchData(pk)
@@ -100,10 +100,10 @@ export const useGetMetaProjectDetails = (
   }, [pk])
 
   useEffect(() => {
-    if (isFirstChangedDataRender.current) {
-      isFirstChangedDataRender.current = false
-      return
-    }
+    // if (isFirstChangedDataRender.current) {
+    //   isFirstChangedDataRender.current = false
+    //   return
+    // }
 
     if (!pk || hasData) {
       getPossibleMetaproject()
