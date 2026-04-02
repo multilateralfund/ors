@@ -12,7 +12,7 @@ def clear_funding_window(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0283_decision_api_changed_decision_pseudo_content_preview_and_more"),
+        ("core", "0285_project_adjustment_project_interest"),
     ]
 
     operations = [
