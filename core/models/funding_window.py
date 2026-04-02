@@ -1,7 +1,7 @@
 from django.db import models
 
-from core.models import Decision
-from core.models import Meeting
+from core.models.meeting import Decision
+from core.models.meeting import Meeting
 
 
 class FundingWindow(models.Model):

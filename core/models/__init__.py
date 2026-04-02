@@ -6,6 +6,7 @@ from .country import *
 from .country_programme import *
 from .country_programme_archive import *
 from .group import *
+from .funding_window import *
 from .project import *
 from .project_complition_report import *
 from .project_history import *
