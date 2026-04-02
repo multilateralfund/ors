@@ -207,7 +207,7 @@ class Command(BaseCommand):
         )
 
         if write_to_db:
-            self.stdout.write(f"Writing APR records to DB...")
+            self.stdout.write("Writing APR records to DB...")
             self._commit_aprs_to_db(projects, year)
 
     def _commit_aprs_to_db(self, projects, year):
