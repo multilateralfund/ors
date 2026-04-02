@@ -7,19 +7,28 @@ actual phaseout, remarks, etc.) are left empty since no APR records are used.
 
 Derived fields (identification, dates, financial proposals, phaseout proposals)
 are computed in-memory using AnnualProjectReport.populate_derived_fields()
-without persisting any APR records to the database.
+without persisting any APR records to the database, unless --write-to-db is
+passed, in which case the container models (AnnualProgressReport and
+AnnualAgencyProjectReport) are created as needed and each AnnualProjectReport
+is saved to the database.
 """
 
 from datetime import date, datetime
 
 from django.core.management import BaseCommand
+from django.db import transaction
 from django.db.models import Prefetch
 
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
 )
-from core.models import AnnualProjectReport, Project
+from core.models import (
+    AnnualAgencyProjectReport,
+    AnnualProgressReport,
+    AnnualProjectReport,
+    Project,
+)
 
 
 # Fields excluded from the export.
@@ -140,7 +149,11 @@ class Command(BaseCommand):
             "--year",
             type=int,
             default=None,
-            help="Year used for the output file name. Defaults to current year.",
+            help=(
+                "Year used for the APR report and output file name. "
+                "Defaults to current year. When --write-to-db is set this "
+                "determines which AnnualProgressReport container is used."
+            ),
         )
         parser.add_argument(
             "--output",
@@ -148,9 +161,21 @@ class Command(BaseCommand):
             default=None,
             help="Output file path. Defaults to APR_All_Projects_<year>.xlsx",
         )
+        parser.add_argument(
+            "--write-to-db",
+            action="store_true",
+            default=False,
+            help=(
+                "Saves the generated AnnualProjectReport objects to the database. "
+                "Creates the needed APR containers if they don't exist. "
+                "Skips projects that already have an APR for the target report. "
+                "Default: False (Excel export only)."
+            ),
+        )
 
     def handle(self, *args, **options):
-        year = datetime.now().year
+        year = options["year"] or datetime.now().year
+        write_to_db = options["write_to_db"]
         output = options["output"] or f"APR_All_Projects_{year}.xlsx"
 
         self.stdout.write("Querying all projects...")
@@ -178,6 +203,80 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Done. Exported {len(project_data)} projects to {output}"
+            )
+        )
+
+        if write_to_db:
+            self.stdout.write("Writing APR records to DB...")
+            self._commit_aprs_to_db(projects, year)
+
+    def _commit_aprs_to_db(self, projects, year):
+        """
+        Save AnnualProjectReport records to the database.
+
+        get_or_create an AnnualProgressReport for `year`,
+        then get_or_create one AnnualAgencyProjectReport per agency,
+        and finally create an AnnualProjectReport for every project that doesn't have one
+        """
+        with transaction.atomic():
+            progress_report, created = AnnualProgressReport.objects.get_or_create(
+                year=year,
+                defaults={"remarks_endorsed": "", "endorsed": False},
+            )
+            action = "Created" if created else "Found existing"
+            self.stdout.write(f"{action} AnnualProgressReport for year {year}.")
+
+            # Pre-create one AnnualAgencyProjectReport for each distinct agency
+            # Materialize the queryset
+            projects_list = list(projects)
+            seen_agency_ids = {p.agency_id for p in projects_list}
+            agency_reports: dict = {}
+            for agency_id in seen_agency_ids:
+                agency_report, _ = AnnualAgencyProjectReport.objects.get_or_create(
+                    progress_report=progress_report,
+                    agency_id=agency_id,
+                    defaults={
+                        "status": AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+                    },
+                )
+                agency_reports[agency_id] = agency_report
+            self.stdout.write(
+                f"Ensured {len(agency_reports)} AnnualAgencyProjectReport(s)."
+            )
+
+            # Collect project IDs that already have an APR in this report to
+            # avoid unique-constraint violations without an extra per-row query.
+            existing_project_ids = set(
+                AnnualProjectReport.objects.filter(
+                    report__progress_report=progress_report
+                ).values_list("project_id", flat=True)
+            )
+
+            to_create = []
+            num_skipped = 0
+            for project in projects_list:
+                if project.id in existing_project_ids:
+                    num_skipped += 1
+                    continue
+
+                apr = AnnualProjectReport(
+                    project=project,
+                    report=agency_reports[project.agency_id],
+                )
+                apr.project_id = project.id
+                apr.status = project.status.name if project.status else ""
+                apr.__dict__["latest_project_version_for_year"] = project
+                apr.__dict__["report_year"] = year
+                apr.populate_derived_fields()
+                to_create.append(apr)
+
+            AnnualProjectReport.objects.bulk_create(to_create, batch_size=500)
+            num_created = len(to_create)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"DB write complete: {num_created} APR(s) created, "
+                f"{num_skipped} already existed."
             )
         )
 
