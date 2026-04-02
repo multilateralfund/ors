@@ -39,9 +39,9 @@ class APRExportWriter:
 
     SHEET_NAME = "Annex I APR report "
     STATUS_SHEET_NAME = "Status Values"
-    # Last header row
-    HEADER_ROW = 2
-    FIRST_DATA_ROW = 3
+    # Last header row (only one now present in the template)
+    HEADER_ROW = 1
+    FIRST_DATA_ROW = 2
 
     DATE_FORMAT = "dd/mm/yyyy"
 
