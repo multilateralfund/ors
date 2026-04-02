@@ -12,6 +12,13 @@ export const createMpDataSlice = ({ set }: CreateSliceProps): MpDataSlice => ({
         state.mpData.mpData = updatedMpData
       }),
     ),
+  loadingMpData: false,
+  setLoadingMpData: (loadingMpData) =>
+    set(
+      produce((state) => {
+        state.mpData.loadingMpData = loadingMpData
+      }),
+    ),
   defaultMpErrors: {},
   setDefaultMpErrors: (defaultMpErrors) =>
     set(

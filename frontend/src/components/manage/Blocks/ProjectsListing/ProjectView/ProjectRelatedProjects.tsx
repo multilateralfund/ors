@@ -11,6 +11,7 @@ import {
   RelatedProjectsType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
+import { useStore } from '@ors/store'
 
 import { Divider, CircularProgress } from '@mui/material'
 import { isNull, map, orderBy, uniqBy } from 'lodash'
@@ -40,6 +41,8 @@ const ProjectRelatedProjects = ({
 }) => {
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
+
+  const { loadingMpData } = useStore((state) => state.mpData)
 
   const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
   const isAddOrCopyMode = ['add', 'copy'].includes(mode)
@@ -89,8 +92,10 @@ const ProjectRelatedProjects = ({
         }
 
         const { projects: crtData = [], loaded } = data
+
+        const loadedProjects = index === 0 ? loaded : loaded && !loadingMpData
         const showDownloadButton =
-          crtData && crtData.length > 0 && downloadButton
+          crtData && crtData.length > 0 && downloadButton && loadedProjects
         const isLinkMode = mode.includes('link') && !!project
 
         const getFinalData = () => {
@@ -153,7 +158,7 @@ const ProjectRelatedProjects = ({
                 )}
               </div>
             </div>
-            {loaded ? (
+            {loadedProjects ? (
               finalData && finalData.length > 0 ? (
                 <>
                   <RelatedProjects

@@ -6,6 +6,7 @@ import useApi from '@ors/hooks/useApi.ts'
 import { formatApiUrl, getResults } from '@ors/helpers'
 import { MetaProjectType } from '@ors/types/api_projects.ts'
 import { ProjIdentifiers } from '../interfaces'
+import { useStore } from '@ors/store'
 
 export const useGetMetaProjects = (
   params: typeof initialParams,
@@ -27,6 +28,8 @@ export const useGetMetaProjectDetails = (
   mode: string = 'edit',
   metaProjectIdentifiers?: Partial<ProjIdentifiers>,
 ) => {
+  const { setLoadingMpData } = useStore((state) => state.mpData)
+
   const isFirstInitialRender = useRef(true)
   const isFirstChangedDataRender = useRef(true)
 
@@ -39,15 +42,20 @@ export const useGetMetaProjectDetails = (
     mode === 'view' || category !== 'MYA' ? category : 'Multi-year agreement'
 
   const fetchData = (pk: number) => {
+    setLoadingMpData(true)
+
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
       .then((resp) => resp.json())
       .then((data) => {
         setData(data)
         setHasData(true)
       })
+      .finally(() => setLoadingMpData(false))
   }
 
   const fetchPossibleMetaproject = () => {
+    setLoadingMpData(true)
+
     fetch(
       formatApiUrl(
         `/api/meta-projects/country/${country}/cluster/${cluster}/category/${formattedCategory}`,
@@ -59,6 +67,7 @@ export const useGetMetaProjectDetails = (
         setData(data)
         setHasData(true)
       })
+      .finally(() => setLoadingMpData(false))
   }
 
   const refresh = useCallback(() => {
