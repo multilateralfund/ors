@@ -438,6 +438,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "transfer_meeting_projects",
             "triennialcontributionview",
             "triennialcontributionstatus",
+            "fundingwindow",
         ]
         fields = get_final_display_list(Meeting, exclude)
         return fields
@@ -454,6 +455,7 @@ class DecisionAdmin(admin.ModelAdmin):
             "bp_projects",
             "post_excom_projects",
             "transfer_decision_projects",
+            "fundingwindow",
         ]
 
         results = get_final_display_list(Decision, exclude)

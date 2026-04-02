@@ -19,6 +19,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReportFile,
 )
+from core.models import FundingWindow
 from core.models.business_plan import (
     BusinessPlan,
     BPActivity,
@@ -417,6 +418,17 @@ class DecisionFactory(factory.django.DjangoModelFactory):
 
     meeting = factory.SubFactory(MeetingFactory)
     number = factory.Faker("random_int", min=1, max=100)
+
+
+class FundingWindowFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = FundingWindow
+
+    meeting = factory.SubFactory(MeetingFactory)
+    decision = factory.SubFactory(DecisionFactory)
+    amount = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    remarks = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=100)
 
 
 class ProjectComponentsFactory(factory.django.DjangoModelFactory):

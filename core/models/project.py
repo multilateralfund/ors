@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
 from functools import cached_property
 
+from core.models.funding_window import FundingWindow
 from core.models.agency import Agency
 from core.models.blend import Blend
 
@@ -1056,8 +1057,9 @@ class Project(models.Model):
     )
 
     # new approval fields
-    funding_window = models.CharField(
-        max_length=256,
+    funding_window = models.ForeignKey(
+        FundingWindow,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
         help_text="Funding window",
@@ -1636,7 +1638,6 @@ class Project(models.Model):
         return new_project
 
     def increase_version(self, user):
-
         # Create an archived copy of the current project. The archived project will have
         # the same code as the current project.
         archieved_project = self.copy_project(duplicate_files=False)
