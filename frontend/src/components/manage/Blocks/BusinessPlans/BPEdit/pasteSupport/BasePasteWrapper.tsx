@@ -43,10 +43,13 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
     setPasting(true)
     const pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
     const newValues: Record<string, any> = {}
+    // Only keep rows whose first cell is a known row ID.
+    // This transparently discards any copied header rows from Excel.
+    const knownIds = new Set(form!.map((r) => r[rowIdField]))
     for (let i = 0; i < pastedTable.length; i++) {
       const row = pastedTable[i]
       const entryId = row[0]
-      if (entryId) {
+      if (entryId && knownIds.has(entryId)) {
         newValues[entryId] = row[1]
       }
     }
