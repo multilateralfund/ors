@@ -30,6 +30,7 @@ class MetaProjectSerializer(serializers.ModelSerializer):
             "umbrella_code",
             "pcr_project_id",
             "projects",
+            "is_draft",
         ]
 
     def get_projects(self, obj):
