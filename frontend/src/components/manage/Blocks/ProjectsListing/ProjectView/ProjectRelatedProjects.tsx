@@ -52,6 +52,7 @@ const ProjectRelatedProjects = ({
     isVieworEditMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
+    project.submission_status === 'Approved' &&
     isExistingMetaproject &&
     !!metaProjectId
 

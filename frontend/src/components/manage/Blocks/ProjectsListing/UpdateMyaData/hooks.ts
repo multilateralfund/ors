@@ -89,22 +89,22 @@ export const useGetMetaProjectDetails = (
   useEffect(() => {
     if (isFirstInitialRender.current) {
       isFirstInitialRender.current = false
-    }
 
-    if (pk) {
-      fetchData(pk)
-    } else {
-      getPossibleMetaproject()
+      if (pk) {
+        fetchData(pk)
+      } else {
+        getPossibleMetaproject()
+      }
     }
   }, [pk])
 
   useEffect(() => {
     if (isFirstChangedDataRender.current) {
       isFirstChangedDataRender.current = false
-    }
 
-    if (!pk || hasData) {
-      getPossibleMetaproject()
+      if (!pk || hasData) {
+        getPossibleMetaproject()
+      }
     }
   }, [country, cluster, category])
 
