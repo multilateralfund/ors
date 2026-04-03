@@ -1,6 +1,7 @@
 import os
 from zipfile import ZipFile
 
+from celery.result import AsyncResult
 from constance import config
 from django.db import transaction, models
 from django.db.models import Prefetch
@@ -59,7 +60,7 @@ from core.models import (
     Project,
     Country,
 )
-from core.tasks import send_agency_submission_notification
+from core.tasks import send_agency_submission_notification, sync_apr_from_projects
 
 
 # pylint: disable=C0302
@@ -1271,14 +1272,40 @@ class APRMLFSExportView(APIView):
 
 class APRSyncFromProjectsView(APIView):
     """
-    Re-synchronize all derived fields on all project reports for every agency
-    for a given year, using latest Project data.
+    Re-synchronize all denormalized fields on all APR project reports for a given year,
+    for all agencies, from current Project data. MLFS Full Access only.
 
-    This is a MLFS Full Access endpoint. Only the derived fields are updated; while
-    input fields values are preserved.
+    POST:   enqueues the job as an async task; returns 202 with task_id.
+    GET:    polls the task status; accepts ?task_id=<id> to check its progress.
+
+    Both verbs return the same four-key JSON response,
+    so the frontend only needs one URL and one response handler:
+        {
+            "task_id":  "<celery-task-uuid>",
+            "status":   "pending" | "success" | "failure",
+            "result":   null | { updated_count, changed_count, agencies_count, message },
+            "error":    null | "<error message>"
+        }
     """
 
     permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
+
+    # Celery states that need to map to the view's "pending" status
+    _PENDING_STATES = {"PENDING", "RECEIVED", "STARTED", "RETRY"}
+
+    @staticmethod
+    def _task_response(
+        task_id, state, result=None, error=None, http_status=status.HTTP_200_OK
+    ):
+        return Response(
+            {
+                "task_id": task_id,
+                "status": state,
+                "result": result,
+                "error": error,
+            },
+            status=http_status,
+        )
 
     def post(self, request, year):
         year = int(year)
@@ -1289,124 +1316,24 @@ class APRSyncFromProjectsView(APIView):
                 f"Cannot sync reports for year {year}. APR has been endorsed."
             )
 
-        project_reports = list(
-            AnnualProjectReport.objects.filter(
-                report__progress_report=progress_report
-            ).select_related(
-                "project",
-                "project__agency",
-                "project__cluster",
-                "project__country__parent",
-                "project__sector",
-                "project__project_type",
-                "project__status",
-                "project__post_excom_decision__meeting",
-                "report__progress_report",
-            )
+        task = sync_apr_from_projects.delay(year)
+        return self._task_response(
+            task.id, "pending", http_status=status.HTTP_202_ACCEPTED
         )
 
-        if not project_reports:
-            return Response(
-                {
-                    "updated_count": 0,
-                    "agencies_count": 0,
-                    "message": "No project reports to sync.",
-                },
-                status=status.HTTP_200_OK,
-            )
+    def get(self, request, _year):
+        task_id = request.query_params.get("task_id")
+        if not task_id:
+            raise ValidationError("Query parameter 'task_id' is required.")
 
-        # Distinct agency reports touched (for the response summary)
-        agencies_count = len({pr.report_id for pr in project_reports})
+        result = AsyncResult(task_id)
 
-        # Collecting unique project keys
-        final_project_ids = set()
-        for pr in project_reports:
-            final_project_ids.add(pr.project.latest_project_id or pr.project.id)
+        if result.state in self._PENDING_STATES:
+            return self._task_response(task_id, "pending")
 
-        # Loading related project data in-memory and caching it on projects
-        # so that all calculations in populate_derived_fields() are sped up.
+        if result.state == "SUCCESS":
+            return self._task_response(task_id, "success", result=result.result)
 
-        # Batch-load version 3 projects (we're using ods_odp for phase-out calculations)
-        version_3_map = {
-            (p.latest_project_id or p.id): p
-            for p in Project.objects.really_all()
-            .filter(
-                models.Q(id__in=final_project_ids)
-                | models.Q(latest_project_id__in=final_project_ids),
-                version=3,
-            )
-            .select_related("status", "post_excom_decision__meeting")
-            .prefetch_related("ods_odp")
-        }
-
-        # Batch-load the latest project version approved in or before `year`
-        # (we're using them for adjustment / pcr_due previous-year calculation)
-        latest_version_map = {}
-        for p in (
-            Project.objects.really_all()
-            .filter(
-                models.Q(id__in=final_project_ids)
-                | models.Q(latest_project_id__in=final_project_ids),
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year__lte=year,
-            )
-            .select_related("status", "post_excom_decision__meeting")
-            .order_by("-post_excom_decision__meeting__date", "-version")
-        ):
-            project_key = p.latest_project_id or p.id
-            if project_key not in latest_version_map:
-                latest_version_map[project_key] = p
-
-        # Batch-load all versions approved during `year` (used for pcr_due)
-        all_versions_map: dict = {}
-        for p in (
-            Project.objects.really_all()
-            .filter(
-                models.Q(id__in=final_project_ids)
-                | models.Q(latest_project_id__in=final_project_ids),
-                models.Q(
-                    post_excom_decision__isnull=False,
-                    post_excom_decision__meeting__date__year=year,
-                )
-                | models.Q(post_excom_decision__isnull=True, version=3),
-            )
-            .select_related("status")
-        ):
-            project_key = p.latest_project_id or p.id
-            all_versions_map.setdefault(project_key, []).append(p)
-
-        with transaction.atomic():
-            for project_report in project_reports:
-                project_key = (
-                    project_report.project.latest_project_id
-                    or project_report.project.id
-                )
-
-                # Attaching cached version data so populate_derived_fields() uses it
-                # without performing extra DB queries.
-                project_report.project.cached_version_3_list = (
-                    [version_3_map[project_key]] if project_key in version_3_map else []
-                )
-                project_report.project.cached_versions_for_year = (
-                    [latest_version_map[project_key]]
-                    if project_key in latest_version_map
-                    else []
-                )
-                project_report.project.cached_all_versions_for_year = (
-                    all_versions_map.get(project_key, [])
-                )
-
-                project_report.populate_derived_fields()
-                project_report.save(update_fields=AnnualProjectReport.DENORM_FIELDS)
-
-        return Response(
-            {
-                "updated_count": len(project_reports),
-                "agencies_count": agencies_count,
-                "message": (
-                    f"Successfully synced {len(project_reports)} project report(s) "
-                    f"across {agencies_count} agency/agencies."
-                ),
-            },
-            status=status.HTTP_200_OK,
-        )
+        # FAILURE, REVOKED, or anything else (if applicable)
+        error_msg = str(result.result) if result.result else "Task failed."
+        return self._task_response(task_id, "failure", error=error_msg)

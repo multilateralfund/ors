@@ -8,6 +8,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db import models as django_models
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template import loader
 
@@ -19,7 +21,12 @@ from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
-from core.models import Project, AnnualAgencyProjectReport
+from core.models import (
+    Project,
+    AnnualAgencyProjectReport,
+    AnnualProjectReport,
+    AnnualProgressReport,
+)
 
 from multilateralfund.celery import app
 
@@ -447,3 +454,145 @@ def synchronize_decisions():
         ],
     )
     logger.info("Decisions synchronized successfully")
+
+
+@app.task()
+def sync_apr_from_projects(year):
+    """
+    Re-synchronize all APR derived fields for a reporting year, for all agencies,
+    from the current Project data.
+
+    Only records whose values actually changed are written to the DB,
+    so runs where the state has not actually changed are fast.
+    """
+    progress_report = AnnualProgressReport.objects.get(year=year)
+
+    project_reports = list(
+        AnnualProjectReport.objects.filter(
+            report__progress_report=progress_report
+        ).select_related(
+            "project",
+            "project__agency",
+            "project__cluster",
+            "project__country__parent",
+            "project__sector",
+            "project__project_type",
+            "project__status",
+            "project__post_excom_decision__meeting",
+            "report__progress_report",
+        )
+    )
+
+    if not project_reports:
+        return {
+            "updated_count": 0,
+            "changed_count": 0,
+            "agencies_count": 0,
+            "message": "No project reports to sync.",
+        }
+
+    agencies_count = len({pr.report_id for pr in project_reports})
+
+    # Collect unique final-project ids
+    final_project_ids = set()
+    for pr in project_reports:
+        final_project_ids.add(pr.project.latest_project_id or pr.project.id)
+
+    # Loading related project data in-memory and caching it on projects
+    # so that all calculations in populate_derived_fields() are sped up.
+
+    # Batch-load version 3 projects (ods_odp needed for phase-out calculations)
+    version_3_map = {
+        (p.latest_project_id or p.id): p
+        for p in Project.objects.really_all()
+        .filter(
+            django_models.Q(id__in=final_project_ids)
+            | django_models.Q(latest_project_id__in=final_project_ids),
+            version=3,
+        )
+        .select_related("status", "post_excom_decision__meeting")
+        .prefetch_related("ods_odp")
+    }
+
+    # Batch-load latest version approved in or before `year`
+    latest_version_map = {}
+    for p in (
+        Project.objects.really_all()
+        .filter(
+            django_models.Q(id__in=final_project_ids)
+            | django_models.Q(latest_project_id__in=final_project_ids),
+            post_excom_decision__isnull=False,
+            post_excom_decision__meeting__date__year__lte=year,
+        )
+        .select_related("status", "post_excom_decision__meeting")
+        .order_by("-post_excom_decision__meeting__date", "-version")
+    ):
+        project_key = p.latest_project_id or p.id
+        if project_key not in latest_version_map:
+            latest_version_map[project_key] = p
+
+    # Batch-load all versions approved during `year`
+    all_versions_map: dict = {}
+    for p in (
+        Project.objects.really_all()
+        .filter(
+            django_models.Q(id__in=final_project_ids)
+            | django_models.Q(latest_project_id__in=final_project_ids),
+            django_models.Q(
+                post_excom_decision__isnull=False,
+                post_excom_decision__meeting__date__year=year,
+            )
+            | django_models.Q(post_excom_decision__isnull=True, version=3),
+        )
+        .select_related("status")
+    ):
+        project_key = p.latest_project_id or p.id
+        all_versions_map.setdefault(project_key, []).append(p)
+
+    to_update = []
+    for project_report in project_reports:
+        project_key = (
+            project_report.project.latest_project_id or project_report.project.id
+        )
+
+        old_values = {
+            field: getattr(project_report, field)
+            for field in AnnualProjectReport.DENORM_FIELDS
+        }
+
+        project_report.project.cached_version_3_list = (
+            [version_3_map[project_key]] if project_key in version_3_map else []
+        )
+        project_report.project.cached_versions_for_year = (
+            [latest_version_map[project_key]]
+            if project_key in latest_version_map
+            else []
+        )
+        project_report.project.cached_all_versions_for_year = all_versions_map.get(
+            project_key, []
+        )
+
+        project_report.populate_derived_fields()
+
+        if any(
+            getattr(project_report) != old_values[f]
+            for f in AnnualProjectReport.DENORM_FIELDS
+        ):
+            to_update.append(project_report)
+
+    if to_update:
+        with transaction.atomic():
+            AnnualProjectReport.objects.bulk_update(
+                to_update, AnnualProjectReport.DENORM_FIELDS, batch_size=500
+            )
+
+    changed_count = len(to_update)
+    return {
+        "updated_count": len(project_reports),
+        "changed_count": changed_count,
+        "agencies_count": agencies_count,
+        "message": (
+            f"Synced {len(project_reports)} project report(s) across "
+            f"{agencies_count} agency/agencies; {changed_count} record(s) updated."
+        ),
+    }
