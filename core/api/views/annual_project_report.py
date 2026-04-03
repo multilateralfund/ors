@@ -1321,7 +1321,8 @@ class APRSyncFromProjectsView(APIView):
             task.id, "pending", http_status=status.HTTP_202_ACCEPTED
         )
 
-    def get(self, request, _year):
+    # pylint: disable-next=W0613
+    def get(self, request, year):
         task_id = request.query_params.get("task_id")
         if not task_id:
             raise ValidationError("Query parameter 'task_id' is required.")
