@@ -575,8 +575,8 @@ def sync_apr_from_projects(year):
         project_report.populate_derived_fields()
 
         if any(
-            getattr(project_report) != old_values[f]
-            for f in AnnualProjectReport.DENORM_FIELDS
+            getattr(project_report, field) != old_values[field]
+            for field in AnnualProjectReport.DENORM_FIELDS
         ):
             to_update.append(project_report)
 
