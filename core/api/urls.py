@@ -826,7 +826,7 @@ urlpatterns = [
         name="apr-mlfs-export",
     ),
     path(
-        "annual-project-report/<int:year>/agency/<int:agency_id>/sync-from-projects/",
+        "annual-project-report/<int:year>/sync-from-projects/",
         APRSyncFromProjectsView.as_view(),
         name="apr-sync-from-projects",
     ),

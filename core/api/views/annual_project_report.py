@@ -1271,30 +1271,28 @@ class APRMLFSExportView(APIView):
 
 class APRSyncFromProjectsView(APIView):
     """
-    Re-sync all derived (denormalized) fields on existing project reports for an
-    agency report from the current Project data. MLFS Full Access only.
+    Re-synchronize all derived fields on all project reports for every agency
+    for a given year, using latest Project data.
 
-    This is useful when project data changes after APR records were initially created.
-    Only the _denorm fields are updated; user-entered data is preserved.
+    This is a MLFS Full Access endpoint. Only the derived fields are updated; while
+    input fields values are preserved.
     """
 
     permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
 
-    def post(self, request, year, agency_id):
+    def post(self, request, year):
         year = int(year)
-        agency_report = get_object_or_404(
-            AnnualAgencyProjectReport.objects.select_related(
-                "agency", "progress_report"
-            ),
-            progress_report__year=year,
-            agency_id=agency_id,
-        )
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
 
-        if agency_report.is_endorsed():
-            raise ValidationError("Cannot sync endorsed reports.")
+        if progress_report.endorsed:
+            raise ValidationError(
+                f"Cannot sync reports for year {year}. APR has been endorsed."
+            )
 
         project_reports = list(
-            AnnualProjectReport.objects.filter(report=agency_report).select_related(
+            AnnualProjectReport.objects.filter(
+                report__progress_report=progress_report
+            ).select_related(
                 "project",
                 "project__agency",
                 "project__cluster",
@@ -1309,16 +1307,26 @@ class APRSyncFromProjectsView(APIView):
 
         if not project_reports:
             return Response(
-                {"updated_count": 0, "message": "No project reports to sync."},
+                {
+                    "updated_count": 0,
+                    "agencies_count": 0,
+                    "message": "No project reports to sync.",
+                },
                 status=status.HTTP_200_OK,
             )
 
-        # Collect unique project keys (the "final" / non-archived project id)
+        # Distinct agency reports touched (for the response summary)
+        agencies_count = len({pr.report_id for pr in project_reports})
+
+        # Collecting unique project keys
         final_project_ids = set()
         for pr in project_reports:
             final_project_ids.add(pr.project.latest_project_id or pr.project.id)
 
-        # Batch-load version 3 projects (need ods_odp for phase-out calculations)
+        # Loading related project data in-memory and caching it on projects
+        # so that all calculations in populate_derived_fields() are sped up.
+
+        # Batch-load version 3 projects (we're using ods_odp for phase-out calculations)
         version_3_map = {
             (p.latest_project_id or p.id): p
             for p in Project.objects.really_all()
@@ -1332,7 +1340,7 @@ class APRSyncFromProjectsView(APIView):
         }
 
         # Batch-load the latest project version approved in or before `year`
-        # (used for adjustment / pcr_due previous-year calculation)
+        # (we're using them for adjustment / pcr_due previous-year calculation)
         latest_version_map = {}
         for p in (
             Project.objects.really_all()
@@ -1368,31 +1376,36 @@ class APRSyncFromProjectsView(APIView):
             all_versions_map.setdefault(project_key, []).append(p)
 
         with transaction.atomic():
-            for pr in project_reports:
-                project_key = pr.project.latest_project_id or pr.project.id
+            for project_report in project_reports:
+                project_key = (
+                    project_report.project.latest_project_id
+                    or project_report.project.id
+                )
 
-                # Attach cached version data so populate_derived_fields() uses it
-                # without extra DB queries (mirrors APRMLFSExportView pattern)
-                pr.project.cached_version_3_list = (
+                # Attaching cached version data so populate_derived_fields() uses it
+                # without performing extra DB queries.
+                project_report.project.cached_version_3_list = (
                     [version_3_map[project_key]] if project_key in version_3_map else []
                 )
-                pr.project.cached_versions_for_year = (
+                project_report.project.cached_versions_for_year = (
                     [latest_version_map[project_key]]
                     if project_key in latest_version_map
                     else []
                 )
-                pr.project.cached_all_versions_for_year = all_versions_map.get(
-                    project_key, []
+                project_report.project.cached_all_versions_for_year = (
+                    all_versions_map.get(project_key, [])
                 )
 
-                pr.populate_derived_fields()
-                pr.save(update_fields=AnnualProjectReport.DENORM_FIELDS)
+                project_report.populate_derived_fields()
+                project_report.save(update_fields=AnnualProjectReport.DENORM_FIELDS)
 
         return Response(
             {
                 "updated_count": len(project_reports),
+                "agencies_count": agencies_count,
                 "message": (
-                    f"Successfully synced {len(project_reports)} project report(s)."
+                    f"Successfully synced {len(project_reports)} project report(s) "
+                    f"across {agencies_count} agency/agencies."
                 ),
             },
             status=status.HTTP_200_OK,
