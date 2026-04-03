@@ -179,36 +179,36 @@ class Command(BaseCommand):
         output = options["output"] or f"APR_All_Projects_{year}.xlsx"
 
         self.stdout.write("Querying all projects...")
-
         projects = self._get_projects_queryset()
         total = projects.count()
-        self.stdout.write(f"Found {total} projects. Building export data...")
-
-        project_data = list(_generate_project_dicts(projects, year))
-
-        self.stdout.write(f"Writing {len(project_data)} rows to {output}...")
-
-        def _write_progress(rows_written, total):
-            self.stdout.write(f"  {rows_written}/{total} rows written...")
-
-        writer = APRExportWriter(
-            year=year,
-            agency_name=None,
-            project_reports_data=project_data,
-            exclude_fields=EXCLUDE_FIELDS,
-            progress_callback=_write_progress,
-        )
-        writer.generate_to_file(output)
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Done. Exported {len(project_data)} projects to {output}"
-            )
-        )
+        self.stdout.write(f"Found {total} projects.")
 
         if write_to_db:
-            self.stdout.write("Writing APR records to DB...")
+            self.stdout.write("Writing APR records to DB (skipping Excel export)...")
             self._commit_aprs_to_db(projects, year)
+        else:
+            self.stdout.write("Building export data...")
+            project_data = list(_generate_project_dicts(projects, year))
+
+            self.stdout.write(f"Writing {len(project_data)} rows to {output}...")
+
+            def _write_progress(rows_written, total):
+                self.stdout.write(f"  {rows_written}/{total} rows written...")
+
+            writer = APRExportWriter(
+                year=year,
+                agency_name=None,
+                project_reports_data=project_data,
+                exclude_fields=EXCLUDE_FIELDS,
+                progress_callback=_write_progress,
+            )
+            writer.generate_to_file(output)
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Done. Exported {len(project_data)} projects to {output}"
+                )
+            )
 
     def _commit_aprs_to_db(self, projects, year):
         """
@@ -253,7 +253,8 @@ class Command(BaseCommand):
             )
 
             to_create = []
-            num_skipped = 0
+            num_skipped = num_future = 0
+            year_end = date(year, 12, 31)
             for project in projects_list:
                 if project.id in existing_project_ids:
                     num_skipped += 1
@@ -268,6 +269,16 @@ class Command(BaseCommand):
                 apr.__dict__["latest_project_version_for_year"] = project
                 apr.__dict__["report_year"] = year
                 apr.populate_derived_fields()
+
+                # Only include projects approved on or before the end of the report year.
+                # Projects approved later cannot be part of this report.
+                if (
+                    apr.date_approved_denorm is not None
+                    and apr.date_approved_denorm > year_end
+                ):
+                    num_future += 1
+                    continue
+
                 to_create.append(apr)
 
             AnnualProjectReport.objects.bulk_create(to_create, batch_size=500)
@@ -276,7 +287,8 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"DB write complete: {num_created} APR(s) created, "
-                f"{num_skipped} already existed."
+                f"{num_skipped} already existed, "
+                f"{num_future} skipped (approved after {year_end})."
             )
         )
 
