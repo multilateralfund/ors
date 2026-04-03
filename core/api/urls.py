@@ -163,6 +163,7 @@ from core.api.views.annual_project_report import (
     APRMLFSBulkUpdateView,
     APRKickStartView,
     APRMLFSExportView,
+    APRSyncFromProjectsView,
 )
 
 router = routers.SimpleRouter()
@@ -823,6 +824,11 @@ urlpatterns = [
         "annual-project-report/mlfs/<int:year>/export/",
         APRMLFSExportView.as_view(),
         name="apr-mlfs-export",
+    ),
+    path(
+        "annual-project-report/<int:year>/agency/<int:agency_id>/sync-from-projects/",
+        APRSyncFromProjectsView.as_view(),
+        name="apr-sync-from-projects",
     ),
     # User permissions
     path(

@@ -739,6 +739,36 @@ class AnnualProjectReport(models.Model):
         # TODO: need to ask MLFS about this field
         return ""
 
+    DENORM_FIELDS = [
+        "meta_code_denorm",
+        "project_code_denorm",
+        "legacy_code_denorm",
+        "agency_name_denorm",
+        "cluster_name_denorm",
+        "region_name_denorm",
+        "country_name_denorm",
+        "type_code_denorm",
+        "sector_code_denorm",
+        "project_title_denorm",
+        "date_approved_denorm",
+        "date_completion_proposal_denorm",
+        "consumption_phased_out_odp_proposal_denorm",
+        "consumption_phased_out_co2_proposal_denorm",
+        "production_phased_out_odp_proposal_denorm",
+        "production_phased_out_co2_proposal_denorm",
+        "consumption_phased_out_mt_proposal_denorm",
+        "production_phased_out_mt_proposal_denorm",
+        "approved_funding_denorm",
+        "support_cost_approved_denorm",
+        "adjustment_denorm",
+        "approved_funding_plus_adjustment_denorm",
+        "support_cost_adjustment_denorm",
+        "support_cost_approved_plus_adjustment_denorm",
+        "implementation_delays_status_report_decisions_denorm",
+        "date_of_completion_per_agreement_or_decisions_denorm",
+        "pcr_due_denorm",
+    ]
+
     def populate_derived_fields(self):
         """
         Populate all denormalized fields from their corresponding properties.

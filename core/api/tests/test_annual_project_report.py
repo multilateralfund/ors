@@ -5053,3 +5053,174 @@ class TestAPRPermissions(BaseTest):
         # And the reverse (only APR permissions)
         assert apr_agency_viewer_user.has_perm("core.has_apr_view_access")
         assert not apr_agency_viewer_user.has_perm("core.has_project_v2_edit_access")
+
+
+@pytest.mark.django_db
+class TestAPRSyncFromProjectsView(BaseTest):
+    def _url(self, year, agency_id):
+        return reverse(
+            "apr-sync-from-projects",
+            kwargs={"year": year, "agency_id": agency_id},
+        )
+
+    def test_without_login(self, annual_agency_report):
+        self.client.force_authenticate(user=None)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_viewer_cannot_sync(
+        self, apr_agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_inputter_cannot_sync(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_nonexistent_report_returns_404(self, apr_mlfs_full_access_user):
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(year=9999, agency_id=99999)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_endorsed_report_returns_error(
+        self, apr_mlfs_full_access_user, annual_progress_report_endorsed, agency
+    ):
+        endorsed_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(
+            endorsed_agency_report.progress_report.year,
+            endorsed_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_no_project_reports_returns_zero_count(
+        self, apr_mlfs_full_access_user, annual_agency_report
+    ):
+        """Syncing an agency report with no project reports returns 0 updated."""
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 0
+
+    def test_sync_updates_denorm_fields(
+        self,
+        apr_mlfs_full_access_user,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+    ):
+        """After changing project data, sync re-populates the _denorm fields."""
+        original_title = approved_project.title
+
+        # Verify initial state
+        annual_project_report.refresh_from_db()
+        assert annual_project_report.project_title_denorm == original_title
+
+        # Change the project title
+        new_title = "Updated Project Title After APR Creation"
+        approved_project.title = new_title
+        approved_project.save(update_fields=["title"])
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 1
+
+        annual_project_report.refresh_from_db()
+        assert annual_project_report.project_title_denorm == new_title
+
+    def test_sync_preserves_user_entered_fields(
+        self,
+        apr_mlfs_full_access_user,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+    ):
+        """Sync must not overwrite user-entered fields like funds_disbursed."""
+        user_value = 99999
+        annual_project_report.funds_disbursed = user_value
+        annual_project_report.save(update_fields=["funds_disbursed"])
+
+        # Change project title to ensure sync runs
+        approved_project.title = "Changed Title"
+        approved_project.save(update_fields=["title"])
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        annual_project_report.refresh_from_db()
+        # User-entered value must be untouched
+        assert annual_project_report.funds_disbursed == user_value
+        # Denorm field must be updated
+        assert annual_project_report.project_title_denorm == "Changed Title"
+
+    def test_sync_updates_multiple_project_reports(
+        self, apr_mlfs_full_access_user, annual_agency_report, agency
+    ):
+        """All project reports for the agency are synced in one call."""
+        projects = [
+            ProjectFactory(agency=agency, title=f"Project {i}", version=3)
+            for i in range(3)
+        ]
+        reports = [
+            AnnualProjectReportFactory(report=annual_agency_report, project=project)
+            for project in projects
+        ]
+
+        # Change all project titles
+        for i, project in enumerate(projects):
+            project.title = f"Updated Project {i}"
+            project.save(update_fields=["title"])
+
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(
+            annual_agency_report.progress_report.year,
+            annual_agency_report.agency_id,
+        )
+        response = self.client.post(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 3
+
+        for i, report in enumerate(reports):
+            report.refresh_from_db()
+            assert report.project_title_denorm == f"Updated Project {i}"

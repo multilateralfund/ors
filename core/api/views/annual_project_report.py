@@ -1267,3 +1267,133 @@ class APRMLFSExportView(APIView):
         ).order_by("agency__name")
 
         return queryset
+
+
+class APRSyncFromProjectsView(APIView):
+    """
+    Re-sync all derived (denormalized) fields on existing project reports for an
+    agency report from the current Project data. MLFS Full Access only.
+
+    This is useful when project data changes after APR records were initially created.
+    Only the _denorm fields are updated; user-entered data is preserved.
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
+
+    def post(self, request, year, agency_id):
+        year = int(year)
+        agency_report = get_object_or_404(
+            AnnualAgencyProjectReport.objects.select_related(
+                "agency", "progress_report"
+            ),
+            progress_report__year=year,
+            agency_id=agency_id,
+        )
+
+        if agency_report.is_endorsed():
+            raise ValidationError("Cannot sync endorsed reports.")
+
+        project_reports = list(
+            AnnualProjectReport.objects.filter(report=agency_report).select_related(
+                "project",
+                "project__agency",
+                "project__cluster",
+                "project__country__parent",
+                "project__sector",
+                "project__project_type",
+                "project__status",
+                "project__post_excom_decision__meeting",
+                "report__progress_report",
+            )
+        )
+
+        if not project_reports:
+            return Response(
+                {"updated_count": 0, "message": "No project reports to sync."},
+                status=status.HTTP_200_OK,
+            )
+
+        # Collect unique project keys (the "final" / non-archived project id)
+        final_project_ids = set()
+        for pr in project_reports:
+            final_project_ids.add(pr.project.latest_project_id or pr.project.id)
+
+        # Batch-load version 3 projects (need ods_odp for phase-out calculations)
+        version_3_map = {
+            (p.latest_project_id or p.id): p
+            for p in Project.objects.really_all()
+            .filter(
+                models.Q(id__in=final_project_ids)
+                | models.Q(latest_project_id__in=final_project_ids),
+                version=3,
+            )
+            .select_related("status", "post_excom_decision__meeting")
+            .prefetch_related("ods_odp")
+        }
+
+        # Batch-load the latest project version approved in or before `year`
+        # (used for adjustment / pcr_due previous-year calculation)
+        latest_version_map = {}
+        for p in (
+            Project.objects.really_all()
+            .filter(
+                models.Q(id__in=final_project_ids)
+                | models.Q(latest_project_id__in=final_project_ids),
+                post_excom_decision__isnull=False,
+                post_excom_decision__meeting__date__year__lte=year,
+            )
+            .select_related("status", "post_excom_decision__meeting")
+            .order_by("-post_excom_decision__meeting__date", "-version")
+        ):
+            project_key = p.latest_project_id or p.id
+            if project_key not in latest_version_map:
+                latest_version_map[project_key] = p
+
+        # Batch-load all versions approved during `year` (used for pcr_due)
+        all_versions_map: dict = {}
+        for p in (
+            Project.objects.really_all()
+            .filter(
+                models.Q(id__in=final_project_ids)
+                | models.Q(latest_project_id__in=final_project_ids),
+                models.Q(
+                    post_excom_decision__isnull=False,
+                    post_excom_decision__meeting__date__year=year,
+                )
+                | models.Q(post_excom_decision__isnull=True, version=3),
+            )
+            .select_related("status")
+        ):
+            project_key = p.latest_project_id or p.id
+            all_versions_map.setdefault(project_key, []).append(p)
+
+        with transaction.atomic():
+            for pr in project_reports:
+                project_key = pr.project.latest_project_id or pr.project.id
+
+                # Attach cached version data so populate_derived_fields() uses it
+                # without extra DB queries (mirrors APRMLFSExportView pattern)
+                pr.project.cached_version_3_list = (
+                    [version_3_map[project_key]] if project_key in version_3_map else []
+                )
+                pr.project.cached_versions_for_year = (
+                    [latest_version_map[project_key]]
+                    if project_key in latest_version_map
+                    else []
+                )
+                pr.project.cached_all_versions_for_year = all_versions_map.get(
+                    project_key, []
+                )
+
+                pr.populate_derived_fields()
+                pr.save(update_fields=AnnualProjectReport.DENORM_FIELDS)
+
+        return Response(
+            {
+                "updated_count": len(project_reports),
+                "message": (
+                    f"Successfully synced {len(project_reports)} project report(s)."
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
