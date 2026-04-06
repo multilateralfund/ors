@@ -253,6 +253,10 @@ const ProjectMyaUpdate = ({
     )
   }
 
+  if (!loadingMpData && !metaprojectData?.id) {
+    return <>This project does not belong to any metaproject.</>
+  }
+
   return (
     <div className="rounded-lg bg-common-containerBg px-6 py-2">
       {!loadingMpData && !!metaprojectData?.id ? (
