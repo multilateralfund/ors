@@ -65,7 +65,13 @@ class DashboardWriter(WriteOnlyBase):
         cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
         return cell
 
-    def write_record_cell(self, value, read_only=False):
+    def write_record_cell(
+        self,
+        value,
+        read_only=False,
+        align="left",
+        cell_format=None,
+    ):
         cell = WriteOnlyCell(self.sheet, value=value)
         cell.font = Font(name="Times New Roman")
         cell.border = Border(
@@ -164,7 +170,13 @@ class StatusOfContributionsWriter(WriteOnlyBase):
         cell.font = Font(name="Times New Roman", bold=True)
         return cell
 
-    def write_record_cell(self, value, read_only=False):
+    def write_record_cell(
+        self,
+        value,
+        read_only=False,
+        align="left",
+        cell_format=None,
+    ):
         cell = super().write_record_cell(value, read_only)
         if type(value) in (float, Decimal):
             cell.number_format = "###,###,##0.00###"
@@ -240,7 +252,13 @@ class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
         cell.font = Font(name="Times New Roman", bold=True)
         return cell
 
-    def write_record_cell(self, value, read_only=False):
+    def write_record_cell(
+        self,
+        value,
+        read_only=False,
+        align="left",
+        cell_format=None,
+    ):
         cell = super().write_record_cell(value, read_only)
         if type(value) in (float, Decimal):
             cell.number_format = "###,###,##0.00###"
@@ -327,7 +345,13 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
         cell.font = Font(name="Times New Roman", bold=True)
         return cell
 
-    def write_record_cell(self, value, read_only=False):
+    def write_record_cell(
+        self,
+        value,
+        read_only=False,
+        align="left",
+        cell_format=None,
+    ):
         cell = super().write_record_cell(value, read_only)
         if type(value) in (float, Decimal):
             cell.number_format = "###,###,##0.00###"
@@ -594,7 +618,7 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
                 )
             if key == "average_inflation_rate":
                 cell.value = value.replace(
-                    "2021 -2023", f"{self.start_year - 3}-{self.start_year -  1}"
+                    "2021 -2023", f"{self.start_year - 3}-{self.start_year - 1}"
                 )
             if key == "exchange_rate":
                 cell.value = value.replace("(01 Jan - 30 June 2023)", "")
