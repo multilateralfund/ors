@@ -165,12 +165,15 @@ const ProjectsCreate = ({
   const specificFieldsIdentifiers = 'projectSpecificFields'
   const specificFieldsData = projectData[specificFieldsIdentifiers] || []
 
-  const meta_project_id =
-    project && mode === 'edit' ? project.meta_project_id : null
+  const meta_project_id = project && mode === 'edit' ? metaProjectId : null
+  const submissionStatus =
+    project && mode === 'edit' ? project.submission_status : null
+
   const { data: metaprojectData } = useGetMetaProjectDetails(
     meta_project_id,
     mode,
     projIdentifiers,
+    submissionStatus,
   )
 
   const {

@@ -186,9 +186,10 @@ const ProjectView = ({
     category: project.category,
   }
   const { data: metaprojectData } = useGetMetaProjectDetails(
-    project.meta_project_id,
+    metaProjectId,
     'view',
     metaProjectDetailsProps,
+    project.submission_status,
   )
 
   const { setMpData } = useStore((state) => state.mpData)

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { MetaProjectDetailType } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/types.ts'
 import { initialParams } from '@ors/components/manage/Blocks/ProjectsListing/UpdateMyaData/constants.ts'
@@ -7,6 +7,8 @@ import { formatApiUrl, getResults } from '@ors/helpers'
 import { MetaProjectType } from '@ors/types/api_projects.ts'
 import { ProjIdentifiers } from '../interfaces'
 import { useStore } from '@ors/store'
+
+import { debounce } from 'lodash'
 
 export const useGetMetaProjects = (
   params: typeof initialParams,
@@ -27,29 +29,24 @@ export const useGetMetaProjectDetails = (
   pk?: number | null,
   mode: string = 'edit',
   metaProjectIdentifiers?: Partial<ProjIdentifiers>,
+  submissionStatus?: string | null,
 ) => {
   const { setLoadingMpData } = useStore((state) => state.mpData)
 
-  const isFirstInitialRender = useRef(true)
-  const isFirstChangedDataRender = useRef(true)
-
   const [data, setData] = useState<MetaProjectDetailType | null>(null)
-  const [hasData, setHasData] = useState<boolean | null>(null)
 
   const { country, cluster, category } = metaProjectIdentifiers ?? {}
-
   const formattedCategory =
     mode === 'view' || category !== 'MYA' ? category : 'Multi-year agreement'
+
+  const isEditOrView = ['edit', 'view'].includes(mode)
 
   const fetchData = (pk: number) => {
     setLoadingMpData(true)
 
     fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
       .then((resp) => resp.json())
-      .then((data) => {
-        setData(data)
-        setHasData(true)
-      })
+      .then((data) => setData(data))
       .finally(() => setLoadingMpData(false))
   }
 
@@ -63,10 +60,7 @@ export const useGetMetaProjectDetails = (
       { credentials: 'include' },
     )
       .then((resp) => resp.json())
-      .then((data) => {
-        setData(data)
-        setHasData(true)
-      })
+      .then((data) => setData(data))
       .finally(() => setLoadingMpData(false))
   }
 
@@ -82,31 +76,36 @@ export const useGetMetaProjectDetails = (
       !!cluster &&
       formattedCategory === 'Multi-year agreement'
     ) {
-      fetchPossibleMetaproject()
+      debouncedFetchPossibleMetaproject()
     }
   }
 
-  useEffect(() => {
-    if (isFirstInitialRender.current) {
-      isFirstInitialRender.current = false
+  const debouncedFetchData = useMemo(
+    () => debounce((pk) => fetchData(pk), 0),
+    [fetchData],
+  )
 
-      if (pk) {
-        fetchData(pk)
-      } else {
-        getPossibleMetaproject()
-      }
+  const debouncedFetchPossibleMetaproject = useMemo(
+    () => debounce(() => fetchPossibleMetaproject(), 0),
+    [fetchPossibleMetaproject],
+  )
+
+  useEffect(() => {
+    if (pk) {
+      debouncedFetchData(pk)
     }
   }, [pk])
 
   useEffect(() => {
-    if (isFirstChangedDataRender.current) {
-      isFirstChangedDataRender.current = false
-
-      if (!pk || hasData) {
+    if (!pk) {
+      if (!isEditOrView || submissionStatus !== 'Approved') {
         getPossibleMetaproject()
+      } else {
+        setData(null)
+        setLoadingMpData(false)
       }
     }
-  }, [country, cluster, category])
+  }, [pk, country, cluster, category])
 
   return { data, refresh }
 }
