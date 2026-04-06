@@ -13,7 +13,7 @@ import { Redirect } from 'wouter'
 import BlanketApprovalDetails from '@ors/components/manage/Blocks/ProjectsListing/BlanketApprovalDetails/BlanketApprovalDetails.tsx'
 
 export default function Projects() {
-  usePageTitle('Blanket approval details')
+  usePageTitle('List of projects and activities')
 
   const { canViewProjects } = useContext(PermissionsContext)
 
@@ -28,7 +28,7 @@ export default function Projects() {
         <PageHeading className="min-w-fit">
           <PageTitle
             pageTitle="Generate DB"
-            projectTitle="Blanket approval details"
+            projectTitle="List of projects and activities"
           />
         </PageHeading>
       </HeaderTitle>

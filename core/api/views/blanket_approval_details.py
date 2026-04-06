@@ -326,7 +326,7 @@ class BlanketApprovalDetailsViewset(
 
         sheet.delete_rows(4, 7)
 
-        return workbook_response("Blanket approval details", wb)
+        return workbook_response("List of projects and activities", wb)
 
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):

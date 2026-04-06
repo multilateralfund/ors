@@ -63,7 +63,7 @@ const ProjectApprovalFields = ({
   const fundingWindowOptions = useMemo(() => {
     return (
       getFundingWindowResults?.map((fw) => ({
-        name: `$${formatNumberValue(fw.amount)} (${fw.decision.number})`,
+        name: fw.decision.number,
         id: fw.id,
       })) || []
     )

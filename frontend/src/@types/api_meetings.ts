@@ -10,6 +10,7 @@ export type MeetingType = {
 export type ApiDecision = {
   id: number
   meeting_id: number
-  number: string // This is not a mistake, the "number" is a string, usually something like "11/59".
+  /** This is not a mistake, the "number" is a string, usually something like "11/59". */
+  number: string
   title: string
 }

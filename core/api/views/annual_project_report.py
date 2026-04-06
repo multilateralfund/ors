@@ -1,6 +1,7 @@
 import os
 from zipfile import ZipFile
 
+from celery.result import AsyncResult
 from constance import config
 from django.db import transaction, models
 from django.db.models import Prefetch
@@ -59,7 +60,7 @@ from core.models import (
     Project,
     Country,
 )
-from core.tasks import send_agency_submission_notification
+from core.tasks import send_agency_submission_notification, sync_apr_from_projects
 
 
 # pylint: disable=C0302
@@ -1267,3 +1268,73 @@ class APRMLFSExportView(APIView):
         ).order_by("agency__name")
 
         return queryset
+
+
+class APRSyncFromProjectsView(APIView):
+    """
+    Re-synchronize all denormalized fields on all APR project reports for a given year,
+    for all agencies, from current Project data. MLFS Full Access only.
+
+    POST:   enqueues the job as an async task; returns 202 with task_id.
+    GET:    polls the task status; accepts ?task_id=<id> to check its progress.
+
+    Both verbs return the same four-key JSON response,
+    so the frontend only needs one URL and one response handler:
+        {
+            "task_id":  "<celery-task-uuid>",
+            "status":   "pending" | "success" | "failure",
+            "result":   null | { updated_count, changed_count, agencies_count, message },
+            "error":    null | "<error message>"
+        }
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
+
+    # Celery states that need to map to the view's "pending" status
+    _PENDING_STATES = {"PENDING", "RECEIVED", "STARTED", "RETRY"}
+
+    @staticmethod
+    def _task_response(
+        task_id, state, result=None, error=None, http_status=status.HTTP_200_OK
+    ):
+        return Response(
+            {
+                "task_id": task_id,
+                "status": state,
+                "result": result,
+                "error": error,
+            },
+            status=http_status,
+        )
+
+    def post(self, request, year):
+        year = int(year)
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
+
+        if progress_report.endorsed:
+            raise ValidationError(
+                f"Cannot sync reports for year {year}. APR has been endorsed."
+            )
+
+        task = sync_apr_from_projects.delay(year)
+        return self._task_response(
+            task.id, "pending", http_status=status.HTTP_202_ACCEPTED
+        )
+
+    # pylint: disable-next=W0613
+    def get(self, request, year):
+        task_id = request.query_params.get("task_id")
+        if not task_id:
+            raise ValidationError("Query parameter 'task_id' is required.")
+
+        result = AsyncResult(task_id)
+
+        if result.state in self._PENDING_STATES:
+            return self._task_response(task_id, "pending")
+
+        if result.state == "SUCCESS":
+            return self._task_response(task_id, "success", result=result.result)
+
+        # FAILURE, REVOKED, or anything else (if applicable)
+        error_msg = str(result.result) if result.result else "Task failed."
+        return self._task_response(task_id, "failure", error=error_msg)

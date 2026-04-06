@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from io import BytesIO
+from unittest.mock import patch, MagicMock
 
 from constance import config
 from openpyxl import load_workbook
@@ -29,6 +30,7 @@ from core.api.tests.factories import (
     MetaProjectFactory,
     ProjectClusterFactory,
 )
+from core.tasks import sync_apr_from_projects
 
 # pylint: disable=W0221,W0613,C0302,R0913,R0914
 
@@ -5053,3 +5055,232 @@ class TestAPRPermissions(BaseTest):
         # And the reverse (only APR permissions)
         assert apr_agency_viewer_user.has_perm("core.has_apr_view_access")
         assert not apr_agency_viewer_user.has_perm("core.has_project_v2_edit_access")
+
+
+@pytest.mark.django_db
+class TestAPRSyncFromProjectsView(BaseTest):
+    """
+    Tests for the POST (enqueue) and GET (poll) handlers.
+    The Celery task is mocked so these tests only cover the HTTP layer.
+    """
+
+    def _url(self, year):
+        return reverse("apr-sync-from-projects", kwargs={"year": year})
+
+    def test_without_login(self, annual_agency_report):
+        self.client.force_authenticate(user=None)
+        url = self._url(annual_agency_report.progress_report.year)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_viewer_cannot_sync(
+        self, apr_agency_viewer_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = self._url(annual_agency_report.progress_report.year)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_agency_inputter_cannot_sync(
+        self, apr_agency_inputter_user, annual_agency_report
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = self._url(annual_agency_report.progress_report.year)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_nonexistent_year_returns_404(self, apr_mlfs_full_access_user):
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(year=9999)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_endorsed_year_returns_error(
+        self, apr_mlfs_full_access_user, annual_progress_report_endorsed
+    ):
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(annual_progress_report_endorsed.year)
+        response = self.client.post(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_post_enqueues_task_and_returns_202(
+        self, apr_mlfs_full_access_user, annual_progress_report
+    ):
+        with patch("core.tasks.sync_apr_from_projects.delay") as mock_delay:
+            mock_delay.return_value = MagicMock(id="test-task-uuid-1234")
+
+            self.client.force_authenticate(user=apr_mlfs_full_access_user)
+            url = self._url(annual_progress_report.year)
+            response = self.client.post(url)
+
+        assert response.status_code == status.HTTP_202_ACCEPTED
+        assert response.data["task_id"] == "test-task-uuid-1234"
+        assert response.data["status"] == "pending"
+        assert response.data["result"] is None
+        assert response.data["error"] is None
+        mock_delay.assert_called_once_with(annual_progress_report.year)
+
+    def test_get_without_task_id_returns_400(
+        self, apr_mlfs_full_access_user, annual_progress_report
+    ):
+        self.client.force_authenticate(user=apr_mlfs_full_access_user)
+        url = self._url(annual_progress_report.year)
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_get_pending_task(self, apr_mlfs_full_access_user, annual_progress_report):
+        mock_result = MagicMock(state="PENDING", result=None)
+        with patch(
+            "core.api.views.annual_project_report.AsyncResult",
+            return_value=mock_result,
+        ):
+            self.client.force_authenticate(user=apr_mlfs_full_access_user)
+            url = self._url(annual_progress_report.year)
+            response = self.client.get(url, {"task_id": "some-task-id"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["task_id"] == "some-task-id"
+        assert response.data["status"] == "pending"
+        assert response.data["result"] is None
+        assert response.data["error"] is None
+
+    def test_get_started_task_is_also_pending(
+        self, apr_mlfs_full_access_user, annual_progress_report
+    ):
+        mock_result = MagicMock(state="STARTED", result=None)
+        with patch(
+            "core.api.views.annual_project_report.AsyncResult",
+            return_value=mock_result,
+        ):
+            self.client.force_authenticate(user=apr_mlfs_full_access_user)
+            url = self._url(annual_progress_report.year)
+            response = self.client.get(url, {"task_id": "some-task-id"})
+
+        assert response.data["status"] == "pending"
+
+    def test_get_successful_task(
+        self, apr_mlfs_full_access_user, annual_progress_report
+    ):
+        task_result = {
+            "updated_count": 100,
+            "changed_count": 3,
+            "agencies_count": 5,
+            "message": "Synced 100 project report(s) ...",
+        }
+        mock_result = MagicMock(state="SUCCESS", result=task_result)
+        with patch(
+            "core.api.views.annual_project_report.AsyncResult",
+            return_value=mock_result,
+        ):
+            self.client.force_authenticate(user=apr_mlfs_full_access_user)
+            url = self._url(annual_progress_report.year)
+            response = self.client.get(url, {"task_id": "some-task-id"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "success"
+        assert response.data["result"] == task_result
+        assert response.data["error"] is None
+
+    def test_get_failed_task(self, apr_mlfs_full_access_user, annual_progress_report):
+        mock_result = MagicMock(state="FAILURE", result=Exception("DB error"))
+        with patch(
+            "core.api.views.annual_project_report.AsyncResult",
+            return_value=mock_result,
+        ):
+            self.client.force_authenticate(user=apr_mlfs_full_access_user)
+            url = self._url(annual_progress_report.year)
+            response = self.client.get(url, {"task_id": "some-task-id"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "failure"
+        assert response.data["result"] is None
+        assert "DB error" in response.data["error"]
+
+
+@pytest.mark.django_db
+class TestSyncAprFromProjectsTask:
+    """
+    Tests for the sync_apr_from_projects Celery task.
+    The task is called synchronously, so no broker is needed.
+    """
+
+    def test_empty_year_returns_zero_counts(self, annual_progress_report):
+        result = sync_apr_from_projects(annual_progress_report.year)
+
+        assert result["updated_count"] == 0
+        assert result["changed_count"] == 0
+        assert result["agencies_count"] == 0
+
+    def test_unchanged_records_are_not_written(
+        self,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["updated_count"] == 1
+        assert result["changed_count"] == 0
+
+    def test_changed_records_are_updated(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+    ):
+        approved_project.title = "Brand New Title"
+        approved_project.save(update_fields=["title"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["updated_count"] == 1
+        assert result["changed_count"] == 1
+
+        annual_project_report.refresh_from_db()
+        assert annual_project_report.project_title_denorm == "Brand New Title"
+
+    def test_input_fields_are_preserved(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        approved_project,
+    ):
+        annual_project_report.funds_disbursed = 42000
+        annual_project_report.save(update_fields=["funds_disbursed"])
+
+        approved_project.title = "Another Title"
+        approved_project.save(update_fields=["title"])
+
+        sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        annual_project_report.refresh_from_db()
+        assert annual_project_report.funds_disbursed == 42000
+
+    def test_all_agencies_synced_in_one_call(self, annual_progress_report):
+        agency_a = AgencyFactory()
+        agency_b = AgencyFactory()
+        report_a = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report, agency=agency_a
+        )
+        report_b = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report, agency=agency_b
+        )
+        project_a = ProjectFactory(agency=agency_a, title="Old A", version=3)
+        project_b = ProjectFactory(agency=agency_b, title="Old B", version=3)
+        apr_a = AnnualProjectReportFactory(report=report_a, project=project_a)
+        apr_b = AnnualProjectReportFactory(report=report_b, project=project_b)
+
+        project_a.title = "New A"
+        project_a.save(update_fields=["title"])
+        project_b.title = "New B"
+        project_b.save(update_fields=["title"])
+
+        result = sync_apr_from_projects(annual_progress_report.year)
+
+        assert result["updated_count"] == 2
+        assert result["changed_count"] == 2
+        assert result["agencies_count"] == 2
+
+        apr_a.refresh_from_db()
+        apr_b.refresh_from_db()
+        assert apr_a.project_title_denorm == "New A"
+        assert apr_b.project_title_denorm == "New B"
