@@ -18,6 +18,7 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectTransferMixin:
+
     @action(
         methods=["POST"],
         detail=True,
@@ -65,6 +66,12 @@ class ProjectTransferMixin:
                         help_text="Fund transferred",
                     ),
                     "psc_transferred": serializers.DecimalField(
+                        max_digits=30,
+                        decimal_places=15,
+                        required=False,
+                        help_text="PSC transferred",
+                    ),
+                    "psc_received": serializers.DecimalField(
                         max_digits=30,
                         decimal_places=15,
                         required=False,

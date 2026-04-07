@@ -40,7 +40,7 @@ const GenerateDBMenu = ({
         permissions: [isMlfsUser && canApproveProjects],
       },
       {
-        title: 'Blanket approval details',
+        title: 'List of projects and activities',
         url: '/projects-listing/blanket-approval-details',
         permissions: [isMlfsUser && canViewProjects],
       },

@@ -1513,7 +1513,11 @@ def annual_agency_report(annual_progress_report, agency, agency_viewer_user):
 
 
 @pytest.fixture
-def annual_project_report(annual_agency_report, approved_project):
+def annual_project_report(
+    annual_agency_report, approved_project, project_ongoing_status
+):
+    approved_project.status = project_ongoing_status
+    approved_project.save(update_fields=["status"])
     return AnnualProjectReportFactory(
         report=annual_agency_report,
         project=approved_project,

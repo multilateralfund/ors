@@ -241,7 +241,7 @@ def create_new_project(row, dry_run=True):
     if not meeting:
         logger.warning(
             f"""⚠️ Meeting with number '{meeting_number}' not found while
-            processing project with legacy code '{row['CODE']}'
+            processing project with legacy code '{row["CODE"]}'
             """
         )
 
@@ -511,7 +511,7 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
     for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             logger.info(
-                f"""Skipping project with legacy code '{row['CODE']}' as it is
+                f"""Skipping project with legacy code '{row["CODE"]}' as it is
                 in the ignore list extracted from C+P sheets
                 """
             )
@@ -595,7 +595,7 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
     for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             logger.info(
-                f"""Skipping project with legacy code '{row['CODE']}' as it
+                f"""Skipping project with legacy code '{row["CODE"]}' as it
                   is in the ignore list extracted from C+P sheets
                   """
             )
@@ -609,8 +609,8 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         meeting = Meeting.objects.filter(number=row["MEETING"]).first()
         if not meeting:
             logger.warning(
-                f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing
-                Funding Fields sheet for project with legacy code '{row['CODE']}'
+                f"""⚠️ Meeting with name '{row["MEETING"]}' not found while processing
+                Funding Fields sheet for project with legacy code '{row["CODE"]}'
                 """
             )
             continue
@@ -667,8 +667,8 @@ def process_transfer_fields_sheet(
             meeting = Meeting.objects.filter(number=row["MEETING"]).first()
             if not meeting:
                 logger.warning(
-                    f"""⚠️ Meeting with name '{row['MEETING']}' not found while processing
-                      Transfer Fields sheet for project with legacy code '{row['CODE']}'
+                    f"""⚠️ Meeting with name '{row["MEETING"]}' not found while processing
+                      Transfer Fields sheet for project with legacy code '{row["CODE"]}'
                       """
                 )
                 continue
@@ -813,7 +813,6 @@ def process_c_and_p_production_sheet(dry_run=True):
             continue
         # copy project from the consumption one:
         if row["Legacy Code"] not in legacy_codes_already_updated:
-
             project_exists = Project.objects.filter(
                 legacy_code=row["Legacy Code"], production=True
             ).exists()
@@ -947,7 +946,6 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
                 """
                 )
             else:
-
                 meta_project.end_date = latest_date_per_agreement
                 if not dry_run:
                     meta_project.save()

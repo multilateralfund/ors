@@ -9,9 +9,9 @@ import {
   ProjectTypeApi,
   RelatedProjectsSectionType,
   RelatedProjectsType,
-  InlineMessageType,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
+import { useStore } from '@ors/store'
 
 import { Divider, CircularProgress } from '@mui/material'
 import { isNull, map, orderBy, uniqBy } from 'lodash'
@@ -28,7 +28,6 @@ const ProjectRelatedProjects = ({
   metaprojectData,
   mode,
   isMya,
-  setInlineMessage,
 }: {
   project?: ProjectTypeApi
   relatedProjects: RelatedProjectsSectionType[]
@@ -39,23 +38,28 @@ const ProjectRelatedProjects = ({
   metaprojectData: MetaProjectDetailType | null
   mode: string
   isMya: boolean
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const { canDisassociateProjects, canDisassociateComponents } =
     useContext(PermissionsContext)
 
+  const { loadingMpData } = useStore((state) => state.mpData)
+
   const isVieworEditMode = ['edit', 'view'].includes(mode) && !!project
   const isAddOrCopyMode = ['add', 'copy'].includes(mode)
+  const isExistingMetaproject = !!metaprojectData && !metaprojectData.is_draft
 
   const canRemoveAssociation =
     isVieworEditMode &&
     canDisassociateProjects &&
     (project.editable || canDisassociate) &&
+    project.submission_status === 'Approved' &&
+    isExistingMetaproject &&
     !!metaProjectId
 
   const canDisassociateComponent =
     isVieworEditMode &&
     canDisassociateComponents &&
+    isExistingMetaproject &&
     isNull(project.latest_project) &&
     project.submission_status === 'Submitted'
 
@@ -64,14 +68,21 @@ const ProjectRelatedProjects = ({
     project.component &&
     project.component.original_project_id === project.id
 
-  const hasPossibleAssociatedProjects =
-    isMya &&
-    !(
-      isVieworEditMode &&
-      ['Withdrawn', 'Approved', 'Not approved'].includes(
-        project.submission_status,
+  const getHasPossibleAssociatedProjects = (type: string) => {
+    const commonSubmissionStatuses = ['Withdrawn', 'Not approved']
+    const submissionStatuses =
+      type === 'message'
+        ? [...commonSubmissionStatuses, 'Approved']
+        : commonSubmissionStatuses
+
+    return (
+      isMya &&
+      !(
+        isVieworEditMode &&
+        submissionStatuses.includes(project.submission_status)
       )
     )
+  }
 
   const RelatedProjectsList = () =>
     map(
@@ -82,8 +93,10 @@ const ProjectRelatedProjects = ({
         }
 
         const { projects: crtData = [], loaded } = data
+
+        const loadedProjects = index === 0 ? loaded : loaded && !loadingMpData
         const showDownloadButton =
-          crtData && crtData.length > 0 && downloadButton
+          crtData && crtData.length > 0 && downloadButton && loadedProjects
         const isLinkMode = mode.includes('link') && !!project
 
         const getFinalData = () => {
@@ -98,7 +111,7 @@ const ProjectRelatedProjects = ({
             ...(metaprojectData?.possible_projects ?? []),
           ]
 
-          const allCrtData = hasPossibleAssociatedProjects
+          const allCrtData = getHasPossibleAssociatedProjects('data')
             ? [
                 ...(crtData ?? []),
                 ...map(allMetaprojectProjects, (project) => ({
@@ -112,7 +125,6 @@ const ProjectRelatedProjects = ({
           const componentsIds = map(relatedProjects[0].data.projects, 'id')
           const filteredData = allCrtData.filter(
             (entry) =>
-              entry.submission_status !== 'Draft' &&
               !componentsIds.includes(entry.id) &&
               !(isVieworEditMode && entry.id === project.id) &&
               !(isLinkMode && entry.id === project.id),
@@ -147,7 +159,7 @@ const ProjectRelatedProjects = ({
                 )}
               </div>
             </div>
-            {loaded ? (
+            {loadedProjects ? (
               finalData && finalData.length > 0 ? (
                 <>
                   <RelatedProjects
@@ -163,7 +175,6 @@ const ProjectRelatedProjects = ({
                         project,
                         setRefetchRelatedProjects,
                         hasComponents,
-                        setInlineMessage,
                       }}
                     />
                   )}
@@ -185,7 +196,7 @@ const ProjectRelatedProjects = ({
 
   return (
     <div className="flex w-full flex-col">
-      {isVieworEditMode && !!project.meta_project_id && (
+      {isVieworEditMode && !!metaprojectData?.id && (
         <>
           <SectionTitle>
             <div className="flex flex-wrap items-center gap-2">
@@ -199,7 +210,7 @@ const ProjectRelatedProjects = ({
             <div className="mb-3 text-lg">
               If you want this project to be removed from the umbrella metacode,
               click
-              <RemoveAssociation {...{ setMetaProjectId, setInlineMessage }} />
+              <RemoveAssociation {...{ setMetaProjectId }} />
               (In case of removal, the component relationships will be
               maintained.)
             </div>
@@ -208,7 +219,7 @@ const ProjectRelatedProjects = ({
         </>
       )}
       <div className="flex flex-col gap-y-4">
-        {hasPossibleAssociatedProjects && (
+        {getHasPossibleAssociatedProjects('message') && (
           <div className="text-xl">
             Should this project get approved, it will have the following
             {!isAddOrCopyMode ? ' components and' : ''} associated projects:

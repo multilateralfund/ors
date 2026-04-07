@@ -110,6 +110,18 @@ def get_headers_cross_cutting(
             "headerName": "Duration of project (months)",
         },
         {
+            "id": "interest",
+            "headerName": "Interest",
+            "type": "number",
+            "align": "right",
+            "cell_format": "$###,###,##0.00#############",
+            "docx_decimals": False,
+        },
+        {
+            "id": "adjustment",
+            "headerName": "Adjustment",
+        },
+        {
             "id": "blanket_or_individual_consideration",
             "headerName": "Blanket approval/Individual consideration",
             "method": get_blanket_consideration_value,

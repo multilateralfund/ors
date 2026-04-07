@@ -18,6 +18,7 @@ export type MetaProjectDetailType = {
   possible_projects?: ProjectType[]
   field_data: MetaProjectFieldData
   computed_field_data: Record<string, number | string | null>
+  is_draft: boolean
   detail?: string
 } & MetaProjectType
 

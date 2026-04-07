@@ -42,7 +42,6 @@ import {
   ProjectSpecificFields,
   BpDataProps,
   FileMetaDataType,
-  InlineMessageType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
@@ -79,7 +78,6 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
-  setInlineMessage,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -90,9 +88,9 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
-  setInlineMessage: (message: InlineMessageType) => void
 }) => {
   const [_, setLocation] = useLocation()
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
 
   const {
     canUpdateProjects,
@@ -109,6 +107,7 @@ const EditActionButtons = ({
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
   )
 
+  const { defaultMpErrors } = useStore((state) => state.mpData)
   const { projectFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -295,6 +294,8 @@ const EditActionButtons = ({
     crossCuttingErrors?.['total_fund']?.length > 0 ||
     crossCuttingErrors['support_cost_psc'].length > 0
 
+  const disableApprove = hasSectionErrors(defaultMpErrors)
+
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const handleErrors = async (error: any, type?: string) => {
@@ -434,6 +435,8 @@ const EditActionButtons = ({
 
       if (postExComUpdate) {
         data['post-excom-update'] = true
+        data['adjustment'] = crossCuttingFields.adjustment
+        data['interest'] = crossCuttingFields.interest
 
         // main fields validation before edit
         await api(`api/projects/v2/${id}`, {
@@ -793,7 +796,7 @@ const EditActionButtons = ({
           label={<>Approval</>}
         >
           <Dropdown.Item
-            disabled={disableApprovalActions}
+            disabled={disableApprovalActions || disableApprove}
             className={cx(dropdownItemClassname, 'text-primary')}
             onClick={() => onApproveRejectProject('approve')}
           >

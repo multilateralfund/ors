@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton } from '../HelperComponents'
-import { InlineMessageType } from '../interfaces'
+import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { Typography, Box, Modal, CircularProgress, Button } from '@mui/material'
@@ -11,19 +11,18 @@ import { useParams } from 'wouter'
 
 type RemoveAssociationProps = {
   setMetaProjectId?: (id: number | null) => void
-  setInlineMessage: (message: InlineMessageType) => void
 }
 
 const RemoveAssociationModal = ({
   isModalOpen,
   setIsModalOpen,
   setMetaProjectId,
-  setInlineMessage,
 }: RemoveAssociationProps & {
   isModalOpen: boolean
   setIsModalOpen: (isOpen: boolean) => void
 }) => {
   const { project_id } = useParams<Record<string, string>>()
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
   const [isLoading, setIsLoading] = useState(false)
 
   const removeAssociation = async () => {
@@ -46,7 +45,7 @@ const RemoveAssociationModal = ({
       setInlineMessage({
         type: 'success',
         message: message,
-        tabId: 'project-related-projects-section',
+        tabId: 'related-projects',
       })
     } catch (error) {
       if (error.status === 400) {

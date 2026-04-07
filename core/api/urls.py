@@ -65,6 +65,8 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.funding_window import FundingWindowListCreateView
+from core.api.views.funding_window import FundingWindowUpdateView
 from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
 from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
 from core.api.views.projects_metadata import (
@@ -161,6 +163,7 @@ from core.api.views.annual_project_report import (
     APRMLFSBulkUpdateView,
     APRKickStartView,
     APRMLFSExportView,
+    APRSyncFromProjectsView,
 )
 
 router = routers.SimpleRouter()
@@ -494,6 +497,16 @@ urlpatterns = [
         name="file-type-list",
     ),
     path(
+        "funding-window/",
+        FundingWindowListCreateView.as_view(),
+        name="meta-project-list",
+    ),
+    path(
+        "funding-window/<int:id>/",
+        FundingWindowUpdateView.as_view(),
+        name="meta-project-update",
+    ),
+    path(
         "meta-projects/",
         MetaProjectListView.as_view(),
         name="meta-project-list",
@@ -798,6 +811,11 @@ urlpatterns = [
         "annual-project-report/mlfs/<int:year>/export/",
         APRMLFSExportView.as_view(),
         name="apr-mlfs-export",
+    ),
+    path(
+        "annual-project-report/<int:year>/sync-from-projects/",
+        APRSyncFromProjectsView.as_view(),
+        name="apr-sync-from-projects",
     ),
     # User permissions
     path(

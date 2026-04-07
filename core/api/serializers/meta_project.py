@@ -11,7 +11,7 @@ from core.api.serializers.project_metadata import (
     ProjectSectorSerializer,
 )
 from core.api.serializers.project_v2 import ProjectListV2Serializer
-from core.models.project import MetaProject, Project
+from core.models.project import MetaProject
 
 
 class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
@@ -78,6 +78,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
     field_data = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
     lead_agency = serializers.SerializerMethodField()
+    possible_projects = serializers.SerializerMethodField()
 
     class Meta:
         model = MetaProject
@@ -85,14 +86,31 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
+            "is_draft",
             "umbrella_code",
             "projects",
             "field_data",
             "computed_field_data",
+            "possible_projects",
         ]
 
     def get_projects(self, obj):
-        return ProjectListV2Serializer(obj.projects.all(), many=True).data
+        # only approved projects are considered part of the meta project
+        approved_projects = obj.projects.filter(submission_status__name="Approved")
+        return ProjectListV2Serializer(approved_projects, many=True).data
+
+    def get_possible_projects(self, obj):
+        try:
+            user = self.context["request"].user
+        except KeyError:
+            return []
+        # projects not yet approved are considered possible projects
+        possible_projects = obj.projects.exclude(submission_status__name="Approved")
+        if user.has_perm("core.is_mlfs_user") and not user.is_superuser:
+            possible_projects = possible_projects.exclude(
+                submission_status__name="Draft"
+            )
+        return ProjectListV2Serializer(possible_projects, many=True).data
 
     def _get_field_data(self, obj, serializer):
         data = serializer(obj).data
@@ -122,26 +140,6 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         return AgencySerializer(lead_agency).data
 
 
-class MetaProjectMyaDetailsIncludingPossibleProjectsSerializer(
-    MetaProjecMyaDetailsSerializer
-):
-    possible_projects = serializers.SerializerMethodField()
-
-    def get_possible_projects(self, obj):
-        # Get all projects that are not part of the meta project but match the country and cluster
-        possible_projects = Project.objects.filter(
-            country=obj.country,
-            cluster=obj.cluster,
-            category=obj.type,
-            meta_project__isnull=True,
-        )
-        return ProjectListV2Serializer(possible_projects, many=True).data
-
-    class Meta:
-        model = MetaProject
-        fields = MetaProjecMyaDetailsSerializer.Meta.fields + ["possible_projects"]
-
-
 class MetaProjectMyaSerializer(serializers.ModelSerializer):
     clusters = serializers.SerializerMethodField()
     country = CountrySerializer()
@@ -154,6 +152,7 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
+            "is_draft",
             "umbrella_code",
             "country",
             "clusters",

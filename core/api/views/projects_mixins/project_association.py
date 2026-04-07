@@ -169,6 +169,12 @@ class ProjectAssociationMixin:
                 type=OpenApiTypes.BOOL,
             ),
             OpenApiParameter(
+                name="only_approved",
+                location=OpenApiParameter.QUERY,
+                description="If set to true, only approved projects will be included in the response.",
+                type=OpenApiTypes.BOOL,
+            ),
+            OpenApiParameter(
                 name="included_entries",
                 location=OpenApiParameter.QUERY,
                 description=(
@@ -244,7 +250,10 @@ class ProjectAssociationMixin:
             )
         elif included_entries == "only_project":
             associated_projects = Project.objects.filter(id=project.id)
-
+        if request.query_params.get("only_approved", "false").lower() == "true":
+            associated_projects = associated_projects.filter(
+                submission_status__name="Approved"
+            )
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
                 id=project.id,

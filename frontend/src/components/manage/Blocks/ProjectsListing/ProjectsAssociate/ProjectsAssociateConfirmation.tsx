@@ -227,7 +227,6 @@ const ProjectsAssociateConfirmation = ({
       'all',
       false,
       true,
-      false,
     )
   }, 0)
 

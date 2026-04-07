@@ -6,6 +6,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
 from functools import cached_property
 
+from core.models.funding_window import FundingWindow
 from core.models.agency import Agency
 from core.models.blend import Blend
 
@@ -74,6 +75,15 @@ class MetaProject(models.Model):
             Format: meta-/<country-3-letter-code>/<8-digit-unique-number>
         """,
     )
+    is_draft = models.BooleanField(
+        help_text="""
+            True if the MetaProject is created for a project that is not yet approved.
+            When the project is approved, the MetaProject will be converted to a final
+            MetaProject and the is_draft field will be set to False.
+        """,
+        default=False,
+    )
+
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -621,7 +631,11 @@ class Project(models.Model):
     project_duration = models.IntegerField(
         null=True,
         blank=True,
-        help_text=OLD_FIELD_HELP_TEXT,
+        help_text="Duration of project (months)",
+    )
+    adjustment = models.BooleanField(
+        default=False,
+        help_text="Marked as true on a post excom update if the update resulted in a fund adjustment.",
     )
     stage = models.IntegerField(
         null=True,
@@ -773,7 +787,7 @@ class Project(models.Model):
         help_text=OLD_FIELD_HELP_TEXT,
     )  # obsolete
     remarks = models.TextField(null=True, blank=True)
-
+    interest = models.FloatField(null=True, blank=True)
     # other fields
     umbrella_project = models.BooleanField(
         default=False,
@@ -957,11 +971,6 @@ class Project(models.Model):
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)
-    project_duration = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Duration of project (months)",
-    )
     group = models.ForeignKey(
         "core.Group",
         on_delete=models.CASCADE,
@@ -1048,10 +1057,12 @@ class Project(models.Model):
     )
 
     # new approval fields
-    funding_window = models.CharField(
-        max_length=256,
+    funding_window = models.ForeignKey(
+        FundingWindow,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
+        related_name="projects",
         help_text="Funding window",
     )
     ad_hoc_pcr = models.BooleanField(
@@ -1628,7 +1639,6 @@ class Project(models.Model):
         return new_project
 
     def increase_version(self, user):
-
         # Create an archived copy of the current project. The archived project will have
         # the same code as the current project.
         archieved_project = self.copy_project(duplicate_files=False)
@@ -1805,7 +1815,7 @@ class ProjectOdsOdp(models.Model):
         if self.ods_replacement_text:
             return_str = f"{return_str} replacements: {self.ods_replacement_text}"
         elif self.ods_replacement:
-            return_str = f"{return_str} replacements: {', '.join([alt.name for alt in self.ods_replacements.all()])}"
+            return_str = f"{return_str} replacements: {self.ods_replacement.name}"
         return return_str
 
     def get_ods_display_name(self, obj):

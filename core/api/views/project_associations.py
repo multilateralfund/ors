@@ -58,6 +58,9 @@ class ProjectAssociationViewSet(
         if user.is_superuser:
             return queryset
 
+        if user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
 

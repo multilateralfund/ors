@@ -101,8 +101,7 @@ const ProjectIdentifiersFields = ({
     !canEditField(editableFields, 'agency')
 
   const isClusterDisabled =
-    postExComUpdate ||
-    (isV3ProjectEditable && !!project?.cluster_id) ||
+    mode === 'edit' ||
     !specificFieldsLoaded ||
     !canEditField(editableFields, 'cluster')
   const isProductionDisabled =

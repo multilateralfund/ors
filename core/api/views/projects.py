@@ -52,9 +52,6 @@ from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.meta_project_fields import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
-from core.api.serializers.meta_project import (
-    MetaProjectMyaDetailsIncludingPossibleProjectsSerializer,
-)
 from core.api.views.projects_export import ProjectsExport
 from core.models import Agency
 from core.models import Country
@@ -122,6 +119,7 @@ class MetaProjectCountryListView(generics.ListAPIView):
         meta_projects = MetaProject.objects.filter(
             type=MetaProject.MetaProjectType.MYA,
             projects__submission_status__name="Approved",
+            is_draft=False,
         ).distinct()
 
         return Country.objects.filter(meta_projects__in=meta_projects).distinct()
@@ -139,6 +137,7 @@ class MetaProjectClusterListView(generics.ListAPIView):
         meta_projects = MetaProject.objects.filter(
             type=MetaProject.MetaProjectType.MYA,
             projects__submission_status__name="Approved",
+            is_draft=False,
         ).distinct()
 
         return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
@@ -215,6 +214,11 @@ class MetaProjectMyaDetailsViewSet(
     queryset = MetaProject.objects.all()
     permission_classes = [HasProjectV2MyaAccess]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def update(self, request, *args, **kwargs):
         mp = self.get_object()
 
@@ -250,7 +254,7 @@ class MetaProjectMyaDetailsViewSet(
             cluster_id=kwargs["cluster_id"],
             type=Project.Category.MYA,
         )
-        serializer = MetaProjectMyaDetailsIncludingPossibleProjectsSerializer(obj)
+        serializer = MetaProjecMyaDetailsSerializer(obj, context={"request": request})
         return Response(serializer.data)
 
 

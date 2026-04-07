@@ -46,6 +46,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
                 meta_projects = MetaProject.objects.filter(
                     type=MetaProject.MetaProjectType.MYA,
                     projects__submission_status__name="Approved",
+                    is_draft=False,
                 ).distinct()
 
                 queryset = Country.objects.filter(

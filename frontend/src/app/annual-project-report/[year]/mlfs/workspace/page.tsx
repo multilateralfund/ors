@@ -7,7 +7,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
+  FormControlLabel,
   Link,
   Tabs,
 } from '@mui/material'
@@ -86,6 +88,7 @@ export default function APRMLFSWorkspace() {
 
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
+  const [showDerivedColumns, setShowDerivedColumns] = useState(true)
 
   const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
@@ -225,9 +228,22 @@ export default function APRMLFSWorkspace() {
   const canKickstartAPR = Boolean(
     canEditAPR && kickstartAPR && kickstartAPR.can_kick_start,
   )
+
+  const editHref = (() => {
+    const sp = new URLSearchParams()
+    Object.entries(filters).forEach(([key, values]) => {
+      if (values.length > 0) {
+        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+      }
+    })
+    const q = sp.toString()
+    return `/${year}/edit${q ? `?${q}` : ''}`
+  })()
+
   const { columnDefs: columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
     inlineEdit: isMlfsUser && canUpdateAPR,
+    showDerivedColumns,
   })
 
   // Redirect non-MLFS users to the agency workspace
@@ -635,7 +651,7 @@ export default function APRMLFSWorkspace() {
                 button
                 variant="text"
                 startIcon={<FiEdit size={18} />}
-                href={`/${year}/edit`}
+                href={editHref}
                 disabled={!canUpdateAPR}
               >
                 Update APR (tabs)
@@ -652,6 +668,17 @@ export default function APRMLFSWorkspace() {
             </div>
           </div>
 
+          <div className="flex justify-end">
+            <FormControlLabel
+              label="Show derived columns"
+              control={
+                <Checkbox
+                  checked={showDerivedColumns}
+                  onChange={(e) => setShowDerivedColumns(e.target.checked)}
+                />
+              }
+            />
+          </div>
           {loaded && (
             <EditTable
               noRowsOverlayComponentParams={{

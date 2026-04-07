@@ -279,6 +279,10 @@
       border-top: 2px solid #000;
     }
   }
+
+  .ag-row:has(.draft) .ag-cell span {
+    @apply italic;
+  }
 }
 
 .ag-table .ag-cell.ag-cell-no-border-r {

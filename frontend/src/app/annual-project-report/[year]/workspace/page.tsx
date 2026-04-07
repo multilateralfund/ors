@@ -1,11 +1,11 @@
-import { Redirect, useParams } from 'wouter'
+import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import { Box, Chip } from '@mui/material'
+import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
@@ -31,6 +31,9 @@ import {
 import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/StatusFilter.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
+import Field from '@ors/components/manage/Form/Field.tsx'
+import { IoChevronDown } from 'react-icons/io5'
+import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -43,8 +46,33 @@ export default function APRWorkspace() {
   const {
     statuses: { data: projectStatuses },
   } = useStore((state) => state.projects)
-  const [filters, setFilters] =
-    useState<Record<string, Filter[]>>(INITIAL_PARAMS)
+  const search = useSearch()
+  const [initialSearch] = useState(search)
+  const [filters, setFilters] = useState<Record<string, Filter[]>>(() => {
+    const sp = new URLSearchParams(initialSearch)
+    const restored: Record<string, Filter[]> = { ...INITIAL_PARAMS }
+    const statusParam = sp.get('status')
+    if (statusParam) {
+      restored.status = statusParam
+        .split(',')
+        .filter(Boolean)
+        .flatMap((code) => {
+          const found = projectStatuses.find((s: any) => s.code === code)
+          return found ? [found] : []
+        })
+    }
+    for (const key of ['region', 'country', 'cluster']) {
+      const val = sp.get(key)
+      if (val) {
+        restored[key] = val
+          .split(',')
+          .filter(Boolean)
+          .map((v) => ({ id: v as unknown as number, name: v }))
+      }
+    }
+    return restored
+  })
+  const [showDerivedColumns, setShowDerivedColumns] = useState(true)
   const {
     data: apr,
     loading,
@@ -56,12 +84,44 @@ export default function APRWorkspace() {
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR,
+      params: Object.fromEntries(
+        [...new URLSearchParams(initialSearch)].filter(([, v]) => v),
+      ),
     },
     path: `api/annual-project-report/${year}/workspace/`,
     reactivePath: true,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year! })
+  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year!, showDerivedColumns })
+
+  const regions = useMemo(() => {
+    const uniqueRegions = new Set<string>()
+    apr?.project_reports?.forEach((report) => {
+      if (report.region_name) uniqueRegions.add(report.region_name)
+    })
+    return Array.from(uniqueRegions).map((r) => ({ id: r, name: r }))
+  }, [apr?.project_reports])
+
+  const countries = useMemo(() => {
+    const uniqueCountries = new Set<string>()
+    apr?.project_reports?.forEach((report) => {
+      if (report.country_name) uniqueCountries.add(report.country_name)
+    })
+    return Array.from(uniqueCountries).map((c) => ({ id: c, name: c }))
+  }, [apr?.project_reports])
+
+  const clusters = useMemo(() => {
+    const uniqueClusters = new Set<string>()
+    apr?.project_reports?.forEach((report) => {
+      if (report.cluster_name) uniqueClusters.add(report.cluster_name)
+    })
+    return Array.from(uniqueClusters).map((c) => ({ id: c, name: c }))
+  }, [apr?.project_reports])
+
+  const choosableStatuses = useMemo(
+    () => projectStatuses.filter((s) => !MANDATORY_STATUSES.includes(s.code)),
+    [projectStatuses],
+  )
 
   if (!canViewAPR) {
     return <NotFoundPage />
@@ -69,10 +129,6 @@ export default function APRWorkspace() {
   if (isMlfsUser) {
     return <Redirect to={`/${year}/mlfs/workspace`} replace />
   }
-
-  const choosableStatuses = projectStatuses.filter(
-    (status) => !MANDATORY_STATUSES.includes(status.code),
-  )
 
   const onChipDelete =
     (filterKey: string, clearedObj: Filter, paramKey: keyof Filter = 'id') =>
@@ -91,6 +147,17 @@ export default function APRWorkspace() {
 
   const isDraft = apr?.status === 'draft' || apr?.is_unlocked
   const canUpdateAPR = canEditAPR && isDraft
+
+  const editHref = (() => {
+    const sp = new URLSearchParams()
+    Object.entries(filters).forEach(([key, values]) => {
+      if (values.length > 0) {
+        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+      }
+    })
+    const q = sp.toString()
+    return `/${year}/edit${q ? `?${q}` : ''}`
+  })()
 
   return (
     <PageWrapper>
@@ -129,26 +196,104 @@ export default function APRWorkspace() {
       </div>
       <Box className="shadow-none">
         <Loader active={loading} />
-        <div className="mb-2 flex justify-between">
-          <div className="flex flex-col">
-            <StatusFilter
-              disabled={loading}
-              statusOptions={choosableStatuses}
-              selectedCodes={filters.status.map((f) => f.code!)}
-              onToggle={(status, checked) => {
-                const statusFilters = checked
-                  ? union(filters.status, [status])
-                  : filters.status.filter((f) => f.code !== status.code)
+        <div className="mb-2 flex items-start justify-between">
+          <div className="flex flex-col gap-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Region filter */}
+              <Field
+                Input={{ placeholder: 'Region' }}
+                options={getFilterOptions(filters, regions, 'region')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: { sx: { transform: 'none !important' } },
+                }}
+                onChange={(_: any, value: any) => {
+                  const regionFilters = union(filters.region, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    region: regionFilters,
+                  }))
+                  setParams({
+                    region: regionFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
 
-                setFilters((oldFilters) => ({
-                  ...oldFilters,
-                  status: statusFilters,
-                }))
-                setParams({
-                  status: statusFilters.map((f) => f.code).join(','),
-                })
-              }}
-            />
+              {/* Country filter */}
+              <Field
+                Input={{ placeholder: 'Country' }}
+                options={getFilterOptions(filters, countries, 'country')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: { sx: { transform: 'none !important' } },
+                }}
+                onChange={(_: any, value: any) => {
+                  const countryFilters = union(filters.country, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    country: countryFilters,
+                  }))
+                  setParams({
+                    country: countryFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
+
+              {/* Cluster filter */}
+              <Field
+                Input={{ placeholder: 'Cluster' }}
+                options={getFilterOptions(filters, clusters, 'cluster')}
+                widget="autocomplete"
+                multiple={true}
+                value={[]}
+                getOptionLabel={(option: any) => option?.name}
+                popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+                FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
+                componentsProps={{
+                  popupIndicator: { sx: { transform: 'none !important' } },
+                }}
+                onChange={(_: any, value: any) => {
+                  const clusterFilters = union(filters.cluster, value)
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    cluster: clusterFilters,
+                  }))
+                  setParams({
+                    cluster: clusterFilters.map((v: any) => v.id).join(','),
+                  })
+                }}
+              />
+
+              <StatusFilter
+                disabled={loading}
+                statusOptions={choosableStatuses}
+                selectedCodes={filters.status.map((f) => f.code!)}
+                onToggle={(status, checked) => {
+                  const statusFilters = checked
+                    ? union(filters.status, [status])
+                    : filters.status.filter((f) => f.code !== status.code)
+
+                  setFilters((oldFilters) => ({
+                    ...oldFilters,
+                    status: statusFilters,
+                  }))
+                  setParams({
+                    status: statusFilters.map((f) => f.code).join(','),
+                  })
+                }}
+              />
+            </div>
+
             {Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
             ) && (
@@ -157,7 +302,7 @@ export default function APRWorkspace() {
                   const paramKey: keyof Filter =
                     filterKey === 'status' ? 'code' : 'id'
                   return filterValue.map((val) => (
-                    <li key={val.id}>
+                    <li key={`${filterKey}-${val.id}`}>
                       <Chip
                         label={val.name}
                         onDelete={onChipDelete(filterKey, val, paramKey)}
@@ -195,7 +340,7 @@ export default function APRWorkspace() {
               button
               variant="text"
               startIcon={<FiEdit size={18} />}
-              href={`/${year}/edit`}
+              href={editHref}
               disabled={!canUpdateAPR}
             >
               Update APR
@@ -210,6 +355,17 @@ export default function APRWorkspace() {
               Generate summary tables
             </Button>
           </div>
+        </div>
+        <div className="flex justify-end">
+          <FormControlLabel
+            label="Show derived columns"
+            control={
+              <Checkbox
+                checked={showDerivedColumns}
+                onChange={(e) => setShowDerivedColumns(e.target.checked)}
+              />
+            }
+          />
         </div>
         {loaded && (
           <ViewTable

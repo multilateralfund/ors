@@ -4,7 +4,6 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
-import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -30,7 +29,6 @@ import {
   TrancheErrorType,
   BpDataProps,
   FileMetaDataType,
-  InlineMessageType,
 } from '../interfaces'
 import {
   approvalOdsFields,
@@ -243,19 +241,11 @@ const ProjectsEdit = ({
     project,
   )
 
-  const meta_project_id = mode === 'edit' ? project.meta_project_id : null
-  const { data: metaprojectData } = useGetMetaProjectDetails(
-    meta_project_id,
-    mode,
-    projIdentifiers,
-  )
-
   const [bpData, setBpData] = useState({
     hasBpData: false,
     bpDataLoading: false,
   })
 
-  const [inlineMessage, setInlineMessage] = useState<InlineMessageType>(null)
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
@@ -321,6 +311,11 @@ const ProjectsEdit = ({
                         project.blanket_or_individual_consideration,
                     )?.id ?? null)
                   : null,
+              ...(isEditMode &&
+                project.submission_status === 'Approved' && {
+                  adjustment: project.adjustment ?? false,
+                  interest: getFormattedDecimalValue(project.interest ?? null),
+                }),
             },
           }
         : {
@@ -428,6 +423,7 @@ const ProjectsEdit = ({
           meeting: project.meeting_id,
           decision: project.decision_id,
           date_completion: project.project_end_date,
+          funding_window: project.funding_window,
           ...computedFieldsValues,
           ...totalFieldsValues,
         },
@@ -569,7 +565,6 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
-            setInlineMessage,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -598,10 +593,8 @@ const ProjectsEdit = ({
             metaProjectId,
             setMetaProjectId,
             setRefetchRelatedProjects,
-            metaprojectData,
             shouldValidateTotalFund,
-            inlineMessage,
-            setInlineMessage,
+            setErrors,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

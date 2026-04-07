@@ -1,6 +1,7 @@
 import os
 from zipfile import ZipFile
 
+from celery.result import AsyncResult
 from constance import config
 from django.db import transaction, models
 from django.db.models import Prefetch
@@ -60,7 +61,7 @@ from core.models import (
     Project,
     Country,
 )
-from core.tasks import send_agency_submission_notification
+from core.tasks import send_agency_submission_notification, sync_apr_from_projects
 
 
 # pylint: disable=C0302
@@ -170,27 +171,50 @@ class APRWorkspaceView(RetrieveAPIView):
         user = self.request.user
         year = int(self.kwargs.get("year"))
 
+        # Build filter params from query params to filter nested project_reports
+        filter_params = {}
+
+        country_param = self.request.query_params.get("country")
+        if country_param:
+            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
+            filter_params["country"] = Country.objects.filter(
+                name__in=country_names, location_type=Country.LocationType.COUNTRY
+            )
+
+        region_param = self.request.query_params.get("region")
+        if region_param:
+            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
+            filter_params["region"] = Country.objects.filter(
+                name__in=region_names,
+                location_type__in=[
+                    Country.LocationType.REGION,
+                    Country.LocationType.SUBREGION,
+                ],
+            )
+
+        cluster_param = self.request.query_params.get("cluster")
+        if cluster_param:
+            filter_params["cluster"] = cluster_param
+
+        # Default the status to ONG,COM to match the workspace creation logic
+        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
+
+        project_reports_qs = build_filtered_project_reports_queryset(filter_params)
+        project_reports_qs = project_reports_qs.select_related("project__meta_project")
+
         queryset = AnnualAgencyProjectReport.objects.select_related(
             "progress_report",
             "agency",
             "created_by",
             "submitted_by",
         ).prefetch_related(
-            "project_reports",
-            "project_reports__project__meta_project",
-            "project_reports__project__agency",
-            "project_reports__project__country__parent",
-            "project_reports__project__country",
-            "project_reports__project__cluster",
-            "project_reports__project__sector",
-            "project_reports__project__project_type",
+            Prefetch("project_reports", queryset=project_reports_qs),
             get_version_3_prefetch(),
             get_latest_version_prefetch(year),
             get_all_versions_for_year_prefetch(year),
             "files",
         )
 
-        user = self.request.user
         if not user.is_superuser and not user.has_perm("core.can_view_all_agencies"):
             if hasattr(user, "agency") and user.agency:
                 queryset = queryset.filter(agency=user.agency)
@@ -573,16 +597,7 @@ class APRExportView(APIView):
         year = int(year)
 
         agency_report = get_object_or_404(
-            AnnualAgencyProjectReport.objects.prefetch_related(
-                "project_reports",
-                "project_reports__project__meta_project",
-                "project_reports__project__agency",
-                "project_reports__project__country__parent",
-                "project_reports__project__country",
-                "project_reports__project__cluster",
-                "project_reports__project__sector",
-                "project_reports__project__project_type",
-            ),
+            AnnualAgencyProjectReport,
             progress_report__year=year,
             agency_id=agency_id,
         )
@@ -592,8 +607,9 @@ class APRExportView(APIView):
         status_codes = request.query_params.get("status", "ONG,COM")
         status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
 
-        project_reports = agency_report.project_reports.filter(
-            project__status__code__in=status_codes
+        project_reports = AnnualProjectReport.objects.filter(
+            report=agency_report,
+            project__status__code__in=status_codes,
         )
 
         serializer = AnnualProjectReportReadSerializer(
@@ -713,9 +729,8 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         if cluster_param:
             filter_params["cluster"] = cluster_param
 
-        status_param = self.request.query_params.get("status")
-        if status_param:
-            filter_params["status"] = status_param
+        # Default the status to ONG,COM to match the workspace creation logic
+        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related(
@@ -1254,3 +1269,73 @@ class APRMLFSExportView(APIView):
         ).order_by("agency__name")
 
         return queryset
+
+
+class APRSyncFromProjectsView(APIView):
+    """
+    Re-synchronize all denormalized fields on all APR project reports for a given year,
+    for all agencies, from current Project data. MLFS Full Access only.
+
+    POST:   enqueues the job as an async task; returns 202 with task_id.
+    GET:    polls the task status; accepts ?task_id=<id> to check its progress.
+
+    Both verbs return the same four-key JSON response,
+    so the frontend only needs one URL and one response handler:
+        {
+            "task_id":  "<celery-task-uuid>",
+            "status":   "pending" | "success" | "failure",
+            "result":   null | { updated_count, changed_count, agencies_count, message },
+            "error":    null | "<error message>"
+        }
+    """
+
+    permission_classes = [IsAuthenticated, HasAPRMLFSFullAccess]
+
+    # Celery states that need to map to the view's "pending" status
+    _PENDING_STATES = {"PENDING", "RECEIVED", "STARTED", "RETRY"}
+
+    @staticmethod
+    def _task_response(
+        task_id, state, result=None, error=None, http_status=status.HTTP_200_OK
+    ):
+        return Response(
+            {
+                "task_id": task_id,
+                "status": state,
+                "result": result,
+                "error": error,
+            },
+            status=http_status,
+        )
+
+    def post(self, request, year):
+        year = int(year)
+        progress_report = get_object_or_404(AnnualProgressReport, year=year)
+
+        if progress_report.endorsed:
+            raise ValidationError(
+                f"Cannot sync reports for year {year}. APR has been endorsed."
+            )
+
+        task = sync_apr_from_projects.delay(year)
+        return self._task_response(
+            task.id, "pending", http_status=status.HTTP_202_ACCEPTED
+        )
+
+    # pylint: disable-next=W0613
+    def get(self, request, year):
+        task_id = request.query_params.get("task_id")
+        if not task_id:
+            raise ValidationError("Query parameter 'task_id' is required.")
+
+        result = AsyncResult(task_id)
+
+        if result.state in self._PENDING_STATES:
+            return self._task_response(task_id, "pending")
+
+        if result.state == "SUCCESS":
+            return self._task_response(task_id, "success", result=result.result)
+
+        # FAILURE, REVOKED, or anything else (if applicable)
+        error_msg = str(result.result) if result.result else "Task failed."
+        return self._task_response(task_id, "failure", error=error_msg)

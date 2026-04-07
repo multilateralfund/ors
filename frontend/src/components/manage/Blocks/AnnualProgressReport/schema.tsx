@@ -79,6 +79,7 @@ interface APRTableColumn {
 
 interface BaseColumnDefOptions {
   inlineEdit?: boolean
+  showDerivedColumns?: boolean
   year: string
 }
 
@@ -100,6 +101,7 @@ export default function useGetColumnDefs({
   year,
   inlineEdit = false,
   clipboardEdit = false,
+  showDerivedColumns = true,
   rows,
   setRows,
 }: ColumnDefOptions) {
@@ -303,6 +305,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionMTProposal: {
@@ -313,6 +316,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionODPCO2Proposal: {
@@ -323,6 +327,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionODPMTProposal: {
@@ -333,6 +338,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionMTProposal: {
@@ -343,6 +349,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     productionODPCO2Proposal: {
@@ -353,6 +360,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        autoHeaderHeight: true,
       },
     },
     consumptionODPMTActual: {
@@ -673,7 +681,9 @@ export default function useGetColumnDefs({
     },
   }
 
-  const columns = Object.values(tableColumns)
+  const columns = Object.values(tableColumns).filter(
+    (c) => showDerivedColumns || c.input || c.fieldName === 'project_code',
+  )
   const columnDefs = columns.map((c) => {
     const canBeEdited = c.input && (clipboardEdit || inlineEdit)
 

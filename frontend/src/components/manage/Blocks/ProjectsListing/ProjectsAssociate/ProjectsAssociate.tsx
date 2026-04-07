@@ -89,14 +89,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   }, [projectFilters.loaded])
 
   const debouncedGetAssociatedProjects = debounce(() => {
-    useGetAssociatedProjects(
-      parseInt(project_id),
-      setAssociation,
-      'all',
-      false,
-      false,
-      false,
-    )
+    useGetAssociatedProjects(parseInt(project_id), setAssociation, 'all')
   }, 0)
 
   useEffect(() => {

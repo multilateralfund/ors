@@ -19,6 +19,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReportFile,
 )
+from core.models import FundingWindow
 from core.models.business_plan import (
     BusinessPlan,
     BPActivity,
@@ -419,6 +420,17 @@ class DecisionFactory(factory.django.DjangoModelFactory):
     number = factory.Faker("random_int", min=1, max=100)
 
 
+class FundingWindowFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = FundingWindow
+
+    meeting = factory.SubFactory(MeetingFactory)
+    decision = factory.SubFactory(DecisionFactory)
+    amount = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    remarks = factory.Faker("pystr", max_chars=100)
+    description = factory.Faker("pystr", max_chars=100)
+
+
 class ProjectComponentsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectComponents
@@ -493,7 +505,7 @@ class AnnualProgressReportFactory(factory.django.DjangoModelFactory):
         model = AnnualProgressReport
 
     year = factory.Sequence(lambda n: n + 2025)
-    meeting_endorsed = factory.SubFactory(MeetingFactory)
+    meeting_endorsed = None
     date_endorsed = factory.Faker("date")
     remarks_endorsed = factory.Faker("pystr", max_chars=400)
     endorsed = factory.Faker("pybool")
@@ -644,6 +656,8 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     planned_completion_date = factory.Faker("date")
     actual_completion_date = factory.Faker("date")
     project_duration = factory.Faker("random_int", min=1, max=120)
+    adjustment = factory.Faker("pybool")
+    interest = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     status = EnterpriseStatus.PENDING
     chemical_phased_out = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     impact = factory.Faker("pystr", max_chars=200, prefix="Impact ")

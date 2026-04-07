@@ -103,8 +103,6 @@ const SummaryOfProjects = () => {
     return downloadUrl.replace('/export', '/totals')
   }, [downloadUrl])
 
-  console.log(totalsUrl)
-
   return (
     <>
       <Box className="shadow-none">

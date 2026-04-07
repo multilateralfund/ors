@@ -45,6 +45,8 @@ export interface CrossCuttingFields {
   total_fund: string | null
   support_cost_psc: string | null
   blanket_or_individual_consideration: string | null
+  adjustment?: boolean
+  interest?: string | null
 }
 
 export interface SpecificFields {
@@ -274,6 +276,7 @@ export interface ProjectTransferData {
   transfer_excom_provision: string
   fund_transferred: string | null
   psc_transferred: string | null
+  psc_received: string | null
 }
 
 export type SetEnterpriseData<T> = (
@@ -308,7 +311,6 @@ export interface ProjectHeader {
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
   filesMetaData?: FileMetaDataType[]
-  setInlineMessage: (message: InlineMessageType) => void
 }
 
 export type ActionButtons = ProjectHeader & {
@@ -503,23 +505,4 @@ export interface FieldOptsType {
   sectors: ProjectSectorType[]
   crtSubsectorsOpts: ProjectSubSectorType[]
   subsectors: ProjectSubSectorType[]
-}
-
-export interface MpDataProps {
-  mpData?: any
-  setMpData?: any
-}
-
-export type InlineMessageType = {
-  type: 'success' | 'error'
-  message?: string
-  errorMessages?: string[]
-  tabId?: string
-  redirectMessage?: string
-  hrefRedirect?: string
-} | null
-
-export interface InlineMessageProps {
-  inlineMessage: InlineMessageType
-  setInlineMessage: (message: InlineMessageType) => void
 }

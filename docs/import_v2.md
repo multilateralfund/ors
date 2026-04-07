@@ -49,9 +49,12 @@ The scripts should be run in the following order when installing locally or when
 
     python manage.py import_resources_v2 fill_replacement_technologies_field
 
+    Use to fill meta projects for existing in submission projects before the change (should only be required 
+    locally/on staging):
+    python manage.py import_resources_v2 fill_meta_project_for_projects_in_submission
+
 You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and
 the `generate_new_cluster_type_sector_file` function from `import_project_resources_v2.py`
-
 
 
 ## Migrating 2026 projects data:
