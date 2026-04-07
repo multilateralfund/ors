@@ -157,23 +157,27 @@ HEADERS = [
 
 class MyaWriter(BaseWriter):
     header_row_start_idx = 1
+    last_data_row = 0
 
     def write(self, data):
         self.write_headers()
         self.write_data(data)
-        self.write_totals_row()
         self.set_dimensions()
         self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
         last_col_letter = get_column_letter(self.max_column_idx)
-        last_data_row = max(self.sheet.max_row - 1, self.header_row_end_idx)
+        self.last_data_row = self.sheet.max_row
         self.sheet.auto_filter.ref = (
-            f"A{self.header_row_start_idx}:{last_col_letter}{last_data_row}"
+            f"A{self.header_row_start_idx}:{last_col_letter}{self.last_data_row}"
         )
+        self.write_totals_row()
 
     def write_totals_row(self):
-        row_idx = self.sheet.max_row + 1
         first_data_row = self.header_row_end_idx + 1
-        has_data = row_idx > first_data_row
+        spacer_row_idx = self.last_data_row + 1
+        row_idx = self.last_data_row + 2
+        has_data = self.last_data_row >= first_data_row
+
+        self.sheet.row_dimensions[spacer_row_idx].hidden = True
 
         for header_idx, header in enumerate(self.headers.values(), start=1):
             value = ""
@@ -182,9 +186,7 @@ class MyaWriter(BaseWriter):
             elif header.get("in_grand_total"):
                 col_letter = header["column_letter"]
                 if has_data:
-                    value = (
-                        f"=SUM({col_letter}{first_data_row}:{col_letter}{row_idx - 1})"
-                    )
+                    value = f"=SUM({col_letter}{first_data_row}:{col_letter}{self.last_data_row})"
                 else:
                     value = 0
             cell = self._write_record_cell(
