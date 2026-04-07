@@ -790,9 +790,6 @@ export const getTransferErrors = (
     ...(Number(psc_transferred) > Number(project.support_cost_psc) && {
       psc_transferred: ['Value cannot be greater than project support costs.'],
     }),
-    ...(Number(psc_received) > Number(project.support_cost_psc) && {
-      psc_received: ['Value cannot be greater than project support costs.'],
-    }),
     ...(shouldValidateTotalFund &&
       Number(psc_transferred) > Number(fund_transferred) && {
         psc_transferred: [
