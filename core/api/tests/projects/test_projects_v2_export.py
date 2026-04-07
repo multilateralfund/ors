@@ -311,15 +311,27 @@ class TestProjectV2ExportXLSX(BaseTest):
         sheet = wb["MYAs"]
 
         assert sheet.auto_filter.ref == "A1:Z3"
-        assert sheet["A4"].value == "Grand total"
-        assert sheet["D4"].value is None
-        assert sheet["G4"].value == "=SUM(G2:G3)"
-        assert sheet["H4"].value == "=SUM(H2:H3)"
-        assert sheet["P4"].value == "=SUM(P2:P3)"
-        assert sheet["S4"].value == "=SUM(S2:S3)"
-        assert sheet["U4"].value == "=SUM(U2:U3)"
-        assert sheet["Y4"].value == "=SUM(Y2:Y3)"
-        assert sheet["H4"].number_format == "$###,###,##0.00#############"
+        assert sheet["A4"].value is None, "Spacer row not empty."
+        assert sheet["A5"].value == "Subtotal"
+        assert sheet["A6"].value == "Grand total"
+
+        assert sheet[f"D5"].value is None
+        assert sheet[f"G5"].value == "=SUBTOTAL(9,G2:G3)"
+        assert sheet[f"H5"].value == "=SUBTOTAL(9,H2:H3)"
+        assert sheet[f"P5"].value == "=SUBTOTAL(9,P2:P3)"
+        assert sheet[f"S5"].value == "=SUBTOTAL(9,S2:S3)"
+        assert sheet[f"U5"].value == "=SUBTOTAL(9,U2:U3)"
+        assert sheet[f"Y5"].value == "=SUBTOTAL(9,Y2:Y3)"
+        assert sheet[f"H5"].number_format == "$###,###,##0.00#############"
+
+        assert sheet[f"D6"].value is None
+        assert sheet[f"G6"].value == "=SUM(G2:G3)"
+        assert sheet[f"H6"].value == "=SUM(H2:H3)"
+        assert sheet[f"P6"].value == "=SUM(P2:P3)"
+        assert sheet[f"S6"].value == "=SUM(S2:S3)"
+        assert sheet[f"U6"].value == "=SUM(U2:U3)"
+        assert sheet[f"Y6"].value == "=SUM(Y2:Y3)"
+        assert sheet[f"H6"].number_format == "$###,###,##0.00#############"
 
 
 class TestProjectV2ExportDOCX(BaseTest):

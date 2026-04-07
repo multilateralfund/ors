@@ -169,24 +169,46 @@ class MyaWriter(BaseWriter):
         self.sheet.auto_filter.ref = (
             f"A{self.header_row_start_idx}:{last_col_letter}{self.last_data_row}"
         )
-        self.write_totals_row()
+        self.write_summary_rows()
 
-    def write_totals_row(self):
+    def write_summary_rows(self):
         first_data_row = self.header_row_end_idx + 1
         spacer_row_idx = self.last_data_row + 1
-        row_idx = self.last_data_row + 2
+        subtotal_row_idx = self.last_data_row + 2
+        grand_total_row_idx = self.last_data_row + 3
         has_data = self.last_data_row >= first_data_row
 
         self.sheet.row_dimensions[spacer_row_idx].hidden = True
+        self.write_summary_row(
+            subtotal_row_idx,
+            "Subtotal",
+            has_data,
+            first_data_row,
+            formula_template="=SUBTOTAL(9,{col_letter}{first_data_row}:{col_letter}{last_data_row})",
+        )
+        self.write_summary_row(
+            grand_total_row_idx,
+            "Grand total",
+            has_data,
+            first_data_row,
+            formula_template="=SUM({col_letter}{first_data_row}:{col_letter}{last_data_row})",
+        )
 
+    def write_summary_row(
+        self, row_idx, label, has_data, first_data_row, formula_template
+    ):
         for header_idx, header in enumerate(self.headers.values(), start=1):
             value = ""
             if header_idx == 1:
-                value = "Grand total"
+                value = label
             elif header.get("in_grand_total"):
                 col_letter = header["column_letter"]
                 if has_data:
-                    value = f"=SUM({col_letter}{first_data_row}:{col_letter}{self.last_data_row})"
+                    value = formula_template.format(
+                        col_letter=col_letter,
+                        first_data_row=first_data_row,
+                        last_data_row=self.last_data_row,
+                    )
                 else:
                     value = 0
             cell = self._write_record_cell(
