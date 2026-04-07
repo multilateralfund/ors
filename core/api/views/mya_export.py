@@ -242,27 +242,24 @@ class MyaExport:
 
     def export_xls(self):
         self.setup_workbook()
-        meta_project_ids = (
-            self.view.filter_queryset(self.view.get_queryset())
-            .exclude(meta_project__isnull=True)
-            .order_by()
-            .values_list("meta_project_id", flat=True)
-            .distinct()
-        )
-
-        # self.sheet.append([h["headerName"] for h in HEADERS])
-
         first_project = Project.objects.filter(meta_project=OuterRef("pk")).order_by(
             "id"
         )[:1]
-
-        meta_projects = MetaProject.objects.filter(id__in=meta_project_ids).values(
-            *[h["id"] for h in HEADERS if h["id"]],
-            country_name=F("country__name"),
-            cluster_name=F("cluster__name"),
-            lead_agency_name=Subquery(
-                first_project.values("lead_agency__name")[:1],
-            ),
+        meta_projects = (
+            MetaProject.objects.filter(
+                projects__category=Project.Category.MYA,
+                projects__submission_status__name="Approved",
+            )
+            .order_by()
+            .distinct()
+            .values(
+                *[h["id"] for h in HEADERS if h["id"]],
+                country_name=F("country__name"),
+                cluster_name=F("cluster__name"),
+                lead_agency_name=Subquery(
+                    first_project.values("lead_agency__name")[:1],
+                ),
+            )
         )
 
         writer = MyaWriter(self.sheet, HEADERS)
