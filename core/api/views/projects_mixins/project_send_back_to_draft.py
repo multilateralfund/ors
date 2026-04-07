@@ -18,19 +18,19 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectSendBackToDraftMixin:
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Send the project back to draft.
         The project is checked for validity (status should be 'Submitted' and version should be 2).
         The status is set to 'Draft', but the version is not changed back to 1.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectListV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def send_back_to_draft(self, request, *args, **kwargs):
         project = self.get_object()
         if project.submission_status.name != "Submitted" or project.version != 2:

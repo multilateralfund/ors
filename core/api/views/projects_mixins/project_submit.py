@@ -20,7 +20,6 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectSubmitMixin:
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Submit the project for review.
@@ -33,12 +32,13 @@ class ProjectSubmitMixin:
         An email notification is sent to the secretariat team
         to inform them about the new submission.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def submit(self, request, *args, **kwargs):
         """
         Submits the project and its components projects for review.

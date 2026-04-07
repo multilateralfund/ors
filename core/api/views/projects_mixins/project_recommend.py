@@ -20,7 +20,6 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectRecommendMixin:
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Recommend the project and its components projects for approval.
@@ -33,12 +32,13 @@ class ProjectRecommendMixin:
         An email notification is sent to the secretariat team and the creator of the projects
         to inform them about the new recommendation.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectListV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def recommend(self, request, *args, **kwargs):
         project = self.get_object()
         if project.component:

@@ -557,7 +557,6 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["PUT"], detail=True)
     @extend_schema(
         description="""
         Allows editing only the actual fields of the project. Available only for 'Approved' projects.
@@ -568,6 +567,7 @@ class ProjectV2ViewSet(
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["PUT"], detail=True)
     def edit_actual_fields(self, request, *args, **kwargs):
         validate_request = request.data.get("validate_request", False)
         if validate_request:
@@ -593,7 +593,6 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["PUT"], detail=True)
     @extend_schema(
         description="""
         Allows editing only the approval fields of the project.
@@ -604,6 +603,7 @@ class ProjectV2ViewSet(
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["PUT"], detail=True)
     def edit_approval_fields(self, request, *args, **kwargs):
         validate_request = request.data.get("validate_request", False)
         if validate_request:

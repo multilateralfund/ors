@@ -28,7 +28,6 @@ from core.utils import get_project_sub_code
 
 
 class ProjectAssociationMixin:
-    @action(methods=["POST"], detail=False)
     @extend_schema(
         description="""
         Receives a list of project ids and associates them under the same meta project.
@@ -69,6 +68,7 @@ class ProjectAssociationMixin:
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=False)
     def associate_projects(self, request, *args, **kwargs):
         data = AssociateProjectSerializer(data=request.data)
         if not data.is_valid():
@@ -126,17 +126,17 @@ class ProjectAssociationMixin:
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Receives a project id and removes it from its meta project association.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def remove_association(self, request, *args, **kwargs):
         project = self.get_object()
 

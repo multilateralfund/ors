@@ -14,19 +14,19 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectWithdrawMixin:
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Withdraw the project.
         The project is checked for validity (status should be 'Submitted' and version should be 2).
         If the project is valid, it is marked as Withdrawn.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def withdraw(self, request, *args, **kwargs):
         project = self.get_object()
         if project.submission_status.name != "Submitted" or project.version != 2:

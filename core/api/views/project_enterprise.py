@@ -316,18 +316,18 @@ class ProjectEnterpriseViewSet(
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=["POST"], detail=True)
     @extend_schema(
         description="""
         Approve a pending Project Enterprise.
         Only enterprises with 'Pending' status can be approved.
         """,
-        request=OpenApiTypes.OBJECT,
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectEnterpriseSerializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.status != EnterpriseStatus.PENDING:
