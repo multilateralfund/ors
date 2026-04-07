@@ -18,12 +18,6 @@ from core.api.views.utils import log_project_history
 
 
 class ProjectTransferMixin:
-
-    @action(
-        methods=["POST"],
-        detail=True,
-        parser_classes=[parsers.MultiPartParser, parsers.FormParser],
-    )
     @extend_schema(
         description="Transfer the project to a new agency.",
         request={
@@ -84,6 +78,11 @@ class ProjectTransferMixin:
             status.HTTP_200_OK: ProjectV2TransferSerializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
+    )
+    @action(
+        methods=["POST"],
+        detail=True,
+        parser_classes=[parsers.MultiPartParser, parsers.FormParser],
     )
     def transfer(self, request, *args, **kwargs):
         with transaction.atomic():
