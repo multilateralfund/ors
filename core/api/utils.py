@@ -14,7 +14,7 @@ from django_filters import rest_framework as filters
 from django_clamd.validators import validate_file_infection
 from openpyxl.worksheet.page import PageMargins
 
-from core.models import AnnualProgressReport, AnnualAgencyProjectReport
+from core.models import AnnualProgressReport, AnnualAgencyProjectReport, ProjectHistory
 
 User = get_user_model()
 
@@ -44,6 +44,10 @@ PROJECT_SECTOR_TYPE_MAPPING = {
     "PMU": ["TAS"],
     "TAS": ["TAS"],
 }
+
+TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES = [
+    ("Agency Programme", "Project support", "Core Unit"),
+]
 
 
 class RelatedExistsFilter(filters.BooleanFilter):
@@ -170,6 +174,14 @@ def get_unendorsed_years():
         AnnualProgressReport.objects.filter(endorsed=False)
         .values_list("year", flat=True)
         .order_by("year")
+    )
+
+
+def log_project_history(project, request_user, description):
+    ProjectHistory.objects.create(
+        project=project,
+        description=description,
+        user=request_user,
     )
 
 

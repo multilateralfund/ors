@@ -24,7 +24,7 @@ from core.models.project_metadata import (
 )
 
 from core.models import Project
-from core.api.views.utils import TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES
+from core.api.utils import TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES
 
 # pylint: disable=R0911
 

@@ -14,7 +14,7 @@ from core.models.project_metadata import (
     ProjectSubmissionStatus,
 )
 
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 
 
 class ProjectSendBackToDraftMixin:

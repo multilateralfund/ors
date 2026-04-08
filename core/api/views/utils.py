@@ -15,6 +15,7 @@ from core.api.export.replenishment import (
     StatusOfContributionsWriter,
     StatisticsStatusOfContributionsWriter,
 )
+
 from core.models import (
     AnnualContributionStatus,
     BilateralAssistance,
@@ -24,7 +25,6 @@ from core.models import (
     ExternalAllocation,
     FermGainLoss,
     Payment,
-    ProjectHistory,
     TriennialContributionStatus,
     TriennialContributionView,
 )
@@ -61,18 +61,6 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
     "uncontrolled": "Other",
     "legacy": "Legacy",
 }
-
-TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES = [
-    ("Agency Programme", "Project support", "Core Unit"),
-]
-
-
-def log_project_history(project, request_user, description):
-    ProjectHistory.objects.create(
-        project=project,
-        description=description,
-        user=request_user,
-    )
 
 
 def get_available_values(queryset: QuerySet, field_name: str, order_by: tuple = ()):
@@ -1333,7 +1321,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Total payments",
             "summary": f"=SUM(B14:{last_period_column_letter}14)",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"=SUM({get_column_letter(i+2)}11:{get_column_letter(i+2)}13)"
+                f"{soc['start_year']}-{soc['end_year']}": f"=SUM({get_column_letter(i + 2)}11:{get_column_letter(i + 2)}13)"
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1360,7 +1348,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "summary": f"={last_column_letter}14/{last_column_letter}10 * 100",
             **{
                 f"{soc['start_year']}-{soc['end_year']}": (
-                    f"={get_column_letter(i+2)}14" f"/{get_column_letter(i+2)}10 * 100"
+                    f"={get_column_letter(i + 2)}14/{get_column_letter(i + 2)}10 * 100"
                 )
                 for i, soc in enumerate(soc_data)
             },
@@ -1393,9 +1381,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "summary": f"=SUM(B23:{last_period_column_letter}23)",
             **{
                 f"{soc['start_year']}-{soc['end_year']}": (
-                    f"={get_column_letter(i+2)}14"
-                    f"+{get_column_letter(i+2)}19"
-                    f"+{get_column_letter(i+2)}21"
+                    f"={get_column_letter(i + 2)}14"
+                    f"+{get_column_letter(i + 2)}19"
+                    f"+{get_column_letter(i + 2)}21"
                 )
                 for i, soc in enumerate(soc_data)
             },
@@ -1413,7 +1401,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Total pledges",
             "summary": f"={last_column_letter}10",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}10"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i + 2)}10"
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1421,7 +1409,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Total payments",
             "summary": f"={last_column_letter}14",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i + 2)}14"
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1429,7 +1417,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Payments %age to pledges",
             "summary": f"={last_column_letter}17",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}17"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i + 2)}17"
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1445,7 +1433,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Total outstanding contributions",
             "summary": f"={last_column_letter}26-{last_column_letter}27",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26-{get_column_letter(i+2)}27"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i + 2)}26-{get_column_letter(i + 2)}27"
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1454,7 +1442,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "summary": f"={last_column_letter}30/{last_column_letter}26 * 100",
             **{
                 f"{soc['start_year']}-{soc['end_year']}": (
-                    f"={get_column_letter(i+2)}30" f"/{get_column_letter(i+2)}26 * 100"
+                    f"={get_column_letter(i + 2)}30/{get_column_letter(i + 2)}26 * 100"
                 )
                 for i, soc in enumerate(soc_data)
             },
@@ -1472,7 +1460,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "summary": f"={last_column_letter}32/{last_column_letter}26 * 100",
             **{
                 f"{soc['start_year']}-{soc['end_year']}": (
-                    f"={get_column_letter(i+2)}32" f"/{get_column_letter(i+2)}26 * 100"
+                    f"={get_column_letter(i + 2)}32/{get_column_letter(i + 2)}26 * 100"
                 )
                 for i, soc in enumerate(soc_data)
             },
