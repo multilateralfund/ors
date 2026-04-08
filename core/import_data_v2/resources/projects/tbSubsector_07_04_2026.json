@@ -286,9 +286,7 @@
     "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "MAC/vehicle air-conditioning",
     "CODE_SUBSECTOR": "MAC",
-    "SORT_SUBSECTOR": 45,
-    "ACTION": "RENAME",
-    "OLD_NAME": "MAC"
+    "SORT_SUBSECTOR": 45
   },
   {
     "SEC": ["REF", "AC", "SRV"],
@@ -323,9 +321,7 @@
   {
     "SEC": ["REF", "AC", "SRV"],
     "SUBSECTOR": "End-user",
-    "SORT_SUBSECTOR": 51,
-    "ACTION": "RENAME",
-    "OLD_NAME": "End User"
+    "SORT_SUBSECTOR": 51
   },
   {
     "SEC": [],
@@ -487,6 +483,72 @@
     "SEC": [],
     "SUBSECTOR": "CFC conversion",
     "SORT_SUBSECTOR": 78,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Foam",
+    "SORT_SUBSECTOR": 79,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "MAC Training",
+    "SORT_SUBSECTOR": 80,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Management",
+    "SORT_SUBSECTOR": 81,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Administration, coordination, financial",
+    "SORT_SUBSECTOR": 82,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "National Co-ordination",
+    "SORT_SUBSECTOR": 83,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Refrigeration Servicing",
+    "SORT_SUBSECTOR": 84,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "CFC Production",
+    "SORT_SUBSECTOR": 85,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "HCFC Production",
+    "SORT_SUBSECTOR": 86,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "Halon Production",
+    "SORT_SUBSECTOR": 87,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "End User",
+    "SORT_SUBSECTOR": 88,
+    "OBSOLETE": true
+  },
+  {
+    "SEC": [],
+    "SUBSECTOR": "MAC",
+    "SORT_SUBSECTOR": 89,
     "OBSOLETE": true
   }
 ]
