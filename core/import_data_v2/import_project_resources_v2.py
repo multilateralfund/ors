@@ -81,7 +81,7 @@ def import_project_resources_v2(option):
         logger.info("✔ sectors imported")
 
     if option in ["all", "import_subsector"]:
-        file_path = IMPORT_RESOURCES_V2_DIR / "projects" / "tbSubsector_11_03_2026.json"
+        file_path = IMPORT_RESOURCES_V2_DIR / "projects" / "tbSubsector_07_04_2026.json"
         import_subsector(file_path)
         logger.info("✔ subsectors imported")
 

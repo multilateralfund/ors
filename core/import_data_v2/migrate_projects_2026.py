@@ -175,6 +175,7 @@ def get_status_by_name(name):
 
 def update_field(project, field_name, new_value, logging_message=True):
     current_value = getattr(project, field_name)
+    updated = False
     if current_value != new_value:
         if logging_message:
             logger.warning(
@@ -183,12 +184,20 @@ def update_field(project, field_name, new_value, logging_message=True):
             """
             )
         setattr(project, field_name, new_value)
+        updated = True
+    return updated
 
 
 def get_date(date_value):
     if pd.isna(date_value):
         return None
     return date_value
+
+
+def get_boolean(value):
+    if value.lower() in ["y", "yes"]:
+        return True
+    return False
 
 
 def create_missing_clusters_types_sectors_subsectors(dry_run=True):
@@ -410,6 +419,87 @@ def process_current_invetory_sheet(dry_run=True):
     )
 
 
+def process_master_data_sheet(dry_run=True, second_parameter=""):
+    file_path = (
+        IMPORT_RESOURCES_V2_DIR
+        / "projects"
+        / "migration_2026"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
+    )
+
+    df = pd.read_excel(file_path, sheet_name="MasterData-filtered", header=0).fillna("")
+    df.replace({"NaT": None}, inplace=True)
+    for _, row in df.iterrows():
+        project = Project.objects.filter(legacy_code=row["legacy_code"]).first()
+        if not project:
+            count += 1
+            logger.warning(
+                f"⚠️ Project with legacy code '{row['legacy_code']}' not found"
+            )
+            continue
+
+        if second_parameter == "set_cluster_type_sector_subsector":
+            if cluster_object := get_cluster_by_name(row["Cluster"]):
+                project.cluster = cluster_object
+            if project_type := get_type_by_name(row["Type"]):
+                project.project_type = project_type
+            if sector := get_sector_by_name(row["Sector"]):
+                project.sector = sector
+            subsectors = get_subsectors_by_name(row["Sub-sector(s)"])
+            project.subsectors.clear()
+            if subsectors:
+                project.subsectors.add(*subsectors)
+            if not dry_run:
+                project.save()
+
+    if second_parameter == "set_new_code":
+        projects = Project.objects.filter(submission_status__name__iexact="Approved")
+        for project in projects:
+            new_project_code = get_project_sub_code(
+                project.country,
+                project.cluster,
+                project.agency,
+                project.project_type,
+                project.sector,
+                project.meeting,
+                project.serial_number,
+                None,
+            )
+            if project.code != new_project_code:
+                logger.warning(
+                    f"""⚠️ Updating project code for project with legacy code '{project.legacy_code}'
+                    from '{project.code}' to '{new_project_code}'
+                    """
+                )
+                project.code = new_project_code
+                if not dry_run:
+                    project.save()
+    if second_parameter == "check_category_changed":
+        projects = Project.objects.filter(submission_status__name__iexact="Approved")
+        for project in projects:
+            project_category = project.category
+            if project.category == "Individual":
+                project_category = "IND"
+            elif project.category == "Multi-year agreement":
+                project_category = "MYA"
+            if project_category != project.cluster.category:
+                logger.warning(
+                    f"""⚠️ Project with legacy code '{project.legacy_code}' has category '{project_category}'
+                    not matching the cluster category '{project.cluster.category}'.
+                    """
+                )
+    if second_parameter == "check_code_metacode":
+        for project in Project.objects.filter(
+            submission_status__name__iexact="Approved"
+        ):
+            if project.code.split("/")[1] != project.metacode.split("/")[1]:
+                logger.warning(
+                    f"""⚠️ Project with legacy code '{project.legacy_code}' has metacode '{project.metacode}' 
+                        not matching the cluster code in the project code '{project.code}'.
+                    """
+                )
+
+
 def process_set_new_code(dry_run=True):
     file_path = (
         IMPORT_RESOURCES_V2_DIR
@@ -452,10 +542,10 @@ def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         IMPORT_RESOURCES_V2_DIR
         / "projects"
         / "migration_2026"
-        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
     )
 
-    df = pd.read_excel(file_path, sheet_name="ODS Phaseout fields", header=1).fillna("")
+    df = pd.read_excel(file_path, sheet_name="ODS Phaseout", header=0).fillna("")
 
     for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
@@ -501,13 +591,10 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
         IMPORT_RESOURCES_V2_DIR
         / "projects"
         / "migration_2026"
-        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
     )
 
-    df = pd.read_excel(file_path, sheet_name="ODS Production fields", header=1).fillna(
-        ""
-    )
-
+    df = pd.read_excel(file_path, sheet_name="ODS Production", header=0).fillna("")
     for _, row in df.iterrows():
         if row["CODE"] in legacy_codes_to_ignore:
             logger.info(
@@ -531,9 +618,9 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
             ProjectOdsOdp.objects.filter(project=project), row["ODS_PRODUCTION"]
         )
         if existing_project_ods_odp:
-            existing_project_ods_odp.ods_replacement_text = row["ODS_REPLACEMENT"]
-            existing_project_ods_odp.co2_mt = row["CO2MT"] or None
-            existing_project_ods_odp.odp = row["ODP"] or None
+            existing_project_ods_odp.ods_replacement_text = row["ODS_PROREPLA"]
+            existing_project_ods_odp.co2_mt = row["CO2MT_PRODUCTION"] or None
+            existing_project_ods_odp.odp = row["ODP_PRODUCTION"] or None
             if not dry_run:
                 existing_project_ods_odp.save()
         else:
@@ -545,9 +632,9 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
                 ods_display_name=ods_display_name,
                 ods_substance=substance,
                 ods_blend=blend,
-                ods_replacement_text=row["ODS_REPLACEMENT"],
-                co2_mt=row["CO2MT"] or None,
-                odp=row["ODP"] or None,
+                ods_replacement_text=row["ODS_PROREPLA"],
+                co2_mt=row["CO2MT_PRODUCTION"] or None,
+                odp=row["ODP_PRODUCTION"] or None,
             )
             if not dry_run:
                 new_project_ods_odp.save()
@@ -562,20 +649,16 @@ def extract_consumption_and_production_projects_to_ignore_list():
         IMPORT_RESOURCES_V2_DIR
         / "projects"
         / "migration_2026"
-        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
     )
     legacy_codes_to_ignore = []
-    df = pd.read_excel(file_path, sheet_name="C+P Production", header=3).fillna("")
-
+    df = pd.read_excel(
+        file_path, sheet_name="C + P projects to ignore", header=0
+    ).fillna("")
     for _, row in df.iterrows():
         if row["Legacy Code"] and row["Legacy Code"] not in legacy_codes_to_ignore:
             legacy_codes_to_ignore.append(row["Legacy Code"])
 
-    df = pd.read_excel(file_path, sheet_name="C+P Consumption", header=3).fillna("")
-
-    for _, row in df.iterrows():
-        if row["Legacy Code"] and row["Legacy Code"] not in legacy_codes_to_ignore:
-            legacy_codes_to_ignore.append(row["Legacy Code"])
     logger.info(
         f"Extracted {len(legacy_codes_to_ignore)} legacy codes to ignore from C+P sheets"
     )
@@ -587,9 +670,9 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
         IMPORT_RESOURCES_V2_DIR
         / "projects"
         / "migration_2026"
-        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
     )
-    df = pd.read_excel(file_path, sheet_name="Funding fields", header=2).fillna("")
+    df = pd.read_excel(file_path, sheet_name="Funds", header=0).fillna("")
     ids_already_updated = []
     import_user = get_import_user()
     for _, row in df.iterrows():
@@ -600,20 +683,36 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                   """
             )
             continue
+
+        if not row["FUND_ALLOCATED"] and not row["SUPPORT_COST_13"]:
+            logger.info(
+                f"""Skipping project with legacy code '{row["CODE"]}' in Funding Fields sheet
+                as it has no fund allocated and no support cost
+                """
+            )
+            continue
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
         if not project:
             logger.warning(
                 f"⚠️ Project with legacy code '{row['CODE']}' not found while processing Funding Fields sheet"
             )
             continue
-        meeting = Meeting.objects.filter(number=row["MEETING"]).first()
+        try:
+            meeting = Meeting.objects.filter(number=row["MEETING"]).first()
+        except ValueError:
+            meeting = project.meeting
         if not meeting:
             logger.warning(
                 f"""⚠️ Meeting with name '{row["MEETING"]}' not found while processing
                 Funding Fields sheet for project with legacy code '{row["CODE"]}'
                 """
             )
-            continue
+            meeting = project.meeting
+
+        date_approved = get_date(row["DATE_APPROVAL"])
+        if not isinstance(date_approved, datetime):
+            date_approved = None
+
         if project.id in ids_already_updated:
             # we create a post-excom update
             if not dry_run:
@@ -623,14 +722,14 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                     import_user,
                     HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
                 )
-            project.date_approved = get_date(row["DATE_APPROVAL"])
+            project.date_approved = date_approved
             project.post_excom_meeting = meeting
             project.total_fund += row["FUND_ALLOCATED"]
             project.support_cost_psc += row["SUPPORT_COST_13"]
             if not dry_run:
                 project.save()
         else:
-            project.date_approved = get_date(row["DATE_APPROVAL"])
+            project.date_approved = date_approved
             project.meeting = meeting
             project.total_fund_approved = row["FUND_ALLOCATED"]
             project.total_psc_cost = row["SUPPORT_COST_13"]
@@ -648,9 +747,9 @@ def process_transfer_fields_sheet(
         IMPORT_RESOURCES_V2_DIR
         / "projects"
         / "migration_2026"
-        / "2026.02.12. Inventory_EDW_Migration_ARPFeb8.xlsx"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
     )
-    df = pd.read_excel(file_path, sheet_name="Transfer fields", header=1).fillna("")
+    df = pd.read_excel(file_path, sheet_name="Transfers", header=0).fillna("")
     transfer_status = ProjectStatus.objects.filter(name__iexact="Transferred").first()
     ids_already_updated = []
     import_user = get_import_user()
@@ -660,7 +759,7 @@ def process_transfer_fields_sheet(
         project = Project.objects.filter(legacy_code=row["CODE"]).first()
         if not project:
             logger.warning(
-                f"⚠️ Project with legacy code '{row['CODE']}' not found while processing Transfer Fields sheet"
+                f"⚠️ Project with legacy code '{row['CODE']}' not found while processing Transfers sheet"
             )
             continue
         try:
@@ -668,12 +767,12 @@ def process_transfer_fields_sheet(
             if not meeting:
                 logger.warning(
                     f"""⚠️ Meeting with name '{row["MEETING"]}' not found while processing
-                      Transfer Fields sheet for project with legacy code '{row["CODE"]}'
+                      Transfers sheet for project with legacy code '{row["CODE"]}'
                       """
                 )
-                continue
+                meeting = project.meeting
         except ValueError:
-            meeting = None
+            meeting = project.meeting
 
         if project.status != transfer_status:
             if only_transfered:
@@ -697,6 +796,7 @@ def process_transfer_fields_sheet(
             except TypeError:
                 project.support_cost_psc = row["SUPPORT_13_TRANSFERRED"] or 0
             project.post_excom_meeting = meeting
+            project.adjustment = get_boolean(row["Adjustment Tick"])
             if not dry_run:
                 try:
                     project.save()
@@ -721,9 +821,69 @@ def process_transfer_fields_sheet(
                 project.psc_transferred += row["SUPPORT_13_TRANSFERRED"] or 0
             except TypeError:
                 project.psc_transferred = row["SUPPORT_13_TRANSFERRED"] or 0
+            project.adjustment = get_boolean(row["Adjustment Tick"])
             if not dry_run:
                 project.save()
         ids_already_updated.append(project.id)
+
+
+def process_interest_sheet(dry_run=True, legacy_codes_to_ignore=[]):
+    file_path = (
+        IMPORT_RESOURCES_V2_DIR
+        / "projects"
+        / "migration_2026"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
+    )
+    df = pd.read_excel(file_path, sheet_name="Interest", header=0).fillna("")
+    already_updated_project_ids = []
+    for _, row in df.iterrows():
+        if row["CODE"] in legacy_codes_to_ignore:
+            logger.info(
+                f"""Skipping project with legacy code '{row["CODE"]}' as it
+                  is in the ignore list extracted from C+P sheets
+                  """
+            )
+            continue
+        project = Project.objects.filter(legacy_code=row["CODE"]).first()
+        if not project:
+            logger.warning(
+                f"⚠️ Project with legacy code '{row['CODE']}' not found while processing Interest sheet"
+            )
+            continue
+        if project.id not in already_updated_project_ids:
+            project.interest = row["INTEREST"] or 0
+        else:
+            project.interest += row["INTEREST"] or 0
+        if not dry_run:
+            project.save()
+        already_updated_project_ids.append(project.id)
+
+
+def process_hfc_plus(dry_run=True, legacy_codes_to_ignore=[]):
+    file_path = (
+        IMPORT_RESOURCES_V2_DIR
+        / "projects"
+        / "migration_2026"
+        / "2026_03_30_Inventory_EDW_Migration.xlsx"
+    )
+    df = pd.read_excel(file_path, sheet_name="HFC_PLUS", header=2).fillna("")
+    for _, row in df.iterrows():
+        if row["CODE"] in legacy_codes_to_ignore:
+            logger.info(
+                f"""Skipping project with legacy code '{row["CODE"]}' as it
+                  is in the ignore list extracted from C+P sheets
+                  """
+            )
+            continue
+        project = Project.objects.filter(legacy_code=row["CODE"]).first()
+        if not project:
+            logger.warning(
+                f"⚠️ Project with legacy code '{row['CODE']}' not found while processing Interest sheet"
+            )
+            continue
+        project.additional_funding = row["HFC_PLUS"] or 0
+        if not dry_run:
+            project.save()
 
 
 def process_c_and_p_consumption_sheet(dry_run=True):
@@ -957,7 +1117,9 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
 
 
 @transaction.atomic
-def migrate_projects_2026(option, dry_run=True, only_transfered=False):
+def migrate_projects_2026(
+    option, second_parameter="", dry_run=True, only_transfered=False
+):
     consumption_and_production_projects_legacy_codes = (
         extract_consumption_and_production_projects_to_ignore_list()
     )
@@ -988,6 +1150,18 @@ def migrate_projects_2026(option, dry_run=True, only_transfered=False):
             only_transfered=only_transfered,
             legacy_codes_to_ignore=consumption_and_production_projects_legacy_codes,
         )
+    elif option == "import_interest":
+        process_interest_sheet(
+            dry_run=dry_run,
+            legacy_codes_to_ignore=consumption_and_production_projects_legacy_codes,
+        )
+    elif option == "import_hfc_plus":
+        process_hfc_plus(
+            dry_run=dry_run,
+            legacy_codes_to_ignore=consumption_and_production_projects_legacy_codes,
+        )
+    elif option == "process_master_data_sheet":
+        process_master_data_sheet(dry_run=dry_run, second_parameter=second_parameter)
     elif option == "c_and_p":
         process_c_and_p_consumption_sheet(dry_run=dry_run)
         process_c_and_p_production_sheet(dry_run=dry_run)
