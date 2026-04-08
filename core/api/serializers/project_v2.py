@@ -41,7 +41,7 @@ from core.models.project_metadata import (
     ProjectType,
 )
 from core.utils import get_project_sub_code
-from core.api.views.utils import (
+from core.api.utils import (
     log_project_history,
     TOTAL_FUND_OPTIONAL_FOR_PROJECT_SPECIFIC_FIELD_ENTRIES,
 )

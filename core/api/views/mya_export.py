@@ -1,0 +1,266 @@
+from copy import copy
+from typing import TYPE_CHECKING
+
+import openpyxl
+from django.db.models import F
+from django.db.models import OuterRef
+from django.db.models import Subquery
+from openpyxl.utils import get_column_letter
+
+from core.api.export.base import BaseWriter
+from core.api.export.base import configure_sheet_print
+from core.api.export.single_project_v2.helpers import format_iso_date
+from core.api.utils import workbook_response
+from core.models import MetaProject
+from core.models import Project
+
+if TYPE_CHECKING:
+    from core.api.views import ProjectV2ViewSet
+    from openpyxl.worksheet.worksheet import Worksheet
+
+
+HEADERS = [
+    {"headerName": "Metacode", "id": "umbrella_code"},
+    {"headerName": "Country", "id": "country_name"},
+    {"headerName": "Cluster", "id": "cluster_name"},
+    {"headerName": "Lead agency", "id": "lead_agency_name"},
+    {
+        "headerName": "Start date (MYA)",
+        "id": "start_date",
+        "method": lambda r, h: format_iso_date(r[h["id"]]),
+    },
+    {
+        "headerName": "End date (MYA)",
+        "id": "end_date",
+        "method": lambda r, h: format_iso_date(r[h["id"]]),
+    },
+    {
+        "headerName": "Project duration (months)",
+        "id": "project_duration",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "MYA Total agreed funding in principle (US $)",
+        "id": "project_funding",
+        "type": "number",
+        "align": "right",
+        "cell_format": "$###,###,##0.00#############",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "MYA Total support costs in principle (US $)",
+        "id": "support_cost",
+        "type": "number",
+        "align": "right",
+        "cell_format": "$###,###,##0.00#############",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "MYA Total agreed costs in principle (US $)",
+        "id": "project_cost",
+        "type": "number",
+        "align": "right",
+        "cell_format": "$###,###,##0.00#############",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Phase-out (CO2-eq tonnes) (MYA)",
+        "id": "phase_out_co2_eq_t",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Phase-out (ODP tonnes) (MYA)",
+        "id": "phase_out_odp",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Phase-out (metric tonnes) (MYA)",
+        "id": "phase_out_mt",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Target in the last year (reduction in %)",
+        "id": "target_reduction",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Target in the last year (CO2-eq tonnes)",
+        "id": "target_co2_eq_t",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Target in the last year (ODP tonnes)",
+        "id": "target_odp",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Starting point for aggregate reductions in consumption or "
+        "production (ODP tonnes)",
+        "id": "starting_point_odp",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Starting point for aggregate reductions in consumption or "
+        "production (CO2-eq tonnes)",
+        "id": "starting_point_co2_eq_t",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Baseline (ODP tonnes)",
+        "id": "baseline_odp",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Baseline (CO2-eq tonnes)",
+        "id": "baseline_co2_eq_t",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Number of SMEs directly funded",
+        "id": "number_of_smes_directly_funded",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Number of non-SMEs directly funded",
+        "id": "number_of_non_sme_directly_funded",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Number of both SMEs and non-SMEs included in the project but "
+        "not directly funded",
+        "id": "number_of_both_sme_non_sme_not_directly_funded",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Production sector: number of production lines assisted",
+        "id": "number_of_production_lines_assisted",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Cost effectiveness (US $/kg)",
+        "id": "cost_effectiveness_kg",
+        "type": "number",
+        "align": "right",
+        "cell_format": "$###,###,##0.00#############",
+        "in_grand_total": True,
+    },
+    {
+        "headerName": "Cost effectiveness (US $/CO2-eq tonnes) ",
+        "id": "cost_effectiveness_co2",
+        "type": "number",
+        "align": "right",
+        "cell_format": "$###,###,##0.00#############",
+        "in_grand_total": True,
+    },
+]
+
+
+class MyaWriter(BaseWriter):
+    header_row_start_idx = 1
+    last_data_row = 0
+
+    def write(self, data):
+        self.write_headers()
+        self.write_data(data)
+        self.set_dimensions()
+        self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
+        last_col_letter = get_column_letter(self.max_column_idx)
+        self.last_data_row = self.sheet.max_row
+        self.sheet.auto_filter.ref = (
+            f"A{self.header_row_start_idx}:{last_col_letter}{self.last_data_row}"
+        )
+        self.write_summary_rows()
+
+    def write_summary_rows(self):
+        first_data_row = self.header_row_end_idx + 1
+        spacer_row_idx = self.last_data_row + 1
+        subtotal_row_idx = self.last_data_row + 2
+        grand_total_row_idx = self.last_data_row + 3
+        has_data = self.last_data_row >= first_data_row
+
+        self.sheet.row_dimensions[spacer_row_idx].hidden = True
+        self.write_summary_row(
+            subtotal_row_idx,
+            "Subtotal",
+            has_data,
+            first_data_row,
+            formula_template="=SUBTOTAL(9,{col_letter}{first_data_row}:{col_letter}{last_data_row})",
+        )
+        self.write_summary_row(
+            grand_total_row_idx,
+            "Grand total",
+            has_data,
+            first_data_row,
+            formula_template="=SUM({col_letter}{first_data_row}:{col_letter}{last_data_row})",
+        )
+
+    def write_summary_row(
+        self, row_idx, label, has_data, first_data_row, formula_template
+    ):
+        for header_idx, header in enumerate(self.headers.values(), start=1):
+            value = ""
+            if header_idx == 1:
+                value = label
+            elif header.get("in_grand_total"):
+                col_letter = header["column_letter"]
+                if has_data:
+                    value = formula_template.format(
+                        col_letter=col_letter,
+                        first_data_row=first_data_row,
+                        last_data_row=self.last_data_row,
+                    )
+                else:
+                    value = 0
+            cell = self._write_record_cell(
+                row_idx,
+                header["column"],
+                value,
+                align=header.get("align", "left"),
+                cell_format=header.get("cell_format"),
+            )
+            font = copy(cell.font)
+            font.bold = True
+            cell.font = font
+        self.sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT
+
+
+class MyaExport:
+    wb: "openpyxl.Workbook"
+    sheet: "Worksheet"
+    view: "ProjectV2ViewSet"
+
+    def __init__(self, view):
+        self.view = view
+
+    def setup_workbook(self):
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "MYAs"
+        configure_sheet_print(sheet, "landscape")
+        self.wb = wb
+        self.sheet = sheet
+
+    def export_xls(self):
+        self.setup_workbook()
+        first_project = Project.objects.filter(meta_project=OuterRef("pk")).order_by(
+            "id"
+        )[:1]
+        meta_projects = (
+            MetaProject.objects.filter(
+                type=MetaProject.MetaProjectType.MYA, is_draft=False
+            )
+            .order_by()
+            .distinct()
+            .values(
+                *[h["id"] for h in HEADERS if h["id"]],
+                country_name=F("country__name"),
+                cluster_name=F("cluster__name"),
+                lead_agency_name=Subquery(
+                    first_project.values("lead_agency__name")[:1],
+                ),
+            )
+        )
+
+        writer = MyaWriter(self.sheet, HEADERS)
+        writer.write(meta_projects)
+        return workbook_response("Mya.xlsx", self.wb)

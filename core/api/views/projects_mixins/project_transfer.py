@@ -14,7 +14,7 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_TRANSFER,
 )
 from core.api.swagger import FileUploadAutoSchema
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 
 
 class ProjectTransferMixin:

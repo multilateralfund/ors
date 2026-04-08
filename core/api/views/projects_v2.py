@@ -48,7 +48,8 @@ from core.api.views.projects_mixins import (
     ProjectTransferMixin,
     ProjectWithdrawMixin,
 )
-from core.api.views.utils import log_project_history, get_available_values
+from core.api.views.utils import get_available_values
+from core.api.utils import log_project_history
 from core.utils import get_meta_project
 
 # pylint: disable=C0302,R0911,R0904,R1702
@@ -69,7 +70,6 @@ def get_blanket_approval_individual_consideration(queryset: QuerySet[Project]):
 
 
 def get_meeting_number(queryset: QuerySet[Project]):
-
     values = (
         queryset.exclude(meeting__isnull=True)
         .order_by("meeting__number")

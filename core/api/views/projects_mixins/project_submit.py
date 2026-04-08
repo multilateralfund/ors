@@ -16,7 +16,7 @@ from core.api.serializers.project_v2 import (
 from core.models.project import Project
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.tasks import send_project_submission_notification
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 
 
 class ProjectSubmitMixin:

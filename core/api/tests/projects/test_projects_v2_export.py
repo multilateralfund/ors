@@ -1,6 +1,7 @@
 import io
 from http import HTTPStatus
 from itertools import chain
+from decimal import Decimal
 
 import openpyxl
 import pytest
@@ -12,8 +13,11 @@ from rest_framework.response import Response
 
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
+from core.api.tests.factories import MetaProjectFactory
+from core.api.tests.factories import ProjectFactory
 from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
 from core.api.export.single_project_v2.helpers import get_activity_data_from_json
+from core.models import MetaProject
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
@@ -254,6 +258,86 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
+
+    def test_export_mya_adds_filters_and_totals(
+        self,
+        secretariat_viewer_user,
+        project_approved_status,
+    ):
+        first_meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA
+        )
+        first_project = ProjectFactory.create(
+            meta_project=first_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+        )
+        first_meta_project.umbrella_code = "META-001"
+        first_meta_project.country = first_project.country
+        first_meta_project.cluster = first_project.cluster
+        first_meta_project.project_duration = 12
+        first_meta_project.project_funding = Decimal("100.50")
+        first_meta_project.support_cost = Decimal("10.25")
+        first_meta_project.project_cost = Decimal("110.75")
+        first_meta_project.target_odp = Decimal("2.50")
+        first_meta_project.baseline_odp = Decimal("3.75")
+        first_meta_project.number_of_smes_directly_funded = 4
+        first_meta_project.cost_effectiveness_kg = Decimal("5.50")
+        first_meta_project.save()
+
+        second_meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            umbrella_code="META-002",
+            project_duration=24,
+            project_funding=Decimal("200.25"),
+            support_cost=Decimal("20.50"),
+            project_cost=Decimal("220.75"),
+            target_odp=Decimal("3.50"),
+            baseline_odp=Decimal("4.25"),
+            number_of_smes_directly_funded=6,
+            cost_effectiveness_kg=Decimal("6.50"),
+        )
+        second_project = ProjectFactory.create(
+            meta_project=second_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+        )
+        second_meta_project.country = second_project.country
+        second_meta_project.cluster = second_project.cluster
+        second_meta_project.save()
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response: FileResponse = self.client.get(
+            self.url, {"category": [Project.Category.MYA]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["MYAs"]
+
+        assert sheet.auto_filter.ref == "A1:Z3"
+        assert sheet["A4"].value is None, "Spacer row not empty."
+        assert sheet["A5"].value == "Subtotal"
+        assert sheet["A6"].value == "Grand total"
+
+        assert sheet["D5"].value is None
+        assert sheet["G5"].value == "=SUBTOTAL(9,G2:G3)"
+        assert sheet["H5"].value == "=SUBTOTAL(9,H2:H3)"
+        assert sheet["P5"].value == "=SUBTOTAL(9,P2:P3)"
+        assert sheet["S5"].value == "=SUBTOTAL(9,S2:S3)"
+        assert sheet["U5"].value == "=SUBTOTAL(9,U2:U3)"
+        assert sheet["Y5"].value == "=SUBTOTAL(9,Y2:Y3)"
+        assert sheet["H5"].number_format == "$###,###,##0.00#############"
+
+        assert sheet["D6"].value is None
+        assert sheet["G6"].value == "=SUM(G2:G3)"
+        assert sheet["H6"].value == "=SUM(H2:H3)"
+        assert sheet["P6"].value == "=SUM(P2:P3)"
+        assert sheet["S6"].value == "=SUM(S2:S3)"
+        assert sheet["U6"].value == "=SUM(U2:U3)"
+        assert sheet["Y6"].value == "=SUM(Y2:Y3)"
+        assert sheet["H6"].number_format == "$###,###,##0.00#############"
 
 
 class TestProjectV2ExportDOCX(BaseTest):

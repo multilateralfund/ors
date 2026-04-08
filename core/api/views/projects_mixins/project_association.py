@@ -16,7 +16,7 @@ from core.api.serializers.project_v2 import (
     ProjectListV2Serializer,
     HISTORY_ASSOCIATION_MADE,
 )
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 from core.models.project import (
     MetaProject,
     Project,

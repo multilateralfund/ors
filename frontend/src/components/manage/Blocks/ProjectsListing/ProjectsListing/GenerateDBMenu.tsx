@@ -21,7 +21,9 @@ const GenerateDBMenu = ({
     () => [
       {
         title: 'MYA warehouse',
-        url: '/projects-listing/export/mya',
+        url: formatApiUrl(
+          '/api/projects/v2/export/?category=Multi-year+agreement',
+        ),
         permissions: [canViewProjects],
       },
       {

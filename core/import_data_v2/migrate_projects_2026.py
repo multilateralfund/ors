@@ -6,7 +6,7 @@ import pytz
 from django.db import transaction
 from django.db.models import Q
 
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 from core.import_data.utils import (
     IMPORT_RESOURCES_V2_DIR,
 )

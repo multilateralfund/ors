@@ -16,12 +16,11 @@ from core.models.project_metadata import (
     ProjectSubmissionStatus,
 )
 from core.models.project import Project
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 from core.utils import post_approval_changes
 
 
 class ProjectApproveRejectMixin:
-
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
