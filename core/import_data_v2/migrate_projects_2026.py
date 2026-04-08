@@ -33,7 +33,7 @@ from core.models.project_metadata import (
 from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace
+# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines
 
 logger = logging.getLogger(__name__)
 
