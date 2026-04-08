@@ -1,8 +1,9 @@
 from datetime import date
 from datetime import datetime
 from django.db.models import Q
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import views
 from rest_framework.response import Response
 
@@ -316,25 +317,25 @@ class EmptyFormView(views.APIView):
 
         return cls.get_new_empty_form(year, country_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cp_report_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cp_report_id",
+                location=OpenApiParameter.QUERY,
                 description="Country programme report id",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "country_id",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="country_id",
+                location=OpenApiParameter.QUERY,
                 description="Country id for the country programme report",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="year",
+                location=OpenApiParameter.QUERY,
                 description="Year for the country programme report",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
     )

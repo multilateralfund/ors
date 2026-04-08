@@ -516,7 +516,6 @@ class ProjectsV2Dump:
         exclude_fields = [
             "serial_number_legacy",
             "serial_number",
-            "additional_funding",
             "total_fund_transferred",
             "total_psc_transferred",
         ]

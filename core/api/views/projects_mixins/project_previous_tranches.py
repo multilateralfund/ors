@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -13,24 +14,24 @@ from core.models.project_metadata import ProjectSpecificFields
 
 
 class ProjectListPreviousTranchesMixin:
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_validation",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_validation",
+                location=OpenApiParameter.QUERY,
                 description="If set to true, the response will include validation information for the projects.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "project_id",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="project_id",
+                location=OpenApiParameter.QUERY,
                 description="""
                     The project ID to exclude from previous tranches.
                 """,
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
         ],
-        operation_description="List previous tranches of the project.",
+        description="List previous tranches of the project.",
     )
     @action(
         methods=["GET"],

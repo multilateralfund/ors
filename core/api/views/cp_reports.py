@@ -6,9 +6,12 @@ from django.db.models import Count, F, Window
 from django.db.models.functions import RowNumber
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import inline_serializer
 from rest_framework import generics, status, filters
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -182,10 +185,10 @@ class CPReportView(
         custom_errors = self.customize_errors(serializer.errors)
         return Response(custom_errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        operation_description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
+    @extend_schema(
+        description="year < 2019 => required: section_a, adm_b, section_c, adm_c, adm_d\n"
         "year >= 2019 => required: section_a, section_b, section_c, section_d, section_e, section_f",
-        request_body=CPReportCreateSerializer,
+        request=CPReportCreateSerializer,
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -575,8 +578,8 @@ class CPReportView(
         serializer = self.get_serializer(new_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="""Revert country programme report curent draft
+    @extend_schema(
+        description="""Revert country programme report curent draft
         to the previous final version. \n
         Only the secretariat user can delete the curent draft
         """,
@@ -605,14 +608,13 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
 
         return queryset
 
-    @swagger_auto_schema(
-        operation_description="Update country programme report status",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "status": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    enum=CPReport.CPReportStatus.choices,
+    @extend_schema(
+        description="Update country programme report status",
+        request=inline_serializer(
+            name="CPReportStatusUpdate",
+            fields={
+                "status": serializers.ChoiceField(
+                    choices=CPReport.CPReportStatus.choices
                 )
             },
         ),
@@ -681,14 +683,14 @@ class CPReportGroupByYearView(BaseCPReportListView):
     def get_id(obj):
         return obj.year
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "ordering",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="ordering",
+                location=OpenApiParameter.QUERY,
                 description="Order results in ascending or descending order",
                 default="asc",
-                type=openapi.TYPE_STRING,
+                type=OpenApiTypes.STR,
                 enum=["asc", "desc"],
             ),
         ],
@@ -790,23 +792,19 @@ class CPReportCommentsView(generics.GenericAPIView):
 
         return obj
 
-    @swagger_auto_schema(
-        operation_description="Update country programme report comments",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=[],
-            properties={
-                "section": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Comment section",
+    @extend_schema(
+        description="Update country programme report comments",
+        request=inline_serializer(
+            name="UpdateCPCommentRequest",
+            fields={
+                "section": serializers.CharField(
+                    help_text="Comment section",
                 ),
-                "comment_type": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="comment_country or comment_secretariat",
+                "comment_type": serializers.CharField(
+                    help_text="comment_country or comment_secretariat",
                 ),
-                "comment": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Comment text",
+                "comment": serializers.CharField(
+                    help_text="Comment text",
                 ),
             },
         ),

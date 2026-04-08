@@ -23,8 +23,24 @@ class Command(BaseCommand):
                 "fill_project_end_date_mya_with_date_per_agreement",
                 "funding_fields",
                 "transfer_fields",
+                "import_interest",
+                "import_hfc_plus",
+                "process_master_data_sheet",
                 "c_and_p",
             ],
+        )
+        parser.add_argument(
+            "--second-option",
+            type=str,
+            help="Second parameter for the method to run, if needed",
+            choices=[
+                None,
+                "set_cluster_type_sector_subsector",
+                "set_new_code",
+                "check_code_metacode",
+                "check_category_changed",
+            ],
+            nargs="?",
         )
         parser.add_argument(
             "--dry-run",
@@ -41,4 +57,10 @@ class Command(BaseCommand):
         dry_run = kwargs["dry_run"]
         option = kwargs["option"]
         only_transfered = kwargs["run_only_transfered"]
-        migrate_projects_2026(option, dry_run=dry_run, only_transfered=only_transfered)
+        second_parameter = kwargs["second_option"]
+        migrate_projects_2026(
+            option,
+            second_parameter=second_parameter,
+            dry_run=dry_run,
+            only_transfered=only_transfered,
+        )

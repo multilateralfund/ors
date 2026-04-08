@@ -1,7 +1,6 @@
 from constance import config
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -16,13 +15,12 @@ from core.api.serializers.project_v2 import (
 from core.models.project import Project
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.tasks import send_project_submission_notification
-from core.api.views.utils import log_project_history
+from core.api.utils import log_project_history
 
 
 class ProjectSubmitMixin:
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Submit the project for review.
         The project is checked for validity (check version, status and if the required fields are filled).
         If the project is valid, it is marked as submitted and the version is increased, creating an
@@ -33,12 +31,13 @@ class ProjectSubmitMixin:
         An email notification is sent to the secretariat team
         to inform them about the new submission.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def submit(self, request, *args, **kwargs):
         """
         Submits the project and its components projects for review.

@@ -318,7 +318,13 @@ class WriteOnlyBase:
                 else:
                     value = value or ""
 
-                record_row.append(self.write_record_cell(value))
+                record_row.append(
+                    self.write_record_cell(
+                        value,
+                        align=header.get("align", "left"),
+                        cell_format=header.get("cell_format"),
+                    )
+                )
             self.sheet.append(record_row)
 
     def set_dimensions(self):
@@ -347,16 +353,21 @@ class WriteOnlyBase:
             cell.comment = Comment(comment, "")
         return cell
 
-    def write_record_cell(self, value, read_only=False):
+    def write_record_cell(self, value, read_only=False, align="left", cell_format=None):
         cell = WriteOnlyCell(self.sheet, value=value)
         cell.font = Font(color=None)
-        cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
         cell.border = Border(
             left=Side(style="hair"),
             right=Side(style="hair"),
             top=Side(style="hair"),
             bottom=Side(style="hair"),
         )
+        if cell_format:
+            cell.number_format = cell_format
+        elif align == "right":
+            # this cell will contain a number
+            cell.number_format = "###,###,##0.00#############"
         if read_only:
             cell.fill = PatternFill(
                 start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"

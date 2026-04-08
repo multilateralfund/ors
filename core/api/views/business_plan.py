@@ -6,8 +6,9 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, viewsets, filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -61,12 +62,12 @@ class BPChemicalTypeListView(generics.ListAPIView):
     filterset_class = BPChemicalTypeFilter
     serializer_class = BPChemicalTypeSerializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_obsoletes",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_BOOLEAN,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_obsoletes",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.BOOL,
                 description="Include obsolete chemical types. By default, only non-obsolete types are returned.",
             ),
         ],
@@ -152,27 +153,27 @@ class BusinessPlanViewSet(
 
         return Response(final_years.values())
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "business_plan_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="business_plan_id",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+            OpenApiParameter(
+                name="year_start",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+            OpenApiParameter(
+                name="year_end",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "bp_status",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
+            OpenApiParameter(
+                name="bp_status",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.STR,
             ),
         ],
     )
@@ -381,9 +382,9 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
     permission_classes = [HasBusinessPlanEditAccess]
 
-    @swagger_auto_schema(
-        manual_parameters=IMPORT_PARAMETERS,
-        operation_description="Check if uploaded file is valid without saving data",
+    @extend_schema(
+        parameters=IMPORT_PARAMETERS,
+        description="Check if uploaded file is valid without saving data",
     )
     def post(self, request, *args, **kwargs):
         files = request.FILES
@@ -428,9 +429,9 @@ class BPImportView(
     serializer_class = BusinessPlanCreateSerializer
     permission_classes = [HasBusinessPlanEditAccess]
 
-    @swagger_auto_schema(
-        manual_parameters=IMPORT_PARAMETERS,
-        operation_description="Perform Business Plan import from file",
+    @extend_schema(
+        parameters=IMPORT_PARAMETERS,
+        description="Perform Business Plan import from file",
     )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
