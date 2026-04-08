@@ -683,7 +683,7 @@ def process_funding_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
                   """
             )
             continue
-        
+
         if not row["FUND_ALLOCATED"] and not row["SUPPORT_COST_13"]:
             logger.info(
                 f"""Skipping project with legacy code '{row["CODE"]}' in Funding Fields sheet
