@@ -2,8 +2,9 @@ from collections import defaultdict
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import views, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -253,31 +254,31 @@ class CPRecordBaseListByReportView(views.APIView):
 
         return self._get_old_cp_records(cp_report)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cp_report_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cp_report_id",
+                location=OpenApiParameter.QUERY,
                 description="Country programme report id",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "country_id",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="country_id",
+                location=OpenApiParameter.QUERY,
                 description="Country id for the country programme report",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "year",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="year",
+                location=OpenApiParameter.QUERY,
                 description="Year for the country programme report",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "full_history",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="full_history",
+                location=OpenApiParameter.QUERY,
                 description="Include full event history for the country programme report",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
     )

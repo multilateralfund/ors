@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from django.db.models import Case, CharField, F, Q, QuerySet, Value, When
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -414,39 +415,35 @@ class ProjectV2ViewSet(
             return
         return serializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "date_received_after",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="date_received_after",
+                location=OpenApiParameter.QUERY,
                 description="Returns the projects with date_received equal or after this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
-                "date_received_before",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="date_received_before",
+                location=OpenApiParameter.QUERY,
                 description="Returns the projects with date_received equal or before this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
-                "category",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(
-                    type=openapi.TYPE_STRING,
-                    enum=Project.Category.values,
-                ),
+            OpenApiParameter(
+                name="category",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.STR,
+                many=True,
+                enum=Project.Category.values,
             ),
-            openapi.Parameter(
-                "really_all",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="really_all",
+                location=OpenApiParameter.QUERY,
                 description="Queries ALL projects.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
-        operation_description="V2 listing endpoint that allow listing, filtering and ordering the projects.",
+        description="V2 listing endpoint that allow listing, filtering and ordering the projects.",
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -476,19 +473,19 @@ class ProjectV2ViewSet(
         }
         return Response(result)
 
-    @swagger_auto_schema(
-        operation_description="V2 retrieve endpoint that allows retrieving a project.",
+    @extend_schema(
+        description="V2 retrieve endpoint that allows retrieving a project.",
     )
     def retrieve(self, request, *args, **kwargs):
         """Retrieve project details"""
         return super().retrieve(request, *args, **kwargs)
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         V2 projects endpoint for creating a project. This endpoint should be used in the first step of the
         project creation workflow.
         """,
-        request_body=ProjectV2CreateUpdateSerializer,
+        request=ProjectV2CreateUpdateSerializer,
         responses={
             status.HTTP_201_CREATED: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
@@ -505,14 +502,14 @@ class ProjectV2ViewSet(
         response_data["warnings"] = warnings
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         V2 projects endpoint for updating a project. This endpoint should be used in the
         project editing workflow.
         If the field "post-excom-update" is set to true, the project is updated as a post-excom update,
         which means that the version is increased and a new archived version of the project is created.
         """,
-        request_body=ProjectV2CreateUpdateSerializer,
+        request=ProjectV2CreateUpdateSerializer,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
@@ -564,17 +561,17 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["PUT"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Allows editing only the actual fields of the project. Available only for 'Approved' projects.
         """,
-        request_body=ProjectV2EditActualFieldsSerializer,
+        request=ProjectV2EditActualFieldsSerializer,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["PUT"], detail=True)
     def edit_actual_fields(self, request, *args, **kwargs):
         validate_request = request.data.get("validate_request", False)
         if validate_request:
@@ -600,17 +597,17 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["PUT"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Allows editing only the approval fields of the project.
         """,
-        request_body=ProjectV2EditApprovalFieldsSerializer,
+        request=ProjectV2EditApprovalFieldsSerializer,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["PUT"], detail=True)
     def edit_approval_fields(self, request, *args, **kwargs):
         validate_request = request.data.get("validate_request", False)
         if validate_request:

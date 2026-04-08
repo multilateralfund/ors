@@ -81,8 +81,8 @@ class BPActivityFilter(filters.FilterSet):
         widget=CSVWidget,
         help_text="Filter by status. Multiple values can be separated by comma.",
     )
-    bp_chemical_type_id = filters.MultipleChoiceFilter(
-        choices=BPChemicalType.objects.all(),
+    bp_chemical_type_id = filters.ModelMultipleChoiceFilter(
+        queryset=BPChemicalType.objects.all(),
         widget=CSVWidget,
         help_text="Filter by BP chemical type. Multiple values can be separated by comma.",
     )

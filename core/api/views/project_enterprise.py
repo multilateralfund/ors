@@ -1,5 +1,6 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -106,8 +107,8 @@ class EnterpriseViewSet(
             return [HasEnterpriseApprovalAccess]
         return [DenyAll]
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Creates a new Pending Enterprise.
         If the user has the 'can_create_approved_enterprise' permission,
         the new enterprise will be created with 'Approved' status.
@@ -120,8 +121,8 @@ class EnterpriseViewSet(
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Updates a Project Enterprise.
         The status of the enterprise cannot be changed via this endpoint.
         """,
@@ -137,8 +138,8 @@ class EnterpriseViewSet(
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Allows the user to change the status of an enterprise.
         """,
         responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
@@ -269,8 +270,8 @@ class ProjectEnterpriseViewSet(
         serializer = ProjectEnterpriseSerializer
         return serializer
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Creates a new Pending Project Enterprise.
         A new pending Enterprise will be created if the provided enterprise data does not include an ID.
         If the provided enterprise data includes an ID, the existing enterprise with that ID will be linked
@@ -286,8 +287,8 @@ class ProjectEnterpriseViewSet(
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         If the Project Enterprise is in 'Pending' status, it is updated as normal.
         The enterprise entry cannot be changed, so the fields will be applied to already linked enterprise
         and only if it is in 'Pending Approval' status.
@@ -315,18 +316,18 @@ class ProjectEnterpriseViewSet(
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Approve a pending Project Enterprise.
         Only enterprises with 'Pending' status can be approved.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectEnterpriseSerializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.status != EnterpriseStatus.PENDING:
@@ -345,19 +346,19 @@ class ProjectEnterpriseStatusView(APIView):
     View to return a list of all Project Enterprise Status choices
     """
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_obsolete",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_obsolete",
+                location=OpenApiParameter.QUERY,
                 description="""
                     Include 'Obsolete' status in the response.
                     Obsolete status is used only for enterprises, not for project enterprises.
                 """,
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ],
-        operation_description="List previous tranches of the project.",
+        description="List previous tranches of the project.",
     )
     def get(self, request, *args, **kwargs):
         choices = EnterpriseStatus.choices

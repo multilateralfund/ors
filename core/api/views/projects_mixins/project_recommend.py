@@ -1,6 +1,5 @@
 from constance import config
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -20,9 +19,8 @@ from core.api.utils import log_project_history
 
 
 class ProjectRecommendMixin:
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Recommend the project and its components projects for approval.
         The projects are checked for validity (check version, status and if the required fields are filled).
         If all the projects are valid, they are marked as Recommended and the version is increased, creating an
@@ -33,12 +31,13 @@ class ProjectRecommendMixin:
         An email notification is sent to the secretariat team and the creator of the projects
         to inform them about the new recommendation.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectListV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def recommend(self, request, *args, **kwargs):
         project = self.get_object()
         if project.component:

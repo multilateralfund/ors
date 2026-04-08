@@ -114,6 +114,8 @@ def workbook_pdf_response(name, wb, orientation=None):
         wb.save(xlsx_file)
 
         libreoffice_bin = shutil.which("libreoffice")
+        if libreoffice_bin is None:
+            libreoffice_bin = shutil.which("soffice")
         subprocess.check_call(
             [
                 libreoffice_bin,

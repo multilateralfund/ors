@@ -1,5 +1,4 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -21,19 +20,19 @@ from core.utils import post_approval_changes
 
 
 class ProjectApproveRejectMixin:
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Reject the project.
         The project is checked for validity (status should be 'Recommended' and version should be 3).
         If the project is valid, it is marked as Not approved.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def reject(self, request, *args, **kwargs):
         project = self.get_object()
         if project.submission_status.name != "Recommended" or project.version != 3:
@@ -54,20 +53,20 @@ class ProjectApproveRejectMixin:
             status=status.HTTP_200_OK,
         )
 
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
+    @extend_schema(
+        description="""
         Approve the project.
         The project is checked for validity (status should be 'Recommended' and version should be 3).
         The project is checked if the mandatory approval fields are filled.
         If the project is valid, it is marked as Approved.
         """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        request=None,
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )
+    @action(methods=["POST"], detail=True)
     def approve(self, request, *args, **kwargs):
         project = self.get_object()
         context = self.get_serializer_context()

@@ -1,8 +1,9 @@
 import openpyxl
 
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 
 from rest_framework import generics, filters
 
@@ -294,18 +295,18 @@ class BPActivityExportView(generics.GenericAPIView):
 
         return method(name, wb)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "header_year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="header_year_start",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
                 description="The start year of the export header",
             ),
-            openapi.Parameter(
-                "header_year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+            OpenApiParameter(
+                name="header_year_end",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
                 description="The end year of the export header",
             ),
         ],

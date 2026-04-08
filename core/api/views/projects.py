@@ -5,8 +5,9 @@ from django.db import models
 from django.shortcuts import get_object_or_404
 from django.views.static import serve
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, generics, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -232,13 +233,13 @@ class MetaProjectMyaDetailsViewSet(
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "category",
-                openapi.IN_PATH,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="category",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
                 description="Project category (only MYA allowed)",
-                type=openapi.TYPE_STRING,
                 enum=[Project.Category.MYA, Project.Category.IND],
             ),
         ]
@@ -303,19 +304,19 @@ class ProjectTypeListView(generics.ListAPIView):
             queryset = queryset.filter(obsolete=False)
         return queryset
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "cluster_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="cluster_id",
+                location=OpenApiParameter.QUERY,
                 description="Filter project types by cluster ID",
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "include_obsoletes",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_obsoletes",
+                location=OpenApiParameter.QUERY,
                 description="Include obsolete types. By default, only non-obsolete types are returned.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ]
     )
@@ -349,19 +350,19 @@ class ProjectClusterListView(generics.ListAPIView):
             )
         return queryset.order_by("sort_order")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "include_obsoletes",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="include_obsoletes",
+                location=OpenApiParameter.QUERY,
                 description="Include obsolete clusters. By default, only non-obsolete clusters are returned.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "included_in_type_sector_combinations",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="included_in_type_sector_combinations",
+                location=OpenApiParameter.QUERY,
                 description="Return only clusters that have at least one type-sector combination defined.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ]
     )
@@ -430,22 +431,22 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
         )
         return obj
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "project_id",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="project_id",
+                location=OpenApiParameter.QUERY,
                 description="""
                     Giving the project ID allows filtering the fields
                     (projects not approved don't return actual fields).
                 """,
-                type=openapi.TYPE_INTEGER,
+                type=OpenApiTypes.INT,
             ),
-            openapi.Parameter(
-                "include_actuals",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="include_actuals",
+                location=OpenApiParameter.QUERY,
                 description="Include actual fields in the response. Is ignored if project_id is provided.",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
         ]
     )
@@ -532,27 +533,25 @@ class ProjectViewSet(
             return ProjectListSerializer
         return ProjectDetailsSerializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "get_submission",
-                openapi.IN_QUERY,
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="get_submission",
+                location=OpenApiParameter.QUERY,
                 description="True: Return only submissions; False: Return only projects",
-                type=openapi.TYPE_BOOLEAN,
+                type=OpenApiTypes.BOOL,
             ),
-            openapi.Parameter(
-                "date_received_after",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="date_received_after",
+                location=OpenApiParameter.QUERY,
                 description="Returns the projects with date_received equal or after this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
-            openapi.Parameter(
-                "date_received_before",
-                openapi.IN_QUERY,
+            OpenApiParameter(
+                name="date_received_before",
+                location=OpenApiParameter.QUERY,
                 description="Returns the projects with date_received equal or before this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
+                type=OpenApiTypes.DATE,
             ),
         ],
         deprecated=True,
@@ -560,7 +559,7 @@ class ProjectViewSet(
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @swagger_auto_schema(
+    @extend_schema(
         deprecated=True,
     )
     @action(methods=["POST"], detail=True)
@@ -578,14 +577,14 @@ class ProjectViewSet(
     def print(self, *args, **kwargs):
         return ProjectsExport(self).export_pdf()
 
-    @swagger_auto_schema(
+    @extend_schema(
         deprecated=True,
     )
     def retrieve(self, request, *args, **kwargs):
         """Retrieve project details"""
         return super().retrieve(request, *args, **kwargs)
 
-    @swagger_auto_schema(
+    @extend_schema(
         deprecated=True,
     )
     def create(self, request, *args, **kwargs):
@@ -604,7 +603,7 @@ class ProjectFileView(APIView):
     API endpoint for managing project files
     """
 
-    @swagger_auto_schema(
+    @extend_schema(
         deprecated=True,
     )
     def get(self, request, pk):
@@ -614,7 +613,7 @@ class ProjectFileView(APIView):
             request, project_file.file.name, document_root=settings.PROTECTED_MEDIA_ROOT
         )
 
-    @swagger_auto_schema(
+    @extend_schema(
         deprecated=True,
     )
     def delete(self, request, pk):
