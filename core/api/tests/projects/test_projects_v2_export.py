@@ -261,11 +261,13 @@ class TestProjectV2ExportXLSX(BaseTest):
     def test_export_mya_adds_filters_and_totals(
         self,
         secretariat_viewer_user,
+        project_approved_status,
     ):
         first_meta_project = MetaProjectFactory.create(type=Project.Category.MYA)
         first_project = ProjectFactory.create(
             meta_project=first_meta_project,
             category=Project.Category.MYA,
+            submission_status=project_approved_status,
         )
         first_meta_project.umbrella_code = "META-001"
         first_meta_project.country = first_project.country
@@ -295,6 +297,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         second_project = ProjectFactory.create(
             meta_project=second_meta_project,
             category=Project.Category.MYA,
+            submission_status=project_approved_status,
         )
         second_meta_project.country = second_project.country
         second_meta_project.cluster = second_project.cluster
