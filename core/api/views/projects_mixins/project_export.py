@@ -11,6 +11,7 @@ from core.api.export.single_project_v2.associated_projects_as_xlsx import (
     ProjectsV2AssociatedProjectsExport,
 )
 from core.api.views.projects_export import ProjectsV2Export
+from core.api.views.mya_export import MyaExport
 from core.models import Project
 
 
@@ -54,6 +55,9 @@ class ProjectExportMixin:
         project_id = request.query_params.get("project_id")
         output_format = request.query_params.get("output_format", "xlsx")
         really_all = request.query_params.get("really_all", "false") == "true"
+        is_mya = request.query_params.getlist("category", []) == [
+            "Multi-year agreement"
+        ]
         if project_id:
             project = self.get_object()
             if output_format == "xlsx":
@@ -62,6 +66,8 @@ class ProjectExportMixin:
                 return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
         if really_all:
             return ProjectsV2Dump(self).export()
+        if is_mya:
+            return MyaExport(self).export_xls()
         return ProjectsV2Export(self).export_xls()
 
     @extend_schema(

@@ -49,7 +49,8 @@ from core.api.views.projects_mixins import (
     ProjectTransferMixin,
     ProjectWithdrawMixin,
 )
-from core.api.views.utils import log_project_history, get_available_values
+from core.api.views.utils import get_available_values
+from core.api.utils import log_project_history
 from core.utils import get_meta_project
 
 # pylint: disable=C0302,R0911,R0904,R1702
