@@ -1321,7 +1321,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Total payments",
             "summary": f"=SUM(B14:{last_period_column_letter}14)",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"=SUM({get_column_letter(i + 2)}11:{get_column_letter(i + 2)}13)"
+                f"{soc['start_year']}-{soc['end_year']}": (
+                    f"=SUM({get_column_letter(i + 2)}11:{get_column_letter(i + 2)}13)"
+                )
                 for i, soc in enumerate(soc_data)
             },
         },

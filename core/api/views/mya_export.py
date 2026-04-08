@@ -246,7 +246,9 @@ class MyaExport:
             "id"
         )[:1]
         meta_projects = (
-            MetaProject.objects.filter(type=Project.Category.MYA, is_draft=False)
+            MetaProject.objects.filter(
+                type=MetaProject.MetaProjectType.MYA, is_draft=False
+            )
             .order_by()
             .distinct()
             .values(

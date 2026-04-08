@@ -17,6 +17,7 @@ from core.api.tests.factories import MetaProjectFactory
 from core.api.tests.factories import ProjectFactory
 from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
 from core.api.export.single_project_v2.helpers import get_activity_data_from_json
+from core.models import MetaProject
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
@@ -263,7 +264,9 @@ class TestProjectV2ExportXLSX(BaseTest):
         secretariat_viewer_user,
         project_approved_status,
     ):
-        first_meta_project = MetaProjectFactory.create(type=Project.Category.MYA)
+        first_meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA
+        )
         first_project = ProjectFactory.create(
             meta_project=first_meta_project,
             category=Project.Category.MYA,
@@ -283,7 +286,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         first_meta_project.save()
 
         second_meta_project = MetaProjectFactory.create(
-            type=Project.Category.MYA,
+            type=MetaProject.MetaProjectType.MYA,
             umbrella_code="META-002",
             project_duration=24,
             project_funding=Decimal("200.25"),
