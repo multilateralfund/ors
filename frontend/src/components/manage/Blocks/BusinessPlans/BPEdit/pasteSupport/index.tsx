@@ -74,6 +74,7 @@ function parsePastedHTML(html: string) {
 
 export async function readPastedTableFromNavigator(
   throwError: EnqueueSnackbar,
+  isMultiple: boolean,
 ) {
   let result: any[][] = []
   let canceled = false
@@ -92,11 +93,11 @@ export async function readPastedTableFromNavigator(
       : parsePastedText(textContent)
 
     const cleanTable = removeEmptyRowsAndColumns(pastedTable)
-    result = getOnlyFirstAndLastColumns(cleanTable)
+    result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(
-        'Could not read clipbord data! Make sure you are pasting a 2 column table.',
+        `Could not read clipboard data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
         {
           variant: 'error',
         },
@@ -105,10 +106,15 @@ export async function readPastedTableFromNavigator(
       canceled = true
     }
   }
-  if (!canceled && (result.length == 0 || result[0].length != 2)) {
+  if (
+    !canceled &&
+    (result.length == 0 ||
+      (isMultiple && result[0].length < 2) ||
+      (!isMultiple && result[0].length != 2))
+  ) {
     result = []
     throwError(
-      'Could not read a valid table from clipboard! Make sure you are pasting a 2 column table.',
+      `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
       {
         variant: 'error',
       },

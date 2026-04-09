@@ -8,9 +8,8 @@ import {
   formatUSD,
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
-import React from 'react'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isNil, isObject } from 'lodash'
+import { find, get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -68,7 +67,7 @@ export const dataTypeDefinitions: Record<
   },
 }
 
-interface APRTableColumn {
+export interface APRTableColumn {
   label: string
   fieldName: string
   group: string | null
@@ -698,10 +697,10 @@ export default function useGetColumnDefs({
         clipboardEdit && c.input && rows && setRows
           ? (props: IHeaderParams) => (
               <BasePasteWrapper
-                mutator={(row: any, value: any) => {
-                  const field = c.fieldName
+                mutator={(row: any, value: any, field?: string) => {
+                  const crtField = find(columns, (c) => c.fieldName === field)
                   // @ts-ignore
-                  const cellDataType = c.overrideOptions?.cellDataType
+                  const cellDataType = crtField.overrideOptions?.cellDataType
                   let toBeAdded = value
 
                   if (cellDataType === 'dateString') {
@@ -724,15 +723,17 @@ export default function useGetColumnDefs({
                   }
 
                   if (cellDataType === 'boolean') {
-                    toBeAdded = value.toLowerCase() === 'yes';
+                    toBeAdded = value.toLowerCase() === 'yes'
                   }
 
-                  row[field] = toBeAdded
+                  row[field!] = toBeAdded
                 }}
                 form={rows}
                 label={props.displayName}
                 setForm={setRows}
                 rowIdField="project_code"
+                isMultiple={true}
+                columns={columns}
               />
             )
           : undefined,
