@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
 import { APRTableColumn } from '@ors/components/manage/Blocks/AnnualProgressReport/schema'
-import { find } from 'lodash'
+import { find, map, replace } from 'lodash'
 
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
@@ -31,6 +31,13 @@ interface BasePasteWrapperProps {
   isMultiple?: boolean
   columns?: APRTableColumn[]
 }
+
+const normalizeLabel = (label: string) =>
+  replace(label, /\b(\d{4}|XXXX)\b/, 'YEAR')
+
+const findFieldObj = (columns: APRTableColumn[], label: string) =>
+  find(columns, (col) => normalizeLabel(col.label) === label)
+
 export function BasePasteWrapper(props: BasePasteWrapperProps) {
   const {
     label,
@@ -70,16 +77,17 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         if (pendingIds.includes(rowId)) {
           newValues[rowId].map((value: any, index: number) => {
             if (isMultiple) {
-              const columnsLabels = newValues[pendingIds[0]]
-              const pastedFieldObj = find(columns, (col) => col.label === label)
-              const crtFieldObj = find(
-                columns,
-                (col) => col.label === columnsLabels[index],
+              const columnsLabels = map(newValues[pendingIds[0]], (label) =>
+                normalizeLabel(label),
               )
+              const normalizedLabel = normalizeLabel(label)
+
+              const pastedFieldObj = findFieldObj(columns!, normalizedLabel)
+              const crtFieldObj = findFieldObj(columns!, columnsLabels[index])
 
               if (
                 !(
-                  columnsLabels.includes(label) &&
+                  columnsLabels.includes(normalizedLabel) &&
                   crtFieldObj &&
                   crtFieldObj.input &&
                   crtFieldObj.group === pastedFieldObj?.group
@@ -103,21 +111,27 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       setForm(nextForm)
       console.debug('pendingIds', pendingIds)
       console.debug('newValues', newValues)
+
+      const errorMessage = `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`
+
       if (numInserted > 0) {
         const successMessage = isMultiple
-          ? `Successfully pasted ${Math.round(numColsInserted / numInserted)} columns for ${numInserted} entries.`
+          ? `Successfully pasted ${Math.round(numColsInserted / numInserted)} column(s) for ${numInserted} entries.`
           : `Successfully pasted ${numInserted}/${numEntries} entries.`
 
-        enqueueSnackbar(successMessage, {
-          variant: 'success',
-        })
-      } else if (pendingIds.length > numInserted) {
-        enqueueSnackbar(
-          `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
-          {
+        if (!isMultiple || numColsInserted > 0) {
+          enqueueSnackbar(successMessage, {
+            variant: 'success',
+          })
+        } else if (isMultiple && numColsInserted === 0) {
+          enqueueSnackbar(errorMessage, {
             variant: 'error',
-          },
-        )
+          })
+        }
+      } else if (pendingIds.length > numInserted) {
+        enqueueSnackbar(errorMessage, {
+          variant: 'error',
+        })
       }
     } else {
       setPasting(false)

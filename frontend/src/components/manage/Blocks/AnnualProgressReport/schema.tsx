@@ -9,7 +9,7 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isNil, isObject } from 'lodash'
+import { find, get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -698,8 +698,9 @@ export default function useGetColumnDefs({
           ? (props: IHeaderParams) => (
               <BasePasteWrapper
                 mutator={(row: any, value: any, field?: string) => {
+                  const crtField = find(columns, (c) => c.fieldName === field)
                   // @ts-ignore
-                  const cellDataType = c.overrideOptions?.cellDataType
+                  const cellDataType = crtField.overrideOptions?.cellDataType
                   let toBeAdded = value
 
                   if (cellDataType === 'dateString') {
