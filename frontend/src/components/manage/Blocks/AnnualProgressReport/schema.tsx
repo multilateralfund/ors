@@ -18,6 +18,7 @@ import {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
 import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import dayjs from 'dayjs'
 
 export const dataTypeDefinitions: Record<
@@ -67,11 +68,7 @@ export const dataTypeDefinitions: Record<
   },
 }
 
-export interface APRTableColumn {
-  label: string
-  fieldName: string
-  group: string | null
-  input: boolean
+type APRTableColumn = APRTableFieldProps & {
   overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number] &
     ValidatorMixin
 }

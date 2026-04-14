@@ -2,7 +2,7 @@ import { useSnackbar } from 'notistack'
 import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
-import { APRTableColumn } from '@ors/components/manage/Blocks/AnnualProgressReport/schema'
+import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import { find, map, replace, trim } from 'lodash'
 
 function cleanValue(value: string) {
@@ -29,7 +29,7 @@ interface BasePasteWrapperProps {
   rowIdField?: string
   // activitiesRef: any
   isMultiple?: boolean
-  columns?: APRTableColumn[]
+  columns?: APRTableFieldProps[]
 }
 
 const normalizeLabel = (label: string) => {
@@ -39,7 +39,7 @@ const normalizeLabel = (label: string) => {
   return trim(trimmedSlashLabel)
 }
 
-const findFieldObj = (columns: APRTableColumn[], label: string) =>
+const findFieldObj = (columns: APRTableFieldProps[], label: string) =>
   find(columns, (col) => normalizeLabel(col.label) === label)
 
 export function BasePasteWrapper(props: BasePasteWrapperProps) {
