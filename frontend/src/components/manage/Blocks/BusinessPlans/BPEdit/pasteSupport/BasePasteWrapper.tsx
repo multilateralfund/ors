@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
 import { APRTableColumn } from '@ors/components/manage/Blocks/AnnualProgressReport/schema'
-import { find, map, replace } from 'lodash'
+import { find, map, replace, trim } from 'lodash'
 
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
@@ -32,8 +32,12 @@ interface BasePasteWrapperProps {
   columns?: APRTableColumn[]
 }
 
-const normalizeLabel = (label: string) =>
-  replace(label, /\b(\d{4}|XXXX)\b/, 'YEAR')
+const normalizeLabel = (label: string) => {
+  const formattedYearLabel = replace(label, /\b(\d{4}|XXXX)\b/, 'YEAR')
+  const trimmedSlashLabel = replace(formattedYearLabel, /\/\s+/g, '/')
+
+  return trim(trimmedSlashLabel)
+}
 
 const findFieldObj = (columns: APRTableColumn[], label: string) =>
   find(columns, (col) => normalizeLabel(col.label) === label)
