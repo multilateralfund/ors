@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
@@ -9,6 +9,7 @@ import {
   Button,
   Checkbox,
   Chip,
+  CircularProgress,
   FormControlLabel,
   Link,
   Tabs,
@@ -233,7 +234,12 @@ export default function APRMLFSWorkspace() {
     const sp = new URLSearchParams()
     Object.entries(filters).forEach(([key, values]) => {
       if (values.length > 0) {
-        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+        sp.set(
+          key,
+          values
+            .map((f) => (key === 'status' ? f.code! : String(f.id)))
+            .join(','),
+        )
       }
     })
     const q = sp.toString()
@@ -368,6 +374,76 @@ export default function APRMLFSWorkspace() {
     }
   }
 
+  const [taskId, setTaskId] = useState(null)
+
+  const syncWithProjects = async () => {
+    try {
+      const res = await api(
+        `api/annual-project-report/${year}/sync-from-projects/`,
+        {
+          method: 'POST',
+        },
+      )
+
+      if (res.status === 'failure') {
+        enqueueSnackbar(<>{res.error}</>, {
+          variant: 'error',
+        })
+      } else {
+        setTaskId(res.task_id)
+        enqueueSnackbar(<>Started synchronizing with Projects.</>, {
+          variant: 'success',
+        })
+      }
+    } catch (e) {
+      await handleActionErrors(e)
+    }
+  }
+
+  useEffect(() => {
+    if (!taskId) return
+
+    let attempt = 0
+    let timeout: any
+
+    const getSyncStatus = async () => {
+      try {
+        const res = await api(
+          `api/annual-project-report/${year}/sync-from-projects/?task_id=${taskId}`,
+        )
+
+        if (res.status === 'success') {
+          setTaskId(null)
+          refetchAPRCurrentYear()
+
+          enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
+            variant: 'success',
+          })
+          return
+        }
+
+        if (res.status === 'failure') {
+          setTaskId(null)
+          enqueueSnackbar(<>{res.error}</>, {
+            variant: 'error',
+          })
+          return
+        }
+
+        const delay = Math.min(1000 * 2 ** attempt, 30000)
+        attempt++
+
+        timeout = setTimeout(getSyncStatus, delay)
+      } catch (e) {
+        await handleActionErrors(e)
+      }
+    }
+
+    getSyncStatus()
+
+    return () => clearTimeout(timeout)
+  }, [taskId])
+
   return (
     <PageWrapper>
       {/* "~" means absolute, outside the nested context */}
@@ -440,6 +516,25 @@ export default function APRMLFSWorkspace() {
             >
               Endorse APR
             </Button>
+            {canEditAPR && (
+              <Button
+                disabled={
+                  loading || !(loaded && (aprData ?? []).length > 0) || !!taskId
+                }
+                variant="contained"
+                color="secondary"
+                onClick={syncWithProjects}
+              >
+                Synchronize with Projects
+                {!!taskId && (
+                  <CircularProgress
+                    color="inherit"
+                    size="20px"
+                    className="ml-2"
+                  />
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
