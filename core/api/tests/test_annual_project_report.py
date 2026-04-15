@@ -2149,6 +2149,64 @@ class TestAPRExportView(BaseTest):
         )
         assert worksheet.cell(null_row, columns["last_year_remarks"]).value is None
 
+    def test_export_with_non_default_status_filter(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+        project_closed_status,
+    ):
+        ongoing_project = ProjectFactory(
+            code="TEST/EXP/ONG/INV/01",
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        closed_project = ProjectFactory(
+            code="TEST/EXP/CLO/INV/01",
+            agency=annual_agency_report.agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=annual_agency_report, project=ongoing_project)
+        AnnualProjectReportFactory(report=annual_agency_report, project=closed_project)
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        columns = APRExportWriter.build_column_mapping()
+
+        # Default status filters (ONG,COM) — closed project should not appear
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code not in project_codes
+        assert ongoing_project.code in project_codes
+
+        # With status=CLO, the closed project must also appear
+        response = self.client.get(url, {"status": "CLO"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code in project_codes
+        assert ongoing_project.code in project_codes
+
 
 @pytest.mark.django_db
 class TestAnnualProjectReportDerivedProperties(BaseTest):
@@ -4164,6 +4222,66 @@ class TestAPRMLFSExportView(BaseTest):
             ).value
             == version3.total_fund
         )
+
+    def test_filter_by_non_default_status(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
+        project_closed_status,
+    ):
+        agency = AgencyFactory()
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        ongoing_project = ProjectFactory(
+            code="TEST/MLFS/ONG/INV/01",
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        closed_project = ProjectFactory(
+            code="TEST/MLFS/CLO/INV/01",
+            agency=agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=agency_report, project=ongoing_project)
+        AnnualProjectReportFactory(report=agency_report, project=closed_project)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        columns = APRExportWriter.build_column_mapping()
+
+        # Default filters (ONG,COM) — the closed project should not appear
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code not in project_codes
+        assert ongoing_project.code in project_codes
+
+        # With status=CLO, the closed project must also appear
+        response = self.client.get(url, {"status": "CLO"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code in project_codes
+        assert ongoing_project.code in project_codes
 
 
 @pytest.mark.django_db
