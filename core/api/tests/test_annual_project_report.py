@@ -2149,6 +2149,64 @@ class TestAPRExportView(BaseTest):
         )
         assert worksheet.cell(null_row, columns["last_year_remarks"]).value is None
 
+    def test_export_with_non_default_status_filter(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+        project_closed_status,
+    ):
+        ongoing_project = ProjectFactory(
+            code="TEST/EXP/ONG/INV/01",
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        closed_project = ProjectFactory(
+            code="TEST/EXP/CLO/INV/01",
+            agency=annual_agency_report.agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=annual_agency_report, project=ongoing_project)
+        AnnualProjectReportFactory(report=annual_agency_report, project=closed_project)
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        columns = APRExportWriter.build_column_mapping()
+
+        # Default status filters (ONG,COM) — closed project should not appear
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code not in project_codes
+        assert ongoing_project.code in project_codes
+
+        # With status=CLO, the closed project must also appear
+        response = self.client.get(url, {"status": "CLO"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code in project_codes
+        assert ongoing_project.code in project_codes
+
 
 @pytest.mark.django_db
 class TestAnnualProjectReportDerivedProperties(BaseTest):
@@ -3502,7 +3560,11 @@ class TestAPRMLFSExportView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_mlfs_viewer_can_export_all_agencies(
-        self, secretariat_viewer_user, apr_year, annual_progress_report
+        self,
+        secretariat_viewer_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
     ):
         agency1 = AgencyFactory(name="A")
         agency2 = AgencyFactory(name="B")
@@ -3523,12 +3585,14 @@ class TestAPRMLFSExportView(BaseTest):
         project1 = ProjectFactory(
             code="AG1/TEST/2024/001",
             agency=agency1,
+            status=project_ongoing_status,
             version=3,
             latest_project=None,
         )
         project2 = ProjectFactory(
             code="AG2/TEST/2024/001",
             agency=agency2,
+            status=project_ongoing_status,
             version=3,
             latest_project=None,
         )
@@ -3617,7 +3681,9 @@ class TestAPRMLFSExportView(BaseTest):
         ).value
         assert project_1_value == project1.code
 
-    def test_filter_by_agency(self, mlfs_admin_user, apr_year, annual_progress_report):
+    def test_filter_by_agency(
+        self, mlfs_admin_user, apr_year, annual_progress_report, project_ongoing_status
+    ):
         agency1 = AgencyFactory(name="Agency One")
         agency2 = AgencyFactory(name="Agency Two")
 
@@ -3634,8 +3700,18 @@ class TestAPRMLFSExportView(BaseTest):
             is_unlocked=False,
         )
 
-        project1 = ProjectFactory(agency=agency1, version=3, latest_project=None)
-        project2 = ProjectFactory(agency=agency2, version=3, latest_project=None)
+        project1 = ProjectFactory(
+            agency=agency1,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        project2 = ProjectFactory(
+            agency=agency2,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
 
         AnnualProjectReportFactory(report=report1, project=project1)
         AnnualProjectReportFactory(report=report2, project=project2)
@@ -3658,7 +3734,13 @@ class TestAPRMLFSExportView(BaseTest):
         assert agency_value == "Agency One"
 
     def test_filter_by_country(
-        self, mlfs_admin_user, apr_year, annual_progress_report, country_ro, new_country
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        country_ro,
+        new_country,
+        project_ongoing_status,
     ):
         agency1 = AgencyFactory()
         agency2 = AgencyFactory()
@@ -3677,10 +3759,18 @@ class TestAPRMLFSExportView(BaseTest):
         )
 
         project1 = ProjectFactory(
-            agency=agency1, country=country_ro, version=3, latest_project=None
+            agency=agency1,
+            country=country_ro,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
         )
         project2 = ProjectFactory(
-            agency=agency2, country=new_country, version=3, latest_project=None
+            agency=agency2,
+            country=new_country,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
         )
 
         AnnualProjectReportFactory(report=report1, project=project1)
@@ -3791,7 +3881,7 @@ class TestAPRMLFSExportView(BaseTest):
         assert all(value is None or value == "" for value in row_values)
 
     def test_duplicate_project_codes_across_agencies(
-        self, mlfs_admin_user, apr_year, annual_progress_report
+        self, mlfs_admin_user, apr_year, annual_progress_report, project_ongoing_status
     ):
         agency1 = AgencyFactory(name="Agency One")
         agency2 = AgencyFactory(name="Agency Two")
@@ -3813,12 +3903,14 @@ class TestAPRMLFSExportView(BaseTest):
         project1 = ProjectFactory(
             code="DUPLICATE/CODE/001",
             agency=agency1,
+            status=project_ongoing_status,
             version=3,
             latest_project=None,
         )
         project2 = ProjectFactory(
             code="DUPLICATE/CODE/001",
             agency=agency2,
+            status=project_ongoing_status,
             version=3,
             latest_project=None,
         )
@@ -3838,7 +3930,7 @@ class TestAPRMLFSExportView(BaseTest):
         assert data_rows == 2
 
     def test_agencies_ordered_by_name(
-        self, mlfs_admin_user, apr_year, annual_progress_report
+        self, mlfs_admin_user, apr_year, annual_progress_report, project_ongoing_status
     ):
         agency_z = AgencyFactory(name="Zero")
         agency_a = AgencyFactory(name="Alpha")
@@ -3851,7 +3943,12 @@ class TestAPRMLFSExportView(BaseTest):
                 status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
                 is_unlocked=False,
             )
-            project = ProjectFactory(agency=agency, version=3, latest_project=None)
+            project = ProjectFactory(
+                agency=agency,
+                status=project_ongoing_status,
+                version=3,
+                latest_project=None,
+            )
             AnnualProjectReportFactory(report=report, project=project)
 
         self.client.force_authenticate(user=mlfs_admin_user)
@@ -4125,6 +4222,66 @@ class TestAPRMLFSExportView(BaseTest):
             ).value
             == version3.total_fund
         )
+
+    def test_filter_by_non_default_status(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
+        project_closed_status,
+    ):
+        agency = AgencyFactory()
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        ongoing_project = ProjectFactory(
+            code="TEST/MLFS/ONG/INV/01",
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        closed_project = ProjectFactory(
+            code="TEST/MLFS/CLO/INV/01",
+            agency=agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=agency_report, project=ongoing_project)
+        AnnualProjectReportFactory(report=agency_report, project=closed_project)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        columns = APRExportWriter.build_column_mapping()
+
+        # Default filters (ONG,COM) — the closed project should not appear
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code not in project_codes
+        assert ongoing_project.code in project_codes
+
+        # With status=CLO, the closed project must also appear
+        response = self.client.get(url, {"status": "CLO"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, columns["project_code"]).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert closed_project.code in project_codes
+        assert ongoing_project.code in project_codes
 
 
 @pytest.mark.django_db

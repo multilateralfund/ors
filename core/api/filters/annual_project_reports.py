@@ -38,6 +38,42 @@ class APRProjectFilter(filters.FilterSet):
         return queryset.filter(status__code__in=status_codes)
 
 
+def build_filter_params_from_query_params(query_params, default_status="ONG,COM"):
+    """
+    Utility function that parses project-report filter params from request query_params
+    Returns a dict that can be used by build_filtered_project_reports_queryset().
+    """
+    filter_params = {}
+
+    country_param = query_params.get("country")
+    if country_param:
+        country_names = [c.strip() for c in country_param.split(",") if c.strip()]
+        filter_params["country"] = Country.objects.filter(
+            name__in=country_names, location_type=Country.LocationType.COUNTRY
+        )
+
+    region_param = query_params.get("region")
+    if region_param:
+        region_names = [r.strip() for r in region_param.split(",") if r.strip()]
+        filter_params["region"] = Country.objects.filter(
+            name__in=region_names,
+            location_type__in=[
+                Country.LocationType.REGION,
+                Country.LocationType.SUBREGION,
+            ],
+        )
+
+    cluster_param = query_params.get("cluster")
+    if cluster_param:
+        filter_params["cluster"] = cluster_param
+
+    status_param = query_params.get("status", default_status)
+    if status_param:
+        filter_params["status"] = status_param
+
+    return filter_params
+
+
 def build_filtered_project_reports_queryset(filter_params):
     """
     Helper method that builds a filtered queryset for AnnualProjectReport,
