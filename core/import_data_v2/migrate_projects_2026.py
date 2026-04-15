@@ -1,3 +1,5 @@
+# pylint: disable=C0302
+
 import logging
 from datetime import datetime
 import pandas as pd
