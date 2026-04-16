@@ -915,7 +915,6 @@ class APRSummaryTablesExportWriter:
             "approved_funding": 0,
             "funds_disbursed": 0,
             "balance": 0,
-            "pct_values": [],
         }
 
         for approval_year in sorted(year_data.keys()):
@@ -932,12 +931,11 @@ class APRSummaryTablesExportWriter:
                 p.get("funds_disbursed") or 0 for p in year_projects
             )
 
-            pct_values = [
-                p.get("per_cent_funds_disbursed") * 100
-                for p in year_projects
-                if p.get("per_cent_funds_disbursed") is not None
-            ]
-            avg_pct_disbursed = sum(pct_values) / len(pct_values) if pct_values else 0
+            avg_pct_disbursed = (
+                total_funds_disbursed / total_approved_funding * 100
+                if total_approved_funding
+                else 0
+            )
 
             pct_completed = (num_completed / num_approvals) if num_approvals else 0
 
@@ -963,7 +961,6 @@ class APRSummaryTablesExportWriter:
             grand_totals["approved_funding"] += total_approved_funding
             grand_totals["funds_disbursed"] += total_funds_disbursed
             grand_totals["balance"] += total_balance
-            grand_totals["pct_values"].extend(pct_values)
 
             row += 1
 
@@ -973,7 +970,9 @@ class APRSummaryTablesExportWriter:
             (gt["num_completed"] / gt["num_approvals"]) if gt["num_approvals"] else 0
         )
         avg_pct_total = (
-            sum(gt["pct_values"]) / len(gt["pct_values"]) if gt["pct_values"] else 0
+            gt["funds_disbursed"] / gt["approved_funding"] * 100
+            if gt["approved_funding"]
+            else 0
         )
 
         self._write_annual_row(
@@ -1256,13 +1255,10 @@ class APRSummaryTablesExportWriter:
         )
         data["total_funds_disbursed"] = sum(apr.funds_disbursed or 0 for apr in records)
 
-        pct_values = [
-            apr.per_cent_funds_disbursed * 100
-            for apr in records
-            if apr.per_cent_funds_disbursed is not None
-        ]
         data["avg_pct_disbursed"] = (
-            sum(pct_values) / len(pct_values) if pct_values else 0
+            data["total_funds_disbursed"] / data["total_approved_funding"] * 100
+            if data["total_approved_funding"]
+            else 0
         )
 
         data["avg_months_to_disbursement"] = self._calculate_avg_months(
