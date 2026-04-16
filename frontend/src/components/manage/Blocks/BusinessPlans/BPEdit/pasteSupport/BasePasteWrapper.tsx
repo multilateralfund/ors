@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
-import { find, map, replace, trim } from 'lodash'
+import { find, indexOf, map, replace, trim } from 'lodash'
 
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
@@ -39,9 +39,6 @@ const normalizeLabel = (label: string) => {
   return trim(trimmedSlashLabel)
 }
 
-const findFieldObj = (columns: APRTableFieldProps[], label: string) =>
-  find(columns, (col) => normalizeLabel(col.label) === label)
-
 export function BasePasteWrapper(props: BasePasteWrapperProps) {
   const {
     label,
@@ -54,6 +51,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
   } = props
   const { enqueueSnackbar } = useSnackbar()
   const [pasting, setPasting] = useState(false)
+
+  const getFieldData = (label: string) =>
+    find(columns, (col) => normalizeLabel(col.label) === label)
 
   async function handlePaste() {
     setPasting(true)
@@ -78,23 +78,44 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       const nextForm = [...form!]
       for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
         const rowId = nextForm[i][rowIdField]
-        if (pendingIds.includes(rowId)) {
-          newValues[rowId].map((value: any, index: number) => {
-            if (isMultiple) {
-              const columnsLabels = map(newValues[pendingIds[0]], (label) =>
-                normalizeLabel(label),
-              )
-              const normalizedLabel = normalizeLabel(label)
 
-              const pastedFieldObj = findFieldObj(columns!, normalizedLabel)
-              const crtFieldObj = findFieldObj(columns!, columnsLabels[index])
+        if (pendingIds.includes(rowId)) {
+          const rowValues = newValues[rowId]
+
+          if (isMultiple && !!columns) {
+            const normalizedLabel = normalizeLabel(label)
+            const pastedFieldData = getFieldData(normalizedLabel)
+            const fieldIndex = indexOf(columns, pastedFieldData)
+
+            const identifierLabel = 'Project Code'
+            const projectCodeData = getFieldData(identifierLabel)
+            const projectCodeIndex = indexOf(columns, projectCodeData)
+
+            const hasHeaders = pendingIds[0] === identifierLabel
+
+            const values = hasHeaders
+              ? rowValues
+              : rowValues.slice(0, fieldIndex + 1)
+
+            const startIndex = hasHeaders
+              ? 0
+              : Math.max(fieldIndex - values.length + 1, projectCodeIndex + 1)
+
+            const columnsLabels = hasHeaders
+              ? map(newValues[pendingIds[0]], (label) => normalizeLabel(label))
+              : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
+                  normalizeLabel(label),
+                )
+
+            values.map((value: any, index: number) => {
+              const crtFieldObj = getFieldData(columnsLabels[index])
 
               if (
                 !(
                   columnsLabels.includes(normalizedLabel) &&
                   crtFieldObj &&
                   crtFieldObj.input &&
-                  crtFieldObj.group === pastedFieldObj?.group
+                  crtFieldObj.group === pastedFieldData?.group
                 )
               ) {
                 return
@@ -102,10 +123,12 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
               mutator(nextForm[i], cleanValue(value), crtFieldObj.fieldName)
               numColsInserted++
-            } else {
+            })
+          } else {
+            rowValues.map((value: any) => {
               mutator(nextForm[i], cleanValue(value))
-            }
-          })
+            })
+          }
 
           pendingIds = pendingIds.filter((v) => v != rowId)
           numInserted++
