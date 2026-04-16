@@ -4,19 +4,18 @@ import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
 import { BPEditTableInterface } from '@ors/components/manage/Blocks/BusinessPlans/types.ts'
 
+const decimalSeparator = Intl.NumberFormat(navigator.language)
+  .format(1.1)
+  .replaceAll('1', '')
+const thousandSeparator = Intl.NumberFormat(navigator.language)
+  .format(1111)
+  .replaceAll('1', '')
+
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
-    const decimalSeparator = Intl.NumberFormat(navigator.language)
-      .format(1.1)
-      .replaceAll('1', '')
-    const thousandSeparator = Intl.NumberFormat(navigator.language)
-      .format(1111)
-      .replaceAll('1', '')
-    return toParse
-      .replaceAll(thousandSeparator, '')
-      .replace(decimalSeparator, '.')
+    return toParse.replaceAll(thousandSeparator, '').replace(decimalSeparator, '.')
   }
   return value
 }
@@ -50,16 +49,16 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         newValues[entryId] = row[1]
       }
     }
-    let pendingIds = Array.from(Object.keys(newValues))
-    const numEntries = pendingIds.length
+    const pendingIds = new Set(Object.keys(newValues))
+    const numEntries = pendingIds.size
     let numInserted = 0
     if (numEntries > 0) {
       const nextForm = [...form!]
-      for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
+      for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
         const rowId = nextForm[i][rowIdField]
-        if (pendingIds.includes(rowId)) {
+        if (pendingIds.has(rowId)) {
           mutator(nextForm[i], cleanValue(newValues[rowId]))
-          pendingIds = pendingIds.filter((v) => v != rowId)
+          pendingIds.delete(rowId)
           numInserted++
         }
       }
@@ -74,7 +73,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             variant: 'success',
           },
         )
-      } else if (pendingIds.length > numInserted) {
+      } else if (pendingIds.size > numInserted) {
         enqueueSnackbar(
           'No valid entries found in pasted data! Make sure you are pasting a 2 column table.',
           {
