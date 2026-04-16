@@ -76,62 +76,77 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
     let numColsInserted = 0
     if (numEntries > 0) {
       const nextForm = [...form!]
-      for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
-        const rowId = nextForm[i][rowIdField]
 
-        if (pendingIds.includes(rowId)) {
-          const rowValues = newValues[rowId]
+      if (isMultiple && !!columns) {
+        const normalizedLabel = normalizeLabel(label)
+        const pastedFieldData = getFieldData(normalizedLabel)
+        const fieldIndex = indexOf(columns, pastedFieldData)
 
-          if (isMultiple && !!columns) {
-            const normalizedLabel = normalizeLabel(label)
-            const pastedFieldData = getFieldData(normalizedLabel)
-            const fieldIndex = indexOf(columns, pastedFieldData)
+        const identifierLabel = 'Project Code'
+        const projectCodeData = getFieldData(identifierLabel)
+        const projectCodeIndex = indexOf(columns, projectCodeData)
 
-            const identifierLabel = 'Project Code'
-            const projectCodeData = getFieldData(identifierLabel)
-            const projectCodeIndex = indexOf(columns, projectCodeData)
+        const hasHeaders = pendingIds[0] === identifierLabel
+        const firstRowValues = newValues[pendingIds[0]]
 
-            const hasHeaders = pendingIds[0] === identifierLabel
+        const startIndex = hasHeaders
+          ? 0
+          : Math.max(
+              fieldIndex - firstRowValues.length + 1,
+              projectCodeIndex + 1,
+            )
 
-            const values = hasHeaders
-              ? rowValues
-              : rowValues.slice(0, fieldIndex + 1)
+        const columnsLabels = hasHeaders
+          ? map(firstRowValues, (label) => normalizeLabel(label))
+          : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
+              normalizeLabel(label),
+            )
 
-            const startIndex = hasHeaders
-              ? 0
-              : Math.max(fieldIndex - values.length + 1, projectCodeIndex + 1)
+        if (columnsLabels.includes(normalizedLabel)) {
+          for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
+            const rowId = nextForm[i][rowIdField]
 
-            const columnsLabels = hasHeaders
-              ? map(newValues[pendingIds[0]], (label) => normalizeLabel(label))
-              : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
-                  normalizeLabel(label),
-                )
+            if (pendingIds.includes(rowId)) {
+              const rowValues = newValues[rowId]
 
-            values.map((value: any, index: number) => {
-              const crtFieldObj = getFieldData(columnsLabels[index])
+              const values = hasHeaders
+                ? rowValues
+                : rowValues.slice(0, fieldIndex + 1)
 
-              if (
-                !(
-                  columnsLabels.includes(normalizedLabel) &&
-                  crtFieldObj &&
-                  crtFieldObj.input &&
-                  crtFieldObj.group === pastedFieldData?.group
-                )
-              ) {
-                return
-              }
+              values.map((value: any, index: number) => {
+                const crtFieldObj = getFieldData(columnsLabels[index])
 
-              mutator(nextForm[i], cleanValue(value), crtFieldObj.fieldName)
-              numColsInserted++
-            })
-          } else {
-            rowValues.map((value: any) => {
+                if (
+                  !(
+                    crtFieldObj &&
+                    crtFieldObj.input &&
+                    crtFieldObj.group === pastedFieldData?.group
+                  )
+                ) {
+                  return
+                }
+
+                mutator(nextForm[i], cleanValue(value), crtFieldObj.fieldName)
+                numColsInserted++
+              })
+
+              pendingIds = pendingIds.filter((v) => v != rowId)
+              numInserted++
+            }
+          }
+        }
+      } else {
+        for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
+          const rowId = nextForm[i][rowIdField]
+
+          if (pendingIds.includes(rowId)) {
+            newValues[rowId].map((value: any) => {
               mutator(nextForm[i], cleanValue(value))
             })
-          }
 
-          pendingIds = pendingIds.filter((v) => v != rowId)
-          numInserted++
+            pendingIds = pendingIds.filter((v) => v != rowId)
+            numInserted++
+          }
         }
       }
       setPasting(false)
