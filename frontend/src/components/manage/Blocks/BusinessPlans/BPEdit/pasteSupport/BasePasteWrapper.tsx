@@ -23,7 +23,7 @@ function cleanValue(value: string) {
 }
 interface BasePasteWrapperProps {
   label: string
-  mutator: (row: any, value: any, field?: string) => void
+  mutator: (row: any, value: any, field?: APRTableFieldProps) => void
   form: any[] | undefined
   setForm: (state: any[]) => void
   rowIdField?: string
@@ -126,7 +126,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                   return
                 }
 
-                mutator(nextForm[i], cleanValue(value), crtFieldObj.fieldName)
+                mutator(nextForm[i], cleanValue(value), crtFieldObj)
                 numColsInserted++
               })
 

@@ -9,7 +9,7 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useStore } from '@ors/store.tsx'
-import { find, get, isEqual, isNil, isObject } from 'lodash'
+import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -694,10 +694,10 @@ export default function useGetColumnDefs({
         clipboardEdit && c.input && rows && setRows
           ? (props: IHeaderParams) => (
               <BasePasteWrapper
-                mutator={(row: any, value: any, field?: string) => {
-                  const crtField = find(columns, (c) => c.fieldName === field)
+                mutator={(row: any, value: any, field?: APRTableFieldProps) => {
                   // @ts-ignore
-                  const cellDataType = crtField.overrideOptions?.cellDataType
+                  const { fieldName, overrideOptions } = field ?? {}
+                  const cellDataType = overrideOptions?.cellDataType
                   let toBeAdded = value
 
                   if (cellDataType === 'dateString') {
@@ -723,7 +723,7 @@ export default function useGetColumnDefs({
                     toBeAdded = value.toLowerCase() === 'yes'
                   }
 
-                  row[field!] = toBeAdded
+                  row[fieldName!] = toBeAdded
                 }}
                 form={rows}
                 label={props.displayName}
