@@ -225,12 +225,19 @@ class APRExportWriter:
             )
 
         total = len(self.project_reports_data)
+
+        # Insert all extra rows at once for speed optimization.
+        # Eeach insert_rows() call shifts every row below it and would lead to O(n*n).
+        if total > 1:
+            self.worksheet.insert_rows(template_row + 1, total - 1)
+
+        # Read the template's cell styles once, then reuse them for every inserted row.
+        template_styles = self._read_row_styles(template_row)
+
         for idx, report_data in enumerate(self.project_reports_data):
             current_row = self.FIRST_DATA_ROW + idx
             if idx > 0:
-                # Insert row and copy style if we're not on the first data row
-                self.worksheet.insert_rows(current_row, 1)
-                self._copy_row_style(template_row, current_row)
+                self._apply_cached_row_styles(template_styles, current_row)
 
             self._write_row_data(current_row, report_data)
 
@@ -238,18 +245,32 @@ class APRExportWriter:
             if self.progress_callback and rows_written % 100 == 0:
                 self.progress_callback(rows_written, total)
 
-    def _copy_row_style(self, source_row, target_row):
+    def _read_row_styles(self, source_row):
+        """Reads all cell styles from a row into a column-index-keyed dictionary."""
+        styles = {}
         for col_idx in range(1, len(self.column_mapping) + 1):
-            source_cell = self.worksheet.cell(source_row, col_idx)
-            target_cell = self.worksheet.cell(target_row, col_idx)
+            src = self.worksheet.cell(source_row, col_idx)
+            if src.has_style:
+                styles[col_idx] = {
+                    "font": copy(src.font),
+                    "border": copy(src.border),
+                    "fill": copy(src.fill),
+                    "number_format": src.number_format,
+                    "protection": copy(src.protection),
+                    "alignment": copy(src.alignment),
+                }
+        return styles
 
-            if source_cell.has_style:
-                target_cell.font = copy(source_cell.font)
-                target_cell.border = copy(source_cell.border)
-                target_cell.fill = copy(source_cell.fill)
-                target_cell.number_format = copy(source_cell.number_format)
-                target_cell.protection = copy(source_cell.protection)
-                target_cell.alignment = copy(source_cell.alignment)
+    def _apply_cached_row_styles(self, styles, target_row):
+        """Apply pre-read template cell styles to all cells of a target row."""
+        for col_idx, style in styles.items():
+            tgt = self.worksheet.cell(target_row, col_idx)
+            tgt.font = copy(style["font"])
+            tgt.border = copy(style["border"])
+            tgt.fill = copy(style["fill"])
+            tgt.number_format = style["number_format"]
+            tgt.protection = copy(style["protection"])
+            tgt.alignment = copy(style["alignment"])
 
     def _write_row_data(self, row_number, report_data):
         """Writes a single project report's data to the row identified by row_number"""
