@@ -414,7 +414,7 @@ export default function APRMLFSWorkspace() {
 
         if (res.status === 'success') {
           setTaskId(null)
-          refetchAPRCurrentYear()
+          refetchAprData()
 
           enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
             variant: 'success',
