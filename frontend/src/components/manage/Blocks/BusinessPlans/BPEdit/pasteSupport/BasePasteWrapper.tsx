@@ -5,16 +5,17 @@ import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/Busi
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import { find, indexOf, map, replace, trim } from 'lodash'
 
+const decimalSeparator = Intl.NumberFormat(navigator.language)
+  .format(1.1)
+  .replaceAll('1', '')
+const thousandSeparator = Intl.NumberFormat(navigator.language)
+  .format(1111)
+  .replaceAll('1', '')
+
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
-    const decimalSeparator = Intl.NumberFormat(navigator.language)
-      .format(1.1)
-      .replaceAll('1', '')
-    const thousandSeparator = Intl.NumberFormat(navigator.language)
-      .format(1111)
-      .replaceAll('1', '')
     return toParse
       .replaceAll(thousandSeparator, '')
       .replace(decimalSeparator, '.')
@@ -70,8 +71,8 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         newValues[entryId] = row.slice(1)
       }
     }
-    let pendingIds = Array.from(Object.keys(newValues))
-    const numEntries = pendingIds.length
+    const pendingIds = new Set(Object.keys(newValues))
+    const numEntries = pendingIds.size
     let numInserted = 0
     let numColsInserted = 0
     if (numEntries > 0) {
@@ -86,8 +87,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         const projectCodeData = getFieldData(identifierLabel)
         const projectCodeIndex = indexOf(columns, projectCodeData)
 
-        const hasHeaders = pendingIds[0] === identifierLabel
-        const firstRowValues = newValues[pendingIds[0]]
+        const firstPendingId = pendingIds.values().next().value
+        const hasHeaders = firstPendingId === identifierLabel
+        const firstRowValues = newValues[firstPendingId!]
 
         const startIndex = hasHeaders
           ? 0
@@ -103,10 +105,10 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             )
 
         if (columnsLabels.includes(normalizedLabel)) {
-          for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
+          for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
             const rowId = nextForm[i][rowIdField]
 
-            if (pendingIds.includes(rowId)) {
+            if (pendingIds.has(rowId)) {
               const rowValues = newValues[rowId]
 
               const values = hasHeaders
@@ -130,21 +132,21 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                 numColsInserted++
               })
 
-              pendingIds = pendingIds.filter((v) => v != rowId)
+              pendingIds.delete(rowId)
               numInserted++
             }
           }
         }
       } else {
-        for (let i = 0; i < nextForm.length && pendingIds.length; i++) {
+        for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
           const rowId = nextForm[i][rowIdField]
 
-          if (pendingIds.includes(rowId)) {
+          if (pendingIds.has(rowId)) {
             newValues[rowId].map((value: any) => {
               mutator(nextForm[i], cleanValue(value))
             })
 
-            pendingIds = pendingIds.filter((v) => v != rowId)
+            pendingIds.delete(rowId)
             numInserted++
           }
         }
@@ -170,7 +172,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             variant: 'error',
           })
         }
-      } else if (pendingIds.length > numInserted) {
+      } else if (pendingIds.size > numInserted) {
         enqueueSnackbar(errorMessage, {
           variant: 'error',
         })
