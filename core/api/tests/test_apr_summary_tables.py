@@ -726,3 +726,73 @@ class TestAPRSummaryTablesExport(BaseTest):
         )
         assert str(ws.cell(expected_total_row, 1).value or "").strip() == "Total"
         assert ws.cell(expected_total_row, 2).value == num_clusters
+
+    def test_percentage_disbursed(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_completed_status,
+    ):
+        inv_type = ProjectType.objects.create(
+            name="Investment", code="INV", sort_order=1
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                date_approved=date(2023, 1, 15),
+                status=project_completed_status,
+                project_type=inv_type,
+                version=3,
+                total_fund=3000,
+            ),
+            status="COM",
+            funds_disbursed=3000,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ProjectFactory(
+                agency=apr_agency_viewer_user.agency,
+                date_approved=date(2023, 6, 1),
+                status=project_completed_status,
+                project_type=inv_type,
+                version=3,
+                total_fund=1000,
+            ),
+            status="COM",
+            funds_disbursed=0,
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        wb = load_workbook(
+            BytesIO(self.client.get(reverse("apr-summary-tables-export")).content)
+        )
+
+        col_map = APRSummaryTablesExportWriter.build_annual_column_mapping()
+        sheet_a = wb[APRSummaryTablesExportWriter.SHEET_ANNUAL]
+
+        # Per-year row for 2023
+        year_2023_row = next(
+            r
+            for r in range(
+                APRSummaryTablesExportWriter.DATA_START_ROW, sheet_a.max_row + 1
+            )
+            if sheet_a.cell(r, col_map["approval_year"]).value == 2023
+        )
+        assert sheet_a.cell(year_2023_row, col_map["pct_funds_disbursed"]).value == 75.0
+
+        # Total row
+        total_row = next(
+            r
+            for r in range(
+                APRSummaryTablesExportWriter.DATA_START_ROW, sheet_a.max_row + 1
+            )
+            if sheet_a.cell(r, col_map["approval_year"]).value == "Total"
+        )
+        assert sheet_a.cell(total_row, col_map["pct_funds_disbursed"]).value == 75.0
+
+        # Sheet (b) Total row: avg_pct_disbursed is at column 4
+        sheet_b = wb[APRSummaryTablesExportWriter.SHEET_INVESTMENT]
+        assert (
+            sheet_b.cell(APRSummaryTablesExportWriter.DATA_START_ROW, 4).value == 75.0
+        )

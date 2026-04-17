@@ -86,17 +86,21 @@ def get_substance_blend_ods_display_name(name, code):
     return substance, blend, ods_display_name
 
 
-def find_project_ods_odp_by_name(project_ods_odps, name):
+def find_project_ods_odp_by_name(project_ods_odps, name, replacement_text):
     TRANSLATE_ODS_ODP_NAMES = {
         "MB": "Methyl Bromide",
     }
     if name.strip() in TRANSLATE_ODS_ODP_NAMES:
         name = TRANSLATE_ODS_ODP_NAMES[name.strip()]
-    return project_ods_odps.filter(
-        Q(ods_display_name=name.strip())
-        | Q(ods_substance__name=name.strip())
-        | Q(ods_blend__name=name.strip())
-    ).first()
+    return (
+        project_ods_odps.filter(
+            Q(ods_display_name=name.strip())
+            | Q(ods_substance__name=name.strip())
+            | Q(ods_blend__name=name.strip())
+        )
+        .filter(ods_replacement_text=replacement_text.strip())
+        .first()
+    )
 
 
 def get_subsectors_by_name(name):
@@ -561,7 +565,9 @@ def process_ods_phaseout_fields_sheet(dry_run=True, legacy_codes_to_ignore=[]):
             logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found")
             continue
         existing_project_ods_odp = find_project_ods_odp_by_name(
-            ProjectOdsOdp.objects.filter(project=project), row["ODS_NAME"]
+            ProjectOdsOdp.objects.filter(project=project),
+            row["ODS_NAME"],
+            row["ODS_REPLACEMENT"],
         )
         if existing_project_ods_odp:
             existing_project_ods_odp.ods_replacement_text = row["ODS_REPLACEMENT"]
@@ -617,7 +623,9 @@ def process_ods_production_fields_sheet(dry_run=True, legacy_codes_to_ignore=[])
             continue
 
         existing_project_ods_odp = find_project_ods_odp_by_name(
-            ProjectOdsOdp.objects.filter(project=project), row["ODS_PRODUCTION"]
+            ProjectOdsOdp.objects.filter(project=project),
+            row["ODS_PRODUCTION"],
+            row["ODS_PROREPLA"],
         )
         if existing_project_ods_odp:
             existing_project_ods_odp.ods_replacement_text = row["ODS_PROREPLA"]
@@ -933,6 +941,7 @@ def process_c_and_p_consumption_sheet(dry_run=True):
         existing_project_ods_odp = find_project_ods_odp_by_name(
             ProjectOdsOdp.objects.filter(project=project),
             row["Substance - baseline technology"],
+            row["Replacement technology/ies"],
         )
         if existing_project_ods_odp:
             existing_project_ods_odp.ods_replacement_text = row[
@@ -1017,6 +1026,7 @@ def process_c_and_p_production_sheet(dry_run=True):
         existing_project_ods_odp = find_project_ods_odp_by_name(
             ProjectOdsOdp.objects.filter(project=project),
             row["Substance - baseline technology"],
+            row["Replacement technology/ies"],
         )
         if existing_project_ods_odp:
             existing_project_ods_odp.ods_replacement_text = row[
@@ -1045,20 +1055,17 @@ def fill_total_phase_out_values_in_project(dry_run=True):
     projects = Project.objects.really_all().filter(submission_status__name="Approved")
     for project in projects:
         ods_odps = project.ods_odp.all()
-        if not project.total_phase_out_metric_tonnes:
-            project.total_phase_out_metric_tonnes = sum(
-                ods_odps.filter(phase_out_mt__isnull=False).values_list(
-                    "phase_out_mt", flat=True
-                )
+        project.total_phase_out_metric_tonnes = sum(
+            ods_odps.filter(phase_out_mt__isnull=False).values_list(
+                "phase_out_mt", flat=True
             )
-        if not project.total_phase_out_odp_tonnes:
-            project.total_phase_out_odp_tonnes = sum(
-                ods_odps.filter(odp__isnull=False).values_list("odp", flat=True)
-            )
-        if not project.total_phase_out_co2_tonnes:
-            project.total_phase_out_co2_tonnes = sum(
-                ods_odps.filter(co2_mt__isnull=False).values_list("co2_mt", flat=True)
-            )
+        )
+        project.total_phase_out_odp_tonnes = sum(
+            ods_odps.filter(odp__isnull=False).values_list("odp", flat=True)
+        )
+        project.total_phase_out_co2_tonnes = sum(
+            ods_odps.filter(co2_mt__isnull=False).values_list("co2_mt", flat=True)
+        )
         if not dry_run:
             project.save()
 

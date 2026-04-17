@@ -256,25 +256,29 @@ class ProjectsFundsWriter(SheetWriter):
                 {
                     "id": "meeting",
                     "headerName": "Meeting ID",
-                    "method": lambda p, _: p.meeting.id,
+                    "method": lambda p, _: p.meeting.number,
                 },
                 {
                     "id": "post_excom_meeting",
                     "headerName": "Post ExCom meeting ID",
                     "method": lambda p, _: (
-                        p.post_excom_meeting.id if p.post_excom_meeting else None
+                        p.post_excom_meeting.number if p.post_excom_meeting else None
                     ),
                 },
                 {
                     "id": "transfer_meeting",
                     "headerName": "Transfer meeting ID",
                     "method": lambda p, _: (
-                        p.transfer_meeting.id if p.transfer_meeting else None
+                        p.transfer_meeting.number if p.transfer_meeting else None
                     ),
                 },
                 {
                     "id": "date_approved",
                     "headerName": "Date approved",
+                },
+                {
+                    "id": "adjustment",
+                    "headerName": "Adjustment",
                 },
             ]
         )

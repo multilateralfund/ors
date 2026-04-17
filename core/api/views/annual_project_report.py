@@ -26,6 +26,7 @@ from core.api.export.annual_project_report import (
 from core.api.filters.annual_project_reports import (
     APRProjectFilter,
     APRGlobalFilter,
+    build_filter_params_from_query_params,
     build_filtered_project_reports_queryset,
 )
 from core.api.permissions import (
@@ -59,7 +60,6 @@ from core.models import (
     AnnualProjectReport,
     AnnualProjectReportFile,
     Project,
-    Country,
 )
 from core.tasks import send_agency_submission_notification, sync_apr_from_projects
 
@@ -172,32 +172,7 @@ class APRWorkspaceView(RetrieveAPIView):
         year = int(self.kwargs.get("year"))
 
         # Build filter params from query params to filter nested project_reports
-        filter_params = {}
-
-        country_param = self.request.query_params.get("country")
-        if country_param:
-            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
-            filter_params["country"] = Country.objects.filter(
-                name__in=country_names, location_type=Country.LocationType.COUNTRY
-            )
-
-        region_param = self.request.query_params.get("region")
-        if region_param:
-            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
-            filter_params["region"] = Country.objects.filter(
-                name__in=region_names,
-                location_type__in=[
-                    Country.LocationType.REGION,
-                    Country.LocationType.SUBREGION,
-                ],
-            )
-
-        cluster_param = self.request.query_params.get("cluster")
-        if cluster_param:
-            filter_params["cluster"] = cluster_param
-
-        # Default the status to ONG,COM to match the workspace creation logic
-        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
+        filter_params = build_filter_params_from_query_params(self.request.query_params)
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related("project__meta_project")
@@ -604,12 +579,10 @@ class APRExportView(APIView):
 
         self.check_object_permissions(request, agency_report)
 
-        status_codes = request.query_params.get("status", "ONG,COM")
-        status_codes = [s.strip() for s in status_codes.split(",") if s.strip()]
+        filter_params = build_filter_params_from_query_params(request.query_params)
 
-        project_reports = AnnualProjectReport.objects.filter(
-            report=agency_report,
-            project__status__code__in=status_codes,
+        project_reports = build_filtered_project_reports_queryset(filter_params).filter(
+            report=agency_report
         )
 
         serializer = AnnualProjectReportReadSerializer(
@@ -705,32 +678,7 @@ class APRGlobalViewSet(ReadOnlyModelViewSet):
         )
 
         # Also filter the *nested* project reports for each agency report
-        filter_params = {}
-
-        country_param = self.request.query_params.get("country")
-        if country_param:
-            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
-            filter_params["country"] = Country.objects.filter(
-                name__in=country_names, location_type=Country.LocationType.COUNTRY
-            )
-
-        region_param = self.request.query_params.get("region")
-        if region_param:
-            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
-            filter_params["region"] = Country.objects.filter(
-                name__in=region_names,
-                location_type__in=[
-                    Country.LocationType.REGION,
-                    Country.LocationType.SUBREGION,
-                ],
-            )
-
-        cluster_param = self.request.query_params.get("cluster")
-        if cluster_param:
-            filter_params["cluster"] = cluster_param
-
-        # Default the status to ONG,COM to match the workspace creation logic
-        filter_params["status"] = self.request.query_params.get("status", "ONG,COM")
+        filter_params = build_filter_params_from_query_params(self.request.query_params)
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related(
@@ -1187,38 +1135,12 @@ class APRMLFSExportView(APIView):
         )
 
         # Build the filter parameters for the nested project reports
-        filter_params = {}
-
         agency_param = self.request.query_params.get("agency")
         if agency_param:
             agency_ids = [a.strip() for a in agency_param.split(",") if a.strip()]
             queryset = queryset.filter(agency_id__in=agency_ids)
 
-        country_param = self.request.query_params.get("country")
-        if country_param:
-            country_names = [c.strip() for c in country_param.split(",") if c.strip()]
-            filter_params["country"] = Country.objects.filter(
-                name__in=country_names, location_type=Country.LocationType.COUNTRY
-            )
-
-        region_param = self.request.query_params.get("region")
-        if region_param:
-            region_names = [r.strip() for r in region_param.split(",") if r.strip()]
-            filter_params["region"] = Country.objects.filter(
-                name__in=region_names,
-                location_type__in=[
-                    Country.LocationType.REGION,
-                    Country.LocationType.SUBREGION,
-                ],
-            )
-
-        cluster_param = self.request.query_params.get("cluster")
-        if cluster_param:
-            filter_params["cluster"] = cluster_param
-
-        status_param = self.request.query_params.get("status")
-        if status_param:
-            filter_params["status"] = status_param
+        filter_params = build_filter_params_from_query_params(self.request.query_params)
 
         project_reports_qs = build_filtered_project_reports_queryset(filter_params)
         project_reports_qs = project_reports_qs.select_related(
