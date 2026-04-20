@@ -717,8 +717,8 @@ export default function useGetColumnDefs({
                   }
 
                   if (['decimal', 'currency'].includes(cellDataType)) {
-                    // A cell becomes '' when cleared
-                    if (value === '') {
+                    // A cell becomes '' or whitespace-only (e.g. '\u00a0' in Excel HTML) when cleared
+                    if (typeof value === 'string' && value.trim() === '') {
                       toBeAdded = null
                     }
                   }
