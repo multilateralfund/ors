@@ -66,6 +66,7 @@ from core.api.views.cp_archive import (
     CPReportVersionsListView,
 )
 from core.api.views.funding_window import FundingWindowListCreateView
+from core.api.views.funding_window import FundingWindowExportView
 from core.api.views.funding_window import FundingWindowUpdateView
 from core.api.views.project_approval_summary import ProjectApprovalSummaryViewSet
 from core.api.views.projects_compare_versions import ProjectsCompareVersionsViewset
@@ -500,6 +501,11 @@ urlpatterns = [
         "funding-window/",
         FundingWindowListCreateView.as_view(),
         name="meta-project-list",
+    ),
+    path(
+        "funding-window/export/",
+        FundingWindowExportView.as_view(),
+        name="funding-window-export",
     ),
     path(
         "funding-window/<int:id>/",

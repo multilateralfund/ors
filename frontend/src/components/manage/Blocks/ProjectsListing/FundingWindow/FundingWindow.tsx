@@ -8,10 +8,12 @@ import {
 } from '@ors/types/api_funding_window.ts'
 import { useGetFundingWindow } from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/hooks.ts'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
-import { FaPlusCircle, FaEdit } from 'react-icons/fa'
+import { FaPlusCircle, FaEdit, FaFileDownload } from 'react-icons/fa'
 import React, { useState } from 'react'
 import FundingWindowModal from './FundingWindowModal.tsx'
 import api from '../../../../../helpers/Api/_api.ts'
+import Link from '@ors/components/ui/Link/Link.tsx'
+import { formatApiUrl } from '@ors/helpers'
 
 const dollarValueOrNull = (value: number | string) =>
   value ? `$${formatNumberValue(value)}` : null
@@ -124,7 +126,15 @@ export default function FundingWindow() {
   return (
     <>
       <mui.Box>
-        <div className="flex items-center justify-end py-3">
+        <div className="flex items-center justify-end gap-3 py-3">
+          <Link
+            button
+            href={formatApiUrl('api/funding-window/export/')}
+            startIcon={<FaFileDownload size={14} />}
+            variant="contained"
+          >
+            Download report
+          </Link>
           <mui.Button
             variant="contained"
             color="primary"
