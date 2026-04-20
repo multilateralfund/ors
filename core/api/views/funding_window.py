@@ -30,7 +30,10 @@ class FundingWindowUpdateView(generics.RetrieveAPIView, generics.UpdateAPIView):
 
 class FundingWindowExportView(generics.GenericAPIView):
     permission_classes = [HasMetaProjectsViewAccess]
-    queryset = FundingWindow.objects.select_related("meeting", "decision").order_by("id")
+    queryset = FundingWindow.objects.select_related(
+        "meeting",
+        "decision",
+    ).order_by("id")
     serializer_class = FundingWindowSerializerForListing
 
     def get(self, request, *args, **kwargs):
