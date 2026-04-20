@@ -13,6 +13,8 @@ from core.models import Decision
 from core.models import Meeting
 from core.models.funding_window import FundingWindow
 
+# pylint:disable=protected-access
+
 
 class FundingWindowSerializerForCreateUpdate(serializers.ModelSerializer):
     meeting_id = serializers.PrimaryKeyRelatedField(

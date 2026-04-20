@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import openpyxl
 
@@ -6,6 +7,9 @@ from core.api.export.base import BaseWriter
 from core.api.export.base import configure_sheet_print
 from core.api.utils import workbook_response
 
+if TYPE_CHECKING:
+    from core.api.views.funding_window import FundingWindowExportView
+    from openpyxl.worksheet.worksheet import Worksheet
 
 HEADERS = [
     {
@@ -59,6 +63,10 @@ class FundingWindowWriter(BaseWriter):
 
 
 class FundingWindowExport:
+    wb: "openpyxl.Workbook"
+    sheet: "Worksheet"
+    view: "FundingWindowExportView"
+
     def __init__(self, view):
         self.view = view
 
