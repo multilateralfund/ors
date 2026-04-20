@@ -9,6 +9,7 @@ import docx
 
 from django.http.response import FileResponse
 from django.urls import reverse
+from openpyxl.utils import get_column_letter
 from rest_framework.response import Response
 
 from core.api.serializers.business_plan import BPActivityDetailSerializer
@@ -17,6 +18,7 @@ from core.api.tests.factories import MetaProjectFactory
 from core.api.tests.factories import ProjectFactory
 from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
 from core.api.export.single_project_v2.helpers import get_activity_data_from_json
+from core.api.views import mya_export
 from core.models import MetaProject
 from core.models.business_plan import BPActivity
 from core.models.project import Project
@@ -318,26 +320,21 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         assert sheet.auto_filter.ref == "A1:Z3"
         assert sheet["A4"].value is None, "Spacer row not empty."
-        assert sheet["A5"].value == "Subtotal"
+        assert sheet["A5"].value == "Subtotal (filtered results)"
         assert sheet["A6"].value == "Grand total"
 
         assert sheet["D5"].value is None
-        assert sheet["G5"].value == "=SUBTOTAL(9,G2:G3)"
-        assert sheet["H5"].value == "=SUBTOTAL(9,H2:H3)"
-        assert sheet["P5"].value == "=SUBTOTAL(9,P2:P3)"
-        assert sheet["S5"].value == "=SUBTOTAL(9,S2:S3)"
-        assert sheet["U5"].value == "=SUBTOTAL(9,U2:U3)"
-        assert sheet["Y5"].value == "=SUBTOTAL(9,Y2:Y3)"
-        assert sheet["H5"].number_format == "$###,###,##0.00#############"
-
         assert sheet["D6"].value is None
-        assert sheet["G6"].value == "=SUM(G2:G3)"
-        assert sheet["H6"].value == "=SUM(H2:H3)"
-        assert sheet["P6"].value == "=SUM(P2:P3)"
-        assert sheet["S6"].value == "=SUM(S2:S3)"
-        assert sheet["U6"].value == "=SUM(U2:U3)"
-        assert sheet["Y6"].value == "=SUM(Y2:Y3)"
-        assert sheet["H6"].number_format == "$###,###,##0.00#############"
+
+        for idx, header in enumerate(mya_export.HEADERS, start=1):
+            if header.get("in_grand_total"):
+                ltr = get_column_letter(idx)
+                assert sheet[f"{ltr}5"].value == f"=SUBTOTAL(9,{ltr}2:{ltr}3)"
+                assert sheet[f"{ltr}6"].value == f"=SUM({ltr}2:{ltr}3)"
+
+                if cell_format := header.get("cell_format"):
+                    assert sheet[f"{ltr}5"].number_format == cell_format
+                    assert sheet[f"{ltr}6"].number_format == cell_format
 
 
 class TestProjectV2ExportDOCX(BaseTest):

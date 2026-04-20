@@ -1,3 +1,4 @@
+from datetime import datetime
 from copy import copy
 from typing import TYPE_CHECKING
 
@@ -5,6 +6,7 @@ import openpyxl
 from django.db.models import F
 from django.db.models import OuterRef
 from django.db.models import Subquery
+from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 
 from core.api.export.base import BaseWriter
@@ -37,7 +39,6 @@ HEADERS = [
     {
         "headerName": "Project duration (months)",
         "id": "project_duration",
-        "in_grand_total": True,
     },
     {
         "headerName": "MYA Total agreed funding in principle (US $)",
@@ -81,39 +82,32 @@ HEADERS = [
     {
         "headerName": "Target in the last year (reduction in %)",
         "id": "target_reduction",
-        "in_grand_total": True,
     },
     {
         "headerName": "Target in the last year (CO2-eq tonnes)",
         "id": "target_co2_eq_t",
-        "in_grand_total": True,
     },
     {
         "headerName": "Target in the last year (ODP tonnes)",
         "id": "target_odp",
-        "in_grand_total": True,
     },
     {
         "headerName": "Starting point for aggregate reductions in consumption or "
         "production (ODP tonnes)",
         "id": "starting_point_odp",
-        "in_grand_total": True,
     },
     {
         "headerName": "Starting point for aggregate reductions in consumption or "
         "production (CO2-eq tonnes)",
         "id": "starting_point_co2_eq_t",
-        "in_grand_total": True,
     },
     {
         "headerName": "Baseline (ODP tonnes)",
         "id": "baseline_odp",
-        "in_grand_total": True,
     },
     {
         "headerName": "Baseline (CO2-eq tonnes)",
         "id": "baseline_co2_eq_t",
-        "in_grand_total": True,
     },
     {
         "headerName": "Number of SMEs directly funded",
@@ -142,7 +136,6 @@ HEADERS = [
         "type": "number",
         "align": "right",
         "cell_format": "$###,###,##0.00#############",
-        "in_grand_total": True,
     },
     {
         "headerName": "Cost effectiveness (US $/CO2-eq tonnes) ",
@@ -150,7 +143,6 @@ HEADERS = [
         "type": "number",
         "align": "right",
         "cell_format": "$###,###,##0.00#############",
-        "in_grand_total": True,
     },
 ]
 
@@ -181,7 +173,7 @@ class MyaWriter(BaseWriter):
         self.sheet.row_dimensions[spacer_row_idx].hidden = True
         self.write_summary_row(
             subtotal_row_idx,
-            "Subtotal",
+            "Subtotal (filtered results)",
             has_data,
             first_data_row,
             formula_template="=SUBTOTAL(9,{col_letter}{first_data_row}:{col_letter}{last_data_row})",
@@ -221,6 +213,9 @@ class MyaWriter(BaseWriter):
             font = copy(cell.font)
             font.bold = True
             cell.font = font
+            cell.fill = PatternFill(
+                start_color="add8e6", end_color="add8e6", fill_type="solid"
+            )
         self.sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT
 
 
@@ -263,4 +258,5 @@ class MyaExport:
 
         writer = MyaWriter(self.sheet, HEADERS)
         writer.write(meta_projects)
-        return workbook_response("Mya.xlsx", self.wb)
+        timestamp = datetime.today().strftime("%Y.%m")
+        return workbook_response(f"{timestamp} MYA warehouse", self.wb)
