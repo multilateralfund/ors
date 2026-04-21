@@ -2,7 +2,7 @@ import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
@@ -92,7 +92,10 @@ export default function APRWorkspace() {
     reactivePath: true,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year!, showDerivedColumns })
+  const { columnDefs, defaultColDef } = useGetColumnDefs({
+    year: year!,
+    showDerivedColumns,
+  })
 
   const regions = useMemo(() => {
     const uniqueRegions = new Set<string>()
@@ -152,7 +155,12 @@ export default function APRWorkspace() {
     const sp = new URLSearchParams()
     Object.entries(filters).forEach(([key, values]) => {
       if (values.length > 0) {
-        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+        sp.set(
+          key,
+          values
+            .map((f) => (key === 'status' ? f.code! : String(f.id)))
+            .join(','),
+        )
       }
     })
     const q = sp.toString()
@@ -328,6 +336,8 @@ export default function APRWorkspace() {
           <div className="flex flex-wrap gap-x-2">
             <Button
               variant="text"
+              target="_blank"
+              rel="noopener noreferrer"
               startIcon={<FiDownload size={18} />}
               href={formatApiUrl(
                 `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
@@ -347,6 +357,8 @@ export default function APRWorkspace() {
             </Link>
             <Button
               variant="text"
+              target="_blank"
+              rel="noopener noreferrer"
               startIcon={<FiTable size={18} />}
               href={formatApiUrl(
                 `api/annual-project-report/summary-tables/export/`,
