@@ -357,6 +357,8 @@ export default function APRWorkspace() {
             </Link>
             <Button
               variant="text"
+              target="_blank"
+              rel="noopener noreferrer"
               startIcon={<FiTable size={18} />}
               href={formatApiUrl(
                 `api/annual-project-report/summary-tables/export/`,
