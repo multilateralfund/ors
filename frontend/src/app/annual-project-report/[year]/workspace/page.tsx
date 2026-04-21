@@ -5,7 +5,13 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import React, { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
+import {
+  Box,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  CircularProgress,
+} from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
@@ -34,6 +40,7 @@ import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -92,7 +99,10 @@ export default function APRWorkspace() {
     reactivePath: true,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year!, showDerivedColumns })
+  const { columnDefs, defaultColDef } = useGetColumnDefs({
+    year: year!,
+    showDerivedColumns,
+  })
 
   const regions = useMemo(() => {
     const uniqueRegions = new Set<string>()
@@ -152,12 +162,23 @@ export default function APRWorkspace() {
     const sp = new URLSearchParams()
     Object.entries(filters).forEach(([key, values]) => {
       if (values.length > 0) {
-        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+        sp.set(
+          key,
+          values
+            .map((f) => (key === 'status' ? f.code! : String(f.id)))
+            .join(','),
+        )
       }
     })
     const q = sp.toString()
     return `/${year}/edit${q ? `?${q}` : ''}`
   })()
+
+  const exportUrl = formatApiUrl(
+    `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+    params,
+  )
+  const [loadingExport, setLoadingExport] = useState(false)
 
   return (
     <PageWrapper>
@@ -326,13 +347,23 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-wrap gap-x-2">
+            {/* with loader */}
             <Button
               variant="text"
               startIcon={<FiDownload size={18} />}
-              href={formatApiUrl(
-                `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                params,
-              )}
+              onClick={() => handleExport(exportUrl, setLoadingExport)}
+              disabled={loadingExport}
+              endIcon={loadingExport && <CircularProgress size={16} />}
+            >
+              Export APR
+            </Button>
+            {/* download in another tab */}
+            <Button
+              variant="text"
+              startIcon={<FiDownload size={18} />}
+              href={exportUrl}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Export APR
             </Button>
