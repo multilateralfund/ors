@@ -2,16 +2,10 @@ import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import {
-  Box,
-  Checkbox,
-  Chip,
-  FormControlLabel,
-  CircularProgress,
-} from '@mui/material'
+import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
 import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
@@ -40,7 +34,6 @@ import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
-import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 
 export default function APRWorkspace() {
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
@@ -173,12 +166,6 @@ export default function APRWorkspace() {
     const q = sp.toString()
     return `/${year}/edit${q ? `?${q}` : ''}`
   })()
-
-  const exportUrl = formatApiUrl(
-    `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-    params,
-  )
-  const [loadingExport, setLoadingExport] = useState(false)
 
   return (
     <PageWrapper>
@@ -347,23 +334,15 @@ export default function APRWorkspace() {
           </div>
 
           <div className="flex flex-wrap gap-x-2">
-            {/* with loader */}
             <Button
               variant="text"
-              startIcon={<FiDownload size={18} />}
-              onClick={() => handleExport(exportUrl, setLoadingExport)}
-              disabled={loadingExport}
-              endIcon={loadingExport && <CircularProgress size={16} />}
-            >
-              Export APR
-            </Button>
-            {/* download in another tab */}
-            <Button
-              variant="text"
-              startIcon={<FiDownload size={18} />}
-              href={exportUrl}
               target="_blank"
               rel="noopener noreferrer"
+              startIcon={<FiDownload size={18} />}
+              href={formatApiUrl(
+                `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+                params,
+              )}
             >
               Export APR
             </Button>

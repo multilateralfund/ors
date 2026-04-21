@@ -734,6 +734,8 @@ export default function APRMLFSWorkspace() {
             <div className="flex flex-wrap gap-x-2">
               <Button
                 variant="text"
+                target="_blank"
+                rel="noopener noreferrer"
                 startIcon={<FiDownload size={18} />}
                 href={formatApiUrl(
                   `api/annual-project-report/mlfs/${year}/export/`,

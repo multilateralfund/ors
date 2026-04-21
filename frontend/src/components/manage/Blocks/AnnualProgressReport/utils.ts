@@ -1,6 +1,5 @@
-import { enqueueSnackbar } from 'notistack'
-import { isNil } from 'lodash'
 import dayjs from 'dayjs'
+import { isNil } from 'lodash'
 
 export function formatDate(value: any, format = 'DD/MM/YYYY') {
   if (isNil(value)) {
@@ -62,35 +61,4 @@ export function formatBoolean(value: any) {
   }
 
   return 'Yes'
-}
-
-export const handleExport = async (url: string, setLoadingExport: any) => {
-  try {
-    setLoadingExport(true)
-    const response = await fetch(url, {
-      credentials: 'include',
-    })
-
-    if (!response.ok) {
-      throw new Error('Export failed')
-    }
-
-    const blob = await response.blob()
-
-    const exportUrl = URL.createObjectURL(blob)
-    const exportLinkEl = document.createElement('a')
-    exportLinkEl.href = exportUrl
-
-    document.body.appendChild(exportLinkEl)
-    exportLinkEl.click()
-    exportLinkEl.remove()
-
-    URL.revokeObjectURL(exportUrl)
-  } catch (e) {
-    enqueueSnackbar('Export failed. Please try again.', {
-      variant: 'error',
-    })
-  } finally {
-    setLoadingExport(false)
-  }
 }
