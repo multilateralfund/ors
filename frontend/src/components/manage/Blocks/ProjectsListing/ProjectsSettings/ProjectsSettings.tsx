@@ -8,7 +8,6 @@ import React, {
 } from 'react'
 import * as mui from '@mui/material'
 import {
-  Box,
   Button,
   Checkbox,
   FormControl,
@@ -284,7 +283,7 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
           aprAgencySubmitEmail.emailAddresses !==
             apr_agency_submission_notifications_emails)
       return (
-        <Box key={type} className="mt-5">
+        <mui.Box key={type}>
           <form>
             <FormControl className="w-full" error={!!emailSettings.errors}>
               <FormLabel className="text-[#0095D5]">{label}</FormLabel>
@@ -379,7 +378,7 @@ const ProjectsSettingsEmails = (props: ProjectSettingsParams) => {
               )}
             </FormControl>
           </form>
-        </Box>
+        </mui.Box>
       )
     },
   )
@@ -448,7 +447,7 @@ const ProjectsSettingsGlobalFields = ({
     refetch()
   }
   return (
-    <mui.Box className="mt-5">
+    <mui.Box>
       {fields.map((f) => {
         return (
           <div className="my-2 flex items-center">
@@ -481,9 +480,19 @@ const ProjectsSettingsGlobalFields = ({
   )
 }
 
+const ProjectsSettingsListsOfTerms = () => (
+  <mui.Box>
+    <div className="text-xl">
+      This page provides details on how to edit the various pick-lists from the
+      IA/BA Portal.
+    </div>
+  </mui.Box>
+)
+
 enum Tab {
   Emails = 0,
   GlobalFields = 1,
+  ListsOfTerms = 2,
 }
 
 const ProjectsSettings = ({ data, refetch }: ProjectSettingsParams) => {
@@ -494,13 +503,28 @@ const ProjectsSettings = ({ data, refetch }: ProjectSettingsParams) => {
         return <ProjectsSettingsEmails data={data} refetch={refetch} />
       case Tab.GlobalFields:
         return <ProjectsSettingsGlobalFields data={data} refetch={refetch} />
+      case Tab.ListsOfTerms:
+        return <ProjectsSettingsListsOfTerms />
     }
   }, [currentTab, data, refetch])
   return (
     <div>
-      <mui.Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
+      <mui.Tabs
+        aria-label="settings-tabs"
+        value={currentTab}
+        className="sectionsTabs mt-6"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, v) => setCurrentTab(v)}
+      >
         <mui.Tab label="Emails" />
         <mui.Tab label="Global fields" />
+        <mui.Tab label="Lists of terms" />
       </mui.Tabs>
       {tabContent}
     </div>
