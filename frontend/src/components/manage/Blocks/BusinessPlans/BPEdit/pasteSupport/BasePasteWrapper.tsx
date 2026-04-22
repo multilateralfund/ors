@@ -40,48 +40,54 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
   async function handlePaste() {
     setPasting(true)
-    const pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
-    const newValues: Record<string, any> = {}
-    for (let i = 0; i < pastedTable.length; i++) {
-      const row = pastedTable[i]
-      const entryId = row[0]
-      if (entryId) {
-        newValues[entryId] = row[1]
-      }
-    }
-    const pendingIds = new Set(Object.keys(newValues))
-    const numEntries = pendingIds.size
-    let numInserted = 0
-    if (numEntries > 0) {
-      const nextForm = [...form!]
-      for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
-        const rowId = nextForm[i][rowIdField]
-        if (pendingIds.has(rowId)) {
-          mutator(nextForm[i], cleanValue(newValues[rowId]))
-          pendingIds.delete(rowId)
-          numInserted++
+    try {
+      const pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
+      const newValues: Record<string, any> = {}
+      for (let i = 0; i < pastedTable.length; i++) {
+        const row = pastedTable[i]
+        const entryId = row[0]
+        if (entryId) {
+          newValues[entryId] = row[1]
         }
       }
-      setPasting(false)
-      setForm(nextForm)
-      console.debug('pendingIds', pendingIds)
-      console.debug('newValues', newValues)
-      if (numInserted > 0) {
-        enqueueSnackbar(
-          `Successfully pasted ${numInserted}/${numEntries} entries.`,
-          {
-            variant: 'success',
-          },
-        )
-      } else if (pendingIds.size > numInserted) {
-        enqueueSnackbar(
-          'No valid entries found in pasted data! Make sure you are pasting a 2 column table.',
-          {
-            variant: 'error',
-          },
-        )
+      const pendingIds = new Set(Object.keys(newValues))
+      const numEntries = pendingIds.size
+      let numInserted = 0
+      if (numEntries > 0) {
+        const nextForm = [...form!]
+        for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
+          const rowId = nextForm[i][rowIdField]
+          if (pendingIds.has(rowId)) {
+            mutator(nextForm[i], cleanValue(newValues[rowId]))
+            pendingIds.delete(rowId)
+            numInserted++
+          }
+        }
+        setForm(nextForm)
+        console.debug('pendingIds', pendingIds)
+        console.debug('newValues', newValues)
+        if (numInserted > 0) {
+          enqueueSnackbar(
+            `Successfully pasted ${numInserted}/${numEntries} entries.`,
+            {
+              variant: 'success',
+            },
+          )
+        } else if (pendingIds.size > numInserted) {
+          enqueueSnackbar(
+            'No valid entries found in pasted data! Make sure you are pasting a 2 column table.',
+            {
+              variant: 'error',
+            },
+          )
+        }
       }
-    } else {
+    } catch (e) {
+      console.error('Paste error', e)
+      enqueueSnackbar('An unexpected error occurred while pasting.', {
+        variant: 'error',
+      })
+    } finally {
       setPasting(false)
     }
   }
