@@ -14,7 +14,6 @@ import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
-  validateText,
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
@@ -647,7 +646,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
@@ -662,7 +660,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
