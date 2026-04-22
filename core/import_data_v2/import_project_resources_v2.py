@@ -118,7 +118,7 @@ def import_project_resources_v2(option):
         file_path = (
             IMPORT_RESOURCES_V2_DIR
             / "projects"
-            / "project_specific_fields_25_02_2026.xlsx"
+            / "project_specific_fields_10_04_2026.xlsx"
         )
         import_project_specific_fields(file_path)
         logger.info("✔ cluster type sector fields imported")
@@ -140,7 +140,7 @@ def import_project_resources_v2(option):
         file_path = (
             IMPORT_RESOURCES_V2_DIR
             / "projects"
-            / "project_specific_fields_25_02_2026.xlsx"
+            / "project_specific_fields_10_04_2026.xlsx"
         )
         generate_new_cluster_type_sector_file(file_path)
         logger.info("✔ new cluster type sector file generated")
