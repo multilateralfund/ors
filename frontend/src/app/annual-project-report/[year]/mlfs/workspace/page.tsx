@@ -334,10 +334,7 @@ export default function APRMLFSWorkspace() {
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
