@@ -94,6 +94,10 @@ export function validateNumber(value: any) {
 }
 
 export function validateText(value: any) {
+  if (isNil(value)) {
+    return null
+  }
+
   const words = value.split(' ')
 
   return words.length > 300 ? 'Free text is limited to 300 words' : null
