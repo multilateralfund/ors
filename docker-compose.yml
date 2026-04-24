@@ -26,6 +26,7 @@ services:
     depends_on:
       - postgres
       - clamav
+    restart: always
 
   nextjs:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
@@ -42,12 +43,15 @@ services:
       - nextjs
     ports:
       - "3000:80"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:alpine
+    restart: always
 
   redis:
     image: redis:alpine
+    restart: always
 
   celery:
     image: ghcr.io/multilateralfund/multilateralfund-celery:${DOCKER_TAG:-latest}
@@ -64,11 +68,13 @@ services:
       - postgres
       - redis
       - rabbitmq
+    restart: always
 
   clamav:
     image: clamav/clamav:1.5.2
     volumes:
       - clam_db:/var/lib/clamav
+    restart: always
 
 volumes:
   pg-data:
