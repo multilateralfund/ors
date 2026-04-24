@@ -12,7 +12,12 @@ import {
   EnterpriseTextField,
 } from '../FormHelperComponents'
 import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
-import { dateFields, decimalFields, textFields } from '../constants'
+import {
+  dateFields,
+  decimalFields,
+  integerFields,
+  textFields,
+} from '../constants'
 import { defaultProps } from '../../constants'
 import {
   EnterpriseOverview,
@@ -108,15 +113,17 @@ const PEnterpriseOverviewSection = ({
         {...{ sectionIdentifier, ...rest }}
         enterpriseData={overview}
       />
-      {map(textFields.slice(1, 3), (field) => (
+      {map(textFields.slice(1, 3), (field, index) => (
         <EnterpriseTextField<PEnterpriseData, EnterpriseOverview>
+          key={index}
           {...{ field, sectionIdentifier, isDisabled, ...rest }}
           enterpriseData={overview}
         />
       ))}
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(selectFields.slice(1), (field) => (
+        {map(selectFields.slice(1), (field, index) => (
           <EnterpriseSelectField<PEnterpriseData, EnterpriseOverview>
+            key={index}
             isDisabled={field.isDisabled}
             {...{ sectionIdentifier, field, ...rest }}
             enterpriseData={overview}
@@ -129,8 +136,9 @@ const PEnterpriseOverviewSection = ({
         enterpriseData={overview}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(decimalFields, (field) => (
+        {map(decimalFields, (field, index) => (
           <EnterpriseNumberField<PEnterpriseData, EnterpriseOverview>
+            key={index}
             dataType="decimal"
             {...{ sectionIdentifier, field, isDisabled, ...rest }}
             enterpriseData={overview}
@@ -138,12 +146,12 @@ const PEnterpriseOverviewSection = ({
         ))}
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {/* <EnterpriseNumberField<PEnterpriseData,EnterpriseOverview>
-                dataType="integer"
-                field={integerFields[0]}
-            {...{ sectionIdentifier, isDisabled, ...rest }}
-            enterpriseData={overview}
-          /> */}
+        <EnterpriseNumberField<PEnterpriseData, EnterpriseOverview>
+          dataType="integer"
+          field={integerFields[0]}
+          {...{ sectionIdentifier, isDisabled, ...rest }}
+          enterpriseData={overview}
+        />
         <EnterpriseDateField<PEnterpriseData, EnterpriseOverview>
           field={dateFields[0]}
           {...{ sectionIdentifier, isDisabled, ...rest }}

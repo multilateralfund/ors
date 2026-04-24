@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-export const textFields = ['name', 'location', 'stage', 'application']
+export const textFields = ['name', 'location', 'city', 'stage', 'application']
 export const remarksFields = ['agency_remarks', 'secretariat_remarks']
 export const dateFields = ['date_of_revision']
 export const detailsDateFields = [
@@ -25,6 +25,7 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   name: 'Enterprise',
   country: 'Country',
   location: 'Location',
+  city: 'City',
   stage: 'Stage',
   sector: 'Sector',
   subsector: 'Sub-sector',
@@ -69,6 +70,7 @@ export const initialOverviewFields = {
   name: '',
   country: null,
   location: '',
+  city: '',
   stage: '',
   sector: null,
   subsector: null,

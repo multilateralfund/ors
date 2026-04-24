@@ -57,6 +57,7 @@ const PEnterpriseEdit = ({
         name: enterpriseObj.name,
         country: enterpriseObj.country,
         location: enterpriseObj.location,
+        city: enterpriseObj.city,
         stage: enterpriseObj.stage,
         sector: enterpriseObj.sector,
         subsector: enterpriseObj.subsector,

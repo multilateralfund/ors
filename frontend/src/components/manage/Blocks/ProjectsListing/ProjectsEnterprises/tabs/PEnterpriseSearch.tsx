@@ -39,6 +39,7 @@ const PEnterpriseSearch = ({
               name: crtEnterprise.name,
               country: crtEnterprise.country,
               location: crtEnterprise.location,
+              city: crtEnterprise.city,
               stage: crtEnterprise.stage,
               sector: crtEnterprise.sector,
               subsector: crtEnterprise.subsector,
