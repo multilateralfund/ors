@@ -187,6 +187,11 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
         tooltipField: getFieldName('location'),
       },
       {
+        headerName: enterpriseFieldsMapping.city,
+        field: getFieldName('city'),
+        tooltipField: getFieldName('city'),
+      },
+      {
         headerName: enterpriseFieldsMapping.stage,
         field: getFieldName('stage'),
         tooltipField: getFieldName('stage'),
@@ -230,11 +235,11 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
               tooltipValueGetter: (params: ITooltipParams) =>
                 getDecimalValue(params, 'export_to_non_a5'),
             },
-            //  {
-            //   headerName: enterpriseFieldsMapping.revision,
-            //   field: getFieldName('revision'),
-            //   tooltipField: getFieldName('revision'),
-            // },
+            {
+              headerName: enterpriseFieldsMapping.revision,
+              field: getFieldName('revision'),
+              tooltipField: getFieldName('revision'),
+            },
             {
               headerName: enterpriseFieldsMapping.date_of_revision,
               field: getFieldName('date_of_revision'),

@@ -412,6 +412,7 @@ export interface EnterpriseOverview {
   name: string
   country: number | null
   location: string
+  city: string
   stage: string
   sector: number | null
   subsector: number | null

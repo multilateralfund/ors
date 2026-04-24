@@ -27,6 +27,7 @@ const PEnterpriseOverviewSection = ({
         {detailItem(enterpriseFieldsMapping.name, enterprise.name)}
         {detailItem(enterpriseFieldsMapping.country, country)}
         {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
+        {detailItem(enterpriseFieldsMapping.city, enterprise.city)}
         {detailItem(enterpriseFieldsMapping.stage, enterprise.stage)}
         <div className={viewColumnsClassName}>
           {detailItem(enterpriseFieldsMapping.sector, sector)}
@@ -49,11 +50,11 @@ const PEnterpriseOverviewSection = ({
           )}
         </div>
         <div className={viewColumnsClassName}>
-          {/* {numberDetailItem(
-              enterpriseFieldsMapping.revision,
-              enterprise.revision as string,
-              'integer',
-            )} */}
+          {numberDetailItem(
+            enterpriseFieldsMapping.revision,
+            enterprise.revision as string,
+            'integer',
+          )}
           {dateDetailItem(
             enterpriseFieldsMapping.date_of_revision,
             enterprise.date_of_revision as string,
