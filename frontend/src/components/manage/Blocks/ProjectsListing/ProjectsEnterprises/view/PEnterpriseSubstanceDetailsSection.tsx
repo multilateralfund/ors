@@ -108,13 +108,15 @@ const PEnterpriseSubstanceDetailsSection = ({
     <>
       <div className="flex flex-col gap-4">
         <div className={viewColumnsClassName}>
-          {map(substanceDecimalFields, (field) =>
-            numberDetailItem(
-              enterpriseFieldsMapping[field],
-              enterprise[field as keyof typeof enterprise] as string,
-              'decimal',
-            ),
-          )}
+          {map(substanceDecimalFields, (field, index) => (
+            <div key={index}>
+              {numberDetailItem(
+                enterpriseFieldsMapping[field],
+                enterprise[field as keyof typeof enterprise] as string,
+                'decimal',
+              )}
+            </div>
+          ))}
         </div>
         <ViewTable
           getRowId={(props: GetRowIdParams) => props.data.id}

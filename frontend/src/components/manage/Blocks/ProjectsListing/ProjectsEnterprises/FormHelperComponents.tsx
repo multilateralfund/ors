@@ -27,6 +27,7 @@ import {
 
 import { TextareaAutosize } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { omit } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -112,7 +113,7 @@ export const EnterpriseNumberField = <T, K>({
                   sectionIdentifier,
                 )
           }
-          {...getFieldDefaultProps(isDisabled)}
+          {...omit(getFieldDefaultProps(isDisabled), 'containerClassName')}
         />
         <FieldErrorIndicator {...{ field, errors }} />
       </div>
@@ -223,7 +224,7 @@ export const EnterpriseDateField = <T, K>({
             sectionIdentifier,
           )
         }
-        {...getFieldDefaultProps(isDisabled)}
+        {...omit(getFieldDefaultProps(isDisabled), 'containerClassName')}
       />
       <FieldErrorIndicator {...{ field, errors }} />
     </div>

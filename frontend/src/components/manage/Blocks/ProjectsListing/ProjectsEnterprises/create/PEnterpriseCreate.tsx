@@ -329,14 +329,14 @@ const PEnterpriseCreate = ({
         }}
       >
         {steps.map(({ id, label }) => (
-          <Tab id={id} aria-controls={id} label={label} />
+          <Tab key={id} id={id} aria-controls={id} label={label} />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => (
-            <>
+          .map(({ id, component, errors }) => (
+            <span key={id}>
               {errors && errors.length > 0 && (
                 <CustomAlert
                   type="error"
@@ -360,7 +360,7 @@ const PEnterpriseCreate = ({
                 />
               )}
               {component}
-            </>
+            </span>
           ))}
       </div>
     </>

@@ -23,8 +23,9 @@ const PEnterpriseRemarksSection = ({
 
   return (
     <div className="flex max-w-[41rem] flex-col gap-y-2">
-      {map(remarksFields, (field) => (
+      {map(remarksFields, (field, index) => (
         <EnterpriseTextAreaField<PEnterpriseData, EnterpriseRemarks>
+          key={index}
           enterpriseData={enterpriseData.remarks}
           {...{
             setEnterpriseData,

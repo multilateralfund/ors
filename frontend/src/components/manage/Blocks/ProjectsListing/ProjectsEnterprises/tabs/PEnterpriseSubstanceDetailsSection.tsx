@@ -28,7 +28,7 @@ import {
   disabledClassName,
 } from '../../constants'
 
-import { find, get, isObject, map, sortBy, split } from 'lodash'
+import { find, get, isObject, map, omit, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -171,8 +171,9 @@ const PEnterpriseSubstanceDetailsSection = ({
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(substanceDecimalFields, (field) => (
+        {map(substanceDecimalFields, (field, index) => (
           <EnterpriseNumberField<PEnterpriseData, EnterpriseSubstanceFields>
+            key={index}
             dataType="decimal"
             enterpriseData={enterpriseData.substance_fields}
             {...{
@@ -190,7 +191,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 
       <div className="flex flex-col flex-wrap gap-y-2">
         {substanceData.map((substance, index) => (
-          <>
+          <span key={index} className="flex flex-col flex-wrap gap-y-4">
             <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
               <>
                 <div>
@@ -225,9 +226,9 @@ const PEnterpriseSubstanceDetailsSection = ({
                     />
                   </div>
                 </div>
-                {map(substanceFields, (field) =>
+                {map(substanceFields, (field, index) =>
                   field !== 'selected_alternative' ? (
-                    <div>
+                    <div key={index}>
                       <Label>{enterpriseFieldsMapping[field]}</Label>
                       <div className="flex items-center">
                         <FormattedNumberInput
@@ -242,7 +243,10 @@ const PEnterpriseSubstanceDetailsSection = ({
                           onChange={(event) =>
                             handleChangeNumericValues(event, field, index)
                           }
-                          {...getFieldDefaultProps(isDisabled)}
+                          {...omit(
+                            getFieldDefaultProps(isDisabled),
+                            'containerClassName',
+                          )}
                         />
                         <FieldErrorIndicator
                           {...{ field }}
@@ -251,7 +255,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                       </div>
                     </div>
                   ) : (
-                    <div>
+                    <div key={index}>
                       <Label>{enterpriseFieldsMapping[field]}</Label>
                       <div className="flex items-center">
                         <SimpleInput
@@ -289,7 +293,7 @@ const PEnterpriseSubstanceDetailsSection = ({
               )}
             </div>
             {index !== substanceData.length - 1 && <Divider />}
-          </>
+          </span>
         ))}
       </div>
       <SubmitButton

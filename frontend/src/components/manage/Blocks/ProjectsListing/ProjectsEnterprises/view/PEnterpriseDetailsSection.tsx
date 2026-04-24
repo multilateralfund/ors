@@ -34,12 +34,14 @@ const PEnterpriseDetailsSection = ({
         {detailItem(enterpriseFieldsMapping.project_type, project_type)}
       </div>
       <div className={viewColumnsClassName}>
-        {map(detailsDateFields.slice(0, 2), (field) =>
-          dateDetailItem(
-            enterpriseFieldsMapping[field],
-            enterprise[field as keyof typeof enterprise] as string,
-          ),
-        )}
+        {map(detailsDateFields.slice(0, 2), (field, index) => (
+          <div key={index}>
+            {dateDetailItem(
+              enterpriseFieldsMapping[field],
+              enterprise[field as keyof typeof enterprise] as string,
+            )}
+          </div>
+        ))}
         {numberDetailItem(
           enterpriseFieldsMapping.project_duration,
           enterprise.project_duration as string,
@@ -51,12 +53,14 @@ const PEnterpriseDetailsSection = ({
           enterpriseFieldsMapping.meeting,
           getMeetingNr(enterprise?.meeting ?? undefined)?.toString() as string,
         )}
-        {map(detailsDateFields.slice(2), (field) =>
-          dateDetailItem(
-            enterpriseFieldsMapping[field],
-            enterprise[field as keyof typeof enterprise] as string,
-          ),
-        )}
+        {map(detailsDateFields.slice(2), (field, index) => (
+          <div key={index}>
+            {dateDetailItem(
+              enterpriseFieldsMapping[field],
+              enterprise[field as keyof typeof enterprise] as string,
+            )}
+          </div>
+        ))}
       </div>
       <div className="max-w-[90%]">
         {detailItem(

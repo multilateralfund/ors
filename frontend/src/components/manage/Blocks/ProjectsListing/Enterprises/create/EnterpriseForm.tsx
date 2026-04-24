@@ -50,14 +50,16 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
         field={selectFields[0]}
         {...{ isDisabled, ...props }}
       />
-      {map(textFields.slice(1, 3), (field) => (
+      {map(textFields.slice(1, 3), (field, index) => (
         <EnterpriseTextField<EnterpriseOverview, EnterpriseOverview>
+          key={index}
           {...{ field, isDisabled, ...props }}
         />
       ))}
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(selectFields.slice(1), (field) => (
+        {map(selectFields.slice(1), (field, index) => (
           <EnterpriseSelectField<EnterpriseOverview, EnterpriseOverview>
+            key={index}
             {...{ field, isDisabled, ...props }}
           />
         ))}
@@ -67,19 +69,20 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
         {...{ isDisabled, ...props }}
       />
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(decimalFields, (field) => (
+        {map(decimalFields, (field, index) => (
           <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
+            key={index}
             dataType="decimal"
             {...{ field, isDisabled, ...props }}
           />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {/* <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
+        <EnterpriseNumberField<EnterpriseOverview, EnterpriseOverview>
           dataType="integer"
           field={integerFields[0]}
           {...{ isDisabled, ...props }}
-        /> */}
+        />
         <EnterpriseDateField<EnterpriseOverview, EnterpriseOverview>
           field={dateFields[0]}
           {...{ isDisabled, ...props }}

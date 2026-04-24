@@ -61,14 +61,16 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
           }}
         >
           {tabs.map(({ id, label }) => (
-            <Tab id={id} aria-controls={id} label={label} />
+            <Tab key={id} id={id} aria-controls={id} label={label} />
           ))}
         </Tabs>
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs
           .filter((_, index) => index === activeTab)
-          .map(({ component }) => component)}
+          .map(({ id, component }) => (
+            <span key={id}>{component}</span>
+          ))}
       </div>
     </>
   )
