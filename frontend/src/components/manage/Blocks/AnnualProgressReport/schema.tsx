@@ -13,7 +13,6 @@ import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
-  validateText,
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
@@ -643,7 +642,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
@@ -658,7 +656,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
@@ -713,8 +710,8 @@ export default function useGetColumnDefs({
                   }
 
                   if (['decimal', 'currency'].includes(cellDataType)) {
-                    // A cell becomes '' when cleared
-                    if (value === '') {
+                    // A cell becomes '' or whitespace-only (e.g. '\u00a0' in Excel HTML) when cleared
+                    if (typeof value === 'string' && value.trim() === '') {
                       toBeAdded = null
                     }
                   }

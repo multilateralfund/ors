@@ -92,6 +92,14 @@ export async function readPastedTableFromNavigator(
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
 
+    if (pastedTable.length === 0 || (pastedTable[0]?.length ?? 0) < 2) {
+      throwError(
+        'Could not read a valid table from clipboard! Make sure you are pasting a 2 column table.',
+        { variant: 'error' },
+      )
+      return []
+    }
+
     const cleanTable = removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
   } catch (error) {

@@ -40,7 +40,6 @@ const ProjectsHeader = ({
   bpData,
   filesMetaData,
   loadedFiles,
-  shouldValidateTotalFund,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -74,7 +73,6 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
     agency_id,
-    shouldValidateTotalFund,
   )
   const hasTrancheErrors =
     !!trancheErrors?.errorText || !!trancheErrors?.loading
@@ -178,7 +176,6 @@ const ProjectsHeader = ({
                 postExComUpdate,
                 bpData,
                 filesMetaData,
-                shouldValidateTotalFund,
               }}
               {...rest}
             />

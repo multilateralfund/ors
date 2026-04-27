@@ -58,78 +58,93 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
   async function handlePaste() {
     setPasting(true)
-    const pastedTable = await readPastedTableFromNavigator(
-      enqueueSnackbar,
-      isMultiple,
-    )
+    try {
+      const pastedTable = await readPastedTableFromNavigator(
+        enqueueSnackbar,
+        isMultiple,
+      )
 
-    const newValues: Record<string, any> = {}
-    for (let i = 0; i < pastedTable.length; i++) {
-      const row = pastedTable[i]
-      const entryId = row[0]
-      if (entryId) {
-        newValues[entryId] = row.slice(1)
+      const newValues: Record<string, any> = {}
+      for (let i = 0; i < pastedTable.length; i++) {
+        const row = pastedTable[i]
+        const entryId = row[0]
+        if (entryId) {
+          newValues[entryId] = row.slice(1)
+        }
       }
-    }
-    const pendingIds = new Set(Object.keys(newValues))
-    const numEntries = pendingIds.size
-    let numInserted = 0
-    let numColsInserted = 0
-    if (numEntries > 0) {
-      const nextForm = [...form!]
+      const pendingIds = new Set(Object.keys(newValues))
+      const numEntries = pendingIds.size
+      let numInserted = 0
+      let numColsInserted = 0
+      if (numEntries > 0) {
+        const nextForm = [...form!]
 
-      if (isMultiple && !!columns) {
-        const normalizedLabel = normalizeLabel(label)
-        const pastedFieldData = getFieldData(normalizedLabel)
-        const fieldIndex = indexOf(columns, pastedFieldData)
+        if (isMultiple && !!columns) {
+          const normalizedLabel = normalizeLabel(label)
+          const pastedFieldData = getFieldData(normalizedLabel)
+          const fieldIndex = indexOf(columns, pastedFieldData)
 
-        const identifierLabel = 'Project Code'
-        const projectCodeData = getFieldData(identifierLabel)
-        const projectCodeIndex = indexOf(columns, projectCodeData)
+          const identifierLabel = 'Project Code'
+          const projectCodeData = getFieldData(identifierLabel)
+          const projectCodeIndex = indexOf(columns, projectCodeData)
 
-        const firstPendingId = pendingIds.values().next().value
-        const hasHeaders = firstPendingId === identifierLabel
-        const firstRowValues = newValues[firstPendingId!]
+          const firstPendingId = pendingIds.values().next().value
+          const hasHeaders = firstPendingId === identifierLabel
+          const firstRowValues = newValues[firstPendingId!]
 
-        const startIndex = hasHeaders
-          ? 0
-          : Math.max(
-              fieldIndex - firstRowValues.length + 1,
-              projectCodeIndex + 1,
-            )
+          const startIndex = hasHeaders
+            ? 0
+            : Math.max(
+                fieldIndex - firstRowValues.length + 1,
+                projectCodeIndex + 1,
+              )
 
-        const columnsLabels = hasHeaders
-          ? map(firstRowValues, (label) => normalizeLabel(label))
-          : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
-              normalizeLabel(label),
-            )
+          const columnsLabels = hasHeaders
+            ? map(firstRowValues, (label) => normalizeLabel(label))
+            : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
+                normalizeLabel(label),
+              )
 
-        if (columnsLabels.includes(normalizedLabel)) {
+          if (columnsLabels.includes(normalizedLabel)) {
+            for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
+              const rowId = nextForm[i][rowIdField]
+
+              if (pendingIds.has(rowId)) {
+                const rowValues = newValues[rowId]
+
+                const values = hasHeaders
+                  ? rowValues
+                  : rowValues.slice(0, fieldIndex + 1)
+
+                values.map((value: any, index: number) => {
+                  const crtFieldObj = getFieldData(columnsLabels[index])
+
+                  if (
+                    !(
+                      crtFieldObj &&
+                      crtFieldObj.input &&
+                      crtFieldObj.group === pastedFieldData?.group
+                    )
+                  ) {
+                    return
+                  }
+
+                  mutator(nextForm[i], cleanValue(value), crtFieldObj)
+                  numColsInserted++
+                })
+
+                pendingIds.delete(rowId)
+                numInserted++
+              }
+            }
+          }
+        } else {
           for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
             const rowId = nextForm[i][rowIdField]
 
             if (pendingIds.has(rowId)) {
-              const rowValues = newValues[rowId]
-
-              const values = hasHeaders
-                ? rowValues
-                : rowValues.slice(0, fieldIndex + 1)
-
-              values.map((value: any, index: number) => {
-                const crtFieldObj = getFieldData(columnsLabels[index])
-
-                if (
-                  !(
-                    crtFieldObj &&
-                    crtFieldObj.input &&
-                    crtFieldObj.group === pastedFieldData?.group
-                  )
-                ) {
-                  return
-                }
-
-                mutator(nextForm[i], cleanValue(value), crtFieldObj)
-                numColsInserted++
+              newValues[rowId].map((value: any) => {
+                mutator(nextForm[i], cleanValue(value))
               })
 
               pendingIds.delete(rowId)
@@ -137,47 +152,38 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             }
           }
         }
-      } else {
-        for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
-          const rowId = nextForm[i][rowIdField]
+        setForm(nextForm)
+        console.debug('pendingIds', pendingIds)
+        console.debug('newValues', newValues)
 
-          if (pendingIds.has(rowId)) {
-            newValues[rowId].map((value: any) => {
-              mutator(nextForm[i], cleanValue(value))
+        const errorMessage = `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`
+
+        if (numInserted > 0) {
+          const successMessage = isMultiple
+            ? `Successfully pasted ${Math.round(numColsInserted / numInserted)} column(s) for ${numInserted} entries.`
+            : `Successfully pasted ${numInserted}/${numEntries} entries.`
+
+          if (!isMultiple || numColsInserted > 0) {
+            enqueueSnackbar(successMessage, {
+              variant: 'success',
             })
-
-            pendingIds.delete(rowId)
-            numInserted++
+          } else if (isMultiple && numColsInserted === 0) {
+            enqueueSnackbar(errorMessage, {
+              variant: 'error',
+            })
           }
-        }
-      }
-      setPasting(false)
-      setForm(nextForm)
-      console.debug('pendingIds', pendingIds)
-      console.debug('newValues', newValues)
-
-      const errorMessage = `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`
-
-      if (numInserted > 0) {
-        const successMessage = isMultiple
-          ? `Successfully pasted ${Math.round(numColsInserted / numInserted)} column(s) for ${numInserted} entries.`
-          : `Successfully pasted ${numInserted}/${numEntries} entries.`
-
-        if (!isMultiple || numColsInserted > 0) {
-          enqueueSnackbar(successMessage, {
-            variant: 'success',
-          })
-        } else if (isMultiple && numColsInserted === 0) {
+        } else if (pendingIds.size > numInserted) {
           enqueueSnackbar(errorMessage, {
             variant: 'error',
           })
         }
-      } else if (pendingIds.size > numInserted) {
-        enqueueSnackbar(errorMessage, {
-          variant: 'error',
-        })
       }
-    } else {
+    } catch (e) {
+      console.error('Paste error', e)
+      enqueueSnackbar('An unexpected error occurred while pasting.', {
+        variant: 'error',
+      })
+    } finally {
       setPasting(false)
     }
   }
