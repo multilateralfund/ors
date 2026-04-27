@@ -452,10 +452,9 @@ CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
 CELERY_RESULT_BACKEND = env("REDIS_HOST", default="redis://redis:6379")
-# Force Celery to use durable queues for results
-CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS = {
-    "durable": True,
-}
+# Force Celery to use durable queues for control
+CELERY_CONTROL_QUEUE_DURABLE = True
+CELERY_CONTROL_QUEUE_EXCLUSIVE = False
 # Suppress CPendingDeprecationWarning introduced in Celery 5.3
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
