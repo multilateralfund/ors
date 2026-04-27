@@ -452,6 +452,12 @@ CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
 CELERY_RESULT_BACKEND = env("REDIS_HOST", default="redis://redis:6379")
+# RabbitMQ 4.x removed support for transient non-exclusive queues.
+# Disabling them to avoid InternalError on startup - they are not needed in our setup.
+CELERY_WORKER_DISABLE_MINGLE = True
+CELERY_WORKER_DISABLE_GOSSIP = True
+# Suppress deprecation warning about broker_connection_retry
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {
