@@ -58,6 +58,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
           const rowId = nextForm[i][rowIdField]
           if (pendingIds.has(rowId)) {
+            nextForm[i] = { ...nextForm[i] }
             mutator(nextForm[i], cleanValue(newValues[rowId]))
             pendingIds.delete(rowId)
             numInserted++
