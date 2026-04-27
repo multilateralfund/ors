@@ -53,6 +53,13 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       const pendingIds = new Set(Object.keys(newValues))
       const numEntries = pendingIds.size
       let numInserted = 0
+      if (numEntries === 0) {
+        enqueueSnackbar(
+          'No project codes found in pasted data! Make sure the first column contains project codes.',
+          { variant: 'error' },
+        )
+        return
+      }
       if (numEntries > 0) {
         const nextForm = [...form!]
         for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
@@ -74,9 +81,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
               variant: 'success',
             },
           )
-        } else if (pendingIds.size > numInserted) {
+        } else {
           enqueueSnackbar(
-            'No valid entries found in pasted data! Make sure you are pasting a 2 column table.',
+            'No matching project codes found! Make sure the pasted project codes match the ones currently displayed.',
             {
               variant: 'error',
             },
