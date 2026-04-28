@@ -1,8 +1,8 @@
+import * as Sentry from '@sentry/react'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
-import { BPEditTableInterface } from '@ors/components/manage/Blocks/BusinessPlans/types.ts'
 
 const decimalSeparator = Intl.NumberFormat(navigator.language)
   .format(1.1)
@@ -12,6 +12,7 @@ const thousandSeparator = Intl.NumberFormat(navigator.language)
   .replaceAll('1', '')
 
 function cleanValue(value: string) {
+  if (value == null) return value
   const toParse = value.trim().split('$').reverse()[0].trim()
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
@@ -40,8 +41,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
   async function handlePaste() {
     setPasting(true)
+    let pastedTable: any[][] = []
     try {
-      const pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
+      pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
       const newValues: Record<string, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
         const row = pastedTable[i]
@@ -92,6 +94,25 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       }
     } catch (e) {
       console.error('Paste error', e)
+      Sentry.withScope((scope) => {
+        scope.setTag('feature', 'paste')
+        scope.setContext('paste', {
+          label,
+          rowIdField,
+          formLength: form?.length ?? 0,
+          pastedRowCount: pastedTable.length,
+          pastedSample: [
+            ...pastedTable.slice(0, 5),
+            ...pastedTable.slice(-5),
+          ].filter(
+            (row, idx, arr) =>
+              arr.indexOf(row) === idx,
+          ),
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+        })
+        Sentry.captureException(e)
+      })
       enqueueSnackbar('An unexpected error occurred while pasting.', {
         variant: 'error',
       })
