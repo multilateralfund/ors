@@ -1,5 +1,6 @@
-import dayjs from 'dayjs'
+import { enqueueSnackbar } from 'notistack'
 import { isNil } from 'lodash'
+import dayjs from 'dayjs'
 
 export function formatDate(value: any, format = 'DD/MM/YYYY') {
   if (isNil(value)) {
@@ -61,4 +62,42 @@ export function formatBoolean(value: any) {
   }
 
   return 'Yes'
+}
+
+export const handleExport = async (
+  url: string,
+  setLoading: (loading: boolean) => void,
+) => {
+  try {
+    setLoading(true)
+
+    const response = await fetch(url, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      throw new Error('Export failed')
+    }
+
+    const cd = response.headers.get('content-disposition') ?? ''
+    const filename = cd.match(/filename="([^"]+)"/)?.[1] ?? 'export.xlsx'
+
+    const blob = await response.blob()
+
+    const exportUrl = URL.createObjectURL(blob)
+    const exportLinkEl = document.createElement('a')
+    exportLinkEl.href = exportUrl
+    exportLinkEl.download = filename
+
+    document.body.appendChild(exportLinkEl)
+    exportLinkEl.click()
+    exportLinkEl.remove()
+    URL.revokeObjectURL(exportUrl)
+  } catch (e) {
+    enqueueSnackbar('Export failed. Please try again.', {
+      variant: 'error',
+    })
+  } finally {
+    setLoading(false)
+  }
 }

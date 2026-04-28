@@ -53,6 +53,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 CORS_ORIGIN_WHITELIST = [_host.rsplit(",", 1)[0] for _host in FRONTEND_HOST]
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 
 # CSRF allowed origins
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
