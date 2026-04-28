@@ -1,4 +1,5 @@
 import io
+from datetime import date
 from http import HTTPStatus
 from itertools import chain
 from decimal import Decimal
@@ -15,8 +16,10 @@ from rest_framework.response import Response
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import AgencyFactory
+from core.api.tests.factories import BPActivityFactory
 from core.api.tests.factories import FundingWindowFactory
 from core.api.tests.factories import MetaProjectFactory
+from core.api.tests.factories import MeetingFactory
 from core.api.tests.factories import ProjectClusterFactory
 from core.api.tests.factories import ProjectFactory
 from core.api.tests.factories import ProjectSubSectorFactory
@@ -283,6 +286,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             excom_provision="Provision text",
             products_manufactured="Manufactured product",
             tranche=4,
+            additional_funding=True,
             production=True,
             lead_agency=lead_agency,
             funding_window=funding_window,
@@ -290,6 +294,14 @@ class TestProjectV2ExportXLSX(BaseTest):
             cluster=cluster,
             subsectors=[subsector_one, subsector_two],
         )
+        bp_activity = BPActivityFactory.create(
+            agency=project.agency,
+            country=project.country,
+            initial_id=123,
+            lvc_status=BPActivity.LVCStatus.undefined,
+            status=BPActivity.Status.undefined,
+        )
+        project.bp_activity = bp_activity
         project.sector_legacy = "Sector legacy"
         project.subsector_legacy = "Subsector legacy"
         project.save()
@@ -301,28 +313,108 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb["Projects"]
+        row = next(
+            (
+                idx
+                for idx in range(2, sheet.max_row + 1)
+                if sheet[f"A{idx}"].value == project.id
+            ),
+            None,
+        )
 
-        assert sheet["A2"].value == project.id
-        assert sheet["B2"].value == project.country.name
-        assert sheet["C2"].value == project.metacode
-        assert sheet["D2"].value == project.code
-        assert sheet["E2"].value == project.legacy_code
-        assert sheet["F2"].value == project.agency.name
-        assert sheet["G2"].value == lead_agency.name
-        assert sheet["H2"].value == project.cluster.name
-        assert sheet["I2"].value == project.project_type.code
-        assert sheet["J2"].value == project.sector.name
-        assert sheet["K2"].value == project.sector_legacy
-        assert sheet["L2"].value == ", ".join([subsector_one.name, subsector_two.name])
-        assert sheet["M2"].value == project.subsector_legacy
-        assert sheet["N2"].value == project.title
-        assert sheet["O2"].value == project.description
-        assert sheet["P2"].value == project.excom_provision
-        assert sheet["Q2"].value == project.products_manufactured
-        assert sheet["R2"].value == project.tranche
-        assert sheet["S2"].value == meta_project.type
-        assert sheet["T2"].value == funding_window.id
-        assert sheet["U2"].value == "Yes"
+        assert row is not None
+        assert sheet[f"A{row}"].value == project.id
+        assert sheet[f"B{row}"].value == project.country.name
+        assert sheet[f"C{row}"].value == project.metacode
+        assert sheet[f"D{row}"].value == project.code
+        assert sheet[f"E{row}"].value == project.legacy_code
+        assert sheet[f"F{row}"].value == project.agency.name
+        assert sheet[f"G{row}"].value == lead_agency.name
+        assert sheet[f"H{row}"].value == project.cluster.name
+        assert sheet[f"I{row}"].value == project.project_type.code
+        assert sheet[f"J{row}"].value == project.sector.name
+        assert sheet[f"K{row}"].value == project.sector_legacy
+        assert sheet[f"L{row}"].value == ", ".join(
+            [subsector_one.name, subsector_two.name]
+        )
+        assert sheet[f"M{row}"].value == project.subsector_legacy
+        assert sheet[f"N{row}"].value == project.title
+        assert sheet[f"O{row}"].value == project.description
+        assert sheet[f"P{row}"].value == project.excom_provision
+        assert sheet[f"Q{row}"].value == project.products_manufactured
+        assert sheet[f"R{row}"].value == project.tranche
+        assert sheet[f"S{row}"].value == meta_project.type
+        assert sheet[f"T{row}"].value == funding_window.id
+        assert sheet[f"U{row}"].value == "Yes"
+        assert sheet[f"V{row}"].value == bp_activity.get_display_internal_id
+        assert sheet[f"W{row}"].value == "Yes"
+
+    def test_export_inventory_report_populates_prior_meeting_columns(
+        self, admin_user
+    ):
+        final_project = ProjectFactory.create(
+            version=6,
+            total_fund=160,
+            support_cost_psc=16,
+            meeting=MeetingFactory.create(number=306),
+            post_excom_meeting=MeetingFactory.create(number=206),
+            date_approved=date(2024, 6, 15),
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=3,
+            total_fund=100,
+            support_cost_psc=10,
+            meeting=MeetingFactory.create(number=303),
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=4,
+            total_fund=120,
+            support_cost_psc=12,
+            meeting=MeetingFactory.create(number=304),
+            post_excom_meeting=MeetingFactory.create(number=204),
+            date_approved=date(2024, 4, 15),
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=5,
+            total_fund=140,
+            support_cost_psc=14,
+            meeting=MeetingFactory.create(number=305),
+            post_excom_meeting=MeetingFactory.create(number=205),
+            date_approved=date(2024, 5, 15),
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        row = next(
+            (
+                idx
+                for idx in range(2, sheet.max_row + 1)
+                if sheet[f"A{idx}"].value == final_project.id
+            ),
+            None,
+        )
+
+        assert row is not None
+        assert sheet[f"X{row}"].value == 20
+        assert sheet[f"Y{row}"].value == 2
+        assert sheet[f"Z{row}"].value == 204
+        assert sheet[f"AA{row}"].value.date() == date(2024, 4, 15)
+        assert sheet[f"AB{row}"].value == 20
+        assert sheet[f"AC{row}"].value == 2
+        assert sheet[f"AD{row}"].value == 205
+        assert sheet[f"AE{row}"].value.date() == date(2024, 5, 15)
+        assert sheet[f"AF{row}"].value == 20
+        assert sheet[f"AG{row}"].value == 2
+        assert sheet[f"AH{row}"].value == 206
+        assert sheet[f"AI{row}"].value.date() == date(2024, 6, 15)
 
     def test_export_mya_adds_filters_and_totals(
         self,

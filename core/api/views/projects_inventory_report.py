@@ -2,11 +2,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import openpyxl
+from django.db.models import Prefetch
 from openpyxl.worksheet.worksheet import Worksheet
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.projects_inventory_report import ProjectsInventoryReportWriter
 from core.api.utils import workbook_response
+from core.models import Project
 
 if TYPE_CHECKING:
     from core.api.views import ProjectV2ViewSet
@@ -33,7 +35,17 @@ class ProjectsInventoryReportExport:
         queryset = (
             self.view.filter_queryset(self.view.get_queryset())
             .filter(version__gte=3)
-            .select_related("lead_agency", "funding_window")
+            .select_related("lead_agency", "funding_window", "bp_activity")
+            .prefetch_related(
+                Prefetch(
+                    "archive_projects",
+                    queryset=Project.objects.really_all().select_related(
+                        "meeting",
+                        "post_excom_meeting",
+                        "status",
+                    ),
+                )
+            )
         )
         writer = ProjectsInventoryReportWriter(self.sheet)
         writer.write(queryset)
