@@ -12,6 +12,7 @@ const thousandSeparator = Intl.NumberFormat(navigator.language)
   .replaceAll('1', '')
 
 function cleanValue(value: string) {
+  if (value == null) return value
   const toParse = value.trim().split('$').reverse()[0].trim()
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {

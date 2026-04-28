@@ -26,14 +26,14 @@ function parsePastedText(text: string) {
 }
 
 function transposeMatrix(matrix: string[][]) {
-  const result: typeof matrix = new Array(matrix[0].length)
+  const numCols = matrix.reduce((max, row) => Math.max(max, row.length), 0)
+  const result: typeof matrix = Array.from({ length: numCols }, () =>
+    new Array(matrix.length).fill(''),
+  )
 
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
-      if (!result[j]) {
-        result[j] = new Array(matrix.length)
-      }
-      result[j][i] = matrix[i][j]
+      result[j][i] = matrix[i][j] ?? ''
     }
   }
 
@@ -50,8 +50,12 @@ function getOnlyFirstAndLastColumns(matrix: string[][]) {
   return matrix.map((cols) => [cols[0], cols[cols.length - 1]])
 }
 
+function normalizeCell(c: string) {
+  return (c ?? '').replace(/\u00A0/g, ' ').trim()
+}
+
 function removeEmptyRows(matrix: string[][]) {
-  return matrix.filter((r) => r.filter((c) => !!c).length)
+  return matrix.filter((r) => r.filter((c) => !!normalizeCell(c)).length)
 }
 
 function parsePastedHTML(html: string) {
@@ -65,7 +69,7 @@ function parsePastedHTML(html: string) {
   for (let i = 0; i < elTable.rows.length; i++) {
     result.push([])
     for (let j = 0; j < elTable.rows[i].cells.length; j++) {
-      result[i].push(elTable.rows[i].cells[j].textContent)
+      result[i].push(normalizeCell(elTable.rows[i].cells[j].textContent ?? ''))
     }
   }
 
