@@ -14,12 +14,17 @@ from rest_framework.response import Response
 
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
+from core.api.tests.factories import AgencyFactory
+from core.api.tests.factories import FundingWindowFactory
 from core.api.tests.factories import MetaProjectFactory
+from core.api.tests.factories import ProjectClusterFactory
 from core.api.tests.factories import ProjectFactory
+from core.api.tests.factories import ProjectSubSectorFactory
 from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
 from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.api.views import mya_export
 from core.models import MetaProject
+from core.models import Project
 from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
@@ -260,6 +265,64 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
+
+    def test_export_inventory_report_reads_project_objects_directly(self, admin_user):
+        lead_agency = AgencyFactory.create(name="Lead agency")
+        cluster = ProjectClusterFactory.create(name="Cluster A")
+        funding_window = FundingWindowFactory.create(description="Window A")
+        meta_project = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        subsector_one = ProjectSubSectorFactory.create(name="Subsector A")
+        subsector_two = ProjectSubSectorFactory.create(name="Subsector B")
+        project = ProjectFactory.create(
+            version=3,
+            metacode="META-123",
+            code="PRJ-123",
+            legacy_code="LEG-123",
+            title="Inventory project",
+            description="Inventory description",
+            excom_provision="Provision text",
+            products_manufactured="Manufactured product",
+            tranche=4,
+            production=True,
+            lead_agency=lead_agency,
+            funding_window=funding_window,
+            meta_project=meta_project,
+            cluster=cluster,
+            subsectors=[subsector_one, subsector_two],
+        )
+        project.sector_legacy = "Sector legacy"
+        project.subsector_legacy = "Subsector legacy"
+        project.save()
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+
+        assert sheet["A2"].value == project.id
+        assert sheet["B2"].value == project.country.name
+        assert sheet["C2"].value == project.metacode
+        assert sheet["D2"].value == project.code
+        assert sheet["E2"].value == project.legacy_code
+        assert sheet["F2"].value == project.agency.name
+        assert sheet["G2"].value == lead_agency.name
+        assert sheet["H2"].value == project.cluster.name
+        assert sheet["I2"].value == project.project_type.code
+        assert sheet["J2"].value == project.sector.name
+        assert sheet["K2"].value == project.sector_legacy
+        assert sheet["L2"].value == ", ".join([subsector_one.name, subsector_two.name])
+        assert sheet["M2"].value == project.subsector_legacy
+        assert sheet["N2"].value == project.title
+        assert sheet["O2"].value == project.description
+        assert sheet["P2"].value == project.excom_provision
+        assert sheet["Q2"].value == project.products_manufactured
+        assert sheet["R2"].value == project.tranche
+        assert sheet["S2"].value == meta_project.type
+        assert sheet["T2"].value == funding_window.id
+        assert sheet["U2"].value == "Yes"
 
     def test_export_mya_adds_filters_and_totals(
         self,
