@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Link,
   Tabs,
+  Tab,
 } from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
@@ -33,7 +34,6 @@ import {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
 import { union } from 'lodash'
 import { useStore } from '@ors/store.tsx'
-import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
@@ -52,7 +52,10 @@ import {
   FiTable,
   FiUnlock,
 } from 'react-icons/fi'
-import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import {
+  formatDate,
+  handleExport,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import {
   useAPRCurrentYear,
   useConfirmation,
@@ -74,6 +77,8 @@ export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
   const gridRef = useRef<AgGridReact>()
   const [activeTab, setActiveTab] = useState(0)
+  const [loadingExport, setLoadingExport] = useState(false)
+  const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
   const confirm = useConfirmation()
   const { year } = useParams()
@@ -731,13 +736,18 @@ export default function APRMLFSWorkspace() {
             <div className="flex flex-wrap gap-x-2">
               <Button
                 variant="text"
-                target="_blank"
-                rel="noopener noreferrer"
                 startIcon={<FiDownload size={18} />}
-                href={formatApiUrl(
-                  `api/annual-project-report/mlfs/${year}/export/`,
-                  params,
-                )}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/mlfs/${year}/export/`,
+                      params,
+                    ),
+                    setLoadingExport,
+                  )
+                }
+                disabled={loadingExport}
+                endIcon={loadingExport && <CircularProgress size={16} />}
               >
                 Export APR
               </Button>
@@ -752,12 +762,17 @@ export default function APRMLFSWorkspace() {
               </MlfsLink>
               <Button
                 variant="text"
-                target="_blank"
-                rel="noopener noreferrer"
                 startIcon={<FiTable size={18} />}
-                href={formatApiUrl(
-                  `api/annual-project-report/summary-tables/export/`,
-                )}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/summary-tables/export/`,
+                    ),
+                    setLoadingSummaryTables,
+                  )
+                }
+                disabled={loadingSummaryTables}
+                endIcon={loadingSummaryTables && <CircularProgress size={16} />}
               >
                 Generate summary tables
               </Button>

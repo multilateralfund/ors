@@ -5,9 +5,15 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
+import {
+  Box,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  Button,
+  CircularProgress,
+} from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
-import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
@@ -33,9 +39,12 @@ import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLin
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
+import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 export default function APRWorkspace() {
+  const [loadingExport, setLoadingExport] = useState(false)
+  const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
     useState(false)
   const { year } = useParams()
@@ -336,13 +345,18 @@ export default function APRWorkspace() {
           <div className="flex flex-wrap gap-x-2">
             <Button
               variant="text"
-              target="_blank"
-              rel="noopener noreferrer"
               startIcon={<FiDownload size={18} />}
-              href={formatApiUrl(
-                `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                params,
-              )}
+              onClick={() =>
+                handleExport(
+                  formatApiUrl(
+                    `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+                    params,
+                  ),
+                  setLoadingExport,
+                )
+              }
+              disabled={loadingExport}
+              endIcon={loadingExport && <CircularProgress size={16} />}
             >
               Export APR
             </Button>
@@ -357,12 +371,17 @@ export default function APRWorkspace() {
             </Link>
             <Button
               variant="text"
-              target="_blank"
-              rel="noopener noreferrer"
               startIcon={<FiTable size={18} />}
-              href={formatApiUrl(
-                `api/annual-project-report/summary-tables/export/`,
-              )}
+              onClick={() =>
+                handleExport(
+                  formatApiUrl(
+                    `api/annual-project-report/summary-tables/export/`,
+                  ),
+                  setLoadingSummaryTables,
+                )
+              }
+              disabled={loadingSummaryTables}
+              endIcon={loadingSummaryTables && <CircularProgress size={16} />}
             >
               Generate summary tables
             </Button>
