@@ -403,18 +403,92 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
 
         assert row is not None
+        # funding_headers(4) -> X, Y, Z, AA
         assert sheet[f"X{row}"].value == 20
         assert sheet[f"Y{row}"].value == 2
         assert sheet[f"Z{row}"].value == 204
         assert sheet[f"AA{row}"].value.date() == date(2024, 4, 15)
+        # funding_headers(5) -> AB, AC, AD, AE
         assert sheet[f"AB{row}"].value == 20
         assert sheet[f"AC{row}"].value == 2
         assert sheet[f"AD{row}"].value == 205
         assert sheet[f"AE{row}"].value.date() == date(2024, 5, 15)
+        # funding_headers(6) -> AF, AG, AH, AI
         assert sheet[f"AF{row}"].value == 20
         assert sheet[f"AG{row}"].value == 2
         assert sheet[f"AH{row}"].value == 206
         assert sheet[f"AI{row}"].value.date() == date(2024, 6, 15)
+
+    def test_export_inventory_report_populates_adjustment_columns(self, admin_user):
+        final_project = ProjectFactory.create(
+            version=6,
+            total_fund=160,
+            support_cost_psc=16,
+            meeting=MeetingFactory.create(number=306),
+            post_excom_meeting=MeetingFactory.create(number=206),
+            date_approved=date(2024, 6, 15),
+            adjustment=True,
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=3,
+            total_fund=100,
+            support_cost_psc=10,
+            meeting=MeetingFactory.create(number=303),
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=4,
+            total_fund=120,
+            support_cost_psc=12,
+            meeting=MeetingFactory.create(number=304),
+            post_excom_meeting=MeetingFactory.create(number=204),
+            date_approved=date(2024, 4, 15),
+            adjustment=True,
+        )
+        ProjectFactory.create(
+            latest_project=final_project,
+            version=5,
+            total_fund=140,
+            support_cost_psc=14,
+            meeting=MeetingFactory.create(number=305),
+            post_excom_meeting=MeetingFactory.create(number=205),
+            date_approved=date(2024, 5, 15),
+            adjustment=True,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        row = next(
+            (
+                idx
+                for idx in range(2, sheet.max_row + 1)
+                if sheet[f"A{idx}"].value == final_project.id
+            ),
+            None,
+        )
+
+        assert row is not None
+        # adjustment_headers(4) -> AJ, AK, AL, AM
+        assert sheet[f"AJ{row}"].value == 20
+        assert sheet[f"AK{row}"].value == 2
+        assert sheet[f"AL{row}"].value == 204
+        assert sheet[f"AM{row}"].value.date() == date(2024, 4, 15)
+        # adjustment_headers(5) -> AN, AO, AP, AQ
+        assert sheet[f"AN{row}"].value == 20
+        assert sheet[f"AO{row}"].value == 2
+        assert sheet[f"AP{row}"].value == 205
+        assert sheet[f"AQ{row}"].value.date() == date(2024, 5, 15)
+        # adjustment_headers(6) -> AR, AS, AT, AU
+        assert sheet[f"AR{row}"].value == 20
+        assert sheet[f"AS{row}"].value == 2
+        assert sheet[f"AT{row}"].value == 206
+        assert sheet[f"AU{row}"].value.date() == date(2024, 6, 15)
 
     def test_export_mya_adds_filters_and_totals(
         self,

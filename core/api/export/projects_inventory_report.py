@@ -49,7 +49,7 @@ def funding_headers(version):
     def validate_project(project):
         versioned_project = get_project_version(project, version)
         return (
-            version in {4, 5, 6}
+            version >= 4
             and versioned_project is not None
             and versioned_project.adjustment is False
             and versioned_project.transferred_from is None
@@ -81,9 +81,12 @@ def funding_headers(version):
             "headerName": f"Meeting Approved {idx}",
             "method": lambda project, _: (
                 (
-                    get_project_version(project, version).post_excom_meeting.number
-                    if get_project_version(project, version).post_excom_meeting
-                    else get_project_version(project, version).meeting.number
+                    get_project_version(project, version).post_excom_meeting
+                    and get_project_version(project, version).post_excom_meeting.number
+                    or (
+                        get_project_version(project, version).meeting
+                        and get_project_version(project, version).meeting.number
+                    )
                 )
                 if validate_project(project)
                 else None
@@ -92,6 +95,73 @@ def funding_headers(version):
         {
             "id": f"date_approved_v{version}",
             "headerName": f"Date Approved {idx}",
+            "type": "date",
+            "method": lambda project, _: (
+                get_project_version(project, version).date_approved
+                if validate_project(project)
+                else None
+            ),
+        },
+    ]
+
+
+def adjustment_headers(version):
+    if version < 4:
+        return []
+
+    idx = version - 3
+
+    def validate_project(project):
+        versioned_project = get_project_version(project, version)
+        return (
+            version >= 4
+            and versioned_project is not None
+            and (
+                versioned_project.adjustment is True
+                or versioned_project.transferred_from_id is not None
+            )
+        )
+
+    return [
+        {
+            "id": f"funds_adjustment_v{version}",
+            "headerName": f"Fund Adjustments {idx}",
+            "method": lambda project, _: (
+                calc_total_fund(project, version) if validate_project(project) else None
+            ),
+            "type": "number",
+            "align": "right",
+        },
+        {
+            "id": f"psc_adjustment_v{version}",
+            "headerName": f"Support Cost Adjustments {idx}",
+            "method": lambda project, _: (
+                calc_support_cost_psc(project, version)
+                if validate_project(project)
+                else None
+            ),
+            "type": "number",
+            "align": "right",
+        },
+        {
+            "id": f"adjustment_meeting_v{version}",
+            "headerName": f"Adjustments Meeting {idx}",
+            "method": lambda project, _: (
+                (
+                    get_project_version(project, version).post_excom_meeting
+                    and get_project_version(project, version).post_excom_meeting.number
+                    or (
+                        get_project_version(project, version).meeting
+                        and get_project_version(project, version).meeting.number
+                    )
+                )
+                if validate_project(project)
+                else None
+            ),
+        },
+        {
+            "id": f"adjustment_date_v{version}",
+            "headerName": f"Adjustments Date {idx}",
             "type": "date",
             "method": lambda project, _: (
                 get_project_version(project, version).date_approved
@@ -240,7 +310,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": lambda project, _: project.additional_funding,
             },
         ]
-        headers.extend(funding_headers(4))
-        headers.extend(funding_headers(5))
-        headers.extend(funding_headers(6))
+
+        for i in range(3):
+            headers.extend(funding_headers(i + 4))
+
+        for i in range(7):
+            headers.extend(adjustment_headers(i + 4))
+
         super().__init__(sheet, headers)
