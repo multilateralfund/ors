@@ -92,7 +92,6 @@ export const handleExport = async (
     document.body.appendChild(exportLinkEl)
     exportLinkEl.click()
     exportLinkEl.remove()
-
     URL.revokeObjectURL(exportUrl)
   } catch (e) {
     enqueueSnackbar('Export failed. Please try again.', {

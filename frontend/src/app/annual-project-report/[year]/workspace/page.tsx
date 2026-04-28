@@ -342,49 +342,57 @@ export default function APRWorkspace() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-x-2">
-            <Button
-              variant="text"
-              startIcon={<FiDownload size={18} />}
-              onClick={() =>
-                handleExport(
-                  formatApiUrl(
-                    `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                    params,
-                  ),
-                  setLoadingExport,
-                )
-              }
-              disabled={loadingExport}
-              endIcon={loadingExport && <CircularProgress size={16} />}
-            >
-              Export APR
-            </Button>
-            <Link
-              button
-              variant="text"
-              startIcon={<FiEdit size={18} />}
-              href={editHref}
-              disabled={!canUpdateAPR}
-            >
-              Update APR
-            </Link>
-            <Button
-              variant="text"
-              startIcon={<FiTable size={18} />}
-              onClick={() =>
-                handleExport(
-                  formatApiUrl(
-                    `api/annual-project-report/summary-tables/export/`,
-                  ),
-                  setLoadingSummaryTables,
-                )
-              }
-              disabled={loadingSummaryTables}
-              endIcon={loadingSummaryTables && <CircularProgress size={16} />}
-            >
-              Generate summary tables
-            </Button>
+          <div>
+            <div className="flex flex-wrap gap-x-2">
+              <Button
+                variant="text"
+                startIcon={<FiDownload size={18} />}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+                      params,
+                    ),
+                    setLoadingExport,
+                  )
+                }
+                disabled={loadingExport}
+                endIcon={loadingExport && <CircularProgress size={16} />}
+              >
+                Export APR
+              </Button>
+              <Link
+                button
+                variant="text"
+                startIcon={<FiEdit size={18} />}
+                href={editHref}
+                disabled={!canUpdateAPR}
+              >
+                Update APR
+              </Link>
+              <Button
+                variant="text"
+                startIcon={<FiTable size={18} />}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/summary-tables/export/`,
+                    ),
+                    setLoadingSummaryTables,
+                  )
+                }
+                disabled={loadingSummaryTables}
+                endIcon={loadingSummaryTables && <CircularProgress size={16} />}
+              >
+                Generate summary tables
+              </Button>
+            </div>
+
+            {(loadingExport || loadingSummaryTables) && (
+              <div className="ml-1.5 mt-1 max-h-10 text-sm text-gray-500 opacity-100">
+                Download may take more than 1 minute, please wait!
+              </div>
+            )}
           </div>
         </div>
         <div className="flex justify-end">
