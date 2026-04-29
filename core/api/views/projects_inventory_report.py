@@ -33,9 +33,9 @@ class ProjectsInventoryReportExport:
     def export_xls(self):
         self.setup_workbook()
         project_fields = ProjectsInventoryReportWriter.get_project_fields()
-        metaproject_fields = ProjectsInventoryReportWriter.get_metaproject_fields(
-            ProjectsInventoryReportWriter.METAPROJECT_FIELDS
-        )
+        metaproject_fields = ProjectsInventoryReportWriter.get_metaproject_fields()
+        # We need fk_fields and m2m_fields for ALL project fields, not just the selected ones,
+        # because the base headers also rely on them. Otherwise, we hit an N+1 queries issue.
         fk_fields = ProjectsInventoryReportWriter.get_fk_fields(project_fields)
         m2m_fields = ProjectsInventoryReportWriter.get_m2m_fields(project_fields)
         queryset = (
@@ -55,9 +55,9 @@ class ProjectsInventoryReportExport:
                         "post_excom_meeting",
                         "status",
                     ),
-                )
+                ),
             )
-        )
+        )[:1000]
         version_map = {(p.final_version.id, p.version): p for p in queryset}
         writer = ProjectsInventoryReportWriter(
             self.sheet,
@@ -65,6 +65,8 @@ class ProjectsInventoryReportExport:
             project_fields=project_fields,
             metaproject_fields=metaproject_fields,
         )
-        writer.write(queryset.filter(latest_project=None))
+        # Filter in memory to avoid a second DB query on the same large set.
+        latest_projects = [p for p in queryset if p.latest_project_id is None]
+        writer.write(latest_projects)
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} Inventory report", self.wb)

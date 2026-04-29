@@ -20,7 +20,6 @@ from core.api.export.projects_v2_dump import get_value_fk
 from core.api.export.projects_v2_dump import get_value_m2m
 from core.models import MetaProject
 from core.models import Project
-from core.models import Project
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
 
@@ -37,7 +36,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
-    METAPROJECT_FIELDS = [("end_date", "End date (MYA)")]
+    METAPROJECT_FIELD_TITLES = {
+        "end_date": "End date (MYA)",
+    }
 
     def __init__(
         self,
@@ -54,8 +55,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
         self.metaproject_fields = (
             metaproject_fields
             if metaproject_fields is not None
-            else self.get_metaproject_fields(self.METAPROJECT_FIELDS)
+            else self.get_metaproject_fields()
         )
+        self.project_field_names = {
+            f["write_field_name"]: f["label"]
+            for f in ProjectField.objects.all().values("write_field_name", "label")
+        }
 
         for (final_version_id, _), p in self.version_map.items():
             if p.id != final_version_id:
@@ -120,7 +125,198 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(self.metaproject_fields, source="meta_project")
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=["end_date"],
+                title_overrides=self.METAPROJECT_FIELD_TITLES,
+            )
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=["transfer_meeting", "transfer_decision"],
+                title_overrides={
+                    "transfer_meeting": "Transfer meeting",
+                    "transfer_decision": "Transfer decision",
+                },
+            )
+        )
+
+        headers.append(
+            {
+                "id": "transferred_from",
+                "headerName": "Transferred from",
+                "method": lambda project, _: (
+                    project.transferred_from.agency.name
+                    if project.transferred_from
+                    else None
+                ),
+            },
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
+                    "number_of_non_sme_directly_funded",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "number_of_non_sme_directly_funded_actual",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
+                    "number_of_smes_directly_funded",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "number_of_smes_directly_funded_actual",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
+                    "number_of_both_sme_non_sme_not_directly_funded",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "number_of_both_sme_non_sme_not_directly_funded_actual",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
+                    "number_of_production_lines_assisted",
+                ],
+            )
+        )
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "number_of_production_lines_assisted_actual",
+                    "ad_hoc_pcr",
+                    "pcr_waived",
+                    "total_phase_out_metric_tonnes",
+                    "total_phase_out_odp_tonnes",
+                    "total_phase_out_co2_tonnes",
+                    "total_number_of_technicians_trained",
+                    "total_number_of_technicians_trained_actual",
+                    "number_of_female_technicians_trained",
+                    "number_of_female_technicians_trained_actual",
+                    "total_number_of_trainers_trained",
+                    "total_number_of_trainers_trained_actual",
+                    "number_of_female_trainers_trained",
+                    "number_of_female_trainers_trained_actual",
+                    "total_number_of_technicians_certified",
+                    "total_number_of_technicians_certified_actual",
+                    "number_of_female_technicians_certified",
+                    "number_of_female_technicians_certified_actual",
+                    "number_of_training_institutions_newly_assisted",
+                    "number_of_training_institutions_newly_assisted_actual",
+                    "number_of_toolkits_and_equipment_distributed",
+                    "number_of_toolkits_and_equipment_distributed_actual",
+                    "total_number_of_customs_officers_trained",
+                    "total_number_of_customs_officers_trained_actual",
+                    "number_of_female_customs_officers_trained",
+                    "number_of_female_customs_officers_trained_actual",
+                    "total_number_of_nou_personnel_supported",
+                    "total_number_of_nou_personnel_supported_actual",
+                    "number_of_female_nou_personnel_supported",
+                    "number_of_female_nou_personnel_supported_actual",
+                    "establishment_of_technician_certification",
+                    "establishment_of_technician_certification_actual",
+                    "establishment_of_recovery_and_recycling_scheme",
+                    "establishment_of_recovery_and_recycling_scheme_actual",
+                    "establishment_of_reclamation_scheme",
+                    "establishment_of_reclamation_scheme_actual",
+                    "upgrade_of_imp_exp_licensing",
+                    "upgrade_of_imp_exp_licensing_actual",
+                    "upgrade_of_quota_system",
+                    "upgrade_of_quota_system_actual",
+                    "number_of_bans_on_equipment",
+                    "number_of_bans_on_equipment_actual",
+                    "number_of_bans_on_substances",
+                    "number_of_bans_on_substances_actual",
+                    "energy_savings",
+                    "energy_savings_actual",
+                    "meps_developed_domestic_refrigeration",
+                    "meps_developed_domestic_refrigeration_actual",
+                    "meps_developed_commercial_refrigeration",
+                    "meps_developed_commercial_refrigeration_actual",
+                    "meps_developed_residential_ac",
+                    "meps_developed_residential_ac_actual",
+                    "meps_developed_commercial_ac",
+                    "meps_developed_commercial_ac_actual",
+                    "capacity_building_programmes",
+                    "capacity_building_programmes_actual",
+                    "ee_demonstration_project",
+                    "ee_demonstration_project_actual",
+                    "end_users",
+                    "end_users_actual",
+                    "quantity_controlled_substances_destroyed_mt",
+                    "quantity_controlled_substances_destroyed_mt_actual",
+                    "quantity_controlled_substances_destroyed_co2_eq_t",
+                    "quantity_controlled_substances_destroyed_co2_eq_t_actual",
+                    "quantity_hfc_23_by_product_generated",
+                    "quantity_hfc_23_by_product_generated_actual",
+                    "hfc_23_by_product_generation_rate",
+                    "hfc_23_by_product_generation_rate_actual",
+                    "quantity_hfc_23_by_product_destroyed",
+                    "quantity_hfc_23_by_product_destroyed_actual",
+                    "quantity_hfc_23_by_product_emitted",
+                    "quantity_hfc_23_by_product_emitted_actual",
+                    "destruction_technology",
+                    "production_control_type",
+                ],
+            )
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=[
+                    "cost_effectiveness",
+                ],
+            )
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "cost_effectiveness_actual",
+                    "cost_effectiveness_co2",
+                    "cost_effectiveness_co2_actual",
+                ],
+            )
         )
 
         super().__init__(sheet, headers)
@@ -264,25 +460,60 @@ class ProjectsInventoryReportWriter(BaseWriter):
         ]
 
     @staticmethod
-    def get_fk_fields(fields):
-        return [f.name for f in fields if isinstance(f, ForeignKey)]
+    def unpack_field(field):
+        return field[0] if isinstance(field, tuple) else field
+
+    @classmethod
+    def get_fk_fields(cls, fields):
+        return [
+            cls.unpack_field(f).name
+            for f in fields
+            if isinstance(cls.unpack_field(f), ForeignKey)
+        ]
+
+    @classmethod
+    def get_m2m_fields(cls, fields):
+        return [
+            cls.unpack_field(f).name
+            for f in fields
+            if isinstance(cls.unpack_field(f), ManyToManyField)
+        ]
 
     @staticmethod
-    def get_m2m_fields(fields):
-        return [f.name for f in fields if isinstance(f, ManyToManyField)]
+    def select_fields(
+        fields, include_names=None, exclude_names=None, title_overrides=None
+    ):
+        include_names = set(include_names or [])
+        exclude_names = set(exclude_names or [])
+        title_overrides = title_overrides or {}
 
-    @staticmethod
-    def get_metaproject_fields(names=None):
-        names = names if names else []
+        if include_names and exclude_names:
+            raise ValueError(
+                "select_fields accepts either include_names or exclude_names, not both"
+            )
+
         result = []
-        for name, title in names:
-            field = MetaProject._meta.get_field(name)
-            if field and not isinstance(field, ForeignObjectRel):
-                result.append((field, title))
+        for field in fields:
+            if include_names and field.name not in include_names:
+                continue
+            if exclude_names and field.name in exclude_names:
+                continue
+
+            title = title_overrides.get(field.name)
+            result.append((field, title) if title else field)
         return result
 
-    @staticmethod
-    def get_project_fields():
+    @classmethod
+    def get_metaproject_fields(cls):
+        fields = [
+            field
+            for field in MetaProject._meta.get_fields()
+            if not isinstance(field, ForeignObjectRel)
+        ]
+        return fields
+
+    @classmethod
+    def get_project_fields(cls):
         old_fields_included = [
             "additional_funding",
             "date_comp_revised",
@@ -323,22 +554,29 @@ class ProjectsInventoryReportWriter(BaseWriter):
             result.insert(idx_before + 1, result.pop(idx_after))
         return result
 
-    def build_headers(self, fields, source=None, include_names=None):
+    def build_headers(
+        self,
+        fields,
+        source=None,
+        include_names=None,
+        exclude_names=None,
+        title_overrides=None,
+    ):
         result = []
-        include_names = include_names or set()
-        field_names = {
-            f["write_field_name"]: f["label"]
-            for f in ProjectField.objects.all().values("write_field_name", "label")
-        }
+        fields = self.select_fields(
+            fields,
+            include_names=include_names,
+            exclude_names=exclude_names,
+            title_overrides=title_overrides,
+        )
+
+        field_names = getattr(self, "project_field_names", {})
 
         for f in fields:
             if isinstance(f, tuple):
                 f, title = f
             else:
                 title = field_names.get(f.name, f.name)
-
-            if include_names and f.name not in include_names:
-                continue
 
             header = {
                 "id": f.name,
