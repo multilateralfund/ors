@@ -50,10 +50,9 @@ from core.models.project import (
     ProjectRBMMeasure,
     SubmissionAmount,
 )
-from core.models.project_enterprise import (
+from core.models.enterprise import (
     Enterprise,
-    ProjectEnterprise,
-    ProjectEnterpriseOdsOdp,
+    EnterpriseOdsOdp,
 )
 from core.models.project_metadata import (
     ProjectCluster,
@@ -666,11 +665,11 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     meeting = factory.SubFactory(MeetingFactory)
 
 
-class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
+class EnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ProjectEnterpriseOdsOdp
+        model = EnterpriseOdsOdp
 
-    project_enterprise = factory.SubFactory(ProjectEnterpriseFactory)
+    enterprise = factory.SubFactory(EnterpriseFactory)
     consumption = factory.Faker("random_int", min=1, max=100)
     selected_alternative = factory.Faker("pystr", max_chars=100)
     chemical_phased_in = factory.Faker("random_int", min=1, max_chars=100)

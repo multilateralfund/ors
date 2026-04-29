@@ -34,6 +34,13 @@ from core.models.project_metadata import (
 )
 from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
+from core.import_data_v2.utils import (
+    get_agency_by_name,
+    get_country_by_name,
+    get_sector_by_name_or_code,
+    get_subsectors_by_name,
+    get_substance_blend_ods_display_name,
+)
 
 # pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines
 
@@ -45,45 +52,6 @@ def get_cluster_by_name(name):
     if not cluster:
         logger.warning(f"⚠️ Cluster with name '{name.strip()}' not found")
     return cluster
-
-
-def get_type_by_name(name):
-    project_type = ProjectType.objects.filter(name__iexact=name.strip()).first()
-    if not type:
-        logger.warning(f"⚠️ Type with name '{name.strip()}' not found")
-    return project_type
-
-
-def get_sector_by_name(name):
-    TRANSLATED_SECTORS = {"Fumigation": "Fumigant"}
-    if name.strip() in TRANSLATED_SECTORS:
-        name = TRANSLATED_SECTORS[name.strip()]
-    sector = ProjectSector.objects.filter(name__iexact=name.strip()).first()
-    if not sector and name.strip():
-        logger.warning(f"⚠️ Sector with name '{name.strip()}' not found")
-    return sector
-
-
-def get_substance_blend_ods_display_name(name, code):
-    name = name.strip()
-    ods_display_name = name
-    TRANSLATE_ODS_ODP_NAMES = {
-        "MB": "Methyl Bromide",
-    }
-    name = TRANSLATE_ODS_ODP_NAMES.get(name, name)
-    substance = None
-    blend = None
-    substance = Substance.objects.filter(name__iexact=name).first()
-    if not substance:
-        logger.warning(
-            f"⚠️ Substance with name '{name}' not found while processing ODS Phaseout Fields at legacy code {code}"
-        )
-        blend = Blend.objects.filter(name__iexact=name).first()
-        if not blend:
-            logger.warning(
-                f"⚠️ Blend with name '{name}' not found while processing ODS Phaseout Fields at legacy code {code}"
-            )
-    return substance, blend, ods_display_name
 
 
 def find_project_ods_odp_by_name(project_ods_odps, name, replacement_text):
@@ -101,75 +69,6 @@ def find_project_ods_odp_by_name(project_ods_odps, name, replacement_text):
         .filter(ods_replacement_text=replacement_text.strip())
         .first()
     )
-
-
-def get_subsectors_by_name(name):
-    TRANSLATE_SUB_SECTORS = {
-        "Industrial and commercial refrigeration": "Industrial and commercial refrigeration (ICR)",
-        "Rgid PU": "Rigid PU",
-        "Residencial air-conditioning": "Residential air-conditioning",
-        "Other aerosols": "Other Aeresols",
-        "Metered Dose Inhalers, other aerosols": "Metered dose inhalers",
-        "Air conditioning compressor": "AC Compressor",
-        "Air-conditioning compressor": "AC Compressor",
-        "Air-Conditioning compressor": "AC Compressor",
-        "End user, industrial refrigeration": "End User",
-        "commercial air conditioning": "Commercial air-conditioning",
-    }
-    subsectors = []
-    if name and str(name).strip():
-        name = TRANSLATE_SUB_SECTORS.get(str(name).strip(), str(name).strip())
-        subsector = ProjectSubSector.objects.filter(name__iexact=name).first()
-        if not subsector:
-            # now we can try to split by comma
-            if name in ["Rigid PU, flexible", "Rigid PU, XPS"]:
-                subsector_names = [name]
-            else:
-                subsector_names = [s.strip() for s in name.split(",")]
-            for subsector_name in subsector_names:
-                subsector_name = TRANSLATE_SUB_SECTORS.get(
-                    str(subsector_name).strip(), str(subsector_name).strip()
-                )
-                subsector = ProjectSubSector.objects.filter(
-                    name__iexact=subsector_name
-                ).first()
-                if subsector:
-                    subsectors.append(subsector)
-                else:
-                    logger.warning(
-                        f"""⚠️ Sub-sector with name '{subsector_name}' not found while processing
-                         subsectors with original name '{name.strip()}'"""
-                    )
-        return subsectors
-
-
-def get_country_by_name(name):
-    TRANSLATE_COUNTRIES = {
-        "Lao, PDR": "Lao PDR",
-        "Moldova, Rep": "Moldova",
-        "Timor Leste": "Timor-Leste",
-        "Micronesia": "Micronesia (Federated States of)",
-        "Guinea-Bissau": "Guinea Bissau",
-        "": "",
-    }
-    if name.strip() in TRANSLATE_COUNTRIES:
-        name = TRANSLATE_COUNTRIES[name.strip()]
-    country = Country.objects.find_by_name(name)
-    if not country:
-        logger.warning(f"⚠️ Country with name '{name.strip()}' not found")
-    return country
-
-
-def get_agency_by_name(name):
-    TRANSLATE_AGENCIES = {
-        "IBRD": "World Bank",
-    }
-    if name.strip() in TRANSLATE_AGENCIES:
-        name = TRANSLATE_AGENCIES[name.strip()]
-    agency = Agency.objects.filter(name__iexact=name.strip()).first()
-    if not agency:
-        logger.warning(f"⚠️ Agency with name '{name.strip()}' not found")
-    return agency
 
 
 def get_status_by_name(name):
@@ -229,7 +128,7 @@ def create_new_project(row, dry_run=True):
     agency = get_agency_by_name(row["AGENCY"])
     cluster = get_cluster_by_name(row["Cluster"])
     project_type = get_type_by_name(row["Type"])
-    sector = get_sector_by_name(row["Sector"])
+    sector = get_sector_by_name_or_code(row["Sector"])
     subsectors = get_subsectors_by_name(row["Subsector"])
     total_fund_approved = row["TOTAL_FUND_APPROVED"]
     total_psc_cost = row["TOTAL_13%SUPPORT_COST"]
@@ -412,7 +311,7 @@ def process_current_invetory_sheet(dry_run=True):
                 project.cluster = cluster_object
             if project_type := get_type_by_name(row["Type"]):
                 project.project_type = project_type
-            if sector := get_sector_by_name(row["Sector"]):
+            if sector := get_sector_by_name_or_code(row["Sector"]):
                 project.sector = sector
             subsectors = get_subsectors_by_name(row["Subsector"])
             if subsectors:
@@ -449,7 +348,7 @@ def process_master_data_sheet(dry_run=True, second_parameter=""):
                 project.cluster = cluster_object
             if project_type := get_type_by_name(row["Type"]):
                 project.project_type = project_type
-            if sector := get_sector_by_name(row["Sector"]):
+            if sector := get_sector_by_name_or_code(row["Sector"]):
                 project.sector = sector
             subsectors = get_subsectors_by_name(row["Sub-sector(s)"])
             project.subsectors.clear()
@@ -919,7 +818,7 @@ def process_c_and_p_consumption_sheet(dry_run=True):
             agency = get_agency_by_name(row["Agency"])
             cluster = get_cluster_by_name(row["Cluster"])
             project_type = get_type_by_name(row["Type"])
-            sector = get_sector_by_name(row["Sector"])
+            sector = get_sector_by_name_or_code(row["Sector"])
             project.production = False
             if agency:
                 project.agency = agency
@@ -1004,7 +903,7 @@ def process_c_and_p_production_sheet(dry_run=True):
             agency = get_agency_by_name(row["Agency"])
             cluster = get_cluster_by_name(row["Cluster"])
             project_type = get_type_by_name(row["Type"])
-            sector = get_sector_by_name(row["Sector"])
+            sector = get_sector_by_name_or_code(row["Sector"])
             project.production = True
             if agency:
                 project.agency = agency

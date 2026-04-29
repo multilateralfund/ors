@@ -9,8 +9,8 @@ from rest_framework.test import APIClient
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     EnterpriseFactory,
-    ProjectEnterprise,
-    ProjectEnterpriseOdsOdp,
+    Enterprise,
+    EnterpriseOdsOdp,
 )
 from core.models.utils import EnterpriseStatus
 
@@ -27,24 +27,16 @@ def setup_enterprises(project, project2, new_country, new_agency, substance_hcfc
     enterprise1 = EnterpriseFactory(name="Enterprise 1")
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
-    project_enterprise1 = ProjectEnterprise.objects.create(
-        project=project, enterprise=enterprise1, agency=new_agency
-    )
-    ProjectEnterpriseOdsOdp.objects.create(
+    EnterpriseOdsOdp.objects.create(
         project_enterprise=project_enterprise1, ods_substance=substance_hcfc
     )
-    ProjectEnterpriseOdsOdp.objects.create(
+    EnterpriseOdsOdp.objects.create(
         project_enterprise=project_enterprise1, ods_substance=substance_hcfc
     )
-    project_enterprise2 = ProjectEnterprise.objects.create(
-        project=project2,
-        enterprise=enterprise2,
-        agency=new_agency,
-    )
-    ProjectEnterpriseOdsOdp.objects.create(
+    EnterpriseOdsOdp.objects.create(
         project_enterprise=project_enterprise2, ods_substance=substance_hcfc
     )
-    project_enterprise3 = ProjectEnterprise.objects.create(
+    project_enterprise3 = Enterprise.objects.create(
         project=project2,
         enterprise=enterprise3,
         agency=new_agency,
