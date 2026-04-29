@@ -26,11 +26,11 @@ from core.models.project_metadata import ProjectField
 
 
 def trf_or_adj(project):
-    return project.status.name == "Transferred" or project.adjustment == True
+    return project.status.name == "Transferred" or project.adjustment is True
 
 
 def not_trf_or_adj(project):
-    return project.status.name != "Transferred" and project.adjustment == False
+    return project.status.name != "Transferred" and project.adjustment is False
 
 
 class ProjectsInventoryReportWriter(BaseWriter):
@@ -587,6 +587,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             result.insert(idx_before + 1, result.pop(idx_after))
         return result
 
+    # pylint: disable-next=too-many-arguments
     def build_headers(
         self,
         fields,

@@ -31,7 +31,6 @@ from core.api.views import mya_export
 from core.models import MetaProject
 from core.models import Project
 from core.models.business_plan import BPActivity
-from core.models.project import Project
 from core.models.project import ProjectOdsOdp
 from core.models.substance import Substance
 from core.models.user import User
