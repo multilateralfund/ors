@@ -872,7 +872,11 @@ class APREndorseView(APIView):
 
             return Response(
                 {
-                    "message": f"APR for year {year} has been endorsed successfully.",
+                    "message": (
+                        f"APR for year {year} has been endorsed successfully. "
+                        "The projects affected by this APR are updated asynchronously; "
+                        "it may take a few minutes until all of them reflect the updates."
+                    ),
                     "year": year,
                     "date_endorsed": progress_report.date_endorsed,
                     "meeting_endorsed": (

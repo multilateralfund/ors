@@ -14,6 +14,7 @@ import {
   Link,
   Tabs,
   Tab,
+  Tooltip,
 } from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
@@ -499,15 +500,25 @@ export default function APRMLFSWorkspace() {
               </Button>
             )}
             {activeTab === 0 && kickstartAPR && (
-              <Button
-                disabled={loading || !canKickstartAPR}
-                variant="contained"
-                color="secondary"
-                onClick={kickstartNewAPR}
+              <Tooltip
+                title={
+                  !loading && !canKickstartAPR
+                    ? kickstartAPR.message || ''
+                    : ''
+                }
               >
-                Launch new APR{' '}
-                {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
-              </Button>
+                <span>
+                  <Button
+                    disabled={loading || !canKickstartAPR}
+                    variant="contained"
+                    color="secondary"
+                    onClick={kickstartNewAPR}
+                  >
+                    Launch new APR{' '}
+                    {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
+                  </Button>
+                </span>
+              </Tooltip>
             )}
             <Button
               disabled={loading}
@@ -521,7 +532,10 @@ export default function APRMLFSWorkspace() {
             {canEditAPR && (
               <Button
                 disabled={
-                  loading || !(loaded && (aprData ?? []).length > 0) || !!taskId
+                  loading ||
+                  !(loaded && (aprData ?? []).length > 0) ||
+                  !!taskId ||
+                  !!progressReport?.endorsed
                 }
                 variant="contained"
                 color="secondary"
