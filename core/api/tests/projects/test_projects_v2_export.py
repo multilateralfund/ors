@@ -382,17 +382,14 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert sheet[f"{headers['Additional funding']}{row}"].value == "Yes"
         assert last_header == "cost_effectiveness_co2_actual"
-        assert (
-            sheet[f"{headers['End date (MYA)']}{row}"].value
-            == meta_project.end_date.strftime("%d/%m/%Y")
-        )
+        assert sheet[
+            f"{headers['End date (MYA)']}{row}"
+        ].value == meta_project.end_date.strftime("%d/%m/%Y")
         assert sheet[f"{headers['Transfer meeting']}{row}"].value in (None, "")
         assert sheet[f"{headers['Transfer decision']}{row}"].value in (None, "")
         assert sheet[f"{headers['Transferred from']}{row}"].value in (None, "")
 
-    def test_export_inventory_report_populates_prior_meeting_columns(
-        self, admin_user
-    ):
+    def test_export_inventory_report_populates_prior_meeting_columns(self, admin_user):
         final_project = ProjectFactory.create(
             version=6,
             total_fund=160,
@@ -444,10 +441,9 @@ class TestProjectV2ExportXLSX(BaseTest):
             )
             assert sheet[f"{headers[f'PSC meeting {idx}']}{row}"].value == 2
             assert sheet[f"{headers[f'Meeting Approved {idx}']}{row}"].value == 206
-            assert (
-                sheet[f"{headers[f'Date Approved {idx}']}{row}"].value.date()
-                == date(2024, 6, 15)
-            )
+            assert sheet[
+                f"{headers[f'Date Approved {idx}']}{row}"
+            ].value.date() == date(2024, 6, 15)
 
     def test_export_inventory_report_populates_adjustment_columns(self, admin_user):
         final_project = ProjectFactory.create(
@@ -499,20 +495,14 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         assert row is not None
         for idx in range(1, 4):
+            assert sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == 20
             assert (
-                sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == 20
+                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value == 2
             )
-            assert (
-                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value
-                == 2
-            )
-            assert (
-                sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value == 206
-            )
-            assert (
-                sheet[f"{headers[f'Adjustments Date {idx}']}{row}"].value.date()
-                == date(2024, 6, 15)
-            )
+            assert sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value == 206
+            assert sheet[
+                f"{headers[f'Adjustments Date {idx}']}{row}"
+            ].value.date() == date(2024, 6, 15)
 
     def test_export_mya_adds_filters_and_totals(
         self,
