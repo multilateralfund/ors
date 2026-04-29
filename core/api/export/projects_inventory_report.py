@@ -69,10 +69,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
         headers = self.get_base_headers()
 
         for i in range(3):
-            headers.extend(self.funding_headers(i + 4))
+            headers.extend(self.funding_headers(i + 3))
 
         for i in range(7):
-            headers.extend(self.adjustment_headers(i + 4))
+            headers.extend(self.adjustment_headers(i + 3))
 
         headers.extend(
             [
@@ -109,7 +109,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
         headers.extend(
             self.build_headers(
                 self.project_fields,
-                include_names=["project_duration", "date_completion"],
+                include_names=[
+                    "substance_type",
+                    "project_duration",
+                    "date_completion",
+                ],
             )
         )
 
@@ -660,10 +664,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return None
 
     def funding_headers(self, version):
-        if version < 4:
+        if version < 3:
             return []
 
-        idx = version - 3
+        idx = version - 2
 
         return [
             {
@@ -706,10 +710,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
         ]
 
     def adjustment_headers(self, version):
-        if version < 4:
+        if version < 3:
             return []
 
-        idx = version - 3
+        idx = version - 2
 
         return [
             {
