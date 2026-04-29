@@ -27,6 +27,11 @@ const GenerateDBMenu = ({
         permissions: [canViewProjects],
       },
       {
+        title: 'Inventory report',
+        url: formatApiUrl('/api/projects/v2/export/?inventory_report=true'),
+        permissions: [canViewProjects],
+      },
+      {
         title: 'Projects warehouse',
         url: '/projects-listing/export/all',
         permissions: [canViewProjects],
