@@ -68,7 +68,7 @@ class BaseWriter:
             name = parsed_header.get("headerName") or parsed_header.get("display_name")
             if parsed_header.get("type") == "date":
                 comment = name
-                name = "Date"
+                name = name or "Date"
 
             row_idx, col_idx = parsed_header["row"], parsed_header["column"]
             end_row_idx, end_col_idx = row_idx, parsed_header["end_column"]

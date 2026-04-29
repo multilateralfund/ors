@@ -12,6 +12,7 @@ from core.api.export.single_project_v2.associated_projects_as_xlsx import (
 )
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.mya_export import MyaExport
+from core.api.views.projects_inventory_report import ProjectsInventoryReportExport
 from core.models import Project
 
 
@@ -58,6 +59,9 @@ class ProjectExportMixin:
         is_mya = request.query_params.getlist("category", []) == [
             "Multi-year agreement"
         ]
+        is_inventory_report = (
+            request.query_params.get("inventory_report", "false") == "true"
+        )
         if project_id:
             project = self.get_object()
             if output_format == "xlsx":
@@ -68,6 +72,8 @@ class ProjectExportMixin:
             return ProjectsV2Dump(self).export()
         if is_mya:
             return MyaExport(self).export_xls()
+        if is_inventory_report:
+            return ProjectsInventoryReportExport(self).export_xls()
         return ProjectsV2Export(self).export_xls()
 
     @extend_schema(
