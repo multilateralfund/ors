@@ -32,11 +32,22 @@ class ProjectsInventoryReportExport:
 
     def export_xls(self):
         self.setup_workbook()
+        project_fields = ProjectsInventoryReportWriter.get_project_fields()
+        metaproject_fields = ProjectsInventoryReportWriter.get_metaproject_fields(
+            ProjectsInventoryReportWriter.METAPROJECT_FIELDS
+        )
+        fk_fields = ProjectsInventoryReportWriter.get_fk_fields(project_fields)
+        m2m_fields = ProjectsInventoryReportWriter.get_m2m_fields(project_fields)
         queryset = (
             self.view.filter_queryset(self.view.get_queryset())
             .filter(version__gte=3)
-            .select_related("lead_agency", "funding_window", "bp_activity")
+            .select_related(
+                *fk_fields,
+                "funding_window__meeting",
+            )
             .prefetch_related(
+                *m2m_fields,
+                "component__projects",
                 Prefetch(
                     "archive_projects",
                     queryset=Project.objects.really_all().select_related(
@@ -48,7 +59,12 @@ class ProjectsInventoryReportExport:
             )
         )
         version_map = {(p.final_version.id, p.version): p for p in queryset}
-        writer = ProjectsInventoryReportWriter(self.sheet, version_map)
+        writer = ProjectsInventoryReportWriter(
+            self.sheet,
+            version_map,
+            project_fields=project_fields,
+            metaproject_fields=metaproject_fields,
+        )
         writer.write(queryset.filter(latest_project=None))
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} Inventory report", self.wb)

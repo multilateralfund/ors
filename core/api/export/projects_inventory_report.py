@@ -1,8 +1,28 @@
 from functools import partial
+from itertools import pairwise
+
+from django.db.models import JSONField
+from django.db.models.fields import BooleanField
+from django.db.models.fields import CharField
+from django.db.models.fields import DateField
+from django.db.models.fields import DateTimeField
+from django.db.models.fields.related import ForeignKey
+from django.db.models.fields.related import ManyToManyField
+from django.db.models.fields.reverse_related import ForeignObjectRel
 
 from core.api.export.base import BaseWriter
+from core.api.export.projects_v2_dump import get_choice_value
+from core.api.export.projects_v2_dump import get_field_value
+from core.api.export.projects_v2_dump import get_value_boolean
+from core.api.export.projects_v2_dump import get_value_component_field
+from core.api.export.projects_v2_dump import get_value_date
 from core.api.export.projects_v2_dump import get_value_fk
+from core.api.export.projects_v2_dump import get_value_m2m
+from core.models import MetaProject
 from core.models import Project
+from core.models import Project
+from core.models.project import OLD_FIELD_HELP_TEXT
+from core.models.project_metadata import ProjectField
 
 
 def trf_or_adj(project):
@@ -17,16 +37,96 @@ class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
+    METAPROJECT_FIELDS = [("end_date", "End date (MYA)")]
 
-    def __init__(self, sheet, version_map):
+    def __init__(
+        self,
+        sheet,
+        version_map,
+        project_fields=None,
+        metaproject_fields=None,
+    ):
         self.version_map = version_map
         self.all_versions: dict[int, list[Project]] = {}
+        self.project_fields = (
+            project_fields if project_fields is not None else self.get_project_fields()
+        )
+        self.metaproject_fields = (
+            metaproject_fields
+            if metaproject_fields is not None
+            else self.get_metaproject_fields(self.METAPROJECT_FIELDS)
+        )
 
         for (final_version_id, _), p in self.version_map.items():
             if p.id != final_version_id:
                 self.all_versions.setdefault(final_version_id, []).append(p)
 
-        headers = [
+        headers = self.get_base_headers()
+
+        for i in range(3):
+            headers.extend(self.funding_headers(i + 4))
+
+        for i in range(7):
+            headers.extend(self.adjustment_headers(i + 4))
+
+        headers.extend(
+            [
+                {
+                    "id": "fund_transferred",
+                    "headerName": "Fund transferred",
+                    "method": lambda project, _: self.calc_sum_total_fund(project),
+                },
+                {
+                    "id": "psc_transferred",
+                    "headerName": "PSC transferred",
+                    "method": lambda project, _: self.calc_sum_support_cost_psc(
+                        project
+                    ),
+                },
+                {
+                    "id": "actual_fund",
+                    "headerName": "Actual funds",
+                    "method": lambda project, _: project.total_fund or 0,
+                },
+                {
+                    "id": "actual_psc",
+                    "headerName": "Actual PSC",
+                    "method": lambda project, _: project.support_cost_psc or 0,
+                },
+                {
+                    "id": "interest",
+                    "headerName": "Interest",
+                    "method": lambda project, _: self.calc_sum_interest(project),
+                },
+            ]
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=["project_duration", "date_completion"],
+            )
+        )
+
+        headers.append(
+            {
+                "id": "extended_date_completion",
+                "headerName": "Extended date of completion",
+                "type": "date",
+                "method": lambda project, _: self.get_extended_date_of_completion(
+                    project
+                ),
+            },
+        )
+
+        headers.extend(
+            self.build_headers(self.metaproject_fields, source="meta_project")
+        )
+
+        super().__init__(sheet, headers)
+
+    def get_base_headers(self):
+        return [
             {"id": "id", "headerName": "id", "method": lambda project, _: project.id},
             {
                 "id": "country",
@@ -163,45 +263,113 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
         ]
 
-        for i in range(3):
-            headers.extend(self.funding_headers(i + 4))
+    @staticmethod
+    def get_fk_fields(fields):
+        return [f.name for f in fields if isinstance(f, ForeignKey)]
 
-        for i in range(7):
-            headers.extend(self.adjustment_headers(i + 4))
+    @staticmethod
+    def get_m2m_fields(fields):
+        return [f.name for f in fields if isinstance(f, ManyToManyField)]
 
-        headers.extend(
-            [
-                {
-                    "id": "fund_transferred",
-                    "headerName": "Fund transferred",
-                    "method": lambda project, _: self.calc_sum_total_fund(project),
-                },
-                {
-                    "id": "psc_transferred",
-                    "headerName": "PSC transferred",
-                    "method": lambda project, _: self.calc_sum_support_cost_psc(
-                        project
-                    ),
-                },
-                {
-                    "id": "actual_fund",
-                    "headerName": "Actual funds",
-                    "method": lambda project, _: p.total_fund or 0,
-                },
-                {
-                    "id": "actual_psc",
-                    "headerName": "Actual PSC",
-                    "method": lambda project, _: p.support_cost_psc or 0,
-                },
-                {
-                    "id": "interest",
-                    "headerName": "Interest",
-                    "method": lambda project, _: p.support_cost_psc or 0,
-                },
-            ]
-        )
+    @staticmethod
+    def get_metaproject_fields(names=None):
+        names = names if names else []
+        result = []
+        for name, title in names:
+            field = MetaProject._meta.get_field(name)
+            if field and not isinstance(field, ForeignObjectRel):
+                result.append((field, title))
+        return result
 
-        super().__init__(sheet, headers)
+    @staticmethod
+    def get_project_fields():
+        old_fields_included = [
+            "additional_funding",
+            "date_comp_revised",
+        ]
+        exclude_fields = [
+            "serial_number_legacy",
+            "serial_number",
+            "total_fund_transferred",
+            "total_psc_transferred",
+        ]
+        want_order = [
+            "sector",
+            "subsectors",
+        ]
+
+        result = []
+        order = []
+
+        for f in Project._meta.get_fields():
+            if f.name in exclude_fields:
+                continue
+
+            if isinstance(f, ForeignObjectRel):
+                continue
+
+            is_old = getattr(f, "help_text", None) == OLD_FIELD_HELP_TEXT
+            skip_old = is_old and f.name not in old_fields_included
+            if skip_old:
+                continue
+
+            result.append(f)
+            order.append(f.name)
+
+        for before, after in pairwise(want_order):
+            idx_before = order.index(before)
+            idx_after = order.index(after)
+            order.insert(idx_before + 1, order.pop(idx_after))
+            result.insert(idx_before + 1, result.pop(idx_after))
+        return result
+
+    def build_headers(self, fields, source=None, include_names=None):
+        result = []
+        include_names = include_names or set()
+        field_names = {
+            f["write_field_name"]: f["label"]
+            for f in ProjectField.objects.all().values("write_field_name", "label")
+        }
+
+        for f in fields:
+            if isinstance(f, tuple):
+                f, title = f
+            else:
+                title = field_names.get(f.name, f.name)
+
+            if include_names and f.name not in include_names:
+                continue
+
+            header = {
+                "id": f.name,
+                "headerName": title,
+                "method": get_field_value,
+                "source": source,
+            }
+            if isinstance(f, DateField):
+                header["method"] = get_value_date
+            elif isinstance(f, DateTimeField):
+                header["method"] = get_value_date
+            elif isinstance(f, BooleanField):
+                header["method"] = get_value_boolean
+            elif isinstance(f, CharField) and f.choices:
+                header["method"] = partial(get_choice_value, dict(f.choices))
+            elif isinstance(f, JSONField):
+                continue
+            elif isinstance(f, ForeignKey):
+                if f.name == "component":
+                    header["method"] = get_value_component_field
+                elif f.name == "bp_activity":
+                    header["method"] = partial(
+                        get_value_fk, f, attr_name="get_display_internal_id"
+                    )
+                else:
+                    header["method"] = partial(get_value_fk, f)
+            elif isinstance(f, ManyToManyField):
+                header["method"] = partial(get_value_m2m, f)
+
+            result.append(header)
+        return result
 
     def get_version(self, p, version):
         key = (p.final_version.id, version)
@@ -246,6 +414,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
         prev_versions = self.get_all_previous_versions(project)
         candidate_values = [p.interest or 0 for p in prev_versions]
         return sum(candidate_values)
+
+    def get_extended_date_of_completion(self, project):
+        v3 = self.get_version(project, 3)
+        if v3 and v3.date_completion != project.date_completion:
+            return v3.date_completion
+        return None
 
     def funding_headers(self, version):
         if version < 4:

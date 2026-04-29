@@ -1,5 +1,7 @@
 import io
 from datetime import date
+from datetime import datetime
+from datetime import timezone
 from http import HTTPStatus
 from itertools import chain
 from decimal import Decimal
@@ -292,7 +294,10 @@ class TestProjectV2ExportXLSX(BaseTest):
         lead_agency = AgencyFactory.create(name="Lead agency")
         cluster = ProjectClusterFactory.create(name="Cluster A")
         funding_window = FundingWindowFactory.create(description="Window A")
-        meta_project = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=datetime(2026, 12, 31, 0, 0, 0, tzinfo=timezone.utc),
+        )
         subsector_one = ProjectSubSectorFactory.create(name="Subsector A")
         subsector_two = ProjectSubSectorFactory.create(name="Subsector B")
         project = ProjectFactory.create(
@@ -334,6 +339,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         sheet = wb["Projects"]
         headers = get_inventory_headers(sheet)
         row = get_inventory_project_row(sheet, project.id)
+        last_header = sheet.cell(1, sheet.max_column).value
 
         assert row is not None
         assert sheet[f"{headers['id']}{row}"].value == project.id
@@ -376,6 +382,12 @@ class TestProjectV2ExportXLSX(BaseTest):
             == bp_activity.get_display_internal_id
         )
         assert sheet[f"{headers['Additional funding']}{row}"].value == "Yes"
+        assert sheet[f"{headers['version']}{row}"].value == project.version
+        assert last_header == "End date (MYA)"
+        assert (
+            sheet[f"{headers['End date (MYA)']}{row}"].value
+            == meta_project.end_date.strftime("%d/%m/%Y")
+        )
 
     def test_export_inventory_report_populates_prior_meeting_columns(
         self, admin_user
