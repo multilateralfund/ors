@@ -127,3 +127,10 @@ export interface AnnualProgressReportCurrentYear {
     endorsed: boolean
   }[]
 }
+
+export interface APRTableFieldProps {
+  label: string
+  fieldName: string
+  group: string | null
+  input: boolean
+}
