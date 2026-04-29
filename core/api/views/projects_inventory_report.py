@@ -47,7 +47,8 @@ class ProjectsInventoryReportExport:
                 )
             )
         )
-        writer = ProjectsInventoryReportWriter(self.sheet)
-        writer.write(queryset)
+        version_map = {(p.final_version.id, p.version): p for p in queryset}
+        writer = ProjectsInventoryReportWriter(self.sheet, version_map)
+        writer.write(queryset.filter(latest_project=None))
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} Inventory report", self.wb)
