@@ -284,6 +284,35 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         ]
 
 
+class ProjectAPRHistorySerializer(AnnualProjectReportReadSerializer):
+    """
+    Read-only serializer for the APR history tabs on the Project detail page.
+    Extends the standard report serializer with year and endorsement metadata.
+    """
+
+    year = serializers.IntegerField(
+        source="report.progress_report.year", read_only=True
+    )
+    date_endorsed = serializers.DateField(
+        source="report.progress_report.date_endorsed",
+        read_only=True,
+        allow_null=True,
+    )
+    meeting_endorsed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta(AnnualProjectReportReadSerializer.Meta):
+        fields = [
+            "year",
+            "date_endorsed",
+            "meeting_endorsed",
+        ] + AnnualProjectReportReadSerializer.Meta.fields
+        read_only_fields = fields
+
+    def get_meeting_endorsed(self, obj):
+        meeting = obj.report.progress_report.meeting_endorsed
+        return meeting.number if meeting else None
+
+
 class AnnualProjectReportFileSerializer(serializers.ModelSerializer):
     """Serializer for APR file attachments."""
 
