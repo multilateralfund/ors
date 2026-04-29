@@ -20,6 +20,7 @@ from core.api.export.projects_v2_dump import get_value_fk
 from core.api.export.projects_v2_dump import get_value_m2m
 from core.models import MetaProject
 from core.models import Project
+from core.models import ProjectOdsOdp
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
 
@@ -111,11 +112,39 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 self.project_fields,
                 include_names=[
                     "substance_type",
+                ],
+                title_overrides={
+                    "substance_type": "Substance type",
+                },
+            )
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
+                    "total_phase_out_odp_tonnes",
+                    "total_phase_out_metric_tonnes",
+                    "total_phase_out_co2_tonnes",
+                ],
+                id_suffix="ods_total",
+            )
+        )
+
+        headers.extend(
+            self.build_headers(
+                self.project_fields,
+                include_names=[
                     "project_duration",
                     "date_completion",
                 ],
             )
         )
+
+        headers.extend(self.ods_odp_headers(1))
+        headers.extend(self.ods_odp_headers(2))
+        headers.extend(self.ods_odp_headers(3))
+        headers.extend(self.ods_odp_headers(4))
 
         headers.append(
             {
@@ -565,6 +594,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         include_names=None,
         exclude_names=None,
         title_overrides=None,
+        id_suffix=None,
     ):
         result = []
         fields = self.select_fields(
@@ -583,7 +613,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 title = field_names.get(f.name, f.name)
 
             header = {
-                "id": f.name,
+                "id": f"{f.name}_{id_suffix}" if id_suffix else f.name,
                 "headerName": title,
                 "method": get_field_value,
                 "source": source,
@@ -752,3 +782,47 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ),
             },
         ]
+
+    def ods_odp_headers(self, idx):
+        return [
+            {
+                "id": f"ods_odp__ods_substance_{idx}",
+                "headerName": f"ODS_Name{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project,
+                    idx - 1,
+                    lambda ods_odp: (ods_odp.ods_substance or ods_odp.ods_blend).name,
+                ),
+            },
+            {
+                "id": f"ods_odp__odp_{idx}",
+                "headerName": f"ODP{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project, idx - 1, lambda ods_odp: ods_odp.odp
+                ),
+            },
+            {
+                "id": f"ods_odp__phase_out_mt_{idx}",
+                "headerName": f"MT{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project, idx - 1, lambda ods_odp: ods_odp.phase_out_mt
+                ),
+            },
+            {
+                "id": f"ods_odp__co2_mt_{idx}",
+                "headerName": f"CO2-eq{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project, idx - 1, lambda ods_odp: ods_odp.co2_mt
+                ),
+            },
+        ]
+
+    def ods_odp_at_idx(self, project, idx, func):
+        ods_odps: list[ProjectOdsOdp] = list(project.ods_odp.all())
+
+        if len(ods_odps) > idx:
+            ods_odp = ods_odps[idx]
+            if ods_odp.ods_substance or ods_odp.ods_blend:
+                return func(ods_odp)
+
+        return None
