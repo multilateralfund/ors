@@ -717,7 +717,7 @@ export default function useGetColumnDefs({
                   }
 
                   if (cellDataType === 'boolean') {
-                    toBeAdded = value.toLowerCase() === 'yes'
+                    toBeAdded = value?.toLowerCase() === 'yes'
                   }
 
                   row[fieldName!] = toBeAdded

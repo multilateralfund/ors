@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
@@ -13,6 +14,7 @@ const thousandSeparator = Intl.NumberFormat(navigator.language)
   .replaceAll('1', '')
 
 function cleanValue(value: string) {
+  if (value == null) return value
   const toParse = value.trim().split('$').reverse()[0].trim()
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
@@ -58,8 +60,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
   async function handlePaste() {
     setPasting(true)
+    let pastedTable: any[][] = []
     try {
-      const pastedTable = await readPastedTableFromNavigator(
+      pastedTable = await readPastedTableFromNavigator(
         enqueueSnackbar,
         isMultiple,
       )
@@ -76,6 +79,15 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       const numEntries = pendingIds.size
       let numInserted = 0
       let numColsInserted = 0
+
+      if (numEntries === 0) {
+        enqueueSnackbar(
+          'No project codes found in pasted data! Make sure the first column contains project codes.',
+          { variant: 'error' },
+        )
+        return
+      }
+
       if (numEntries > 0) {
         const nextForm = [...form!]
 
@@ -111,10 +123,11 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
               if (pendingIds.has(rowId)) {
                 const rowValues = newValues[rowId]
-
                 const values = hasHeaders
                   ? rowValues
                   : rowValues.slice(0, fieldIndex + 1)
+
+                nextForm[i] = { ...nextForm[i] }
 
                 values.map((value: any, index: number) => {
                   const crtFieldObj = getFieldData(columnsLabels[index])
@@ -143,6 +156,8 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             const rowId = nextForm[i][rowIdField]
 
             if (pendingIds.has(rowId)) {
+              nextForm[i] = { ...nextForm[i] }
+
               newValues[rowId].map((value: any) => {
                 mutator(nextForm[i], cleanValue(value))
               })
@@ -156,8 +171,6 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
         console.debug('pendingIds', pendingIds)
         console.debug('newValues', newValues)
 
-        const errorMessage = `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`
-
         if (numInserted > 0) {
           const successMessage = isMultiple
             ? `Successfully pasted ${Math.round(numColsInserted / numInserted)} column(s) for ${numInserted} entries.`
@@ -168,18 +181,40 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
               variant: 'success',
             })
           } else if (isMultiple && numColsInserted === 0) {
-            enqueueSnackbar(errorMessage, {
-              variant: 'error',
-            })
+            enqueueSnackbar(
+              `No valid entries found in pasted data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
+              {
+                variant: 'error',
+              },
+            )
           }
-        } else if (pendingIds.size > numInserted) {
-          enqueueSnackbar(errorMessage, {
-            variant: 'error',
-          })
+        } else {
+          enqueueSnackbar(
+            'No matching project codes found! Make sure the pasted project codes match the ones currently displayed.',
+            {
+              variant: 'error',
+            },
+          )
         }
       }
     } catch (e) {
       console.error('Paste error', e)
+      Sentry.withScope((scope) => {
+        scope.setTag('feature', 'paste')
+        scope.setContext('paste', {
+          label,
+          rowIdField,
+          formLength: form?.length ?? 0,
+          pastedRowCount: pastedTable.length,
+          pastedSample: [
+            ...pastedTable.slice(0, 5),
+            ...pastedTable.slice(-5),
+          ].filter((row, idx, arr) => arr.indexOf(row) === idx),
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+        })
+        Sentry.captureException(e)
+      })
       enqueueSnackbar('An unexpected error occurred while pasting.', {
         variant: 'error',
       })
