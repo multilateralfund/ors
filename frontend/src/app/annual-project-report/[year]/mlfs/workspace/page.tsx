@@ -518,7 +518,7 @@ export default function APRMLFSWorkspace() {
             >
               Endorse APR
             </Button>
-            {canEditAPR && (
+            {canEditAPR && !progressReport?.endorsed && (
               <Button
                 disabled={
                   loading || !(loaded && (aprData ?? []).length > 0) || !!taskId
