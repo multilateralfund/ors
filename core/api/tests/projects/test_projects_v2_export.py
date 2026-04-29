@@ -147,6 +147,25 @@ def validate_projects_export(project: Project, response: FileResponse):
     assert sheet["A2"].value == project.code, sheet["A2"].value
 
 
+def get_inventory_headers(sheet):
+    return {
+        cell.value: get_column_letter(cell.column)
+        for cell in sheet[1]
+        if cell.value is not None
+    }
+
+
+def get_inventory_project_row(sheet, project_id):
+    return next(
+        (
+            idx
+            for idx in range(2, sheet.max_row + 1)
+            if sheet[f"A{idx}"].value == project_id
+        ),
+        None,
+    )
+
+
 @pytest.fixture(name="project_with_linked_bp")
 def _project_with_linked_bp(
     project: Project, bp_activity: BPActivity, substance: Substance
@@ -313,41 +332,50 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb["Projects"]
-        row = next(
-            (
-                idx
-                for idx in range(2, sheet.max_row + 1)
-                if sheet[f"A{idx}"].value == project.id
-            ),
-            None,
-        )
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
 
         assert row is not None
-        assert sheet[f"A{row}"].value == project.id
-        assert sheet[f"B{row}"].value == project.country.name
-        assert sheet[f"C{row}"].value == project.metacode
-        assert sheet[f"D{row}"].value == project.code
-        assert sheet[f"E{row}"].value == project.legacy_code
-        assert sheet[f"F{row}"].value == project.agency.name
-        assert sheet[f"G{row}"].value == lead_agency.name
-        assert sheet[f"H{row}"].value == project.cluster.name
-        assert sheet[f"I{row}"].value == project.project_type.code
-        assert sheet[f"J{row}"].value == project.sector.name
-        assert sheet[f"K{row}"].value == project.sector_legacy
-        assert sheet[f"L{row}"].value == ", ".join(
+        assert sheet[f"{headers['id']}{row}"].value == project.id
+        assert sheet[f"{headers['Country']}{row}"].value == project.country.name
+        assert sheet[f"{headers['Metacode']}{row}"].value == project.metacode
+        assert sheet[f"{headers['Code']}{row}"].value == project.code
+        assert sheet[f"{headers['Legacy code']}{row}"].value == project.legacy_code
+        assert sheet[f"{headers['Agency']}{row}"].value == project.agency.name
+        assert sheet[f"{headers['Lead agency']}{row}"].value == lead_agency.name
+        assert sheet[f"{headers['Cluster']}{row}"].value == project.cluster.name
+        assert sheet[f"{headers['Type']}{row}"].value == project.project_type.code
+        assert sheet[f"{headers['Sector']}{row}"].value == project.sector.name
+        assert sheet[f"{headers['Sector legacy']}{row}"].value == project.sector_legacy
+        assert sheet[f"{headers['Sub-sector(s)']}{row}"].value == ", ".join(
             [subsector_one.name, subsector_two.name]
         )
-        assert sheet[f"M{row}"].value == project.subsector_legacy
-        assert sheet[f"N{row}"].value == project.title
-        assert sheet[f"O{row}"].value == project.description
-        assert sheet[f"P{row}"].value == project.excom_provision
-        assert sheet[f"Q{row}"].value == project.products_manufactured
-        assert sheet[f"R{row}"].value == project.tranche
-        assert sheet[f"S{row}"].value == meta_project.type
-        assert sheet[f"T{row}"].value == funding_window.id
-        assert sheet[f"U{row}"].value == "Yes"
-        assert sheet[f"V{row}"].value == bp_activity.get_display_internal_id
-        assert sheet[f"W{row}"].value == "Yes"
+        assert (
+            sheet[f"{headers['Subsector legacy']}{row}"].value
+            == project.subsector_legacy
+        )
+        assert sheet[f"{headers['Title']}{row}"].value == project.title
+        assert sheet[f"{headers['Description']}{row}"].value == project.description
+        assert (
+            sheet[f"{headers['Executive Committee provision']}{row}"].value
+            == project.excom_provision
+        )
+        assert (
+            sheet[f"{headers['Product manufactured']}{row}"].value
+            == project.products_manufactured
+        )
+        assert sheet[f"{headers['Tranche number']}{row}"].value == project.tranche
+        assert sheet[f"{headers['Category']}{row}"].value == meta_project.type
+        assert (
+            sheet[f"{headers['Funding window']}{row}"].value
+            == funding_window.meeting.number
+        )
+        assert sheet[f"{headers['Production']}{row}"].value == "Yes"
+        assert (
+            sheet[f"{headers['Business plan activity']}{row}"].value
+            == bp_activity.get_display_internal_id
+        )
+        assert sheet[f"{headers['Additional funding']}{row}"].value == "Yes"
 
     def test_export_inventory_report_populates_prior_meeting_columns(
         self, admin_user
@@ -393,31 +421,20 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb["Projects"]
-        row = next(
-            (
-                idx
-                for idx in range(2, sheet.max_row + 1)
-                if sheet[f"A{idx}"].value == final_project.id
-            ),
-            None,
-        )
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, final_project.id)
 
         assert row is not None
-        # funding_headers(4) -> X, Y, Z, AA
-        assert sheet[f"X{row}"].value == 20
-        assert sheet[f"Y{row}"].value == 2
-        assert sheet[f"Z{row}"].value == 204
-        assert sheet[f"AA{row}"].value.date() == date(2024, 4, 15)
-        # funding_headers(5) -> AB, AC, AD, AE
-        assert sheet[f"AB{row}"].value == 20
-        assert sheet[f"AC{row}"].value == 2
-        assert sheet[f"AD{row}"].value == 205
-        assert sheet[f"AE{row}"].value.date() == date(2024, 5, 15)
-        # funding_headers(6) -> AF, AG, AH, AI
-        assert sheet[f"AF{row}"].value == 20
-        assert sheet[f"AG{row}"].value == 2
-        assert sheet[f"AH{row}"].value == 206
-        assert sheet[f"AI{row}"].value.date() == date(2024, 6, 15)
+        for idx in range(1, 4):
+            assert (
+                sheet[f"{headers[f'Project funding meeting {idx}']}{row}"].value == 20
+            )
+            assert sheet[f"{headers[f'PSC meeting {idx}']}{row}"].value == 2
+            assert sheet[f"{headers[f'Meeting Approved {idx}']}{row}"].value == 206
+            assert (
+                sheet[f"{headers[f'Date Approved {idx}']}{row}"].value.date()
+                == date(2024, 6, 15)
+            )
 
     def test_export_inventory_report_populates_adjustment_columns(self, admin_user):
         final_project = ProjectFactory.create(
@@ -464,31 +481,25 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb["Projects"]
-        row = next(
-            (
-                idx
-                for idx in range(2, sheet.max_row + 1)
-                if sheet[f"A{idx}"].value == final_project.id
-            ),
-            None,
-        )
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, final_project.id)
 
         assert row is not None
-        # adjustment_headers(4) -> AJ, AK, AL, AM
-        assert sheet[f"AJ{row}"].value == 20
-        assert sheet[f"AK{row}"].value == 2
-        assert sheet[f"AL{row}"].value == 204
-        assert sheet[f"AM{row}"].value.date() == date(2024, 4, 15)
-        # adjustment_headers(5) -> AN, AO, AP, AQ
-        assert sheet[f"AN{row}"].value == 20
-        assert sheet[f"AO{row}"].value == 2
-        assert sheet[f"AP{row}"].value == 205
-        assert sheet[f"AQ{row}"].value.date() == date(2024, 5, 15)
-        # adjustment_headers(6) -> AR, AS, AT, AU
-        assert sheet[f"AR{row}"].value == 20
-        assert sheet[f"AS{row}"].value == 2
-        assert sheet[f"AT{row}"].value == 206
-        assert sheet[f"AU{row}"].value.date() == date(2024, 6, 15)
+        for idx in range(1, 4):
+            assert (
+                sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == 20
+            )
+            assert (
+                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value
+                == 2
+            )
+            assert (
+                sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value == 206
+            )
+            assert (
+                sheet[f"{headers[f'Adjustments Date {idx}']}{row}"].value.date()
+                == date(2024, 6, 15)
+            )
 
     def test_export_mya_adds_filters_and_totals(
         self,
