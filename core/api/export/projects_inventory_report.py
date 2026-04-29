@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from functools import partial
 from itertools import pairwise
 
@@ -45,7 +46,7 @@ def not_trf_or_adj(project):
     return project.status.name != "Transferred" and project.adjustment is False
 
 
-# pylint: disable-next=too-many-public-methods
+# pylint: disable-next=too-many-public-methods,too-many-lines
 class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
@@ -472,6 +473,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             return None
         return (consumption or 0) + (production or 0)
 
+    @staticmethod
     def build_version_map(projects):
         version_map = {}
         for project in projects:
