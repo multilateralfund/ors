@@ -100,6 +100,22 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "method": lambda project, _: project.support_cost_psc or 0,
                 },
                 {
+                    "id": "apr_funds_disbursed",
+                    "headerName": "Total Funds Disbursed",
+                    "align": "right",
+                    "method": lambda project, _: getattr(
+                        self._get_latest_apr(project), "funds_disbursed", None
+                    ),
+                },
+                {
+                    "id": "apr_support_cost_disbursed",
+                    "headerName": "Total Support Costs Disbursed",
+                    "align": "right",
+                    "method": lambda project, _: getattr(
+                        self._get_latest_apr(project), "support_cost_disbursed", None
+                    ),
+                },
+                {
                     "id": "interest",
                     "headerName": "Interest",
                     "method": lambda project, _: self.calc_sum_interest(project),
@@ -129,6 +145,41 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ],
                 id_suffix="ods_total",
             )
+        )
+
+        headers.extend(
+            [
+                {
+                    "id": "apr_odp_actual",
+                    "headerName": "Total ODP Actual",
+                    "align": "right",
+                    "method": lambda project, _: self._apr_phase_out_total(
+                        self._get_latest_apr(project),
+                        "consumption_phased_out_odp",
+                        "production_phased_out_odp",
+                    ),
+                },
+                {
+                    "id": "apr_mt_actual",
+                    "headerName": "Total MT Actual",
+                    "align": "right",
+                    "method": lambda project, _: self._apr_phase_out_total(
+                        self._get_latest_apr(project),
+                        "consumption_phased_out_mt",
+                        "production_phased_out_mt",
+                    ),
+                },
+                {
+                    "id": "apr_co2_actual",
+                    "headerName": "Total CO2-eq Actual",
+                    "align": "right",
+                    "method": lambda project, _: self._apr_phase_out_total(
+                        self._get_latest_apr(project),
+                        "consumption_phased_out_co2",
+                        "production_phased_out_co2",
+                    ),
+                },
+            ]
         )
 
         headers.extend(
@@ -167,6 +218,35 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
+            [
+                {
+                    "id": "apr_date_completion_revised",
+                    "headerName": "Date completion revised",
+                    "type": "date",
+                    "method": lambda project, _: getattr(
+                        self._get_latest_apr(project), "date_planned_completion", None
+                    ),
+                },
+                {
+                    "id": "apr_date_completed",
+                    "headerName": "Date completed",
+                    "type": "date",
+                    "method": lambda project, _: getattr(
+                        self._get_latest_apr(project), "date_actual_completion", None
+                    ),
+                },
+                {
+                    "id": "apr_date_financially_completed",
+                    "headerName": "Date financially completed",
+                    "type": "date",
+                    "method": lambda project, _: getattr(
+                        self._get_latest_apr(project), "date_financial_completion", None
+                    ),
+                },
+            ]
+        )
+
+        headers.extend(
             self.build_headers(
                 self.project_fields,
                 include_names=["transfer_meeting", "transfer_decision"],
@@ -185,6 +265,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     project.transferred_from.agency.name
                     if project.transferred_from
                     else None
+                ),
+            },
+        )
+
+        headers.append(
+            {
+                "id": "apr_remarks",
+                "headerName": "Remarks",
+                "method": lambda project, _: getattr(
+                    self._get_latest_apr(project), "current_year_remarks", None
                 ),
             },
         )
@@ -353,6 +443,21 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         super().__init__(sheet, headers)
+
+    @staticmethod
+    def _get_latest_apr(project):
+        aprs = getattr(project, "prefetched_endorsed_aprs", None)
+        return next(iter(aprs), None) if aprs else None
+
+    @staticmethod
+    def _apr_phase_out_total(apr, consumption_field, production_field):
+        if apr is None:
+            return None
+        c = getattr(apr, consumption_field, None)
+        p = getattr(apr, production_field, None)
+        if c is None and p is None:
+            return None
+        return (c or 0) + (p or 0)
 
     def get_base_headers(self):
         return [
