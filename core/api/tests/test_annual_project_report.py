@@ -11,6 +11,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.test import APIClient
 
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.tests.base import BaseTest
@@ -19,6 +20,8 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProjectReportFile,
+    Project,
+    ProjectHistory,
 )
 from core.api.tests.factories import (
     AgencyFactory,
@@ -29,8 +32,12 @@ from core.api.tests.factories import (
     ProjectFactory,
     MetaProjectFactory,
     ProjectClusterFactory,
+    UserFactory,
 )
-from core.tasks import sync_apr_from_projects
+from core.tasks import (
+    sync_apr_from_projects,
+    update_project_statuses_after_apr_endorsement,
+)
 
 # pylint: disable=W0221,W0613,C0302,R0913,R0914
 
@@ -1599,7 +1606,12 @@ class TestAPREndorseView(BaseTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_mlfs_full_access_can_endorse(
-        self, mlfs_admin_user, apr_year, meeting_apr_same_year, annual_progress_report
+        self,
+        mlfs_admin_user,
+        apr_year,
+        meeting_apr_same_year,
+        annual_progress_report,
+        mock_update_project_statuses_after_apr_endorsement,
     ):
         # Create some submitted reports to allow endorsing
         agency1 = AgencyFactory()
@@ -5180,7 +5192,11 @@ class TestAPRPermissions(BaseTest):
         assert response.data["is_unlocked"] is True
 
     def test_apr_mlfs_full_access_can_endorse(
-        self, apr_mlfs_full_access_user, annual_progress_report, meeting_apr_same_year
+        self,
+        apr_mlfs_full_access_user,
+        annual_progress_report,
+        meeting_apr_same_year,
+        mock_update_project_statuses_after_apr_endorsement,
     ):
         agency = AgencyFactory()
         AnnualAgencyProjectReportFactory(
@@ -5441,3 +5457,312 @@ class TestSyncAprFromProjectsTask:
         apr_b.refresh_from_db()
         assert apr_a.project_title_denorm == "New A"
         assert apr_b.project_title_denorm == "New B"
+
+
+@pytest.mark.django_db
+class TestAPREndorseProjectVersioning:
+    """
+    Tests for creating new Project versions and history logs after APR endorsement.
+    """
+
+    def _make_progress_report(self, year=2025, endorsed=True):
+        return AnnualProgressReportFactory(year=year, endorsed=endorsed)
+
+    def _make_submitted_agency_report(self, progress_report, submitted_by):
+        return AnnualAgencyProjectReportFactory(
+            progress_report=progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+            submitted_by=submitted_by,
+        )
+
+    def test_year_2024_skipped(self, project_ongoing_status, project_completed_status):
+        progress_report = self._make_progress_report(year=2024)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        # no new version or history entries for 2024
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version
+        assert not ProjectHistory.objects.filter(project=project).exists()
+
+    def test_status_changed_creates_new_version(
+        self, project_ongoing_status, project_completed_status
+    ):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version + 1
+        assert project.status == project_completed_status
+        assert project.version_created_by == user
+
+        history = ProjectHistory.objects.filter(project=project).first()
+        assert history is not None
+        assert "APR 2025" in history.description
+        assert project_ongoing_status.name in history.description
+        assert project_completed_status.name in history.description
+
+        # the archived version still holds the old status
+        archived = Project.objects.really_all().filter(latest_project=project).first()
+        assert archived is not None
+        assert archived.status == project_ongoing_status
+
+    def test_status_unchanged_skips_new_version(self, project_ongoing_status):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_ongoing_status.name,
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version
+        assert not ProjectHistory.objects.filter(project=project).exists()
+
+    def test_blank_status_skipped(self, project_ongoing_status):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status="",
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version
+
+    def test_unknown_status_name_skipped(self, project_ongoing_status):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status="NonExistentStatusXYZ",
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version
+
+    def test_missing_submitted_by_skipped(
+        self, project_ongoing_status, project_completed_status
+    ):
+        progress_report = self._make_progress_report(year=2025)
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+            submitted_by=None,
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version
+        assert not ProjectHistory.objects.filter(project=project).exists()
+
+    def test_partial_failure_others_still_processed(
+        self, project_ongoing_status, project_completed_status
+    ):
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+
+        project_bad = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project_bad,
+            status=project_completed_status.name,
+        )
+
+        project_good = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project_good,
+            status=project_completed_status.name,
+        )
+
+        initial_version_good = project_good.version
+
+        original_increase_version = Project.increase_version
+
+        def failing_for_bad_project(proj_self, increase_user):
+            if proj_self.id == project_bad.id:
+                raise RuntimeError("Simulated failure")
+            return original_increase_version(proj_self, increase_user)
+
+        with patch.object(Project, "increase_version", failing_for_bad_project):
+            update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project_good.refresh_from_db()
+        assert project_good.version == initial_version_good + 1
+        assert ProjectHistory.objects.filter(project=project_good).exists()
+
+    def test_failures_trigger_admin_email(
+        self, project_ongoing_status, project_completed_status
+    ):
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = "admin@test.com"
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        with patch("core.tasks.send_mail") as mock_send_mail:
+            with patch.object(
+                Project, "increase_version", side_effect=RuntimeError("fail")
+            ):
+                update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        mock_send_mail.assert_called_once()
+        call_kwargs = mock_send_mail.call_args
+        assert "APR 2025" in call_kwargs[1]["subject"]
+        assert str(project.id) in call_kwargs[1]["message"]
+
+    def test_failures_no_email_when_no_recipients(
+        self, project_ongoing_status, project_completed_status
+    ):
+        config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS = ""
+        progress_report = self._make_progress_report(year=2025)
+        user = UserFactory()
+        agency_report = self._make_submitted_agency_report(
+            progress_report, submitted_by=user
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        with patch("core.tasks.send_mail") as mock_send_mail:
+            with patch.object(
+                Project, "increase_version", side_effect=RuntimeError("fail")
+            ):
+                update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        mock_send_mail.assert_not_called()
+
+    def test_duplicate_project_processed_once(
+        self, project_ongoing_status, project_completed_status
+    ):
+        progress_report = self._make_progress_report(year=2025)
+        user1 = UserFactory()
+        user2 = UserFactory()
+        agency_report_1 = self._make_submitted_agency_report(
+            progress_report, submitted_by=user1
+        )
+        agency_report_2 = self._make_submitted_agency_report(
+            progress_report, submitted_by=user2
+        )
+        project = ProjectFactory(status=project_ongoing_status, version=3)
+        AnnualProjectReportFactory(
+            report=agency_report_1,
+            project=project,
+            status=project_completed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=agency_report_2,
+            project=project,
+            status=project_completed_status.name,
+        )
+
+        initial_version = project.version
+        update_project_statuses_after_apr_endorsement(progress_report.id)
+
+        project.refresh_from_db()
+        assert project.version == initial_version + 1
+        assert ProjectHistory.objects.filter(project=project).count() == 1
+
+    def test_endorse_view_triggers_celery_task(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        meeting_apr_same_year,
+        annual_progress_report,
+    ):
+        client = APIClient()
+        agency = AgencyFactory()
+        AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+
+        with patch(
+            "core.api.views.annual_project_report"
+            ".update_project_statuses_after_apr_endorsement"
+        ) as mock_task:
+            mock_task.delay = MagicMock()
+            client.force_authenticate(user=mlfs_admin_user)
+            url = reverse("apr-endorse", kwargs={"year": apr_year})
+            data = {
+                "date_endorsed": timezone.now().date().isoformat(),
+                "meeting_endorsed": meeting_apr_same_year.id,
+                "remarks_endorsed": "Endorsed",
+            }
+            response = client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        mock_task.delay.assert_called_once_with(annual_progress_report.id)
