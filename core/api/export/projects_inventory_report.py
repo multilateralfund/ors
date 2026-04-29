@@ -651,18 +651,26 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return self.all_versions.get(p.id, ())
 
     def calc_total_fund(self, project):
-        prev_version = self.get_version(project, project.version - 1)
+        prev_version = (
+            self.get_version(project, project.version - 1)
+            if project.version > 3
+            else None
+        )
         if prev_version:
             return (project.total_fund or 0) - (prev_version.total_fund or 0)
-        return 0
+        return project.total_fund or 0
 
     def calc_support_cost_psc(self, project):
-        prev_version = self.get_version(project, project.version - 1)
+        prev_version = (
+            self.get_version(project, project.version - 1)
+            if project.version > 3
+            else None
+        )
         if prev_version:
             return (project.support_cost_psc or 0) - (
                 prev_version.support_cost_psc or 0
             )
-        return 0
+        return project.support_cost_psc or 0
 
     def calc_sum_total_fund(self, project):
         prev_versions = self.get_all_previous_versions(project)
