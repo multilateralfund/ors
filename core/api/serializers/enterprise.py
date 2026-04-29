@@ -1,11 +1,5 @@
 from rest_framework import serializers
 
-from core.models import (
-    Blend,
-    Substance,
-    Group,
-)
-from core.models.project import Project
 from core.models.enterprise import (
     Enterprise,
     EnterpriseOdsOdp,
@@ -119,7 +113,6 @@ class EnterpriseSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        user = self.context["request"].user
         _ = validated_data.pop("request", None)
         ods_odp_data = validated_data.pop("ods_odp", [])
         enterprise = Enterprise.objects.create(**validated_data)

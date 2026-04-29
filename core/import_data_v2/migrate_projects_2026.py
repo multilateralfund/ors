@@ -14,24 +14,16 @@ from core.import_data.utils import (
 )
 
 from core.models import (
-    Agency,
-    Country,
-    ProjectStatus,
-    Substance,
-    Blend,
     Meeting,
-    Project,
-    ProjectOdsOdp,
     MetaProject,
-)
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
-from core.models.project_metadata import (
+    Project,
     ProjectCluster,
-    ProjectType,
-    ProjectSector,
+    ProjectOdsOdp,
+    ProjectStatus,
     ProjectSubSector,
     ProjectSubmissionStatus,
 )
+from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
 from core.utils import post_approval_changes, get_project_sub_code
 from core.import_data.utils import get_import_user
 from core.import_data_v2.utils import (
@@ -40,6 +32,7 @@ from core.import_data_v2.utils import (
     get_sector_by_name_or_code,
     get_subsectors_by_name,
     get_substance_blend_ods_display_name,
+    get_type_by_name,
 )
 
 # pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines

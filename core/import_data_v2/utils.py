@@ -1,39 +1,22 @@
-# pylint: disable=C0302
+# pylint: disable=inconsistent-return-statements
 
 import logging
-import pandas as pd
-import pytz
 
-from django.db import transaction
 from django.db.models import Q
-
-from core.api.utils import log_project_history
-from core.import_data.utils import (
-    IMPORT_RESOURCES_V2_DIR,
-)
 
 from core.models import (
     Agency,
     Country,
-    ProjectStatus,
     EnterpriseStatus,
     Substance,
     Blend,
     Meeting,
-    Project,
-    ProjectOdsOdp,
-    MetaProject,
 )
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
 from core.models.project_metadata import (
-    ProjectCluster,
     ProjectType,
     ProjectSector,
     ProjectSubSector,
-    ProjectSubmissionStatus,
 )
-from core.utils import post_approval_changes, get_project_sub_code
-from core.import_data.utils import get_import_user
 
 logger = logging.getLogger(__name__)
 

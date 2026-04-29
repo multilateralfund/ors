@@ -1,60 +1,37 @@
 import logging
-from datetime import datetime
-from decimal import Decimal
 import pandas as pd
-import pytz
+import re
 
-from django.db import transaction
-from django.db.models import Q
+from datetime import datetime
+from dateutil import parser
+from decimal import Decimal
 
-from core.api.utils import log_project_history
+from django.db import connection, transaction
+
 from core.import_data.utils import (
     IMPORT_RESOURCES_V2_DIR,
 )
-
 from core.models import (
-    Agency,
-    Country,
-    ProjectStatus,
-    Substance,
-    Blend,
-    Meeting,
     Enterprise,
     EnterpriseOdsOdp,
     EnterpriseStatus,
-    Project,
-    ProjectSector,
-    ProjectOdsOdp,
-    MetaProject,
-)
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_POST_EXCOM_UPDATE
-from core.models.project_metadata import (
-    ProjectCluster,
-    ProjectType,
     ProjectSector,
     ProjectSubSector,
-    ProjectSubmissionStatus,
 )
-from core.utils import post_approval_changes, get_project_sub_code
-from core.import_data.utils import get_import_user
 from core.import_data_v2.utils import (
     get_country_by_name,
     get_agency_by_name,
     get_sector_by_name_or_code,
     get_subsector_by_name,
-    get_type_by_name,
     get_type_by_code,
     get_enterprise_status_by_name,
     get_meeting_by_number,
     get_substance_blend_ods_display_name,
 )
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines
+# pylint: disable=bare-except,broad-exception-caught,disable=line-too-long,too-many-locals,too-many-branches,too-many-statements,too-many-nested-blocks
 
 logger = logging.getLogger(__name__)
-
-
-from dateutil import parser
 
 
 def parse_date(value):
@@ -64,10 +41,6 @@ def parse_date(value):
         return parser.parse(str(value))
     except (ValueError, OverflowError):
         return None
-
-
-import re
-from decimal import Decimal
 
 
 def extract_decimal(value):
@@ -105,7 +78,7 @@ def extract_integer(value):
 
 
 @transaction.atomic
-def delete_enterprises(reset_index=True):
+def delete_enterprises(reset_index):
     enterprises = Enterprise.objects.all()
     count = enterprises.count()
 
@@ -113,8 +86,6 @@ def delete_enterprises(reset_index=True):
     logger.info(f"Deleted {count} enterprises")
 
     if reset_index:
-        from django.db import connection
-
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT setval(pg_get_serial_sequence('core_enterprise', 'id'), 1, false);"
@@ -123,7 +94,23 @@ def delete_enterprises(reset_index=True):
 
 
 @transaction.atomic
-def import_enterprises(delete=True, reset_index=True):
+def create_enterprise_statuses():
+    statuses = [
+        "New",
+        "Ongoing",
+        "Closed",
+        "Reduced",
+        "Completed",
+        "Transferred",
+        "Cancelled",
+    ]
+    for status in statuses:
+        EnterpriseStatus.objects.get_or_create(name=status)
+    logger.info(f"Ensured enterprise statuses exist: {', '.join(statuses)}")
+
+
+@transaction.atomic
+def import_enterprises(delete, reset_index):
     file_path = (
         IMPORT_RESOURCES_V2_DIR
         / "enterprises"
@@ -131,11 +118,11 @@ def import_enterprises(delete=True, reset_index=True):
     )
     df = pd.read_excel(file_path, sheet_name="Enterprise Combined", header=1).fillna("")
     df.replace({"NaT": None}, inplace=True)
-    count = 0
-    statuses = []
 
     if delete:
         delete_enterprises(reset_index=reset_index)
+
+    create_enterprise_statuses()
     for i, row in df.iterrows():
         try:
             country = get_country_by_name(row["Country"])

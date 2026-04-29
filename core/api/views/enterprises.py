@@ -1,12 +1,8 @@
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.utils import extend_schema
 
-from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets, generics
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from core.api.permissions import (
@@ -40,6 +36,7 @@ class EnterpriseViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
+        "id",
         "code",
         "name",
         "country__name",
@@ -69,7 +66,7 @@ class EnterpriseViewSet(
             return queryset
 
         if user.has_perm("core.can_view_only_own_agency"):
-            return queryset.filter(project_enterprises__agency=user.agency)
+            return queryset.filter(agency=user.agency)
 
         return queryset
 

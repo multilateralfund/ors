@@ -1,10 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
-from core.admin.utils import get_final_display_list
-from core.models.project import (
-    Project,
-)
 from core.models.enterprise import (
     Enterprise,
     EnterpriseOdsOdp,

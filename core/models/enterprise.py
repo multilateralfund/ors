@@ -1,7 +1,6 @@
 from django.db import models
 
 from core.models.blend import Blend
-from core.models.project import Project
 from core.models.substance import Substance
 
 # pylint: disable=C0302
