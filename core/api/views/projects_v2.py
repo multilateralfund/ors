@@ -211,6 +211,7 @@ class ProjectV2ViewSet(
             "list_previous_tranches",
             "list_associated_projects",
             "field_history",
+            "apr_history",
             "list_filters",
             "compare_versions",
         ]:
