@@ -532,10 +532,7 @@ export default function APRMLFSWorkspace() {
             {canEditAPR && !progressReport?.endorsed && (
               <Button
                 disabled={
-                  loading ||
-                  !(loaded && (aprData ?? []).length > 0) ||
-                  !!taskId ||
-                  !!progressReport?.endorsed
+                  loading || !(loaded && (aprData ?? []).length > 0) || !!taskId
                 }
                 variant="contained"
                 color="secondary"
