@@ -471,6 +471,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if consumption is None and production is None:
             return None
         return (consumption or 0) + (production or 0)
+
     def build_version_map(projects):
         version_map = {}
         for project in projects:
