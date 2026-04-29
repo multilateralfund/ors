@@ -453,11 +453,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def _apr_phase_out_total(apr, consumption_field, production_field):
         if apr is None:
             return None
-        c = getattr(apr, consumption_field, None)
-        p = getattr(apr, production_field, None)
-        if c is None and p is None:
+        consumption = getattr(apr, consumption_field, None)
+        production = getattr(apr, production_field, None)
+        if consumption is None and production is None:
             return None
-        return (c or 0) + (p or 0)
+        return (consumption or 0) + (production or 0)
 
     def get_base_headers(self):
         return [
