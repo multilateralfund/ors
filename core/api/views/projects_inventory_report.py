@@ -9,8 +9,8 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.projects_inventory_report import MIN_PROJECT_VERSION
 from core.api.export.projects_inventory_report import ProjectsInventoryReportWriter
 from core.api.utils import workbook_response
-from core.models import Project
-from core.models import ProjectOdsOdp
+from core.models import Project, ProjectOdsOdp
+from core.models.annual_project_report import AnnualProjectReport
 
 if TYPE_CHECKING:
     from core.api.views import ProjectV2ViewSet
@@ -73,6 +73,15 @@ class ProjectsInventoryReportExport:
                         "ods_substance",
                         "ods_blend",
                     ),
+                ),
+                Prefetch(
+                    "annual_reports",
+                    queryset=AnnualProjectReport.objects.filter(
+                        report__progress_report__endorsed=True
+                    )
+                    .select_related("report__progress_report")
+                    .order_by("-report__progress_report__year"),
+                    to_attr="prefetched_endorsed_aprs",
                 ),
             )
         )
