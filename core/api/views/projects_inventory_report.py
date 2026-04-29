@@ -57,7 +57,7 @@ class ProjectsInventoryReportExport:
                     ),
                 ),
             )
-        )[:1000]
+        )
         version_map = {(p.final_version.id, p.version): p for p in queryset}
         writer = ProjectsInventoryReportWriter(
             self.sheet,

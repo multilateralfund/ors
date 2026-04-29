@@ -382,12 +382,14 @@ class TestProjectV2ExportXLSX(BaseTest):
             == bp_activity.get_display_internal_id
         )
         assert sheet[f"{headers['Additional funding']}{row}"].value == "Yes"
-        assert sheet[f"{headers['version']}{row}"].value == project.version
-        assert last_header == "End date (MYA)"
+        assert last_header == "cost_effectiveness_co2_actual"
         assert (
             sheet[f"{headers['End date (MYA)']}{row}"].value
             == meta_project.end_date.strftime("%d/%m/%Y")
         )
+        assert sheet[f"{headers['Transfer meeting']}{row}"].value in (None, "")
+        assert sheet[f"{headers['Transfer decision']}{row}"].value in (None, "")
+        assert sheet[f"{headers['Transferred from']}{row}"].value in (None, "")
 
     def test_export_inventory_report_populates_prior_meeting_columns(
         self, admin_user
