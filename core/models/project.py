@@ -1722,6 +1722,29 @@ class Project(models.Model):
             .first()
         )
 
+    @property
+    def endorsed_apr_records(self):
+        """
+        All endorsed AnnualProjectReport records for this project, latest year first.
+        Useful for displaying APR history on the project detail page and for Excel exports.
+        """
+        return (
+            self.annual_reports.filter(report__progress_report__endorsed=True)
+            .select_related(
+                "report__progress_report",
+                "report__agency",
+            )
+            .order_by("-report__progress_report__year")
+        )
+
+    @property
+    def latest_endorsed_apr(self):
+        """
+        The most recent endorsed AnnualProjectReport, or None.
+        Useful for Excel export when only the latest data point is needed.
+        """
+        return self.endorsed_apr_records.first()
+
 
 class ProjectFile(models.Model):
     class FileType(models.TextChoices):

@@ -7,6 +7,9 @@ from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
+    AnnualAgencyProjectReportFactory,
+    AnnualProgressReportFactory,
+    AnnualProjectReportFactory,
     BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
@@ -1559,3 +1562,50 @@ class TestProjectV2FileIncludePreviousVersions:
         assert response.data["type"] == "endorsement_letter"
         project_file.refresh_from_db()
         assert project_file.type == "endorsement_letter"
+
+
+class TestProjectAPRHistory:
+    client = APIClient()
+
+    def _url(self, project):
+        return reverse("project-v2-apr-history", args=(project.id,))
+
+    def test_returns_endorsed_apr_records(self, admin_user, project):
+        endorsed_progress = AnnualProgressReportFactory.create(year=2023, endorsed=True)
+        unendorsed_progress = AnnualProgressReportFactory.create(
+            year=2024, endorsed=False
+        )
+        endorsed_agency_report = AnnualAgencyProjectReportFactory.create(
+            progress_report=endorsed_progress
+        )
+        unendorsed_agency_report = AnnualAgencyProjectReportFactory.create(
+            progress_report=unendorsed_progress
+        )
+        AnnualProjectReportFactory.create(
+            project=project, report=endorsed_agency_report, funds_disbursed=100
+        )
+        AnnualProjectReportFactory.create(
+            project=project, report=unendorsed_agency_report, funds_disbursed=999
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(self._url(project))
+
+        assert response.status_code == 200
+        # Only the endorsed year should be returned
+        assert len(response.data) == 1
+        assert response.data[0]["year"] == 2023
+        assert response.data[0]["funds_disbursed"] == 100
+
+    def test_returns_empty_when_no_endorsed_aprs(self, admin_user, project):
+        progress = AnnualProgressReportFactory.create(year=2024, endorsed=False)
+        agency_report = AnnualAgencyProjectReportFactory.create(
+            progress_report=progress
+        )
+        AnnualProjectReportFactory.create(project=project, report=agency_report)
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(self._url(project))
+
+        assert response.status_code == 200
+        assert response.data == []
