@@ -45,6 +45,7 @@ def not_trf_or_adj(project):
     return project.status.name != "Transferred" and project.adjustment is False
 
 
+# pylint: disable-next=too-many-public-methods
 class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
