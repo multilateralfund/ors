@@ -6,9 +6,10 @@ from django.db.models import Prefetch
 from openpyxl.worksheet.worksheet import Worksheet
 
 from core.api.export.base import configure_sheet_print
+from core.api.export.projects_inventory_report import MIN_PROJECT_VERSION
 from core.api.export.projects_inventory_report import ProjectsInventoryReportWriter
 from core.api.utils import workbook_response
-from core.models import Project
+from core.models import Project, ProjectOdsOdp
 from core.models.annual_project_report import AnnualProjectReport
 
 if TYPE_CHECKING:
@@ -24,8 +25,8 @@ class ProjectsInventoryReportExport:
         self.view = view
 
     def setup_workbook(self):
-        wb = openpyxl.Workbook()
-        sheet = wb.active
+        wb = openpyxl.Workbook(write_only=True)
+        sheet = wb.create_sheet("Projects")
         sheet.title = "Projects"
         configure_sheet_print(sheet, "landscape")
         self.wb = wb
@@ -39,22 +40,38 @@ class ProjectsInventoryReportExport:
         # because the base headers also rely on them. Otherwise, we hit an N+1 queries issue.
         fk_fields = ProjectsInventoryReportWriter.get_fk_fields(project_fields)
         m2m_fields = ProjectsInventoryReportWriter.get_m2m_fields(project_fields)
+        archive_projects_queryset = (
+            Project.objects.really_all()
+            .filter(version__gte=MIN_PROJECT_VERSION)
+            .select_related(
+                "post_excom_meeting",
+                "status",
+            )
+        )
         queryset = (
             self.view.filter_queryset(self.view.get_queryset())
-            .filter(version__gte=3)
+            .filter(
+                version__gte=MIN_PROJECT_VERSION,
+                latest_project__isnull=True,
+            )
+            .prefetch_related(None)
             .select_related(
                 *fk_fields,
                 "funding_window__meeting",
+                "transferred_from__agency",
             )
             .prefetch_related(
                 *m2m_fields,
                 "component__projects",
                 Prefetch(
                     "archive_projects",
-                    queryset=Project.objects.really_all().select_related(
-                        "meeting",
-                        "post_excom_meeting",
-                        "status",
+                    queryset=archive_projects_queryset,
+                ),
+                Prefetch(
+                    "ods_odp",
+                    queryset=ProjectOdsOdp.objects.select_related(
+                        "ods_substance",
+                        "ods_blend",
                     ),
                 ),
                 Prefetch(
@@ -68,15 +85,13 @@ class ProjectsInventoryReportExport:
                 ),
             )
         )
-        version_map = {(p.final_version.id, p.version): p for p in queryset}
+        projects = list(queryset)
         writer = ProjectsInventoryReportWriter(
             self.sheet,
-            version_map,
+            projects,
             project_fields=project_fields,
             metaproject_fields=metaproject_fields,
         )
-        # Filter in memory to avoid a second DB query on the same large set.
-        latest_projects = [p for p in queryset if p.latest_project_id is None]
-        writer.write(latest_projects)
+        writer.write(projects)
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} Inventory report", self.wb)

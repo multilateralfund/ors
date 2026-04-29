@@ -1,6 +1,15 @@
 from functools import partial
 from itertools import pairwise
 
+from openpyxl.cell import WriteOnlyCell
+from openpyxl.comments import Comment
+from openpyxl.styles import Alignment
+from openpyxl.styles import Border
+from openpyxl.styles import DEFAULT_FONT
+from openpyxl.styles import Font
+from openpyxl.styles import PatternFill
+from openpyxl.styles import Side
+
 from django.db.models import JSONField
 from django.db.models.fields import BooleanField
 from django.db.models.fields import CharField
@@ -25,6 +34,9 @@ from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
 
 
+MIN_PROJECT_VERSION = 3
+
+
 def trf_or_adj(project):
     return project.status.name == "Transferred" or project.adjustment is True
 
@@ -44,11 +56,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def __init__(
         self,
         sheet,
-        version_map,
+        projects,
         project_fields=None,
         metaproject_fields=None,
     ):
-        self.version_map = version_map
+        self.version_map = self.build_version_map(projects)
         self.all_versions: dict[int, list[Project]] = {}
         self.project_fields = (
             project_fields if project_fields is not None else self.get_project_fields()
@@ -458,6 +470,76 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if consumption is None and production is None:
             return None
         return (consumption or 0) + (production or 0)
+    def build_version_map(projects):
+        version_map = {}
+        for project in projects:
+            version_map[(project.id, project.version)] = project
+            for archived_project in project.archive_projects.all():
+                version_map[(project.id, archived_project.version)] = archived_project
+        return version_map
+
+    def write(self, data):
+        self.set_dimensions()
+        self.sheet.freeze_panes = f"B{self.header_row_end_idx + 1}"
+        self.write_headers()
+        self.write_data(data)
+
+    def write_headers(self):
+        header_row = []
+        for header in self.headers.values():
+            name = header.get("headerName") or header.get("display_name")
+            comment = name if header.get("type") == "date" else None
+            header_row.append(self._make_header_cell(name, comment=comment))
+        self.sheet.append(header_row)
+
+    def write_data(self, data):
+        for project in data:
+            self.sheet.append(
+                [
+                    self.get_cell_value(project, header)
+                    for header in self.headers.values()
+                ]
+            )
+
+    def set_dimensions(self):
+        for header in self.headers.values():
+            self.sheet.column_dimensions[header["column_letter"]].width = header.get(
+                "column_width", self.COLUMN_WIDTH
+            )
+
+    def get_cell_value(self, project, header):
+        header_type = header.get("type")
+        if method := header.get("method"):
+            value = method(project, header)
+        else:
+            value = getattr(project, header["id"], None)
+
+        if header_type == "number":
+            return float(value or 0)
+        if header_type == "int":
+            return int(value or 0)
+        if header_type == "bool":
+            return "Yes" if value else "No"
+        return value or ""
+
+    def _make_header_cell(self, value, comment=None):
+        cell = WriteOnlyCell(self.sheet, value=value)
+        cell.font = Font(name=DEFAULT_FONT.name, bold=True, color=None)
+        cell.border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        cell.fill = PatternFill(
+            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
+        )
+        if comment:
+            cell.comment = Comment(comment, "")
+        return cell
 
     def get_base_headers(self):
         return [
@@ -712,39 +794,40 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         field_names = getattr(self, "project_field_names", {})
 
-        for f in fields:
-            if isinstance(f, tuple):
-                f, title = f
+        for field_def in fields:
+            if isinstance(field_def, tuple):
+                field, title = field_def
             else:
-                title = field_names.get(f.name, f.name)
+                field = field_def
+                title = field_names.get(field.name, field.name)
 
             header = {
-                "id": f"{f.name}_{id_suffix}" if id_suffix else f.name,
+                "id": f"{field.name}_{id_suffix}" if id_suffix else field.name,
                 "headerName": title,
                 "method": get_field_value,
                 "source": source,
             }
-            if isinstance(f, DateField):
+            if isinstance(field, DateField):
                 header["method"] = get_value_date
-            elif isinstance(f, DateTimeField):
+            elif isinstance(field, DateTimeField):
                 header["method"] = get_value_date
-            elif isinstance(f, BooleanField):
+            elif isinstance(field, BooleanField):
                 header["method"] = get_value_boolean
-            elif isinstance(f, CharField) and f.choices:
-                header["method"] = partial(get_choice_value, dict(f.choices))
-            elif isinstance(f, JSONField):
+            elif isinstance(field, CharField) and field.choices:
+                header["method"] = partial(get_choice_value, dict(field.choices))
+            elif isinstance(field, JSONField):
                 continue
-            elif isinstance(f, ForeignKey):
-                if f.name == "component":
+            elif isinstance(field, ForeignKey):
+                if field.name == "component":
                     header["method"] = get_value_component_field
-                elif f.name == "bp_activity":
+                elif field.name == "bp_activity":
                     header["method"] = partial(
-                        get_value_fk, f, attr_name="get_display_internal_id"
+                        get_value_fk, field, attr_name="get_display_internal_id"
                     )
                 else:
-                    header["method"] = partial(get_value_fk, f)
-            elif isinstance(f, ManyToManyField):
-                header["method"] = partial(get_value_m2m, f)
+                    header["method"] = partial(get_value_fk, field)
+            elif isinstance(field, ManyToManyField):
+                header["method"] = partial(get_value_m2m, field)
 
             result.append(header)
         return result
@@ -759,7 +842,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def calc_total_fund(self, project):
         prev_version = (
             self.get_version(project, project.version - 1)
-            if project.version > 3
+            if project.version > MIN_PROJECT_VERSION
             else None
         )
         if prev_version:
@@ -769,7 +852,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def calc_support_cost_psc(self, project):
         prev_version = (
             self.get_version(project, project.version - 1)
-            if project.version > 3
+            if project.version > MIN_PROJECT_VERSION
             else None
         )
         if prev_version:
@@ -808,7 +891,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return None
 
     def funding_headers(self, version):
-        if version < 3:
+        if version < MIN_PROJECT_VERSION:
             return []
 
         idx = version - 2
@@ -854,7 +937,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         ]
 
     def adjustment_headers(self, version):
-        if version < 3:
+        if version < MIN_PROJECT_VERSION:
             return []
 
         idx = version - 2
