@@ -12,10 +12,12 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
+import ProjectAPRData from '../ProjectView/ProjectAPRData.tsx'
 import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 import ProjectDelete from './ProjectDelete.tsx'
 import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
+import { useGetProjectsAPRData } from '../hooks/useGetProjectsAPRData.ts'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
 import { projectPhaseOutFields } from '../constants.ts'
 import {
@@ -135,6 +137,7 @@ const ProjectsCreate = ({
   const { project_type, sector } = crossCuttingFields
 
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
+  const { results: aprData } = useGetProjectsAPRData(project_id, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
 
@@ -851,6 +854,22 @@ const ProjectsCreate = ({
         />
       ),
     },
+    ...(isEditMode &&
+    project.submission_status === 'Approved' &&
+    aprData.length > 0
+      ? [
+          {
+            id: 'project-apr-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Progress reports</div>
+              </div>
+            ),
+            disabled: areNextSectionsDisabled,
+            component: <ProjectAPRData {...{ aprData, setCurrentTab }} />,
+          },
+        ]
+      : []),
     ...(isEditMode
       ? [
           {
