@@ -98,12 +98,6 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditEnterprise = user_permissions.includes(
     'has_enterprise_edit_access',
   )
-  const canApproveEnterprise = user_permissions.includes(
-    'has_enterprise_approval_access',
-  )
-  const canApproveProjectEnterprise = user_permissions.includes(
-    'has_project_enterprise_approval_access',
-  )
 
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
@@ -169,8 +163,6 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewMetaProjects,
         canViewEnterprises,
         canEditEnterprise,
-        canApproveEnterprise,
-        canApproveProjectEnterprise,
         canSetProjectSettings,
         isMlfsUser,
         canCommentCPCountry,

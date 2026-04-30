@@ -66,7 +66,7 @@ const EnterpriseHeader = ({
               <EnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
             ) : (
               <EnterpriseEditActionButtons
-                {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
+                {...{ setIsLoading, setEnterpriseName, ...rest }}
               />
             )}
           </div>

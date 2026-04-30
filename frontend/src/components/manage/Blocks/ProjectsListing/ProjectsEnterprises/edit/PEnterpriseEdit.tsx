@@ -29,7 +29,7 @@ const PEnterpriseEdit = ({
 }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const enterpriseStatuses = useGetEnterpriseStatuses(false)
+  const enterpriseStatuses = useGetEnterpriseStatuses()
 
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: { ...initialOverviewFields, id: null },
