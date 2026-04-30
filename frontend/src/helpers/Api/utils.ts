@@ -9,6 +9,11 @@ export function delayExecution(ms: number) {
   })
 }
 
+export function longDownloadUrl(targetUrl: string) {
+  const params = new URLSearchParams({ target: targetUrl })
+  return `/download?${params.toString()}`
+}
+
 export function formatApiUrl(path: string, params?: Record<string, any>) {
   // Check if the path is external
   if (path.startsWith('http://') || path.startsWith('https://')) return path

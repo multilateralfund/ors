@@ -80,6 +80,7 @@ import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
 import PermissionsContext from './contexts/PermissionsContext'
 import NotFoundPage from '@ors/app/not-found'
+import DownloadPage from '@ors/app/download/page'
 
 import RootLayout from './app/layout'
 import { useStore } from '@ors/store.tsx'
@@ -139,6 +140,9 @@ export default function App() {
           <LoginLayout>
             <ForgotPasswordPage />
           </LoginLayout>
+        </Route>
+        <Route path="/download">
+          <DownloadPage />
         </Route>
         <Route path="/business-plans/upload">
           <BPDataProvider>
