@@ -359,6 +359,7 @@ class ProjectV2ViewSet(
     def get_queryset(self):
         requests_really_all = (
             self.request.query_params.get("really_all", "false") == "true"
+            or self.request.query_params.get("inventory_report", "false") == "true"
         )
         if self.action in ["retrieve"] or requests_really_all:
             queryset = Project.objects.really_all()

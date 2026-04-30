@@ -6,7 +6,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { Menu, MenuItem } from '@mui/material'
 import { MdExpandMore } from 'react-icons/md'
 import { GoDatabase } from 'react-icons/go'
-import { formatApiUrl } from '@ors/helpers'
+import { formatApiUrl, longDownloadUrl } from '@ors/helpers'
 import { ListingProjectData } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 const GenerateDBMenu = ({
@@ -24,6 +24,11 @@ const GenerateDBMenu = ({
         url: formatApiUrl(
           '/api/projects/v2/export/?category=Multi-year+agreement',
         ),
+        permissions: [canViewProjects],
+      },
+      {
+        title: 'Inventory report',
+        url: longDownloadUrl('/api/projects/v2/export/?inventory_report=true'),
         permissions: [canViewProjects],
       },
       {
