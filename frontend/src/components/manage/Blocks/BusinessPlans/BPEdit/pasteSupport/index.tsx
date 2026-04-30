@@ -104,7 +104,12 @@ export async function readPastedTableFromNavigator(
       return []
     }
 
-    const cleanTable = removeEmptyRowsAndColumns(pastedTable)
+    // For multi-column paste, only remove empty rows and leave all columns intact.
+    // This way, intentionally empty values are preserved (!),
+    // and column position alignment is not corrupted by dropping empty columns.
+    const cleanTable = isMultiple
+      ? removeEmptyRows(pastedTable)
+      : removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
   } catch (error) {
     if (error.name === 'NotFoundError') {
