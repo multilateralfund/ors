@@ -19,7 +19,7 @@ jobs:
       - self-hosted
       - ors-staging-v2
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       
       - name: 'Configure SSH'
         run: |
@@ -45,4 +45,4 @@ jobs:
 
       - name: Update services
         run: |
-          ssh server "cd /home/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose top"
+          ssh server "cd /home/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose rm -f nextjs && docker compose top"

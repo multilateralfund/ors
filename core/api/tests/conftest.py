@@ -1757,3 +1757,12 @@ def late_post_excom_versions_for_apr(
 def mock_send_agency_submission_notification():
     with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
         yield send_mail
+
+
+@pytest.fixture()
+def mock_update_project_statuses_after_apr_endorsement():
+    with patch(
+        "core.api.views.annual_project_report"
+        ".update_project_statuses_after_apr_endorsement.delay"
+    ) as mock_delay:
+        yield mock_delay

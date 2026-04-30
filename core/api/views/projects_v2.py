@@ -33,6 +33,8 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
 )
+from core.api.serializers.annual_project_report import ProjectAPRHistorySerializer
+from core.models.annual_project_report import AnnualProjectReport
 from core.models.project import (
     Project,
     ProjectOdsOdp,
@@ -209,6 +211,7 @@ class ProjectV2ViewSet(
             "list_previous_tranches",
             "list_associated_projects",
             "field_history",
+            "apr_history",
             "list_filters",
             "compare_versions",
         ]:
@@ -356,6 +359,7 @@ class ProjectV2ViewSet(
     def get_queryset(self):
         requests_really_all = (
             self.request.query_params.get("really_all", "false") == "true"
+            or self.request.query_params.get("inventory_report", "false") == "true"
         )
         if self.action in ["retrieve"] or requests_really_all:
             queryset = Project.objects.really_all()
@@ -560,6 +564,30 @@ class ProjectV2ViewSet(
             SerializeProjectFieldHistory.serialize(project),
             status=status.HTTP_200_OK,
         )
+
+    @extend_schema(
+        responses={200: ProjectAPRHistorySerializer(many=True)},
+        description=(
+            "Returns all endorsed APR records for this project, latest year first."
+        ),
+    )
+    @action(methods=["GET"], detail=True, url_path="apr-history")
+    def apr_history(self, request, *args, **kwargs):
+        project = self.get_object()
+        qs = (
+            AnnualProjectReport.objects.filter(
+                project=project,
+                report__progress_report__endorsed=True,
+            )
+            .select_related(
+                "report__progress_report",
+                "report__agency",
+                "report__progress_report__meeting_endorsed",
+            )
+            .order_by("-report__progress_report__year")
+        )
+        serializer = ProjectAPRHistorySerializer(qs, many=True)
+        return Response(serializer.data)
 
     @extend_schema(
         description="""

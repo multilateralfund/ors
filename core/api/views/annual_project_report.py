@@ -1,3 +1,4 @@
+import logging
 import os
 from zipfile import ZipFile
 
@@ -61,10 +62,17 @@ from core.models import (
     AnnualProjectReportFile,
     Project,
 )
-from core.tasks import send_agency_submission_notification, sync_apr_from_projects
+from core.tasks import (
+    send_agency_submission_notification,
+    sync_apr_from_projects,
+    update_project_statuses_after_apr_endorsement,
+)
 
 
 # pylint: disable=C0302
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_version_3_prefetch():
@@ -853,9 +861,22 @@ class APREndorseView(APIView):
         if serializer.is_valid():
             serializer.save()
 
+            try:
+                update_project_statuses_after_apr_endorsement.delay(progress_report.id)
+            except Exception:  # pylint: disable=W0718
+                logger.exception(
+                    "APR endorsement: Failed to enqueue project status update task "
+                    "for progress report %s.",
+                    progress_report.id,
+                )
+
             return Response(
                 {
-                    "message": f"APR for year {year} has been endorsed successfully.",
+                    "message": (
+                        f"APR for year {year} has been endorsed successfully. "
+                        "The projects affected by this APR are updated asynchronously; "
+                        "it may take a few minutes until all of them reflect the updates."
+                    ),
                     "year": year,
                     "date_endorsed": progress_report.date_endorsed,
                     "meeting_endorsed": (

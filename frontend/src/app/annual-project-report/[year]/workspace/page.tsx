@@ -2,12 +2,18 @@ import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
-import { Box, Checkbox, Chip, FormControlLabel } from '@mui/material'
+import {
+  Box,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  Button,
+  CircularProgress,
+} from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
-import Button from '@mui/material/Button'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
@@ -33,9 +39,12 @@ import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLin
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
+import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 
 export default function APRWorkspace() {
+  const [loadingExport, setLoadingExport] = useState(false)
+  const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
     useState(false)
   const { year } = useParams()
@@ -92,7 +101,10 @@ export default function APRWorkspace() {
     reactivePath: true,
   })
 
-  const { columnDefs, defaultColDef } = useGetColumnDefs({ year: year!, showDerivedColumns })
+  const { columnDefs, defaultColDef } = useGetColumnDefs({
+    year: year!,
+    showDerivedColumns,
+  })
 
   const regions = useMemo(() => {
     const uniqueRegions = new Set<string>()
@@ -152,7 +164,12 @@ export default function APRWorkspace() {
     const sp = new URLSearchParams()
     Object.entries(filters).forEach(([key, values]) => {
       if (values.length > 0) {
-        sp.set(key, values.map((f) => (key === 'status' ? f.code! : String(f.id))).join(','))
+        sp.set(
+          key,
+          values
+            .map((f) => (key === 'status' ? f.code! : String(f.id)))
+            .join(','),
+        )
       }
     })
     const q = sp.toString()
@@ -325,35 +342,57 @@ export default function APRWorkspace() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-x-2">
-            <Button
-              variant="text"
-              startIcon={<FiDownload size={18} />}
-              href={formatApiUrl(
-                `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                params,
-              )}
-            >
-              Export APR
-            </Button>
-            <Link
-              button
-              variant="text"
-              startIcon={<FiEdit size={18} />}
-              href={editHref}
-              disabled={!canUpdateAPR}
-            >
-              Update APR
-            </Link>
-            <Button
-              variant="text"
-              startIcon={<FiTable size={18} />}
-              href={formatApiUrl(
-                `api/annual-project-report/summary-tables/export/`,
-              )}
-            >
-              Generate summary tables
-            </Button>
+          <div>
+            <div className="flex flex-wrap gap-x-2">
+              <Button
+                variant="text"
+                startIcon={<FiDownload size={18} />}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
+                      params,
+                    ),
+                    setLoadingExport,
+                  )
+                }
+                disabled={loadingExport}
+                endIcon={loadingExport && <CircularProgress size={16} />}
+              >
+                Export APR
+              </Button>
+              <Link
+                button
+                variant="text"
+                startIcon={<FiEdit size={18} />}
+                href={editHref}
+                disabled={!canUpdateAPR}
+              >
+                Update APR
+              </Link>
+              <Button
+                variant="text"
+                startIcon={<FiTable size={18} />}
+                onClick={() =>
+                  handleExport(
+                    formatApiUrl(
+                      `api/annual-project-report/summary-tables/export/`,
+                    ),
+                    setLoadingSummaryTables,
+                  )
+                }
+                disabled={loadingSummaryTables}
+                endIcon={loadingSummaryTables && <CircularProgress size={16} />}
+              >
+                Generate summary tables
+              </Button>
+            </div>
+
+            {(loadingExport || loadingSummaryTables) && (
+              <div className="ml-1.5 mt-1 max-h-10 text-sm text-gray-500 opacity-100">
+                Download may take more than 1 minute, please wait!
+              </div>
+            )}
           </div>
         </div>
         <div className="flex justify-end">

@@ -3,7 +3,15 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import { useLocation, useParams, useSearch } from 'wouter'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { Alert, Box, Checkbox, Chip, FormControlLabel, Tab, Tabs } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  Tab,
+  Tabs,
+} from '@mui/material'
 import useApi from '@ors/hooks/useApi.ts'
 import NotFoundPage from '@ors/app/not-found.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -30,6 +38,7 @@ import {
 import { useConfirmation } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { validateRows } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import ValidationErrors from '@ors/components/manage/Blocks/AnnualProgressReport/ValidationErrors.tsx'
+import { handleActionErrors } from '@ors/components/manage/Blocks/AnnualProgressReport/errors'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 
 const TABS = [
@@ -166,10 +175,7 @@ export default function APREdit() {
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
@@ -190,11 +196,7 @@ export default function APREdit() {
   return (
     <PageWrapper>
       <BackLink
-        url={
-          search
-            ? `/${year}/workspace?${search}`
-            : `/${year}/workspace`
-        }
+        url={search ? `/${year}/workspace?${search}` : `/${year}/workspace`}
         text="Annual Progress Report Workspace"
       />
       <PageHeading className="min-w-fit">

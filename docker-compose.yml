@@ -26,6 +26,7 @@ services:
     depends_on:
       - postgres
       - clamav
+    restart: always
 
   nextjs:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
@@ -42,16 +43,19 @@ services:
       - nextjs
     ports:
       - "3000:80"
+    restart: always
 
   rabbitmq:
     image: rabbitmq:alpine
+    restart: always
 
   redis:
     image: redis:alpine
+    restart: always
 
   celery:
     image: ghcr.io/multilateralfund/multilateralfund-celery:${DOCKER_TAG:-latest}
-    command: celery -A multilateralfund worker --beat -l info
+    command: celery -A multilateralfund worker --beat -l info --without-mingle --without-gossip
     environment:
       - CELERY_BROKER_URL=amqp://rabbitmq:5672
       - CELERY_RESULT_BACKEND=redis://redis:6379
@@ -64,11 +68,13 @@ services:
       - postgres
       - redis
       - rabbitmq
+    restart: always
 
   clamav:
-    image: clamav/clamav:latest
+    image: clamav/clamav:1.5.2
     volumes:
       - clam_db:/var/lib/clamav
+    restart: always
 
 volumes:
   pg-data:

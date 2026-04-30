@@ -26,14 +26,14 @@ function parsePastedText(text: string) {
 }
 
 function transposeMatrix(matrix: string[][]) {
-  const result: typeof matrix = new Array(matrix[0].length)
+  const numCols = matrix.reduce((max, row) => Math.max(max, row.length), 0)
+  const result: typeof matrix = Array.from({ length: numCols }, () =>
+    new Array(matrix.length).fill(''),
+  )
 
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
-      if (!result[j]) {
-        result[j] = new Array(matrix.length)
-      }
-      result[j][i] = matrix[i][j]
+      result[j][i] = matrix[i][j] ?? ''
     }
   }
 
@@ -50,8 +50,12 @@ function getOnlyFirstAndLastColumns(matrix: string[][]) {
   return matrix.map((cols) => [cols[0], cols[cols.length - 1]])
 }
 
+function normalizeCell(c: string) {
+  return (c ?? '').replace(/\u00A0/g, ' ').trim()
+}
+
 function removeEmptyRows(matrix: string[][]) {
-  return matrix.filter((r) => r.filter((c) => !!c).length)
+  return matrix.filter((r) => r.filter((c) => !!normalizeCell(c)).length)
 }
 
 function parsePastedHTML(html: string) {
@@ -65,7 +69,7 @@ function parsePastedHTML(html: string) {
   for (let i = 0; i < elTable.rows.length; i++) {
     result.push([])
     for (let j = 0; j < elTable.rows[i].cells.length; j++) {
-      result[i].push(elTable.rows[i].cells[j].textContent)
+      result[i].push(normalizeCell(elTable.rows[i].cells[j].textContent ?? ''))
     }
   }
 
@@ -74,6 +78,7 @@ function parsePastedHTML(html: string) {
 
 export async function readPastedTableFromNavigator(
   throwError: EnqueueSnackbar,
+  isMultiple: boolean,
 ) {
   let result: any[][] = []
   let canceled = false
@@ -91,12 +96,20 @@ export async function readPastedTableFromNavigator(
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
 
+    if (pastedTable.length === 0 || (pastedTable[0]?.length ?? 0) < 2) {
+      throwError(
+        `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
+        { variant: 'error' },
+      )
+      return []
+    }
+
     const cleanTable = removeEmptyRowsAndColumns(pastedTable)
-    result = getOnlyFirstAndLastColumns(cleanTable)
+    result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(
-        'Could not read clipbord data! Make sure you are pasting a 2 column table.',
+        `Could not read clipboard data! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
         {
           variant: 'error',
         },
@@ -105,10 +118,15 @@ export async function readPastedTableFromNavigator(
       canceled = true
     }
   }
-  if (!canceled && (result.length == 0 || result[0].length != 2)) {
+  if (
+    !canceled &&
+    (result.length == 0 ||
+      (isMultiple && result[0].length < 2) ||
+      (!isMultiple && result[0].length != 2))
+  ) {
     result = []
     throwError(
-      'Could not read a valid table from clipboard! Make sure you are pasting a 2 column table.',
+      `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
       {
         variant: 'error',
       },

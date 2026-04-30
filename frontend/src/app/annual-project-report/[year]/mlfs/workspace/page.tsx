@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import {
   Accordion,
@@ -13,6 +13,8 @@ import {
   FormControlLabel,
   Link,
   Tabs,
+  Tab,
+  Tooltip,
 } from '@mui/material'
 import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
@@ -33,7 +35,6 @@ import {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/constants.ts'
 import { union } from 'lodash'
 import { useStore } from '@ors/store.tsx'
-import Tab from '@mui/material/Tab/Tab'
 import cx from 'classnames'
 import {
   AnnualAgencyProjectReport,
@@ -52,7 +53,10 @@ import {
   FiTable,
   FiUnlock,
 } from 'react-icons/fi'
-import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
+import {
+  formatDate,
+  handleExport,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import {
   useAPRCurrentYear,
   useConfirmation,
@@ -74,6 +78,8 @@ export default function APRMLFSWorkspace() {
   const [, navigate] = useLocation()
   const gridRef = useRef<AgGridReact>()
   const [activeTab, setActiveTab] = useState(0)
+  const [loadingExport, setLoadingExport] = useState(false)
+  const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isEndorseModalOpen, setIsEndorseModalOpen] = useState(false)
   const confirm = useConfirmation()
   const { year } = useParams()
@@ -334,10 +340,7 @@ export default function APRMLFSWorkspace() {
         variant: 'success',
       })
     } catch (e) {
-      // TODO: better error reporting
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleActionErrors(e)
     }
   }
 
@@ -497,15 +500,25 @@ export default function APRMLFSWorkspace() {
               </Button>
             )}
             {activeTab === 0 && kickstartAPR && (
-              <Button
-                disabled={loading || !canKickstartAPR}
-                variant="contained"
-                color="secondary"
-                onClick={kickstartNewAPR}
+              <Tooltip
+                title={
+                  !loading && !canKickstartAPR
+                    ? kickstartAPR.message || ''
+                    : ''
+                }
               >
-                Launch new APR{' '}
-                {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
-              </Button>
+                <span>
+                  <Button
+                    disabled={loading || !canKickstartAPR}
+                    variant="contained"
+                    color="secondary"
+                    onClick={kickstartNewAPR}
+                  >
+                    Launch new APR{' '}
+                    {kickstartAPR.next_year && `(${kickstartAPR.next_year})`}
+                  </Button>
+                </span>
+              </Tooltip>
             )}
             <Button
               disabled={loading}
@@ -516,7 +529,7 @@ export default function APRMLFSWorkspace() {
             >
               Endorse APR
             </Button>
-            {canEditAPR && (
+            {canEditAPR && !progressReport?.endorsed && (
               <Button
                 disabled={
                   loading || !(loaded && (aprData ?? []).length > 0) || !!taskId
@@ -731,35 +744,58 @@ export default function APRMLFSWorkspace() {
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-x-2">
-              <Button
-                variant="text"
-                startIcon={<FiDownload size={18} />}
-                href={formatApiUrl(
-                  `api/annual-project-report/mlfs/${year}/export/`,
-                  params,
-                )}
-              >
-                Export APR
-              </Button>
-              <MlfsLink
-                button
-                variant="text"
-                startIcon={<FiEdit size={18} />}
-                href={editHref}
-                disabled={!canUpdateAPR}
-              >
-                Update APR (tabs)
-              </MlfsLink>
-              <Button
-                variant="text"
-                startIcon={<FiTable size={18} />}
-                href={formatApiUrl(
-                  `api/annual-project-report/summary-tables/export/`,
-                )}
-              >
-                Generate summary tables
-              </Button>
+            <div>
+              <div className="flex flex-wrap gap-x-2">
+                <Button
+                  variant="text"
+                  startIcon={<FiDownload size={18} />}
+                  onClick={() =>
+                    handleExport(
+                      formatApiUrl(
+                        `api/annual-project-report/mlfs/${year}/export/`,
+                        params,
+                      ),
+                      setLoadingExport,
+                    )
+                  }
+                  disabled={loadingExport}
+                  endIcon={loadingExport && <CircularProgress size={16} />}
+                >
+                  Export APR
+                </Button>
+                <MlfsLink
+                  button
+                  variant="text"
+                  startIcon={<FiEdit size={18} />}
+                  href={editHref}
+                  disabled={!canUpdateAPR}
+                >
+                  Update APR (tabs)
+                </MlfsLink>
+                <Button
+                  variant="text"
+                  startIcon={<FiTable size={18} />}
+                  onClick={() =>
+                    handleExport(
+                      formatApiUrl(
+                        `api/annual-project-report/summary-tables/export/`,
+                      ),
+                      setLoadingSummaryTables,
+                    )
+                  }
+                  disabled={loadingSummaryTables}
+                  endIcon={
+                    loadingSummaryTables && <CircularProgress size={16} />
+                  }
+                >
+                  Generate summary tables
+                </Button>
+              </div>
+              {(loadingExport || loadingSummaryTables) && (
+                <div className="ml-1.5 mt-1 max-h-10 text-sm text-gray-500 opacity-100">
+                  Download may take more than 1 minute, please wait!
+                </div>
+              )}
             </div>
           </div>
 

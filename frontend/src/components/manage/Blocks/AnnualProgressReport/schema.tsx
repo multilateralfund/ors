@@ -8,17 +8,16 @@ import {
   formatUSD,
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
-import React from 'react'
 import { useStore } from '@ors/store.tsx'
 import { get, isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
-  validateText,
   ValidatorMixin,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/validation.tsx'
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
 import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
+import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import dayjs from 'dayjs'
 
 export const dataTypeDefinitions: Record<
@@ -68,11 +67,7 @@ export const dataTypeDefinitions: Record<
   },
 }
 
-interface APRTableColumn {
-  label: string
-  fieldName: string
-  group: string | null
-  input: boolean
+type APRTableColumn = APRTableFieldProps & {
   overrideOptions?: NonNullable<AgGridReactProps['columnDefs']>[number] &
     ValidatorMixin
 }
@@ -647,7 +642,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
@@ -662,7 +656,6 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'text',
-        validators: [validateText],
         cellClass: 'ag-cell-ellipsed',
         tooltipValueGetter: (params: any) => {
           return params.valueFormatted ?? params.value
@@ -698,10 +691,10 @@ export default function useGetColumnDefs({
         clipboardEdit && c.input && rows && setRows
           ? (props: IHeaderParams) => (
               <BasePasteWrapper
-                mutator={(row: any, value: any) => {
-                  const field = c.fieldName
+                mutator={(row: any, value: any, field?: APRTableFieldProps) => {
                   // @ts-ignore
-                  const cellDataType = c.overrideOptions?.cellDataType
+                  const { fieldName, overrideOptions } = field ?? {}
+                  const cellDataType = overrideOptions?.cellDataType
                   let toBeAdded = value
 
                   if (cellDataType === 'dateString') {
@@ -717,22 +710,24 @@ export default function useGetColumnDefs({
                   }
 
                   if (['decimal', 'currency'].includes(cellDataType)) {
-                    // A cell becomes '' when cleared
-                    if (value === '') {
+                    // A cell becomes '' or whitespace-only (e.g. '\u00a0' in Excel HTML) when cleared
+                    if (typeof value === 'string' && value.trim() === '') {
                       toBeAdded = null
                     }
                   }
 
                   if (cellDataType === 'boolean') {
-                    toBeAdded = value.toLowerCase() === 'yes';
+                    toBeAdded = value?.toLowerCase() === 'yes'
                   }
 
-                  row[field] = toBeAdded
+                  row[fieldName!] = toBeAdded
                 }}
                 form={rows}
                 label={props.displayName}
                 setForm={setRows}
                 rowIdField="project_code"
+                isMultiple={true}
+                columns={columns}
               />
             )
           : undefined,

@@ -16,6 +16,7 @@ from django.template import loader
 from core.api.utils import (
     COUNTRY_USER_GROUP,
     COUNTRY_SUBMITTER_GROUP,
+    log_project_history,
 )
 from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
@@ -26,6 +27,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReport,
     AnnualProgressReport,
+    ProjectStatus,
 )
 
 from multilateralfund.celery import app
@@ -34,6 +36,8 @@ from multilateralfund.celery import app
 logger = get_task_logger(__name__)
 User = get_user_model()
 # pylint: disable=W0718
+
+APR_VERSIONING_START_YEAR = 2025
 
 
 def send_html_mail(
@@ -61,6 +65,121 @@ def send_html_mail(
 
 
 # Annual Progress Report
+@app.task()
+def update_project_statuses_after_apr_endorsement(progress_report_id):
+    """
+    When an AnnualProgressReport is endorsed and year >= 2025,
+    create a new version for every project whose status was changed during the APR cycle.
+
+    Single-project failures are logged and admins notified, but other projects
+    continue to be processed.
+    """
+    try:
+        progress_report = AnnualProgressReport.objects.get(id=progress_report_id)
+    except AnnualProgressReport.DoesNotExist:
+        logger.error(
+            "APR endorsement: AnnualProgressReport %s not found.",
+            progress_report_id,
+        )
+        return
+
+    if progress_report.year < APR_VERSIONING_START_YEAR:
+        return
+
+    if not progress_report.endorsed:
+        logger.error(
+            "APR endorsement: AnnualProgressReport %s is not endorsed.",
+            progress_report_id,
+        )
+        return
+
+    year = progress_report.year
+
+    apr_entries = (
+        AnnualProjectReport.objects.filter(
+            report__progress_report=progress_report,
+        )
+        .exclude(status="")
+        .select_related("project__status", "report__submitted_by")
+        .order_by("id")
+    )
+
+    processed_project_ids = set()
+    failures = []
+
+    for entry in apr_entries:
+        project = entry.project
+
+        if project.id in processed_project_ids:
+            continue
+
+        if entry.status == project.status.name:
+            processed_project_ids.add(project.id)
+            continue
+
+        new_status = ProjectStatus.objects.filter(name=entry.status).first()
+        if new_status is None:
+            logger.error(
+                "APR endorsement: Unknown status name '%s' for project %s. Skipping.",
+                entry.status,
+                project.id,
+            )
+            processed_project_ids.add(project.id)
+            continue
+
+        user = entry.report.submitted_by
+        if user is None:
+            logger.error(
+                "APR endorsement: No submitted_by user for agency report %s "
+                "(project %s). Skipping.",
+                entry.report.id,
+                project.id,
+            )
+            processed_project_ids.add(project.id)
+            continue
+
+        try:
+            with transaction.atomic():
+                prev_status_name = project.status.name
+                project.increase_version(user)
+                project.status = new_status
+                project.save(update_fields=["status"])
+                log_project_history(
+                    project,
+                    user,
+                    f"APR {year}: Status changed from {prev_status_name} to {new_status.name}",
+                )
+            processed_project_ids.add(project.id)
+        except Exception:
+            logger.exception(
+                "APR endorsement: Failed to update project %s for APR year %s.",
+                project.id,
+                year,
+            )
+            processed_project_ids.add(project.id)
+            failures.append(project.id)
+
+    if failures:
+        recipients = config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS
+        if isinstance(recipients, str):
+            recipients = [r.strip() for r in recipients.split(",")]
+        recipients = [r for r in recipients if r]
+
+        if recipients:
+            project_ids_str = ", ".join(str(pid) for pid in failures)
+            send_mail(
+                subject=f"APR {year}: Failed to update project statuses after endorsement",
+                message=(
+                    f"The following project IDs failed to have their status updated "
+                    f"after endorsing APR {year}: {project_ids_str}.\n\n"
+                    f"Please check the application logs for details."
+                ),
+                from_email=None,
+                recipient_list=recipients,
+                fail_silently=True,
+            )
+
+
 @app.task()
 def send_agency_submission_notification(agency_report_id):
     recipients = config.APR_AGENCY_SUBMISSION_NOTIFICATIONS_EMAILS
