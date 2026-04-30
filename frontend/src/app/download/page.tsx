@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Alert, CircularProgress, Typography } from '@mui/material'
 import { IoDownloadOutline } from 'react-icons/io5'
 
-import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
+import { SubmitButton } from '@ors/components/ui/Button/Button'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import useSearchParams from '@ors/hooks/useSearchParams'
