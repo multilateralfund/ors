@@ -74,8 +74,9 @@ const PEnterpriseDetailsSection = ({
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(selectFields, (field) => (
+        {map(selectFields, (field, index) => (
           <EnterpriseSelectField<PEnterpriseData, EnterpriseDetails>
+            key={index}
             enterpriseData={details}
             isDisabled={field.isDisabled}
             {...{
@@ -88,8 +89,9 @@ const PEnterpriseDetailsSection = ({
         ))}
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
-        {map(detailsDateFields.slice(0, 2), (field) => (
+        {map(detailsDateFields.slice(0, 2), (field, index) => (
           <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
+            key={index}
             enterpriseData={details}
             isDisabled={
               field === 'planned_completion_date'
@@ -134,8 +136,9 @@ const PEnterpriseDetailsSection = ({
             <FieldErrorIndicator field="meeting" {...{ errors }} />
           </div>
         </div>
-        {map(detailsDateFields.slice(2), (field) => (
+        {map(detailsDateFields.slice(2), (field, index) => (
           <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
+            key={index}
             enterpriseData={details}
             isDisabled={field === 'date_of_approval' ? true : isDisabled}
             {...{

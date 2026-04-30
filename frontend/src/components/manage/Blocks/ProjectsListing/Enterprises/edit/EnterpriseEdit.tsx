@@ -23,6 +23,7 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
       name: enterprise.name,
       country: enterprise.country,
       location: enterprise.location,
+      city: enterprise.city,
       stage: enterprise.stage,
       sector: enterprise.sector,
       subsector: enterprise.subsector,

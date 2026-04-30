@@ -69,9 +69,15 @@ const PEnterpriseFundingDetailsSection = ({
       {fields.map((field, index) => (
         <div key={index} className="flex w-full flex-col gap-4">
           <div className={viewColumnsClassName}>
-            {field.map(([crtField, value]) =>
-              numberDetailItem(crtField as string, value as string, 'decimal'),
-            )}
+            {field.map(([crtField, value], index) => (
+              <div key={index}>
+                {numberDetailItem(
+                  crtField as string,
+                  value as string,
+                  'decimal',
+                )}
+              </div>
+            ))}
           </div>
         </div>
       ))}
