@@ -404,6 +404,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             total_fund=100,
             support_cost_psc=10,
             meeting=MeetingFactory.create(number=303),
+            date_approved=date(2024, 3, 15),
         )
         ProjectFactory.create(
             latest_project=final_project,
@@ -435,15 +436,26 @@ class TestProjectV2ExportXLSX(BaseTest):
         row = get_inventory_project_row(sheet, final_project.id)
 
         assert row is not None
-        for idx in range(1, 4):
+
+        expected = {
+            1: {"fund": 100, "psc": 10, "meeting": 303, "date": date(2024, 3, 15)},
+            2: {"fund": 120, "psc": 12, "meeting": 204, "date": date(2024, 4, 15)},
+            3: {"fund": 140, "psc": 14, "meeting": 205, "date": date(2024, 5, 15)},
+        }
+        for idx, values in expected.items():
             assert (
-                sheet[f"{headers[f'Project funding meeting {idx}']}{row}"].value == 20
+                sheet[f"{headers[f'Project funding meeting {idx}']}{row}"].value
+                == values["fund"]
             )
-            assert sheet[f"{headers[f'PSC meeting {idx}']}{row}"].value == 2
-            assert sheet[f"{headers[f'Meeting Approved {idx}']}{row}"].value == 206
-            assert sheet[
-                f"{headers[f'Date Approved {idx}']}{row}"
-            ].value.date() == date(2024, 6, 15)
+            assert sheet[f"{headers[f'PSC meeting {idx}']}{row}"].value == values["psc"]
+            assert (
+                sheet[f"{headers[f'Meeting Approved {idx}']}{row}"].value
+                == values["meeting"]
+            )
+            assert (
+                sheet[f"{headers[f'Date Approved {idx}']}{row}"].value.date()
+                == values["date"]
+            )
 
     def test_export_inventory_report_populates_adjustment_columns(self, admin_user):
         final_project = ProjectFactory.create(
@@ -454,6 +466,8 @@ class TestProjectV2ExportXLSX(BaseTest):
             post_excom_meeting=MeetingFactory.create(number=206),
             date_approved=date(2024, 6, 15),
             adjustment=True,
+            fund_transferred=9,
+            psc_transferred=3,
         )
         ProjectFactory.create(
             latest_project=final_project,
@@ -471,6 +485,8 @@ class TestProjectV2ExportXLSX(BaseTest):
             post_excom_meeting=MeetingFactory.create(number=204),
             date_approved=date(2024, 4, 15),
             adjustment=True,
+            fund_transferred=7,
+            psc_transferred=1,
         )
         ProjectFactory.create(
             latest_project=final_project,
@@ -481,6 +497,8 @@ class TestProjectV2ExportXLSX(BaseTest):
             post_excom_meeting=MeetingFactory.create(number=205),
             date_approved=date(2024, 5, 15),
             adjustment=True,
+            fund_transferred=8,
+            psc_transferred=2,
         )
 
         self.client.force_authenticate(user=admin_user)
@@ -494,15 +512,26 @@ class TestProjectV2ExportXLSX(BaseTest):
         row = get_inventory_project_row(sheet, final_project.id)
 
         assert row is not None
-        for idx in range(1, 4):
-            assert sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == 20
+
+        expected = {
+            1: {"fund": 7, "psc": 1, "meeting": 204, "date": date(2024, 4, 15)},
+            2: {"fund": 8, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
+            3: {"fund": 9, "psc": 3, "meeting": 206, "date": date(2024, 6, 15)},
+        }
+        for idx, values in expected.items():
+            assert sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == values["fund"]
             assert (
-                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value == 2
+                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value
+                == values["psc"]
             )
-            assert sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value == 206
-            assert sheet[
-                f"{headers[f'Adjustments Date {idx}']}{row}"
-            ].value.date() == date(2024, 6, 15)
+            assert (
+                sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value
+                == values["meeting"]
+            )
+            assert (
+                sheet[f"{headers[f'Adjustments Date {idx}']}{row}"].value.date()
+                == values["date"]
+            )
 
     def test_export_mya_adds_filters_and_totals(
         self,
