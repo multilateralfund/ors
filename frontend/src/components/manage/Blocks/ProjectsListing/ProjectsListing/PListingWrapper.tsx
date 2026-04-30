@@ -26,7 +26,6 @@ export default function PListingWrapper() {
     canViewBp,
     canUpdateBp,
     canViewEnterprises,
-    canEditProjectEnterprise,
     canUpdateProjects,
     canAssociateProjects,
     canUpdatePostExcom,
@@ -110,7 +109,7 @@ export default function PListingWrapper() {
         <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
           Copy project
         </Typography>
-        <div className="bg-common-containerBg mb-4 flex flex-col gap-2.5 p-6">
+        <div className="mb-4 flex flex-col gap-2.5 bg-common-containerBg p-6">
           <span className="text-lg">
             You are about to copy the following project and start a new
             submission.
@@ -151,7 +150,6 @@ export default function PListingWrapper() {
               canViewBp,
               canUpdateBp,
               canViewEnterprises,
-              canEditProjectEnterprise,
               canUpdatePostExcom,
               canTransferProjects,
               canViewMetaProjects,

@@ -32,7 +32,6 @@ const getColumnDefs = (
     canUpdateProjects,
     canEditProjects,
     canEditApprovedProjects,
-    canEditProjectEnterprise,
   } = useContext(PermissionsContext)
 
   const [projectCardModalId, setProjectCardModalId] = useState<number | null>(
@@ -112,8 +111,7 @@ const getColumnDefs = (
                   setProjectData &&
                   (canAssociateProjects ||
                     canUpdateProjects ||
-                    canEditApprovedProjects ||
-                    canEditProjectEnterprise) && (
+                    canEditApprovedProjects) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {

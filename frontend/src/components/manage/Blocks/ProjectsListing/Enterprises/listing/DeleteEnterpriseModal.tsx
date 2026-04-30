@@ -3,7 +3,7 @@ import { CancelButton } from '../../HelperComponents'
 
 import { Typography, Box, Modal } from '@mui/material'
 
-const DeletePEnterpriseModal = ({
+const DeleteEnterpriseModal = ({
   idToDelete,
   setIdToDelete,
   onAction,
@@ -48,4 +48,4 @@ const DeletePEnterpriseModal = ({
   )
 }
 
-export default DeletePEnterpriseModal
+export default DeleteEnterpriseModal

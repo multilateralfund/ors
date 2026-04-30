@@ -7,7 +7,7 @@ export function useGetEnterpriseStatuses(include_obsolete = true) {
       params: { include_obsolete },
       withStoreCache: true,
     },
-    path: '/api/project-enterprise-status/',
+    path: '/api/enterprise-statuses/',
   })
 
   return map(data, (status) => ({

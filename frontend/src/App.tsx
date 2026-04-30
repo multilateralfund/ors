@@ -71,7 +71,6 @@ import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
 import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
 import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterprise_id]/edit/page'
-import ProjectsEnterprisesPage from '@ors/app/projects_listing/projects_enterprises/page'
 import ProjectsEnterprisesCreatePage from '@ors/app/projects_listing/projects_enterprises/[project_id]/create/page'
 import ProjectsEnterprisesViewPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/view/[enterprise_id]/page'
 import ProjectsEnterprisesEditPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/edit/[enterprise_id]/page'
@@ -370,11 +369,6 @@ export default function App() {
         <Route path="/projects-listing/enterprises/:enterprise_id/edit">
           <ProjectsDataProvider>
             <EnterpriseEditPage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id/create">
