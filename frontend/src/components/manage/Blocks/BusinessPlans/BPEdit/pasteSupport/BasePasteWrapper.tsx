@@ -80,6 +80,10 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       }
       const pendingIds = new Set(Object.keys(newValues))
       const numEntries = pendingIds.size
+
+      // DEBUG — remove before merging to main
+      console.debug('[paste] newValues (key = first col, value = remaining cols):', JSON.parse(JSON.stringify(newValues)))
+      console.debug('[paste] clicked column label:', label)
       let numInserted = 0
       let numColsInserted = 0
 

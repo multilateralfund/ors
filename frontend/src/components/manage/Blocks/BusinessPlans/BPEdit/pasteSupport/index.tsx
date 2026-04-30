@@ -92,9 +92,17 @@ export async function readPastedTableFromNavigator(
 
     const textContent = await (await paste.getType('text/plain')).text()
 
+    // DEBUG — remove before merging to main
+    console.debug('[paste] clipboard types:', paste.types)
+    console.debug('[paste] raw htmlContent:', htmlContent)
+    console.debug('[paste] raw textContent:', textContent)
+
     const pastedTable = !!htmlContent
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
+
+    // DEBUG — remove before merging to main
+    console.debug('[paste] pastedTable after parsing (before cleanup):', JSON.parse(JSON.stringify(pastedTable)))
 
     if (pastedTable.length === 0 || (pastedTable[0]?.length ?? 0) < 2) {
       throwError(
@@ -111,6 +119,9 @@ export async function readPastedTableFromNavigator(
       ? removeEmptyRows(pastedTable)
       : removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
+
+    // DEBUG — remove before merging to main
+    console.debug('[paste] result after cleanup:', JSON.parse(JSON.stringify(result)))
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(
