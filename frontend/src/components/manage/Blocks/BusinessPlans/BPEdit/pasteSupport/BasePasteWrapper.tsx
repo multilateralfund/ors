@@ -39,7 +39,11 @@ const normalizeLabel = (label: string) => {
   // Strip non-breaking spaces (\u00A0) that Excel injects into cell text,
   // matching the normalizeCell treatment applied during clipboard parsing.
   const noNbsp = replace(label, /\u00A0/g, ' ')
-  const formattedYearLabel = replace(noNbsp, /\b(\d{4}|XXXX)\b/, 'YEAR')
+  // M365 on Windows can wraps column headers in plain-text clipboard with \n + spaces
+  // (e.g. "Funds Disbursed\n  (US$)").
+  // Collapse those to a single space, so they match our actual schema labels.
+  const noWrappedNewlines = replace(noNbsp, /\n\s*/g, ' ')
+  const formattedYearLabel = replace(noWrappedNewlines, /\b(\d{4}|XXXX)\b/, 'YEAR')
   const trimmedSlashLabel = replace(formattedYearLabel, /\/\s+/g, '/')
 
   return trim(trimmedSlashLabel)
@@ -108,7 +112,8 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
           const projectCodeIndex = indexOf(columns, projectCodeData)
 
           const firstPendingId = pendingIds.values().next().value
-          const hasHeaders = firstPendingId === identifierLabel
+          // Also normalize labels before comparing; M365 can embeds "\n" and spaces
+          const hasHeaders = normalizeLabel(firstPendingId!) === identifierLabel
           const firstRowValues = newValues[firstPendingId!]
 
           // In the no-headers path, we infer which columns were pasted by
