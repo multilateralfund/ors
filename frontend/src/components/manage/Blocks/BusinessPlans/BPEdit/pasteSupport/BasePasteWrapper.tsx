@@ -36,7 +36,10 @@ interface BasePasteWrapperProps {
 }
 
 const normalizeLabel = (label: string) => {
-  const formattedYearLabel = replace(label, /\b(\d{4}|XXXX)\b/, 'YEAR')
+  // Strip non-breaking spaces (\u00A0) that Excel injects into cell text,
+  // matching the normalizeCell treatment applied during clipboard parsing.
+  const noNbsp = replace(label, /\u00A0/g, ' ')
+  const formattedYearLabel = replace(noNbsp, /\b(\d{4}|XXXX)\b/, 'YEAR')
   const trimmedSlashLabel = replace(formattedYearLabel, /\/\s+/g, '/')
 
   return trim(trimmedSlashLabel)
@@ -104,12 +107,17 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
           const hasHeaders = firstPendingId === identifierLabel
           const firstRowValues = newValues[firstPendingId!]
 
+          // In the no-headers path, we infer which columns were pasted by
+          // anchoring to the group boundary of the clicked column.
+          // Using `projectCodeIndex+1` as the lower bound could span multiple column
+          // groups and cause values to be applied to the wrong fields.
+          const groupStartIndex =
+            pastedFieldData?.group != null
+              ? columns.findIndex((col) => col.group === pastedFieldData.group)
+              : projectCodeIndex + 1
           const startIndex = hasHeaders
             ? 0
-            : Math.max(
-                fieldIndex - firstRowValues.length + 1,
-                projectCodeIndex + 1,
-              )
+            : Math.max(fieldIndex - firstRowValues.length + 1, groupStartIndex)
 
           const columnsLabels = hasHeaders
             ? map(firstRowValues, (label) => normalizeLabel(label))
@@ -123,9 +131,12 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
               if (pendingIds.has(rowId)) {
                 const rowValues = newValues[rowId]
+                // Slice by columnsLabels.length, not fieldIndex, so the bound
+                // reflects the actual number of mapped columns
+                // rather than an unrelated schema position.
                 const values = hasHeaders
                   ? rowValues
-                  : rowValues.slice(0, fieldIndex + 1)
+                  : rowValues.slice(0, columnsLabels.length)
 
                 nextForm[i] = { ...nextForm[i] }
 
@@ -152,16 +163,18 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             }
           }
         } else {
+          // Single-column mode (Business Plans)
+
+          // getOnlyFirstAndLastColumns ensures newValues[rowId] always has
+          // exactly one element.
+          // Only the first (and only) value is applied; no field metadata is passed
+          // because columns/isMultiple are not provided in this branch.
           for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
             const rowId = nextForm[i][rowIdField]
 
             if (pendingIds.has(rowId)) {
               nextForm[i] = { ...nextForm[i] }
-
-              newValues[rowId].map((value: any) => {
-                mutator(nextForm[i], cleanValue(value))
-              })
-
+              mutator(nextForm[i], cleanValue(newValues[rowId][0]))
               pendingIds.delete(rowId)
               numInserted++
             }
