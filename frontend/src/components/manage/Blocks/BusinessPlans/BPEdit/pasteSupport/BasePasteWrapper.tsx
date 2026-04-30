@@ -36,7 +36,10 @@ interface BasePasteWrapperProps {
 }
 
 const normalizeLabel = (label: string) => {
-  const formattedYearLabel = replace(label, /\b(\d{4}|XXXX)\b/, 'YEAR')
+  // Strip non-breaking spaces (\u00A0) that Excel injects into cell text,
+  // matching the normalizeCell treatment applied during clipboard parsing.
+  const noNbsp = replace(label, /\u00A0/g, ' ')
+  const formattedYearLabel = replace(noNbsp, /\b(\d{4}|XXXX)\b/, 'YEAR')
   const trimmedSlashLabel = replace(formattedYearLabel, /\/\s+/g, '/')
 
   return trim(trimmedSlashLabel)
