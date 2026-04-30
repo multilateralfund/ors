@@ -519,7 +519,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             3: {"fund": 9, "psc": 3, "meeting": 206, "date": date(2024, 6, 15)},
         }
         for idx, values in expected.items():
-            assert sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value == values["fund"]
+            assert (
+                sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value
+                == values["fund"]
+            )
             assert (
                 sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value
                 == values["psc"]
