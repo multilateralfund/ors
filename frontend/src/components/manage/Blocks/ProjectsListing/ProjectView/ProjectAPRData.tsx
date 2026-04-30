@@ -9,6 +9,7 @@ import {
   numberDetailItem,
 } from './ViewHelperComponents'
 import { viewColumnsClassName } from '../constants'
+import { formatFieldLabel } from '../utils'
 
 import { Divider, Typography } from '@mui/material'
 import { keys, map } from 'lodash'
@@ -85,7 +86,7 @@ const ProjectHistory = ({
             <div className={viewColumnsClassName}>
               {map(keys(phaseoutFields).slice(0, 3), (field) =>
                 numberDetailItem(
-                  phaseoutFields[field],
+                  formatFieldLabel(phaseoutFields[field]),
                   latestApr[field as keyof typeof latestApr] as string,
                   'decimal',
                 ),
@@ -94,7 +95,7 @@ const ProjectHistory = ({
             <div className={viewColumnsClassName}>
               {map(keys(phaseoutFields).slice(3), (field) =>
                 numberDetailItem(
-                  phaseoutFields[field],
+                  formatFieldLabel(phaseoutFields[field]),
                   latestApr[field as keyof typeof latestApr] as string,
                   'decimal',
                 ),
