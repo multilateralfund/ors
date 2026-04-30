@@ -7,7 +7,7 @@ import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import useSearchParams from '@ors/hooks/useSearchParams'
-import { decodeLongDownloadTarget, formatApiUrl } from '@ors/helpers'
+import { formatApiUrl } from '@ors/helpers'
 import Button from '@mui/material/Button'
 
 type DownloadState = 'preparing' | 'ready' | 'error'
@@ -37,7 +37,7 @@ export default function DownloadPage() {
   const searchParams = useSearchParams()
   const target = searchParams.get('target')
   const targetUrl = useMemo(
-    () => (target ? formatApiUrl(decodeLongDownloadTarget(target)) : null),
+    () => (target ? formatApiUrl(target) : null),
     [target],
   )
 
