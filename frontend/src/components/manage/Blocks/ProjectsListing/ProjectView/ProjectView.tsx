@@ -11,10 +11,12 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectUmbrellaProjectDetails from './ProjectUmbrellaProjectsDetails'
+import ProjectAPRData from './ProjectAPRData'
 import ProjectsInlineMessage from '../ProjectsCreate/ProjectsInlineMessage'
 import ProjectDelete from '../ProjectsCreate/ProjectDelete'
 import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { useGetProjectsAPRData } from '../hooks/useGetProjectsAPRData'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import {
@@ -173,6 +175,8 @@ const ProjectView = ({
       ) ?? [])
     : []
 
+  const { results: aprData } = useGetProjectsAPRData(project.id, 'view')
+
   const relatedProjects = useGetRelatedProjects(
     'view',
     metaProjectId,
@@ -313,6 +317,17 @@ const ProjectView = ({
                 }}
               />
             ),
+          },
+        ]
+      : []),
+    ...(isNull(project.latest_project) &&
+    project.submission_status === 'Approved' &&
+    aprData.length > 0
+      ? [
+          {
+            id: 'project-apr-section',
+            label: 'Progress reports',
+            component: <ProjectAPRData {...{ aprData }} />,
           },
         ]
       : []),
