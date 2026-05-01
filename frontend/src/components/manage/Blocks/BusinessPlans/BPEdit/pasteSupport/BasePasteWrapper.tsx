@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport'
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
-import { find, indexOf, map, replace, trim } from 'lodash'
+import { find, indexOf, map } from 'lodash'
 
 const decimalSeparator = Intl.NumberFormat(navigator.language)
   .format(1.1)
@@ -35,19 +35,15 @@ interface BasePasteWrapperProps {
   columns?: APRTableFieldProps[]
 }
 
-const normalizeLabel = (label: string) => {
-  // Strip non-breaking spaces (\u00A0) that Excel injects into cell text,
-  // matching the normalizeCell treatment applied during clipboard parsing.
-  const noNbsp = replace(label, /\u00A0/g, ' ')
-  // M365 on Windows can wraps column headers in plain-text clipboard with \n + spaces
-  // (e.g. "Funds Disbursed\n  (US$)").
-  // Collapse those to a single space, so they match our actual schema labels.
-  const noWrappedNewlines = replace(noNbsp, /\n\s*/g, ' ')
-  const formattedYearLabel = replace(noWrappedNewlines, /\b(\d{4}|XXXX)\b/, 'YEAR')
-  const trimmedSlashLabel = replace(formattedYearLabel, /\/\s+/g, '/')
-
-  return trim(trimmedSlashLabel)
-}
+const normalizeLabel = (label: string) =>
+  // Collapse all whitespace types NBSP \u00A0, CR, LF, tabs, multi-space etc
+  // to a single space, then normalize "/" occurences.
+  // \s matches \u00A0 (the Unicode Space_Separator).
+  label
+    .replace(/\s+/g, ' ')
+    .replace(/\b(\d{4}|XXXX)\b/, 'YEAR')
+    .replace(/\/\s+/g, '/')
+    .trim()
 
 export function BasePasteWrapper(props: BasePasteWrapperProps) {
   const {
@@ -134,18 +130,32 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                 normalizeLabel(label),
               )
 
+          if (!columnsLabels.includes(normalizedLabel)) {
+            if (hasHeaders) {
+              enqueueSnackbar(
+                `The pasted data does not contain a "${label}" column. You seem to try to paste in a different column.`,
+                { variant: 'error' },
+              )
+            }
+            // In the no-headers path this (hopefully!) can't happen
+            // (as columnsLabels is derived from the clicked column itself).
+            return
+          }
+
           if (columnsLabels.includes(normalizedLabel)) {
             for (let i = 0; i < nextForm.length && pendingIds.size; i++) {
               const rowId = nextForm[i][rowIdField]
 
               if (pendingIds.has(rowId)) {
                 const rowValues = newValues[rowId]
-                // Slice by columnsLabels.length, not fieldIndex, so the bound
-                // reflects the actual number of mapped columns
-                // rather than an unrelated schema position.
+                // Right-align: Excel includes all intermediate columns in the
+                // clipboard, so take the last N values to get the actual data.
+                // This matches getOnlyFirstAndLastColumns' behaviour on single-column.
                 const values = hasHeaders
                   ? rowValues
-                  : rowValues.slice(0, columnsLabels.length)
+                  : rowValues.slice(
+                      Math.max(0, rowValues.length - columnsLabels.length),
+                    )
 
                 nextForm[i] = { ...nextForm[i] }
 
