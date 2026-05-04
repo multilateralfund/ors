@@ -6,15 +6,12 @@ import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/Busi
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import { find, indexOf, map } from 'lodash'
 
-// cleanValue uses the separators derived from the source locale (Excel's lang
-// attribute from clipboard HTML, or browser locale as fallback) to normalize
-// numbers to dot-decimal.
-// A date guard prevents date strings from being corrupted by separator stripping
-// (e.g. European locale has "." as thousands separator, which would strip dots
-// from "01.01.2022", turning it into "01012022").
+// cleanValue uses the separators derived from the Excel source locale
+// (or browser locale as fallback) to normalize numbers to dot-decimal.
 function cleanValue(value: string, decimalSep: string, thousandSep: string) {
   if (value == null) return value
   const toParse = value.trim().split('$').reverse()[0].trim()
+
   // Guard date-like strings (e.g. "01.01.2022", "31/01/2022", "01-01-2022")
   if (/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{2,4}$/.test(toParse)) return toParse
   const isNumber = !isNaN(parseFloat(toParse))
@@ -25,6 +22,7 @@ function cleanValue(value: string, decimalSep: string, thousandSep: string) {
   }
   return value
 }
+
 interface BasePasteWrapperProps {
   label: string
   mutator: (row: any, value: any, field?: APRTableFieldProps) => void
@@ -177,7 +175,15 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                     return
                   }
 
-                  mutator(nextForm[i], cleanValue(value, decimalSep, thousandSep), crtFieldObj)
+                  // Do not call cleanValue on text fields
+                  const isTextField = (crtFieldObj as any)?.overrideOptions?.cellDataType === 'text'
+                  mutator(
+                    nextForm[i],
+                    isTextField
+                      ? value
+                      : cleanValue(value, decimalSep, thousandSep),
+                    crtFieldObj,
+                  )
                   numColsInserted++
                 })
 
