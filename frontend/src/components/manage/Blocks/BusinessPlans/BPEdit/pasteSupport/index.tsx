@@ -106,11 +106,6 @@ export async function readPastedTableFromNavigator(
 
     const textContent = await (await paste.getType('text/plain')).text()
 
-    // DEBUG — remove before merging to main
-    console.log('[paste] clipboard types:', paste.types)
-    console.log('[paste] raw htmlContent:', htmlContent)
-    console.log('[paste] raw textContent:', textContent)
-
     if (htmlContent) {
       sourceLang = extractLangFromHTML(htmlContent)
       console.log('[paste] detected sourceLang from clipboard HTML:', sourceLang)
@@ -119,9 +114,6 @@ export async function readPastedTableFromNavigator(
     const pastedTable = !!htmlContent
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
-
-    // DEBUG — remove before merging to main
-    console.log('[paste] pastedTable after parsing (before cleanup):', JSON.parse(JSON.stringify(pastedTable)))
 
     if (pastedTable.length === 0 || (pastedTable[0]?.length ?? 0) < 2) {
       throwError(
@@ -139,8 +131,6 @@ export async function readPastedTableFromNavigator(
       : removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
 
-    // DEBUG — remove before merging to main
-    console.log('[paste] result after cleanup:', JSON.parse(JSON.stringify(result)))
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(
