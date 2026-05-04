@@ -169,6 +169,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "total_phase_out_metric_tonnes",
                     "total_phase_out_co2_tonnes",
                 ],
+                title_overrides={
+                    "total_phase_out_odp_tonnes": "Total ODP Approved",
+                    "total_phase_out_metric_tonnes": "Total MT Approved",
+                    "total_phase_out_co2_tonnes": "Total CO2-eq Approved",
+                },
                 id_suffix="ods_total",
             )
         )
@@ -208,6 +213,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
             ]
         )
 
+        headers.extend(self.ods_odp_headers(1))
+        headers.extend(self.ods_odp_headers(2))
+        headers.extend(self.ods_odp_headers(3))
+        headers.extend(self.ods_odp_headers(4))
+
         headers.extend(
             self.build_headers(
                 self.project_fields,
@@ -217,11 +227,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ],
             )
         )
-
-        headers.extend(self.ods_odp_headers(1))
-        headers.extend(self.ods_odp_headers(2))
-        headers.extend(self.ods_odp_headers(3))
-        headers.extend(self.ods_odp_headers(4))
 
         headers.append(
             {
@@ -358,17 +363,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
         headers.extend(
             self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=[
-                    "number_of_production_lines_assisted",
-                ],
-            )
-        )
-        headers.extend(
-            self.build_headers(
                 self.project_fields,
                 include_names=[
+                    "number_of_production_lines_assisted",
                     "number_of_production_lines_assisted_actual",
                     "ad_hoc_pcr",
                     "pcr_waived",
@@ -452,8 +449,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 self.metaproject_fields,
                 source="meta_project",
                 include_names=[
-                    "cost_effectiveness",
+                    "cost_effectiveness_kg",
                 ],
+                title_overrides={
+                    "cost_effectiveness_kg": "Cost effectiveness (US $/kg) (MYA)"
+                },
             )
         )
 
@@ -612,6 +612,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": partial(get_value_fk, None),
             },
             {
+                "id": "status",
+                "headerName": "Status",
+                "method": partial(get_value_fk, None),
+            },
+            {
                 "id": "cluster",
                 "headerName": "Cluster",
                 "column_width": self.COLUMN_WIDTH * 2,
@@ -738,7 +743,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def select_fields(
         fields, include_names=None, exclude_names=None, title_overrides=None
     ):
-        include_names = set(include_names or [])
+        include_names = include_names or []
         exclude_names = set(exclude_names or [])
         title_overrides = title_overrides or {}
 
@@ -748,9 +753,15 @@ class ProjectsInventoryReportWriter(BaseWriter):
             )
 
         result = []
+        if include_names:
+            fields_by_name = {field.name: field for field in fields}
+            for field_name in include_names:
+                field = fields_by_name.get(field_name)
+                title = title_overrides.get(field.name)
+                result.append((field, title) if title else field)
+            return result
+
         for field in fields:
-            if include_names and field.name not in include_names:
-                continue
             if exclude_names and field.name in exclude_names:
                 continue
 
@@ -1115,7 +1126,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return [
             {
                 "id": f"ods_odp__ods_substance_{idx}",
-                "headerName": f"ODS_Name{idx}",
+                "headerName": f"ODS_Name {idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project,
                     idx - 1,
@@ -1124,23 +1135,30 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": f"ods_odp__odp_{idx}",
-                "headerName": f"ODP{idx}",
+                "headerName": f"ODP_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.odp
                 ),
             },
             {
                 "id": f"ods_odp__phase_out_mt_{idx}",
-                "headerName": f"MT{idx}",
+                "headerName": f"MT_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.phase_out_mt
                 ),
             },
             {
                 "id": f"ods_odp__co2_mt_{idx}",
-                "headerName": f"CO2-eq{idx}",
+                "headerName": f"CO2_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.co2_mt
+                ),
+            },
+            {
+                "id": f"ods_odp__ods_replacement_text_{idx}",
+                "headerName": f"ODS_replacement_{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project, idx - 1, lambda ods_odp: ods_odp.ods_replacement_text
                 ),
             },
         ]
