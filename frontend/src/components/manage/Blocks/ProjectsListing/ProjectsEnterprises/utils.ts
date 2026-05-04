@@ -7,7 +7,7 @@ import {
   SetEnterpriseData,
 } from '../interfaces'
 
-import { find, get, isNil, isObject, keys, sumBy } from 'lodash'
+import { find, isNil, keys, sumBy } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = <T>(
@@ -177,16 +177,6 @@ export const getFieldErrors = (
     ...filteredErrors,
   }
 }
-
-export const getOptionLabel = (
-  data: any,
-  option: any,
-  displayedField: string = 'name',
-  identifierField: string = 'id',
-) =>
-  isObject(option)
-    ? get(option, [displayedField])
-    : find(data, { [identifierField]: option })?.[displayedField] || ''
 
 export const getEntityById = (data: any, id: number | null) =>
   find(data, (entry) => entry.id === id)

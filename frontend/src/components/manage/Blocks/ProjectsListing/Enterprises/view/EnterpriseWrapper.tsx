@@ -14,7 +14,7 @@ import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 import { Redirect, useParams } from 'wouter'
 
 const EnterpriseWrapper = () => {
-  const { canViewEnterprises, canEditEnterprise, canApproveEnterprise } =
+  const { canViewEnterprises, canEditEnterprise } =
     useContext(PermissionsContext)
 
   const { enterprise_id } = useParams<Record<string, string>>()
@@ -53,19 +53,18 @@ const EnterpriseWrapper = () => {
                   title="Cancel"
                   href="/projects-listing/enterprises"
                 />
-                {(canEditEnterprise || canApproveEnterprise) &&
-                  data.status !== 'Obsolete' && (
-                    <CustomLink
-                      href={`/projects-listing/enterprises/${enterprise_id}/edit`}
-                      className="border border-solid px-4 py-2 hover:border-primary"
-                      variant="contained"
-                      color="secondary"
-                      size="large"
-                      button
-                    >
-                      Edit enterprise
-                    </CustomLink>
-                  )}
+                {canEditEnterprise && (
+                  <CustomLink
+                    href={`/projects-listing/enterprises/${enterprise_id}/edit`}
+                    className="border border-solid border-secondary px-4 py-2 hover:border-primary shadow-none"
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    button
+                  >
+                    Edit enterprise
+                  </CustomLink>
+                )}
               </div>
             </div>
             <EnterpriseStatus status={data.status} />

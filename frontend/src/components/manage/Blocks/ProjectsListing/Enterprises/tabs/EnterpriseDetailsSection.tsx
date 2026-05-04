@@ -7,54 +7,37 @@ import {
   useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FieldErrorIndicator } from '../../HelperComponents'
 import {
   EnterpriseDateField,
   EnterpriseNumberField,
   EnterpriseSelectField,
   EnterpriseTextAreaField,
-} from '../FormHelperComponents'
-import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
-import { disabledClassName } from '../../constants'
+} from '../../ProjectsEnterprises/FormHelperComponents'
+import { EnterpriseDataProps } from '../../interfaces'
 import {
-  PEnterpriseDataProps,
-  PEnterpriseData,
-  EnterpriseDetails,
-  ProjectTypeApi,
-} from '../../interfaces'
+  detailsDateFields,
+  enterpriseFieldsMapping,
+} from '../../ProjectsEnterprises/constants'
 import { parseNumber } from '@ors/helpers'
 
 import { map } from 'lodash'
-import cx from 'classnames'
 
-const PEnterpriseDetailsSection = ({
-  enterpriseData,
-  setEnterpriseData,
-  projectData,
-  errors,
-}: PEnterpriseDataProps & { projectData: ProjectTypeApi }) => {
-  const { agencies, project_types } = useContext(ProjectsDataContext)
-  const { canEditProjectEnterprise } = useContext(PermissionsContext)
-  const isDisabled = !canEditProjectEnterprise
-
-  const { agency_id, project_type_id, project_end_date, meeting_id } =
-    projectData
-  const isMeetingDisabled = isDisabled || !!meeting_id
-
+const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
   const sectionIdentifier = 'details'
+
+  const { enterpriseData, setEnterpriseData, errors } = props
   const { details } = enterpriseData
 
+  const { agencies, project_types } = useContext(ProjectsDataContext)
   const selectFields = [
     {
       fieldName: 'agency',
       options: agencies,
-      isDisabled: isDisabled || !!agency_id,
     },
     {
       fieldName: 'project_type',
       options: project_types,
-      isDisabled: isDisabled || !!project_type_id,
     },
   ]
 
@@ -75,46 +58,33 @@ const PEnterpriseDetailsSection = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields, (field, index) => (
-          <EnterpriseSelectField<PEnterpriseData, EnterpriseDetails>
+          <EnterpriseSelectField
             key={index}
-            enterpriseData={details}
-            isDisabled={field.isDisabled}
             {...{
-              setEnterpriseData,
-              sectionIdentifier,
               field,
-              errors,
+              sectionIdentifier,
+              ...props,
             }}
           />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         {map(detailsDateFields.slice(0, 2), (field, index) => (
-          <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
+          <EnterpriseDateField
             key={index}
-            enterpriseData={details}
-            isDisabled={
-              field === 'planned_completion_date'
-                ? isDisabled || !!project_end_date
-                : isDisabled
-            }
             {...{
-              setEnterpriseData,
-              sectionIdentifier,
               field,
-              errors,
+              sectionIdentifier,
+              ...props,
             }}
           />
         ))}
-        <EnterpriseNumberField<PEnterpriseData, EnterpriseDetails>
+        <EnterpriseNumberField
           dataType="integer"
           field="project_duration"
-          enterpriseData={details}
           {...{
-            setEnterpriseData,
             sectionIdentifier,
-            isDisabled,
-            errors,
+            ...props,
           }}
         />
       </div>
@@ -126,39 +96,32 @@ const PEnterpriseDetailsSection = ({
               label={getMeetingNr(details?.meeting ?? undefined)?.toString()}
               options={useMeetingOptions()}
               onChange={handleChangeMeeting}
-              onClear={() => handleChangeMeeting()}
-              disabled={isMeetingDisabled}
+              onClear={handleChangeMeeting}
+              withClear={true}
               clearBtnClassName="right-1"
-              className={cx('!m-0 h-10 !py-1', {
-                [disabledClassName]: isMeetingDisabled,
-              })}
+              className="!m-0 h-10 !py-1"
             />
             <FieldErrorIndicator field="meeting" {...{ errors }} />
           </div>
         </div>
         {map(detailsDateFields.slice(2), (field, index) => (
-          <EnterpriseDateField<PEnterpriseData, EnterpriseDetails>
+          <EnterpriseDateField
             key={index}
-            enterpriseData={details}
-            isDisabled={field === 'date_of_approval' ? true : isDisabled}
+            isDisabled={field === 'date_of_approval'}
             {...{
-              setEnterpriseData,
-              sectionIdentifier,
               field,
-              errors,
+              sectionIdentifier,
+              ...props,
             }}
           />
         ))}
       </div>
       <div className="max-w-[41rem]">
-        <EnterpriseTextAreaField<PEnterpriseData, EnterpriseDetails>
-          enterpriseData={details}
+        <EnterpriseTextAreaField
           field="excom_provision"
           {...{
-            setEnterpriseData,
             sectionIdentifier,
-            isDisabled,
-            errors,
+            ...props,
           }}
         />
       </div>
@@ -166,4 +129,4 @@ const PEnterpriseDetailsSection = ({
   )
 }
 
-export default PEnterpriseDetailsSection
+export default EnterpriseDetailsSection

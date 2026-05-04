@@ -5,45 +5,37 @@ import Field from '@ors/components/manage/Form/Field'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { EnterpriseNumberField } from '../../ProjectsEnterprises/FormHelperComponents'
 import { FieldErrorIndicator, SubmitButton } from '../../HelperComponents'
-import { EnterpriseNumberField } from '../FormHelperComponents'
+import { getFieldDefaultProps } from '../../ProjectsEnterprises/utils'
 import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
   initialSubstanceDetailsFields,
   substanceDecimalFields,
   substanceFields,
-} from '../constants'
+} from '../../ProjectsEnterprises/constants'
+import { defaultProps } from '../../constants'
 import {
   EnterpriseSubstanceDetails,
-  PEnterpriseDataProps,
+  EnterpriseDataProps,
   OptionsType,
-  PEnterpriseData,
-  EnterpriseSubstanceFields,
 } from '../../interfaces'
-import {
-  defaultProps,
-  defaultPropsSimpleField,
-  disabledClassName,
-} from '../../constants'
 
 import { find, get, isObject, map, omit, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PEnterpriseSubstanceDetailsSection = ({
+const EnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   errors,
   odsOdpErrors,
-}: PEnterpriseDataProps & {
+}: EnterpriseDataProps & {
   odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const { substances, blends } = useContext(ProjectsDataContext)
-  const { canEditProjectEnterprise } = useContext(PermissionsContext)
-  const isDisabled = !canEditProjectEnterprise
 
   const sectionIdentifier = 'substance_fields'
   const sectionId = 'substance_details'
@@ -161,26 +153,18 @@ const PEnterpriseSubstanceDetailsSection = ({
         ? `blend_${substance.ods_blend}`
         : null
 
-  const getFieldDefaultProps = (isFieldDisabled: boolean) => ({
-    ...defaultPropsSimpleField,
-    className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-      [disabledClassName]: isFieldDisabled,
-    }),
-  })
-
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(substanceDecimalFields, (field, index) => (
-          <EnterpriseNumberField<PEnterpriseData, EnterpriseSubstanceFields>
+          <EnterpriseNumberField
             key={index}
             dataType="decimal"
-            enterpriseData={enterpriseData.substance_fields}
             {...{
+              enterpriseData,
               setEnterpriseData,
-              sectionIdentifier,
               field,
-              isDisabled,
+              sectionIdentifier,
               errors,
             }}
           />
@@ -200,7 +184,6 @@ const PEnterpriseSubstanceDetailsSection = ({
                     <Field
                       widget="autocomplete"
                       options={options}
-                      disabled={isDisabled}
                       value={getSubstanceValue(substance)}
                       onChange={(_, value) =>
                         handleChangeDropdownValues(value, index)
@@ -233,7 +216,6 @@ const PEnterpriseSubstanceDetailsSection = ({
                       <div className="flex items-center">
                         <FormattedNumberInput
                           id={field}
-                          disabled={isDisabled}
                           withoutDefaultValue={true}
                           value={
                             (substance[
@@ -244,7 +226,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                             handleChangeNumericValues(event, field, index)
                           }
                           {...omit(
-                            getFieldDefaultProps(isDisabled),
+                            getFieldDefaultProps(),
                             'containerClassName',
                           )}
                         />
@@ -260,7 +242,6 @@ const PEnterpriseSubstanceDetailsSection = ({
                       <div className="flex items-center">
                         <SimpleInput
                           id={field}
-                          disabled={isDisabled}
                           value={
                             (substance[
                               field as keyof EnterpriseSubstanceDetails
@@ -271,7 +252,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                             handleChangeTextValues(event, field, index)
                           }
                           type="text"
-                          {...getFieldDefaultProps(isDisabled)}
+                          {...getFieldDefaultProps()}
                         />
                         <FieldErrorIndicator
                           {...{ field }}
@@ -282,15 +263,13 @@ const PEnterpriseSubstanceDetailsSection = ({
                   ),
                 )}
               </>
-              {!isDisabled && (
-                <IoTrash
-                  className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                  size={16}
-                  onClick={() => {
-                    onRemoveSubstance(index)
-                  }}
-                />
-              )}
+              <IoTrash
+                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                size={16}
+                onClick={() => {
+                  onRemoveSubstance(index)
+                }}
+              />
             </div>
             {index !== substanceData.length - 1 && <Divider />}
           </span>
@@ -298,7 +277,6 @@ const PEnterpriseSubstanceDetailsSection = ({
       </div>
       <SubmitButton
         title="Add substance"
-        isDisabled={isDisabled}
         onSubmit={onAddSubstance}
         className={cx('h-8', { 'mt-6': substanceData.length > 0 })}
       />
@@ -306,4 +284,4 @@ const PEnterpriseSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterpriseSubstanceDetailsSection
+export default EnterpriseSubstanceDetailsSection

@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
 
@@ -9,12 +10,12 @@ import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
 
 const EnterprisesFilters = ({
-  enterpriseStatuses,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const defaultProps = {
     multiple: true,
@@ -67,7 +68,7 @@ const EnterprisesFilters = ({
       />
       <Field
         Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, enterpriseStatuses, 'status')}
+        options={getFilterOptions(filters, statuses, 'status')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const status = filters.status || []

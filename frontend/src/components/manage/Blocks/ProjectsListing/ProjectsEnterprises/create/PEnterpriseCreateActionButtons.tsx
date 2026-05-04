@@ -4,7 +4,7 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { handleErrors } from '../FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
+import { EnterpriseActionButtons, EnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
@@ -17,7 +17,7 @@ const PEnterpriseCreateActionButtons = ({
   setIsLoading,
   setErrors,
   setOtherErrors,
-}: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
+}: EnterpriseActionButtons & { enterpriseData: EnterpriseData }) => {
   const [_, setLocation] = useLocation()
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
   const { clearUpdatedFields } = useUpdatedFields()

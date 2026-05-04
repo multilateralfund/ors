@@ -3,12 +3,11 @@ import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import {
-  DateInput,
   FormattedNumberInput,
+  DateInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
-import { STYLE } from '../../Replenishment/Inputs/constants'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { EnterprisesCommonProps, SetEnterpriseData } from '../interfaces'
+import { STYLE } from '../../Replenishment/Inputs/constants'
 import { enterpriseFieldsMapping } from './constants'
 import { onTextareaFocus } from '../utils'
 import {
@@ -24,6 +23,11 @@ import {
   defaultPropsSimpleField,
   textAreaClassname,
 } from '../constants'
+import {
+  EnterpriseData,
+  EnterprisesCommonProps,
+  SetEnterpriseData,
+} from '../interfaces'
 
 import { TextareaAutosize } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
@@ -31,32 +35,34 @@ import { omit } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-type PEnterpriseFieldsProps<T, K> = EnterprisesCommonProps & {
-  enterpriseData: K
-  setEnterpriseData: SetEnterpriseData<T>
+type EnterpriseFieldsProps = EnterprisesCommonProps & {
+  enterpriseData: EnterpriseData
+  setEnterpriseData: SetEnterpriseData<EnterpriseData>
   field: string
-  sectionIdentifier?: keyof T
-  isDisabled: boolean
+  sectionIdentifier: keyof EnterpriseData
+  isDisabled?: boolean
 }
 
-export const EnterpriseTextField = <T, K>({
+export const EnterpriseTextField = ({
   enterpriseData,
   setEnterpriseData,
   field,
   sectionIdentifier,
   isDisabled,
   errors,
-}: PEnterpriseFieldsProps<T, K>) => (
+}: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
     <div className="flex items-center">
       <SimpleInput
         id={field}
         disabled={isDisabled}
-        value={enterpriseData[field as keyof K]}
         onFocus={onTextareaFocus}
+        value={
+          (enterpriseData[sectionIdentifier] as Record<string, any>)[field]
+        }
         onChange={(event) =>
-          handleChangeTextValues<T>(
+          handleChangeTextValues<EnterpriseData>(
             field,
             setEnterpriseData,
             event,
@@ -75,7 +81,7 @@ export const EnterpriseTextField = <T, K>({
   </div>
 )
 
-export const EnterpriseNumberField = <T, K>({
+export const EnterpriseNumberField = ({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -84,7 +90,7 @@ export const EnterpriseNumberField = <T, K>({
   sectionIdentifier,
   isDisabled,
   errors,
-}: PEnterpriseFieldsProps<T, K> & { dataType: string; prefix?: string }) => {
+}: EnterpriseFieldsProps & { dataType: string; prefix?: string }) => {
   const isInteger = dataType === 'integer'
 
   return (
@@ -97,16 +103,20 @@ export const EnterpriseNumberField = <T, K>({
           withoutDefaultValue={true}
           decimalDigits={isInteger ? 0 : 2}
           prefix={prefix}
-          value={(enterpriseData[field as keyof K] as string) ?? ''}
+          value={
+            ((enterpriseData[sectionIdentifier] as Record<string, any>)[
+              field
+            ] as string) ?? ''
+          }
           onChange={(event) =>
             isInteger
-              ? handleChangeIntegerValues<T>(
+              ? handleChangeIntegerValues<EnterpriseData>(
                   field,
                   setEnterpriseData,
                   event,
                   sectionIdentifier,
                 )
-              : handleChangeDecimalValues<T>(
+              : handleChangeDecimalValues<EnterpriseData>(
                   field,
                   setEnterpriseData,
                   event,
@@ -121,7 +131,7 @@ export const EnterpriseNumberField = <T, K>({
   )
 }
 
-export const EnterpriseSelectField = <T, K>({
+export const EnterpriseSelectField = ({
   enterpriseData,
   setEnterpriseData,
   field,
@@ -129,11 +139,11 @@ export const EnterpriseSelectField = <T, K>({
   isDisabled,
   errors,
 }: EnterprisesCommonProps & {
-  enterpriseData: K
-  setEnterpriseData: SetEnterpriseData<T>
+  enterpriseData: EnterpriseData
+  setEnterpriseData: SetEnterpriseData<EnterpriseData>
   field: { fieldName: string; options: any }
-  sectionIdentifier?: keyof T
-  isDisabled: boolean
+  sectionIdentifier: keyof EnterpriseData
+  isDisabled?: boolean
 }) => {
   const { fieldName, options } = field
 
@@ -145,9 +155,13 @@ export const EnterpriseSelectField = <T, K>({
           widget="autocomplete"
           disabled={isDisabled}
           options={options}
-          value={enterpriseData[fieldName as keyof K]}
+          value={
+            (enterpriseData[sectionIdentifier] as Record<string, any>)[
+              fieldName
+            ]
+          }
           onChange={(_, value) =>
-            handleChangeSelectValues<T>(
+            handleChangeSelectValues<EnterpriseData>(
               fieldName,
               setEnterpriseData,
               value,
@@ -167,23 +181,27 @@ export const EnterpriseSelectField = <T, K>({
   )
 }
 
-export const EnterpriseTextAreaField = <T, K>({
+export const EnterpriseTextAreaField = ({
   enterpriseData,
   setEnterpriseData,
   field,
   sectionIdentifier,
   isDisabled,
   errors,
-}: PEnterpriseFieldsProps<T, K>) => (
+}: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]} (max 500 characters)</Label>
     <div className="flex items-center">
       <TextareaAutosize
         disabled={isDisabled}
-        value={enterpriseData[field as keyof K] as string}
         onFocus={onTextareaFocus}
+        value={
+          (enterpriseData[sectionIdentifier] as Record<string, any>)[
+            field
+          ] as string
+        }
         onChange={(event) =>
-          handleChangeTextValues<T>(
+          handleChangeTextValues<EnterpriseData>(
             field,
             setEnterpriseData,
             event,
@@ -200,24 +218,28 @@ export const EnterpriseTextAreaField = <T, K>({
   </div>
 )
 
-export const EnterpriseDateField = <T, K>({
+export const EnterpriseDateField = ({
   enterpriseData,
   setEnterpriseData,
   field,
   sectionIdentifier,
   isDisabled,
   errors,
-}: PEnterpriseFieldsProps<T, K>) => (
+}: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
     <div className="flex items-center">
       <DateInput
         id={field}
-        value={enterpriseData[field as keyof K] as string}
         disabled={isDisabled}
+        value={
+          (enterpriseData[sectionIdentifier] as Record<string, any>)[
+            field
+          ] as string
+        }
         formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
         onChange={(event) =>
-          handleChangeDateValues<T>(
+          handleChangeDateValues<EnterpriseData>(
             field,
             setEnterpriseData,
             event,

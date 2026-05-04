@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import PEnterpriseHeader from '../create/PEnterpriseHeader'
 import PEnterpriseCreate from '../create/PEnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { getFormattedDecimalValue } from '../../utils'
 import {
-  PEnterpriseData,
+  EnterpriseData,
   PEnterpriseType,
   ProjectTypeApi,
 } from '../../interfaces'
@@ -29,9 +29,9 @@ const PEnterpriseEdit = ({
 }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const enterpriseStatuses = useGetEnterpriseStatuses()
+  const { statuses } = useContext(EnterprisesDataContext)
 
-  const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
+  const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
     overview: { ...initialOverviewFields, id: null },
     details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
@@ -53,7 +53,7 @@ const PEnterpriseEdit = ({
       overview: {
         id: enterpriseObj.id,
         status: enterpriseObj.status,
-        linkStatus: enterprise.status,
+        status: enterprise.status,
         name: enterpriseObj.name,
         country: enterpriseObj.country,
         location: enterpriseObj.location,
@@ -145,10 +145,10 @@ const PEnterpriseEdit = ({
           enterpriseData,
           setEnterpriseData,
           enterprise,
-          enterpriseStatuses,
           projectData,
           errors,
         }}
+        enterpriseStatuses={statuses}
       />
       <ProjectFormFooter
         id={enterpriseId}

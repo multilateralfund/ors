@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
@@ -9,18 +10,18 @@ import { formatNumberColumns } from '../../utils'
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
 import { find, isNil } from 'lodash'
-import dayjs from 'dayjs'
 import {
   ICellRendererParams,
   ValueGetterParams,
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
+const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
   const { canEditEnterprise } = useContext(PermissionsContext)
 
   const { countries, agencies, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const getFieldValue = (
     params: ValueGetterParams | ITooltipParams,
@@ -38,22 +39,21 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
       ...(canEditEnterprise
         ? [
             {
-              minWidth: 80,
-              maxWidth: 80,
+              minWidth: 60,
+              maxWidth: 60,
               resizable: false,
               sortable: false,
-              cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
+              cellClass: 'ag-text-center ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center gap-1 p-2">
                   <Link
-                    className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/enterprises/${props.data.id}/edit`}
                   >
                     <FiEdit size={16} />
                   </Link>
                   /
                   <IoTrash
-                    size={18}
+                    size={20}
                     className="cursor-pointer fill-gray-500"
                     onClick={() => {
                       setIdToDelete(props.data.id)
@@ -70,14 +70,12 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
         tooltipField: 'code',
         minWidth: 100,
         cellRenderer: (props: ICellRendererParams) => (
-          <div className="flex items-center justify-center p-2">
-            <Link
-              className="overflow-hidden truncate whitespace-nowrap"
-              href={`/projects-listing/enterprises/${props.data.id}`}
-            >
-              <span>{props.value}</span>
-            </Link>
-          </div>
+          <Link
+            className="overflow-hidden truncate whitespace-nowrap"
+            href={`/projects-listing/enterprises/${props.data.id}`}
+          >
+            <span>{props.value}</span>
+          </Link>
         ),
       },
       {
@@ -97,6 +95,16 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
           getFieldValue(params, countries, 'country'),
       },
       {
+        headerName: enterpriseFieldsMapping.city,
+        field: 'city',
+        tooltipField: 'city',
+      },
+      {
+        headerName: enterpriseFieldsMapping.location,
+        field: 'location',
+        tooltipField: 'location',
+      },
+      {
         headerName: enterpriseFieldsMapping.agency,
         field: 'agency__name',
         valueGetter: (params: ValueGetterParams) =>
@@ -105,27 +113,17 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
           getFieldValue(params, agencies, 'agency'),
       },
       {
+        headerName: enterpriseFieldsMapping.stage,
+        field: 'stage',
+        tooltipField: 'stage',
+      },
+      {
         headerName: enterpriseFieldsMapping.project_type,
         field: 'project_type',
         valueGetter: (params: ValueGetterParams) =>
           getFieldValue(params, project_types, 'project_type'),
         tooltipValueGetter: (params: ITooltipParams) =>
           getFieldValue(params, project_types, 'project_type'),
-      },
-      {
-        headerName: enterpriseFieldsMapping.location,
-        field: 'location',
-        tooltipField: 'location',
-      },
-      {
-        headerName: enterpriseFieldsMapping.city,
-        field: 'city',
-        tooltipField: 'city',
-      },
-      {
-        headerName: enterpriseFieldsMapping.stage,
-        field: 'stage',
-        tooltipField: 'stage',
       },
       {
         headerName: enterpriseFieldsMapping.sector,
@@ -144,9 +142,9 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
           getFieldValue(params, subsectors, 'subsector'),
       },
       {
-        headerName: enterpriseFieldsMapping.application,
-        field: 'application',
-        tooltipField: 'application',
+        headerName: enterpriseFieldsMapping.meeting,
+        field: 'meeting',
+        tooltipField: 'meeting',
       },
       {
         headerName: enterpriseFieldsMapping.local_ownership,
@@ -165,26 +163,12 @@ const getColumnDefs = (setIdToDelete: (idToDelete: number | null) => void) => {
           getDecimalValue(params, 'export_to_non_a5'),
       },
       {
-        headerName: enterpriseFieldsMapping.revision,
-        field: 'revision',
-        tooltipField: 'revision',
-      },
-      {
-        headerName: enterpriseFieldsMapping.date_of_revision,
-        field: 'date_of_revision',
-        valueGetter: (params: ValueGetterParams) => {
-          const value = params.data.date_of_revision
-          return value ? dayjs(value).format('DD/MM/YYYY') : ''
-        },
-        tooltipValueGetter: (params: ITooltipParams) => {
-          const value = params.data.date_of_revision
-          return value ? dayjs(value).format('DD/MM/YYYY') : ''
-        },
-      },
-      {
-        headerName: 'Status',
+        headerName: enterpriseFieldsMapping.status,
         field: 'status',
-        tooltipField: 'status',
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, statuses, 'status'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, statuses, 'status'),
         minWidth: 120,
       },
     ],

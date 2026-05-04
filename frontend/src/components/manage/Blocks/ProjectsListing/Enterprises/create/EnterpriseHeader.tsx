@@ -8,8 +8,8 @@ import EnterpriseCancelButton from './EnterpriseCancelButton'
 import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import { PageTitle } from '../../HelperComponents'
 import {
+  EnterpriseData,
   EnterpriseHeaderProps,
-  EnterpriseOverview,
   EnterpriseType,
 } from '../../interfaces'
 
@@ -22,7 +22,7 @@ const EnterpriseHeader = ({
   ...rest
 }: EnterpriseHeaderProps & {
   mode: string
-  enterpriseData: EnterpriseOverview
+  enterpriseData: EnterpriseData
   enterprise?: EnterpriseType
 }) => {
   const [enterpriseName, setEnterpriseName] = useState(enterprise?.name ?? '')

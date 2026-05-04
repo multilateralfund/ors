@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
@@ -8,13 +9,13 @@ import { Typography } from '@mui/material'
 import { map } from 'lodash'
 
 const EnterprisesFiltersSelectedOpts = ({
-  enterpriseStatuses,
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const initialParams = {
     country_id: [],
@@ -32,7 +33,7 @@ const EnterprisesFiltersSelectedOpts = ({
       entityIdentifier: 'agency_id',
     },
     {
-      entities: formatEntity(enterpriseStatuses),
+      entities: formatEntity(statuses),
       entityIdentifier: 'status',
     },
   ]

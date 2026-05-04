@@ -8,7 +8,7 @@ import PEnterpriseCreateActionButtons from './PEnterpriseCreateActionButtons'
 import { PageTitle } from '../../HelperComponents'
 import { EnterpriseStatus } from '../FormHelperComponents'
 import {
-  PEnterpriseData,
+  EnterpriseData,
   EnterpriseHeaderProps,
   PEnterpriseType,
 } from '../../interfaces'
@@ -22,7 +22,7 @@ const PEnterpriseHeader = ({
   ...rest
 }: EnterpriseHeaderProps & {
   mode: string
-  enterpriseData: PEnterpriseData
+  enterpriseData: EnterpriseData
   enterprise?: PEnterpriseType
 }) => {
   const [enterpriseName, setEnterpriseName] = useState(

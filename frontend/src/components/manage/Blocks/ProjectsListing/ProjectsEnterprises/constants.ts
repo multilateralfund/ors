@@ -1,5 +1,3 @@
-import dayjs from 'dayjs'
-
 export const textFields = ['name', 'location', 'city', 'stage', 'application']
 export const remarksFields = ['agency_remarks', 'secretariat_remarks']
 export const dateFields = ['date_of_revision']
@@ -78,7 +76,8 @@ export const initialOverviewFields = {
   local_ownership: null,
   export_to_non_a5: null,
   revision: null,
-  date_of_revision: dayjs().format('YYYY-MM-DD'),
+  date_of_revision: null,
+  status: null,
 }
 
 export const initialDetailsFields = {
@@ -89,7 +88,7 @@ export const initialDetailsFields = {
   project_duration: null,
   meeting: null,
   date_of_approval: null,
-  date_of_report: dayjs().format('YYYY-MM-DD'),
+  date_of_report: null,
   excom_provision: '',
 }
 

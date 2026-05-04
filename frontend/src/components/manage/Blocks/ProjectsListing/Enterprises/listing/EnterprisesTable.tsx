@@ -25,7 +25,7 @@ const EnterprisesTable = ({
 
   const handleDeleteEnterprise = async () => {
     try {
-      await api(`api/project-enterprise/${idToDelete}`, {
+      await api(`api/enterprises/${idToDelete}`, {
         method: 'DELETE',
       })
 
@@ -34,8 +34,9 @@ const EnterprisesTable = ({
       enqueueSnackbar(<>Could not delete enterprise. Please try again.</>, {
         variant: 'error',
       })
+    } finally {
+      setIdToDelete(null)
     }
-    setIdToDelete(null)
   }
 
   return (

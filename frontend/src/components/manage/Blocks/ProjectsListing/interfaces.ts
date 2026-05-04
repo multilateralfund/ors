@@ -378,8 +378,8 @@ export type PEnterpriseType = EnterpriseDetails &
     ods_odp: EnterpriseSubstanceDetails[]
   }
 
-export interface PEnterpriseData {
-  overview: EnterpriseOverview & { id: number | null; status?: string }
+export interface EnterpriseData {
+  overview: EnterpriseOverview
   details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields
@@ -387,26 +387,17 @@ export interface PEnterpriseData {
   remarks: EnterpriseRemarks
 }
 
-export type PEnterpriseDataType = {
-  enterpriseData: PEnterpriseData
-  setEnterpriseData: SetEnterpriseData<PEnterpriseData>
-  enterprise?: PEnterpriseType
-}
-
 export type EnterpriseDataType = {
-  enterpriseData: EnterpriseOverview
-  setEnterpriseData: SetEnterpriseData<EnterpriseOverview>
-  enterprise?: EnterpriseType
+  enterpriseData: EnterpriseData
+  setEnterpriseData: SetEnterpriseData<EnterpriseData>
+  enterprise?: PEnterpriseType
 }
 
 export type EnterprisesCommonProps = {
   errors: { [key: string]: string[] }
 }
 
-export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
-
-export type EnterpriseDataProps = EnterpriseDataType &
-  EnterprisesCommonProps & { mode: string }
+export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
 export interface EnterpriseOverview {
   name: string
@@ -421,7 +412,7 @@ export interface EnterpriseOverview {
   export_to_non_a5: string | null
   revision: string | null
   date_of_revision: string | null
-  linkStatus?: string
+  status: string
 }
 
 export interface EnterpriseDetails {

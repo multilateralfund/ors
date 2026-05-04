@@ -9,7 +9,7 @@ const DeleteEnterpriseModal = ({
   onAction,
 }: {
   idToDelete: number | null
-  setIdToDelete: (isOpen: number | null) => void
+  setIdToDelete: (id: number | null) => void
   onAction: () => Promise<void>
 }) => {
   const handleCloseModal = () => {
@@ -18,17 +18,17 @@ const DeleteEnterpriseModal = ({
 
   return (
     <Modal
-      aria-labelledby="delete-project-enterprise-modal"
+      aria-labelledby="delete-enterprise-modal"
       open={!!idToDelete}
       onClose={handleCloseModal}
       keepMounted
     >
       <Box className="flex w-full max-w-[90%] flex-col absolute-center md:max-w-lg">
         <Typography className="mb-4 text-[20px] font-medium text-black">
-          Delete project enterprise
+          Delete enterprise
         </Typography>
         <Typography className="mb-4 text-lg text-primary">
-          Are you sure you want to delete this project enterprise?
+          Are you sure you want to delete this enterprise?
         </Typography>
         <div className="mr-3 flex flex-wrap justify-end gap-3">
           <CustomLink
@@ -39,7 +39,7 @@ const DeleteEnterpriseModal = ({
             variant="contained"
             button
           >
-            Delete project enterprise
+            Delete enterprise
           </CustomLink>
           <CancelButton onClick={handleCloseModal} />
         </div>

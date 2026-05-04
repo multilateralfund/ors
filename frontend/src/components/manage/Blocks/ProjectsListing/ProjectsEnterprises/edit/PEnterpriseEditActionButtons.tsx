@@ -7,7 +7,7 @@ import { handleErrors } from '../FormHelperComponents'
 import { dropDownClassName, enabledButtonClassname } from '../../constants'
 import {
   EnterpriseActionButtons,
-  PEnterpriseData,
+  EnterpriseData,
   PEnterpriseType,
 } from '../../interfaces'
 import { api } from '@ors/helpers'
@@ -27,7 +27,7 @@ const PEnterpriseEditActionButtons = ({
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons & {
-  enterpriseData: PEnterpriseData
+  enterpriseData: EnterpriseData
   enterprise?: PEnterpriseType
   setEnterpriseName: (name: string) => void
 }) => {
@@ -62,7 +62,7 @@ const PEnterpriseEditActionButtons = ({
       const data = {
         project: project_id,
         enterprise: omit(overview, ['status', 'linkStatus']),
-        status: overview.linkStatus,
+        status: overview.status,
         ods_odp: substance_details,
         ...details,
         ...substance_fields,
