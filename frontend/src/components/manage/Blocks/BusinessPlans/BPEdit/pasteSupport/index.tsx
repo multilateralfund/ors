@@ -58,6 +58,19 @@ function removeEmptyRows(matrix: string[][]) {
   return matrix.filter((r) => r.filter((c) => !!normalizeCell(c)).length)
 }
 
+function extractLangFromHTML(html: string): string | null {
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    return (
+      doc.documentElement.getAttribute('lang') ||
+      doc.body.getAttribute('lang') ||
+      null
+    )
+  } catch {
+    return null
+  }
+}
+
 function parsePastedHTML(html: string) {
   const result: any = []
 
@@ -79,8 +92,9 @@ function parsePastedHTML(html: string) {
 export async function readPastedTableFromNavigator(
   throwError: EnqueueSnackbar,
   isMultiple: boolean,
-) {
+): Promise<{ table: any[][], sourceLang: string | null }> {
   let result: any[][] = []
+  let sourceLang: string | null = null
   let canceled = false
   try {
     const pasteData = await navigator.clipboard.read()
@@ -97,6 +111,11 @@ export async function readPastedTableFromNavigator(
     console.log('[paste] raw htmlContent:', htmlContent)
     console.log('[paste] raw textContent:', textContent)
 
+    if (htmlContent) {
+      sourceLang = extractLangFromHTML(htmlContent)
+      console.log('[paste] detected sourceLang from clipboard HTML:', sourceLang)
+    }
+
     const pastedTable = !!htmlContent
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
@@ -109,7 +128,7 @@ export async function readPastedTableFromNavigator(
         `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
         { variant: 'error' },
       )
-      return []
+      return { table: [], sourceLang: null }
     }
 
     // For multi-column paste, only remove empty rows and leave all columns intact.
@@ -148,5 +167,5 @@ export async function readPastedTableFromNavigator(
       },
     )
   }
-  return result
+  return { table: result, sourceLang }
 }
