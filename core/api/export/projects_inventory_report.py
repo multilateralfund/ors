@@ -38,15 +38,15 @@ from core.models.project_metadata import ProjectField
 MIN_PROJECT_VERSION = 3
 
 
-def trf_or_adj(project):
+def trf_or_adj(project: Project | None):
     if project:
-        return project.status.name == "Transferred" or project.adjustment is True
+        return project.adjustment or project.fund_transferred or project.psc_transferred
     return None
 
 
-def not_trf_or_adj(project):
-    if project:
-        return project.status.name != "Transferred" and project.adjustment is False
+def not_trf_or_adj(project: Project | None):
+    if project and not project.adjustment:
+        return not (project.fund_transferred or project.psc_transferred)
     return None
 
 
@@ -110,16 +110,21 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "actual_fund",
                     "headerName": "Actual funds",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self._p_actual_fund(project),
                 },
                 {
                     "id": "actual_psc",
                     "headerName": "Actual PSC",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self._p_actual_psc(project),
                 },
                 {
                     "id": "apr_funds_disbursed",
                     "headerName": "Total Funds Disbursed",
+                    "type": "number",
                     "align": "right",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "funds_disbursed", None
@@ -128,6 +133,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "apr_support_cost_disbursed",
                     "headerName": "Total Support Costs Disbursed",
+                    "type": "number",
                     "align": "right",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "support_cost_disbursed", None
@@ -136,6 +142,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "interest",
                     "headerName": "Interest",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self.calc_sum_interest(project),
                 },
             ]
@@ -504,7 +512,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         for project in data:
             self.sheet.append(
                 [
-                    self.get_cell_value(project, header)
+                    self._make_record_cell(project, header)
                     for header in self.headers.values()
                 ]
             )
@@ -523,12 +531,31 @@ class ProjectsInventoryReportWriter(BaseWriter):
             value = getattr(project, header["id"], None)
 
         if header_type == "number":
-            return float(value or 0)
+            return float(value or 0) or None
         if header_type == "int":
-            return int(value or 0)
+            return int(value or 0) or None
         if header_type == "bool":
             return "Yes" if value else "No"
         return value or ""
+
+    def _make_record_cell(self, project, header):
+        value = self.get_cell_value(project, header)
+
+        if value is None:
+            return value
+
+        cell_format = header.get("cell_format")
+        align = header.get("align")
+
+        if not cell_format and align != "right":
+            return value
+
+        cell = WriteOnlyCell(self.sheet, value=value)
+        if cell_format:
+            cell.number_format = cell_format
+        elif align == "right":
+            cell.number_format = "###,###,##0.00#############"
+        return cell
 
     def _make_header_cell(self, value, comment=None):
         cell = WriteOnlyCell(self.sheet, value=value)
@@ -840,7 +867,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             result.append(header)
         return result
 
-    def get_version(self, p, version):
+    def get_version(self, p, version) -> Project | None:
         key = (p.final_version.id, version)
         return self.version_map.get(key)
 
@@ -857,6 +884,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None:
             return None
 
+        if project.adjustment:
+            return project.total_fund or 0
+
         return project.fund_transferred or 0
 
     def _p_psc_approved(self, project):
@@ -869,13 +899,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None:
             return None
 
+        if project.adjustment:
+            return project.support_cost_psc or 0
+
         return project.psc_transferred or 0
 
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
             tf = project.fund_transferred or 0
             result = (project.total_fund or 0) + tf
-            return result
+            return result or 0
         return project.total_fund or 0
 
     def _p_actual_psc(self, project):
@@ -989,8 +1022,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"funds_approved_v{version}",
                 "headerName": f"Project funding meeting {idx}",
-                "method": lambda project, _: self._p_fund_approved(
-                    self.get_version(project, version)
+                "method": lambda project, _: (
+                    self._p_fund_approved(self.get_version(project, version))
+                    if not_trf_or_adj(self.get_version(project, version))
+                    else None
                 ),
                 "type": "number",
                 "align": "right",
@@ -1000,6 +1035,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"PSC meeting {idx}",
                 "method": lambda project, _: (
                     self._p_psc_approved(self.get_version(project, version))
+                    if not_trf_or_adj(self.get_version(project, version))
+                    else None
                 ),
                 "type": "number",
                 "align": "right",
@@ -1009,6 +1046,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Meeting Approved {idx}",
                 "method": lambda project, _: (
                     self._p_meeting_approved(self.get_version(project, version))
+                    if not_trf_or_adj(self.get_version(project, version))
+                    else None
                 ),
             },
             {
@@ -1017,7 +1056,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "type": "date",
                 "method": lambda project, _: (
                     self.get_version(project, version).date_approved
-                    if self.get_version(project, version)
+                    if not_trf_or_adj(self.get_version(project, version))
                     else None
                 ),
             },

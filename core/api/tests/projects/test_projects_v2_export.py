@@ -442,12 +442,15 @@ class TestProjectV2ExportXLSX(BaseTest):
             2: {"fund": 120, "psc": 12, "meeting": 204, "date": date(2024, 4, 15)},
             3: {"fund": 140, "psc": 14, "meeting": 205, "date": date(2024, 5, 15)},
         }
+        currency_format = "###,###,##0.00#############"
         for idx, values in expected.items():
-            assert (
-                sheet[f"{headers[f'Project funding meeting {idx}']}{row}"].value
-                == values["fund"]
-            )
-            assert sheet[f"{headers[f'PSC meeting {idx}']}{row}"].value == values["psc"]
+            fund_cell = sheet[f"{headers[f'Project funding meeting {idx}']}{row}"]
+            psc_cell = sheet[f"{headers[f'PSC meeting {idx}']}{row}"]
+
+            assert fund_cell.value == values["fund"]
+            assert fund_cell.number_format == currency_format
+            assert psc_cell.value == values["psc"]
+            assert psc_cell.number_format == currency_format
             assert (
                 sheet[f"{headers[f'Meeting Approved {idx}']}{row}"].value
                 == values["meeting"]
@@ -514,19 +517,19 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert row is not None
 
         expected = {
-            1: {"fund": 7, "psc": 1, "meeting": 204, "date": date(2024, 4, 15)},
-            2: {"fund": 8, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
-            3: {"fund": 9, "psc": 3, "meeting": 206, "date": date(2024, 6, 15)},
+            1: {"fund": 120, "psc": 12, "meeting": 204, "date": date(2024, 4, 15)},
+            2: {"fund": 140, "psc": 14, "meeting": 205, "date": date(2024, 5, 15)},
+            3: {"fund": 160, "psc": 16, "meeting": 206, "date": date(2024, 6, 15)},
         }
+        currency_format = "###,###,##0.00#############"
         for idx, values in expected.items():
-            assert (
-                sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"].value
-                == values["fund"]
-            )
-            assert (
-                sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"].value
-                == values["psc"]
-            )
+            fund_cell = sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"]
+            psc_cell = sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"]
+
+            assert fund_cell.value == values["fund"]
+            assert fund_cell.number_format == currency_format
+            assert psc_cell.value == values["psc"]
+            assert psc_cell.number_format == currency_format
             assert (
                 sheet[f"{headers[f'Adjustments Meeting {idx}']}{row}"].value
                 == values["meeting"]
