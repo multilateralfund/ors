@@ -6,21 +6,22 @@ import { readPastedTableFromNavigator } from '@ors/components/manage/Blocks/Busi
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import { find, indexOf, map } from 'lodash'
 
-const decimalSeparator = Intl.NumberFormat(navigator.language)
-  .format(1.1)
-  .replaceAll('1', '')
-const thousandSeparator = Intl.NumberFormat(navigator.language)
-  .format(1111)
-  .replaceAll('1', '')
-
-function cleanValue(value: string) {
+// cleanValue uses the separators derived from the source locale (Excel's lang
+// attribute from clipboard HTML, or browser locale as fallback) to normalize
+// numbers to dot-decimal.
+// A date guard prevents date strings from being corrupted by separator stripping
+// (e.g. European locale has "." as thousands separator, which would strip dots
+// from "01.01.2022", turning it into "01012022").
+function cleanValue(value: string, decimalSep: string, thousandSep: string) {
   if (value == null) return value
   const toParse = value.trim().split('$').reverse()[0].trim()
+  // Guard date-like strings (e.g. "01.01.2022", "31/01/2022", "01-01-2022")
+  if (/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{2,4}$/.test(toParse)) return toParse
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
     return toParse
-      .replaceAll(thousandSeparator, '')
-      .replace(decimalSeparator, '.')
+      .replaceAll(thousandSep, '')
+      .replace(decimalSep, '.')
   }
   return value
 }
@@ -65,10 +66,14 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
     setPasting(true)
     let pastedTable: any[][] = []
     try {
-      pastedTable = await readPastedTableFromNavigator(
+      const pasteResult = await readPastedTableFromNavigator(
         enqueueSnackbar,
         isMultiple,
       )
+      pastedTable = pasteResult.table
+      const locale = pasteResult.sourceLang ?? navigator.language
+      const decimalSep = Intl.NumberFormat(locale).format(1.1).replaceAll('1', '')
+      const thousandSep = Intl.NumberFormat(locale).format(1111).replaceAll('1', '')
 
       const newValues: Record<string, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
@@ -172,7 +177,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                     return
                   }
 
-                  mutator(nextForm[i], cleanValue(value), crtFieldObj)
+                  mutator(nextForm[i], cleanValue(value, decimalSep, thousandSep), crtFieldObj)
                   numColsInserted++
                 })
 
@@ -193,7 +198,7 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
             if (pendingIds.has(rowId)) {
               nextForm[i] = { ...nextForm[i] }
-              mutator(nextForm[i], cleanValue(newValues[rowId][0]))
+              mutator(nextForm[i], cleanValue(newValues[rowId][0], decimalSep, thousandSep))
               pendingIds.delete(rowId)
               numInserted++
             }
