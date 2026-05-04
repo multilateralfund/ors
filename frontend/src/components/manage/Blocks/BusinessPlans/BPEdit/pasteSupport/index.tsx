@@ -128,7 +128,7 @@ export async function readPastedTableFromNavigator(
         `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
         { variant: 'error' },
       )
-      return { table: [], sourceLang: null }
+      return { table: [], sourceLang }
     }
 
     // For multi-column paste, only remove empty rows and leave all columns intact.
