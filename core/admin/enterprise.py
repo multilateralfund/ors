@@ -29,8 +29,8 @@ class EnterpriseAdmin(admin.ModelAdmin):
         "code",
     ]
     list_display = [
-        "legacy_code",
         "code",
+        "legacy_code",
         "name",
         "country",
         "agency",

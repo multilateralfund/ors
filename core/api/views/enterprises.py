@@ -51,7 +51,7 @@ class EnterpriseViewSet(
         "status",
     ]
     model = Enterprise
-    search_fields = ["code", "name"]
+    search_fields = ["code", "legacy_code", "name", "city", "location", "stage"]
     serializer_class = EnterpriseSerializer
 
     def filter_permissions_queryset(self, queryset):
