@@ -53,6 +53,7 @@ class EnterpriseFilter(filters.FilterSet):
         queryset=ProjectType.objects.all(),
         widget=CSVWidget,
     )
+
     class Meta:
         model = Enterprise
         fields = [

@@ -163,7 +163,9 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
         return ProjectSubSector.objects.find_by_name_and_sector(name, sector_id)
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = (
+            super().get_queryset().prefetch_related("sectors", "sectors__subsectors")
+        )
         try:
             sector_id = int(self.request.query_params.get("sector_id", ""))
         except (ValueError, TypeError):

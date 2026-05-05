@@ -59,6 +59,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
         ):
             queryset = queryset.filter(id=user.country_id)
 
+        queryset = queryset.prefetch_related("parent")
         return queryset.order_by("name")
 
     @extend_schema(

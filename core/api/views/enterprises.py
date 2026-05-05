@@ -71,7 +71,9 @@ class EnterpriseViewSet(
         return queryset
 
     def get_queryset(self):
-        queryset = Enterprise.objects.all()
+        queryset = Enterprise.objects.all().prefetch_related(
+            "ods_odp",
+        )
         queryset = self.filter_permissions_queryset(queryset)
         queryset = queryset.select_related("country")
         return queryset
