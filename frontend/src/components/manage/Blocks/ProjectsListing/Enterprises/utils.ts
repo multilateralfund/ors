@@ -155,9 +155,8 @@ export const getFieldDefaultProps = (isFieldDisabled: boolean = false) => {
 export const getFieldErrors = (
   data: any,
   errors: { [key: string]: string[] },
-  isOnlyEditValidation: boolean = false,
 ) => {
-  const requiredFields = isOnlyEditValidation ? ['id', 'name'] : ['name']
+  const requiredFields = ['name', 'country']
 
   const fields = keys(data)
   const filteredErrors = Object.fromEntries(

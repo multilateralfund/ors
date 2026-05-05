@@ -1,14 +1,14 @@
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
-import { viewColumnsClassName } from '../../constants'
 import { enterpriseFieldsMapping } from '../constants'
-import { PEnterpriseType } from '../../interfaces'
+import { viewColumnsClassName } from '../../constants'
+import { EnterpriseType } from '../../interfaces'
 
 import { replace } from 'lodash'
 
-const PEnterpriseFundingDetailsSection = ({
+const EnterpriseFundingDetailsSection = ({
   enterprise,
 }: {
-  enterprise: PEnterpriseType
+  enterprise: EnterpriseType
 }) => {
   const formatFieldName = (fieldName: string) =>
     replace(fieldName, ' (computed)', '')
@@ -85,4 +85,4 @@ const PEnterpriseFundingDetailsSection = ({
   )
 }
 
-export default PEnterpriseFundingDetailsSection
+export default EnterpriseFundingDetailsSection

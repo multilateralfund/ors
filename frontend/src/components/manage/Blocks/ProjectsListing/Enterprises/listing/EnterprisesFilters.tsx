@@ -4,7 +4,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
+import { enterpriseFieldsMapping } from '../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'

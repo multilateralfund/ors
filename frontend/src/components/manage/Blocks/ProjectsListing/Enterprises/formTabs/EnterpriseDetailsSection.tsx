@@ -13,12 +13,9 @@ import {
   EnterpriseNumberField,
   EnterpriseSelectField,
   EnterpriseTextAreaField,
-} from '../../ProjectsEnterprises/FormHelperComponents'
+} from '../FormHelperComponents'
+import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
 import { EnterpriseDataProps } from '../../interfaces'
-import {
-  detailsDateFields,
-  enterpriseFieldsMapping,
-} from '../../ProjectsEnterprises/constants'
 import { parseNumber } from '@ors/helpers'
 
 import { map } from 'lodash'

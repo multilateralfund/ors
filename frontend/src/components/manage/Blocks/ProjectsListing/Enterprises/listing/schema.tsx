@@ -4,7 +4,7 @@ import Link from '@ors/components/ui/Link/Link'
 import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
+import { enterpriseFieldsMapping } from '../constants'
 import { formatNumberColumns } from '../../utils'
 
 import { IoTrash } from 'react-icons/io5'

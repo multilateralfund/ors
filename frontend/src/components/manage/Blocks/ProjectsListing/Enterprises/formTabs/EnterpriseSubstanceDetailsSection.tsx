@@ -5,17 +5,17 @@ import Field from '@ors/components/manage/Form/Field'
 import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { EnterpriseNumberField } from '../../ProjectsEnterprises/FormHelperComponents'
 import { FieldErrorIndicator, SubmitButton } from '../../HelperComponents'
-import { getFieldDefaultProps } from '../../ProjectsEnterprises/utils'
+import { EnterpriseNumberField } from '../FormHelperComponents'
+import { getFieldDefaultProps } from '../utils'
+import { defaultProps } from '../../constants'
 import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
   initialSubstanceDetailsFields,
   substanceDecimalFields,
   substanceFields,
-} from '../../ProjectsEnterprises/constants'
-import { defaultProps } from '../../constants'
+} from '../constants'
 import {
   EnterpriseSubstanceDetails,
   EnterpriseDataProps,

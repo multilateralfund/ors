@@ -3,18 +3,18 @@ import { useEffect, useMemo, useState } from 'react'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
-import EnterpriseOverviewSection from '../tabs/EnterpriseOverviewSection.tsx'
-import EnterpriseDetailsSection from '../tabs/EnterpriseDetailsSection.tsx'
-import EnterpriseSubstanceDetailsSection from '../tabs/EnterpriseSubstanceDetailsSection.tsx'
-import EnterpriseFundingDetailsSection from '../tabs/EnterpriseFundingDetailsSection.tsx'
-import EnterpriseRemarksSection from '../tabs/EnterpriseRemarksSection.tsx'
+import EnterpriseOverviewSection from '../formTabs/EnterpriseOverviewSection.tsx'
+import EnterpriseDetailsSection from '../formTabs/EnterpriseDetailsSection.tsx'
+import EnterpriseSubstanceDetailsSection from '../formTabs/EnterpriseSubstanceDetailsSection.tsx'
+import EnterpriseFundingDetailsSection from '../formTabs/EnterpriseFundingDetailsSection.tsx'
+import EnterpriseRemarksSection from '../formTabs/EnterpriseRemarksSection.tsx'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
-import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants.ts'
+import { enterpriseFieldsMapping } from '../constants.ts'
 import {
   getCostEffectivenessApproved,
   getFieldErrors,
   getFundsApproved,
-} from '../../ProjectsEnterprises/utils.ts'
+} from '../utils.ts'
 import {
   EnterpriseDataProps,
   EnterpriseSubstanceDetails,

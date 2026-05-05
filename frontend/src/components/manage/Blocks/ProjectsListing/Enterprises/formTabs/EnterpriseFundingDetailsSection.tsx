@@ -1,4 +1,4 @@
-import { EnterpriseNumberField } from '../../ProjectsEnterprises/FormHelperComponents'
+import { EnterpriseNumberField } from '../FormHelperComponents'
 import { EnterpriseDataProps } from '../../interfaces'
 
 import { keys, map } from 'lodash'

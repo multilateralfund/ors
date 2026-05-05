@@ -11,7 +11,7 @@ import {
   initialSubstanceFields,
   initialFundingDetailsFields,
   initialRemarksFields,
-} from '../../ProjectsEnterprises/constants.ts'
+} from '../constants.ts'
 
 import { Redirect } from 'wouter'
 

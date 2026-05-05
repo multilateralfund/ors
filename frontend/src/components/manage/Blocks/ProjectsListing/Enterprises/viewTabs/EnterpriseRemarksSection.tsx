@@ -1,13 +1,13 @@
 import { detailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping, remarksFields } from '../constants'
-import { PEnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../../interfaces'
 
 import { map } from 'lodash'
 
-const PEnterpriseRemarksSection = ({
+const EnterpriseRemarksSection = ({
   enterprise,
 }: {
-  enterprise: PEnterpriseType
+  enterprise: EnterpriseType
 }) => (
   <div className="flex flex-col gap-4">
     {map(remarksFields, (field) => (
@@ -24,4 +24,4 @@ const PEnterpriseRemarksSection = ({
   </div>
 )
 
-export default PEnterpriseRemarksSection
+export default EnterpriseRemarksSection

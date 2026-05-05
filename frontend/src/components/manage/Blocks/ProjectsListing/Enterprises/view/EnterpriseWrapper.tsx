@@ -5,21 +5,27 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterpriseView from './EnterpriseView'
-import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { EnterpriseStatus } from '../FormHelperComponents'
 import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 
 import { Redirect, useParams } from 'wouter'
+import { find } from 'lodash'
 
 const EnterpriseWrapper = () => {
   const { canViewEnterprises, canEditEnterprise } =
     useContext(PermissionsContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const { enterprise_id } = useParams<Record<string, string>>()
   const enterprise = useGetEnterprise(enterprise_id)
   const { data, loading, error } = enterprise
+
+  const status =
+    find(statuses, (status) => status.id === data.status)?.name ?? ''
 
   if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />
@@ -56,7 +62,7 @@ const EnterpriseWrapper = () => {
                 {canEditEnterprise && (
                   <CustomLink
                     href={`/projects-listing/enterprises/${enterprise_id}/edit`}
-                    className="border border-solid border-secondary px-4 py-2 hover:border-primary shadow-none"
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
                     variant="contained"
                     color="secondary"
                     size="large"
@@ -67,7 +73,7 @@ const EnterpriseWrapper = () => {
                 )}
               </div>
             </div>
-            <EnterpriseStatus status={data.status} />
+            <EnterpriseStatus status={status} />
           </HeaderTitle>
           <EnterpriseView enterprise={data} />
         </>

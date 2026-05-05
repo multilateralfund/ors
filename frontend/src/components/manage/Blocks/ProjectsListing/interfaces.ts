@@ -368,13 +368,11 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type PEnterpriseType = EnterpriseDetails &
+export type EnterpriseType = EnterpriseOverview &
+  EnterpriseDetails &
   EnterpriseSubstanceFields &
   EnterpriseFundingDetails &
   EnterpriseRemarks & {
-    id: number | null
-    status: string
-    enterprise: EnterpriseType
     ods_odp: EnterpriseSubstanceDetails[]
   }
 
@@ -390,7 +388,7 @@ export interface EnterpriseData {
 export type EnterpriseDataType = {
   enterpriseData: EnterpriseData
   setEnterpriseData: SetEnterpriseData<EnterpriseData>
-  enterprise?: PEnterpriseType
+  enterprise?: EnterpriseType
 }
 
 export type EnterprisesCommonProps = {
@@ -412,7 +410,7 @@ export interface EnterpriseOverview {
   export_to_non_a5: string | null
   revision: string | null
   date_of_revision: string | null
-  status: string
+  status: number | null
 }
 
 export interface EnterpriseDetails {
@@ -425,12 +423,6 @@ export interface EnterpriseDetails {
   meeting: number | null
   excom_provision: string
   date_of_report: string | null
-}
-
-export type EnterpriseType = EnterpriseOverview & {
-  id: number
-  status: string
-  code: string
 }
 
 export interface EnterpriseSubstanceDetails {
@@ -465,6 +457,7 @@ export interface EnterpriseRemarks {
   secretariat_remarks: string
 }
 export interface EnterpriseHeaderProps {
+  enterpriseData: EnterpriseData
   setEnterpriseId: (id: number | null) => void
   setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void

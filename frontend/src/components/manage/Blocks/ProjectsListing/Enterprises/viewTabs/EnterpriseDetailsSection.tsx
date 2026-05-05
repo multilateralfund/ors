@@ -9,15 +9,15 @@ import {
 } from '../../ProjectView/ViewHelperComponents'
 import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { PEnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../../interfaces'
 import { getEntityById } from '../utils'
 
 import { map } from 'lodash'
 
-const PEnterpriseDetailsSection = ({
+const EnterpriseDetailsSection = ({
   enterprise,
 }: {
-  enterprise: PEnterpriseType
+  enterprise: EnterpriseType
 }) => {
   const { agencies, project_types } = useContext(ProjectsDataContext)
 
@@ -75,4 +75,4 @@ const PEnterpriseDetailsSection = ({
   )
 }
 
-export default PEnterpriseDetailsSection
+export default EnterpriseDetailsSection

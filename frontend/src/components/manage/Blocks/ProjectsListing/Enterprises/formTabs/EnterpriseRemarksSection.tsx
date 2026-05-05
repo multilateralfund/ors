@@ -1,6 +1,6 @@
-import { EnterpriseTextAreaField } from '../../ProjectsEnterprises/FormHelperComponents'
-import { remarksFields } from '../../ProjectsEnterprises/constants'
+import { EnterpriseTextAreaField } from '../FormHelperComponents'
 import { EnterpriseDataProps } from '../../interfaces'
+import { remarksFields } from '../constants'
 
 import { map } from 'lodash'
 

@@ -5,7 +5,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping, substanceDecimalFields } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { PEnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
@@ -18,10 +18,10 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 
-const PEnterpriseSubstanceDetailsSection = ({
+const EnterpriseSubstanceDetailsSection = ({
   enterprise,
 }: {
-  enterprise: PEnterpriseType
+  enterprise: EnterpriseType
 }) => {
   const { substances, blends } = useContext(ProjectsDataContext)
 
@@ -135,4 +135,4 @@ const PEnterpriseSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterpriseSubstanceDetailsSection
+export default EnterpriseSubstanceDetailsSection

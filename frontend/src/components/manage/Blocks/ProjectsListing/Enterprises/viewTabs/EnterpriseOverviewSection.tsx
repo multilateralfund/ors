@@ -1,25 +1,31 @@
 import { useContext } from 'react'
 
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   detailItem,
   numberDetailItem,
   dateDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
-import { viewColumnsClassName } from '../../constants'
 import { enterpriseFieldsMapping } from '../constants'
-import { EnterpriseOverview } from '../../interfaces'
+import { viewColumnsClassName } from '../../constants'
+import { EnterpriseType } from '../../interfaces'
 import { getEntityById } from '../utils'
+import { find } from 'lodash'
 
-const PEnterpriseOverviewSection = ({
+const EnterpriseOverviewSection = ({
   enterprise,
 }: {
-  enterprise: EnterpriseOverview
+  enterprise: EnterpriseType
 }) => {
   const { countries, sectors, subsectors } = useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
+
   const country = getEntityById(countries, enterprise.country)?.name
   const sector = getEntityById(sectors, enterprise.sector)?.name
   const subsector = getEntityById(subsectors, enterprise.subsector)?.name
+  const status =
+    find(statuses, (status) => status.id === enterprise.status)?.name ?? ''
 
   return (
     <>
@@ -60,9 +66,10 @@ const PEnterpriseOverviewSection = ({
             enterprise.date_of_revision as string,
           )}
         </div>
+        {detailItem(enterpriseFieldsMapping.status, status)}
       </div>
     </>
   )
 }
 
-export default PEnterpriseOverviewSection
+export default EnterpriseOverviewSection

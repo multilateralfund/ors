@@ -17,7 +17,7 @@ import {
   handleChangeSelectValues,
   handleChangeTextValues,
   handleChangeDateValues,
-} from '../ProjectsEnterprises/utils'
+} from './utils'
 import {
   defaultProps,
   defaultPropsSimpleField,

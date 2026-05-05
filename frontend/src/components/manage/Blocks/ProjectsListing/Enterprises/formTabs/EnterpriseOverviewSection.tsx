@@ -7,7 +7,7 @@ import {
   EnterpriseNumberField,
   EnterpriseSelectField,
   EnterpriseDateField,
-} from '../../ProjectsEnterprises/FormHelperComponents'
+} from '../FormHelperComponents'
 import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
 import { EnterpriseDataProps } from '../../interfaces'
 import {
@@ -15,7 +15,7 @@ import {
   integerFields,
   decimalFields,
   dateFields,
-} from '../../ProjectsEnterprises/constants'
+} from '../constants'
 
 import { map } from 'lodash'
 
