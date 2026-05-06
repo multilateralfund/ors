@@ -236,7 +236,7 @@ function EditTable(props: TableProps) {
       }
       if (
         !rows &&
-        ((rowData?.length === 0 && isDataFormatted) || results.length === 0)
+        ((rowData?.length === 0 && isDataFormatted) || results?.length === 0)
       ) {
         agTable.style.height = 'auto'
         gridApi?.setGridOption('domLayout', 'autoHeight')
