@@ -2,21 +2,20 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
+import { enterpriseFieldsMapping } from '../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
-import { filter, union } from 'lodash'
-import { useParams } from 'wouter'
+import { union } from 'lodash'
 
 const EnterprisesFilters = ({
-  enterpriseStatuses,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { project_id } = useParams<Record<string, string>>()
   const { countries, agencies } = useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const defaultProps = {
     multiple: true,
@@ -33,58 +32,51 @@ const EnterprisesFilters = ({
     },
   }
 
-  const statusOptions = project_id
-    ? filter(enterpriseStatuses, (status) => status.name !== 'Obsolete')
-    : enterpriseStatuses
-
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {project_id ? (
-        <Field
-          Input={{ placeholder: enterpriseFieldsMapping.agency }}
-          options={getFilterOptions(filters, agencies, 'agency_id')}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const agency = filters.agency_id || []
-            const newValue = union(agency, value)
-
-            handleFilterChange({ agency_id: newValue })
-            handleParamsChange({
-              agency_id: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-          {...defaultProps}
-        />
-      ) : (
-        <Field
-          Input={{ placeholder: enterpriseFieldsMapping.country }}
-          options={getFilterOptions(filters, countries, 'country_id')}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const country = filters.country_id || []
-            const newValue = union(country, value)
-
-            handleFilterChange({ country_id: newValue })
-            handleParamsChange({
-              country_id: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-          {...defaultProps}
-        />
-      )}
       <Field
-        Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, statusOptions, 'status')}
+        Input={{ placeholder: enterpriseFieldsMapping.country }}
+        options={getFilterOptions(filters, countries, 'country_id')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
-          const status = filters.status || []
+          const country = filters.country_id || []
+          const newValue = union(country, value)
+
+          handleFilterChange({ country_id: newValue })
+          handleParamsChange({
+            country_id: newValue.map((item: any) => item.id).join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+      />
+      <Field
+        Input={{ placeholder: enterpriseFieldsMapping.agency }}
+        options={getFilterOptions(filters, agencies, 'agency_id')}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const agency = filters.agency_id || []
+          const newValue = union(agency, value)
+
+          handleFilterChange({ agency_id: newValue })
+          handleParamsChange({
+            agency_id: newValue.map((item: any) => item.id).join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+      />
+      <Field
+        Input={{ placeholder: enterpriseFieldsMapping.status }}
+        options={getFilterOptions(filters, statuses, 'status_id')}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const status = filters.status_id || []
           const newValue = union(status, value)
 
-          handleFilterChange({ status: newValue })
+          handleFilterChange({ status_id: newValue })
           handleParamsChange({
-            status: newValue.map((item: any) => item.id).join(','),
+            status_id: newValue.map((item: any) => item.id).join(','),
             offset: 0,
           })
         }}

@@ -71,11 +71,8 @@ import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
 import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
 import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterprise_id]/edit/page'
-import ProjectsEnterprisesPage from '@ors/app/projects_listing/projects_enterprises/page'
-import ProjectsEnterprisesCreatePage from '@ors/app/projects_listing/projects_enterprises/[project_id]/create/page'
-import ProjectsEnterprisesViewPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/view/[enterprise_id]/page'
-import ProjectsEnterprisesEditPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/edit/[enterprise_id]/page'
 
+import EnterprisesDataProvider from './contexts/Enterprises/EnterprisesDataProvider'
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
 import PermissionsContext from './contexts/PermissionsContext'
@@ -358,42 +355,30 @@ export default function App() {
         </Route>
         <Route path="/projects-listing/enterprises">
           <ProjectsDataProvider>
-            <EnterprisesPage />
+            <EnterprisesDataProvider>
+              <EnterprisesPage />
+            </EnterprisesDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/create">
           <ProjectsDataProvider>
-            <EnterpriseCreatePage />
+            <EnterprisesDataProvider>
+              <EnterpriseCreatePage />
+            </EnterprisesDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/:enterprise_id">
           <ProjectsDataProvider>
-            <EnterprisePage />
+            <EnterprisesDataProvider>
+              <EnterprisePage />
+            </EnterprisesDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/:enterprise_id/edit">
           <ProjectsDataProvider>
-            <EnterpriseEditPage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesPage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/create">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesCreatePage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/view/:enterprise_id">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesViewPage />
-          </ProjectsDataProvider>
-        </Route>
-        <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
-          <ProjectsDataProvider>
-            <ProjectsEnterprisesEditPage />
+            <EnterprisesDataProvider>
+              <EnterpriseEditPage />
+            </EnterprisesDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">

@@ -6,10 +6,10 @@ from .business_plan import *
 from .country import *
 from .country_programme import *
 from .country_programme_archive import *
+from .enterprise import *
 from .group import *
 from .project_complition_report import *
 from .project import *
-from .project_enterprise import *
 from .project_metadata import *
 from .replenishment import *
 from .substance import *

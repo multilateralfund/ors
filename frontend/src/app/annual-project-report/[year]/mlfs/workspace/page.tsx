@@ -19,7 +19,12 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material'
-import { IoChevronDown, IoClose, IoInformationCircleOutline, IoSearchOutline } from 'react-icons/io5'
+import {
+  IoChevronDown,
+  IoClose,
+  IoInformationCircleOutline,
+  IoSearchOutline,
+} from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -516,9 +521,7 @@ export default function APRMLFSWorkspace() {
             {activeTab === 0 && kickstartAPR && (
               <Tooltip
                 title={
-                  !loading && !canKickstartAPR
-                    ? kickstartAPR.message || ''
-                    : ''
+                  !loading && !canKickstartAPR ? kickstartAPR.message || '' : ''
                 }
               >
                 <span>

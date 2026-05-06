@@ -16,9 +16,7 @@ function cleanValue(value: string, decimalSep: string, thousandSep: string) {
   if (/^\d{1,4}[/\-.]\d{1,2}[/\-.]\d{2,4}$/.test(toParse)) return toParse
   const isNumber = !isNaN(parseFloat(toParse))
   if (isNumber) {
-    return toParse
-      .replaceAll(thousandSep, '')
-      .replace(decimalSep, '.')
+    return toParse.replaceAll(thousandSep, '').replace(decimalSep, '.')
   }
   return value
 }
@@ -70,8 +68,12 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
       )
       pastedTable = pasteResult.table
       const locale = pasteResult.sourceLang ?? navigator.language
-      const decimalSep = Intl.NumberFormat(locale).format(1.1).replaceAll('1', '')
-      const thousandSep = Intl.NumberFormat(locale).format(1111).replaceAll('1', '')
+      const decimalSep = Intl.NumberFormat(locale)
+        .format(1.1)
+        .replaceAll('1', '')
+      const thousandSep = Intl.NumberFormat(locale)
+        .format(1111)
+        .replaceAll('1', '')
 
       const newValues: Record<string, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
@@ -173,7 +175,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                   }
 
                   // Do not call cleanValue on text fields
-                  const isTextField = (crtFieldObj as any)?.overrideOptions?.cellDataType === 'text'
+                  const isTextField =
+                    (crtFieldObj as any)?.overrideOptions?.cellDataType ===
+                    'text'
                   mutator(
                     nextForm[i],
                     isTextField
@@ -201,7 +205,10 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
 
             if (pendingIds.has(rowId)) {
               nextForm[i] = { ...nextForm[i] }
-              mutator(nextForm[i], cleanValue(newValues[rowId][0], decimalSep, thousandSep))
+              mutator(
+                nextForm[i],
+                cleanValue(newValues[rowId][0], decimalSep, thousandSep),
+              )
               pendingIds.delete(rowId)
               numInserted++
             }

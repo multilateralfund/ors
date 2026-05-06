@@ -1,199 +1,133 @@
 import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { enterpriseFieldsMapping } from '../../ProjectsEnterprises/constants'
+import { enterpriseFieldsMapping } from '../constants'
 import { formatNumberColumns } from '../../utils'
 
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
 import { find, isNil } from 'lodash'
-import { useParams } from 'wouter'
-import dayjs from 'dayjs'
 import {
   ICellRendererParams,
   ValueGetterParams,
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
-  const { project_id } = useParams<Record<string, string>>()
-
-  const {
-    canEditEnterprise,
-    canEditProjectEnterprise,
-    canApproveEnterprise,
-    canApproveProjectEnterprise,
-  } = useContext(PermissionsContext)
+const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
+  const { canEditEnterprise } = useContext(PermissionsContext)
 
   const { countries, agencies, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
-
-  const isEnterprise = !project_id
-  const editPermissions = isEnterprise
-    ? canEditEnterprise
-    : canEditProjectEnterprise
-  const approvalPermissions = isEnterprise
-    ? canApproveEnterprise
-    : canApproveProjectEnterprise
-  const canAccessEditPage = editPermissions || approvalPermissions
-
-  const checkboxWidth = isEnterprise || !canEditProjectEnterprise ? 40 : 80
-
-  const getViewUrl = (enterpriseId: number) =>
-    isEnterprise
-      ? `/projects-listing/enterprises/${enterpriseId}`
-      : `/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`
-
-  const getEditUrl = (enterpriseId: number) =>
-    isEnterprise
-      ? `/projects-listing/enterprises/${enterpriseId}/edit`
-      : `/projects-listing/projects-enterprises/${project_id}/edit/${enterpriseId}`
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const getFieldValue = (
     params: ValueGetterParams | ITooltipParams,
     data: any,
     field: string,
-    isDirectField?: boolean,
-  ) => {
-    const crtEntry =
-      isEnterprise || isDirectField
-        ? params.data[field]
-        : params.data.enterprise?.[field]
-
-    return find(data, (entry) => entry.id === crtEntry)?.name
-  }
-
-  const getFieldName = (field: string) =>
-    isEnterprise ? field : 'enterprise.' + field
+  ) => find(data, (entry) => entry.id === params.data[field])?.name
 
   const getDecimalValue = (
     params: ValueGetterParams | ITooltipParams,
     field: string,
-  ) => {
-    const crtField = getFieldName(field)
-
-    return !isNil(params.data[crtField])
-      ? formatNumberColumns(params, crtField)
-      : ''
-  }
+  ) => (!isNil(params.data[field]) ? formatNumberColumns(params, field) : '')
 
   return {
     columnDefs: [
-      ...(canAccessEditPage
+      ...(canEditEnterprise
         ? [
             {
-              minWidth: checkboxWidth,
-              maxWidth: checkboxWidth,
+              minWidth: 80,
+              maxWidth: 80,
               resizable: false,
               sortable: false,
-              cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
-              cellRenderer: (props: ICellRendererParams) => {
-                const canDeleteProjectEnterprise =
-                  !isEnterprise &&
-                  setIdToDelete &&
-                  canEditProjectEnterprise &&
-                  (props.data.status !== 'Approved' ||
-                    canApproveProjectEnterprise)
-
-                return (
-                  <div className="flex items-center gap-1 p-2">
-                    {props.data.status !== 'Obsolete' &&
-                      (isEnterprise ||
-                        props.data.status !== 'Approved' ||
-                        (canEditProjectEnterprise &&
-                          canApproveProjectEnterprise)) && (
-                        <>
-                          <Link
-                            className="flex h-4 w-4 justify-center"
-                            href={getEditUrl(props.data.id)}
-                          >
-                            <FiEdit size={16} />
-                          </Link>
-                          {canDeleteProjectEnterprise && '/'}
-                        </>
-                      )}
-                    {canDeleteProjectEnterprise && (
-                      <IoTrash
-                        size={18}
-                        className="cursor-pointer fill-gray-500"
-                        onClick={() => {
-                          setIdToDelete(props.data.id)
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              },
+              cellClass: 'ag-text-center ag-cell-no-border-r',
+              cellRenderer: (props: ICellRendererParams) => (
+                <div className="flex items-center gap-1 p-2">
+                  <Link
+                    href={`/projects-listing/enterprises/${props.data.id}/edit`}
+                  >
+                    <FiEdit size={16} />
+                  </Link>
+                  /
+                  <IoTrash
+                    size={18}
+                    className="cursor-pointer fill-gray-500"
+                    onClick={() => {
+                      setIdToDelete(props.data.id)
+                    }}
+                  />
+                </div>
+              ),
             },
           ]
         : []),
       {
         headerName: enterpriseFieldsMapping.code,
-        field: getFieldName('code'),
-        tooltipField: getFieldName('code'),
+        field: 'code',
+        tooltipField: 'code',
         minWidth: 100,
         cellRenderer: (props: ICellRendererParams) => (
-          <div className="flex items-center justify-center p-2">
-            <Link
-              className="overflow-hidden truncate whitespace-nowrap"
-              href={getViewUrl(props.data.id)}
-            >
-              <span>{props.value}</span>
-            </Link>
-          </div>
+          <Link
+            className="overflow-hidden truncate whitespace-nowrap"
+            href={`/projects-listing/enterprises/${props.data.id}`}
+          >
+            <span>{props.value}</span>
+          </Link>
         ),
       },
       {
         headerName: enterpriseFieldsMapping.name,
-        field: getFieldName('name'),
-        tooltipField: getFieldName('name'),
+        field: 'name',
+        tooltipField: 'name',
         cellClass: 'ag-cell-ellipsed !pl-2.5',
         minWidth: 200,
       },
-      ...(isEnterprise
-        ? [
-            {
-              headerName: enterpriseFieldsMapping.country,
-              field: getFieldName('country__name'),
-              valueGetter: (params: ValueGetterParams) =>
-                getFieldValue(params, countries, 'country'),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getFieldValue(params, countries, 'country'),
-            },
-          ]
-        : [
-            {
-              headerName: enterpriseFieldsMapping.agency,
-              field: 'agency__name',
-              valueGetter: (params: ValueGetterParams) =>
-                getFieldValue(params, agencies, 'agency', true),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getFieldValue(params, agencies, 'agency', true),
-            },
-            {
-              headerName: enterpriseFieldsMapping.project_type,
-              field: 'project_type',
-              valueGetter: (params: ValueGetterParams) =>
-                getFieldValue(params, project_types, 'project_type', true),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getFieldValue(params, project_types, 'project_type', true),
-            },
-          ]),
+
+      {
+        headerName: enterpriseFieldsMapping.country,
+        field: 'country__name',
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, countries, 'country'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, countries, 'country'),
+      },
+      {
+        headerName: enterpriseFieldsMapping.city,
+        field: 'city',
+        tooltipField: 'city',
+      },
       {
         headerName: enterpriseFieldsMapping.location,
-        field: getFieldName('location'),
-        tooltipField: getFieldName('location'),
+        field: 'location',
+        tooltipField: 'location',
+      },
+      {
+        headerName: enterpriseFieldsMapping.agency,
+        field: 'agency__name',
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, agencies, 'agency'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, agencies, 'agency'),
       },
       {
         headerName: enterpriseFieldsMapping.stage,
-        field: getFieldName('stage'),
-        tooltipField: getFieldName('stage'),
+        field: 'stage',
+        tooltipField: 'stage',
+      },
+      {
+        headerName: enterpriseFieldsMapping.project_type,
+        field: 'project_type',
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, project_types, 'project_type'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, project_types, 'project_type'),
       },
       {
         headerName: enterpriseFieldsMapping.sector,
-        field: getFieldName('sector'),
+        field: 'sector',
         valueGetter: (params: ValueGetterParams) =>
           getFieldValue(params, sectors, 'sector'),
         tooltipValueGetter: (params: ITooltipParams) =>
@@ -201,58 +135,40 @@ const getColumnDefs = (setIdToDelete?: (idToDelete: number | null) => void) => {
       },
       {
         headerName: enterpriseFieldsMapping.subsector,
-        field: getFieldName('subsector'),
+        field: 'subsector',
         valueGetter: (params: ValueGetterParams) =>
           getFieldValue(params, subsectors, 'subsector'),
         tooltipValueGetter: (params: ITooltipParams) =>
           getFieldValue(params, subsectors, 'subsector'),
       },
       {
-        headerName: enterpriseFieldsMapping.application,
-        field: getFieldName('application'),
-        tooltipField: getFieldName('application'),
+        headerName: enterpriseFieldsMapping.meeting,
+        field: 'meeting',
+        tooltipField: 'meeting',
       },
-      ...(isEnterprise
-        ? [
-            {
-              headerName: enterpriseFieldsMapping.local_ownership,
-              field: getFieldName('local_ownership'),
-              valueGetter: (params: ValueGetterParams) =>
-                getDecimalValue(params, 'local_ownership'),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getDecimalValue(params, 'local_ownership'),
-            },
-            {
-              headerName: enterpriseFieldsMapping.export_to_non_a5,
-              field: getFieldName('export_to_non_a5'),
-              valueGetter: (params: ValueGetterParams) =>
-                getDecimalValue(params, 'export_to_non_a5'),
-              tooltipValueGetter: (params: ITooltipParams) =>
-                getDecimalValue(params, 'export_to_non_a5'),
-            },
-            //  {
-            //   headerName: enterpriseFieldsMapping.revision,
-            //   field: getFieldName('revision'),
-            //   tooltipField: getFieldName('revision'),
-            // },
-            {
-              headerName: enterpriseFieldsMapping.date_of_revision,
-              field: getFieldName('date_of_revision'),
-              valueGetter: (params: ValueGetterParams) => {
-                const value = params.data[getFieldName('date_of_revision')]
-                return value ? dayjs(value).format('DD/MM/YYYY') : ''
-              },
-              tooltipValueGetter: (params: ITooltipParams) => {
-                const value = params.data[getFieldName('date_of_revision')]
-                return value ? dayjs(value).format('DD/MM/YYYY') : ''
-              },
-            },
-          ]
-        : []),
       {
-        headerName: 'Status',
+        headerName: enterpriseFieldsMapping.local_ownership,
+        field: 'local_ownership',
+        valueGetter: (params: ValueGetterParams) =>
+          getDecimalValue(params, 'local_ownership'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getDecimalValue(params, 'local_ownership'),
+      },
+      {
+        headerName: enterpriseFieldsMapping.export_to_non_a5,
+        field: 'export_to_non_a5',
+        valueGetter: (params: ValueGetterParams) =>
+          getDecimalValue(params, 'export_to_non_a5'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getDecimalValue(params, 'export_to_non_a5'),
+      },
+      {
+        headerName: enterpriseFieldsMapping.status,
         field: 'status',
-        tooltipField: 'status',
+        valueGetter: (params: ValueGetterParams) =>
+          getFieldValue(params, statuses, 'status'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldValue(params, statuses, 'status'),
         minWidth: 120,
       },
     ],

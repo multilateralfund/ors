@@ -76,3 +76,16 @@ python manage.py migrate_projects_2026 transfer_fields
 python manage.py migrate_projects_2026 c_and_p
 python manage.py migrate_projects_2026 fill_total_phase_out_values_in_project
 python manage.py migrate_projects_2026 fill_project_end_date_mya_with_date_per_agreement
+
+
+```
+5. Importing enterprises:
+```
+
+For migrating enterprises, please first download files from nextcloud
+    - **nextcloud path** OzoneMlf/5. Projects - database/2026 Data/Enterprises_DB_and_Templates_Combined_final_Dec_2025.xlsx
+    - **local path** core/import_data_v2/resources/enterprises/Enterprises_DB_and_Templates_Combined_final_Dec_2025.xlsx
+
+After that, run the following command:
+
+    python manage.py import_enterprises

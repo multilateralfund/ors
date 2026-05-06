@@ -1,25 +1,33 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterpriseView from './EnterpriseView'
-import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { EnterpriseStatus } from '../FormHelperComponents'
 import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 
 import { Redirect, useParams } from 'wouter'
+import { find } from 'lodash'
 
 const EnterpriseWrapper = () => {
-  const { canViewEnterprises, canEditEnterprise, canApproveEnterprise } =
+  const { canViewEnterprises, canEditEnterprise } =
     useContext(PermissionsContext)
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const { enterprise_id } = useParams<Record<string, string>>()
   const enterprise = useGetEnterprise(enterprise_id)
   const { data, loading, error } = enterprise
+
+  const status = useMemo(
+    () => find(statuses, (status) => status.id === data?.status)?.name ?? '',
+    [data],
+  )
 
   if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />
@@ -53,22 +61,21 @@ const EnterpriseWrapper = () => {
                   title="Cancel"
                   href="/projects-listing/enterprises"
                 />
-                {(canEditEnterprise || canApproveEnterprise) &&
-                  data.status !== 'Obsolete' && (
-                    <CustomLink
-                      href={`/projects-listing/enterprises/${enterprise_id}/edit`}
-                      className="border border-solid px-4 py-2 hover:border-primary"
-                      variant="contained"
-                      color="secondary"
-                      size="large"
-                      button
-                    >
-                      Edit enterprise
-                    </CustomLink>
-                  )}
+                {canEditEnterprise && (
+                  <CustomLink
+                    href={`/projects-listing/enterprises/${enterprise_id}/edit`}
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    button
+                  >
+                    Edit enterprise
+                  </CustomLink>
+                )}
               </div>
             </div>
-            <EnterpriseStatus status={data.status} />
+            <EnterpriseStatus status={status} />
           </HeaderTitle>
           <EnterpriseView enterprise={data} />
         </>

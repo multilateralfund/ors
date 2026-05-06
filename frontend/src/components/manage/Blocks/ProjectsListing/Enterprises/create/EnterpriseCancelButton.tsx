@@ -5,32 +5,27 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import CancelWarningModal from '../../ProjectSubmission/CancelWarningModal'
 import { RedirectBackButton } from '../../HelperComponents'
 
-import { useLocation, useParams } from 'wouter'
+import { useLocation } from 'wouter'
 
 const EnterpriseCancelButton = ({
-  type,
   mode,
   isEdit,
 }: {
-  type: string
   mode: string
   isEdit: boolean
 }) => {
   const [_, setLocation] = useLocation()
   const { updatedFields } = useUpdatedFields()
-  const { project_id } = useParams<Record<string, string>>()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
 
   const isRedirect = mode === 'redirect'
-  const listingUrl =
-    type === 'enterprise' ? 'enterprises' : `projects-enterprises/${project_id}`
 
   const onCancel = () => {
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation(`/projects-listing/${isRedirect ? 'listing' : listingUrl}`)
+      setLocation(`/projects-listing/${isRedirect ? 'listing' : 'enterprises'}`)
     }
   }
 
@@ -43,8 +38,8 @@ const EnterpriseCancelButton = ({
       )}
       {isCancelModalOpen && (
         <CancelWarningModal
-          mode={`${type} ${isEdit ? 'editing' : 'creation'}`}
-          url={!isRedirect ? `/projects-listing/${listingUrl}` : undefined}
+          mode={`enterprise ${isEdit ? 'editing' : 'creation'}`}
+          url={!isRedirect ? '/projects-listing/enterprises' : undefined}
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
         />

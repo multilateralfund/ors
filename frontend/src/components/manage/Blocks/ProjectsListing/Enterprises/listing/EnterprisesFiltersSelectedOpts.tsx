@@ -1,44 +1,40 @@
 import { useContext } from 'react'
 
+import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
 
 import { Typography } from '@mui/material'
-import { useParams } from 'wouter'
 import { map } from 'lodash'
 
 const EnterprisesFiltersSelectedOpts = ({
-  enterpriseStatuses,
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
   const { countries, agencies } = useContext(ProjectsDataContext)
-  const { project_id } = useParams<Record<string, string>>()
-  const isEnterpriseView = !project_id
+  const { statuses } = useContext(EnterprisesDataContext)
 
   const initialParams = {
-    status: [],
-    ...(isEnterpriseView ? { country_id: [] } : { agency_id: [] }),
+    country_id: [],
+    agency_id: [],
+    status_id: [],
   }
 
   const filterSelectedOpts = [
     {
       entities: formatEntity(countries),
       entityIdentifier: 'country_id',
-      isAvailable: isEnterpriseView,
     },
     {
       entities: formatEntity(agencies),
       entityIdentifier: 'agency_id',
-      isAvailable: !isEnterpriseView,
     },
     {
-      entities: formatEntity(enterpriseStatuses),
-      entityIdentifier: 'status',
-      isAvailable: true,
+      entities: formatEntity(statuses),
+      entityIdentifier: 'status_id',
     },
   ]
 
@@ -47,17 +43,14 @@ const EnterprisesFiltersSelectedOpts = ({
   return (
     areFiltersApplied && (
       <div className="mt-1.5 flex flex-wrap gap-2">
-        {map(
-          filterSelectedOpts,
-          (selectedOpt) =>
-            selectedOpt.isAvailable &&
-            displaySelectedOption(
-              filters,
-              selectedOpt.entities,
-              selectedOpt.entityIdentifier,
-              handleFilterChange,
-              handleParamsChange,
-            ),
+        {map(filterSelectedOpts, (selectedOpt) =>
+          displaySelectedOption(
+            filters,
+            selectedOpt.entities,
+            selectedOpt.entityIdentifier,
+            handleFilterChange,
+            handleParamsChange,
+          ),
         )}
         <Typography
           className="cursor-pointer content-center text-lg font-medium"

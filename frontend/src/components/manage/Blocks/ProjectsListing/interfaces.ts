@@ -368,18 +368,16 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type PEnterpriseType = EnterpriseDetails &
+export type EnterpriseType = EnterpriseOverview &
+  EnterpriseDetails &
   EnterpriseSubstanceFields &
   EnterpriseFundingDetails &
   EnterpriseRemarks & {
-    id: number | null
-    status: string
-    enterprise: EnterpriseType
     ods_odp: EnterpriseSubstanceDetails[]
   }
 
-export interface PEnterpriseData {
-  overview: EnterpriseOverview & { id: number | null; status?: string }
+export interface EnterpriseData {
+  overview: EnterpriseOverview
   details: EnterpriseDetails
   substance_details: EnterpriseSubstanceDetails[]
   substance_fields: EnterpriseSubstanceFields
@@ -387,15 +385,9 @@ export interface PEnterpriseData {
   remarks: EnterpriseRemarks
 }
 
-export type PEnterpriseDataType = {
-  enterpriseData: PEnterpriseData
-  setEnterpriseData: SetEnterpriseData<PEnterpriseData>
-  enterprise?: PEnterpriseType
-}
-
 export type EnterpriseDataType = {
-  enterpriseData: EnterpriseOverview
-  setEnterpriseData: SetEnterpriseData<EnterpriseOverview>
+  enterpriseData: EnterpriseData
+  setEnterpriseData: SetEnterpriseData<EnterpriseData>
   enterprise?: EnterpriseType
 }
 
@@ -403,29 +395,27 @@ export type EnterprisesCommonProps = {
   errors: { [key: string]: string[] }
 }
 
-export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
-
-export type EnterpriseDataProps = EnterpriseDataType &
-  EnterprisesCommonProps & { mode: string }
+export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
 export interface EnterpriseOverview {
   name: string
   country: number | null
+  agency: number | null
   location: string
-  stage: string
+  city: string
+  project_type: number | null
   sector: number | null
   subsector: number | null
-  application: string
-  local_ownership: string | null
-  export_to_non_a5: string | null
-  revision: string | null
-  date_of_revision: string | null
-  linkStatus?: string
+  status: number | null
 }
 
 export interface EnterpriseDetails {
-  agency: number | null
-  project_type: number | null
+  local_ownership: string | null
+  export_to_non_a5: string | null
+  application: string
+  stage: string
+  revision_number: string | null
+  date_of_revision: string | null
   planned_completion_date: string | null
   actual_completion_date: string | null
   project_duration: string | null
@@ -435,18 +425,12 @@ export interface EnterpriseDetails {
   date_of_report: string | null
 }
 
-export type EnterpriseType = EnterpriseOverview & {
-  id: number
-  status: string
-  code: string
-}
-
 export interface EnterpriseSubstanceDetails {
   ods_substance: number | null
   ods_blend: number | null
   consumption: string | null
   selected_alternative: string
-  chemical_phased_in: string | null
+  chemical_phased_in_mt: string | null
 }
 
 export interface EnterpriseSubstanceFields {
@@ -473,6 +457,7 @@ export interface EnterpriseRemarks {
   secretariat_remarks: string
 }
 export interface EnterpriseHeaderProps {
+  enterpriseData: EnterpriseData
   setEnterpriseId: (id: number | null) => void
   setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void

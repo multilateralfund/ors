@@ -1,19 +1,19 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
-import { EnterpriseOverview } from '../interfaces'
+import { EnterpriseData } from '../interfaces'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'
 
 import { debounce, filter, find, sortBy } from 'lodash'
 
-const useGetEnterpriseFieldsOpts = <T,>(
+const useGetEnterpriseFieldsOpts = (
+  enterpriseData: EnterpriseData,
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
   mode: string,
-  enterpriseData: EnterpriseOverview,
-  setEnterpriseData: Dispatch<SetStateAction<T>>,
-  sectionIdentifier?: keyof T | null,
 ) => {
-  const { sector, subsector } = enterpriseData
+  const sectionIdentifier = 'overview'
+  const { sector, subsector } = enterpriseData[sectionIdentifier]
 
   const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
   const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)

@@ -23,6 +23,7 @@ from core.api.tests.factories import (
     CPReportFactory,
     CountryFactory,
     DecisionFactory,
+    EnterpriseStatusFactory,
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
@@ -636,6 +637,11 @@ def project_not_approved_status():
 @pytest.fixture
 def project_approved_status():
     return ProjectSubmissionStatusFactory.create(name="Approved", code="approved")
+
+
+@pytest.fixture
+def enterprise_ongoing_status():
+    return EnterpriseStatusFactory.create(name="Ongoing")
 
 
 @pytest.fixture

@@ -1,10 +1,7 @@
 import EnterprisesFilters from './EnterprisesFilters'
 import EnterprisesFiltersSelectedOpts from './EnterprisesFiltersSelectedOpts'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 
 const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
-  const enterpriseStatuses = useGetEnterpriseStatuses()
-
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
   }
@@ -14,7 +11,6 @@ const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
   }
 
   const props = {
-    enterpriseStatuses,
     handleFilterChange,
     handleParamsChange,
     ...rest,

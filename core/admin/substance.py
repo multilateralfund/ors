@@ -38,20 +38,20 @@ class SubstanceAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
-            "blendcomponents",
-            "cpprices",
-            "cprecord",
+            "admrecord",
+            "admrecordarchive",
+            "allcprecordsview",
             "alt_names",
+            "blendcomponents",
+            "bpactivity",
+            "cpprices",
+            "cppricesarchive",
+            "cprecord",
+            "cprecordarchive",
+            "cpreportformatrow",
+            "enterprise_ods",
             "excludedusage",
             "excluded_usages",
-            "admrecord",
             "project_ods",
-            "projectenterprise_ods",
-            "bpactivity",
-            "cprecordarchive",
-            "cppricesarchive",
-            "admrecordarchive",
-            "cpreportformatrow",
-            "allcprecordsview",
         ]
         return get_final_display_list(Substance, exclude)

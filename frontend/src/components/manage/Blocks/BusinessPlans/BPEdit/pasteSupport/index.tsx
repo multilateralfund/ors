@@ -92,7 +92,7 @@ function parsePastedHTML(html: string) {
 export async function readPastedTableFromNavigator(
   throwError: EnqueueSnackbar,
   isMultiple: boolean,
-): Promise<{ table: any[][], sourceLang: string | null }> {
+): Promise<{ table: any[][]; sourceLang: string | null }> {
   let result: any[][] = []
   let sourceLang: string | null = null
   let canceled = false
@@ -108,7 +108,10 @@ export async function readPastedTableFromNavigator(
 
     if (htmlContent) {
       sourceLang = extractLangFromHTML(htmlContent)
-      console.log('[paste] detected sourceLang from clipboard HTML:', sourceLang)
+      console.log(
+        '[paste] detected sourceLang from clipboard HTML:',
+        sourceLang,
+      )
     }
 
     const pastedTable = !!htmlContent
@@ -130,7 +133,6 @@ export async function readPastedTableFromNavigator(
       ? removeEmptyRows(pastedTable)
       : removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
-
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(

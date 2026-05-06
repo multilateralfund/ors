@@ -10,114 +10,123 @@ const ProjectsSettingsListsOfTerms = () => {
       <h2 className="mt-2 text-3xl">
         Management of values for the pick lists used in the IA/BA portal
       </h2>
-      <h3 className="mt-6">A) Fields with values configurable from the admin interface.</h3>
-      
+      <h3 className="mt-6">
+        A) Fields with values configurable from the admin interface.
+      </h3>
 
       <p>
-        <strong>Agencies: </strong> the value "China (FECO)" is excluded from Business Plans. Values "China (FECO)", "Treasurer (Cash Pool)" and "Secretariat" are excluded from projects.
+        <strong>Agencies: </strong> the value "China (FECO)" is excluded from
+        Business Plans. Values "China (FECO)", "Treasurer (Cash Pool)" and
+        "Secretariat" are excluded from projects.
       </p>
-      
-      <table>
-      <tr>
-        <th className={firstColumnClassName}>Label in application</th>
-        <th className={secondColumnClassName}>Values</th>
-      </tr>
 
-      <tr>
-        <td className={firstColumnClassName}>Agency, Lead agency</td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/agency/')}
-          >
-            /admin/core/agency/
-          </a>
-        </td>
-      </tr>
+      <table>
+        <tr>
+          <th className={firstColumnClassName}>Label in application</th>
+          <th className={secondColumnClassName}>Values</th>
+        </tr>
+
+        <tr>
+          <td className={firstColumnClassName}>Agency, Lead agency</td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/agency/')}
+            >
+              /admin/core/agency/
+            </a>
+          </td>
+        </tr>
       </table>
 
       <p>
-        <strong>Alternative technologies: </strong> do not edit or remove the value "Other alternatives – specify" .
-        It is used to identify when an additional text field should appear.
+        <strong>Alternative technologies: </strong> do not edit or remove the
+        value "Other alternatives – specify" . It is used to identify when an
+        additional text field should appear.
       </p>
-      
-      <table>
-      <tr>
-        <th className={firstColumnClassName}>Label in application</th>
-        <th className={secondColumnClassName}>Values</th>
-      </tr>
 
-      <tr>
-        <td className={firstColumnClassName}>Replacement technologies</td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/alternativetechnology/')}
-          >
-            /admin/core/alternativetechnology/
-          </a>
-        </td>
-      </tr>
-      </table>
-      
-      <p>
-        <strong>Blends alternative name: </strong> the alternative name of a blend (appears between paranthesis after the blend name).
-      </p>
-      
       <table>
-      <tr>
-        <th className={firstColumnClassName}>Label in application</th>
-        <th className={secondColumnClassName}>Values</th>
-      </tr>
+        <tr>
+          <th className={firstColumnClassName}>Label in application</th>
+          <th className={secondColumnClassName}>Values</th>
+        </tr>
 
-      <tr>
-        <td className={firstColumnClassName}>Substance - baseline technology</td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/blendaltname/')}
-          >
-            /admin/core/blendaltname/
-          </a>
-        </td>
-      </tr>
+        <tr>
+          <td className={firstColumnClassName}>Replacement technologies</td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/alternativetechnology/')}
+            >
+              /admin/core/alternativetechnology/
+            </a>
+          </td>
+        </tr>
       </table>
 
       <p>
-        <strong>Blend components: </strong> the actual substances that compose a blend. 
-        These are also used for identifying the group of the blend (for filtering Annex group of substances).
+        <strong>Blends alternative name: </strong> the alternative name of a
+        blend (appears between paranthesis after the blend name).
       </p>
-      
-      <table>
-      <tr>
-        <th className={firstColumnClassName}>Label in application</th>
-        <th className={secondColumnClassName}>Values</th>
-      </tr>
 
-      <tr>
-        <td className={firstColumnClassName}> </td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/blendcomponents/')}
-          >
-            /admin/core/blendcomponents/
-          </a>
-        </td>
-      </tr>
+      <table>
+        <tr>
+          <th className={firstColumnClassName}>Label in application</th>
+          <th className={secondColumnClassName}>Values</th>
+        </tr>
+
+        <tr>
+          <td className={firstColumnClassName}>
+            Substance - baseline technology
+          </td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/blendaltname/')}
+            >
+              /admin/core/blendaltname/
+            </a>
+          </td>
+        </tr>
       </table>
- 
+
       <p>
-        <strong>Project specific fields</strong> for a given cluster/type/sector combination. In case of indicators,
-         both the planned and actual indicator need to be added in the table.
+        <strong>Blend components: </strong> the actual substances that compose a
+        blend. These are also used for identifying the group of the blend (for
+        filtering Annex group of substances).
+      </p>
+
+      <table>
+        <tr>
+          <th className={firstColumnClassName}>Label in application</th>
+          <th className={secondColumnClassName}>Values</th>
+        </tr>
+
+        <tr>
+          <td className={firstColumnClassName}> </td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/blendcomponents/')}
+            >
+              /admin/core/blendcomponents/
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <p>
+        <strong>Project specific fields</strong> for a given cluster/type/sector
+        combination. In case of indicators, both the planned and actual
+        indicator need to be added in the table.
       </p>
       <p>
         <strong>Warning:</strong> do not add any other fields than the specific
@@ -139,42 +148,42 @@ const ProjectsSettingsListsOfTerms = () => {
       </p>
 
       <p>
-        <strong>Substances</strong>strong>
+        <strong>Substances</strong>
       </p>
 
       <table>
-      <tr>
-        <th className={firstColumnClassName}>Label in application</th>
-        <th className={secondColumnClassName}>Values</th>
-      </tr>
+        <tr>
+          <th className={firstColumnClassName}>Label in application</th>
+          <th className={secondColumnClassName}>Values</th>
+        </tr>
 
-      <tr>
-        <td className={firstColumnClassName}>Substances</td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/substance/')}
-          >
-            /admin/core/substance/
-          </a>
-        </td>
-      </tr>
+        <tr>
+          <td className={firstColumnClassName}>Substances</td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/substance/')}
+            >
+              /admin/core/substance/
+            </a>
+          </td>
+        </tr>
 
-      <tr>
-        <td className={firstColumnClassName}>Substance alternative names</td>
-        <td className={secondColumnClassName}>
-          <a
-            className="italic text-inherit"
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            href={formatApiUrl('/admin/core/substancealtname/')}
-          >
-            /admin/core/substancealtname/
-          </a>
-        </td>
-      </tr>
+        <tr>
+          <td className={firstColumnClassName}>Substance alternative names</td>
+          <td className={secondColumnClassName}>
+            <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/substancealtname/')}
+            >
+              /admin/core/substancealtname/
+            </a>
+          </td>
+        </tr>
       </table>
 
       <h3 className="mt-8">
