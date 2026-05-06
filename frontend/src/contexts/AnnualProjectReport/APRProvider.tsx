@@ -37,9 +37,9 @@ export default function APRProvider({ children }: ProjectsDataProviderProps) {
     options: {
       withStoreCache: false,
       triggerIf: canViewAPR,
+      params: { is_for_apr: true },
     },
     path: 'api/project-statuses/',
-    params: { is_for_apr: true },
   })
 
   const confirm = useCallback((options: ConfirmOptions) => {
