@@ -2219,6 +2219,64 @@ class TestAPRExportView(BaseTest):
         assert closed_project.code in project_codes
         assert ongoing_project.code in project_codes
 
+    def test_filter_by_project_code_search_and_codes(
+        self,
+        apr_agency_viewer_user,
+        annual_agency_report,
+        project_ongoing_status,
+    ):
+        project_alpha = ProjectFactory(
+            code="TEST/EXP/ALPHA/INV/01",
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        project_beta = ProjectFactory(
+            code="TEST/EXP/BETA/INV/02",
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=annual_agency_report, project=project_alpha)
+        AnnualProjectReportFactory(report=annual_agency_report, project=project_beta)
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-export",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        columns = APRExportWriter.build_column_mapping()
+        code_col = columns["project_code"]
+
+        # search=ALPHA returns only project_alpha
+        response = self.client.get(url, {"search": "ALPHA"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_alpha.code in project_codes
+        assert project_beta.code not in project_codes
+
+        # project_codes=project_beta.code returns only project_beta
+        response = self.client.get(url, {"project_codes": project_beta.code})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_beta.code in project_codes
+        assert project_alpha.code not in project_codes
+
 
 @pytest.mark.django_db
 class TestAnnualProjectReportDerivedProperties(BaseTest):
@@ -4294,6 +4352,66 @@ class TestAPRMLFSExportView(BaseTest):
         ]
         assert closed_project.code in project_codes
         assert ongoing_project.code in project_codes
+
+    def test_filter_by_project_code_search_and_codes(
+        self,
+        mlfs_admin_user,
+        apr_year,
+        annual_progress_report,
+        project_ongoing_status,
+    ):
+        agency = AgencyFactory()
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            is_unlocked=False,
+        )
+        project_alpha = ProjectFactory(
+            code="TEST/MLFS/ALPHA/INV/01",
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        project_omega = ProjectFactory(
+            code="TEST/MLFS/BETA/INV/02",
+            agency=agency,
+            status=project_ongoing_status,
+            version=3,
+            latest_project=None,
+        )
+        AnnualProjectReportFactory(report=agency_report, project=project_alpha)
+        AnnualProjectReportFactory(report=agency_report, project=project_omega)
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
+        columns = APRExportWriter.build_column_mapping()
+        code_col = columns["project_code"]
+
+        # searching for ALPHA returns only project_alpha
+        response = self.client.get(url, {"search": "ALPHA"})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_alpha.code in project_codes
+        assert project_omega.code not in project_codes
+
+        # filtering by project_omega.code returns only project_omega
+        response = self.client.get(url, {"project_codes": project_omega.code})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_omega.code in project_codes
+        assert project_alpha.code not in project_codes
 
 
 @pytest.mark.django_db

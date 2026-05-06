@@ -2,7 +2,7 @@ import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import {
@@ -12,11 +12,17 @@ import {
   FormControlLabel,
   Button,
   CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
 } from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
+import { IoChevronDown, IoClose, IoSearchOutline } from 'react-icons/io5'
 import { formatApiUrl } from '@ors/helpers'
+import { AgGridReact } from 'ag-grid-react'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
+  checkboxColumnDef,
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
@@ -38,7 +44,6 @@ import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/Sta
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 import Field from '@ors/components/manage/Form/Field.tsx'
-import { IoChevronDown } from 'react-icons/io5'
 import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 
@@ -47,6 +52,9 @@ export default function APRWorkspace() {
   const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
     useState(false)
+  const [projectCodeSearch, setProjectCodeSearch] = useState('')
+  const [selectedProjectCodes, setSelectedProjectCodes] = useState<string[]>([])
+  const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   usePageTitle(`Annual Progress Report (${year})`)
   const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
@@ -100,6 +108,18 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
     reactivePath: true,
   })
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (projectCodeSearch.length >= 3) {
+        setParams({ search: projectCodeSearch })
+      } else if (projectCodeSearch === '') {
+        setParams({ search: '' })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectCodeSearch])
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
@@ -311,6 +331,36 @@ export default function APRWorkspace() {
               />
             </div>
 
+            {/* Project code search */}
+            <div>
+              <TextField
+                size="small"
+                placeholder="Search by project code..."
+                value={projectCodeSearch}
+                onChange={(e) => setProjectCodeSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <IoSearchOutline size={18} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: projectCodeSearch ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          setProjectCodeSearch('')
+                          setParams({ search: '' })
+                        }}
+                      >
+                        <IoClose size={16} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                }}
+              />
+            </div>
+
             {Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
             ) && (
@@ -332,7 +382,10 @@ export default function APRWorkspace() {
                     variant="text"
                     onClick={() => {
                       setFilters(INITIAL_PARAMS)
-                      setParams(INITIAL_PARAMS)
+                      setParams({ ...INITIAL_PARAMS, search: '' })
+                      setProjectCodeSearch('')
+                      setSelectedProjectCodes([])
+                      gridRef.current?.api?.deselectAll()
                     }}
                   >
                     Clear all
@@ -351,7 +404,12 @@ export default function APRWorkspace() {
                   handleExport(
                     formatApiUrl(
                       `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                      params,
+                      selectedProjectCodes.length > 0
+                        ? {
+                            ...params,
+                            project_codes: selectedProjectCodes.join(','),
+                          }
+                        : params,
                     ),
                     setLoadingExport,
                   )
@@ -412,14 +470,32 @@ export default function APRWorkspace() {
               label: 'No reported projects',
             }}
             Toolbar={() => {
-              return <div>Total rows: {apr?.project_reports.length ?? 0}</div>
+              return (
+                <div className="flex gap-x-4">
+                  <div>Total rows: {apr?.project_reports.length ?? 0}</div>
+                  {selectedProjectCodes.length > 0 && (
+                    <div>{selectedProjectCodes.length} selected</div>
+                  )}
+                </div>
+              )
             }}
             rowsVisible={100}
+            gridRef={gridRef}
+            rowSelection="multiple"
+            suppressRowClickSelection={true}
             dataTypeDefinitions={dataTypeDefinitions}
-            columnDefs={columnDefs}
+            columnDefs={[checkboxColumnDef, ...columnDefs]}
             defaultColDef={defaultColDef}
             rowData={apr?.project_reports ?? []}
             tooltipShowDelay={200}
+            onSelectionChanged={() => {
+              const nodes = gridRef.current?.api?.getSelectedNodes() ?? []
+              setSelectedProjectCodes(
+                nodes
+                  .map((n) => n.data?.project_code)
+                  .filter(Boolean) as string[],
+              )
+            }}
           />
         )}
       </Box>
