@@ -91,18 +91,22 @@ class ProjectsInventoryReportWriter(BaseWriter):
             headers.extend(self.funding_headers(i + 3, i + 1))
 
         for i in range(7):
-            headers.extend(self.adjustment_headers(i + 4, i + 1))
+            headers.extend(self.adjustment_headers(i, i + 1))
 
         headers.extend(
             [
                 {
                     "id": "fund_transferred",
                     "headerName": "Fund transferred",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self.calc_sum_total_fund(project),
                 },
                 {
                     "id": "psc_transferred",
                     "headerName": "PSC transferred",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self.calc_sum_support_cost_psc(
                         project
                     ),
@@ -169,6 +173,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "total_phase_out_metric_tonnes",
                     "total_phase_out_co2_tonnes",
                 ],
+                title_overrides={
+                    "total_phase_out_odp_tonnes": "Total ODP Approved",
+                    "total_phase_out_metric_tonnes": "Total MT Approved",
+                    "total_phase_out_co2_tonnes": "Total CO2-eq Approved",
+                },
                 id_suffix="ods_total",
             )
         )
@@ -208,6 +217,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
             ]
         )
 
+        headers.extend(self.ods_odp_headers(1))
+        headers.extend(self.ods_odp_headers(2))
+        headers.extend(self.ods_odp_headers(3))
+        headers.extend(self.ods_odp_headers(4))
+
         headers.extend(
             self.build_headers(
                 self.project_fields,
@@ -217,11 +231,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ],
             )
         )
-
-        headers.extend(self.ods_odp_headers(1))
-        headers.extend(self.ods_odp_headers(2))
-        headers.extend(self.ods_odp_headers(3))
-        headers.extend(self.ods_odp_headers(4))
 
         headers.append(
             {
@@ -358,17 +367,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
         headers.extend(
             self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=[
-                    "number_of_production_lines_assisted",
-                ],
-            )
-        )
-        headers.extend(
-            self.build_headers(
                 self.project_fields,
                 include_names=[
+                    "number_of_production_lines_assisted",
                     "number_of_production_lines_assisted_actual",
                     "ad_hoc_pcr",
                     "pcr_waived",
@@ -452,8 +453,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 self.metaproject_fields,
                 source="meta_project",
                 include_names=[
-                    "cost_effectiveness",
+                    "cost_effectiveness_kg",
                 ],
+                title_overrides={
+                    "cost_effectiveness_kg": "Cost effectiveness (US $/kg) (MYA)"
+                },
             )
         )
 
@@ -612,6 +616,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": partial(get_value_fk, None),
             },
             {
+                "id": "status",
+                "headerName": "Status",
+                "method": partial(get_value_fk, None),
+            },
+            {
                 "id": "cluster",
                 "headerName": "Cluster",
                 "column_width": self.COLUMN_WIDTH * 2,
@@ -738,7 +747,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def select_fields(
         fields, include_names=None, exclude_names=None, title_overrides=None
     ):
-        include_names = set(include_names or [])
+        include_names = include_names or []
         exclude_names = set(exclude_names or [])
         title_overrides = title_overrides or {}
 
@@ -748,9 +757,15 @@ class ProjectsInventoryReportWriter(BaseWriter):
             )
 
         result = []
+        if include_names:
+            fields_by_name = {field.name: field for field in fields}
+            for field_name in include_names:
+                field = fields_by_name.get(field_name)
+                title = title_overrides.get(field.name)
+                result.append((field, title) if title else field)
+            return result
+
         for field in fields:
-            if include_names and field.name not in include_names:
-                continue
             if exclude_names and field.name in exclude_names:
                 continue
 
@@ -871,6 +886,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
         key = (p.final_version.id, version)
         return self.version_map.get(key)
 
+    def get_trf_or_adj_version(self, p, idx) -> Project | None:
+        projects = [p for p in self.get_all_previous_versions(p) if trf_or_adj(p)]
+
+        if trf_or_adj(p):
+            projects.append(p)
+
+        if len(projects) > idx:
+            return projects[idx]
+
+        return None
+
     def get_all_previous_versions(self, p):
         return self.all_versions.get(p.id, ())
 
@@ -878,31 +904,53 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None or project.fund_transferred:
             return None
 
-        return project.total_fund or 0
+        total_fund = project.total_fund or 0
 
-    def _p_fund_transferred(self, project):
-        if project is None:
-            return None
+        if project.version > 3:
+            prev_version = self.get_version(project, project.version - 1)
+            prev_total_fund = prev_version.total_fund or 0 if prev_version else 0
+            return total_fund - prev_total_fund
 
-        if project.adjustment:
-            return project.total_fund or 0
-
-        return project.fund_transferred or 0
+        return total_fund
 
     def _p_psc_approved(self, project):
         if project is None or project.psc_transferred:
             return None
 
-        return project.support_cost_psc or 0
+        support_cost_psc = project.support_cost_psc or 0
+
+        if project.version > 3:
+            prev_version = self.get_version(project, project.version - 1)
+            prev_support_cost_psc = (
+                prev_version.support_cost_psc or 0 if prev_version else 0
+            )
+            return support_cost_psc - prev_support_cost_psc
+
+        return support_cost_psc
+
+    def _p_fund_transferred(self, project):
+        if project is None:
+            return None
+
+        fund_transferred = project.fund_transferred or 0
+
+        prev_version = self.get_version(project, project.version - 1)
+        prev_fund_transferred = (
+            prev_version.fund_transferred or 0 if prev_version else 0
+        )
+
+        return fund_transferred - prev_fund_transferred
 
     def _p_psc_transferred(self, project):
         if project is None:
             return None
 
-        if project.adjustment:
-            return project.support_cost_psc or 0
+        psc_transferred = project.psc_transferred or 0
 
-        return project.psc_transferred or 0
+        prev_version = self.get_version(project, project.version - 1)
+        prev_psc_transferred = prev_version.psc_transferred or 0 if prev_version else 0
+
+        return psc_transferred - prev_psc_transferred
 
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
@@ -1014,6 +1062,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         return project.post_excom_meeting.number if project.post_excom_meeting else None
 
+    def _p_adjustment_meeting(self, project):
+        if project is None:
+            return None
+
+        meeting = project.post_excom_meeting or project.transfer_meeting
+
+        if meeting:
+            return meeting.number
+
+        return None
+
     def funding_headers(self, version, idx):
         if version < MIN_PROJECT_VERSION:
             return []
@@ -1062,50 +1121,45 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
         ]
 
-    def adjustment_headers(self, version, idx):
-        if version < MIN_PROJECT_VERSION:
-            return []
+    def adjustment_headers(self, v_idx, idx):
 
         return [
             {
-                "id": f"funds_adjustment_v{version}",
+                "id": f"funds_adjustment_v{idx}",
                 "headerName": f"Fund Adjustments {idx}",
                 "method": lambda project, _: (
-                    self._p_fund_transferred(self.get_version(project, version))
-                    if trf_or_adj(self.get_version(project, version))
-                    else None
+                    self._p_fund_transferred(
+                        self.get_trf_or_adj_version(project, v_idx)
+                    )
                 ),
                 "type": "number",
                 "align": "right",
             },
             {
-                "id": f"psc_adjustment_v{version}",
+                "id": f"psc_adjustment_v{idx}",
                 "headerName": f"Support Cost Adjustments {idx}",
                 "method": lambda project, _: (
-                    self._p_psc_transferred(self.get_version(project, version))
-                    if trf_or_adj(self.get_version(project, version))
-                    else None
+                    self._p_psc_transferred(self.get_trf_or_adj_version(project, v_idx))
                 ),
                 "type": "number",
                 "align": "right",
             },
             {
-                "id": f"adjustment_meeting_v{version}",
+                "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
                 "method": lambda project, _: (
-                    self.get_version(project, version).post_excom_meeting.number
-                    if trf_or_adj(self.get_version(project, version))
-                    and self.get_version(project, version).post_excom_meeting
-                    else None
+                    self._p_adjustment_meeting(
+                        self.get_trf_or_adj_version(project, v_idx)
+                    )
                 ),
             },
             {
-                "id": f"adjustment_date_v{version}",
+                "id": f"adjustment_date_v{idx}",
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
                 "method": lambda project, _: (
-                    self.get_version(project, version).date_approved
-                    if trf_or_adj(self.get_version(project, version))
+                    self.get_trf_or_adj_version(project, v_idx).date_approved
+                    if self.get_trf_or_adj_version(project, v_idx)
                     else None
                 ),
             },
@@ -1115,7 +1169,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return [
             {
                 "id": f"ods_odp__ods_substance_{idx}",
-                "headerName": f"ODS_Name{idx}",
+                "headerName": f"ODS_Name {idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project,
                     idx - 1,
@@ -1124,23 +1178,30 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": f"ods_odp__odp_{idx}",
-                "headerName": f"ODP{idx}",
+                "headerName": f"ODP_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.odp
                 ),
             },
             {
                 "id": f"ods_odp__phase_out_mt_{idx}",
-                "headerName": f"MT{idx}",
+                "headerName": f"MT_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.phase_out_mt
                 ),
             },
             {
                 "id": f"ods_odp__co2_mt_{idx}",
-                "headerName": f"CO2-eq{idx}",
+                "headerName": f"CO2_{idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.co2_mt
+                ),
+            },
+            {
+                "id": f"ods_odp__ods_replacement_text_{idx}",
+                "headerName": f"ODS_replacement_{idx}",
+                "method": lambda project, _: self.ods_odp_at_idx(
+                    project, idx - 1, lambda ods_odp: ods_odp.ods_replacement_text
                 ),
             },
         ]

@@ -439,8 +439,8 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         expected = {
             1: {"fund": 100, "psc": 10, "meeting": 303, "date": date(2024, 3, 15)},
-            2: {"fund": 120, "psc": 12, "meeting": 204, "date": date(2024, 4, 15)},
-            3: {"fund": 140, "psc": 14, "meeting": 205, "date": date(2024, 5, 15)},
+            2: {"fund": 20, "psc": 2, "meeting": 204, "date": date(2024, 4, 15)},
+            3: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
         }
         currency_format = "###,###,##0.00#############"
         for idx, values in expected.items():
@@ -467,6 +467,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             support_cost_psc=16,
             meeting=MeetingFactory.create(number=306),
             post_excom_meeting=MeetingFactory.create(number=206),
+            date_actual=date(2024, 6, 15),
             date_approved=date(2024, 6, 15),
             adjustment=True,
             fund_transferred=9,
@@ -478,6 +479,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             total_fund=100,
             support_cost_psc=10,
             meeting=MeetingFactory.create(number=303),
+            date_actual=date(2024, 3, 15),
         )
         ProjectFactory.create(
             latest_project=final_project,
@@ -486,6 +488,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             support_cost_psc=12,
             meeting=MeetingFactory.create(number=304),
             post_excom_meeting=MeetingFactory.create(number=204),
+            date_actual=date(2024, 4, 15),
             date_approved=date(2024, 4, 15),
             adjustment=True,
             fund_transferred=7,
@@ -498,6 +501,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             support_cost_psc=14,
             meeting=MeetingFactory.create(number=305),
             post_excom_meeting=MeetingFactory.create(number=205),
+            date_actual=date(2024, 5, 15),
             date_approved=date(2024, 5, 15),
             adjustment=True,
             fund_transferred=8,
@@ -517,9 +521,9 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert row is not None
 
         expected = {
-            1: {"fund": 120, "psc": 12, "meeting": 204, "date": date(2024, 4, 15)},
-            2: {"fund": 140, "psc": 14, "meeting": 205, "date": date(2024, 5, 15)},
-            3: {"fund": 160, "psc": 16, "meeting": 206, "date": date(2024, 6, 15)},
+            1: {"fund": 1, "psc": 1, "meeting": 205, "date": date(2024, 5, 15)},
+            2: {"fund": 7, "psc": 1, "meeting": 204, "date": date(2024, 4, 15)},
+            3: {"fund": 1, "psc": 1, "meeting": 206, "date": date(2024, 6, 15)},
         }
         currency_format = "###,###,##0.00#############"
         for idx, values in expected.items():
