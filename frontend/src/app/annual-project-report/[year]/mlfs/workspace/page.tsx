@@ -723,36 +723,6 @@ export default function APRMLFSWorkspace() {
                 />
               </div>
 
-              {/* Project code search - under the filters */}
-              <div>
-                <TextField
-                  size="small"
-                  placeholder="Search by project code..."
-                  value={projectCodeSearch}
-                  onChange={(e) => setProjectCodeSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IoSearchOutline size={18} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: projectCodeSearch ? (
-                      <InputAdornment position="end">
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            setProjectCodeSearch('')
-                            setParams({ search: '' })
-                          }}
-                        >
-                          <IoClose size={16} />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null,
-                  }}
-                />
-              </div>
-
               {/* Also display the active filters */}
               {Object.values(filters).some(
                 (filterArr) => filterArr.length > 0,
@@ -851,7 +821,33 @@ export default function APRMLFSWorkspace() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <TextField
+              size="small"
+              placeholder="Search by project code..."
+              value={projectCodeSearch}
+              onChange={(e) => setProjectCodeSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IoSearchOutline size={18} />
+                  </InputAdornment>
+                ),
+                endAdornment: projectCodeSearch ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setProjectCodeSearch('')
+                        setParams({ search: '' })
+                      }}
+                    >
+                      <IoClose size={16} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
             <FormControlLabel
               label="Show derived columns"
               control={
