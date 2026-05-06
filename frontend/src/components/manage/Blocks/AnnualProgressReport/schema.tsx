@@ -20,6 +20,20 @@ import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BP
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
 import dayjs from 'dayjs'
 
+export const checkboxColumnDef = {
+  checkboxSelection: true,
+  headerCheckboxSelection: true,
+  width: 48,
+  minWidth: 48,
+  maxWidth: 48,
+  pinned: 'left' as const,
+  headerName: '',
+  field: '_checkbox',
+  resizable: false,
+  sortable: false,
+  suppressColumnsToolPanel: true,
+}
+
 export const dataTypeDefinitions: Record<
   string,
   DataTypeDefinition & ValidatorMixin

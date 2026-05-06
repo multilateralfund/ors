@@ -11,12 +11,20 @@ import {
   Chip,
   CircularProgress,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   Link,
   Tabs,
   Tab,
+  TextField,
   Tooltip,
 } from '@mui/material'
-import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
+import {
+  IoChevronDown,
+  IoClose,
+  IoInformationCircleOutline,
+  IoSearchOutline,
+} from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -26,6 +34,7 @@ import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import useGetColumnDefs, {
+  checkboxColumnDef,
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
@@ -96,6 +105,9 @@ export default function APRMLFSWorkspace() {
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
   const [showDerivedColumns, setShowDerivedColumns] = useState(true)
+  const [projectCodeSearch, setProjectCodeSearch] = useState('')
+  const [selectedProjectCodes, setSelectedProjectCodes] = useState<string[]>([])
+  const [taskId, setTaskId] = useState(null)
 
   const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
@@ -258,6 +270,59 @@ export default function APRMLFSWorkspace() {
     showDerivedColumns,
   })
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (projectCodeSearch.length >= 3) {
+        setParams({ search: projectCodeSearch })
+      } else if (projectCodeSearch === '') {
+        setParams({ search: '' })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectCodeSearch])
+
+  useEffect(() => {
+    if (!taskId) return
+
+    let timeout: any
+
+    const getSyncStatus = async () => {
+      try {
+        const res = await api(
+          `api/annual-project-report/${year}/sync-from-projects/?task_id=${taskId}`,
+        )
+
+        if (res.status === 'success') {
+          setTaskId(null)
+          refetchAprData()
+
+          enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
+            variant: 'success',
+          })
+          return
+        }
+
+        if (res.status === 'failure') {
+          setTaskId(null)
+          enqueueSnackbar(<>{res.error}</>, {
+            variant: 'error',
+          })
+          return
+        }
+
+        timeout = setTimeout(getSyncStatus, 2000)
+      } catch (e) {
+        await handleActionErrors(e)
+      }
+    }
+
+    getSyncStatus()
+
+    return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId])
+
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
     return <Redirect to={`/${year}/workspace`} replace />
@@ -377,8 +442,6 @@ export default function APRMLFSWorkspace() {
     }
   }
 
-  const [taskId, setTaskId] = useState(null)
-
   const syncWithProjects = async () => {
     try {
       const res = await api(
@@ -402,50 +465,6 @@ export default function APRMLFSWorkspace() {
       await handleActionErrors(e)
     }
   }
-
-  useEffect(() => {
-    if (!taskId) return
-
-    let attempt = 0
-    let timeout: any
-
-    const getSyncStatus = async () => {
-      try {
-        const res = await api(
-          `api/annual-project-report/${year}/sync-from-projects/?task_id=${taskId}`,
-        )
-
-        if (res.status === 'success') {
-          setTaskId(null)
-          refetchAprData()
-
-          enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
-            variant: 'success',
-          })
-          return
-        }
-
-        if (res.status === 'failure') {
-          setTaskId(null)
-          enqueueSnackbar(<>{res.error}</>, {
-            variant: 'error',
-          })
-          return
-        }
-
-        const delay = Math.min(1000 * 2 ** attempt, 30000)
-        attempt++
-
-        timeout = setTimeout(getSyncStatus, delay)
-      } catch (e) {
-        await handleActionErrors(e)
-      }
-    }
-
-    getSyncStatus()
-
-    return () => clearTimeout(timeout)
-  }, [taskId])
 
   return (
     <PageWrapper>
@@ -502,9 +521,7 @@ export default function APRMLFSWorkspace() {
             {activeTab === 0 && kickstartAPR && (
               <Tooltip
                 title={
-                  !loading && !canKickstartAPR
-                    ? kickstartAPR.message || ''
-                    : ''
+                  !loading && !canKickstartAPR ? kickstartAPR.message || '' : ''
                 }
               >
                 <span>
@@ -733,7 +750,10 @@ export default function APRMLFSWorkspace() {
                       variant="text"
                       onClick={() => {
                         setFilters(INITIAL_PARAMS_MLFS)
-                        setParams(INITIAL_PARAMS_MLFS)
+                        setParams({ ...INITIAL_PARAMS_MLFS, search: '' })
+                        setProjectCodeSearch('')
+                        setSelectedProjectCodes([])
+                        gridRef.current?.api?.deselectAll()
                       }}
                     >
                       Clear all
@@ -753,7 +773,12 @@ export default function APRMLFSWorkspace() {
                     handleExport(
                       formatApiUrl(
                         `api/annual-project-report/mlfs/${year}/export/`,
-                        params,
+                        selectedProjectCodes.length > 0
+                          ? {
+                              ...params,
+                              project_codes: selectedProjectCodes.join(','),
+                            }
+                          : params,
                       ),
                       setLoadingExport,
                     )
@@ -799,7 +824,33 @@ export default function APRMLFSWorkspace() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <TextField
+              size="small"
+              placeholder="Search by project code..."
+              value={projectCodeSearch}
+              onChange={(e) => setProjectCodeSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IoSearchOutline size={18} />
+                  </InputAdornment>
+                ),
+                endAdornment: projectCodeSearch ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setProjectCodeSearch('')
+                        setParams({ search: '' })
+                      }}
+                    >
+                      <IoClose size={16} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
             <FormControlLabel
               label="Show derived columns"
               control={
@@ -816,17 +867,34 @@ export default function APRMLFSWorkspace() {
                 label: 'No projects submitted by the IA/BAs yet',
               }}
               Toolbar={() => {
-                return <div>Total rows: {allProjectReports.length ?? 0}</div>
+                return (
+                  <div className="flex gap-x-4">
+                    <div>Total rows: {allProjectReports.length ?? 0}</div>
+                    {selectedProjectCodes.length > 0 && (
+                      <div>{selectedProjectCodes.length} selected</div>
+                    )}
+                  </div>
+                )
               }}
               rowsVisible={100}
               gridRef={gridRef}
+              rowSelection="multiple"
+              suppressRowClickSelection={true}
               dataTypeDefinitions={dataTypeDefinitions}
-              columnDefs={columnDefs}
+              columnDefs={[checkboxColumnDef, ...columnDefs]}
               defaultColDef={defaultColDef}
               rowData={allProjectReports}
               isDataFormatted={true}
               tooltipShowDelay={200}
               singleClickEdit={true}
+              onSelectionChanged={() => {
+                const nodes = gridRef.current?.api?.getSelectedNodes() ?? []
+                setSelectedProjectCodes(
+                  nodes
+                    .map((n) => n.data?.project_code)
+                    .filter(Boolean) as string[],
+                )
+              }}
             />
           )}
         </div>

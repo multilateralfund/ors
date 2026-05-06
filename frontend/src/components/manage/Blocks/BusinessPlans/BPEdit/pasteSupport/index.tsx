@@ -92,7 +92,7 @@ function parsePastedHTML(html: string) {
 export async function readPastedTableFromNavigator(
   throwError: EnqueueSnackbar,
   isMultiple: boolean,
-): Promise<{ table: any[][], sourceLang: string | null }> {
+): Promise<{ table: any[][]; sourceLang: string | null }> {
   let result: any[][] = []
   let sourceLang: string | null = null
   let canceled = false
@@ -106,29 +106,24 @@ export async function readPastedTableFromNavigator(
 
     const textContent = await (await paste.getType('text/plain')).text()
 
-    // DEBUG — remove before merging to main
-    console.log('[paste] clipboard types:', paste.types)
-    console.log('[paste] raw htmlContent:', htmlContent)
-    console.log('[paste] raw textContent:', textContent)
-
     if (htmlContent) {
       sourceLang = extractLangFromHTML(htmlContent)
-      console.log('[paste] detected sourceLang from clipboard HTML:', sourceLang)
+      console.log(
+        '[paste] detected sourceLang from clipboard HTML:',
+        sourceLang,
+      )
     }
 
     const pastedTable = !!htmlContent
       ? parsePastedHTML(htmlContent)
       : parsePastedText(textContent)
 
-    // DEBUG — remove before merging to main
-    console.log('[paste] pastedTable after parsing (before cleanup):', JSON.parse(JSON.stringify(pastedTable)))
-
     if (pastedTable.length === 0 || (pastedTable[0]?.length ?? 0) < 2) {
       throwError(
         `Could not read a valid table from clipboard! Make sure you are pasting a ${isMultiple ? 'minimum' : ''} 2 column table.`,
         { variant: 'error' },
       )
-      return { table: [], sourceLang: null }
+      return { table: [], sourceLang }
     }
 
     // For multi-column paste, only remove empty rows and leave all columns intact.
@@ -138,9 +133,6 @@ export async function readPastedTableFromNavigator(
       ? removeEmptyRows(pastedTable)
       : removeEmptyRowsAndColumns(pastedTable)
     result = isMultiple ? cleanTable : getOnlyFirstAndLastColumns(cleanTable)
-
-    // DEBUG — remove before merging to main
-    console.log('[paste] result after cleanup:', JSON.parse(JSON.stringify(result)))
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(

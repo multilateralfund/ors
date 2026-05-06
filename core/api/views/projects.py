@@ -264,8 +264,31 @@ class ProjectStatusListView(generics.ListAPIView):
     """
 
     permission_classes = [HasProjectMetaInfoViewAccess]
-    queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
+
+    def get_queryset(self):
+        queryset = ProjectStatus.objects.all()
+        is_for_apr = (
+            self.request.query_params.get("is_for_apr", "false").lower() == "true"
+        )
+        # The "N/A" status should not be returned for APR
+        if is_for_apr:
+            queryset = queryset.exclude(code="NA")
+
+        return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="is_for_apr",
+                location=OpenApiParameter.QUERY,
+                description="Called from an APR context. If true, 'N/A' is ignored.",
+                type=OpenApiTypes.BOOL,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class ProjectSubmissionStatusListView(generics.ListAPIView):

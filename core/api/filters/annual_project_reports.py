@@ -71,6 +71,16 @@ def build_filter_params_from_query_params(query_params, default_status="ONG,COM"
     if status_param:
         filter_params["status"] = status_param
 
+    search_param = query_params.get("search")
+    if search_param and search_param.strip():
+        filter_params["project_code_search"] = search_param.strip()
+
+    project_codes_param = query_params.get("project_codes")
+    if project_codes_param:
+        codes = [c.strip() for c in project_codes_param.split(",") if c.strip()]
+        if codes:
+            filter_params["project_codes"] = codes
+
     return filter_params
 
 
@@ -115,6 +125,16 @@ def build_filtered_project_reports_queryset(filter_params):
         status_codes = list(set(status_codes) | mandatory_statuses)
         if status_codes:
             queryset = queryset.filter(project__status__code__in=status_codes)
+
+    if filter_params.get("project_code_search"):
+        queryset = queryset.filter(
+            project_code_denorm__icontains=filter_params["project_code_search"]
+        )
+
+    if filter_params.get("project_codes"):
+        queryset = queryset.filter(
+            project_code_denorm__in=filter_params["project_codes"]
+        )
 
     return queryset
 
