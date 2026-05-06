@@ -46,6 +46,7 @@ import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { useAPRProjectStatuses } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 export default function APRWorkspace() {
   const [loadingExport, setLoadingExport] = useState(false)
@@ -60,9 +61,7 @@ export default function APRWorkspace() {
   const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
     useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
-  const {
-    statuses: { data: projectStatuses },
-  } = useStore((state) => state.projects)
+  const projectStatuses = useAPRProjectStatuses()
   const search = useSearch()
   const [initialSearch] = useState(search)
   const [filters, setFilters] = useState<Record<string, Filter[]>>(() => {

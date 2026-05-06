@@ -2,10 +2,12 @@ import { createContext, useContext } from 'react'
 import { ConfirmOptions } from '@ors/contexts/AnnualProjectReport/ConfirmDialog.tsx'
 import { UseApiReturn } from '@ors/hooks/useApi.ts'
 import { AnnualProgressReportCurrentYear } from '@ors/app/annual-project-report/types.ts'
+import { ProjectStatusType } from '@ors/@types/api_project_statuses.ts'
 
 interface APRContextProps {
   confirm: (options: ConfirmOptions) => Promise<boolean>
   aprCurrentYear: UseApiReturn<AnnualProgressReportCurrentYear>
+  aprProjectStatuses: UseApiReturn<ProjectStatusType[]>
 }
 
 export const APRContext = createContext<APRContextProps | null>(null)
@@ -26,4 +28,14 @@ export function useAPRCurrentYear() {
     )
   }
   return ctx.aprCurrentYear
+}
+
+export function useAPRProjectStatuses() {
+  const ctx = useContext(APRContext)
+  if (!ctx) {
+    throw new Error(
+      'useAPRProjectStatuses must be used inside APRProvider',
+    )
+  }
+  return ctx.aprProjectStatuses.data ?? []
 }

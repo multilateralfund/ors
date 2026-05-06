@@ -69,6 +69,7 @@ import {
 import {
   useAPRCurrentYear,
   useConfirmation,
+  useAPRProjectStatuses,
 } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 import { enqueueSnackbar } from 'notistack'
 import { api, formatApiUrl } from '@ors/helpers'
@@ -94,9 +95,7 @@ export default function APRMLFSWorkspace() {
   const { year } = useParams()
   usePageTitle(`Secretariat - Annual Progress Report (${year})`)
   const { canViewAPR, isMlfsUser, canEditAPR } = useContext(PermissionsContext)
-  const {
-    statuses: { data: projectStatuses },
-  } = useStore((state) => state.projects)
+  const projectStatuses = useAPRProjectStatuses()
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string[]>[]
   >([])
