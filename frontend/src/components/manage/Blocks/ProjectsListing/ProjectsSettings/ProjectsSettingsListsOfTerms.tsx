@@ -10,7 +10,7 @@ const ProjectsSettingsListsOfTerms = () => {
       <h2 className="mt-2 text-3xl">
         Management of values for the pick lists used in the IA/BA portal
       </h2>
-      <h3 className="mt-6 text-[#0095D5]">
+      <h3 className="mt-2 text-3xl">
         A) Fields with values configurable from the admin interface.
       </h3>
 
