@@ -2223,17 +2223,25 @@ class TestAPRExportView(BaseTest):
         self,
         apr_agency_viewer_user,
         annual_agency_report,
+        project_closed_status,
         project_ongoing_status,
     ):
         project_alpha = ProjectFactory(
             code="TEST/EXP/ALPHA/INV/01",
             agency=annual_agency_report.agency,
-            status=project_ongoing_status,
+            status=project_closed_status,
             version=3,
             latest_project=None,
         )
         project_beta = ProjectFactory(
             code="TEST/EXP/BETA/INV/02",
+            agency=annual_agency_report.agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        project_ong = ProjectFactory(
+            code="TEST/EXP/ONG/INV/03",
             agency=annual_agency_report.agency,
             status=project_ongoing_status,
             version=3,
@@ -2241,6 +2249,7 @@ class TestAPRExportView(BaseTest):
         )
         AnnualProjectReportFactory(report=annual_agency_report, project=project_alpha)
         AnnualProjectReportFactory(report=annual_agency_report, project=project_beta)
+        AnnualProjectReportFactory(report=annual_agency_report, project=project_ong)
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
@@ -2253,8 +2262,8 @@ class TestAPRExportView(BaseTest):
         columns = APRExportWriter.build_column_mapping()
         code_col = columns["project_code"]
 
-        # search=ALPHA returns only project_alpha
-        response = self.client.get(url, {"search": "ALPHA"})
+        # search=ALPHA with status=CLO returns only project_alpha
+        response = self.client.get(url, {"search": "ALPHA", "status": "CLO"})
         assert response.status_code == status.HTTP_200_OK
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
@@ -2265,8 +2274,10 @@ class TestAPRExportView(BaseTest):
         assert project_alpha.code in project_codes
         assert project_beta.code not in project_codes
 
-        # project_codes=project_beta.code returns only project_beta
-        response = self.client.get(url, {"project_codes": project_beta.code})
+        # project_codes=project_beta.code with status=CLO returns only project_beta
+        response = self.client.get(
+            url, {"project_codes": project_beta.code, "status": "CLO"}
+        )
         assert response.status_code == status.HTTP_200_OK
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
@@ -2276,6 +2287,17 @@ class TestAPRExportView(BaseTest):
         ]
         assert project_beta.code in project_codes
         assert project_alpha.code not in project_codes
+
+        # ONG/COM projects are excluded even if explicitly listed in project_codes
+        response = self.client.get(url, {"project_codes": project_ong.code})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_ong.code not in project_codes
 
 
 @pytest.mark.django_db
@@ -4358,6 +4380,7 @@ class TestAPRMLFSExportView(BaseTest):
         mlfs_admin_user,
         apr_year,
         annual_progress_report,
+        project_closed_status,
         project_ongoing_status,
     ):
         agency = AgencyFactory()
@@ -4370,12 +4393,19 @@ class TestAPRMLFSExportView(BaseTest):
         project_alpha = ProjectFactory(
             code="TEST/MLFS/ALPHA/INV/01",
             agency=agency,
-            status=project_ongoing_status,
+            status=project_closed_status,
             version=3,
             latest_project=None,
         )
         project_omega = ProjectFactory(
             code="TEST/MLFS/BETA/INV/02",
+            agency=agency,
+            status=project_closed_status,
+            version=3,
+            latest_project=None,
+        )
+        project_ong = ProjectFactory(
+            code="TEST/MLFS/ONG/INV/03",
             agency=agency,
             status=project_ongoing_status,
             version=3,
@@ -4383,14 +4413,15 @@ class TestAPRMLFSExportView(BaseTest):
         )
         AnnualProjectReportFactory(report=agency_report, project=project_alpha)
         AnnualProjectReportFactory(report=agency_report, project=project_omega)
+        AnnualProjectReportFactory(report=agency_report, project=project_ong)
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
         columns = APRExportWriter.build_column_mapping()
         code_col = columns["project_code"]
 
-        # searching for ALPHA returns only project_alpha
-        response = self.client.get(url, {"search": "ALPHA"})
+        # searching for ALPHA with status=CLO returns only project_alpha
+        response = self.client.get(url, {"search": "ALPHA", "status": "CLO"})
         assert response.status_code == status.HTTP_200_OK
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
@@ -4401,8 +4432,10 @@ class TestAPRMLFSExportView(BaseTest):
         assert project_alpha.code in project_codes
         assert project_omega.code not in project_codes
 
-        # filtering by project_omega.code returns only project_omega
-        response = self.client.get(url, {"project_codes": project_omega.code})
+        # filtering by project_omega.code with status=CLO returns only project_omega
+        response = self.client.get(
+            url, {"project_codes": project_omega.code, "status": "CLO"}
+        )
         assert response.status_code == status.HTTP_200_OK
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook[APRExportWriter.SHEET_NAME]
@@ -4412,6 +4445,17 @@ class TestAPRMLFSExportView(BaseTest):
         ]
         assert project_omega.code in project_codes
         assert project_alpha.code not in project_codes
+
+        # ONG/COM projects are excluded even when explicitly listed in project_codes
+        response = self.client.get(url, {"project_codes": project_ong.code})
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        worksheet = workbook[APRExportWriter.SHEET_NAME]
+        project_codes = [
+            worksheet.cell(row, code_col).value
+            for row in range(APRExportWriter.FIRST_DATA_ROW, worksheet.max_row + 1)
+        ]
+        assert project_ong.code not in project_codes
 
 
 @pytest.mark.django_db
