@@ -589,7 +589,37 @@ export default function APRMLFSWorkspace() {
           <div className="mb-2 mt-4 flex justify-between">
             {/* Filters section */}
             <div className="flex flex-col gap-y-4">
+              {/* Project code search */}
               <div className="flex flex-wrap items-center gap-2">
+                <div className="BPList">
+                  <TextField
+                    size="small"
+                    placeholder="Search by project code..."
+                    value={projectCodeSearch}
+                    onChange={(e) => setProjectCodeSearch(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <IoSearchOutline size={18} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: projectCodeSearch ? (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setProjectCodeSearch('')
+                              setParams({ search: '' })
+                            }}
+                          >
+                            <IoClose size={16} />
+                          </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+                </div>
+
                 {/* Agency filter */}
                 <Field
                   Input={{ placeholder: 'Agency' }}
@@ -727,10 +757,21 @@ export default function APRMLFSWorkspace() {
               </div>
 
               {/* Also display the active filters */}
-              {Object.values(filters).some(
+              {(Object.values(filters).some(
                 (filterArr) => filterArr.length > 0,
-              ) && (
+              ) || !!projectCodeSearch) && (
                 <ul className="m-0 flex list-none flex-wrap gap-2 px-0">
+                  {projectCodeSearch && (
+                    <li key="search">
+                      <Chip
+                        label={projectCodeSearch}
+                        onDelete={() => {
+                          setProjectCodeSearch('')
+                          setParams({ search: '' })
+                        }}
+                      />
+                    </li>
+                  )}
                   {Object.entries(filters).flatMap(
                     ([filterKey, filterValue]) => {
                       const paramKey: keyof Filter =
@@ -764,8 +805,8 @@ export default function APRMLFSWorkspace() {
             </div>
 
             {/* Actions */}
-            <div>
-              <div className="flex flex-wrap gap-x-2">
+            <div className="flex flex-col items-end">
+              <div className="flex gap-x-2 whitespace-nowrap">
                 <Button
                   variant="text"
                   startIcon={<FiDownload size={18} />}
@@ -821,46 +862,18 @@ export default function APRMLFSWorkspace() {
                   Download may take more than 1 minute, please wait!
                 </div>
               )}
+              <FormControlLabel
+                label="Show derived columns"
+                control={
+                  <Checkbox
+                    checked={showDerivedColumns}
+                    onChange={(e) => setShowDerivedColumns(e.target.checked)}
+                  />
+                }
+              />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <TextField
-              size="small"
-              placeholder="Search by project code..."
-              value={projectCodeSearch}
-              onChange={(e) => setProjectCodeSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IoSearchOutline size={18} />
-                  </InputAdornment>
-                ),
-                endAdornment: projectCodeSearch ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setProjectCodeSearch('')
-                        setParams({ search: '' })
-                      }}
-                    >
-                      <IoClose size={16} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : null,
-              }}
-            />
-            <FormControlLabel
-              label="Show derived columns"
-              control={
-                <Checkbox
-                  checked={showDerivedColumns}
-                  onChange={(e) => setShowDerivedColumns(e.target.checked)}
-                />
-              }
-            />
-          </div>
           {loaded && (
             <EditTable
               noRowsOverlayComponentParams={{
@@ -880,6 +893,13 @@ export default function APRMLFSWorkspace() {
               gridRef={gridRef}
               rowSelection="multiple"
               suppressRowClickSelection={true}
+              isRowSelectable={(node) => {
+                const statusName = node.data?.status
+                const status = projectStatuses.find(
+                  (s: any) => s.name === statusName,
+                )
+                return !MANDATORY_STATUSES.includes(status?.code ?? '')
+              }}
               dataTypeDefinitions={dataTypeDefinitions}
               columnDefs={[checkboxColumnDef, ...columnDefs]}
               defaultColDef={defaultColDef}
