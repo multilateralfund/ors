@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 
@@ -127,8 +128,10 @@ def build_filtered_project_reports_queryset(filter_params):
             queryset = queryset.filter(project__status__code__in=status_codes)
 
     if filter_params.get("project_code_search"):
+        search_term = filter_params["project_code_search"]
         queryset = queryset.filter(
-            project_code_denorm__icontains=filter_params["project_code_search"]
+            Q(project_code_denorm__icontains=search_term)
+            | Q(legacy_code_denorm__icontains=search_term)
         )
 
     if filter_params.get("project_codes"):
