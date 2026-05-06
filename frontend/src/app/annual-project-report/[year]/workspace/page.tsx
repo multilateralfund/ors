@@ -46,6 +46,7 @@ import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { useAPRProjectStatuses } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 export default function APRWorkspace() {
   const [loadingExport, setLoadingExport] = useState(false)
@@ -60,9 +61,7 @@ export default function APRWorkspace() {
   const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
     useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
-  const {
-    statuses: { data: projectStatuses },
-  } = useStore((state) => state.projects)
+  const projectStatuses = useAPRProjectStatuses()
   const search = useSearch()
   const [initialSearch] = useState(search)
   const [filters, setFilters] = useState<Record<string, Filter[]>>(() => {
@@ -236,6 +235,35 @@ export default function APRWorkspace() {
         <div className="mb-2 flex items-start justify-between">
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-wrap items-center gap-2">
+              <div className="BPList">
+                <TextField
+                  size="small"
+                  placeholder="Search by project code..."
+                  value={projectCodeSearch}
+                  onChange={(e) => setProjectCodeSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IoSearchOutline size={18} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: projectCodeSearch ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setProjectCodeSearch('')
+                            setParams({ search: '' })
+                          }}
+                        >
+                            <IoClose size={16} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              </div>
+
               {/* Region filter */}
               <Field
                 Input={{ placeholder: 'Region' }}
@@ -331,40 +359,21 @@ export default function APRWorkspace() {
               />
             </div>
 
-            {/* Project code search */}
-            <div>
-              <TextField
-                size="small"
-                placeholder="Search by project code..."
-                value={projectCodeSearch}
-                onChange={(e) => setProjectCodeSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <IoSearchOutline size={18} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: projectCodeSearch ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setProjectCodeSearch('')
-                          setParams({ search: '' })
-                        }}
-                      >
-                        <IoClose size={16} />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                }}
-              />
-            </div>
-
-            {Object.values(filters).some(
+            {(Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
-            ) && (
+            ) || !!projectCodeSearch) && (
               <ul className="m-0 flex list-none gap-x-2 px-0 py-2">
+                {projectCodeSearch && (
+                  <li key="search">
+                    <Chip
+                      label={projectCodeSearch}
+                      onDelete={() => {
+                        setProjectCodeSearch('')
+                        setParams({ search: '' })
+                      }}
+                    />
+                  </li>
+                )}
                 {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
                   const paramKey: keyof Filter =
                     filterKey === 'status' ? 'code' : 'id'
@@ -395,8 +404,8 @@ export default function APRWorkspace() {
             )}
           </div>
 
-          <div>
-            <div className="flex flex-wrap gap-x-2">
+          <div className="flex flex-col items-end">
+            <div className="flex gap-x-2 whitespace-nowrap">
               <Button
                 variant="text"
                 startIcon={<FiDownload size={18} />}
@@ -451,18 +460,16 @@ export default function APRWorkspace() {
                 Download may take more than 1 minute, please wait!
               </div>
             )}
+            <FormControlLabel
+              label="Show derived columns"
+              control={
+                <Checkbox
+                  checked={showDerivedColumns}
+                  onChange={(e) => setShowDerivedColumns(e.target.checked)}
+                />
+              }
+            />
           </div>
-        </div>
-        <div className="flex justify-end">
-          <FormControlLabel
-            label="Show derived columns"
-            control={
-              <Checkbox
-                checked={showDerivedColumns}
-                onChange={(e) => setShowDerivedColumns(e.target.checked)}
-              />
-            }
-          />
         </div>
         {loaded && (
           <ViewTable
@@ -483,6 +490,13 @@ export default function APRWorkspace() {
             gridRef={gridRef}
             rowSelection="multiple"
             suppressRowClickSelection={true}
+            isRowSelectable={(node) => {
+              const statusName = node.data?.status
+              const status = projectStatuses.find(
+                (s: any) => s.name === statusName,
+              )
+              return !MANDATORY_STATUSES.includes(status?.code ?? '')
+            }}
             dataTypeDefinitions={dataTypeDefinitions}
             columnDefs={[checkboxColumnDef, ...columnDefs]}
             defaultColDef={defaultColDef}

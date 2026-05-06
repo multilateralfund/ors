@@ -5,6 +5,7 @@ import ConfirmDialog, {
 } from '@ors/contexts/AnnualProjectReport/ConfirmDialog.tsx'
 import useApi from '@ors/hooks/useApi.ts'
 import { AnnualProgressReportCurrentYear } from '@ors/app/annual-project-report/types.ts'
+import { ProjectStatusType } from '@ors/@types/api_project_statuses.ts'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 
 interface ProjectsDataProviderProps extends PropsWithChildren {}
@@ -32,6 +33,15 @@ export default function APRProvider({ children }: ProjectsDataProviderProps) {
     path: `api/annual-project-report/current-year/`,
   })
 
+  const aprProjectStatuses = useApi<ProjectStatusType[]>({
+    options: {
+      withStoreCache: false,
+      triggerIf: canViewAPR,
+      params: { is_for_apr: true },
+    },
+    path: 'api/project-statuses/',
+  })
+
   const confirm = useCallback((options: ConfirmOptions) => {
     return new Promise<boolean>((resolve) => {
       setDialog({
@@ -48,7 +58,7 @@ export default function APRProvider({ children }: ProjectsDataProviderProps) {
   }
 
   return (
-    <APRContext.Provider value={{ confirm, aprCurrentYear }}>
+    <APRContext.Provider value={{ confirm, aprCurrentYear, aprProjectStatuses }}>
       {children}
       <ConfirmDialog
         open={dialog.open}

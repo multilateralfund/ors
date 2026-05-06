@@ -135,7 +135,7 @@ def build_filtered_project_reports_queryset(filter_params):
         )
 
     if filter_params.get("project_codes"):
-        queryset = queryset.filter(
+        queryset = queryset.exclude(project__status__code__in=["ONG", "COM"]).filter(
             project_code_denorm__in=filter_params["project_codes"]
         )
 

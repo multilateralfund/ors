@@ -18,11 +18,14 @@ import {
 import CellValidation from '@ors/components/manage/Blocks/AnnualProgressReport/CellValidation.tsx'
 import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
 import { APRTableFieldProps } from '@ors/app/annual-project-report/types'
+import SelectionCheckbox, {
+  APRSelectAllCheckbox,
+} from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
 export const checkboxColumnDef = {
-  checkboxSelection: true,
-  headerCheckboxSelection: true,
+  headerComponent: APRSelectAllCheckbox,
+  cellRenderer: SelectionCheckbox,
   width: 48,
   minWidth: 48,
   maxWidth: 48,
