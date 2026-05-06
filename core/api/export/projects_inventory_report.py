@@ -91,18 +91,22 @@ class ProjectsInventoryReportWriter(BaseWriter):
             headers.extend(self.funding_headers(i + 3, i + 1))
 
         for i in range(7):
-            headers.extend(self.adjustment_headers(i + 4, i + 1))
+            headers.extend(self.adjustment_headers(i, i + 1))
 
         headers.extend(
             [
                 {
                     "id": "fund_transferred",
                     "headerName": "Fund transferred",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self.calc_sum_total_fund(project),
                 },
                 {
                     "id": "psc_transferred",
                     "headerName": "PSC transferred",
+                    "type": "number",
+                    "align": "right",
                     "method": lambda project, _: self.calc_sum_support_cost_psc(
                         project
                     ),
@@ -882,6 +886,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
         key = (p.final_version.id, version)
         return self.version_map.get(key)
 
+    def get_trf_or_adj_version(self, p, idx) -> Project | None:
+        projects = [p for p in self.get_all_previous_versions(p) if trf_or_adj(p)]
+
+        if trf_or_adj(p):
+            projects.append(p)
+
+        if len(projects) > idx:
+            return projects[idx]
+
+        return None
+
     def get_all_previous_versions(self, p):
         return self.all_versions.get(p.id, ())
 
@@ -889,31 +904,53 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None or project.fund_transferred:
             return None
 
-        return project.total_fund or 0
+        total_fund = project.total_fund or 0
 
-    def _p_fund_transferred(self, project):
-        if project is None:
-            return None
+        if project.version > 3:
+            prev_version = self.get_version(project, project.version - 1)
+            prev_total_fund = prev_version.total_fund or 0 if prev_version else 0
+            return total_fund - prev_total_fund
 
-        if project.adjustment:
-            return project.total_fund or 0
-
-        return project.fund_transferred or 0
+        return total_fund
 
     def _p_psc_approved(self, project):
         if project is None or project.psc_transferred:
             return None
 
-        return project.support_cost_psc or 0
+        support_cost_psc = project.support_cost_psc or 0
+
+        if project.version > 3:
+            prev_version = self.get_version(project, project.version - 1)
+            prev_support_cost_psc = (
+                prev_version.support_cost_psc or 0 if prev_version else 0
+            )
+            return support_cost_psc - prev_support_cost_psc
+
+        return support_cost_psc
+
+    def _p_fund_transferred(self, project):
+        if project is None:
+            return None
+
+        fund_transferred = project.fund_transferred or 0
+
+        prev_version = self.get_version(project, project.version - 1)
+        prev_fund_transferred = (
+            prev_version.fund_transferred or 0 if prev_version else 0
+        )
+
+        return fund_transferred - prev_fund_transferred
 
     def _p_psc_transferred(self, project):
         if project is None:
             return None
 
-        if project.adjustment:
-            return project.support_cost_psc or 0
+        psc_transferred = project.psc_transferred or 0
 
-        return project.psc_transferred or 0
+        prev_version = self.get_version(project, project.version - 1)
+        prev_psc_transferred = prev_version.psc_transferred or 0 if prev_version else 0
+
+        return psc_transferred - prev_psc_transferred
 
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
@@ -1025,6 +1062,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         return project.post_excom_meeting.number if project.post_excom_meeting else None
 
+    def _p_adjustment_meeting(self, project):
+        if project is None:
+            return None
+
+        meeting = project.post_excom_meeting or project.transfer_meeting
+
+        if meeting:
+            return meeting.number
+
+        return None
+
     def funding_headers(self, version, idx):
         if version < MIN_PROJECT_VERSION:
             return []
@@ -1073,50 +1121,45 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
         ]
 
-    def adjustment_headers(self, version, idx):
-        if version < MIN_PROJECT_VERSION:
-            return []
+    def adjustment_headers(self, v_idx, idx):
 
         return [
             {
-                "id": f"funds_adjustment_v{version}",
+                "id": f"funds_adjustment_v{idx}",
                 "headerName": f"Fund Adjustments {idx}",
                 "method": lambda project, _: (
-                    self._p_fund_transferred(self.get_version(project, version))
-                    if trf_or_adj(self.get_version(project, version))
-                    else None
+                    self._p_fund_transferred(
+                        self.get_trf_or_adj_version(project, v_idx)
+                    )
                 ),
                 "type": "number",
                 "align": "right",
             },
             {
-                "id": f"psc_adjustment_v{version}",
+                "id": f"psc_adjustment_v{idx}",
                 "headerName": f"Support Cost Adjustments {idx}",
                 "method": lambda project, _: (
-                    self._p_psc_transferred(self.get_version(project, version))
-                    if trf_or_adj(self.get_version(project, version))
-                    else None
+                    self._p_psc_transferred(self.get_trf_or_adj_version(project, v_idx))
                 ),
                 "type": "number",
                 "align": "right",
             },
             {
-                "id": f"adjustment_meeting_v{version}",
+                "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
                 "method": lambda project, _: (
-                    self.get_version(project, version).post_excom_meeting.number
-                    if trf_or_adj(self.get_version(project, version))
-                    and self.get_version(project, version).post_excom_meeting
-                    else None
+                    self._p_adjustment_meeting(
+                        self.get_trf_or_adj_version(project, v_idx)
+                    )
                 ),
             },
             {
-                "id": f"adjustment_date_v{version}",
+                "id": f"adjustment_date_v{idx}",
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
                 "method": lambda project, _: (
-                    self.get_version(project, version).date_approved
-                    if trf_or_adj(self.get_version(project, version))
+                    self.get_trf_or_adj_version(project, v_idx).date_approved
+                    if self.get_trf_or_adj_version(project, v_idx)
                     else None
                 ),
             },
