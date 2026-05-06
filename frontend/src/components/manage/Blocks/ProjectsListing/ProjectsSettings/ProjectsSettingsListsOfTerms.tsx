@@ -10,14 +10,14 @@ const ProjectsSettingsListsOfTerms = () => {
       <h2 className="mt-2 text-3xl">
         Management of values for the pick lists used in the IA/BA portal
       </h2>
-      <h3 className="mt-6">
+      <h3 className="mt-6 text-[#0095D5]">
         A) Fields with values configurable from the admin interface.
       </h3>
 
       <p>
         <strong className="text-[#0095D5]">
-          Emails for project submission: Agencies:{' '}
-        </strong>{' '}
+          Agencies:
+        </strong>
         the value "China (FECO)" is excluded from Business Plans. Values "China
         (FECO)", "Treasurer (Cash Pool)" and "Secretariat" are excluded from
         projects.
@@ -45,7 +45,7 @@ const ProjectsSettingsListsOfTerms = () => {
       </table>
 
       <p>
-        <strong className="text-[#0095D5]">Alternative technologies: </strong>{' '}
+        <strong className="text-[#0095D5]">Alternative technologies: </strong>
         do not edit or remove the value "Other alternatives – specify" . It is
         used to identify when an additional text field should appear.
       </p>
@@ -101,7 +101,7 @@ const ProjectsSettingsListsOfTerms = () => {
       </table>
 
       <p>
-        <strong className="text-[#0095D5]">Blend and blend components: </strong>{' '}
+        <strong className="text-[#0095D5]">Blend and blend components: </strong>
         the actual substances that compose a blend. These are also used for
         identifying the group of the blend (for filtering Annex group of
         substances).
@@ -246,18 +246,47 @@ const ProjectsSettingsListsOfTerms = () => {
         </tr>
       </table>
 
-      <h3 className="mt-8">
+      <h3 className="mt-2 text-3xl">
         B) Fields that can be changed in the Master Database with a more complex
         process
       </h3>
 
       <ul>
-        <li>Cluster</li>
-        <li>Type</li>
-        <li>Sector</li>
+        <li><strong className="text-[#0095D5]">Cluster</strong>: add values in the table <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/projectcluster/')}
+            >
+              /admin/core/projectcluster/
+            </a></li>
+        <li><strong className="text-[#0095D5]">Type</strong>: add values in the table <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/projecttype/')}
+            >
+              /admin/core/projecttype/
+            </a></li>
+        <li><strong className="text-[#0095D5]">Sector</strong>: add values in the table <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/projectsector/')}
+            >
+              /admin/core/projectsector/
+            </a></li>
       </ul>
+      <p>After adding a value from one of the tables above, add it to the combination of fields in the table <a
+              className="italic text-inherit"
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              href={formatApiUrl('/admin/core/projectspecificfields/')}
+            >
+              /admin/core/projectspecificfields/
+            </a></p>
 
-      <h3 className="mt-8">
+      <h3 className="mt-2 text-3xl">
         C) Fields that cannot be changed in the Master Database
       </h3>
 
