@@ -11,12 +11,15 @@ import {
   Chip,
   CircularProgress,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   Link,
   Tabs,
   Tab,
+  TextField,
   Tooltip,
 } from '@mui/material'
-import { IoChevronDown, IoInformationCircleOutline } from 'react-icons/io5'
+import { IoChevronDown, IoClose, IoInformationCircleOutline, IoSearchOutline } from 'react-icons/io5'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -96,6 +99,8 @@ export default function APRMLFSWorkspace() {
   const [filters, setFilters] =
     useState<Record<string, Filter[]>>(INITIAL_PARAMS_MLFS)
   const [showDerivedColumns, setShowDerivedColumns] = useState(true)
+  const [projectCodeSearch, setProjectCodeSearch] = useState('')
+  const [selectedProjectCodes, setSelectedProjectCodes] = useState<string[]>([])
 
   const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
@@ -257,6 +262,35 @@ export default function APRMLFSWorkspace() {
     inlineEdit: isMlfsUser && canUpdateAPR,
     showDerivedColumns,
   })
+
+  const checkboxColumnDef = useMemo(
+    () => ({
+      checkboxSelection: true,
+      headerCheckboxSelection: true,
+      width: 48,
+      minWidth: 48,
+      maxWidth: 48,
+      pinned: 'left' as const,
+      headerName: '',
+      field: '_checkbox',
+      resizable: false,
+      sortable: false,
+      suppressColumnsToolPanel: true,
+    }),
+    [],
+  )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (projectCodeSearch.length >= 3) {
+        setParams({ search: projectCodeSearch })
+      } else if (projectCodeSearch === '') {
+        setParams({ search: '' })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectCodeSearch])
 
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
@@ -709,6 +743,36 @@ export default function APRMLFSWorkspace() {
                 />
               </div>
 
+              {/* Project code search - under the filters */}
+              <div>
+                <TextField
+                  size="small"
+                  placeholder="Search by project code..."
+                  value={projectCodeSearch}
+                  onChange={(e) => setProjectCodeSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IoSearchOutline size={18} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: projectCodeSearch ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setProjectCodeSearch('')
+                            setParams({ search: '' })
+                          }}
+                        >
+                          <IoClose size={16} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              </div>
+
               {/* Also display the active filters */}
               {Object.values(filters).some(
                 (filterArr) => filterArr.length > 0,
@@ -733,7 +797,10 @@ export default function APRMLFSWorkspace() {
                       variant="text"
                       onClick={() => {
                         setFilters(INITIAL_PARAMS_MLFS)
-                        setParams(INITIAL_PARAMS_MLFS)
+                        setParams({ ...INITIAL_PARAMS_MLFS, search: '' })
+                        setProjectCodeSearch('')
+                        setSelectedProjectCodes([])
+                        gridRef.current?.api?.deselectAll()
                       }}
                     >
                       Clear all
@@ -753,7 +820,12 @@ export default function APRMLFSWorkspace() {
                     handleExport(
                       formatApiUrl(
                         `api/annual-project-report/mlfs/${year}/export/`,
-                        params,
+                        selectedProjectCodes.length > 0
+                          ? {
+                              ...params,
+                              project_codes: selectedProjectCodes.join(','),
+                            }
+                          : params,
                       ),
                       setLoadingExport,
                     )
@@ -816,17 +888,34 @@ export default function APRMLFSWorkspace() {
                 label: 'No projects submitted by the IA/BAs yet',
               }}
               Toolbar={() => {
-                return <div>Total rows: {allProjectReports.length ?? 0}</div>
+                return (
+                  <div className="flex gap-x-4">
+                    <div>Total rows: {allProjectReports.length ?? 0}</div>
+                    {selectedProjectCodes.length > 0 && (
+                      <div>{selectedProjectCodes.length} selected</div>
+                    )}
+                  </div>
+                )
               }}
               rowsVisible={100}
               gridRef={gridRef}
+              rowSelection="multiple"
+              suppressRowClickSelection={true}
               dataTypeDefinitions={dataTypeDefinitions}
-              columnDefs={columnDefs}
+              columnDefs={[checkboxColumnDef, ...columnDefs]}
               defaultColDef={defaultColDef}
               rowData={allProjectReports}
               isDataFormatted={true}
               tooltipShowDelay={200}
               singleClickEdit={true}
+              onSelectionChanged={() => {
+                const nodes = gridRef.current?.api?.getSelectedNodes() ?? []
+                setSelectedProjectCodes(
+                  nodes
+                    .map((n) => n.data?.project_code)
+                    .filter(Boolean) as string[],
+                )
+              }}
             />
           )}
         </div>
