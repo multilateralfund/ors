@@ -1,6 +1,8 @@
 # pylint: disable=too-many-lines
 from functools import partial
 from itertools import pairwise
+from operator import attrgetter
+from typing import Iterable
 
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
@@ -100,14 +102,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "Fund transferred",
                     "type": "number",
                     "align": "right",
-                    "method": lambda project, _: self.calc_sum_total_fund(project),
+                    "method": lambda project, _: self.calc_sum_total_fund_transferred(
+                        project
+                    ),
                 },
                 {
                     "id": "psc_transferred",
                     "headerName": "PSC transferred",
                     "type": "number",
                     "align": "right",
-                    "method": lambda project, _: self.calc_sum_support_cost_psc(
+                    "method": lambda project, _: self.calc_sum_total_psc_transferred(
                         project
                     ),
                 },
@@ -887,18 +891,23 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return self.version_map.get(key)
 
     def get_trf_or_adj_version(self, p, idx) -> Project | None:
-        projects = [p for p in self.get_all_previous_versions(p) if trf_or_adj(p)]
-
-        if trf_or_adj(p):
-            projects.append(p)
+        projects = self.get_all_trf_or_adj_previous_versions(p)
 
         if len(projects) > idx:
             return projects[idx]
 
         return None
 
-    def get_all_previous_versions(self, p):
+    def get_all_previous_versions(self, p) -> Iterable[Project]:
         return self.all_versions.get(p.id, ())
+
+    def get_all_trf_or_adj_previous_versions(self, p: Project) -> list[Project]:
+        projects = [p for p in self.get_all_previous_versions(p) if trf_or_adj(p)]
+
+        if trf_or_adj(p):
+            projects.append(p)
+
+        return projects
 
     def _p_fund_approved(self, project):
         if project is None or project.fund_transferred:
@@ -932,25 +941,35 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None:
             return None
 
-        fund_transferred = project.fund_transferred or 0
-
-        prev_version = self.get_version(project, project.version - 1)
-        prev_fund_transferred = (
-            prev_version.fund_transferred or 0 if prev_version else 0
+        get_value = (
+            attrgetter("total_fund")
+            if project.adjustment
+            else attrgetter("fund_transferred")
         )
 
-        return fund_transferred - prev_fund_transferred
+        cur_value = get_value(project) or 0
+
+        prev_version = self.get_version(project, project.version - 1)
+        prev_value = (get_value(prev_version) or 0) if prev_version else 0
+
+        return cur_value - prev_value
 
     def _p_psc_transferred(self, project):
         if project is None:
             return None
 
-        psc_transferred = project.psc_transferred or 0
+        get_value = (
+            attrgetter("support_cost_psc")
+            if project.adjustment
+            else attrgetter("psc_transferred")
+        )
+
+        cur_value = get_value(project) or 0
 
         prev_version = self.get_version(project, project.version - 1)
-        prev_psc_transferred = prev_version.psc_transferred or 0 if prev_version else 0
+        prev_value = (get_value(prev_version) or 0) if prev_version else 0
 
-        return psc_transferred - prev_psc_transferred
+        return cur_value - prev_value
 
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
@@ -1024,22 +1043,14 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 )
         return result
 
-    def calc_sum_total_fund(self, project):
-        prev_versions = self.get_all_previous_versions(project)
-        candidate_values = [
-            (p.total_fund or 0) + (p.fund_transferred or 0)
-            for p in prev_versions
-            if trf_or_adj(p)
-        ]
+    def calc_sum_total_fund_transferred(self, project):
+        prev_versions = self.get_all_trf_or_adj_previous_versions(project)
+        candidate_values = [(self._p_fund_transferred(p) or 0) for p in prev_versions]
         return sum(candidate_values)
 
-    def calc_sum_support_cost_psc(self, project):
-        prev_versions = self.get_all_previous_versions(project)
-        candidate_values = [
-            (p.support_cost_psc or 0) + (p.psc_transferred or 0)
-            for p in prev_versions
-            if trf_or_adj(p)
-        ]
+    def calc_sum_total_psc_transferred(self, project):
+        prev_versions = self.get_all_trf_or_adj_previous_versions(project)
+        candidate_values = [(self._p_psc_transferred(p) or 0) for p in prev_versions]
         return sum(candidate_values)
 
     def calc_sum_interest(self, project):

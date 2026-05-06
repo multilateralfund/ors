@@ -521,9 +521,9 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert row is not None
 
         expected = {
-            1: {"fund": 1, "psc": 1, "meeting": 205, "date": date(2024, 5, 15)},
-            2: {"fund": 7, "psc": 1, "meeting": 204, "date": date(2024, 4, 15)},
-            3: {"fund": 1, "psc": 1, "meeting": 206, "date": date(2024, 6, 15)},
+            1: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
+            2: {"fund": 20, "psc": 2, "meeting": 204, "date": date(2024, 4, 15)},
+            3: {"fund": 20, "psc": 2, "meeting": 206, "date": date(2024, 6, 15)},
         }
         currency_format = "###,###,##0.00#############"
         for idx, values in expected.items():
