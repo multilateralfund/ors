@@ -22,6 +22,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { AgGridReact } from 'ag-grid-react'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
+  checkboxColumnDef,
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
@@ -107,23 +108,6 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
     reactivePath: true,
   })
-
-  const checkboxColumnDef = useMemo(
-    () => ({
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
-      width: 48,
-      minWidth: 48,
-      maxWidth: 48,
-      pinned: 'left' as const,
-      headerName: '',
-      field: '_checkbox',
-      resizable: false,
-      sortable: false,
-      suppressColumnsToolPanel: true,
-    }),
-    [],
-  )
 
   useEffect(() => {
     const timer = setTimeout(() => {

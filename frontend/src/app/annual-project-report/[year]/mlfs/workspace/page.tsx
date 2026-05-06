@@ -29,6 +29,7 @@ import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import Loader from '@ors/components/manage/Blocks/AnnualProgressReport/Loader.tsx'
 import useGetColumnDefs, {
+  checkboxColumnDef,
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
@@ -101,6 +102,7 @@ export default function APRMLFSWorkspace() {
   const [showDerivedColumns, setShowDerivedColumns] = useState(true)
   const [projectCodeSearch, setProjectCodeSearch] = useState('')
   const [selectedProjectCodes, setSelectedProjectCodes] = useState<string[]>([])
+  const [taskId, setTaskId] = useState(null)
 
   const { refetch: refetchAPRCurrentYear } = useAPRCurrentYear()
   const {
@@ -263,23 +265,6 @@ export default function APRMLFSWorkspace() {
     showDerivedColumns,
   })
 
-  const checkboxColumnDef = useMemo(
-    () => ({
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
-      width: 48,
-      minWidth: 48,
-      maxWidth: 48,
-      pinned: 'left' as const,
-      headerName: '',
-      field: '_checkbox',
-      resizable: false,
-      sortable: false,
-      suppressColumnsToolPanel: true,
-    }),
-    [],
-  )
-
   useEffect(() => {
     const timer = setTimeout(() => {
       if (projectCodeSearch.length >= 3) {
@@ -291,6 +276,47 @@ export default function APRMLFSWorkspace() {
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectCodeSearch])
+
+  useEffect(() => {
+    if (!taskId) return
+
+    let timeout: any
+
+    const getSyncStatus = async () => {
+      try {
+        const res = await api(
+          `api/annual-project-report/${year}/sync-from-projects/?task_id=${taskId}`,
+        )
+
+        if (res.status === 'success') {
+          setTaskId(null)
+          refetchAprData()
+
+          enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
+            variant: 'success',
+          })
+          return
+        }
+
+        if (res.status === 'failure') {
+          setTaskId(null)
+          enqueueSnackbar(<>{res.error}</>, {
+            variant: 'error',
+          })
+          return
+        }
+
+        timeout = setTimeout(getSyncStatus, 2000)
+      } catch (e) {
+        await handleActionErrors(e)
+      }
+    }
+
+    getSyncStatus()
+
+    return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskId])
 
   // Redirect non-MLFS users to the agency workspace
   if (!isMlfsUser && canViewAPR) {
@@ -411,8 +437,6 @@ export default function APRMLFSWorkspace() {
     }
   }
 
-  const [taskId, setTaskId] = useState(null)
-
   const syncWithProjects = async () => {
     try {
       const res = await api(
@@ -436,50 +460,6 @@ export default function APRMLFSWorkspace() {
       await handleActionErrors(e)
     }
   }
-
-  useEffect(() => {
-    if (!taskId) return
-
-    let attempt = 0
-    let timeout: any
-
-    const getSyncStatus = async () => {
-      try {
-        const res = await api(
-          `api/annual-project-report/${year}/sync-from-projects/?task_id=${taskId}`,
-        )
-
-        if (res.status === 'success') {
-          setTaskId(null)
-          refetchAprData()
-
-          enqueueSnackbar(<>Synchronized successfully with Projects.</>, {
-            variant: 'success',
-          })
-          return
-        }
-
-        if (res.status === 'failure') {
-          setTaskId(null)
-          enqueueSnackbar(<>{res.error}</>, {
-            variant: 'error',
-          })
-          return
-        }
-
-        const delay = Math.min(1000 * 2 ** attempt, 30000)
-        attempt++
-
-        timeout = setTimeout(getSyncStatus, delay)
-      } catch (e) {
-        await handleActionErrors(e)
-      }
-    }
-
-    getSyncStatus()
-
-    return () => clearTimeout(timeout)
-  }, [taskId])
 
   return (
     <PageWrapper>
