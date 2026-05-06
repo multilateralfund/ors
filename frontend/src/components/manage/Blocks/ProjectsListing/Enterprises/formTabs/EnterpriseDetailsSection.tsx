@@ -1,21 +1,25 @@
-import { useContext } from 'react'
-
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import {
   getMeetingNr,
   useMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { FieldErrorIndicator } from '../../HelperComponents'
 import {
   EnterpriseDateField,
   EnterpriseNumberField,
-  EnterpriseSelectField,
   EnterpriseTextAreaField,
+  EnterpriseTextField,
 } from '../FormHelperComponents'
-import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
 import { EnterpriseDataProps } from '../../interfaces'
+import {
+  dateFields,
+  decimalFields,
+  detailsDateFields,
+  enterpriseFieldsMapping,
+  integerFields,
+  textFields,
+} from '../constants'
 import { parseNumber } from '@ors/helpers'
 
 import { map } from 'lodash'
@@ -25,18 +29,6 @@ const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
 
   const { enterpriseData, setEnterpriseData, errors } = props
   const { details } = enterpriseData
-
-  const { agencies, project_types } = useContext(ProjectsDataContext)
-  const selectFields = [
-    {
-      fieldName: 'agency',
-      options: agencies,
-    },
-    {
-      fieldName: 'project_type',
-      options: project_types,
-    },
-  ]
 
   const handleChangeMeeting = (meeting?: string) => {
     setEnterpriseData(
@@ -53,17 +45,33 @@ const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(selectFields, (field, index) => (
-          <EnterpriseSelectField
+      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
+        {map(decimalFields, (field, index) => (
+          <EnterpriseNumberField
             key={index}
-            {...{
-              field,
-              sectionIdentifier,
-              ...props,
-            }}
+            dataType="decimal"
+            {...{ sectionIdentifier, field, ...props }}
           />
         ))}
+      </div>
+      <EnterpriseTextField
+        field={textFields[4]}
+        {...{ sectionIdentifier, ...props }}
+      />
+      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
+        <EnterpriseTextField
+          field={textFields[3]}
+          {...{ sectionIdentifier, ...props }}
+        />
+        <EnterpriseNumberField
+          dataType="integer"
+          field={integerFields[0]}
+          {...{ sectionIdentifier, ...props }}
+        />
+        <EnterpriseDateField
+          field={dateFields[0]}
+          {...{ sectionIdentifier, ...props }}
+        />
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         {map(detailsDateFields.slice(0, 2), (field, index) => (

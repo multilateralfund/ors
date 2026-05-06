@@ -146,6 +146,7 @@ export const EnterpriseSelectField = ({
   isDisabled?: boolean
 }) => {
   const { fieldName, options } = field
+  const isStatusField = fieldName == 'status'
 
   return (
     <div>
@@ -172,7 +173,9 @@ export const EnterpriseSelectField = ({
           {...defaultProps}
           FieldProps={{
             ...defaultProps.FieldProps,
-            className: defaultProps.FieldProps.className + ' w-[18rem]',
+            className:
+              defaultProps.FieldProps.className +
+              ` w-[${isStatusField ? '10' : '18'}rem]`,
           }}
         />
         <FieldErrorIndicator field={fieldName} {...{ errors }} />

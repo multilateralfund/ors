@@ -400,22 +400,22 @@ export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 export interface EnterpriseOverview {
   name: string
   country: number | null
+  agency: number | null
   location: string
   city: string
-  stage: string
+  project_type: number | null
   sector: number | null
   subsector: number | null
-  application: string
-  local_ownership: string | null
-  export_to_non_a5: string | null
-  revision: string | null
-  date_of_revision: string | null
   status: number | null
 }
 
 export interface EnterpriseDetails {
-  agency: number | null
-  project_type: number | null
+  local_ownership: string | null
+  export_to_non_a5: string | null
+  application: string
+  stage: string
+  revision: string | null
+  date_of_revision: string | null
   planned_completion_date: string | null
   actual_completion_date: string | null
   project_duration: string | null
