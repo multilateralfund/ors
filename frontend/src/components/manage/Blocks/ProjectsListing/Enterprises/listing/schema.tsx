@@ -39,8 +39,8 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
       ...(canEditEnterprise
         ? [
             {
-              minWidth: 60,
-              maxWidth: 60,
+              minWidth: 80,
+              maxWidth: 80,
               resizable: false,
               sortable: false,
               cellClass: 'ag-text-center ag-cell-no-border-r',
@@ -53,7 +53,7 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
                   </Link>
                   /
                   <IoTrash
-                    size={20}
+                    size={18}
                     className="cursor-pointer fill-gray-500"
                     onClick={() => {
                       setIdToDelete(props.data.id)

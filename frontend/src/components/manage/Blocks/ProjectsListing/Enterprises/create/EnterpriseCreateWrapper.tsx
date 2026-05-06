@@ -12,14 +12,18 @@ import {
   initialFundingDetailsFields,
   initialRemarksFields,
 } from '../constants.ts'
+import { useStore } from '@ors/store.tsx'
 
 import { Redirect } from 'wouter'
 
 const EnterpriseCreateWrapper = () => {
   const { canEditEnterprise } = useContext(PermissionsContext)
 
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
-    overview: initialOverviewFields,
+    overview: { ...initialOverviewFields, agency: agency_id ?? null },
     details: initialDetailsFields,
     substance_fields: initialSubstanceFields,
     substance_details: [],

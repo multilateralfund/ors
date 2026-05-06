@@ -174,8 +174,8 @@ const EnterpriseSubstanceDetailsSection = ({
       <Divider className="my-6" />
 
       <div className="flex flex-col flex-wrap gap-y-2">
-        {substanceData.map((substance, index) => (
-          <span key={index} className="flex flex-col flex-wrap gap-y-4">
+        {substanceData.map((substance, dataIndex) => (
+          <span key={dataIndex} className="flex flex-col flex-wrap gap-y-4">
             <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
               <>
                 <div>
@@ -186,7 +186,7 @@ const EnterpriseSubstanceDetailsSection = ({
                       options={options}
                       value={getSubstanceValue(substance)}
                       onChange={(_, value) =>
-                        handleChangeDropdownValues(value, index)
+                        handleChangeDropdownValues(value, dataIndex)
                       }
                       getOptionLabel={(option: any) =>
                         (isObject(option)
@@ -205,7 +205,7 @@ const EnterpriseSubstanceDetailsSection = ({
                       field={
                         substance.ods_blend ? 'ods_blend' : 'ods_substance'
                       }
-                      errors={odsOdpErrors[index]}
+                      errors={odsOdpErrors[dataIndex]}
                     />
                   </div>
                 </div>
@@ -223,7 +223,7 @@ const EnterpriseSubstanceDetailsSection = ({
                             ] as string) ?? ''
                           }
                           onChange={(event) =>
-                            handleChangeNumericValues(event, field, index)
+                            handleChangeNumericValues(event, field, dataIndex)
                           }
                           {...omit(
                             getFieldDefaultProps(),
@@ -232,7 +232,7 @@ const EnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[index]}
+                          errors={odsOdpErrors[dataIndex]}
                         />
                       </div>
                     </div>
@@ -249,14 +249,14 @@ const EnterpriseSubstanceDetailsSection = ({
                           }
                           onFocus={onTextareaFocus}
                           onChange={(event) =>
-                            handleChangeTextValues(event, field, index)
+                            handleChangeTextValues(event, field, dataIndex)
                           }
                           type="text"
                           {...getFieldDefaultProps()}
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[index]}
+                          errors={odsOdpErrors[dataIndex]}
                         />
                       </div>
                     </div>
@@ -267,11 +267,11 @@ const EnterpriseSubstanceDetailsSection = ({
                 className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                 size={16}
                 onClick={() => {
-                  onRemoveSubstance(index)
+                  onRemoveSubstance(dataIndex)
                 }}
               />
             </div>
-            {index !== substanceData.length - 1 && <Divider />}
+            {dataIndex !== substanceData.length - 1 && <Divider />}
           </span>
         ))}
       </div>

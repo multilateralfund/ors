@@ -53,9 +53,9 @@ const EnterpriseSubstanceDetailsSection = ({
               (ods_odp) => Number(ods_odp.consumption) || 0,
             ),
             selected_alternative: '-',
-            chemical_phased_in: sumBy(
+            chemical_phased_in_mt: sumBy(
               odsOdpData,
-              (ods_odp) => Number(ods_odp.chemical_phased_in) || 0,
+              (ods_odp) => Number(ods_odp.chemical_phased_in_mt) || 0,
             ),
           },
         ]
@@ -96,11 +96,11 @@ const EnterpriseSubstanceDetailsSection = ({
       tooltipField: 'selected_alternative',
     },
     {
-      headerName: enterpriseFieldsMapping.chemical_phased_in,
+      headerName: enterpriseFieldsMapping.chemical_phased_in_mt,
       valueGetter: (params: ValueGetterParams) =>
-        getDecimalValue(params, 'chemical_phased_in'),
+        getDecimalValue(params, 'chemical_phased_in_mt'),
       tooltipValueGetter: (params: ITooltipParams) =>
-        getDecimalValue(params, 'chemical_phased_in'),
+        getDecimalValue(params, 'chemical_phased_in_mt'),
     },
   ]
 

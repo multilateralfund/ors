@@ -47,7 +47,7 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         export_to_non_a5: getFormattedDecimalValue(enterprise.export_to_non_a5),
         application: enterprise.application,
         stage: enterprise.stage,
-        revision: enterprise.revision,
+        revision_number: enterprise.revision_number,
         date_of_revision: enterprise.date_of_revision,
         planned_completion_date: enterprise.planned_completion_date,
         actual_completion_date: enterprise.actual_completion_date,

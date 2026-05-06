@@ -414,7 +414,7 @@ export interface EnterpriseDetails {
   export_to_non_a5: string | null
   application: string
   stage: string
-  revision: string | null
+  revision_number: string | null
   date_of_revision: string | null
   planned_completion_date: string | null
   actual_completion_date: string | null
@@ -430,7 +430,7 @@ export interface EnterpriseSubstanceDetails {
   ods_blend: number | null
   consumption: string | null
   selected_alternative: string
-  chemical_phased_in: string | null
+  chemical_phased_in_mt: string | null
 }
 
 export interface EnterpriseSubstanceFields {

@@ -67,16 +67,16 @@ const EnterprisesFilters = ({
         {...defaultProps}
       />
       <Field
-        Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, statuses, 'status')}
+        Input={{ placeholder: enterpriseFieldsMapping.status }}
+        options={getFilterOptions(filters, statuses, 'status_id')}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
-          const status = filters.status || []
+          const status = filters.status_id || []
           const newValue = union(status, value)
 
-          handleFilterChange({ status: newValue })
+          handleFilterChange({ status_id: newValue })
           handleParamsChange({
-            status: newValue.map((item: any) => item.id).join(','),
+            status_id: newValue.map((item: any) => item.id).join(','),
             offset: 0,
           })
         }}

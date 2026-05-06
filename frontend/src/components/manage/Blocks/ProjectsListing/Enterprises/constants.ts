@@ -7,13 +7,13 @@ export const detailsDateFields = [
   'date_of_approval',
   'date_of_report',
 ]
-export const integerFields = ['revision']
+export const integerFields = ['revision_number']
 export const decimalFields = ['local_ownership', 'export_to_non_a5']
 export const substanceDecimalFields = ['chemical_phased_out', 'impact']
 export const substanceFields = [
   'consumption',
   'selected_alternative',
-  'chemical_phased_in',
+  'chemical_phased_in_mt',
 ]
 
 export const enterpriseFieldsMapping: { [key: string]: string } = {
@@ -30,11 +30,11 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   application: 'Application',
   local_ownership: 'Local ownership (%)',
   export_to_non_a5: 'Export to non-A5 (%)',
-  revision: 'Revision number',
+  revision_number: 'Revision number',
   date_of_revision: 'Date of revision',
   consumption: 'Consumption (mt)',
   selected_alternative: 'Selected alternative',
-  chemical_phased_in: 'Chemical phased in (mt)',
+  chemical_phased_in_mt: 'Chemical phased in (mt)',
   ods_substance: 'Chemical name',
   ods_blend: 'Chemical name',
   chemical_phased_out: 'Chemical phased out (mt)',
@@ -81,7 +81,7 @@ export const initialDetailsFields = {
   export_to_non_a5: null,
   application: '',
   stage: '',
-  revision: null,
+  revision_number: null,
   date_of_revision: null,
   planned_completion_date: null,
   actual_completion_date: null,
@@ -102,7 +102,7 @@ export const initialSubstanceDetailsFields = {
   ods_blend: null,
   consumption: null,
   selected_alternative: '',
-  chemical_phased_in: null,
+  chemical_phased_in_mt: null,
 }
 
 export const initialFundingDetailsFields = {

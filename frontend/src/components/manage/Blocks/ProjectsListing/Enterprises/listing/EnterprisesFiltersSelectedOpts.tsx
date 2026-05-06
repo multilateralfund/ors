@@ -20,7 +20,7 @@ const EnterprisesFiltersSelectedOpts = ({
   const initialParams = {
     country_id: [],
     agency_id: [],
-    status: [],
+    status_id: [],
   }
 
   const filterSelectedOpts = [
@@ -34,7 +34,7 @@ const EnterprisesFiltersSelectedOpts = ({
     },
     {
       entities: formatEntity(statuses),
-      entityIdentifier: 'status',
+      entityIdentifier: 'status_id',
     },
   ]
 

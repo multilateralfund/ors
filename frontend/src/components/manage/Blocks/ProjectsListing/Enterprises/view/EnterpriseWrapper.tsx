@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useMemo } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -24,8 +24,10 @@ const EnterpriseWrapper = () => {
   const enterprise = useGetEnterprise(enterprise_id)
   const { data, loading, error } = enterprise
 
-  const status =
-    find(statuses, (status) => status.id === data.status)?.name ?? ''
+  const status = useMemo(
+    () => find(statuses, (status) => status.id === data?.status)?.name ?? '',
+    [data],
+  )
 
   if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />

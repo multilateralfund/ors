@@ -32,8 +32,8 @@ const EnterpriseDetailsSection = ({
     <div className={viewColumnsClassName}>
       {detailItem(enterpriseFieldsMapping.stage, enterprise.stage)}
       {numberDetailItem(
-        enterpriseFieldsMapping.revision,
-        enterprise.revision as string,
+        enterpriseFieldsMapping.revision_number,
+        enterprise.revision_number as string,
         'integer',
       )}
       {dateDetailItem(

@@ -178,7 +178,13 @@ export const EnterpriseSelectField = ({
               ` w-[${isStatusField ? '10' : '18'}rem]`,
           }}
         />
-        <FieldErrorIndicator field={fieldName} {...{ errors }} />
+        <div
+          className={cx({
+            'w-8': fieldName === 'country',
+          })}
+        >
+          <FieldErrorIndicator field={fieldName} {...{ errors }} />
+        </div>
       </div>
     </div>
   )
