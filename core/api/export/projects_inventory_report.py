@@ -1184,7 +1184,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project,
                     idx - 1,
-                    lambda ods_odp: (ods_odp.ods_substance or ods_odp.ods_blend).name,
+                    lambda ods_odp: ods_odp.ods_display_name,
                 ),
             },
             {
@@ -1222,7 +1222,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         if len(ods_odps) > idx:
             ods_odp = ods_odps[idx]
-            if ods_odp.ods_substance or ods_odp.ods_blend:
-                return func(ods_odp)
+            return func(ods_odp)
 
         return None
