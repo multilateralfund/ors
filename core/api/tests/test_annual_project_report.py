@@ -2182,8 +2182,16 @@ class TestAPRExportView(BaseTest):
             version=3,
             latest_project=None,
         )
-        AnnualProjectReportFactory(report=annual_agency_report, project=ongoing_project)
-        AnnualProjectReportFactory(report=annual_agency_report, project=closed_project)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=ongoing_project,
+            status=project_ongoing_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=closed_project,
+            status=project_closed_status.name,
+        )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
@@ -2247,9 +2255,21 @@ class TestAPRExportView(BaseTest):
             version=3,
             latest_project=None,
         )
-        AnnualProjectReportFactory(report=annual_agency_report, project=project_alpha)
-        AnnualProjectReportFactory(report=annual_agency_report, project=project_beta)
-        AnnualProjectReportFactory(report=annual_agency_report, project=project_ong)
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project_alpha,
+            status=project_closed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project_beta,
+            status=project_closed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project_ong,
+            status=project_ongoing_status.name,
+        )
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
@@ -3923,9 +3943,21 @@ class TestAPRMLFSExportView(BaseTest):
             latest_project=None,
         )
 
-        AnnualProjectReportFactory(report=report, project=project1)
-        AnnualProjectReportFactory(report=report, project=project2)
-        AnnualProjectReportFactory(report=report, project=project3)
+        AnnualProjectReportFactory(
+            report=report,
+            project=project1,
+            status=project_ongoing_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=report,
+            project=project2,
+            status=project_completed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=report,
+            project=project3,
+            status=project_closed_status.name,
+        )
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -4344,8 +4376,16 @@ class TestAPRMLFSExportView(BaseTest):
             version=3,
             latest_project=None,
         )
-        AnnualProjectReportFactory(report=agency_report, project=ongoing_project)
-        AnnualProjectReportFactory(report=agency_report, project=closed_project)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=ongoing_project,
+            status=project_ongoing_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=closed_project,
+            status=project_closed_status.name,
+        )
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
@@ -4411,9 +4451,21 @@ class TestAPRMLFSExportView(BaseTest):
             version=3,
             latest_project=None,
         )
-        AnnualProjectReportFactory(report=agency_report, project=project_alpha)
-        AnnualProjectReportFactory(report=agency_report, project=project_omega)
-        AnnualProjectReportFactory(report=agency_report, project=project_ong)
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project_alpha,
+            status=project_closed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project_omega,
+            status=project_closed_status.name,
+        )
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project_ong,
+            status=project_ongoing_status.name,
+        )
 
         self.client.force_authenticate(user=mlfs_admin_user)
         url = reverse("apr-mlfs-export", kwargs={"year": apr_year})
