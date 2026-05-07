@@ -899,7 +899,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return None
 
     def get_all_previous_versions(self, p) -> Iterable[Project]:
-        return self.all_versions.get(p.id, ())
+        return sorted(self.all_versions.get(p.id, ()), key=lambda p: p.version)
 
     def get_all_trf_or_adj_previous_versions(self, p: Project) -> list[Project]:
         projects = [p for p in self.get_all_previous_versions(p) if trf_or_adj(p)]
