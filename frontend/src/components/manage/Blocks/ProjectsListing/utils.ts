@@ -524,6 +524,7 @@ export const getCrossCuttingErrors = (
   project: ProjectTypeApi | undefined,
   validateApproval: boolean,
   shouldValidateTotalFund: boolean,
+  withoutRequiredFields: boolean,
 ) => {
   const allRequiredFields = [
     'title',
@@ -565,7 +566,8 @@ export const getCrossCuttingErrors = (
     mode === 'edit' ? requiredFieldsAfterSubmission : requiredFields.slice(0, 3)
 
   return {
-    ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
+    ...(!withoutRequiredFields &&
+      getFieldErrors(fieldsToCheck, crossCuttingFields, project)),
     ...(validateApproval &&
       mode === 'edit' &&
       project?.submission_status === 'Recommended' &&
@@ -794,6 +796,7 @@ export const getSpecificFieldsErrors = (
   errors: { [key: string]: [] },
   mode: string,
   canEditApprovedProjects: boolean,
+  withoutRequiredFields: boolean,
   project?: ProjectTypeApi,
 ) => {
   const isEditMode = project && mode === 'edit'
@@ -825,7 +828,7 @@ export const getSpecificFieldsErrors = (
     getDefaultImpactErrors(projectSpecificFields, specificFields) ?? {}
 
   const sectionErrors =
-    mode === 'edit' && project
+    mode === 'edit' && project && !withoutRequiredFields
       ? (getFieldErrors(fieldNames, projectSpecificFields, project) ?? {})
       : {}
   const updatedErrors = { ...sectionErrors, ...defaultImpactErrors, ...errors }

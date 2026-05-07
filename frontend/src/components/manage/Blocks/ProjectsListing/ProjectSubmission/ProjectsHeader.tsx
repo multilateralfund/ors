@@ -77,12 +77,15 @@ const ProjectsHeader = ({
   const hasTrancheErrors =
     !!trancheErrors?.errorText || !!trancheErrors?.loading
 
-  const isSaveDisabled =
+  const approvedProjectsErrors =
     (mode !== 'add' && !loadedFiles) ||
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    !!find(filesMetaData, (metadata) => !metadata.type) ||
+    !!find(filesMetaData, (metadata) => !metadata.type)
+
+  const isSaveDisabled =
+    approvedProjectsErrors ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&
       hasTrancheErrors)
@@ -176,6 +179,7 @@ const ProjectsHeader = ({
                 postExComUpdate,
                 bpData,
                 filesMetaData,
+                approvedProjectsErrors,
               }}
               {...rest}
             />

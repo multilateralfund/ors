@@ -262,6 +262,8 @@ const ProjectsCreate = ({
 
   const isEditMode = project && mode === 'edit'
   const isApprovalTabAvailable = isEditMode && project.version >= 3
+  const shouldValidateRequiredFields =
+    mode === 'edit' && project?.submission_status === 'Approved'
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -296,6 +298,7 @@ const ProjectsCreate = ({
         mode === 'edit' ? project : undefined,
         true,
         shouldValidateTotalFund,
+        shouldValidateRequiredFields,
       ),
     [crossCuttingFields, errors, mode, shouldValidateTotalFund],
   )
@@ -400,6 +403,7 @@ const ProjectsCreate = ({
         errors,
         mode,
         canEditApprovedProjects,
+        shouldValidateRequiredFields,
         project,
       ),
     [projectSpecificFields, specificFields, errors, mode, project],

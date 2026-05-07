@@ -78,6 +78,7 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
+  approvedProjectsErrors,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -88,6 +89,7 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
+  approvedProjectsErrors: boolean
 }) => {
   const [_, setLocation] = useLocation()
   const { setInlineMessage } = useStore((state) => state.inlineMessage)
@@ -169,6 +171,7 @@ const EditActionButtons = ({
         project,
         false,
         shouldValidateTotalFund,
+        isApproved,
       ),
     [crossCuttingFields, shouldValidateTotalFund],
   )
@@ -196,6 +199,7 @@ const EditActionButtons = ({
         {},
         'edit',
         canEditApprovedProjects,
+        isApproved,
         project,
       ),
     [projectSpecificFields, project, specificFields],
@@ -232,10 +236,13 @@ const EditActionButtons = ({
     Impact: impactErrors = {},
   } = specificErrors
 
-  const commonErrors =
+  const tabErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(headerErrors) ||
-    hasSectionErrors(substanceErrors) ||
+    hasSectionErrors(substanceErrors)
+
+  const commonErrors =
+    tabErrors ||
     hasOdsOdpErrors ||
     (getHasNoFiles(id, files, projectFiles) &&
       (submission_status !== 'Draft' || version === 1) &&
@@ -266,17 +273,19 @@ const EditActionButtons = ({
       bpData.hasBpData &&
       !bpLinking.bpId)
 
-  const disableUpdateForAgencies =
+  const disableUpdateForV3AndWithdrawn =
     editable_for_actual_fields && !editable && !postExComUpdate
       ? hasImpactErrors
-      : disableSubmit
+      : isApproved
+        ? tabErrors || approvedProjectsErrors
+        : disableSubmit
 
   const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)
 
   const disableUpdate =
     !specificFieldsLoaded ||
     (project.version >= 3 || isWithdrawn
-      ? disableUpdateForAgencies
+      ? disableUpdateForV3AndWithdrawn
       : isSaveDisabled) ||
     (postExComUpdate &&
       (!(
@@ -292,7 +301,7 @@ const EditActionButtons = ({
     hasOdsOdpErrors ||
     hasSectionErrors(approvalErrors) ||
     crossCuttingErrors?.['total_fund']?.length > 0 ||
-    crossCuttingErrors['support_cost_psc'].length > 0
+    crossCuttingErrors?.['support_cost_psc']?.length > 0
 
   const disableApprove = hasSectionErrors(defaultMpErrors)
 
