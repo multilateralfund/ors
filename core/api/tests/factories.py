@@ -530,7 +530,7 @@ class AnnualProjectReportFactory(factory.django.DjangoModelFactory):
 
     project = factory.SubFactory(ProjectFactory)
     report = factory.SubFactory(AnnualAgencyProjectReportFactory)
-    status = "ONG"
+    status = "Ongoing"
 
     date_first_disbursement = factory.Faker("date")
     date_planned_completion = factory.Faker("date")
