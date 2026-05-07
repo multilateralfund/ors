@@ -61,6 +61,7 @@ export default function EnterprisesWrapper() {
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <EnterprisesFiltersWrapper
           {...{
+            form,
             filters,
             initialFilters,
             setFilters,
