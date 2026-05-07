@@ -104,6 +104,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   )
 
   const isMlfsUser = user_permissions.includes('is_mlfs_user')
+  const canViewOnlyOwnAgency = user_permissions.includes(
+    'can_view_only_own_agency',
+  )
 
   const canCommentCPCountry = user_permissions.includes(
     'can_cp_country_type_comment',
@@ -165,6 +168,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditEnterprise,
         canSetProjectSettings,
         isMlfsUser,
+        canViewOnlyOwnAgency,
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,

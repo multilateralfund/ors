@@ -1,7 +1,10 @@
+import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import EnterprisesFilters from './EnterprisesFilters'
 import EnterprisesFiltersSelectedOpts from './EnterprisesFiltersSelectedOpts'
 
 const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
+  const meetings = useMeetingOptions()
+
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
   }
@@ -11,6 +14,7 @@ const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
   }
 
   const props = {
+    meetings,
     handleFilterChange,
     handleParamsChange,
     ...rest,

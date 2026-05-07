@@ -26,7 +26,7 @@ const EnterpriseWrapper = () => {
 
   const status = useMemo(
     () => find(statuses, (status) => status.id === data?.status)?.name ?? '',
-    [data],
+    [data, statuses],
   )
 
   if (!canViewEnterprises) {
