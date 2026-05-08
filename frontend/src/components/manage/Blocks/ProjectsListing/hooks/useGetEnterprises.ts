@@ -7,7 +7,7 @@ export function useGetEnterprises(
 ) {
   const { data, ...rest } = useApi({
     options: {
-      params: { ...filters, country_id },
+      params: filters,
       withStoreCache: false,
     },
     path: 'api/enterprises',

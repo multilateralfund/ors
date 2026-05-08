@@ -1,7 +1,9 @@
+import openpyxl
 from drf_spectacular.utils import extend_schema
 
 from django_filters.rest_framework import DjangoFilterBackend
 
+from rest_framework.decorators import action
 from rest_framework import filters, mixins, status, viewsets, generics
 from rest_framework.response import Response
 
@@ -18,6 +20,9 @@ from core.api.serializers.enterprise import (
     EnterpriseSerializer,
     EnterpriseStatusSerializer,
 )
+from core.api.utils import workbook_response
+
+from core.api.export.enterprises import EnterpriseWriter
 from core.api.filters.enterprise import EnterpriseFilter
 
 
@@ -83,6 +88,7 @@ class EnterpriseViewSet(
         if self.action in [
             "list",
             "retrieve",
+            "export",
         ]:
             return [HasEnterpriseViewAccess]
         if self.action in [
@@ -124,6 +130,34 @@ class EnterpriseViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def export(self, request, *args, **kwargs):
+        wb = openpyxl.Workbook()
+        exporter = EnterpriseWriter(wb)
+        data = (
+            self.filter_queryset(self.get_queryset())
+            .prefetch_related(
+                "ods_odp",
+                "ods_odp__ods_substance",
+                "ods_odp__ods_blend",
+            )
+            .select_related(
+                "country",
+                "agency",
+                "status",
+                "meeting",
+                "sector",
+                "subsector",
+                "project_type",
+            )
+        )
+        exporter.write(data)
+
+        # delete default sheet
+        del wb[wb.sheetnames[0]]
+
+        return workbook_response("Enterprises", wb)
 
 
 class EnterpriseStatusListView(generics.ListAPIView):
