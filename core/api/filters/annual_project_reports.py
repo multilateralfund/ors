@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 
@@ -8,6 +9,7 @@ from core.models import (
     AnnualAgencyProjectReport,
     AnnualProjectReport,
 )
+from core.models.project_metadata import ProjectStatus
 
 
 class APRProjectFilter(filters.FilterSet):
@@ -71,6 +73,16 @@ def build_filter_params_from_query_params(query_params, default_status="ONG,COM"
     if status_param:
         filter_params["status"] = status_param
 
+    search_param = query_params.get("search")
+    if search_param and search_param.strip():
+        filter_params["project_code_search"] = search_param.strip()
+
+    project_codes_param = query_params.get("project_codes")
+    if project_codes_param:
+        codes = [c.strip() for c in project_codes_param.split(",") if c.strip()]
+        if codes:
+            filter_params["project_codes"] = codes
+
     return filter_params
 
 
@@ -113,8 +125,25 @@ def build_filtered_project_reports_queryset(filter_params):
         ]
         mandatory_statuses = {"ONG", "COM"}
         status_codes = list(set(status_codes) | mandatory_statuses)
-        if status_codes:
-            queryset = queryset.filter(project__status__code__in=status_codes)
+        status_names = list(
+            ProjectStatus.objects.filter(code__in=status_codes).values_list(
+                "name", flat=True
+            )
+        )
+        if status_names:
+            queryset = queryset.filter(status__in=status_names)
+
+    if filter_params.get("project_code_search"):
+        search_term = filter_params["project_code_search"]
+        queryset = queryset.filter(
+            Q(project_code_denorm__icontains=search_term)
+            | Q(legacy_code_denorm__icontains=search_term)
+        )
+
+    if filter_params.get("project_codes"):
+        queryset = queryset.exclude(project__status__code__in=["ONG", "COM"]).filter(
+            project_code_denorm__in=filter_params["project_codes"]
+        )
 
     return queryset
 
@@ -165,7 +194,7 @@ class APRGlobalFilter(filters.FilterSet):
     def filter_by_status(self, queryset, _name, value):
         """
         Accepts a comma-separated list of Project status codes (e.g., ONG, COM, CAN).
-        Filters agencies that have at least one project with the specified status.
+        Filters agencies that have at least one project with the specified APR status.
         """
         if not value:
             status_codes = ["ONG", "COM"]
@@ -174,10 +203,13 @@ class APRGlobalFilter(filters.FilterSet):
 
         mandatory_statuses = {"ONG", "COM"}
         status_codes = list(set(status_codes) | mandatory_statuses)
+        status_names = list(
+            ProjectStatus.objects.filter(code__in=status_codes).values_list(
+                "name", flat=True
+            )
+        )
 
-        return queryset.filter(
-            project_reports__project__status__code__in=status_codes
-        ).distinct()
+        return queryset.filter(project_reports__status__in=status_names).distinct()
 
     def filter_by_agency_report_status(self, queryset, _name, value):
         """

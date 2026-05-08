@@ -2,7 +2,7 @@ import { Redirect, useParams, useSearch } from 'wouter'
 import usePageTitle from '@ors/hooks/usePageTitle.ts'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper.tsx'
 import { PageHeading } from '@ors/components/ui/Heading/Heading.tsx'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import NotFoundPage from '@ors/app/not-found'
 import {
@@ -12,11 +12,17 @@ import {
   FormControlLabel,
   Button,
   CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
 } from '@mui/material'
 import { FiDownload, FiEdit, FiTable } from 'react-icons/fi'
+import { IoChevronDown, IoClose, IoSearchOutline } from 'react-icons/io5'
 import { formatApiUrl } from '@ors/helpers'
+import { AgGridReact } from 'ag-grid-react'
 import { useStore } from '@ors/store.tsx'
 import useGetColumnDefs, {
+  checkboxColumnDef,
   dataTypeDefinitions,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/schema.tsx'
 import UploadDocumentsModal from '@ors/components/manage/Blocks/AnnualProgressReport/UploadDocumentsModal.tsx'
@@ -38,23 +44,24 @@ import StatusFilter from '@ors/components/manage/Blocks/AnnualProgressReport/Sta
 import BackLink from '@ors/components/manage/Blocks/AnnualProgressReport/BackLink.tsx'
 import AprYearDropdown from '@ors/components/manage/Blocks/AnnualProgressReport/AprYearDropdown.tsx'
 import Field from '@ors/components/manage/Form/Field.tsx'
-import { IoChevronDown } from 'react-icons/io5'
 import { handleExport } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { useAPRProjectStatuses } from '@ors/contexts/AnnualProjectReport/APRContext.tsx'
 
 export default function APRWorkspace() {
   const [loadingExport, setLoadingExport] = useState(false)
   const [loadingSummaryTables, setLoadingSummaryTables] = useState(false)
   const [isUploadDocumentsModalOpen, setIsUploadDocumentsModalOpen] =
     useState(false)
+  const [projectCodeSearch, setProjectCodeSearch] = useState('')
+  const [selectedProjectCodes, setSelectedProjectCodes] = useState<string[]>([])
+  const gridRef = useRef<AgGridReact>()
   const { year } = useParams()
   usePageTitle(`Annual Progress Report (${year})`)
   const { canViewAPR, canSubmitAPR, canEditAPR, isMlfsUser } =
     useContext(PermissionsContext)
   const { data: user } = useStore((state) => state.user)
-  const {
-    statuses: { data: projectStatuses },
-  } = useStore((state) => state.projects)
+  const projectStatuses = useAPRProjectStatuses()
   const search = useSearch()
   const [initialSearch] = useState(search)
   const [filters, setFilters] = useState<Record<string, Filter[]>>(() => {
@@ -100,6 +107,18 @@ export default function APRWorkspace() {
     path: `api/annual-project-report/${year}/workspace/`,
     reactivePath: true,
   })
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (projectCodeSearch.length >= 3) {
+        setParams({ search: projectCodeSearch })
+      } else if (projectCodeSearch === '') {
+        setParams({ search: '' })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectCodeSearch])
 
   const { columnDefs, defaultColDef } = useGetColumnDefs({
     year: year!,
@@ -216,6 +235,35 @@ export default function APRWorkspace() {
         <div className="mb-2 flex items-start justify-between">
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-wrap items-center gap-2">
+              <div className="BPList">
+                <TextField
+                  size="small"
+                  placeholder="Search by project code..."
+                  value={projectCodeSearch}
+                  onChange={(e) => setProjectCodeSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IoSearchOutline size={18} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: projectCodeSearch ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setProjectCodeSearch('')
+                            setParams({ search: '' })
+                          }}
+                        >
+                            <IoClose size={16} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+              </div>
+
               {/* Region filter */}
               <Field
                 Input={{ placeholder: 'Region' }}
@@ -311,10 +359,21 @@ export default function APRWorkspace() {
               />
             </div>
 
-            {Object.values(filters).some(
+            {(Object.values(filters).some(
               (filterArr) => filterArr.length > 0,
-            ) && (
+            ) || !!projectCodeSearch) && (
               <ul className="m-0 flex list-none gap-x-2 px-0 py-2">
+                {projectCodeSearch && (
+                  <li key="search">
+                    <Chip
+                      label={projectCodeSearch}
+                      onDelete={() => {
+                        setProjectCodeSearch('')
+                        setParams({ search: '' })
+                      }}
+                    />
+                  </li>
+                )}
                 {Object.entries(filters).flatMap(([filterKey, filterValue]) => {
                   const paramKey: keyof Filter =
                     filterKey === 'status' ? 'code' : 'id'
@@ -332,7 +391,10 @@ export default function APRWorkspace() {
                     variant="text"
                     onClick={() => {
                       setFilters(INITIAL_PARAMS)
-                      setParams(INITIAL_PARAMS)
+                      setParams({ ...INITIAL_PARAMS, search: '' })
+                      setProjectCodeSearch('')
+                      setSelectedProjectCodes([])
+                      gridRef.current?.api?.deselectAll()
                     }}
                   >
                     Clear all
@@ -342,8 +404,8 @@ export default function APRWorkspace() {
             )}
           </div>
 
-          <div>
-            <div className="flex flex-wrap gap-x-2">
+          <div className="flex flex-col items-end">
+            <div className="flex gap-x-2 whitespace-nowrap">
               <Button
                 variant="text"
                 startIcon={<FiDownload size={18} />}
@@ -351,7 +413,12 @@ export default function APRWorkspace() {
                   handleExport(
                     formatApiUrl(
                       `api/annual-project-report/${year}/agency/${user.agency_id}/export/`,
-                      params,
+                      selectedProjectCodes.length > 0
+                        ? {
+                            ...params,
+                            project_codes: selectedProjectCodes.join(','),
+                          }
+                        : params,
                     ),
                     setLoadingExport,
                   )
@@ -393,18 +460,16 @@ export default function APRWorkspace() {
                 Download may take more than 1 minute, please wait!
               </div>
             )}
+            <FormControlLabel
+              label="Show derived columns"
+              control={
+                <Checkbox
+                  checked={showDerivedColumns}
+                  onChange={(e) => setShowDerivedColumns(e.target.checked)}
+                />
+              }
+            />
           </div>
-        </div>
-        <div className="flex justify-end">
-          <FormControlLabel
-            label="Show derived columns"
-            control={
-              <Checkbox
-                checked={showDerivedColumns}
-                onChange={(e) => setShowDerivedColumns(e.target.checked)}
-              />
-            }
-          />
         </div>
         {loaded && (
           <ViewTable
@@ -412,14 +477,39 @@ export default function APRWorkspace() {
               label: 'No reported projects',
             }}
             Toolbar={() => {
-              return <div>Total rows: {apr?.project_reports.length ?? 0}</div>
+              return (
+                <div className="flex gap-x-4">
+                  <div>Total rows: {apr?.project_reports.length ?? 0}</div>
+                  {selectedProjectCodes.length > 0 && (
+                    <div>{selectedProjectCodes.length} selected</div>
+                  )}
+                </div>
+              )
             }}
             rowsVisible={100}
+            gridRef={gridRef}
+            rowSelection="multiple"
+            suppressRowClickSelection={true}
+            isRowSelectable={(node) => {
+              const statusName = node.data?.status
+              const status = projectStatuses.find(
+                (s: any) => s.name === statusName,
+              )
+              return !MANDATORY_STATUSES.includes(status?.code ?? '')
+            }}
             dataTypeDefinitions={dataTypeDefinitions}
-            columnDefs={columnDefs}
+            columnDefs={[checkboxColumnDef, ...columnDefs]}
             defaultColDef={defaultColDef}
             rowData={apr?.project_reports ?? []}
             tooltipShowDelay={200}
+            onSelectionChanged={() => {
+              const nodes = gridRef.current?.api?.getSelectedNodes() ?? []
+              setSelectedProjectCodes(
+                nodes
+                  .map((n) => n.data?.project_code)
+                  .filter(Boolean) as string[],
+              )
+            }}
           />
         )}
       </Box>

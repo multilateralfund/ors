@@ -98,21 +98,15 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditEnterprise = user_permissions.includes(
     'has_enterprise_edit_access',
   )
-  const canApproveEnterprise = user_permissions.includes(
-    'has_enterprise_approval_access',
-  )
-  const canEditProjectEnterprise = user_permissions.includes(
-    'has_project_enterprise_edit_access',
-  )
-  const canApproveProjectEnterprise = user_permissions.includes(
-    'has_project_enterprise_approval_access',
-  )
 
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
   )
 
   const isMlfsUser = user_permissions.includes('is_mlfs_user')
+  const canViewOnlyOwnAgency = user_permissions.includes(
+    'can_view_only_own_agency',
+  )
 
   const canCommentCPCountry = user_permissions.includes(
     'can_cp_country_type_comment',
@@ -172,11 +166,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewMetaProjects,
         canViewEnterprises,
         canEditEnterprise,
-        canApproveEnterprise,
-        canEditProjectEnterprise,
-        canApproveProjectEnterprise,
         canSetProjectSettings,
         isMlfsUser,
+        canViewOnlyOwnAgency,
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,

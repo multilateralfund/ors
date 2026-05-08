@@ -8,12 +8,16 @@ import EnterprisesFiltersWrapper from './EnterprisesFiltersWrapper'
 import EnterprisesTable from './EnterprisesTable'
 import { CreateButton, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
+import { formatApiUrl } from '@ors/helpers'
+import Link from '@ors/components/ui/Link/Link'
 
 import { Redirect } from 'wouter'
 
 export default function EnterprisesWrapper() {
   const { canViewEnterprises, canEditEnterprise } =
     useContext(PermissionsContext)
+
+  const downloadUrlBase = '/api/enterprises/export'
 
   const form = useRef<any>()
 
@@ -25,7 +29,12 @@ export default function EnterprisesWrapper() {
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const enterprises = useGetEnterprises(initialFilters)
-  const { loading, setParams } = enterprises
+  const { loading, params, setParams } = enterprises
+
+  const downloadUrl = useMemo(() => {
+    const encodedParams = new URLSearchParams(params).toString()
+    return formatApiUrl(`${downloadUrlBase}?${encodedParams}`)
+  }, [filters])
 
   if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />
@@ -59,14 +68,32 @@ export default function EnterprisesWrapper() {
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
-        <EnterprisesFiltersWrapper
-          {...{
-            filters,
-            initialFilters,
-            setFilters,
-            setParams,
-          }}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <EnterprisesFiltersWrapper
+            mode="listing"
+            {...{
+              form,
+              filters,
+              initialFilters,
+              setFilters,
+              setParams,
+            }}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {canEditEnterprise && (
+            <Link
+              className="mb-auto px-4 py-2 text-lg uppercase md:mb-0.5"
+              color="secondary"
+              href={downloadUrl}
+              variant="contained"
+              button
+              download
+            >
+              Export enterprises
+            </Link>
+          )}
+        </div>
         <EnterprisesTable {...{ enterprises }} />
       </form>
     </>

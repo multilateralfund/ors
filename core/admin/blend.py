@@ -28,14 +28,15 @@ class BlendAdmin(admin.ModelAdmin):
             "cpprices",
             "components",
             "project_ods",
-            "projectenterprise_ods",
+            "enterprise_ods",
             "cprecordarchive",
             "cppricesarchive",
             "admrecordarchive",
             "cpreportformatrow",
             "allcprecordsview",
         ]
-        return get_final_display_list(Blend, exclude)
+        fields = get_final_display_list(Blend, exclude)
+        return fields
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

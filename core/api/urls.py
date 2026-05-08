@@ -121,10 +121,9 @@ from core.api.views.projects import (
     ProjectCommentViewSet,
     ProjectFileView,
 )
-from core.api.views.project_enterprise import (
+from core.api.views.enterprises import (
     EnterpriseViewSet,
-    ProjectEnterpriseStatusView,
-    ProjectEnterpriseViewSet,
+    EnterpriseStatusListView,
 )
 from core.api.views.projects_v2 import (
     ProjectProductionControlTypeView,
@@ -199,9 +198,6 @@ router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"
 )
 router.register("enterprises", EnterpriseViewSet, basename="enterprise")
-router.register(
-    "project-enterprise", ProjectEnterpriseViewSet, basename="project-enterprise"
-)
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
@@ -493,6 +489,11 @@ urlpatterns = [
         name="countries-list",
     ),
     path(
+        "enterprise-statuses/",
+        EnterpriseStatusListView.as_view(),
+        name="enterprise-status-list",
+    ),
+    path(
         "file-types/",
         FileTypeView.as_view(),
         name="file-type-list",
@@ -576,11 +577,6 @@ urlpatterns = [
         "decisions/",
         DecisionListView.as_view(),
         name="decision-list",
-    ),
-    path(
-        "project-enterprise-status/",
-        ProjectEnterpriseStatusView.as_view(),
-        name="project-enterprise-status",
     ),
     path(
         "project-production-control-type/",

@@ -10,7 +10,6 @@ from core.models.project import (
     MetaProject,
     Project,
 )
-from core.models.project_enterprise import Enterprise, ProjectEnterprise
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -19,7 +18,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-from core.models.utils import SubstancesType, EnterpriseStatus
+from core.models.utils import SubstancesType
 
 # pylint: disable=W0613
 
@@ -161,67 +160,4 @@ class ProjectFilter(filters.FilterSet):
             "cluster_id",
             "meeting_id",
             "date_received",
-        ]
-
-
-class ProjectEnterpriseFilter(filters.FilterSet):
-    """
-    Filter for project enterprises
-    """
-
-    project_id = filters.ModelMultipleChoiceFilter(
-        field_name="project",
-        queryset=Project.objects.all(),
-        widget=CSVWidget,
-    )
-    enterprise_id = filters.ModelMultipleChoiceFilter(
-        field_name="enterprise",
-        queryset=Enterprise.objects.all(),
-        widget=CSVWidget,
-    )
-    agency_id = filters.ModelMultipleChoiceFilter(
-        field_name="agency",
-        queryset=Agency.objects.all(),
-        widget=CSVWidget,
-    )
-    country_id = filters.ModelMultipleChoiceFilter(
-        field_name="enterprise__country",
-        queryset=Country.objects.all(),
-        widget=CSVWidget,
-    )
-    status = filters.MultipleChoiceFilter(
-        choices=EnterpriseStatus.choices,
-        widget=CSVWidget,
-    )
-
-    class Meta:
-        model = ProjectEnterprise
-        fields = [
-            "project_id",
-            "country_id",
-            "status",
-            "agency_id",
-        ]
-
-
-class EnterpriseFilter(filters.FilterSet):
-    """
-    Filter for enterprises
-    """
-
-    country_id = filters.ModelMultipleChoiceFilter(
-        field_name="country",
-        queryset=Country.objects.all(),
-        widget=CSVWidget,
-    )
-    status = filters.MultipleChoiceFilter(
-        choices=EnterpriseStatus.choices,
-        widget=CSVWidget,
-    )
-
-    class Meta:
-        model = Enterprise
-        fields = [
-            "country_id",
-            "status",
         ]

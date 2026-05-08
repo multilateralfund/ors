@@ -932,7 +932,6 @@ export const getMenus = (
     canViewBp,
     canUpdateBp,
     canViewEnterprises,
-    canEditProjectEnterprise,
     canUpdatePostExcom,
     canTransferProjects,
     canViewMetaProjects,
@@ -981,14 +980,6 @@ export const getMenus = (
             !canUpdatePostExcom ||
             !projectId ||
             !getIsUpdatablePostExcom(projectSubmissionStatus, projectStatus),
-        },
-        {
-          title: 'Update project enterprises',
-          url: `/projects-listing/projects-enterprises/${projectId}`,
-          disabled:
-            !canEditProjectEnterprise ||
-            !projectId ||
-            projectSubmissionStatus !== 'Approved',
         },
         {
           title: 'Manage enterprises',
