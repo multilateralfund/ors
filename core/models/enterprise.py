@@ -158,71 +158,71 @@ class Enterprise(models.Model):
         help_text="Month and year of meeting when project was approved",
     )
     chemical_phased_out = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Total quantity of chemical phased out (mt)",
     )
     impact = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Total ODP tonnes phased out",
     )
     funds_approved = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds approved/allocated for the enterprise (US $)",
     )
     capital_cost_approved = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Capital cost approved/allocated for the enterprise (US $)",
     )  # (ICC)
     operating_cost_approved = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Operating cost approved/allocated for enterprise (US $)",
     )  # (IOC)
     cost_effectiveness_approved = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Cost effectiveness approved (US $/kg)",
     )
     funds_disbursed = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds disbursed to the enterprise (US $)",
     )
     capital_cost_disbursed = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Capital cost disbursed to the enterprise (US $)",
     )
     operating_cost_disbursed = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Operating cost disbursed to the enterprise (US $)",
     )
     cost_effectiveness_actual = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Actual cost effectiveness (US $)/kg",
@@ -320,8 +320,8 @@ class EnterpriseOdsOdp(models.Model):
         blank=True,
     )
     consumption = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Amount of the controlled substance to be phased out (mt)",
@@ -334,8 +334,8 @@ class EnterpriseOdsOdp(models.Model):
         """,
     )
     chemical_phased_in_mt = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="""

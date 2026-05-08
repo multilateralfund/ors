@@ -637,25 +637,25 @@ class EnterpriseFactory(factory.django.DjangoModelFactory):
     revision_number = factory.Faker("random_int", min=1, max=10)
     meeting = factory.SubFactory(MeetingFactory)
     date_of_approval = factory.Faker("date")
-    chemical_phased_out = factory.Faker("pydecimal", left_digits=17, right_digits=3)
-    impact = factory.Faker("pydecimal", left_digits=17, right_digits=3)
-    funds_approved = factory.Faker("pydecimal", left_digits=17, right_digits=3)
-    capital_cost_approved = factory.Faker("pydecimal", left_digits=17, right_digits=3)
-    operating_cost_approved = factory.Faker("pydecimal", left_digits=17, right_digits=3)
+    chemical_phased_out = factory.Faker("pydecimal", left_digits=15, right_digits=3)
+    impact = factory.Faker("pydecimal", left_digits=15, right_digits=3)
+    funds_approved = factory.Faker("pydecimal", left_digits=15, right_digits=3)
+    capital_cost_approved = factory.Faker("pydecimal", left_digits=15, right_digits=3)
+    operating_cost_approved = factory.Faker("pydecimal", left_digits=15, right_digits=3)
     cost_effectiveness_approved = factory.Faker(
-        "pydecimal", left_digits=17, right_digits=3
+        "pydecimal", left_digits=15, right_digits=3
     )
-    funds_disbursed = factory.Faker("pydecimal", left_digits=17, right_digits=3)
-    capital_cost_disbursed = factory.Faker("pydecimal", left_digits=17, right_digits=3)
+    funds_disbursed = factory.Faker("pydecimal", left_digits=15, right_digits=3)
+    capital_cost_disbursed = factory.Faker("pydecimal", left_digits=15, right_digits=3)
     operating_cost_disbursed = factory.Faker(
-        "pydecimal", left_digits=17, right_digits=3
+        "pydecimal", left_digits=15, right_digits=3
     )
     cost_effectiveness_actual = factory.Faker(
-        "pydecimal", left_digits=17, right_digits=3
+        "pydecimal", left_digits=15, right_digits=3
     )
     co_financing_planned = factory.Faker("pystr", max_chars=64)
     co_financing_actual = factory.Faker("pystr", max_chars=64)
-    funds_transferred = factory.Faker("pydecimal", left_digits=17, right_digits=3)
+    funds_transferred = factory.Faker("pydecimal", left_digits=15, right_digits=3)
     agency_remarks = factory.Faker("pystr", max_chars=256)
     secretariat_remarks = factory.Faker("pystr", max_chars=256)
     excom_provision = factory.Faker("pystr", max_chars=256)
