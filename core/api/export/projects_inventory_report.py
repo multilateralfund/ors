@@ -622,7 +622,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": "status",
                 "headerName": "Status",
-                "method": partial(get_value_fk, None),
+                "method": partial(get_value_fk, None, attr_name="code"),
             },
             {
                 "id": "cluster",
