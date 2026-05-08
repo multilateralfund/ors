@@ -127,7 +127,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             : Math.max(fieldIndex - firstRowValues.length + 1, groupStartIndex)
 
           const columnsLabels = hasHeaders
-            ? map(firstRowValues, (label) => normalizeLabel(label))
+            ? map(firstRowValues, (label) =>
+                label != null ? normalizeLabel(label) : null,
+              )
             : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
                 normalizeLabel(label),
               )
