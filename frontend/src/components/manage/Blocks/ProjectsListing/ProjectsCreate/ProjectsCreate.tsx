@@ -139,7 +139,17 @@ const ProjectsCreate = ({
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
   const { results: aprData } = useGetProjectsAPRData(project_id, mode)
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
+  const isEditMode = project && mode === 'edit'
+  const isApprovalTabAvailable = isEditMode && project.version >= 3
+  const shouldValidateRequiredFields = !(
+    mode === 'edit' && project?.submission_status === 'Approved'
+  )
+
+  const canLinkToBp = canGoToSecondStep(
+    projIdentifiers,
+    agency_id,
+    shouldValidateRequiredFields,
+  )
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
   const [currentTab, setCurrentTab] = useState<number>(
@@ -260,13 +270,13 @@ const ProjectsCreate = ({
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
 
-  const isEditMode = project && mode === 'edit'
-  const isApprovalTabAvailable = isEditMode && project.version >= 3
-  const shouldValidateRequiredFields =
-    mode === 'edit' && project?.submission_status === 'Approved'
-
   const projIdentifiersErrors = useMemo(
-    () => getProjIdentifiersErrors(projIdentifiers, errors),
+    () =>
+      getProjIdentifiersErrors(
+        projIdentifiers,
+        errors,
+        shouldValidateRequiredFields,
+      ),
     [projIdentifiers, errors],
   )
   const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
@@ -495,7 +505,7 @@ const ProjectsCreate = ({
         .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
 
       const messages = [
-        missingFields.length > 0
+        shouldValidateRequiredFields && missingFields.length > 0
           ? `${missingFields.join(', ')}: ${
               missingFields.length > 1 ? 'These fields are' : 'This field is'
             } required${errorMessageExtension}.`
@@ -554,7 +564,7 @@ const ProjectsCreate = ({
           {bpData.bpDataLoading
             ? LoadingTab
             : (hasSectionErrors(projIdentifiersErrors) ||
-                !!agencyErrorType ||
+                (shouldValidateRequiredFields && !!agencyErrorType) ||
                 (postExComUpdate &&
                   !(
                     projIdentifiers.post_excom_meeting &&
@@ -595,7 +605,7 @@ const ProjectsCreate = ({
           ...postExcomMeetingErrors,
           ...bpErrors,
         }),
-        ...(!!agencyErrorType
+        ...(shouldValidateRequiredFields && !!agencyErrorType
           ? [
               {
                 message:
@@ -656,8 +666,9 @@ const ProjectsCreate = ({
               (hasSectionErrors(overviewErrors) ||
                 hasSectionErrors(substanceDetailsErrors) ||
                 formattedOdsOdpErrors.length > 0 ||
-                errorText ||
+                (shouldValidateRequiredFields && errorText) ||
                 (mode === 'edit' &&
+                  shouldValidateRequiredFields &&
                   odsOdpFields.length > 0 &&
                   odsOdpData.length === 0)) &&
               (isSpecificInfoTabDisabled ? (
@@ -692,6 +703,7 @@ const ProjectsCreate = ({
           ...substanceDetailsErrors,
         }),
         ...(mode === 'edit' &&
+        shouldValidateRequiredFields &&
         odsOdpFields.length > 0 &&
         odsOdpData.length === 0
           ? [
@@ -701,7 +713,9 @@ const ProjectsCreate = ({
             ]
           : []),
         ...formattedOdsOdpErrors,
-        ...(errorText && isError ? [{ message: errorText }] : []),
+        ...(shouldValidateRequiredFields && errorText && isError
+          ? [{ message: errorText }]
+          : []),
       ],
     },
     {

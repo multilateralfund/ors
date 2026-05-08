@@ -69,10 +69,15 @@ const ProjectsHeader = ({
     (errors) => errors.length > 0,
   )
 
+  const shouldValidateRequiredFields = !(
+    mode === 'edit' && project?.submission_status === 'Approved'
+  )
+
   const hasMissingRequiredFields = getIsSaveDisabled(
     projIdentifiers,
     crossCuttingFields,
     agency_id,
+    shouldValidateRequiredFields,
   )
   const hasTrancheErrors =
     !!trancheErrors?.errorText || !!trancheErrors?.loading

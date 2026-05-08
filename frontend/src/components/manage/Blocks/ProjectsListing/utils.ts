@@ -115,27 +115,35 @@ export const getDefaultValues = <T>(
 export const canGoToSecondStep = (
   projIdentifiers: ProjIdentifiers,
   agency_id: number | undefined,
+  shouldValidateRequiredFields: boolean = true,
 ) =>
-  !!(
+  !shouldValidateRequiredFields ||
+  (!!(
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     projIdentifiers.cluster &&
     projIdentifiers.agency &&
     projIdentifiers.lead_agency
-  ) && !getAgencyErrorType(projIdentifiers, agency_id)
+  ) &&
+    !getAgencyErrorType(projIdentifiers, agency_id))
 
 export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
   agency_id: number | undefined,
+  shouldValidateRequiredFields: boolean,
 ) => {
-  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
+  const canLinkToBp = canGoToSecondStep(
+    projIdentifiers,
+    agency_id,
+    shouldValidateRequiredFields,
+  )
   const { project_type, sector, title, project_start_date, project_end_date } =
     crossCuttingFields
 
   return (
     !canLinkToBp ||
-    !(project_type && sector && title) ||
+    (shouldValidateRequiredFields && !(project_type && sector && title)) ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date))
   )
 }
@@ -442,6 +450,7 @@ export const getActualData = (
 export const getProjIdentifiersErrors = (
   projIdentifiers: ProjIdentifiers,
   errors: { [key: string]: [] },
+  shouldValidateRequiredFields: boolean,
 ) => {
   const requiredFields = [
     'country',
@@ -461,13 +470,14 @@ export const getProjIdentifiersErrors = (
   )
 
   return {
-    ...requiredFields.reduce((acc: any, field) => {
-      acc[field] = !projIdentifiers[field as keyof ProjIdentifiers]
-        ? ['This field is required.']
-        : []
+    ...(shouldValidateRequiredFields &&
+      requiredFields.reduce((acc: any, field) => {
+        acc[field] = !projIdentifiers[field as keyof ProjIdentifiers]
+          ? ['This field is required.']
+          : []
 
-      return acc
-    }, {}),
+        return acc
+      }, {})),
     ...filteredErrors,
   }
 }
@@ -524,7 +534,7 @@ export const getCrossCuttingErrors = (
   project: ProjectTypeApi | undefined,
   validateApproval: boolean,
   shouldValidateTotalFund: boolean,
-  withoutRequiredFields: boolean,
+  withRequiredFields: boolean,
 ) => {
   const allRequiredFields = [
     'title',
@@ -566,7 +576,7 @@ export const getCrossCuttingErrors = (
     mode === 'edit' ? requiredFieldsAfterSubmission : requiredFields.slice(0, 3)
 
   return {
-    ...(!withoutRequiredFields &&
+    ...(withRequiredFields &&
       getFieldErrors(fieldsToCheck, crossCuttingFields, project)),
     ...(validateApproval &&
       mode === 'edit' &&
@@ -796,7 +806,7 @@ export const getSpecificFieldsErrors = (
   errors: { [key: string]: [] },
   mode: string,
   canEditApprovedProjects: boolean,
-  withoutRequiredFields: boolean,
+  withRequiredFields: boolean,
   project?: ProjectTypeApi,
 ) => {
   const isEditMode = project && mode === 'edit'
@@ -828,7 +838,7 @@ export const getSpecificFieldsErrors = (
     getDefaultImpactErrors(projectSpecificFields, specificFields) ?? {}
 
   const sectionErrors =
-    mode === 'edit' && project && !withoutRequiredFields
+    mode === 'edit' && project && withRequiredFields
       ? (getFieldErrors(fieldNames, projectSpecificFields, project) ?? {})
       : {}
   const updatedErrors = { ...sectionErrors, ...defaultImpactErrors, ...errors }

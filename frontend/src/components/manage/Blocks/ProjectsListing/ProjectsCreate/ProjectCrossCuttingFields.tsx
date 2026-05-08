@@ -97,6 +97,8 @@ const ProjectCrossCuttingFields = ({
   } = crossCuttingFields
   const { submission_status } = project || {}
 
+  const isProjectApproved = mode === 'edit' && submission_status === 'Approved'
+
   const { projectFields, viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -123,16 +125,12 @@ const ProjectCrossCuttingFields = ({
     className: 'BPListUpload !ml-0 h-10 w-40 !flex-grow-0',
   }
 
-  const areInvalidFields = !(
-    canGoToSecondStep(projIdentifiers, agency_id) &&
-    project_type &&
-    sector
-  )
+  const areInvalidFields =
+    !isProjectApproved &&
+    !(canGoToSecondStep(projIdentifiers, agency_id) && project_type && sector)
   const isNextDisabled = areInvalidFields || !specificFieldsLoaded
   const isStartDateDisabled =
-    (mode === 'edit' &&
-      submission_status === 'Approved' &&
-      (postExComUpdate || !!project?.project_start_date)) ||
+    (isProjectApproved && (postExComUpdate || !!project?.project_start_date)) ||
     !canEditField(editableFields, 'project_start_date')
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
