@@ -171,7 +171,7 @@ const EditActionButtons = ({
         project,
         false,
         shouldValidateTotalFund,
-        isApproved,
+        !isApproved,
       ),
     [crossCuttingFields, shouldValidateTotalFund],
   )
@@ -199,7 +199,7 @@ const EditActionButtons = ({
         {},
         'edit',
         canEditApprovedProjects,
-        isApproved,
+        !isApproved,
         project,
       ),
     [projectSpecificFields, project, specificFields],
