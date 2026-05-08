@@ -454,6 +454,7 @@ const ProjectsCreate = ({
                 : 'ods_replacement'
 
             return mode === 'edit' &&
+              shouldValidateRequiredFields &&
               checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null
@@ -505,7 +506,7 @@ const ProjectsCreate = ({
         .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
 
       const messages = [
-        shouldValidateRequiredFields && missingFields.length > 0
+        missingFields.length > 0
           ? `${missingFields.join(', ')}: ${
               missingFields.length > 1 ? 'These fields are' : 'This field is'
             } required${errorMessageExtension}.`
@@ -666,7 +667,7 @@ const ProjectsCreate = ({
               (hasSectionErrors(overviewErrors) ||
                 hasSectionErrors(substanceDetailsErrors) ||
                 formattedOdsOdpErrors.length > 0 ||
-                (shouldValidateRequiredFields && errorText) ||
+                errorText ||
                 (mode === 'edit' &&
                   shouldValidateRequiredFields &&
                   odsOdpFields.length > 0 &&
@@ -713,9 +714,7 @@ const ProjectsCreate = ({
             ]
           : []),
         ...formattedOdsOdpErrors,
-        ...(shouldValidateRequiredFields && errorText && isError
-          ? [{ message: errorText }]
-          : []),
+        ...(errorText && isError ? [{ message: errorText }] : []),
       ],
     },
     {

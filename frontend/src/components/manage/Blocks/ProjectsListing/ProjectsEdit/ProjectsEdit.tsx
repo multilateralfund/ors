@@ -474,6 +474,15 @@ const ProjectsEdit = ({
     ) {
       fieldsValuesLoaded.current = true
     }
+
+    if (
+      !fieldsValuesLoaded.current &&
+      isEditMode &&
+      project.submission_status === 'Approved' &&
+      !(project.cluster && project.project_type && project.sector)
+    ) {
+      fieldsValuesLoaded.current = true
+    }
   }, [specificFields, fieldsValuesLoaded])
 
   const tranche = projectData.projectSpecificFields?.tranche ?? 0

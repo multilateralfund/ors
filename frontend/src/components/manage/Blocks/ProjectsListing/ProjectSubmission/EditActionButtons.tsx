@@ -78,7 +78,6 @@ const EditActionButtons = ({
   bpData,
   filesMetaData,
   shouldValidateTotalFund,
-  approvedProjectsErrors,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -89,7 +88,6 @@ const EditActionButtons = ({
   postExComUpdate?: boolean
   bpData: BpDataProps
   shouldValidateTotalFund: boolean
-  approvedProjectsErrors: boolean
 }) => {
   const [_, setLocation] = useLocation()
   const { setInlineMessage } = useStore((state) => state.inlineMessage)
@@ -277,7 +275,7 @@ const EditActionButtons = ({
     editable_for_actual_fields && !editable && !postExComUpdate
       ? hasImpactErrors
       : isApproved
-        ? tabErrors || approvedProjectsErrors
+        ? tabErrors || isSaveDisabled
         : disableSubmit
 
   const hasPostExcomMeetingErrors = getPostExcomMeetingErrors(projIdentifiers)

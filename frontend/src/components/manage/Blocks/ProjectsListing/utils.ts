@@ -827,7 +827,7 @@ export const getSpecificFieldsErrors = (
         data_type !== 'boolean' &&
         !fieldsNotValidated.includes(write_field_name) &&
         (canEditApprovedProjects ||
-          (isEditMode && project.version > 3) ||
+          (isEditMode && project.version >= 3) ||
           editable_in_versions.includes(version)),
     ),
     'write_field_name',
