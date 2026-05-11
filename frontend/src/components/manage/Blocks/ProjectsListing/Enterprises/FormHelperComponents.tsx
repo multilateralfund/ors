@@ -8,8 +8,8 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { FieldErrorIndicator } from '../HelperComponents'
 import { STYLE } from '../../Replenishment/Inputs/constants'
+import { getNonFieldErrors, onTextareaFocus } from '../utils'
 import { enterpriseFieldsMapping } from './constants'
-import { onTextareaFocus } from '../utils'
 import {
   getFieldDefaultProps,
   handleChangeIntegerValues,
@@ -28,6 +28,7 @@ import {
   EnterprisesCommonProps,
   SetEnterpriseData,
 } from '../interfaces'
+import { InlineMessage } from '@ors/types/store'
 
 import { TextareaAutosize } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
@@ -264,31 +265,44 @@ export const EnterpriseDateField = ({
 
 export const handleErrors = async (
   error: any,
-  setEnterpriseId: (id: number | null) => void,
   setErrors: (errors: { [key: string]: string[] }) => void,
-  setOtherErrors: (errors: string) => void,
+  setInlineMessage: (message: InlineMessage) => void,
 ) => {
   const errors = await error.json()
 
   if (error.status === 400) {
     setErrors(errors)
 
+    const nonFieldErrors = getNonFieldErrors(errors)
+    if (nonFieldErrors.length > 0) {
+      setInlineMessage({
+        type: 'error',
+        errorMessages: nonFieldErrors,
+      })
+    }
+
     if (errors?.details) {
-      setOtherErrors(errors.details)
+      setInlineMessage({
+        type: 'error',
+        message: errors.details,
+      })
     }
   }
 
-  setEnterpriseId(null)
   enqueueSnackbar(<>An error occurred. Please try again.</>, {
     variant: 'error',
   })
 }
 
 export const EnterpriseStatus = ({ status }: { status: string }) => (
-  <div className="mt-4 flex items-center gap-3">
+  <div className="mt-4 flex items-center gap-1.5">
     <span>Status:</span>
-    <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
-      {status}
-    </span>
+    {!!status ? (
+      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+        {status}
+      </span>
+    ) : (
+      '-'
+    )}
   </div>
 )

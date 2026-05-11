@@ -458,9 +458,7 @@ export interface EnterpriseRemarks {
 }
 export interface EnterpriseHeaderProps {
   enterpriseData: EnterpriseData
-  setEnterpriseId: (id: number | null) => void
   setErrors: (value: { [key: string]: string[] }) => void
-  setOtherErrors: (value: string) => void
 }
 
 export type EnterpriseActionButtons = EnterpriseHeaderProps & {

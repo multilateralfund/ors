@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 import EnterpriseHeader from '../create/EnterpriseHeader'
 import EnterpriseCreate from '../create/EnterpriseCreate'
-import ProjectFormFooter from '../../ProjectFormFooter'
 import { EnterpriseData, EnterpriseType } from '../../interfaces'
 import { getFormattedDecimalValue } from '../utils'
 import {
@@ -22,11 +21,7 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
     funding_details: initialFundingDetailsFields,
     remarks: initialRemarksFields,
   })
-  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
-  const [otherErrors, setOtherErrors] = useState<string>('')
-  const nonFieldsErrors = errors?.['non_field_errors'] || []
 
   useEffect(() => {
     setEnterpriseData((prevData) => ({
@@ -109,9 +104,7 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         {...{
           enterpriseData,
           enterprise,
-          setEnterpriseId,
           setErrors,
-          setOtherErrors,
         }}
       />
       <EnterpriseCreate
@@ -122,13 +115,6 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
           enterprise,
           errors,
         }}
-      />
-      <ProjectFormFooter
-        id={enterpriseId}
-        href={`/projects-listing/enterprises/${enterpriseId}`}
-        successMessage="Enterprise was updated successfully."
-        successRedirectMessage="View enterprise."
-        {...{ nonFieldsErrors, otherErrors }}
       />
     </>
   )

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
+import ProjectsInlineMessage from '../../ProjectsCreate/ProjectsInlineMessage.tsx'
 import EnterpriseOverviewSection from '../formTabs/EnterpriseOverviewSection.tsx'
 import EnterpriseDetailsSection from '../formTabs/EnterpriseDetailsSection.tsx'
 import EnterpriseSubstanceDetailsSection from '../formTabs/EnterpriseSubstanceDetailsSection.tsx'
@@ -36,7 +37,7 @@ const EnterpriseCreate = ({
 
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { enterpriseData, setEnterpriseData, enterprise } = rest
+  const { enterpriseData, setEnterpriseData } = rest
   const {
     overview,
     details,
@@ -96,6 +97,14 @@ const EnterpriseCreate = ({
 
   useEffect(() => {
     clearUpdatedFields()
+  }, [])
+
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
+
+  useEffect(() => {
+    setInlineMessage(null)
   }, [])
 
   const setEnterpriseDataWithEditTracking = (
@@ -283,6 +292,7 @@ const EnterpriseCreate = ({
           .filter((_, index) => index === currentTab)
           .map(({ id, component, errors }) => (
             <span key={id}>
+              {!!inlineMessage && <ProjectsInlineMessage />}
               {errors && errors.length > 0 && (
                 <CustomAlert
                   type="error"
