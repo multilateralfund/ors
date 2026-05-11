@@ -15,8 +15,9 @@ const ProjectsSettingsListsOfTerms = () => {
       </h3>
       <p>
         Although some data can be changed (rows added, edited or deleted) from
-        the Django administration area (<code>portal-url/admin/</code>), only a
-        few types of records can be edited directly using this interface. Those
+        the Django administration area (<a className="italic text-inherit"
+        href={formatApiUrl('/admin/')} target="_blank" rel="noopener noreferrer">/admin/</a>),
+        only a few types of records can be edited directly using this interface. Those
         types are listed below, together with instructions and caveats.
       </p>
       <p>
