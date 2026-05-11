@@ -164,7 +164,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                 nextForm[i] = { ...nextForm[i] }
 
                 values.map((value: any, index: number) => {
-                  const crtFieldObj = getFieldData(columnsLabels[index])
+                  const crtFieldObj = columnsLabels[index] != null
+                    ? getFieldData(columnsLabels[index] as string)
+                    : undefined
 
                   if (
                     !(
