@@ -85,7 +85,7 @@ const EnterprisesFilters = ({
       {canFilterByAgency && <FieldFilter field="agency" options={agencies} />}
       <div className="mb-0.5 w-[8.5rem]">
         <PopoverInput
-          className="!m-0 h-9 !pr-0 !text-[16px] text-inherit"
+          className="!m-0 h-9 border-2 !pr-0 !text-[16px] text-inherit"
           label="Meeting"
           options={meetings}
           onChange={(value: any) => {
