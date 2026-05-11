@@ -34,7 +34,7 @@ const ProjectsSettingsListsOfTerms = () => {
         the confirmation that the corresponding record from the ODS-ODP table
         will be also deleted:
       </p>
-      <img src="/images/admin-delete-image.jpg" />
+      <img src="/images/admin-delete-image.jpg" className="h-[350px]" />
       <p>
         It is advisable to refrain from deleting records if you don't have a
         clear image of the database and are not aware of the impacts of the
