@@ -47,6 +47,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         apr_agency_viewer_user,
         annual_progress_report,
         annual_agency_report,
+        project_ongoing_status,
     ):
         own_project = ProjectFactory(
             agency=apr_agency_viewer_user.agency,
@@ -92,6 +93,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         self,
         secretariat_viewer_user,
         annual_progress_report,
+        project_ongoing_status,
     ):
         agency_report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
@@ -237,7 +239,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project_2022,
-            status="COM",
+            status="Completed",
             funds_disbursed=100000,
         )
 
@@ -264,7 +266,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project_2023_2,
-            status="COM",
+            status="Completed",
             funds_disbursed=75000,
         )
 
@@ -321,7 +323,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
-            status="COM",
+            status="Completed",
             funds_disbursed=80000,
             consumption_phased_out_odp=10,
             production_phased_out_odp=5,
@@ -520,7 +522,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project1,
-            status="COM",
+            status="Completed",
             funds_disbursed=100000,
         )
 
@@ -576,7 +578,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
-            status="COM",
+            status="Completed",
             consumption_phased_out_odp=10,
             production_phased_out_odp=5,
             consumption_phased_out_mt=100,
@@ -702,6 +704,7 @@ class TestAPRSummaryTablesExport(BaseTest):
         apr_agency_viewer_user,
         annual_agency_report,
         project_completed_status,
+        project_ongoing_status,
     ):
         num_clusters = 8
         for i in range(num_clusters):
@@ -746,7 +749,7 @@ class TestAPRSummaryTablesExport(BaseTest):
                 version=3,
                 total_fund=3000,
             ),
-            status="COM",
+            status="Completed",
             funds_disbursed=3000,
         )
         AnnualProjectReportFactory(
@@ -759,7 +762,7 @@ class TestAPRSummaryTablesExport(BaseTest):
                 version=3,
                 total_fund=1000,
             ),
-            status="COM",
+            status="Completed",
             funds_disbursed=0,
         )
 

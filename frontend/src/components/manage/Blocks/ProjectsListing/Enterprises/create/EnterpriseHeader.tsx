@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -39,10 +39,12 @@ const EnterpriseHeader = ({
   const formatStatus = (enterpriseStatus?: number | null) =>
     find(statuses, (status) => status.id === enterpriseStatus)?.name ?? ''
 
-  const [enterpriseStatus, setEnterpriseStatus] = useState(
-    formatStatus(enterprise?.status),
-  )
+  const [enterpriseStatus, setEnterpriseStatus] = useState('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    setEnterpriseStatus(formatStatus(enterprise?.status))
+  }, [statuses])
 
   const isEdit = mode === 'edit' && !!enterprise
 

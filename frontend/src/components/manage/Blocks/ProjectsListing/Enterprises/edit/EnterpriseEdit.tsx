@@ -4,7 +4,7 @@ import EnterpriseHeader from '../create/EnterpriseHeader'
 import EnterpriseCreate from '../create/EnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
 import { EnterpriseData, EnterpriseType } from '../../interfaces'
-import { getFormattedDecimalValue } from '../../utils'
+import { getFormattedDecimalValue } from '../utils'
 import {
   initialOverviewFields,
   initialDetailsFields,

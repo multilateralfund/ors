@@ -139,7 +139,17 @@ const ProjectsCreate = ({
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
   const { results: aprData } = useGetProjectsAPRData(project_id, mode)
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers, agency_id)
+  const isEditMode = project && mode === 'edit'
+  const isApprovalTabAvailable = isEditMode && project.version >= 3
+  const shouldValidateRequiredFields = !(
+    mode === 'edit' && project?.submission_status === 'Approved'
+  )
+
+  const canLinkToBp = canGoToSecondStep(
+    projIdentifiers,
+    agency_id,
+    shouldValidateRequiredFields,
+  )
 
   const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
   const [currentTab, setCurrentTab] = useState<number>(
@@ -260,11 +270,13 @@ const ProjectsCreate = ({
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
 
-  const isEditMode = project && mode === 'edit'
-  const isApprovalTabAvailable = isEditMode && project.version >= 3
-
   const projIdentifiersErrors = useMemo(
-    () => getProjIdentifiersErrors(projIdentifiers, errors),
+    () =>
+      getProjIdentifiersErrors(
+        projIdentifiers,
+        errors,
+        shouldValidateRequiredFields,
+      ),
     [projIdentifiers, errors],
   )
   const agencyErrorType = getAgencyErrorType(projIdentifiers, agency_id)
@@ -296,6 +308,7 @@ const ProjectsCreate = ({
         mode === 'edit' ? project : undefined,
         true,
         shouldValidateTotalFund,
+        shouldValidateRequiredFields,
       ),
     [crossCuttingFields, errors, mode, shouldValidateTotalFund],
   )
@@ -400,6 +413,7 @@ const ProjectsCreate = ({
         errors,
         mode,
         canEditApprovedProjects,
+        shouldValidateRequiredFields,
         project,
       ),
     [projectSpecificFields, specificFields, errors, mode, project],
@@ -440,6 +454,7 @@ const ProjectsCreate = ({
                 : 'ods_replacement'
 
             return mode === 'edit' &&
+              shouldValidateRequiredFields &&
               checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])
               ? [field, [`This field is required${errorMessageExtension}.`]]
               : null
@@ -550,7 +565,7 @@ const ProjectsCreate = ({
           {bpData.bpDataLoading
             ? LoadingTab
             : (hasSectionErrors(projIdentifiersErrors) ||
-                !!agencyErrorType ||
+                (shouldValidateRequiredFields && !!agencyErrorType) ||
                 (postExComUpdate &&
                   !(
                     projIdentifiers.post_excom_meeting &&
@@ -591,7 +606,7 @@ const ProjectsCreate = ({
           ...postExcomMeetingErrors,
           ...bpErrors,
         }),
-        ...(!!agencyErrorType
+        ...(shouldValidateRequiredFields && !!agencyErrorType
           ? [
               {
                 message:
@@ -654,6 +669,7 @@ const ProjectsCreate = ({
                 formattedOdsOdpErrors.length > 0 ||
                 errorText ||
                 (mode === 'edit' &&
+                  shouldValidateRequiredFields &&
                   odsOdpFields.length > 0 &&
                   odsOdpData.length === 0)) &&
               (isSpecificInfoTabDisabled ? (
@@ -688,6 +704,7 @@ const ProjectsCreate = ({
           ...substanceDetailsErrors,
         }),
         ...(mode === 'edit' &&
+        shouldValidateRequiredFields &&
         odsOdpFields.length > 0 &&
         odsOdpData.length === 0
           ? [

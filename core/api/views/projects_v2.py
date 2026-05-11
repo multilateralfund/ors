@@ -122,6 +122,7 @@ class ProjectOdsOdpTypeView(APIView):
     View to return a list of all Project OdsOdpType choices
     """
 
+    @extend_schema(deprecated=True)
     def get(self, request, *args, **kwargs):
         choices = ProjectOdsOdp.ProjectOdsOdpType.choices
         return Response(choices)

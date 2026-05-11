@@ -68,7 +68,7 @@ export default function EnterprisesWrapper() {
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap justify-between gap-3">
           <EnterprisesFiltersWrapper
             mode="listing"
             {...{
@@ -79,11 +79,9 @@ export default function EnterprisesWrapper() {
               setParams,
             }}
           />
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
           {canEditEnterprise && (
             <Link
-              className="mb-auto px-4 py-2 text-lg uppercase md:mb-0.5"
+              className="mb-auto h-10 px-4 py-2 text-lg uppercase md:mb-0.5"
               color="secondary"
               href={downloadUrl}
               variant="contained"

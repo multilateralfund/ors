@@ -13,11 +13,35 @@ const ProjectsSettingsListsOfTerms = () => {
       <h3 className="mt-2 text-3xl">
         A) Fields with values configurable from the admin interface.
       </h3>
-
       <p>
-        <strong className="text-[#0095D5]">
-          Agencies:
-        </strong>
+        Although some data can be changed (rows added, edited or deleted) from
+        the Django administration area (<a className="italic text-inherit"
+        href={formatApiUrl('/admin/')} target="_blank" rel="noopener noreferrer">/admin/</a>),
+        only a few types of records can be edited directly using this interface. Those
+        types are listed below, together with instructions and caveats.
+      </p>
+      <p>
+        Users who should access the administration area must have the <em>Staff status</em> checked.
+        The <em>Superuser status</em> alone does not grant access to the administration area.
+      </p>
+      <p>
+        <strong>Deleting values</strong> should be done with caution, because
+        these values may appear in records of related tables. When trying to
+        delete a record which has links, the Django administration area will
+        present a list of related records and require a confirmation. If there
+        are no related records listed, it is safe to delete the value. For
+        instance, when attempting to delete a substance, the system will ask for
+        the confirmation that the corresponding record from the ODS-ODP table
+        will be also deleted:
+      </p>
+      <img src="/images/projects/delete_confirmation_example.png" className="h-[350px]" />
+      <p>
+        It is advisable to refrain from deleting records if you don't have a
+        clear image of the database and are not aware of the impacts of the
+        respective fields and values.
+      </p>
+      <p>
+        <strong className="text-[#0095D5]">Agencies:</strong>
         the value "China (FECO)" is excluded from Business Plans. Values "China
         (FECO)", "Treasurer (Cash Pool)" and "Secretariat" are excluded from
         projects.
@@ -252,39 +276,55 @@ const ProjectsSettingsListsOfTerms = () => {
       </h3>
 
       <ul>
-        <li><strong className="text-[#0095D5]">Cluster</strong>: add values in the table <a
-              className="italic text-inherit"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              href={formatApiUrl('/admin/core/projectcluster/')}
-            >
-              /admin/core/projectcluster/
-            </a></li>
-        <li><strong className="text-[#0095D5]">Type</strong>: add values in the table <a
-              className="italic text-inherit"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              href={formatApiUrl('/admin/core/projecttype/')}
-            >
-              /admin/core/projecttype/
-            </a></li>
-        <li><strong className="text-[#0095D5]">Sector</strong>: add values in the table <a
-              className="italic text-inherit"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              href={formatApiUrl('/admin/core/projectsector/')}
-            >
-              /admin/core/projectsector/
-            </a></li>
+        <li>
+          <strong className="text-[#0095D5]">Cluster</strong>: add values in the
+          table{' '}
+          <a
+            className="italic text-inherit"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            href={formatApiUrl('/admin/core/projectcluster/')}
+          >
+            /admin/core/projectcluster/
+          </a>
+        </li>
+        <li>
+          <strong className="text-[#0095D5]">Type</strong>: add values in the
+          table{' '}
+          <a
+            className="italic text-inherit"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            href={formatApiUrl('/admin/core/projecttype/')}
+          >
+            /admin/core/projecttype/
+          </a>
+        </li>
+        <li>
+          <strong className="text-[#0095D5]">Sector</strong>: add values in the
+          table{' '}
+          <a
+            className="italic text-inherit"
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            href={formatApiUrl('/admin/core/projectsector/')}
+          >
+            /admin/core/projectsector/
+          </a>
+        </li>
       </ul>
-      <p>After adding a value from one of the tables above, add it to the combination of fields in the table <a
-              className="italic text-inherit"
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              href={formatApiUrl('/admin/core/projectspecificfields/')}
-            >
-              /admin/core/projectspecificfields/
-            </a></p>
+      <p>
+        After adding a value from one of the tables above, add it to the
+        combination of fields in the table{' '}
+        <a
+          className="italic text-inherit"
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          href={formatApiUrl('/admin/core/projectspecificfields/')}
+        >
+          /admin/core/projectspecificfields/
+        </a>
+      </p>
 
       <h3 className="mt-2 text-3xl">
         C) Fields that cannot be changed in the Master Database

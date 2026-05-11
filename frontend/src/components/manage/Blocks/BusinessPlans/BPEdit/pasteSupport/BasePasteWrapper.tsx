@@ -127,7 +127,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
             : Math.max(fieldIndex - firstRowValues.length + 1, groupStartIndex)
 
           const columnsLabels = hasHeaders
-            ? map(firstRowValues, (label) => normalizeLabel(label))
+            ? map(firstRowValues, (label) =>
+                label != null ? normalizeLabel(label) : null,
+              )
             : map(columns.slice(startIndex, fieldIndex + 1), ({ label }) =>
                 normalizeLabel(label),
               )
@@ -162,7 +164,9 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                 nextForm[i] = { ...nextForm[i] }
 
                 values.map((value: any, index: number) => {
-                  const crtFieldObj = getFieldData(columnsLabels[index])
+                  const crtFieldObj = columnsLabels[index] != null
+                    ? getFieldData(columnsLabels[index] as string)
+                    : undefined
 
                   if (
                     !(

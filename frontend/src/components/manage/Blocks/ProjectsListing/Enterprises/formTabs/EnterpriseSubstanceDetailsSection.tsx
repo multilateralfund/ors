@@ -106,6 +106,13 @@ const EnterpriseSubstanceDetailsSection = ({
     const value = initialValue === '' ? null : initialValue
 
     if (!isNaN(Number(value))) {
+      const splitValue = value?.split('.')
+      const decimalPart = splitValue?.[1]
+
+      if (decimalPart && decimalPart.length > 10) {
+        return
+      }
+
       setEnterpriseData((prevData) => {
         const sectionData = prevData[sectionId] || []
         const updatedData = [...sectionData]
