@@ -497,6 +497,12 @@ class APRSummaryTablesExportWriter:
             "report__progress_report",
         )
 
+        status_names = list(
+            ProjectStatus.objects.filter(
+                code__in=["COM", "FIN", "ONG"]
+            ).values_list("name", flat=True)
+        )
+        queryset = queryset.filter(status__in=status_names)
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
         self.queryset = queryset
