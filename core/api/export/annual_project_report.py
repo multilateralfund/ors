@@ -497,12 +497,13 @@ class APRSummaryTablesExportWriter:
             "report__progress_report",
         )
 
-        status_names = list(
-            ProjectStatus.objects.filter(
-                code__in=["COM", "FIN", "ONG"]
-            ).values_list("name", flat=True)
+        status_by_code = dict(
+            ProjectStatus.objects.filter(code__in=["COM", "FIN", "ONG"]).values_list(
+                "code", "name"
+            )
         )
-        queryset = queryset.filter(status__in=status_names)
+        queryset = queryset.filter(status__in=list(status_by_code.values()))
+        self._com_status_name = status_by_code.get("COM", "")
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
         self.queryset = queryset
@@ -948,7 +949,9 @@ class APRSummaryTablesExportWriter:
             year_projects = year_data[approval_year]
 
             num_approvals = len(year_projects)
-            num_completed = sum(1 for p in year_projects if p.get("status") == "COM")
+            num_completed = sum(
+                1 for p in year_projects if p.get("status") == self._com_status_name
+            )
 
             total_approved_funding = sum(
                 p.get("approved_funding_plus_adjustment") or 0 for p in year_projects
