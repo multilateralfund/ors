@@ -20,9 +20,8 @@ const ProjectsSettingsListsOfTerms = () => {
         types are listed below, together with instructions and caveats.
       </p>
       <p>
-        Users who should access the administration area must have one of the
-        options
-        <em>Staff status</em> or <em>Superuser status</em> checked.
+        Users who should access the administration area must have the <em>Staff status</em> checked.
+        The <em>Superuser status</em> alone does not grant access to the administration area.
       </p>
       <p>
         <strong>Deleting values</strong> should be done with caution, because
@@ -34,7 +33,7 @@ const ProjectsSettingsListsOfTerms = () => {
         the confirmation that the corresponding record from the ODS-ODP table
         will be also deleted:
       </p>
-      <img src="/images/admin-delete-image.jpg" className="h-[350px]" />
+      <img src="/images/projects/delete_confirmation_example.png" className="h-[350px]" />
       <p>
         It is advisable to refrain from deleting records if you don't have a
         clear image of the database and are not aware of the impacts of the
