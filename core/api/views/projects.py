@@ -7,7 +7,7 @@ from django.views.static import serve
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, generics, viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -478,6 +478,18 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
 
 
 # pylint: disable-next=R0901
+
+
+@extend_schema_view(
+    list=extend_schema(deprecated=True),
+    retrieve=extend_schema(deprecated=True),
+    create=extend_schema(deprecated=True),
+    update=extend_schema(deprecated=True),
+    partial_update=extend_schema(deprecated=True),
+    upload=extend_schema(deprecated=True),
+    export=extend_schema(deprecated=True),
+    print=extend_schema(deprecated=True),
+)
 class ProjectViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -582,9 +594,6 @@ class ProjectViewSet(
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(
-        deprecated=True,
-    )
     @action(methods=["POST"], detail=True)
     def upload(self, request, *args, **kwargs):
         project = self.get_object()
@@ -600,16 +609,6 @@ class ProjectViewSet(
     def print(self, *args, **kwargs):
         return ProjectsExport(self).export_pdf()
 
-    @extend_schema(
-        deprecated=True,
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve project details"""
-        return super().retrieve(request, *args, **kwargs)
-
-    @extend_schema(
-        deprecated=True,
-    )
     def create(self, request, *args, **kwargs):
         vald_perm_inst = Project(
             agency_id=request.data.get("agency_id"),
@@ -665,6 +664,14 @@ class ProjectOdsOdpViewSet(
     serializer_class = ProjectOdsOdpCreateSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(deprecated=True),
+    retrieve=extend_schema(deprecated=True),
+    create=extend_schema(deprecated=True),
+    update=extend_schema(deprecated=True),
+    partial_update=extend_schema(deprecated=True),
+    destroy=extend_schema(deprecated=True),
+)
 class ProjectFundViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -695,6 +702,14 @@ class ProjectCommentViewSet(
     serializer_class = ProjectCommentCreateSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(deprecated=True),
+    retrieve=extend_schema(deprecated=True),
+    create=extend_schema(deprecated=True),
+    update=extend_schema(deprecated=True),
+    partial_update=extend_schema(deprecated=True),
+    destroy=extend_schema(deprecated=True),
+)
 class ProjectRbmMeasureViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
@@ -710,6 +725,14 @@ class ProjectRbmMeasureViewSet(
     serializer_class = ProjectRbmMeasureCreateSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(deprecated=True),
+    retrieve=extend_schema(deprecated=True),
+    create=extend_schema(deprecated=True),
+    update=extend_schema(deprecated=True),
+    partial_update=extend_schema(deprecated=True),
+    destroy=extend_schema(deprecated=True),
+)
 class ProjectSubmissionAmountViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,

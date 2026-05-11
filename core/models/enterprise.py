@@ -240,8 +240,8 @@ class Enterprise(models.Model):
         help_text="Co-financing by the enterprise (actual) (US $)",
     )
     funds_transferred = models.DecimalField(
-        max_digits=20,
-        decimal_places=3,
+        max_digits=25,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Funds transferred from one agency to another (US $)",
