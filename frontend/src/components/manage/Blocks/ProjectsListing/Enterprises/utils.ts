@@ -98,6 +98,13 @@ export const handleChangeDecimalValues = <T>(
   const value = initialValue === '' ? null : initialValue
 
   if (!isNaN(Number(value))) {
+    const splitValue = value?.split('.')
+    const decimalPart = splitValue?.[1]
+
+    if (decimalPart && decimalPart.length > 10) {
+      return
+    }
+
     setEnterpriseData(
       (prev) => ({
         ...prev,
@@ -186,7 +193,12 @@ export const getFundsApproved = (
 ) =>
   isNil(capital_cost_approved) && isNil(operating_cost_approved)
     ? null
-    : Number(capital_cost_approved ?? 0) + Number(operating_cost_approved ?? 0)
+    : Number(
+        (
+          Number(capital_cost_approved ?? 0) +
+          Number(operating_cost_approved ?? 0)
+        ).toFixed(10),
+      )
 
 export const getCostEffectivenessApproved = (
   ods_odp: EnterpriseSubstanceDetails[],
@@ -207,6 +219,9 @@ export const getCostEffectivenessApproved = (
       : null
 
   return cost_effectiveness_approved && !isNaN(cost_effectiveness_approved)
-    ? cost_effectiveness_approved
+    ? cost_effectiveness_approved.toFixed(10)
     : null
 }
+
+export const getFormattedDecimalValue = (value: string | null) =>
+  !isNil(value) ? Number(value).toFixed(10).toString() : value

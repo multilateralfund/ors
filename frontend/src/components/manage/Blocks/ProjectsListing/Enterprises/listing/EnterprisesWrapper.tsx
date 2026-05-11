@@ -79,8 +79,6 @@ export default function EnterprisesWrapper() {
               setParams,
             }}
           />
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
           {canEditEnterprise && (
             <Link
               className="mb-auto px-4 py-2 text-lg uppercase md:mb-0.5"
