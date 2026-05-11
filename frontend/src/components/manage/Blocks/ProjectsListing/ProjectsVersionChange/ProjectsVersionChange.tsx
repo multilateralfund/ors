@@ -1,5 +1,3 @@
-'use client'
-
 import { Dispatch, SetStateAction, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -18,10 +16,16 @@ import { AssociatedProjectsType, RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
 
-import { Box, CircularProgress, Typography } from '@mui/material'
 import { capitalize, find, lowerCase } from 'lodash'
 import { Redirect, useParams } from 'wouter'
 import { FaCheck } from 'react-icons/fa6'
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material'
 
 const ProjectsVersionChange = ({
   mode,
@@ -46,6 +50,7 @@ const ProjectsVersionChange = ({
 
   const [isSaving, setIsSaving] = useState(false)
   const [hasSaveErrors, setHasSaveErrors] = useState<boolean>()
+  const [isProjectQACleared, setIsProjectQACleared] = useState<boolean>(false)
 
   const currentProject = find(
     associatedProjects,
@@ -62,6 +67,10 @@ const ProjectsVersionChange = ({
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
   const isSaveSuccessful = hasSaveErrors === false
+
+  const handleChangeIsProjectQACleared = () => {
+    setIsProjectQACleared(!isProjectQACleared)
+  }
 
   const getErrors = () => {
     useGetAssociatedProjects(
@@ -135,11 +144,30 @@ const ProjectsVersionChange = ({
           isLoaded={loaded}
           canRefreshStatus={!isSaveSuccessful && !!hasErrors}
         />
+        {!isSubmit && (
+          <FormControlLabel
+            className="w-fit"
+            label="Please confirm this has been cleared by Quality Assurance before recommending."
+            control={
+              <Checkbox
+                checked={isProjectQACleared}
+                onChange={handleChangeIsProjectQACleared}
+                sx={{ color: 'black' }}
+                size="small"
+              />
+            }
+            componentsProps={{ typography: { fontSize: '1rem', mt: 0.5 } }}
+          />
+        )}
         {!isSaveSuccessful && (
           <div className="flex items-center gap-2">
             <SubmitButton
               title={mode}
-              isDisabled={!!hasErrors || associatedProjects.length === 0}
+              isDisabled={
+                !!hasErrors ||
+                associatedProjects.length === 0 ||
+                (!isSubmit && !isProjectQACleared)
+              }
               onSubmit={saveProjects}
               className="h-9 w-fit"
             />
