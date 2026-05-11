@@ -13,7 +13,32 @@ const ProjectsSettingsListsOfTerms = () => {
       <h3 className="mt-2 text-3xl">
         A) Fields with values configurable from the admin interface.
       </h3>
-
+		<p>
+			Although some data can be changed (rows added, edited or deleted)
+			from the Django administration area (<code>portal-url/admin/</code>),
+			only a few types of records can be edited directly using this interface.
+			Those types are listed below, together with instructions and caveats. 
+		</p>
+		<p>
+			Users who should access the administration area must have one of the options
+			<em>Staff status</em> or <em>Superuser status</em> checked. 
+		</p>
+		<p>
+			<strong>Deleting values</strong> should be done with caution,
+			because these values may appear in records of related tables. 
+			When trying to delete a record which has links, the Django administration
+			area will present a list of related records and require a confirmation. 
+			If there are no related records listed, it is safe to delete the value. 
+			For instance, when attempting to delete a substance, the system will 
+			ask for the confirmation that the corresponding record from the ODS-ODP
+			table will be also deleted: 
+		</p>
+		<!-- img / -->
+		<p>
+			It is advisable to refrain from deleting records if you don't have a
+			clear image of the database and are not aware of the impacts of the 
+			respective fields and values. 
+		</p>
       <p>
         <strong className="text-[#0095D5]">
           Agencies:
