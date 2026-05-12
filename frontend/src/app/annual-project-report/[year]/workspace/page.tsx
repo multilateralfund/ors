@@ -276,6 +276,7 @@ export default function APRWorkspace() {
                 FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: { sx: { transform: 'none !important' } },
+                  paper: { sx: { minWidth: 'max-content' } },
                 }}
                 onChange={(_: any, value: any) => {
                   const regionFilters = union(filters.region, value)
@@ -301,6 +302,7 @@ export default function APRWorkspace() {
                 FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: { sx: { transform: 'none !important' } },
+                  paper: { sx: { minWidth: 'max-content' } },
                 }}
                 onChange={(_: any, value: any) => {
                   const countryFilters = union(filters.country, value)
@@ -326,6 +328,7 @@ export default function APRWorkspace() {
                 FieldProps={{ className: 'mb-0 md:w-24 BPList' }}
                 componentsProps={{
                   popupIndicator: { sx: { transform: 'none !important' } },
+                  paper: { sx: { minWidth: 'max-content' } },
                 }}
                 onChange={(_: any, value: any) => {
                   const clusterFilters = union(filters.cluster, value)

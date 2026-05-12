@@ -635,6 +635,7 @@ export default function APRMLFSWorkspace() {
                         transform: 'none !important',
                       },
                     },
+                    paper: { sx: { minWidth: 'max-content' } },
                   }}
                   onChange={(_: any, value: any) => {
                     const agencyFilters = union(filters.agency, value)
@@ -664,6 +665,7 @@ export default function APRMLFSWorkspace() {
                         transform: 'none !important',
                       },
                     },
+                    paper: { sx: { minWidth: 'max-content' } },
                   }}
                   onChange={(_: any, value: any) => {
                     const regionFilters = union(filters.region, value)
@@ -693,6 +695,7 @@ export default function APRMLFSWorkspace() {
                         transform: 'none !important',
                       },
                     },
+                    paper: { sx: { minWidth: 'max-content' } },
                   }}
                   onChange={(_: any, value: any) => {
                     const countryFilters = union(filters.country, value)
@@ -722,6 +725,7 @@ export default function APRMLFSWorkspace() {
                         transform: 'none !important',
                       },
                     },
+                    paper: { sx: { minWidth: 'max-content' } },
                   }}
                   onChange={(_: any, value: any) => {
                     const clusterFilters = union(filters.cluster, value)
