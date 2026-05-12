@@ -110,10 +110,10 @@ class TestListEnterprise(BaseTest, DataTestMixin):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
     ):
@@ -135,10 +135,14 @@ class TestListEnterprise(BaseTest, DataTestMixin):
         _test_user(agency_user, 200, response_count=1)
         _test_user(agency_inputter_user, 200, response_count=1)
         _test_user(secretariat_viewer_user, 200, response_count=3)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_v3_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v3_edit_access_user, 200, response_count=3)
+        _test_user(secretariat_recommender_edit_access_user, 200, response_count=3)
+        _test_user(
+            secretariat_production_recommender_edit_access_user, 200, response_count=3
+        )
+        _test_user(secretariat_approver_edit_access_user, 200, response_count=3)
+        _test_user(
+            secretariat_production_approver_edit_access_user, 200, response_count=3
+        )
         _test_user(mlfs_admin_user, 200, response_count=3)
         _test_user(admin_user, 200, response_count=3)
 
@@ -230,10 +234,10 @@ class TestProjectRetrieveProjectEnterprise(DataTestMixin):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
     ):
@@ -269,10 +273,12 @@ class TestProjectRetrieveProjectEnterprise(DataTestMixin):
         )  # agency_inputter_user has no access to enterprise2
 
         _test_user(secretariat_viewer_user, 200, enterprise2)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, enterprise2)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, enterprise2)
-        _test_user(secretariat_v3_edit_access_user, 200, enterprise2)
-        _test_user(secretariat_production_v3_edit_access_user, 200, enterprise2)
+        _test_user(secretariat_recommender_edit_access_user, 200, enterprise2)
+        _test_user(
+            secretariat_production_recommender_edit_access_user, 200, enterprise2
+        )
+        _test_user(secretariat_approver_edit_access_user, 200, enterprise2)
+        _test_user(secretariat_production_approver_edit_access_user, 200, enterprise2)
         _test_user(mlfs_admin_user, 200, enterprise2)
         _test_user(admin_user, 200, enterprise2)
 
@@ -416,10 +422,10 @@ class TestCreateProjectEnterprise(DataTestMixin):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
         agency,
@@ -460,11 +466,11 @@ class TestCreateProjectEnterprise(DataTestMixin):
         _test_user(agency_user, 201, data)
         _test_user(agency_inputter_user, 201, data)
         _test_user(secretariat_viewer_user, 403, data)
-        _test_user(secretariat_v1_v2_edit_access_user, 201, data)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 201, data)
+        _test_user(secretariat_recommender_edit_access_user, 201, data)
+        _test_user(secretariat_production_recommender_edit_access_user, 201, data)
 
-        _test_user(secretariat_v3_edit_access_user, 201, data)
-        _test_user(secretariat_production_v3_edit_access_user, 201, data)
+        _test_user(secretariat_approver_edit_access_user, 201, data)
+        _test_user(secretariat_production_approver_edit_access_user, 201, data)
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
@@ -640,10 +646,10 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
         country_ro,
@@ -689,13 +695,15 @@ class TestUpdateProjectEnterprise(DataTestMixin):
         _test_user(agency_user, 200, enterprise1, data)
         _test_user(agency_inputter_user, 200, enterprise1, data)
         _test_user(secretariat_viewer_user, 403, enterprise1, data)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, enterprise1, data)
+        _test_user(secretariat_recommender_edit_access_user, 200, enterprise1, data)
         _test_user(
-            secretariat_production_v1_v2_edit_access_user, 200, enterprise1, data
+            secretariat_production_recommender_edit_access_user, 200, enterprise1, data
         )
 
-        _test_user(secretariat_v3_edit_access_user, 200, enterprise1, data)
-        _test_user(secretariat_production_v3_edit_access_user, 200, enterprise1, data)
+        _test_user(secretariat_approver_edit_access_user, 200, enterprise1, data)
+        _test_user(
+            secretariat_production_approver_edit_access_user, 200, enterprise1, data
+        )
         _test_user(mlfs_admin_user, 200, enterprise1, data)
         _test_user(admin_user, 200, enterprise1, data)
 
@@ -755,10 +763,10 @@ class TestDeleteEnterprise(DataTestMixin):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
         meeting,
@@ -807,8 +815,8 @@ class TestDeleteEnterprise(DataTestMixin):
 
         _test_user(secretariat_viewer_user, 403, enterprise1)
 
-        _test_user(secretariat_v1_v2_edit_access_user, 204, enterprise1)
-        _test_user(secretariat_v1_v2_edit_access_user, 204, enterprise2)
+        _test_user(secretariat_recommender_edit_access_user, 204, enterprise1)
+        _test_user(secretariat_recommender_edit_access_user, 204, enterprise2)
 
         enterprise1 = EnterpriseFactory(
             name="Enterprise 1", meeting=meeting, agency=agency
@@ -816,8 +824,12 @@ class TestDeleteEnterprise(DataTestMixin):
         enterprise2 = EnterpriseFactory(
             name="Enterprise 2", meeting=meeting, agency=new_agency
         )
-        _test_user(secretariat_production_v1_v2_edit_access_user, 204, enterprise1)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 204, enterprise2)
+        _test_user(
+            secretariat_production_recommender_edit_access_user, 204, enterprise1
+        )
+        _test_user(
+            secretariat_production_recommender_edit_access_user, 204, enterprise2
+        )
 
         enterprise1 = EnterpriseFactory(
             name="Enterprise 1", meeting=meeting, agency=agency
@@ -825,8 +837,8 @@ class TestDeleteEnterprise(DataTestMixin):
         enterprise2 = EnterpriseFactory(
             name="Enterprise 2", meeting=meeting, agency=new_agency
         )
-        _test_user(secretariat_v3_edit_access_user, 204, enterprise1)
-        _test_user(secretariat_v3_edit_access_user, 204, enterprise2)
+        _test_user(secretariat_approver_edit_access_user, 204, enterprise1)
+        _test_user(secretariat_approver_edit_access_user, 204, enterprise2)
 
         enterprise1 = EnterpriseFactory(
             name="Enterprise 1", meeting=meeting, agency=agency
@@ -834,8 +846,8 @@ class TestDeleteEnterprise(DataTestMixin):
         enterprise2 = EnterpriseFactory(
             name="Enterprise 2", meeting=meeting, agency=new_agency
         )
-        _test_user(secretariat_production_v3_edit_access_user, 204, enterprise1)
-        _test_user(secretariat_production_v3_edit_access_user, 204, enterprise2)
+        _test_user(secretariat_production_approver_edit_access_user, 204, enterprise1)
+        _test_user(secretariat_production_approver_edit_access_user, 204, enterprise2)
 
         enterprise1 = EnterpriseFactory(
             name="Enterprise 1", meeting=meeting, agency=agency

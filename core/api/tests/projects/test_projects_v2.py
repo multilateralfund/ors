@@ -197,10 +197,10 @@ class TestProjectV2List(BaseTest):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
     ):
@@ -247,7 +247,7 @@ class TestProjectV2List(BaseTest):
         for project in response_data:
             assert project["editable"] is False
         response_data = _test_user_permissions(
-            secretariat_v1_v2_edit_access_user, 200, 6
+            secretariat_recommender_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
@@ -255,14 +255,16 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is False
         response_data = _test_user_permissions(
-            secretariat_production_v1_v2_edit_access_user, 200, 6
+            secretariat_production_recommender_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is True
             else:
                 assert project["editable"] is False
-        response_data = _test_user_permissions(secretariat_v3_edit_access_user, 200, 6)
+        response_data = _test_user_permissions(
+            secretariat_approver_edit_access_user, 200, 6
+        )
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
@@ -271,7 +273,7 @@ class TestProjectV2List(BaseTest):
             else:
                 assert project["editable"] is True
         response_data = _test_user_permissions(
-            secretariat_production_v3_edit_access_user, 200, 6
+            secretariat_production_approver_edit_access_user, 200, 6
         )
         for project in response_data:
             if project["version"] < 3:
@@ -458,10 +460,10 @@ class TestProjectsRetrieve:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         def _test_user_permissions(user, expected_response_status):
@@ -485,10 +487,10 @@ class TestProjectsRetrieve:
         project.submission_status = project_submitted_status
         project.save()
         _test_user_permissions(secretariat_viewer_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
         project.agency = new_agency
@@ -526,10 +528,10 @@ class TestCreateProjects(BaseTest):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         # test with unauthenticated user
@@ -547,10 +549,10 @@ class TestCreateProjects(BaseTest):
         _test_user_permissions(agency_user, 201)
         _test_user_permissions(agency_inputter_user, 201)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 201)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 201)
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 201)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 201)
+        _test_user_permissions(secretariat_approver_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 403)
         _test_user_permissions(admin_user, 201)
 
     def _test_response_data(self, response, data):
@@ -792,10 +794,10 @@ class TestProjectsV2Update:
         new_agency,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         def _test_user_permissions(user, expected_response_status):
@@ -840,27 +842,27 @@ class TestProjectsV2Update:
         _test_permissions_for_different_project_agency(
             secretariat_viewer_user, 403, 403, 403
         )
-        secretariat_v1_v2_edit_access_user.agency = agency_user.agency
-        secretariat_v1_v2_edit_access_user.save()
+        secretariat_recommender_edit_access_user.agency = agency_user.agency
+        secretariat_recommender_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_v1_v2_edit_access_user, 200, 200, 200
+            secretariat_recommender_edit_access_user, 200, 200, 200
         )
-        secretariat_production_v1_v2_edit_access_user.agency = agency_user.agency
-        secretariat_production_v1_v2_edit_access_user.save()
+        secretariat_production_recommender_edit_access_user.agency = agency_user.agency
+        secretariat_production_recommender_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_production_v1_v2_edit_access_user, 200, 200, 200
+            secretariat_production_recommender_edit_access_user, 200, 200, 200
         )
 
         # those return 404 because even if those users have edit access, they only have it for v3 projects
-        secretariat_v3_edit_access_user.agency = agency_user.agency
-        secretariat_v3_edit_access_user.save()
+        secretariat_approver_edit_access_user.agency = agency_user.agency
+        secretariat_approver_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_v3_edit_access_user, 404, 404, 404
+            secretariat_approver_edit_access_user, 404, 404, 404
         )
-        secretariat_production_v3_edit_access_user.agency = agency_user.agency
-        secretariat_production_v3_edit_access_user.save()
+        secretariat_production_approver_edit_access_user.agency = agency_user.agency
+        secretariat_production_approver_edit_access_user.save()
         _test_permissions_for_different_project_agency(
-            secretariat_production_v3_edit_access_user, 404, 404, 404
+            secretariat_production_approver_edit_access_user, 404, 404, 404
         )
         _test_user_permissions(admin_user, 200)
 
@@ -972,10 +974,10 @@ class TestProjectsV2Update:
         decision,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
@@ -1002,10 +1004,10 @@ class TestProjectsV2Update:
         project.submission_status = project_submitted_status
         project.save()
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
     def test_edit_approval_fields_success(
@@ -1078,10 +1080,10 @@ class TestProjectsV2Update:
             ("agency_user", 204),
             ("agency_inputter_user", 204),
             ("secretariat_viewer_user", 403),
-            ("secretariat_v1_v2_edit_access_user", 404),
-            ("secretariat_production_v1_v2_edit_access_user", 404),
-            ("secretariat_v3_edit_access_user", 403),
-            ("secretariat_production_v3_edit_access_user", 403),
+            ("secretariat_recommender_edit_access_user", 404),
+            ("secretariat_production_recommender_edit_access_user", 404),
+            ("secretariat_approver_edit_access_user", 403),
+            ("secretariat_production_approver_edit_access_user", 403),
             ("mlfs_admin_user", 404),
             ("admin_user", 204),
         ],
@@ -1125,10 +1127,10 @@ class TestProjectFiles:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         url = reverse("project-file-v2-list", args=(project.id,))
@@ -1188,14 +1190,14 @@ class TestProjectFiles:
         _test_user_permissions(agency_user, 201, 200, 204)
         _test_user_permissions(agency_inputter_user, 201, 200, 204)
         _test_user_permissions(secretariat_viewer_user, 403, 200, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 201, 200, 204)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 201, 200, 204)
         _test_user_permissions(
-            secretariat_production_v1_v2_edit_access_user, 201, 200, 204
+            secretariat_production_recommender_edit_access_user, 201, 200, 204
         )
 
-        _test_user_permissions(secretariat_v3_edit_access_user, 404, 200, 404)
+        _test_user_permissions(secretariat_approver_edit_access_user, 404, 200, 404)
         _test_user_permissions(
-            secretariat_production_v3_edit_access_user, 404, 200, 404
+            secretariat_production_approver_edit_access_user, 404, 200, 404
         )
         _test_user_permissions(admin_user, 201, 200, 204)
 
@@ -1378,10 +1380,10 @@ class TestProjectV2FileIncludePreviousVersions:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         url = reverse("project-file-v2-include-previous-versions", args=(project.id,))
@@ -1406,15 +1408,15 @@ class TestProjectV2FileIncludePreviousVersions:
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
         _test_user_permissions(secretariat_viewer_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
     def test_endpoint_returns_files_grouped_by_project_and_version(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project2,
         project_file,
@@ -1426,7 +1428,7 @@ class TestProjectV2FileIncludePreviousVersions:
         self._prepare_projects_with_files(
             project, project2, project_file, project2_file, project3, project3_file
         )
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
 
         response = self.client.get(url)
         assert response.status_code == 200
@@ -1446,7 +1448,7 @@ class TestProjectV2FileIncludePreviousVersions:
 
     def test_only_one_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project_file,
         project2,
@@ -1458,7 +1460,7 @@ class TestProjectV2FileIncludePreviousVersions:
             project, project2, project_file, project2_file, project3, project3_file
         )
         url = reverse("project-file-v2-include-previous-versions", args=(project3.id,))
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
 
         response = self.client.get(url)
         assert response.status_code == 200
@@ -1469,7 +1471,7 @@ class TestProjectV2FileIncludePreviousVersions:
 
     def test_project_version2_retrival(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project2,
         project_file,
@@ -1481,7 +1483,7 @@ class TestProjectV2FileIncludePreviousVersions:
             project, project2, project_file, project2_file, project3, project3_file
         )
         url = reverse("project-file-v2-include-previous-versions", args=(project2.id,))
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
 
         response = self.client.get(url)
         assert response.status_code == 200
@@ -1501,10 +1503,10 @@ class TestProjectV2FileIncludePreviousVersions:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         mlfs_admin_user,
         admin_user,
     ):
@@ -1533,10 +1535,10 @@ class TestProjectV2FileIncludePreviousVersions:
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_approver_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 404)
         _test_user_permissions(mlfs_admin_user, 200)
         _test_user_permissions(admin_user, 200)
 

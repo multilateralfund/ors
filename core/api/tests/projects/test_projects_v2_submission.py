@@ -29,10 +29,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.consumption_level_status = Project.ConsumptionLevelStatus.NON_LVC
@@ -72,10 +72,10 @@ class TestProjectVersioning:
         _set_project_back_to_v1()
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_approver_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
 
     def test_submit_project(
@@ -245,10 +245,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.version = 2
@@ -290,12 +290,12 @@ class TestProjectVersioning:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
         _set_project_back_to_v2()
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
         _set_project_back_to_v2()
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
 
     def test_recommend_project(
@@ -352,7 +352,7 @@ class TestProjectVersioning:
         project_submitted_status,
         project2,
         project3,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         agency_user,
         project_file,
         project2_file,
@@ -388,7 +388,7 @@ class TestProjectVersioning:
         project2.component = component
         project2.save()
 
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         url = reverse("project-v2-recommend", args=(project.id,))
 
         # recommend project
@@ -427,10 +427,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.version = 2
@@ -455,14 +455,14 @@ class TestProjectVersioning:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
         project.submission_status = project_submitted_status
         project.save()
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
         project.submission_status = project_submitted_status
         project.save()
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
 
     def test_withdraw_project(
@@ -502,10 +502,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.version = 3
@@ -530,13 +530,13 @@ class TestProjectVersioning:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
         project.submission_status = project_recommended_status
         project.save()
 
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         project.submission_status = project_recommended_status
         project.save()
         _test_user_permissions(admin_user, 200)
@@ -581,10 +581,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.version = 3
@@ -612,14 +612,14 @@ class TestProjectVersioning:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 403)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
 
         project.submission_status = project_recommended_status
         project.save()
 
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         project.submission_status = project_recommended_status
         project.save()
         _test_user_permissions(admin_user, 200)
@@ -676,10 +676,10 @@ class TestProjectVersioning:
         viewer_user,
         agency_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.version = 2
@@ -704,14 +704,14 @@ class TestProjectVersioning:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
         project.submission_status = project_submitted_status
         project.save()
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
         project.submission_status = project_submitted_status
         project.save()
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_approver_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
 
     def test_send_back_to_draft_project(

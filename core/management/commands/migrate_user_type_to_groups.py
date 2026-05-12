@@ -42,20 +42,20 @@ class Command(BaseCommand):
             "Projects - MLFS Viewer", User.UserType.SECRETARIAT_VIEWER
         )
         self._add_group_to_users(
-            "Projects - MLFS Submission V1/V2",
-            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
+            "Projects - MLFS Recommender",
+            User.UserType.SECRETARIAT_RECOMMENDER_EDIT_ACCESS,
         )
         self._add_group_to_users(
-            "Projects - MLFS Submission V3",
-            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
+            "Projects - MLFS Approver",
+            User.UserType.SECRETARIAT_APPROVER_EDIT_ACCESS,
         )
         self._add_group_to_users(
-            "Projects - MLFS Submission V1/V2 Production",
-            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
+            "Projects - MLFS Recommender Production",
+            User.UserType.SECRETARIAT_PRODUCTION_RECOMMENDER_EDIT_ACCESS,
         )
         self._add_group_to_users(
-            "Projects - MLFS Submission V3 Production",
-            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
+            "Projects - MLFS Approver Production",
+            User.UserType.SECRETARIAT_PRODUCTION_APPROVER_EDIT_ACCESS,
         )
         self._add_group_to_users("BP - Viewer", User.UserType.BP_VIEWER)
         self._add_group_to_users("BP - Editor", User.UserType.BP_EDITOR)

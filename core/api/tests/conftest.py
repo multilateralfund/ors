@@ -143,44 +143,44 @@ def secretariat_viewer_user():
 
 
 @pytest.fixture
-def secretariat_v1_v2_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Submission V1/V2")
+def secretariat_recommender_edit_access_user():
+    group = Group.objects.get(name="Projects - MLFS Recommender")
     user = UserFactory(
-        username="secretariat_v1_v2_edit_access",
-        email="secretariat_v1_v2_edit_access@mail.com",
+        username="secretariat_recommender_edit_access",
+        email="secretariat_recommender_edit_access@mail.com",
     )
     user.groups.add(group)
     return user
 
 
 @pytest.fixture
-def secretariat_v3_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Submission V3")
+def secretariat_approver_edit_access_user():
+    group = Group.objects.get(name="Projects - MLFS Approver")
     user = UserFactory(
-        username="secretariat_v3_edit_access",
-        email="secretariat_v3_edit_access@mail.com",
+        username="secretariat_approver_edit_access",
+        email="secretariat_approver_edit_access@mail.com",
     )
     user.groups.add(group)
     return user
 
 
 @pytest.fixture
-def secretariat_production_v1_v2_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Submission V1/V2 Production")
+def secretariat_production_recommender_edit_access_user():
+    group = Group.objects.get(name="Projects - MLFS Recommender Production")
     user = UserFactory(
-        username="secretariat_production_v1_v2_edit_access",
-        email="secretariat_production_v1_v2_edit_access@mail.com",
+        username="secretariat_production_recommender_edit_access",
+        email="secretariat_production_recommender_edit_access@mail.com",
     )
     user.groups.add(group)
     return user
 
 
 @pytest.fixture
-def secretariat_production_v3_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Submission V3 Production")
+def secretariat_production_approver_edit_access_user():
+    group = Group.objects.get(name="Projects - MLFS Approver Production")
     user = UserFactory(
-        username="secretariat_production_v3_edit_access",
-        email="secretariat_production_v3_edit_access@mail.com",
+        username="secretariat_production_approver_edit_access",
+        email="secretariat_production_approver_edit_access@mail.com",
     )
     user.groups.add(group)
     return user

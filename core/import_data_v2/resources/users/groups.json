@@ -52,7 +52,7 @@
         ]
     },
     {
-        "name": "Projects - MLFS Submission V1/V2",
+        "name": "Projects - MLFS Recommender",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",
@@ -75,7 +75,7 @@
         ]
     },
     {
-        "name": "Projects - MLFS Submission V3",
+        "name": "Projects - MLFS Approver",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",
@@ -97,7 +97,7 @@
 
     },
     {
-        "name": "Projects - MLFS Submission V1/V2 Production",
+        "name": "Projects - MLFS Recommender Production",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",
@@ -121,7 +121,7 @@
         ]
     },
     {
-        "name": "Projects - MLFS Submission V3 Production",
+        "name": "Projects - MLFS Approver Production",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",

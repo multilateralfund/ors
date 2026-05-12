@@ -344,15 +344,7 @@ export default function APREdit() {
                               .filter(Boolean)
                               .map((v) => (
                                 <li key={`${key}-${v}`}>
-                                  <Chip
-                                    label={
-                                      key === 'status'
-                                        ? (projectStatuses.find(
-                                            (s: any) => s.code === v,
-                                          )?.name ?? v)
-                                        : v
-                                    }
-                                  />
+                                  <Chip label={v} />
                                 </li>
                               )),
                         )}
