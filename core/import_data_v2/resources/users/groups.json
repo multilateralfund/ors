@@ -97,7 +97,7 @@
 
     },
     {
-        "name": "Projects - MLFS Recommender Production",
+        "name": "Projects - MLFS Production Recommender",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",
@@ -121,7 +121,7 @@
         ]
     },
     {
-        "name": "Projects - MLFS Approver Production",
+        "name": "Projects - MLFS Production Approver",
         "permissions": [
             "has_business_plan_view_access",
             "has_meta_projects_view_access",

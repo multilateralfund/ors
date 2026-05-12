@@ -50,11 +50,11 @@ class Command(BaseCommand):
             User.UserType.SECRETARIAT_APPROVER_EDIT_ACCESS,
         )
         self._add_group_to_users(
-            "Projects - MLFS Recommender Production",
+            "Projects - MLFS Production Recommender",
             User.UserType.SECRETARIAT_PRODUCTION_RECOMMENDER_EDIT_ACCESS,
         )
         self._add_group_to_users(
-            "Projects - MLFS Approver Production",
+            "Projects - MLFS Production Approver",
             User.UserType.SECRETARIAT_PRODUCTION_APPROVER_EDIT_ACCESS,
         )
         self._add_group_to_users("BP - Viewer", User.UserType.BP_VIEWER)
