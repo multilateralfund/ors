@@ -86,6 +86,42 @@ class APRExportWriter:
         "funds_advanced",
     }
 
+    FUNDING_FIELDS = {
+        "approved_funding",
+        "adjustment",
+        "approved_funding_plus_adjustment",
+        "balance",
+        "support_cost_approved",
+        "support_cost_adjustment",
+        "support_cost_approved_plus_adjustment",
+        "support_cost_balance",
+        "funds_disbursed",
+        "funds_committed",
+        "estimated_disbursement_current_year",
+        "support_cost_disbursed",
+        "support_cost_committed",
+        "disbursements_made_to_final_beneficiaries",
+        "funds_advanced",
+    }
+
+    PHASEOUT_ODP_MT_FIELDS = {
+        "consumption_phased_out_odp_proposal",
+        "consumption_phased_out_mt_proposal",
+        "production_phased_out_odp_proposal",
+        "production_phased_out_mt_proposal",
+        "consumption_phased_out_odp",
+        "consumption_phased_out_mt",
+        "production_phased_out_odp",
+        "production_phased_out_mt",
+    }
+
+    PHASEOUT_CO2_FIELDS = {
+        "consumption_phased_out_co2_proposal",
+        "production_phased_out_co2_proposal",
+        "consumption_phased_out_co2",
+        "production_phased_out_co2",
+    }
+
     PERCENTAGE_FIELDS = {
         "per_cent_funds_disbursed",
     }
@@ -341,11 +377,20 @@ class APRExportWriter:
                     cell = self.worksheet.cell(row, col_idx)
                     cell.number_format = "0.00%"
 
-            elif field_name in self.NUMERIC_FIELDS:
+            elif field_name in self.FUNDING_FIELDS:
                 for row in range(first_row, last_row + 1):
                     cell = self.worksheet.cell(row, col_idx)
-                    # Format with thousands separator and 2 decimal places
-                    cell.number_format = "#,##0.00"
+                    cell.number_format = "#,##0"
+
+            elif field_name in self.PHASEOUT_ODP_MT_FIELDS:
+                for row in range(first_row, last_row + 1):
+                    cell = self.worksheet.cell(row, col_idx)
+                    cell.number_format = "#,##0.0"
+
+            elif field_name in self.PHASEOUT_CO2_FIELDS:
+                for row in range(first_row, last_row + 1):
+                    cell = self.worksheet.cell(row, col_idx)
+                    cell.number_format = "#,##0"
 
             elif field_name in self.BOOLEAN_FIELDS:
                 for row in range(first_row, last_row + 1):
@@ -663,22 +708,23 @@ class APRSummaryTablesExportWriter:
         )
 
         # Write values to column B, rows 4-13
-        values = [
-            num_approvals,
-            num_completed,
-            total_funds_approved,
-            total_funds_disbursed,
-            total_approved_odp,
-            total_actual_odp,
-            total_approved_mt,
-            total_actual_mt,
-            total_approved_co2,
-            total_actual_co2,
+        # Rows 4-5: counts, 6-7: funding, 8-9: ODP, 10-11: MT, 12-13: CO2
+        values_with_formats = [
+            (num_approvals, "#,##0"),
+            (num_completed, "#,##0"),
+            (total_funds_approved, "#,##0"),
+            (total_funds_disbursed, "#,##0"),
+            (total_approved_odp, "#,##0.0"),
+            (total_actual_odp, "#,##0.0"),
+            (total_approved_mt, "#,##0.0"),
+            (total_actual_mt, "#,##0.0"),
+            (total_approved_co2, "#,##0"),
+            (total_actual_co2, "#,##0"),
         ]
 
-        for idx, value in enumerate(values):
+        for idx, (value, number_format) in enumerate(values_with_formats):
             cell = ws.cell(self.SUMMARY_DATA_START_ROW + idx, 2, value)
-            cell.number_format = "#,##0"
+            cell.number_format = number_format
 
     def _write_summary_by_cluster_sheet(self):
         """I.2: Summary data by cluster"""
@@ -876,21 +922,17 @@ class APRSummaryTablesExportWriter:
         row = self.CLUSTER_DATA_START_ROW
         for cluster_name, num_completed, total_odp, total_mt, total_co2 in rows_data:
             ws.cell(row, 1, cluster_name)
-            ws.cell(row, 2, num_completed)
-            ws.cell(row, 3, total_odp)
-            ws.cell(row, 4, total_mt)
-            ws.cell(row, 5, total_co2)
-            for col in range(2, 6):
-                ws.cell(row, col).number_format = "#,##0"
+            ws.cell(row, 2, num_completed).number_format = "#,##0"
+            ws.cell(row, 3, total_odp).number_format = "#,##0.0"
+            ws.cell(row, 4, total_mt).number_format = "#,##0.0"
+            ws.cell(row, 5, total_co2).number_format = "#,##0"
             row += 1
 
         # Total row: label already in template, write only the values
-        ws.cell(total_row, 2, totals["num_completed"])
-        ws.cell(total_row, 3, totals["odp"])
-        ws.cell(total_row, 4, totals["mt"])
-        ws.cell(total_row, 5, totals["co2"])
-        for col in range(2, 6):
-            ws.cell(total_row, col).number_format = "#,##0"
+        ws.cell(total_row, 2, totals["num_completed"]).number_format = "#,##0"
+        ws.cell(total_row, 3, totals["odp"]).number_format = "#,##0.0"
+        ws.cell(total_row, 4, totals["mt"]).number_format = "#,##0.0"
+        ws.cell(total_row, 5, totals["co2"]).number_format = "#,##0"
 
     def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
         """Helper for writing a single data row in the annual summary sheet."""
@@ -1243,10 +1285,10 @@ class APRSummaryTablesExportWriter:
             if include_odp_co2:
                 specs.extend(
                     [
-                        ("total_consumption_odp", "#,##0"),
-                        ("total_production_odp", "#,##0"),
-                        ("total_consumption_mt", "#,##0"),
-                        ("total_production_mt", "#,##0"),
+                        ("total_consumption_odp", "#,##0.0"),
+                        ("total_production_odp", "#,##0.0"),
+                        ("total_consumption_mt", "#,##0.0"),
+                        ("total_production_mt", "#,##0.0"),
                         ("total_consumption_co2", "#,##0"),
                         ("total_production_co2", "#,##0"),
                     ]
