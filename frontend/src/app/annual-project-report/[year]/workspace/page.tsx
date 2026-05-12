@@ -380,7 +380,7 @@ export default function APRWorkspace() {
                   return filterValue.map((val) => (
                     <li key={`${filterKey}-${val.id}`}>
                       <Chip
-                        label={val.name}
+                        label={filterKey === 'status' ? val.code : val.name}
                         onDelete={onChipDelete(filterKey, val, paramKey)}
                       />
                     </li>
