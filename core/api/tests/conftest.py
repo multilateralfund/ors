@@ -166,7 +166,7 @@ def secretariat_approver_edit_access_user():
 
 @pytest.fixture
 def secretariat_production_recommender_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Recommender Production")
+    group = Group.objects.get(name="Projects - MLFS Production Recommender")
     user = UserFactory(
         username="secretariat_production_recommender_edit_access",
         email="secretariat_production_recommender_edit_access@mail.com",
@@ -177,7 +177,7 @@ def secretariat_production_recommender_edit_access_user():
 
 @pytest.fixture
 def secretariat_production_approver_edit_access_user():
-    group = Group.objects.get(name="Projects - MLFS Approver Production")
+    group = Group.objects.get(name="Projects - MLFS Production Approver")
     user = UserFactory(
         username="secretariat_production_approver_edit_access",
         email="secretariat_production_approver_edit_access@mail.com",
