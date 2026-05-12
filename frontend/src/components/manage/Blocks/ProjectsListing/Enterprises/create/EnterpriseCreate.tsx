@@ -9,6 +9,7 @@ import EnterpriseDetailsSection from '../formTabs/EnterpriseDetailsSection.tsx'
 import EnterpriseSubstanceDetailsSection from '../formTabs/EnterpriseSubstanceDetailsSection.tsx'
 import EnterpriseFundingDetailsSection from '../formTabs/EnterpriseFundingDetailsSection.tsx'
 import EnterpriseRemarksSection from '../formTabs/EnterpriseRemarksSection.tsx'
+import EnterpriseDelete from '../view/EnterpriseDelete.tsx'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { enterpriseFieldsMapping } from '../constants.ts'
 import {
@@ -37,7 +38,7 @@ const EnterpriseCreate = ({
 
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { enterpriseData, setEnterpriseData } = rest
+  const { enterprise, enterpriseData, setEnterpriseData } = rest
   const {
     overview,
     details,
@@ -268,25 +269,28 @@ const EnterpriseCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project-enterprise"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, label }) => (
-          <Tab key={id} id={id} aria-controls={id} label={label} />
-        ))}
-      </Tabs>
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project-enterprise"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label }) => (
+            <Tab key={id} id={id} aria-controls={id} label={label} />
+          ))}
+        </Tabs>
+        {!!enterprise && <EnterpriseDelete {...{ enterprise }} />}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
