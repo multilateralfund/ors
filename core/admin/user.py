@@ -65,6 +65,7 @@ class UserAdmin(admin.ModelAdmin):
         "country",
         "agency",
         "user_type",
+        "is_external_service",
     ]
 
     fields = (
@@ -81,6 +82,7 @@ class UserAdmin(admin.ModelAdmin):
         "user_type",
         "last_login",
         "date_joined",
+        "is_external_service",
     )
 
     search_fields = (

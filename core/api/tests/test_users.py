@@ -25,10 +25,10 @@ class TestUserPermissions(BaseTest):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         def _test_user_permissions(user, is_superuser=False):
@@ -55,10 +55,10 @@ class TestUserPermissions(BaseTest):
         _test_user_permissions(agency_user)
         _test_user_permissions(agency_inputter_user)
         _test_user_permissions(secretariat_viewer_user)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_v3_edit_access_user)
-        _test_user_permissions(secretariat_production_v3_edit_access_user)
+        _test_user_permissions(secretariat_recommender_edit_access_user)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user)
+        _test_user_permissions(secretariat_approver_edit_access_user)
+        _test_user_permissions(secretariat_production_approver_edit_access_user)
         _test_user_permissions(admin_user, is_superuser=True)
 
 

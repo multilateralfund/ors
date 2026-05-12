@@ -19,21 +19,21 @@ class User(AbstractUser, PermissionsMixin):
 
         # Project
         SECRETARIAT_VIEWER = "secretariat_viewer", _("Secretariat Viewer")
-        SECRETARIAT_V1_V2_EDIT_ACCESS = (
-            "secretariat_v1_v2_edit_access",
-            _("Secretariat V1 V2 Edit Access"),
+        SECRETARIAT_RECOMMENDER_EDIT_ACCESS = (
+            "secretariat_recommender_edit_access",
+            _("Secretariat Recommender Edit Access"),
         )
-        SECRETARIAT_V3_EDIT_ACCESS = (
-            "secretariat_v3_edit_access",
-            _("Secretariat V3 Edit Access"),
+        SECRETARIAT_APPROVER_EDIT_ACCESS = (
+            "secretariat_approver_edit_access_user",
+            _("Secretariat Approver Edit Access"),
         )
-        SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS = (
-            "secretariat_production_v1_v2_edit_access",
-            _("Secretariat Production V1 V2 Edit Access"),
+        SECRETARIAT_PRODUCTION_RECOMMENDER_EDIT_ACCESS = (
+            "secretariat_production_recommender_edit_access",
+            _("Secretariat Production Recommender Edit Access"),
         )
-        SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS = (
-            "secretariat_production_v3_edit_access",
-            _("Secretariat Production V3 Edit Access"),
+        SECRETARIAT_PRODUCTION_APPROVER_EDIT_ACCESS = (
+            "secretariat_production_approver_edit_access",
+            _("Secretariat Production Approver Edit Access"),
         )
 
         # Business profile

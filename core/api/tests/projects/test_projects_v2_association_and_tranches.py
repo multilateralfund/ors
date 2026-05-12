@@ -39,10 +39,10 @@ class TestProjectListPreviousTranches:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         self._prepare_projects(project, project2, project_approved_status)
@@ -82,10 +82,10 @@ class TestProjectListPreviousTranches:
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
         _test_user_permissions(secretariat_viewer_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
     def test_project_list_previous_tranches(
@@ -94,10 +94,10 @@ class TestProjectListPreviousTranches:
         project_approved_status,
         project_draft_status,
         project2,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         new_country,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         self._prepare_projects(project, project2, project_approved_status)
 
         response = self.client.get(
@@ -188,9 +188,9 @@ class TestProjectListPreviousTranches:
         project_approved_status,
         project_draft_status,
         project2,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
     ):
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         self._prepare_projects(project, project2, project_approved_status)
 
         # set project specific fields
@@ -296,10 +296,10 @@ class TestAssociateProject:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         project.metacode = get_meta_project_code(
@@ -339,15 +339,15 @@ class TestAssociateProject:
         _test_user_permissions(agency_user, 403)
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 200)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200)
         _test_user_permissions(admin_user, 200)
 
     def test_associate_project_projects_without_meta_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project2,
     ):
@@ -365,7 +365,7 @@ class TestAssociateProject:
         )
         project2.meta_project = None
         project2.save()
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
         # associate project
@@ -386,7 +386,7 @@ class TestAssociateProject:
 
     def test_associate_project_one_project_with_meta_project(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project2,
         meta_project,
@@ -405,7 +405,7 @@ class TestAssociateProject:
         )
         project2.meta_project = None
         project2.save()
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
         # associate project
@@ -427,7 +427,7 @@ class TestAssociateProject:
 
     def test_associate_project_both_projects_with_different_meta_projects(
         self,
-        secretariat_v1_v2_edit_access_user,
+        secretariat_recommender_edit_access_user,
         project,
         project2,
         project3,
@@ -456,7 +456,7 @@ class TestAssociateProject:
             project2.cluster,
         )
         project2.save()
-        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self.client.force_authenticate(user=secretariat_recommender_edit_access_user)
         url = reverse("project-v2-associate-projects")
         agency = AgencyFactory.create(code="TESTAG")
         # associate project
@@ -499,10 +499,10 @@ class TestProjectListAssocitatedProjects:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         self._prepare_projects(project, project2, project_draft_status)
@@ -528,10 +528,10 @@ class TestProjectListAssocitatedProjects:
         _test_user_permissions(agency_user, 200)
         _test_user_permissions(agency_inputter_user, 200)
         _test_user_permissions(secretariat_viewer_user, 404)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_v3_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_approver_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 404)
         _test_user_permissions(admin_user, 200)
 
     def test_list_associated_projects(
@@ -641,10 +641,10 @@ class TestProjectListAssocitatedProjects:
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
     ):
         url = reverse("project-v2-remove-association", args=(project.id,))
@@ -667,10 +667,10 @@ class TestProjectListAssocitatedProjects:
         _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
         _test_user_permissions(agency_user, 200)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 404)
-        _test_user_permissions(secretariat_v3_edit_access_user, 404)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 404)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_recommender_edit_access_user, 404)
+        _test_user_permissions(secretariat_approver_edit_access_user, 404)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 404)
         _test_user_permissions(admin_user, 200)
 
     def test_remove_association(

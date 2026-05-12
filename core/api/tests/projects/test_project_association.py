@@ -30,10 +30,10 @@ class TestProjectAssociationListing(BaseTest):
         agency_user,
         agency_inputter_user,
         secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
+        secretariat_recommender_edit_access_user,
+        secretariat_production_recommender_edit_access_user,
+        secretariat_approver_edit_access_user,
+        secretariat_production_approver_edit_access_user,
         admin_user,
         meta_project,
     ):
@@ -115,41 +115,53 @@ class TestProjectAssociationListing(BaseTest):
         _set_project_user_same_lead_agency(secretariat_viewer_user)
         _test_user_permissions(secretariat_viewer_user, 200, 1)
 
-        # test with secretariat v1 v2 edit access user
-        _set_project_user_same_agency(secretariat_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200, 1)
-        _set_project_user_different_agency(secretariat_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200, 1)
-        _set_project_user_same_lead_agency(secretariat_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200, 1)
+        # test with secretariat recommender edit access user
+        _set_project_user_same_agency(secretariat_recommender_edit_access_user)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200, 1)
+        _set_project_user_different_agency(secretariat_recommender_edit_access_user)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200, 1)
+        _set_project_user_same_lead_agency(secretariat_recommender_edit_access_user)
+        _test_user_permissions(secretariat_recommender_edit_access_user, 200, 1)
 
-        # test with secretariat production v1 v2 edit access user
-        _set_project_user_same_agency(secretariat_production_v1_v2_edit_access_user)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200, 1)
+        # test with secretariat production recommender edit access user
+        _set_project_user_same_agency(
+            secretariat_production_recommender_edit_access_user
+        )
+        _test_user_permissions(
+            secretariat_production_recommender_edit_access_user, 200, 1
+        )
         _set_project_user_different_agency(
-            secretariat_production_v1_v2_edit_access_user
+            secretariat_production_recommender_edit_access_user
         )
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200, 1)
+        _test_user_permissions(
+            secretariat_production_recommender_edit_access_user, 200, 1
+        )
         _set_project_user_same_lead_agency(
-            secretariat_production_v1_v2_edit_access_user
+            secretariat_production_recommender_edit_access_user
         )
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200, 1)
+        _test_user_permissions(
+            secretariat_production_recommender_edit_access_user, 200, 1
+        )
 
         # test with secretariat v3 edit access user
-        _set_project_user_same_agency(secretariat_v3_edit_access_user)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200, 1)
-        _set_project_user_different_agency(secretariat_v3_edit_access_user)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200, 1)
-        _set_project_user_same_lead_agency(secretariat_v3_edit_access_user)
-        _test_user_permissions(secretariat_v3_edit_access_user, 200, 1)
+        _set_project_user_same_agency(secretariat_approver_edit_access_user)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200, 1)
+        _set_project_user_different_agency(secretariat_approver_edit_access_user)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200, 1)
+        _set_project_user_same_lead_agency(secretariat_approver_edit_access_user)
+        _test_user_permissions(secretariat_approver_edit_access_user, 200, 1)
 
         # test with secretariat production v3 edit access user
-        _set_project_user_same_agency(secretariat_production_v3_edit_access_user)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200, 1)
-        _set_project_user_different_agency(secretariat_production_v3_edit_access_user)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200, 1)
-        _set_project_user_same_lead_agency(secretariat_production_v3_edit_access_user)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 200, 1)
+        _set_project_user_same_agency(secretariat_production_approver_edit_access_user)
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200, 1)
+        _set_project_user_different_agency(
+            secretariat_production_approver_edit_access_user
+        )
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200, 1)
+        _set_project_user_same_lead_agency(
+            secretariat_production_approver_edit_access_user
+        )
+        _test_user_permissions(secretariat_production_approver_edit_access_user, 200, 1)
 
         # test with admin user
         _set_project_user_same_agency(admin_user)
