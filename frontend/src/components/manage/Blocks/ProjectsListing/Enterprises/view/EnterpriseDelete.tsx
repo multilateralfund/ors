@@ -5,11 +5,7 @@ import { EnterpriseType } from '../../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
 
-const EnterpriseDelete = ({
-  enterprise,
-}: {
-  enterprise: EnterpriseType & { id: number }
-}) => {
+const EnterpriseDelete = ({ enterprise }: { enterprise: EnterpriseType }) => {
   const [showWarning, setShowWarning] = useState(false)
 
   return (

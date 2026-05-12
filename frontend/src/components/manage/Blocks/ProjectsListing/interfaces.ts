@@ -373,6 +373,7 @@ export type EnterpriseType = EnterpriseOverview &
   EnterpriseSubstanceFields &
   EnterpriseFundingDetails &
   EnterpriseRemarks & {
+    id: number
     ods_odp: EnterpriseSubstanceDetails[]
   }
 

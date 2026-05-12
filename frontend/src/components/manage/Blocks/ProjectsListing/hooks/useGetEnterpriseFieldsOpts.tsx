@@ -13,7 +13,7 @@ const useGetEnterpriseFieldsOpts = (
   mode: string,
 ) => {
   const sectionIdentifier = 'overview'
-  const { sector, subsector } = enterpriseData[sectionIdentifier]
+  const { subsector } = enterpriseData[sectionIdentifier]
 
   const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
   const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
@@ -56,7 +56,7 @@ const useGetEnterpriseFieldsOpts = (
         'api/project-subsector/',
         {
           params: {
-            sector_id: sector,
+            // sector_id: sector,
             include_obsoletes: true,
           },
           withStoreCache: true,
@@ -72,35 +72,38 @@ const useGetEnterpriseFieldsOpts = (
 
   const debouncedFetchProjectSubsectors = debounce(fetchProjectSubsectors, 0)
 
+  // if we want a relation between sector and subsector
+
+  // useEffect(() => {
+  //   if (sector) {
+  //     debouncedFetchProjectSubsectors()
+  //   } else {
+  //     setSubsectorsOpts([])
+  //   }
+  // }, [sector])
+
   useEffect(() => {
-    if (sector) {
-      debouncedFetchProjectSubsectors()
-    } else {
-      setSubsectorsOpts([])
-    }
-  }, [sector])
+    debouncedFetchProjectSubsectors()
+  }, [])
 
   useEffect(() => {
     if (
-      !sector ||
-      (subsectors.length > 0 &&
-        !find(subsectors, (crtSubsector) => subsector === crtSubsector.id))
+      // !sector ||
+      subsectors.length > 0 &&
+      !find(subsectors, (crtSubsector) => subsector === crtSubsector.id)
     ) {
       setEnterpriseData((prev) => ({
         ...prev,
-        ...(sectionIdentifier
-          ? {
-              [sectionIdentifier]: {
-                ...prev[sectionIdentifier],
-                subsector: null,
-              },
-            }
-          : {
-              subsector: null,
-            }),
+        ...{
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            subsector: null,
+          },
+        },
       }))
     }
-  }, [JSON.stringify(subsectors), sector])
+  }, [JSON.stringify(subsectors)])
+  // }, [JSON.stringify(subsectors), sector])
 
   return {
     sectors,
