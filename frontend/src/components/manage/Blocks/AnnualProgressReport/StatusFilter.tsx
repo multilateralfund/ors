@@ -21,7 +21,7 @@ export default function StatusFilter({
         <FormControlLabel
           className="m-0"
           control={<Checkbox defaultChecked disabled size="small" />}
-          label="Ongoing and completed projects"
+          label="ONG and COM projects"
         />
       </li>
       <li>
@@ -39,7 +39,7 @@ export default function StatusFilter({
                   checked={selectedCodes.includes(status.code)}
                 />
               }
-              label={status.name}
+              label={status.code}
               onChange={(_, checked) => onToggle(status, checked)}
             />
           </li>

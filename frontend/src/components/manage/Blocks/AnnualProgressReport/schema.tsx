@@ -9,7 +9,7 @@ import {
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useStore } from '@ors/store.tsx'
-import { get, isEqual, isNil, isObject } from 'lodash'
+import { isEqual, isNil, isObject } from 'lodash'
 import {
   validateDate,
   validateNumber,
@@ -243,20 +243,19 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 160,
         cellDataType: 'text',
+        valueFormatter: (params: any) =>
+          projectStatuses.find((s) => s.name === params.value)?.code ?? '',
         cellEditor: 'agSelectCellEditor',
         cellEditorParams: {
           Input: { placeholder: 'Select status' },
           openOnFocus: true,
           allowEmptyStringOnClear: true,
           options: projectStatuses,
-          getOptionLabel: (option: any) =>
-            isObject(option)
-              ? get(option, 'name')
-              : (projectStatuses.find((status) => status.name === option)
-                  ?.name ?? ''),
+          getOptionLabel: (option: any) => option?.name ?? '',
           isOptionEqualToValue: (option: any, value: any) =>
             isObject(value) ? isEqual(option, value) : option.name === value,
-          agFormatValue: (value: any) => value?.name || '',
+          agFormatValue: (value: any) =>
+            projectStatuses.find((s) => s.name === value)?.code ?? '',
         },
         validators: [
           (value: any) => {
