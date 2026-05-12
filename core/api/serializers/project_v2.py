@@ -915,17 +915,17 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
     cluster = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
-        queryset=ProjectCluster.objects.filter(obsolete=False),
+        queryset=ProjectCluster.objects.all(),
     )
     sector = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
-        queryset=ProjectSector.objects.filter(obsolete=False),
+        queryset=ProjectSector.objects.all(),
     )
     project_type = serializers.PrimaryKeyRelatedField(
         required=False,
         allow_null=True,
-        queryset=ProjectType.objects.filter(obsolete=False),
+        queryset=ProjectType.objects.all(),
     )
 
     # This field is not on the Project model, but is used for input only
