@@ -7,7 +7,7 @@ import EnterpriseSubstanceDetailsSection from '../viewTabs/EnterpriseSubstanceDe
 import EnterpriseFundingDetailsSection from '../viewTabs/EnterpriseFundingDetailsSection'
 import EnterpriseRemarksSection from '../viewTabs/EnterpriseRemarksSection'
 import EnterpriseDelete from './EnterpriseDelete'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 

@@ -11,7 +11,7 @@ import {
   EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+import { EnterpriseFormProps } from '../interfaces'
 import {
   dateFields,
   decimalFields,
@@ -24,7 +24,7 @@ import { parseNumber } from '@ors/helpers'
 
 import { map } from 'lodash'
 
-const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
+const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
   const sectionIdentifier = 'details'
 
   const { enterpriseData, setEnterpriseData, errors } = props

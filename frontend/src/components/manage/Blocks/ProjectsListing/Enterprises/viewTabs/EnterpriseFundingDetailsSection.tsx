@@ -1,7 +1,7 @@
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 
 import { replace } from 'lodash'
 

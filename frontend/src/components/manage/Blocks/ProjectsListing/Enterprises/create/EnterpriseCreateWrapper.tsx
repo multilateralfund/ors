@@ -3,7 +3,7 @@ import { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import EnterpriseHeader from './EnterpriseHeader.tsx'
 import EnterpriseCreate from './EnterpriseCreate.tsx'
-import { EnterpriseData } from '../../interfaces.ts'
+import { EnterpriseData } from '../interfaces.ts'
 import {
   initialOverviewFields,
   initialDetailsFields,

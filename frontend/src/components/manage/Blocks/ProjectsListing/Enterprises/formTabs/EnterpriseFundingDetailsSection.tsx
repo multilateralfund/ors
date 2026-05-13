@@ -1,12 +1,12 @@
 import { EnterpriseNumberField } from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+import { EnterpriseFormProps } from '../interfaces'
 
 import { keys, map } from 'lodash'
 
 const EnterpriseFundingDetailsSection = ({
   enterpriseData,
   ...rest
-}: EnterpriseDataProps) => {
+}: EnterpriseFormProps) => {
   const sectionIdentifier = 'funding_details'
   const sectionData = enterpriseData[sectionIdentifier]
 

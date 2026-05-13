@@ -7,8 +7,10 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { FieldErrorIndicator, SubmitButton } from '../../HelperComponents'
 import { EnterpriseNumberField } from '../FormHelperComponents'
+import { EnterpriseFormProps, EnterpriseSubstanceDetails } from '../interfaces'
 import { getFieldDefaultProps } from '../utils'
 import { defaultProps } from '../../constants'
+import { OptionsType } from '../../interfaces'
 import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
@@ -16,11 +18,6 @@ import {
   substanceDecimalFields,
   substanceFields,
 } from '../constants'
-import {
-  EnterpriseSubstanceDetails,
-  EnterpriseDataProps,
-  OptionsType,
-} from '../../interfaces'
 
 import { find, get, isObject, map, omit, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
@@ -32,7 +29,7 @@ const EnterpriseSubstanceDetailsSection = ({
   setEnterpriseData,
   errors,
   odsOdpErrors,
-}: EnterpriseDataProps & {
+}: EnterpriseFormProps & {
   odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const { substances, blends } = useContext(ProjectsDataContext)

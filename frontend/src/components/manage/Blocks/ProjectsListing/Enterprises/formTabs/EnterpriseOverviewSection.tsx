@@ -7,7 +7,7 @@ import {
   EnterpriseSelectField,
 } from '../FormHelperComponents'
 import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
-import { EnterpriseDataProps } from '../../interfaces'
+import { EnterpriseFormProps } from '../interfaces'
 import { textFields } from '../constants'
 import { useStore } from '@ors/store'
 
@@ -17,7 +17,7 @@ const EnterpriseOverviewSection = ({
   mode,
   enterprise,
   ...rest
-}: EnterpriseDataProps & {
+}: EnterpriseFormProps & {
   mode: string
 }) => {
   const sectionIdentifier = 'overview'

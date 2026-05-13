@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 
-import { EnterpriseData } from '../interfaces'
+import { EnterpriseData } from '../Enterprises/interfaces'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'

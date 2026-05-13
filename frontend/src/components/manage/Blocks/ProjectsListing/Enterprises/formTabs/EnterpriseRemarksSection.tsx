@@ -1,11 +1,11 @@
 import { EnterpriseTextAreaField } from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+import { EnterpriseFormProps } from '../interfaces'
 import { remarksFields } from '../constants'
 import { useStore } from '@ors/store'
 
 import { filter } from 'lodash'
 
-const EnterpriseRemarksSection = (props: EnterpriseDataProps) => {
+const EnterpriseRemarksSection = (props: EnterpriseFormProps) => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
 

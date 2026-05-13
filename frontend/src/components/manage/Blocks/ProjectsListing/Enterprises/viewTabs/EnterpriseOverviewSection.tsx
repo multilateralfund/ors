@@ -5,7 +5,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { detailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 import { getEntityById } from '../utils'
 import { find } from 'lodash'
 

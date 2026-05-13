@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import EnterpriseHeader from '../create/EnterpriseHeader'
 import EnterpriseCreate from '../create/EnterpriseCreate'
-import { EnterpriseData, EnterpriseType } from '../../interfaces'
+import { EnterpriseData, EnterpriseType } from '../interfaces'
 import { getFormattedDecimalValue } from '../utils'
 import {
   initialOverviewFields,

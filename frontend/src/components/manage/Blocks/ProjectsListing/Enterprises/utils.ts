@@ -2,19 +2,20 @@ import { ChangeEvent } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
 import {
+  EnterpriseData,
   EnterpriseOverview,
   EnterpriseSubstanceDetails,
   SetEnterpriseData,
-} from '../interfaces'
+} from './interfaces'
 
 import { find, isNil, keys, sumBy } from 'lodash'
 import cx from 'classnames'
 
-export const handleChangeSelectValues = <T>(
+export const handleChangeSelectValues = (
   field: string,
-  setEnterpriseData: SetEnterpriseData<T>,
+  setEnterpriseData: SetEnterpriseData,
   value: any,
-  sectionIdentifier?: keyof T | null,
+  sectionIdentifier?: keyof EnterpriseData | null,
 ) => {
   const formattedValue = value?.id ?? null
 
@@ -36,11 +37,11 @@ export const handleChangeSelectValues = <T>(
   )
 }
 
-export const handleChangeTextValues = <T>(
+export const handleChangeTextValues = (
   field: string,
-  setEnterpriseData: SetEnterpriseData<T>,
+  setEnterpriseData: SetEnterpriseData,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  sectionIdentifier?: keyof T | null,
+  sectionIdentifier?: keyof EnterpriseData | null,
 ) => {
   setEnterpriseData(
     (prev) => ({
@@ -58,11 +59,11 @@ export const handleChangeTextValues = <T>(
   )
 }
 
-export const handleChangeIntegerValues = <T>(
+export const handleChangeIntegerValues = (
   field: string,
-  setEnterpriseData: SetEnterpriseData<T>,
+  setEnterpriseData: SetEnterpriseData,
   event: ChangeEvent<HTMLInputElement>,
-  sectionIdentifier?: keyof T | null,
+  sectionIdentifier?: keyof EnterpriseData | null,
 ) => {
   const value = event.target.value
 
@@ -88,11 +89,11 @@ export const handleChangeIntegerValues = <T>(
   }
 }
 
-export const handleChangeDecimalValues = <T>(
+export const handleChangeDecimalValues = (
   field: string,
-  setEnterpriseData: SetEnterpriseData<T>,
+  setEnterpriseData: SetEnterpriseData,
   event: ChangeEvent<HTMLInputElement>,
-  sectionIdentifier?: keyof T | null,
+  sectionIdentifier?: keyof EnterpriseData | null,
 ) => {
   const initialValue = event.target.value
   const value = initialValue === '' ? null : initialValue
@@ -124,11 +125,11 @@ export const handleChangeDecimalValues = <T>(
   }
 }
 
-export const handleChangeDateValues = <T>(
+export const handleChangeDateValues = (
   field: string,
-  setEnterpriseData: SetEnterpriseData<T>,
+  setEnterpriseData: SetEnterpriseData,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  sectionIdentifier?: keyof T | null,
+  sectionIdentifier?: keyof EnterpriseData | null,
 ) => {
   const formattedVal = event.target.value || null
 

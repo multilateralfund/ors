@@ -18,10 +18,10 @@ import {
   getFundsApproved,
 } from '../utils.ts'
 import {
-  EnterpriseDataProps,
-  EnterpriseSubstanceDetails,
   EnterpriseData,
-} from '../../interfaces.ts'
+  EnterpriseSubstanceDetails,
+  EnterpriseFormProps,
+} from '../interfaces.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -32,7 +32,7 @@ const EnterpriseCreate = ({
   mode,
   errors,
   ...rest
-}: EnterpriseDataProps & { mode: string }) => {
+}: EnterpriseFormProps & { mode: string }) => {
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
 

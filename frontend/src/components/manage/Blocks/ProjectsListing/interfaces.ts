@@ -279,11 +279,6 @@ export interface ProjectTransferData {
   psc_received: string | null
 }
 
-export type SetEnterpriseData<T> = (
-  updater: SetStateAction<T>,
-  fieldName?: string,
-) => void
-
 export type SetProjectData = (
   updater: SetStateAction<ProjectData>,
   fieldName?: string,
@@ -366,104 +361,6 @@ export type RelatedProjectsSectionType = {
 export type AssociatedProjectsType = {
   projects: RelatedProjectsType[] | null
   loaded: boolean
-}
-
-export type EnterpriseType = EnterpriseOverview &
-  EnterpriseDetails &
-  EnterpriseSubstanceFields &
-  EnterpriseFundingDetails &
-  EnterpriseRemarks & {
-    id: number
-    ods_odp: EnterpriseSubstanceDetails[]
-  }
-
-export interface EnterpriseData {
-  overview: EnterpriseOverview
-  details: EnterpriseDetails
-  substance_details: EnterpriseSubstanceDetails[]
-  substance_fields: EnterpriseSubstanceFields
-  funding_details: EnterpriseFundingDetails
-  remarks: EnterpriseRemarks
-}
-
-export type EnterpriseDataType = {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: SetEnterpriseData<EnterpriseData>
-  enterprise?: EnterpriseType
-}
-
-export type EnterprisesCommonProps = {
-  errors: { [key: string]: string[] }
-}
-
-export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
-
-export interface EnterpriseOverview {
-  name: string
-  country: number | null
-  agency: number | null
-  location: string
-  city: string
-  project_type: number | null
-  sector: number | null
-  subsector: number | null
-  status: number | null
-}
-
-export interface EnterpriseDetails {
-  local_ownership: string | null
-  export_to_non_a5: string | null
-  application: string
-  stage: string
-  revision_number: string | null
-  date_of_revision: string | null
-  planned_completion_date: string | null
-  actual_completion_date: string | null
-  project_duration: string | null
-  date_of_approval: string | null
-  meeting: number | null
-  excom_provision: string
-  date_of_report: string | null
-}
-
-export interface EnterpriseSubstanceDetails {
-  ods_substance: number | null
-  ods_blend: number | null
-  consumption: string | null
-  selected_alternative: string
-  chemical_phased_in_mt: string | null
-}
-
-export interface EnterpriseSubstanceFields {
-  chemical_phased_out: string | null
-  impact: string | null
-}
-
-export interface EnterpriseFundingDetails {
-  capital_cost_approved: string | null
-  operating_cost_approved: string | null
-  funds_disbursed: string | null
-  funds_approved: string | null
-  cost_effectiveness_approved: string | null
-  capital_cost_disbursed: string | null
-  operating_cost_disbursed: string | null
-  cost_effectiveness_actual: string | null
-  co_financing_planned: string | null
-  co_financing_actual: string | null
-  funds_transferred: string | null
-}
-
-export interface EnterpriseRemarks {
-  agency_remarks: string
-  secretariat_remarks: string
-}
-export interface EnterpriseHeaderProps {
-  enterpriseData: EnterpriseData
-  setErrors: (value: { [key: string]: string[] }) => void
-}
-
-export type EnterpriseActionButtons = EnterpriseHeaderProps & {
-  setIsLoading: (value: boolean) => void
 }
 
 export interface BpDataProps {
