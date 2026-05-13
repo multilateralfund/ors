@@ -548,7 +548,9 @@ class APRSummaryTablesExportWriter:
             )
         )
         queryset = queryset.filter(status__in=list(status_by_code.values()))
-        self._com_status_name = status_by_code.get("COM", "")
+        self._completed_status_names = {
+            status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
+        }
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
         self.queryset = queryset
@@ -670,7 +672,7 @@ class APRSummaryTablesExportWriter:
         num_completed = sum(
             1
             for apr in self.records
-            if apr.project.status and apr.project.status.code == "COM"
+            if apr.project.status and apr.project.status.code in ("COM", "FIN")
         )
 
         total_funds_approved = sum(
@@ -755,7 +757,7 @@ class APRSummaryTablesExportWriter:
             num_completed = sum(
                 1
                 for apr in cluster_records
-                if apr.project.status and apr.project.status.code == "COM"
+                if apr.project.status and apr.project.status.code in ("COM", "FIN")
             )
             pct_completed = (
                 round(num_completed / num_approved * 100) if num_approved else 0
@@ -855,7 +857,7 @@ class APRSummaryTablesExportWriter:
                 apr
                 for apr in self.records
                 if apr.project.status
-                and apr.project.status.code == "COM"
+                and apr.project.status.code in ("COM", "FIN")
                 and apr.report
                 and apr.report.progress_report
                 and apr.report.progress_report.year == self.year
@@ -864,7 +866,7 @@ class APRSummaryTablesExportWriter:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.project.status and apr.project.status.code == "COM"
+                if apr.project.status and apr.project.status.code in ("COM", "FIN")
             ]
 
         cluster_buckets = {}
@@ -992,7 +994,9 @@ class APRSummaryTablesExportWriter:
 
             num_approvals = len(year_projects)
             num_completed = sum(
-                1 for p in year_projects if p.get("status") == self._com_status_name
+                1
+                for p in year_projects
+                if p.get("status") in self._completed_status_names
             )
 
             total_approved_funding = sum(
@@ -1064,12 +1068,17 @@ class APRSummaryTablesExportWriter:
             bold=True,
         )
 
-    def _filter_records(self, status_code=None, type_code=None, exclude_type_codes=()):
-        """Returns a filtered sub-list of self.records, using in-memory filtering"""
+    def _filter_records(
+        self, status_code=None, status_codes=None, type_code=None, exclude_type_codes=()
+    ):
+        """Returns a filtered sub-list of self.records, using in-memory filtering.
+        Pass status_codes (tuple) to match any of several codes, or status_code for one.
+        """
+        _status_codes = status_codes or (({status_code} if status_code else set()))
         result = []
         for apr in self.records:
-            if status_code and not (
-                apr.project.status and apr.project.status.code == status_code
+            if _status_codes and not (
+                apr.project.status and apr.project.status.code in _status_codes
             ):
                 continue
             pt_code = (
@@ -1087,7 +1096,7 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_INVESTMENT]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", type_code="INV"),
+            self._filter_records(status_codes=("COM", "FIN"), type_code="INV"),
             include_odp_co2=True,
             sheet_type="cumulative",
         )
@@ -1097,7 +1106,9 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", exclude_type_codes=("INV", "PRP")),
+            self._filter_records(
+                status_codes=("COM", "FIN"), exclude_type_codes=("INV", "PRP")
+            ),
             include_odp_co2=False,
             sheet_type="cumulative",
         )
@@ -1107,7 +1118,7 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_PREPARATION]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", type_code="PRP"),
+            self._filter_records(status_codes=("COM", "FIN"), type_code="PRP"),
             include_odp_co2=False,
             sheet_type="cumulative",
         )
