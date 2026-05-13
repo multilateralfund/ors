@@ -1,0 +1,19 @@
+name: "CI-azure"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/docker-build.yml
+    # with:
+    #   SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
+    #   SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
+  deploy-azure:
+    needs: docker-build
+    uses: ./.github/workflows/deploy-azure.yml
+    secrets:
+      AZURE_SSH_USER: ${{ secrets.AZURE_SSH_USER }}
+      AZURE_SSH_HOST: ${{ secrets.AZURE_SSH_HOST }}
+      AZURE_SSH_KEY: ${{ secrets.AZURE_SSH_KEY }}

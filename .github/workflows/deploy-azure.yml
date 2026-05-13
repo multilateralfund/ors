@@ -1,0 +1,47 @@
+name: Deploy Azure
+
+# Ensure that only one job works on this at a time
+concurrency: azure_deployment
+
+on:
+  workflow_call:
+    secrets:
+      AZURE_SSH_USER:
+        required: true
+      AZURE_SSH_HOST:
+        required: true
+      AZURE_SSH_KEY:
+        required: true
+
+jobs:
+  deploy:
+    runs-on:
+      - runner-azure-ors
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: 'Configure SSH'
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/server.key
+          chmod 600 ~/.ssh/server.key
+          cat > ~/.ssh/config <<END
+          Host server
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/server.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.AZURE_SSH_USER }}
+          SSH_HOST: ${{ secrets.AZURE_SSH_HOST }}
+          SSH_KEY:  ${{ secrets.AZURE_SSH_KEY }}
+        shell: bash
+
+      - name: Update docker-compose.yml
+        run: |
+          scp docker-compose.yml server:/var/local/ors/
+
+      - name: Update services
+        run: |
+          ssh server "cd /var/local/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose rm -f nextjs && docker compose top"
