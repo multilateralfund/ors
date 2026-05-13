@@ -1174,7 +1174,7 @@ class APRSummaryTablesExportWriter:
         sector_items = list(
             self._compute_grouped_data(
                 records,
-                "project__sector__code",
+                "project__sector__name",
                 include_odp_co2,
                 sheet_type,
             )
