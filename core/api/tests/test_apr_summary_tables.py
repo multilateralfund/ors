@@ -815,45 +815,47 @@ class TestAPRSummaryTablesNumberFormats(BaseTest):
     # populated by the _setup_wb fixture
     wb: load_workbook
 
-    @pytest.fixture(autouse=True, scope="class")
-    def _setup_wb(self, request, django_db_blocker):
-        with django_db_blocker.unblock():
-            agency = AgencyFactory.create(name="NumFmtAgency", code="NFMT")
-            user = UserFactory(username="NumFmtAPRViewer", agency=agency)
-            user.groups.add(Group.objects.get(name="APR - Agency Viewer"))
+    @pytest.fixture(autouse=True)
+    def _setup_wb(self, request):
+        """
+        Helper to avoid expensive calls to the export API for all test methods.
+        """
+        agency = AgencyFactory.create(name="NumFmtAgency", code="NFMT")
+        user = UserFactory(username="NumFmtAPRViewer", agency=agency)
+        user.groups.add(Group.objects.get(name="APR - Agency Viewer"))
 
-            progress_report = AnnualProgressReportFactory(year=2019, endorsed=False)
-            agency_report = AnnualAgencyProjectReportFactory(
-                progress_report=progress_report,
-                agency=agency,
-                is_unlocked=False,
-                created_by=user,
-            )
+        progress_report = AnnualProgressReportFactory(year=2019, endorsed=False)
+        agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=progress_report,
+            agency=agency,
+            is_unlocked=False,
+            created_by=user,
+        )
 
-            project_status = ProjectStatusFactory.create(name="OngoingNF", code="ONGNF")
-            inv_type = ProjectTypeFactory.create(code="INVNF", name="InvestmentNF")
-            project = ProjectFactory(
-                agency=agency,
-                code="NF/TEST/001",
-                date_approved=date(2019, 1, 15),
-                status=project_status,
-                version=3,
-                total_fund=100000,
-                project_type=inv_type,
-            )
-            AnnualProjectReportFactory(
-                report=agency_report,
-                project=project,
-                consumption_phased_out_odp=1.5,
-                consumption_phased_out_mt=2.3,
-                consumption_phased_out_co2=1000.0,
-            )
+        project_status = ProjectStatusFactory.create(name="OngoingNF", code="ONGNF")
+        inv_type = ProjectTypeFactory.create(code="INVNF", name="InvestmentNF")
+        project = ProjectFactory(
+            agency=agency,
+            code="NF/TEST/001",
+            date_approved=date(2019, 1, 15),
+            status=project_status,
+            version=3,
+            total_fund=100000,
+            project_type=inv_type,
+        )
+        AnnualProjectReportFactory(
+            report=agency_report,
+            project=project,
+            consumption_phased_out_odp=1.5,
+            consumption_phased_out_mt=2.3,
+            consumption_phased_out_co2=1000.0,
+        )
 
-            client = APIClient()
-            client.force_authenticate(user=user)
-            response = client.get(reverse("apr-summary-tables-export"))
-            assert response.status_code == status.HTTP_200_OK
-            request.cls.wb = load_workbook(BytesIO(response.content))
+        client = APIClient()
+        client.force_authenticate(user=user)
+        response = client.get(reverse("apr-summary-tables-export"))
+        assert response.status_code == status.HTTP_200_OK
+        request.cls.wb = load_workbook(BytesIO(response.content))
 
     def test_summary_sheet_odp_mt_rows_use_one_decimal(self):
         ws = self.wb[APRSummaryTablesExportWriter.SHEET_SUMMARY]

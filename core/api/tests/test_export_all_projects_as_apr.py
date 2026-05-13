@@ -285,22 +285,21 @@ class TestAPRExportNumberFormats:
     ws = None
     col_map: dict = {}
 
-    @pytest.fixture(autouse=True, scope="class")
-    def _setup_workbook(self, request, django_db_blocker):
-        with django_db_blocker.unblock():
-            col_map = APRExportWriter.build_column_mapping()
-            report_data = {field: None for field in col_map}
-            report_data["approved_funding"] = 100000.0
-            report_data["funds_disbursed"] = 50000.0
-            report_data["consumption_phased_out_odp"] = 1.5
-            report_data["consumption_phased_out_mt"] = 2.3
-            report_data["consumption_phased_out_co2"] = 1000.0
-            writer = APRExportWriter(
-                year=2024,
-                agency_name="Test Agency",
-                project_reports_data=[report_data],
-            )
-            writer._build_workbook()  # pylint: disable=protected-access
+    @pytest.fixture(autouse=True)
+    def _setup_workbook(self, request):
+        col_map = APRExportWriter.build_column_mapping()
+        report_data = {field: None for field in col_map}
+        report_data["approved_funding"] = 100000.0
+        report_data["funds_disbursed"] = 50000.0
+        report_data["consumption_phased_out_odp"] = 1.5
+        report_data["consumption_phased_out_mt"] = 2.3
+        report_data["consumption_phased_out_co2"] = 1000.0
+        writer = APRExportWriter(
+            year=2024,
+            agency_name="Test Agency",
+            project_reports_data=[report_data],
+        )
+        writer._build_workbook()  # pylint: disable=protected-access
         request.cls.ws = writer.worksheet
         request.cls.col_map = col_map
 
