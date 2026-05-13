@@ -1,4 +1,4 @@
-export const textFields = ['name', 'location', 'city', 'stage', 'application']
+export const textFields = ['name', 'city', 'location', 'stage', 'application']
 export const remarksFields = ['agency_remarks', 'secretariat_remarks']
 export const dateFields = ['date_of_revision']
 export const detailsDateFields = [
@@ -22,8 +22,8 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   code: 'Code',
   name: 'Enterprise',
   country: 'Country',
-  location: 'Location',
   city: 'City',
+  location: 'Location',
   stage: 'Stage',
   sector: 'Sector',
   subsector: 'Sub-sector',
@@ -68,8 +68,8 @@ export const initialOverviewFields = {
   name: '',
   country: null,
   agency: null,
-  location: '',
   city: '',
+  location: '',
   project_type: null,
   sector: null,
   subsector: null,
@@ -80,12 +80,12 @@ export const initialDetailsFields = {
   local_ownership: null,
   export_to_non_a5: null,
   application: '',
-  stage: '',
-  revision_number: null,
-  date_of_revision: null,
   planned_completion_date: null,
   actual_completion_date: null,
   project_duration: null,
+  stage: '',
+  revision_number: null,
+  date_of_revision: null,
   meeting: null,
   date_of_approval: null,
   date_of_report: null,
@@ -108,11 +108,11 @@ export const initialSubstanceDetailsFields = {
 export const initialFundingDetailsFields = {
   capital_cost_approved: null,
   operating_cost_approved: null,
-  funds_disbursed: null,
   funds_approved: null,
   cost_effectiveness_approved: null,
-  funds_transferred: null,
   cost_effectiveness_actual: null,
+  funds_disbursed: null,
+  funds_transferred: null,
   capital_cost_disbursed: null,
   operating_cost_disbursed: null,
   co_financing_planned: null,

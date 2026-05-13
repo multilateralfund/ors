@@ -697,6 +697,63 @@ class TestAPRBulkUpdateView(BaseTest):
         assert annual_project_report.funds_disbursed == 50000.0
         assert annual_project_report.consumption_phased_out_odp == 25.5
 
+    def test_bulk_update_implementation_delays_field(
+        self,
+        apr_agency_inputter_user,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+
+        delay_text = "Decision 88/1 - extended to Q2 next year"
+        update_data = {
+            "project_reports": [
+                {
+                    "project_code": annual_project_report.project.code,
+                    "implementation_delays_status_report_decisions": delay_text,
+                }
+            ]
+        }
+
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, update_data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 1
+        assert response.data["error_count"] == 0
+
+        annual_project_report.refresh_from_db()
+        assert (
+            annual_project_report.implementation_delays_status_report_decisions
+            == delay_text
+        )
+
+        # Also verify the GET response returns the saved value
+        workspace_url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        get_response = self.client.get(workspace_url)
+        assert get_response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in get_response.data["project_reports"]
+                if p["project_code"] == annual_project_report.project.code
+            ),
+            None,
+        )
+        assert project_data is not None
+        assert (
+            project_data["implementation_delays_status_report_decisions"] == delay_text
+        )
+
 
 @pytest.mark.django_db
 class TestAPRFileUploadView(BaseTest):
@@ -5097,8 +5154,8 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         assert project_data is not None
 
-        # This field is currently hardcoded to return an empty string
-        assert project_data["implementation_delays_status_report_decisions"] == ""
+        # Field defaults to None when not explicitly set
+        assert project_data["implementation_delays_status_report_decisions"] is None
 
     def test_derived_fields_with_no_version_3(
         self,
@@ -5672,6 +5729,58 @@ class TestSyncAprFromProjectsTask:
         assert apr_a.project_title_denorm == "New A"
         assert apr_b.project_title_denorm == "New B"
 
+    def test_endorsed_apr_is_skipped(self, annual_agency_report, annual_project_report):
+        progress_report = annual_agency_report.progress_report
+        progress_report.endorsed = True
+        progress_report.save(update_fields=["endorsed"])
+
+        result = sync_apr_from_projects(progress_report.year)
+
+        assert result["updated_count"] == 0
+        assert result["changed_count"] == 0
+        assert result["added_count"] == 0
+
+    def test_new_project_added_by_sync(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        project_ongoing_status,
+    ):
+        # Create a new project that was approved after the APR was initialized,
+        # so it has no AnnualProjectReport row yet.
+        new_project = ProjectFactory(
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            date_approved=date(annual_agency_report.progress_report.year, 1, 15),
+        )
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["added_count"] == 1
+        assert AnnualProjectReport.objects.filter(
+            report=annual_agency_report,
+            project=new_project,
+        ).exists()
+
+    def test_closed_project_not_added_by_sync(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        project_closed_status,
+    ):
+        # A project that became closed after the APR was created should not be added.
+        ProjectFactory(
+            agency=annual_agency_report.agency,
+            status=project_closed_status,
+            version=3,
+            date_approved=date(annual_agency_report.progress_report.year, 1, 15),
+        )
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["added_count"] == 0
+
 
 @pytest.mark.django_db
 class TestAPREndorseProjectVersioning:
@@ -5980,3 +6089,54 @@ class TestAPREndorseProjectVersioning:
 
         assert response.status_code == status.HTTP_200_OK
         mock_task.delay.assert_called_once_with(annual_progress_report.id)
+
+
+@pytest.mark.django_db
+class TestAPRExportNumberFormats:
+    """Verify cell number_format values for funding, ODP/MT, and CO2 columns."""
+
+    ws = None
+    col_map: dict = {}
+
+    @pytest.fixture(autouse=True)
+    def _setup_workbook(self, request):
+        col_map = APRExportWriter.build_column_mapping()
+        report_data = {field: None for field in col_map}
+        report_data["approved_funding"] = 100000.0
+        report_data["funds_disbursed"] = 50000.0
+        report_data["consumption_phased_out_odp"] = 1.5
+        report_data["consumption_phased_out_mt"] = 2.3
+        report_data["consumption_phased_out_co2"] = 1000.0
+        writer = APRExportWriter(
+            year=2024,
+            agency_name="Test Agency",
+            project_reports_data=[report_data],
+        )
+        writer._build_workbook()  # pylint: disable=protected-access
+        request.cls.ws = writer.worksheet
+        request.cls.col_map = col_map
+
+    def test_funding_fields_have_no_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["approved_funding", "funds_disbursed", "balance"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert (
+                fmt == "#,##0"
+            ), f"Funding field '{field}' expected '#,##0', got '{fmt}'"
+
+    def test_odp_mt_fields_have_one_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["consumption_phased_out_odp", "consumption_phased_out_mt"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert (
+                fmt == "#,##0.0"
+            ), f"ODP/MT field '{field}' expected '#,##0.0', got '{fmt}'"
+
+    def test_co2_fields_have_no_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["consumption_phased_out_co2", "production_phased_out_co2"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert fmt == "#,##0", f"CO2 field '{field}' expected '#,##0', got '{fmt}'"

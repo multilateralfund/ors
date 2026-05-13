@@ -69,7 +69,6 @@ DENORM_FIELD_MAP = {
     "support_cost_approved": "support_cost_approved_denorm",
     "support_cost_adjustment": "support_cost_adjustment_denorm",
     "support_cost_approved_plus_adjustment": "support_cost_approved_plus_adjustment_denorm",
-    "implementation_delays_status_report_decisions": "implementation_delays_status_report_decisions_denorm",
     "date_of_completion_per_agreement_or_decisions": "date_of_completion_per_agreement_or_decisions_denorm",
 }
 

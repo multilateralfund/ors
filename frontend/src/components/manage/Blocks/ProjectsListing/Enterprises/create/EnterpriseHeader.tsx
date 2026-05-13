@@ -7,10 +7,11 @@ import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import EnterpriseCancelButton from './EnterpriseCancelButton'
 import { EnterpriseStatus, handleErrors } from '../FormHelperComponents'
 import { PageTitle, SubmitButton } from '../../HelperComponents'
-import { EnterpriseHeaderProps, EnterpriseType } from '../../interfaces'
+import { EnterpriseType, EnterpriseHeaderProps } from '../interfaces'
 import { enabledButtonClassname } from '../../constants'
 import { hasSectionErrors } from '../../utils'
 import { getFieldErrors } from '../utils'
+import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { CircularProgress, Button } from '@mui/material'
@@ -23,9 +24,7 @@ const EnterpriseHeader = ({
   mode,
   enterprise,
   enterpriseData,
-  setEnterpriseId,
   setErrors,
-  setOtherErrors,
 }: EnterpriseHeaderProps & {
   mode: string
   enterprise?: EnterpriseType
@@ -34,6 +33,8 @@ const EnterpriseHeader = ({
 
   const { enterprise_id } = useParams<Record<string, string>>()
   const { statuses } = useContext(EnterprisesDataContext)
+
+  const { setInlineMessage } = useStore((state) => state.inlineMessage)
   const { clearUpdatedFields } = useUpdatedFields()
 
   const formatStatus = (enterpriseStatus?: number | null) =>
@@ -54,7 +55,7 @@ const EnterpriseHeader = ({
   const onSubmit = async () => {
     setIsLoading(true)
     setErrors({})
-    setOtherErrors('')
+    setInlineMessage(null)
 
     try {
       const data = {
@@ -76,11 +77,10 @@ const EnterpriseHeader = ({
         method: requestMethod,
       })
 
-      setEnterpriseId(result.id)
       clearUpdatedFields()
 
       enqueueSnackbar(
-        <>Enterprise was {isEdit ? 'updated' : 'created'} successfully.</>,
+        <>{isEdit ? 'Updated' : 'Created'} enterprise successfully.</>,
         {
           variant: 'success',
         },
@@ -88,11 +88,17 @@ const EnterpriseHeader = ({
 
       if (isEdit) {
         setEnterpriseStatus(formatStatus(result.status))
+        setInlineMessage({
+          type: 'success',
+          message: 'Updated enterprise successfully.',
+          redirectMessage: 'View enterprise.',
+          hrefRedirect: `/projects-listing/enterprises/${result.id}`,
+        })
       } else {
         setLocation(`/projects-listing/enterprises/${result.id}/edit`)
       }
     } catch (error) {
-      await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
+      await handleErrors(error, setErrors, setInlineMessage)
     } finally {
       setIsLoading(false)
     }

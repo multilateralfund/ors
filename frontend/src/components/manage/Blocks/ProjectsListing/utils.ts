@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { PermissionsContextProps } from '@ors/contexts/PermissionsContext'
 import { getMeetingNr } from '../../Utils/utilFunctions'
 import { MetaProjectDetailType } from './UpdateMyaData/types'
 import {
@@ -937,7 +938,7 @@ export const getIsUpdatablePostExcom = (
   status !== 'Transferred'
 
 export const getMenus = (
-  permissions: Record<string, boolean>,
+  permissions: PermissionsContextProps,
   projectData?: ListingProjectData,
   onTransferProject?: () => void,
 ) => {

@@ -5,7 +5,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { detailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 import { getEntityById } from '../utils'
 import { find } from 'lodash'
 
@@ -36,8 +36,8 @@ const EnterpriseOverviewSection = ({
         {detailItem(enterpriseFieldsMapping.country, country)}
         {detailItem(enterpriseFieldsMapping.agency, agency)}
       </div>
-      {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
       {detailItem(enterpriseFieldsMapping.city, enterprise.city)}
+      {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
       <div className={viewColumnsClassName}>
         {detailItem(enterpriseFieldsMapping.project_type, project_type)}
         {detailItem(enterpriseFieldsMapping.sector, sector)}

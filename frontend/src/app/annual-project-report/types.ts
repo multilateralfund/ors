@@ -63,7 +63,7 @@ export interface AnnualProjectReport {
   support_cost_committed: number | null
   disbursements_made_to_final_beneficiaries: number | null
   funds_advanced: number | null
-  implementation_delays_status_report_decisions: string
+  implementation_delays_status_report_decisions: string | null
   date_of_completion_per_agreement_or_decisions: string | null
   last_year_remarks: string
   current_year_remarks: string

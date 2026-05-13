@@ -86,6 +86,42 @@ class APRExportWriter:
         "funds_advanced",
     }
 
+    FUNDING_FIELDS = {
+        "approved_funding",
+        "adjustment",
+        "approved_funding_plus_adjustment",
+        "balance",
+        "support_cost_approved",
+        "support_cost_adjustment",
+        "support_cost_approved_plus_adjustment",
+        "support_cost_balance",
+        "funds_disbursed",
+        "funds_committed",
+        "estimated_disbursement_current_year",
+        "support_cost_disbursed",
+        "support_cost_committed",
+        "disbursements_made_to_final_beneficiaries",
+        "funds_advanced",
+    }
+
+    PHASEOUT_ODP_MT_FIELDS = {
+        "consumption_phased_out_odp_proposal",
+        "consumption_phased_out_mt_proposal",
+        "production_phased_out_odp_proposal",
+        "production_phased_out_mt_proposal",
+        "consumption_phased_out_odp",
+        "consumption_phased_out_mt",
+        "production_phased_out_odp",
+        "production_phased_out_mt",
+    }
+
+    PHASEOUT_CO2_FIELDS = {
+        "consumption_phased_out_co2_proposal",
+        "production_phased_out_co2_proposal",
+        "consumption_phased_out_co2",
+        "production_phased_out_co2",
+    }
+
     PERCENTAGE_FIELDS = {
         "per_cent_funds_disbursed",
     }
@@ -341,11 +377,20 @@ class APRExportWriter:
                     cell = self.worksheet.cell(row, col_idx)
                     cell.number_format = "0.00%"
 
-            elif field_name in self.NUMERIC_FIELDS:
+            elif field_name in self.FUNDING_FIELDS:
                 for row in range(first_row, last_row + 1):
                     cell = self.worksheet.cell(row, col_idx)
-                    # Format with thousands separator and 2 decimal places
-                    cell.number_format = "#,##0.00"
+                    cell.number_format = "#,##0"
+
+            elif field_name in self.PHASEOUT_ODP_MT_FIELDS:
+                for row in range(first_row, last_row + 1):
+                    cell = self.worksheet.cell(row, col_idx)
+                    cell.number_format = "#,##0.0"
+
+            elif field_name in self.PHASEOUT_CO2_FIELDS:
+                for row in range(first_row, last_row + 1):
+                    cell = self.worksheet.cell(row, col_idx)
+                    cell.number_format = "#,##0"
 
             elif field_name in self.BOOLEAN_FIELDS:
                 for row in range(first_row, last_row + 1):
@@ -503,7 +548,9 @@ class APRSummaryTablesExportWriter:
             )
         )
         queryset = queryset.filter(status__in=list(status_by_code.values()))
-        self._com_status_name = status_by_code.get("COM", "")
+        self._completed_status_names = {
+            status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
+        }
         if self.agency:
             queryset = queryset.filter(project__agency=self.agency)
         self.queryset = queryset
@@ -625,7 +672,7 @@ class APRSummaryTablesExportWriter:
         num_completed = sum(
             1
             for apr in self.records
-            if apr.project.status and apr.project.status.code == "COM"
+            if apr.project.status and apr.project.status.code in ("COM", "FIN")
         )
 
         total_funds_approved = sum(
@@ -663,22 +710,23 @@ class APRSummaryTablesExportWriter:
         )
 
         # Write values to column B, rows 4-13
-        values = [
-            num_approvals,
-            num_completed,
-            total_funds_approved,
-            total_funds_disbursed,
-            total_approved_odp,
-            total_actual_odp,
-            total_approved_mt,
-            total_actual_mt,
-            total_approved_co2,
-            total_actual_co2,
+        # Rows 4-5: counts, 6-7: funding, 8-9: ODP, 10-11: MT, 12-13: CO2
+        values_with_formats = [
+            (num_approvals, "#,##0"),
+            (num_completed, "#,##0"),
+            (total_funds_approved, "#,##0"),
+            (total_funds_disbursed, "#,##0"),
+            (total_approved_odp, "#,##0.0"),
+            (total_actual_odp, "#,##0.0"),
+            (total_approved_mt, "#,##0.0"),
+            (total_actual_mt, "#,##0.0"),
+            (total_approved_co2, "#,##0"),
+            (total_actual_co2, "#,##0"),
         ]
 
-        for idx, value in enumerate(values):
+        for idx, (value, number_format) in enumerate(values_with_formats):
             cell = ws.cell(self.SUMMARY_DATA_START_ROW + idx, 2, value)
-            cell.number_format = "#,##0"
+            cell.number_format = number_format
 
     def _write_summary_by_cluster_sheet(self):
         """I.2: Summary data by cluster"""
@@ -709,7 +757,7 @@ class APRSummaryTablesExportWriter:
             num_completed = sum(
                 1
                 for apr in cluster_records
-                if apr.project.status and apr.project.status.code == "COM"
+                if apr.project.status and apr.project.status.code in ("COM", "FIN")
             )
             pct_completed = (
                 round(num_completed / num_approved * 100) if num_approved else 0
@@ -809,7 +857,7 @@ class APRSummaryTablesExportWriter:
                 apr
                 for apr in self.records
                 if apr.project.status
-                and apr.project.status.code == "COM"
+                and apr.project.status.code in ("COM", "FIN")
                 and apr.report
                 and apr.report.progress_report
                 and apr.report.progress_report.year == self.year
@@ -818,7 +866,7 @@ class APRSummaryTablesExportWriter:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.project.status and apr.project.status.code == "COM"
+                if apr.project.status and apr.project.status.code in ("COM", "FIN")
             ]
 
         cluster_buckets = {}
@@ -876,21 +924,17 @@ class APRSummaryTablesExportWriter:
         row = self.CLUSTER_DATA_START_ROW
         for cluster_name, num_completed, total_odp, total_mt, total_co2 in rows_data:
             ws.cell(row, 1, cluster_name)
-            ws.cell(row, 2, num_completed)
-            ws.cell(row, 3, total_odp)
-            ws.cell(row, 4, total_mt)
-            ws.cell(row, 5, total_co2)
-            for col in range(2, 6):
-                ws.cell(row, col).number_format = "#,##0"
+            ws.cell(row, 2, num_completed).number_format = "#,##0"
+            ws.cell(row, 3, total_odp).number_format = "#,##0.0"
+            ws.cell(row, 4, total_mt).number_format = "#,##0.0"
+            ws.cell(row, 5, total_co2).number_format = "#,##0"
             row += 1
 
         # Total row: label already in template, write only the values
-        ws.cell(total_row, 2, totals["num_completed"])
-        ws.cell(total_row, 3, totals["odp"])
-        ws.cell(total_row, 4, totals["mt"])
-        ws.cell(total_row, 5, totals["co2"])
-        for col in range(2, 6):
-            ws.cell(total_row, col).number_format = "#,##0"
+        ws.cell(total_row, 2, totals["num_completed"]).number_format = "#,##0"
+        ws.cell(total_row, 3, totals["odp"]).number_format = "#,##0.0"
+        ws.cell(total_row, 4, totals["mt"]).number_format = "#,##0.0"
+        ws.cell(total_row, 5, totals["co2"]).number_format = "#,##0"
 
     def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
         """Helper for writing a single data row in the annual summary sheet."""
@@ -950,7 +994,9 @@ class APRSummaryTablesExportWriter:
 
             num_approvals = len(year_projects)
             num_completed = sum(
-                1 for p in year_projects if p.get("status") == self._com_status_name
+                1
+                for p in year_projects
+                if p.get("status") in self._completed_status_names
             )
 
             total_approved_funding = sum(
@@ -1022,12 +1068,17 @@ class APRSummaryTablesExportWriter:
             bold=True,
         )
 
-    def _filter_records(self, status_code=None, type_code=None, exclude_type_codes=()):
-        """Returns a filtered sub-list of self.records, using in-memory filtering"""
+    def _filter_records(
+        self, status_code=None, status_codes=None, type_code=None, exclude_type_codes=()
+    ):
+        """Returns a filtered sub-list of self.records, using in-memory filtering.
+        Pass status_codes (tuple) to match any of several codes, or status_code for one.
+        """
+        _status_codes = status_codes or (({status_code} if status_code else set()))
         result = []
         for apr in self.records:
-            if status_code and not (
-                apr.project.status and apr.project.status.code == status_code
+            if _status_codes and not (
+                apr.project.status and apr.project.status.code in _status_codes
             ):
                 continue
             pt_code = (
@@ -1045,7 +1096,7 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_INVESTMENT]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", type_code="INV"),
+            self._filter_records(status_codes=("COM", "FIN"), type_code="INV"),
             include_odp_co2=True,
             sheet_type="cumulative",
         )
@@ -1055,7 +1106,9 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_NON_INVESTMENT]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", exclude_type_codes=("INV", "PRP")),
+            self._filter_records(
+                status_codes=("COM", "FIN"), exclude_type_codes=("INV", "PRP")
+            ),
             include_odp_co2=False,
             sheet_type="cumulative",
         )
@@ -1065,7 +1118,7 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_PREPARATION]
         self._write_flat_aggregation_sheet(
             ws,
-            self._filter_records(status_code="COM", type_code="PRP"),
+            self._filter_records(status_codes=("COM", "FIN"), type_code="PRP"),
             include_odp_co2=False,
             sheet_type="cumulative",
         )
@@ -1121,7 +1174,7 @@ class APRSummaryTablesExportWriter:
         sector_items = list(
             self._compute_grouped_data(
                 records,
-                "project__sector__code",
+                "project__sector__name",
                 include_odp_co2,
                 sheet_type,
             )
@@ -1243,10 +1296,10 @@ class APRSummaryTablesExportWriter:
             if include_odp_co2:
                 specs.extend(
                     [
-                        ("total_consumption_odp", "#,##0"),
-                        ("total_production_odp", "#,##0"),
-                        ("total_consumption_mt", "#,##0"),
-                        ("total_production_mt", "#,##0"),
+                        ("total_consumption_odp", "#,##0.0"),
+                        ("total_production_odp", "#,##0.0"),
+                        ("total_consumption_mt", "#,##0.0"),
+                        ("total_production_mt", "#,##0.0"),
                         ("total_consumption_co2", "#,##0"),
                         ("total_production_co2", "#,##0"),
                     ]

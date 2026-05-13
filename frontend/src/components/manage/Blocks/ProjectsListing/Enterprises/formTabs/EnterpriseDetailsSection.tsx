@@ -11,7 +11,7 @@ import {
   EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+import { EnterpriseFormProps } from '../interfaces'
 import {
   dateFields,
   decimalFields,
@@ -24,7 +24,7 @@ import { parseNumber } from '@ors/helpers'
 
 import { map } from 'lodash'
 
-const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
+const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
   const sectionIdentifier = 'details'
 
   const { enterpriseData, setEnterpriseData, errors } = props
@@ -59,21 +59,6 @@ const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
         {...{ sectionIdentifier, ...props }}
       />
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
-        <EnterpriseTextField
-          field={textFields[3]}
-          {...{ sectionIdentifier, ...props }}
-        />
-        <EnterpriseNumberField
-          dataType="integer"
-          field={integerFields[0]}
-          {...{ sectionIdentifier, ...props }}
-        />
-        <EnterpriseDateField
-          field={dateFields[0]}
-          {...{ sectionIdentifier, ...props }}
-        />
-      </div>
-      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         {map(detailsDateFields.slice(0, 2), (field, index) => (
           <EnterpriseDateField
             key={index}
@@ -91,6 +76,21 @@ const EnterpriseDetailsSection = (props: EnterpriseDataProps) => {
             sectionIdentifier,
             ...props,
           }}
+        />
+      </div>
+      <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
+        <EnterpriseTextField
+          field={textFields[3]}
+          {...{ sectionIdentifier, ...props }}
+        />
+        <EnterpriseNumberField
+          dataType="integer"
+          field={integerFields[0]}
+          {...{ sectionIdentifier, ...props }}
+        />
+        <EnterpriseDateField
+          field={dateFields[0]}
+          {...{ sectionIdentifier, ...props }}
         />
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">

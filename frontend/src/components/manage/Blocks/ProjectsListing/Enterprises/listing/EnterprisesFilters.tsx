@@ -9,6 +9,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SearchFilter } from '../../HelperComponents'
 import { enterpriseFieldsMapping } from '../constants'
 import { OptionsType } from '../../interfaces'
+import { getIsAgencyUser } from '../utils'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -22,10 +23,11 @@ const EnterprisesFilters = ({
   handleParamsChange,
 }: any) => {
   const { canViewOnlyOwnAgency } = useContext(PermissionsContext)
+
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
 
-  const canFilterByAgency = !(canViewOnlyOwnAgency && !!agency_id)
+  const canFilterByAgency = !getIsAgencyUser(canViewOnlyOwnAgency, agency_id)
 
   const { countries, agencies, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)

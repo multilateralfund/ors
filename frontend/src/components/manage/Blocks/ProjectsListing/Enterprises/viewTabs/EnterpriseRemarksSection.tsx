@@ -1,6 +1,6 @@
 import { detailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping, remarksFields } from '../constants'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 
 import { map } from 'lodash'
 

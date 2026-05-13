@@ -13,9 +13,11 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template import loader
 
+from core.api.filters.annual_project_reports import APRProjectFilter
 from core.api.utils import (
     COUNTRY_USER_GROUP,
     COUNTRY_SUBMITTER_GROUP,
+    get_previous_year_project_reports,
     log_project_history,
 )
 from core.forms import CountryUserPasswordResetForm
@@ -583,8 +585,25 @@ def sync_apr_from_projects(year):
 
     Only records whose values actually changed are written to the DB,
     so runs where the state has not actually changed are fast.
+
+    This runs in two phases:
+    - it first updates existing APRs based on changed Project data
+    - it then creates specific APRs for projects that have been approved *after*
+      the initial AnnualAgencyProjectReport has been created.
+      If there is no AnnualAgencyProjectReport for a specific agency (e.g. the workspace
+      has not been accessed yet), it will not create new AnnualProjectReport records.
     """
+    # pylint: disable=R0914
     progress_report = AnnualProgressReport.objects.get(year=year)
+
+    if progress_report.endorsed:
+        return {
+            "updated_count": 0,
+            "changed_count": 0,
+            "added_count": 0,
+            "agencies_count": 0,
+            "message": f"APR for year {year} is already endorsed. No sync performed.",
+        }
 
     project_reports = list(
         AnnualProjectReport.objects.filter(
@@ -606,11 +625,18 @@ def sync_apr_from_projects(year):
         return {
             "updated_count": 0,
             "changed_count": 0,
+            "added_count": 0,
             "agencies_count": 0,
             "message": "No project reports to sync.",
         }
 
     agencies_count = len({pr.report_id for pr in project_reports})
+
+    # Build a map of existing project IDs per agency report from already-fetched data,
+    # to avoid one DB query per agency in the second phase (project "pull") below.
+    existing_by_report_id: dict[int, set[int]] = {}
+    for pr in project_reports:
+        existing_by_report_id.setdefault(pr.report_id, set()).add(pr.project_id)
 
     # Collect unique final-project ids
     final_project_ids = set()
@@ -706,12 +732,74 @@ def sync_apr_from_projects(year):
             )
 
     changed_count = len(to_update)
+
+    # Now pull in projects that were added after the APR was first initialized
+    agency_reports = AnnualAgencyProjectReport.objects.filter(
+        progress_report=progress_report
+    ).select_related("agency")
+
+    added_count = 0
+    for agency_report in agency_reports:
+        agency = agency_report.agency
+
+        existing_project_ids = existing_by_report_id.get(agency_report.id, set())
+
+        projects_queryset = (
+            Project.objects.filter(
+                latest_project__isnull=True,
+                version__gte=3,
+            )
+            .select_related(
+                "country",
+                "agency",
+                "sector",
+                "project_type",
+                "status",
+                "meeting",
+                "decision",
+            )
+            .prefetch_related(
+                "subsectors",
+                "ods_odp",
+                "ods_odp__ods_substance",
+                "ods_odp__ods_blend",
+            )
+            .order_by("code")
+        )
+        filterset = APRProjectFilter(
+            data={"year": year, "agency": agency.id, "status": "ONG,COM"},
+            queryset=projects_queryset,
+        )
+        new_projects = [p for p in filterset.qs if p.id not in existing_project_ids]
+
+        if not new_projects:
+            continue
+
+        previous_reports_dict = get_previous_year_project_reports(agency.id, year)
+        for project in new_projects:
+            # It's OK to create new projects individually, there should not be many.
+            key = (project.code, agency.id)
+            default_data = {"status": project.status.name}
+            previous_data = previous_reports_dict.get(key, default_data)
+
+            project_report, created = AnnualProjectReport.objects.get_or_create(
+                project=project,
+                report=agency_report,
+                defaults=previous_data,
+            )
+            if created or project_report.meta_code_denorm is None:
+                project_report.populate_derived_fields()
+                project_report.save()
+                added_count += 1
+
     return {
         "updated_count": len(project_reports),
         "changed_count": changed_count,
+        "added_count": added_count,
         "agencies_count": agencies_count,
         "message": (
             f"Synced {len(project_reports)} project report(s) across "
-            f"{agencies_count} agency/agencies; {changed_count} record(s) updated."
+            f"{agencies_count} agency/agencies; {changed_count} record(s) updated, "
+            f"{added_count} new project report(s) added."
         ),
     }

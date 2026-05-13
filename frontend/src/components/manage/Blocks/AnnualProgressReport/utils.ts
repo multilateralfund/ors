@@ -41,10 +41,24 @@ export function formatUSD(value: any) {
   })
 }
 
+export function formatFunding(value: any) {
+  return formatNumber(value, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+}
+
 export function formatDecimal(value: any) {
   return formatNumber(value, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+  })
+}
+
+export function formatOneDecimal(value: any) {
+  return formatNumber(value, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
   })
 }
 

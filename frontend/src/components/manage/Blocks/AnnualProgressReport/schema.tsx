@@ -3,9 +3,9 @@ import { DataTypeDefinition, IHeaderParams } from 'ag-grid-community'
 import {
   formatBoolean,
   formatDate,
-  formatDecimal,
+  formatFunding,
+  formatOneDecimal,
   formatPercent,
-  formatUSD,
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useStore } from '@ors/store.tsx'
@@ -62,7 +62,7 @@ export const dataTypeDefinitions: Record<
   currency: {
     baseDataType: 'number',
     extendsDataType: 'number',
-    valueFormatter: (params) => formatUSD(params.value),
+    valueFormatter: (params) => formatFunding(params.value),
     validators: [validateNumber],
   },
   percent: {
@@ -74,7 +74,7 @@ export const dataTypeDefinitions: Record<
   decimal: {
     baseDataType: 'number',
     extendsDataType: 'number',
-    valueFormatter: (params) => formatDecimal(params.value),
+    valueFormatter: (params) => formatOneDecimal(params.value),
     validators: [validateNumber],
   },
   boolean: {
@@ -339,6 +339,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         autoHeaderHeight: true,
       },
     },
@@ -372,6 +373,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         autoHeaderHeight: true,
       },
     },
@@ -409,6 +411,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         cellEditorParams: {
           allowNullVals: true,
         },
@@ -448,6 +451,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         cellEditorParams: {
           allowNullVals: true,
         },
@@ -631,15 +635,6 @@ export default function useGetColumnDefs({
         },
       },
     },
-    implementationDelays: {
-      label: 'Implementation Delays/Status Report Decisions',
-      fieldName: 'implementation_delays_status_report_decisions',
-      group: null,
-      input: false,
-      overrideOptions: {
-        minWidth: 200,
-      },
-    },
     dateCompletionPerAgreementOrDecision: {
       label: 'Date of Completion per Agreements or per Decisions',
       fieldName: 'date_of_completion_per_agreement_or_decisions',
@@ -651,6 +646,20 @@ export default function useGetColumnDefs({
       },
     },
     // Narrative & Indicators Data Fields
+    implementationDelays: {
+      label: 'Implementation Delays/Status Report Decisions',
+      fieldName: 'implementation_delays_status_report_decisions',
+      group: 'Narrative & Indicators Data Fields',
+      input: true,
+      overrideOptions: {
+        minWidth: 200,
+        cellDataType: 'text',
+        cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
+      },
+    },
     remarksLastYear: {
       label: `Remarks (as of 31 December ${parseInt(year, 10) - 1})`,
       fieldName: 'last_year_remarks',

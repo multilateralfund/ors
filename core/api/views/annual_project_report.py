@@ -976,8 +976,8 @@ class APRKickStartView(APIView):
 
         if not can_kick_start:
             data["message"] = (
-                f"Year {unendorsed_years[0]} already exists and must be endorsed "
-                f"before creating year {latest_endorsed_year + 1}."
+                f"An APR for year {unendorsed_years[0]} already exists and must be "
+                f"endorsed before creating APR for year {latest_endorsed_year + 1}."
             )
 
         serializer = AnnualProjectReportKickStartStatusSerializer(data)

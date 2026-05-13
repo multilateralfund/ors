@@ -3,11 +3,13 @@ import { useEffect, useMemo, useState } from 'react'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
+import ProjectsInlineMessage from '../../ProjectsCreate/ProjectsInlineMessage.tsx'
 import EnterpriseOverviewSection from '../formTabs/EnterpriseOverviewSection.tsx'
 import EnterpriseDetailsSection from '../formTabs/EnterpriseDetailsSection.tsx'
 import EnterpriseSubstanceDetailsSection from '../formTabs/EnterpriseSubstanceDetailsSection.tsx'
 import EnterpriseFundingDetailsSection from '../formTabs/EnterpriseFundingDetailsSection.tsx'
 import EnterpriseRemarksSection from '../formTabs/EnterpriseRemarksSection.tsx'
+import EnterpriseDelete from '../view/EnterpriseDelete.tsx'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { enterpriseFieldsMapping } from '../constants.ts'
 import {
@@ -16,10 +18,10 @@ import {
   getFundsApproved,
 } from '../utils.ts'
 import {
-  EnterpriseDataProps,
-  EnterpriseSubstanceDetails,
   EnterpriseData,
-} from '../../interfaces.ts'
+  EnterpriseSubstanceDetails,
+  EnterpriseFormProps,
+} from '../interfaces.ts'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -30,13 +32,13 @@ const EnterpriseCreate = ({
   mode,
   errors,
   ...rest
-}: EnterpriseDataProps & { mode: string }) => {
+}: EnterpriseFormProps & { mode: string }) => {
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
 
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { enterpriseData, setEnterpriseData, enterprise } = rest
+  const { enterprise, enterpriseData, setEnterpriseData } = rest
   const {
     overview,
     details,
@@ -96,6 +98,14 @@ const EnterpriseCreate = ({
 
   useEffect(() => {
     clearUpdatedFields()
+  }, [])
+
+  const { inlineMessage, setInlineMessage } = useStore(
+    (state) => state.inlineMessage,
+  )
+
+  useEffect(() => {
+    setInlineMessage(null)
   }, [])
 
   const setEnterpriseDataWithEditTracking = (
@@ -259,30 +269,34 @@ const EnterpriseCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-project-enterprise"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, label }) => (
-          <Tab key={id} id={id} aria-controls={id} label={label} />
-        ))}
-      </Tabs>
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="create-project-enterprise"
+          value={currentTab}
+          className="sectionsTabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          TabIndicatorProps={{
+            className: 'h-0',
+            style: { transitionDuration: '150ms' },
+          }}
+          onChange={(_, newValue) => {
+            setCurrentTab(newValue)
+          }}
+        >
+          {steps.map(({ id, label }) => (
+            <Tab key={id} id={id} aria-controls={id} label={label} />
+          ))}
+        </Tabs>
+        {!!enterprise && <EnterpriseDelete {...{ enterprise }} />}
+      </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
           .map(({ id, component, errors }) => (
             <span key={id}>
+              {!!inlineMessage && <ProjectsInlineMessage />}
               {errors && errors.length > 0 && (
                 <CustomAlert
                   type="error"
