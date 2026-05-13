@@ -434,12 +434,12 @@ class AnnualProjectReport(models.Model):
     )
 
     # Other derived fields
-    implementation_delays_status_report_decisions_denorm = models.CharField(
+    implementation_delays_status_report_decisions = models.CharField(
         max_length=500,
         null=True,
         blank=True,
-        verbose_name="Implementation Delays (denormalized)",
-        help_text="Implementation delays from status reports",
+        verbose_name="Implementation Delays/Status Report Decisions",
+        help_text="User-entered implementation delays or status report decisions",
     )
     date_of_completion_per_agreement_or_decisions_denorm = models.DateField(
         null=True,
@@ -734,11 +734,6 @@ class AnnualProjectReport(models.Model):
             self.support_cost_disbursed or 0
         )
 
-    @property
-    def implementation_delays_status_report_decisions(self):
-        # TODO: need to ask MLFS about this field
-        return ""
-
     DENORM_FIELDS = [
         "meta_code_denorm",
         "project_code_denorm",
@@ -764,7 +759,6 @@ class AnnualProjectReport(models.Model):
         "approved_funding_plus_adjustment_denorm",
         "support_cost_adjustment_denorm",
         "support_cost_approved_plus_adjustment_denorm",
-        "implementation_delays_status_report_decisions_denorm",
         "date_of_completion_per_agreement_or_decisions_denorm",
         "pcr_due_denorm",
     ]
@@ -855,9 +849,6 @@ class AnnualProjectReport(models.Model):
         )
 
         # Other computed fields
-        self.implementation_delays_status_report_decisions_denorm = (
-            self.implementation_delays_status_report_decisions
-        )
         self.date_of_completion_per_agreement_or_decisions_denorm = (
             self.date_of_completion_per_agreement_or_decisions
         )

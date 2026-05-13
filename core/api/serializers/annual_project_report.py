@@ -146,10 +146,8 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
 
     # Project financial data fields - derived (3)
     implementation_delays_status_report_decisions = serializers.CharField(
-        source="implementation_delays_status_report_decisions_denorm",
         allow_null=True,
         allow_blank=True,
-        read_only=True,
     )
     date_of_completion_per_agreement_or_decisions = serializers.DateField(
         source="date_of_completion_per_agreement_or_decisions_denorm",
@@ -276,7 +274,6 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "support_cost_adjustment",
             "support_cost_approved_plus_adjustment",
             "support_cost_balance",
-            "implementation_delays_status_report_decisions",
             "date_of_completion_per_agreement_or_decisions",
             # And the audit fields
             "created_at",
@@ -472,6 +469,9 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
     funds_advanced = serializers.FloatField(allow_null=True, required=False)
 
     # Narrative and indicator data fields - input
+    implementation_delays_status_report_decisions = serializers.CharField(
+        allow_null=True, allow_blank=True, required=False
+    )
     last_year_remarks = serializers.CharField(
         allow_null=True, allow_blank=True, required=False
     )
@@ -509,6 +509,7 @@ class AnnualProjectReportUpdateSerializer(serializers.ModelSerializer):
             "disbursements_made_to_final_beneficiaries",
             "funds_advanced",
             # Narrative and indicators data fields - input
+            "implementation_delays_status_report_decisions",
             "last_year_remarks",
             "current_year_remarks",
             "gender_policy",

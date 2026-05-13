@@ -638,10 +638,15 @@ export default function useGetColumnDefs({
     implementationDelays: {
       label: 'Implementation Delays/Status Report Decisions',
       fieldName: 'implementation_delays_status_report_decisions',
-      group: null,
-      input: false,
+      group: 'Narrative & Indicators Data Fields',
+      input: true,
       overrideOptions: {
         minWidth: 200,
+        cellDataType: 'text',
+        cellClass: 'ag-cell-ellipsed',
+        tooltipValueGetter: (params: any) => {
+          return params.valueFormatted ?? params.value
+        },
       },
     },
     dateCompletionPerAgreementOrDecision: {
