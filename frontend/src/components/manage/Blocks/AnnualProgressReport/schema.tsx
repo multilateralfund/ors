@@ -3,9 +3,9 @@ import { DataTypeDefinition, IHeaderParams } from 'ag-grid-community'
 import {
   formatBoolean,
   formatDate,
-  formatDecimal,
+  formatFunding,
+  formatOneDecimal,
   formatPercent,
-  formatUSD,
   parseDate,
 } from '@ors/components/manage/Blocks/AnnualProgressReport/utils.ts'
 import { useStore } from '@ors/store.tsx'
@@ -62,7 +62,7 @@ export const dataTypeDefinitions: Record<
   currency: {
     baseDataType: 'number',
     extendsDataType: 'number',
-    valueFormatter: (params) => formatUSD(params.value),
+    valueFormatter: (params) => formatFunding(params.value),
     validators: [validateNumber],
   },
   percent: {
@@ -74,7 +74,7 @@ export const dataTypeDefinitions: Record<
   decimal: {
     baseDataType: 'number',
     extendsDataType: 'number',
-    valueFormatter: (params) => formatDecimal(params.value),
+    valueFormatter: (params) => formatOneDecimal(params.value),
     validators: [validateNumber],
   },
   boolean: {
@@ -339,6 +339,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         autoHeaderHeight: true,
       },
     },
@@ -372,6 +373,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         autoHeaderHeight: true,
       },
     },
@@ -409,6 +411,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         cellEditorParams: {
           allowNullVals: true,
         },
@@ -448,6 +451,7 @@ export default function useGetColumnDefs({
       overrideOptions: {
         minWidth: 200,
         cellDataType: 'decimal',
+        valueFormatter: (params) => formatFunding(params.value),
         cellEditorParams: {
           allowNullVals: true,
         },

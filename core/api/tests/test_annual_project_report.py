@@ -5980,3 +5980,54 @@ class TestAPREndorseProjectVersioning:
 
         assert response.status_code == status.HTTP_200_OK
         mock_task.delay.assert_called_once_with(annual_progress_report.id)
+
+
+@pytest.mark.django_db
+class TestAPRExportNumberFormats:
+    """Verify cell number_format values for funding, ODP/MT, and CO2 columns."""
+
+    ws = None
+    col_map: dict = {}
+
+    @pytest.fixture(autouse=True)
+    def _setup_workbook(self, request):
+        col_map = APRExportWriter.build_column_mapping()
+        report_data = {field: None for field in col_map}
+        report_data["approved_funding"] = 100000.0
+        report_data["funds_disbursed"] = 50000.0
+        report_data["consumption_phased_out_odp"] = 1.5
+        report_data["consumption_phased_out_mt"] = 2.3
+        report_data["consumption_phased_out_co2"] = 1000.0
+        writer = APRExportWriter(
+            year=2024,
+            agency_name="Test Agency",
+            project_reports_data=[report_data],
+        )
+        writer._build_workbook()  # pylint: disable=protected-access
+        request.cls.ws = writer.worksheet
+        request.cls.col_map = col_map
+
+    def test_funding_fields_have_no_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["approved_funding", "funds_disbursed", "balance"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert (
+                fmt == "#,##0"
+            ), f"Funding field '{field}' expected '#,##0', got '{fmt}'"
+
+    def test_odp_mt_fields_have_one_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["consumption_phased_out_odp", "consumption_phased_out_mt"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert (
+                fmt == "#,##0.0"
+            ), f"ODP/MT field '{field}' expected '#,##0.0', got '{fmt}'"
+
+    def test_co2_fields_have_no_decimal_format(self):
+        row = APRExportWriter.FIRST_DATA_ROW
+        for field in ["consumption_phased_out_co2", "production_phased_out_co2"]:
+            col = self.col_map[field]
+            fmt = self.ws.cell(row, col).number_format
+            assert fmt == "#,##0", f"CO2 field '{field}' expected '#,##0', got '{fmt}'"
