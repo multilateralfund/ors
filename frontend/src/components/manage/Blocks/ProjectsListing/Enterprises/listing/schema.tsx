@@ -6,6 +6,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { enterpriseFieldsMapping } from '../constants'
 import { formatNumberColumns } from '../../utils'
+import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
@@ -22,6 +23,12 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
   const { countries, agencies, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
   const { statuses } = useContext(EnterprisesDataContext)
+
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+
+  const getMeetingNr = (meeting_id: number) =>
+    find(meetings, (option) => option.id === meeting_id)?.number
 
   const getFieldValue = (
     params: ValueGetterParams | ITooltipParams,
@@ -144,7 +151,10 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
       {
         headerName: enterpriseFieldsMapping.meeting,
         field: 'meeting',
-        tooltipField: 'meeting',
+        valueGetter: (params: ValueGetterParams) =>
+          getMeetingNr(params.data.meeting ?? undefined),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getMeetingNr(params.data.meeting ?? undefined),
       },
       {
         headerName: enterpriseFieldsMapping.local_ownership,

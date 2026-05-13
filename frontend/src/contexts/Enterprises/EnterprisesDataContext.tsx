@@ -1,9 +1,10 @@
 import { createContext } from 'react'
 
-import { StatusType } from '@ors/components/manage/Blocks/ProjectsListing/Enterprises/interfaces'
-
 interface EnterprisesDataContextProps {
-  statuses: StatusType[]
+  statuses: {
+    id: number
+    name: string
+  }[]
 }
 
 const EnterprisesDataContext = createContext<EnterprisesDataContextProps>(

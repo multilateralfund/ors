@@ -5,9 +5,6 @@ import DeleteEnterpriseModal from './DeleteEnterpriseModal'
 import getColumnDefs from './schema'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'
-import { api } from '@ors/helpers'
-
-import { enqueueSnackbar } from 'notistack'
 
 const EnterprisesTable = ({
   enterprises,
@@ -22,22 +19,6 @@ const EnterprisesTable = ({
 
   const { columnDefs, defaultColDef } = getColumnDefs(setIdToDelete)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 500)
-
-  const handleDeleteEnterprise = async () => {
-    try {
-      await api(`api/enterprises/${idToDelete}`, {
-        method: 'DELETE',
-      })
-
-      setParams((prev: any) => ({ ...prev }))
-    } catch (error) {
-      enqueueSnackbar(<>Could not delete enterprise. Please try again.</>, {
-        variant: 'error',
-      })
-    } finally {
-      setIdToDelete(null)
-    }
-  }
 
   return (
     <>
@@ -84,8 +65,8 @@ const EnterprisesTable = ({
       )}
       {idToDelete && (
         <DeleteEnterpriseModal
-          {...{ idToDelete, setIdToDelete }}
-          onAction={handleDeleteEnterprise}
+          mode="listing"
+          {...{ idToDelete, setIdToDelete, setParams }}
         />
       )}
     </>

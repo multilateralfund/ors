@@ -1,15 +1,19 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterpriseOverviewSection from '../viewTabs/EnterpriseOverviewSection'
 import EnterpriseDetailsSection from '../viewTabs/EnterpriseDetailsSection'
 import EnterpriseSubstanceDetailsSection from '../viewTabs/EnterpriseSubstanceDetailsSection'
 import EnterpriseFundingDetailsSection from '../viewTabs/EnterpriseFundingDetailsSection'
 import EnterpriseRemarksSection from '../viewTabs/EnterpriseRemarksSection'
-import { EnterpriseType } from '../../interfaces'
+import EnterpriseDelete from './EnterpriseDelete'
+import { EnterpriseType } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
 const EnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
+  const { canEditEnterprise } = useContext(PermissionsContext)
+
   const [activeTab, setActiveTab] = useState(0)
 
   const tabs = [
@@ -62,6 +66,7 @@ const EnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
             <Tab key={id} id={id} aria-controls={id} label={label} />
           ))}
         </Tabs>
+        {canEditEnterprise && <EnterpriseDelete {...{ enterprise }} />}
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs

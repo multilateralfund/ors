@@ -6,7 +6,7 @@ import {
 } from '../../ProjectView/ViewHelperComponents'
 import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseType } from '../interfaces'
 
 import { map } from 'lodash'
 
@@ -30,18 +30,6 @@ const EnterpriseDetailsSection = ({
     </div>
     {detailItem(enterpriseFieldsMapping.application, enterprise.application)}
     <div className={viewColumnsClassName}>
-      {detailItem(enterpriseFieldsMapping.stage, enterprise.stage)}
-      {numberDetailItem(
-        enterpriseFieldsMapping.revision_number,
-        enterprise.revision_number as string,
-        'integer',
-      )}
-      {dateDetailItem(
-        enterpriseFieldsMapping.date_of_revision,
-        enterprise.date_of_revision as string,
-      )}
-    </div>
-    <div className={viewColumnsClassName}>
       {map(detailsDateFields.slice(0, 2), (field, index) => (
         <div key={index}>
           {dateDetailItem(
@@ -54,6 +42,18 @@ const EnterpriseDetailsSection = ({
         enterpriseFieldsMapping.project_duration,
         enterprise.project_duration as string,
         'integer',
+      )}
+    </div>
+    <div className={viewColumnsClassName}>
+      {detailItem(enterpriseFieldsMapping.stage, enterprise.stage)}
+      {numberDetailItem(
+        enterpriseFieldsMapping.revision_number,
+        enterprise.revision_number as string,
+        'integer',
+      )}
+      {dateDetailItem(
+        enterpriseFieldsMapping.date_of_revision,
+        enterprise.date_of_revision as string,
       )}
     </div>
     <div className={viewColumnsClassName}>

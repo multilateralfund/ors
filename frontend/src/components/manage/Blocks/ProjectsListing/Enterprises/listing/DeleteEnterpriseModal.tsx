@@ -1,25 +1,68 @@
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton } from '../../HelperComponents'
+import { api } from '@ors/helpers'
 
 import { Typography, Box, Modal } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 
 const DeleteEnterpriseModal = ({
+  mode,
   idToDelete,
   setIdToDelete,
-  onAction,
+  setParams,
+  showWarning,
+  setShowWarning,
 }: {
+  mode: string
   idToDelete: number | null
-  setIdToDelete: (id: number | null) => void
-  onAction: () => Promise<void>
+  setIdToDelete?: (id: number | null) => void
+  setParams?: any
+  showWarning?: boolean
+  setShowWarning?: (showWarning: boolean) => void
 }) => {
+  const [_, setLocation] = useLocation()
+
+  const isViewMode = mode === 'view'
+
+  const handleDeleteEnterprise = async () => {
+    try {
+      await api(`api/enterprises/${idToDelete}`, {
+        method: 'DELETE',
+      })
+
+      enqueueSnackbar(<>Deleted enterprise successfully.</>, {
+        variant: 'success',
+      })
+
+      if (isViewMode) {
+        setLocation('/projects-listing/enterprises')
+      } else {
+        setParams?.((prev: any) => ({ ...prev }))
+      }
+    } catch (error) {
+      enqueueSnackbar(<>Could not delete enterprise. Please try again.</>, {
+        variant: 'error',
+      })
+    } finally {
+      if (!isViewMode) {
+        setIdToDelete?.(null)
+      }
+    }
+  }
+
   const handleCloseModal = () => {
-    setIdToDelete(null)
+    if (isViewMode) {
+      setShowWarning?.(false)
+    } else {
+      setIdToDelete?.(null)
+    }
   }
 
   return (
     <Modal
       aria-labelledby="delete-enterprise-modal"
-      open={!!idToDelete}
+      open={isViewMode ? !!showWarning : !!idToDelete}
       onClose={handleCloseModal}
       keepMounted
     >
@@ -33,7 +76,7 @@ const DeleteEnterpriseModal = ({
         <div className="mr-3 flex flex-wrap justify-end gap-3">
           <CustomLink
             className="h-10 px-4 py-2 text-lg uppercase"
-            onClick={onAction}
+            onClick={handleDeleteEnterprise}
             href={null}
             color="secondary"
             variant="contained"

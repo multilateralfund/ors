@@ -3,8 +3,7 @@ import { useContext, useState } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import EnterpriseHeader from './EnterpriseHeader.tsx'
 import EnterpriseCreate from './EnterpriseCreate.tsx'
-import ProjectFormFooter from '../../ProjectFormFooter.tsx'
-import { EnterpriseData } from '../../interfaces.ts'
+import { EnterpriseData } from '../interfaces.ts'
 import {
   initialOverviewFields,
   initialDetailsFields,
@@ -30,11 +29,7 @@ const EnterpriseCreateWrapper = () => {
     funding_details: initialFundingDetailsFields,
     remarks: initialRemarksFields,
   })
-  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
-  const [otherErrors, setOtherErrors] = useState<string>('')
-  const nonFieldsErrors = errors?.['non_field_errors'] || []
 
   if (!canEditEnterprise) {
     return <Redirect to="/projects-listing/enterprises" />
@@ -46,9 +41,7 @@ const EnterpriseCreateWrapper = () => {
         mode="add"
         {...{
           enterpriseData,
-          setEnterpriseId,
           setErrors,
-          setOtherErrors,
         }}
       />
       <EnterpriseCreate
@@ -58,13 +51,6 @@ const EnterpriseCreateWrapper = () => {
           setEnterpriseData,
           errors,
         }}
-      />
-      <ProjectFormFooter
-        id={enterpriseId}
-        href={`/projects-listing/enterprises/${enterpriseId}`}
-        successMessage="Enterprise was created successfully."
-        successRedirectMessage="View enterprise."
-        {...{ nonFieldsErrors, otherErrors }}
       />
     </>
   )
