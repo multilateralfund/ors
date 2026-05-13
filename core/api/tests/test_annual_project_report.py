@@ -697,6 +697,63 @@ class TestAPRBulkUpdateView(BaseTest):
         assert annual_project_report.funds_disbursed == 50000.0
         assert annual_project_report.consumption_phased_out_odp == 25.5
 
+    def test_bulk_update_implementation_delays_field(
+        self,
+        apr_agency_inputter_user,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+
+        delay_text = "Decision 88/1 - extended to Q2 next year"
+        update_data = {
+            "project_reports": [
+                {
+                    "project_code": annual_project_report.project.code,
+                    "implementation_delays_status_report_decisions": delay_text,
+                }
+            ]
+        }
+
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+        response = self.client.post(url, update_data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["updated_count"] == 1
+        assert response.data["error_count"] == 0
+
+        annual_project_report.refresh_from_db()
+        assert (
+            annual_project_report.implementation_delays_status_report_decisions
+            == delay_text
+        )
+
+        # Also verify the GET response returns the saved value
+        workspace_url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        get_response = self.client.get(workspace_url)
+        assert get_response.status_code == status.HTTP_200_OK
+        project_data = next(
+            (
+                p
+                for p in get_response.data["project_reports"]
+                if p["project_code"] == annual_project_report.project.code
+            ),
+            None,
+        )
+        assert project_data is not None
+        assert (
+            project_data["implementation_delays_status_report_decisions"] == delay_text
+        )
+
 
 @pytest.mark.django_db
 class TestAPRFileUploadView(BaseTest):
@@ -5097,8 +5154,8 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         )
         assert project_data is not None
 
-        # This field is currently hardcoded to return an empty string
-        assert project_data["implementation_delays_status_report_decisions"] == ""
+        # Field defaults to None when not explicitly set
+        assert project_data["implementation_delays_status_report_decisions"] is None
 
     def test_derived_fields_with_no_version_3(
         self,
