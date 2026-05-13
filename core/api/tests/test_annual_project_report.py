@@ -5672,6 +5672,58 @@ class TestSyncAprFromProjectsTask:
         assert apr_a.project_title_denorm == "New A"
         assert apr_b.project_title_denorm == "New B"
 
+    def test_endorsed_apr_is_skipped(self, annual_agency_report, annual_project_report):
+        progress_report = annual_agency_report.progress_report
+        progress_report.endorsed = True
+        progress_report.save(update_fields=["endorsed"])
+
+        result = sync_apr_from_projects(progress_report.year)
+
+        assert result["updated_count"] == 0
+        assert result["changed_count"] == 0
+        assert result["added_count"] == 0
+
+    def test_new_project_added_by_sync(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        project_ongoing_status,
+    ):
+        # Create a new project that was approved after the APR was initialized,
+        # so it has no AnnualProjectReport row yet.
+        new_project = ProjectFactory(
+            agency=annual_agency_report.agency,
+            status=project_ongoing_status,
+            version=3,
+            date_approved=date(annual_agency_report.progress_report.year, 1, 15),
+        )
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["added_count"] == 1
+        assert AnnualProjectReport.objects.filter(
+            report=annual_agency_report,
+            project=new_project,
+        ).exists()
+
+    def test_closed_project_not_added_by_sync(
+        self,
+        annual_agency_report,
+        annual_project_report,
+        project_closed_status,
+    ):
+        # A project that became closed after the APR was created should not be added.
+        ProjectFactory(
+            agency=annual_agency_report.agency,
+            status=project_closed_status,
+            version=3,
+            date_approved=date(annual_agency_report.progress_report.year, 1, 15),
+        )
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["added_count"] == 0
+
 
 @pytest.mark.django_db
 class TestAPREndorseProjectVersioning:
