@@ -77,7 +77,7 @@ const EnterpriseOverviewSection = ({
           {...{ field, sectionIdentifier, ...rest }}
         />
       ))}
-      <div className="flex flex-wrap gap-x-28 gap-y-2">
+      <div className="flex flex-wrap gap-x-20 gap-y-2">
         {map(selectFields.slice(2, 5), (field, index) => (
           <EnterpriseSelectField
             key={index}

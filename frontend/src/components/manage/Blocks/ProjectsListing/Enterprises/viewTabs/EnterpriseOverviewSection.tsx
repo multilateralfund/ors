@@ -36,8 +36,8 @@ const EnterpriseOverviewSection = ({
         {detailItem(enterpriseFieldsMapping.country, country)}
         {detailItem(enterpriseFieldsMapping.agency, agency)}
       </div>
-      {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
       {detailItem(enterpriseFieldsMapping.city, enterprise.city)}
+      {detailItem(enterpriseFieldsMapping.location, enterprise.location)}
       <div className={viewColumnsClassName}>
         {detailItem(enterpriseFieldsMapping.project_type, project_type)}
         {detailItem(enterpriseFieldsMapping.sector, sector)}

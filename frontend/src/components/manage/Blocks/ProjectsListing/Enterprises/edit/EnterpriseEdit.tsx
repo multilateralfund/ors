@@ -30,8 +30,8 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         name: enterprise.name,
         country: enterprise.country,
         agency: enterprise.agency,
-        location: enterprise.location,
         city: enterprise.city,
+        location: enterprise.location,
         project_type: enterprise.project_type,
         sector: enterprise.sector,
         subsector: enterprise.subsector,
@@ -41,12 +41,12 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         local_ownership: getFormattedDecimalValue(enterprise.local_ownership),
         export_to_non_a5: getFormattedDecimalValue(enterprise.export_to_non_a5),
         application: enterprise.application,
-        stage: enterprise.stage,
-        revision_number: enterprise.revision_number,
-        date_of_revision: enterprise.date_of_revision,
         planned_completion_date: enterprise.planned_completion_date,
         actual_completion_date: enterprise.actual_completion_date,
         project_duration: enterprise.project_duration,
+        stage: enterprise.stage,
+        revision_number: enterprise.revision_number,
+        date_of_revision: enterprise.date_of_revision,
         date_of_approval: enterprise.date_of_approval,
         meeting: enterprise.meeting,
         excom_provision: enterprise.excom_provision,
@@ -66,16 +66,16 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         operating_cost_approved: getFormattedDecimalValue(
           enterprise.operating_cost_approved,
         ),
-        funds_disbursed: getFormattedDecimalValue(enterprise.funds_disbursed),
         funds_approved: getFormattedDecimalValue(enterprise.funds_approved),
         cost_effectiveness_approved: getFormattedDecimalValue(
           enterprise.cost_effectiveness_approved,
         ),
-        funds_transferred: getFormattedDecimalValue(
-          enterprise.funds_transferred,
-        ),
         cost_effectiveness_actual: getFormattedDecimalValue(
           enterprise.cost_effectiveness_actual,
+        ),
+        funds_disbursed: getFormattedDecimalValue(enterprise.funds_disbursed),
+        funds_transferred: getFormattedDecimalValue(
+          enterprise.funds_transferred,
         ),
         capital_cost_disbursed: getFormattedDecimalValue(
           enterprise.capital_cost_disbursed,

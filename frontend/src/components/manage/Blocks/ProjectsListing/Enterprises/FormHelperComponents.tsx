@@ -136,13 +136,8 @@ export const EnterpriseSelectField = ({
   sectionIdentifier,
   isDisabled,
   errors,
-}: {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: SetEnterpriseData
+}: Omit<EnterpriseFieldsProps, 'field'> & {
   field: { fieldName: string; options: any }
-  sectionIdentifier: keyof EnterpriseData
-  errors: { [key: string]: string[] }
-  isDisabled?: boolean
 }) => {
   const { fieldName, options } = field
 
@@ -176,11 +171,7 @@ export const EnterpriseSelectField = ({
             },
           })}
         />
-        <div
-          className={cx({
-            'w-8': fieldName === 'country',
-          })}
-        >
+        <div className="w-8">
           <FieldErrorIndicator field={fieldName} {...{ errors }} />
         </div>
       </div>

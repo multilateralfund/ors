@@ -23,7 +23,6 @@ const EnterpriseFundingDetailsSection = ({
         enterpriseFieldsMapping.operating_cost_approved,
         enterprise.operating_cost_approved,
       ],
-      [enterpriseFieldsMapping.funds_disbursed, enterprise.funds_disbursed],
     ],
     [
       [
@@ -34,13 +33,14 @@ const EnterpriseFundingDetailsSection = ({
         formatFieldName(enterpriseFieldsMapping.cost_effectiveness_approved),
         enterprise.cost_effectiveness_approved,
       ],
-    ],
-    [
-      [enterpriseFieldsMapping.funds_transferred, enterprise.funds_transferred],
       [
         enterpriseFieldsMapping.cost_effectiveness_actual,
         enterprise.cost_effectiveness_actual,
       ],
+    ],
+    [
+      [enterpriseFieldsMapping.funds_disbursed, enterprise.funds_disbursed],
+      [enterpriseFieldsMapping.funds_transferred, enterprise.funds_transferred],
     ],
     [
       [
