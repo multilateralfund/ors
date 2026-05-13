@@ -635,6 +635,17 @@ export default function useGetColumnDefs({
         },
       },
     },
+    dateCompletionPerAgreementOrDecision: {
+      label: 'Date of Completion per Agreements or per Decisions',
+      fieldName: 'date_of_completion_per_agreement_or_decisions',
+      group: null,
+      input: false,
+      overrideOptions: {
+        minWidth: 160,
+        cellDataType: 'dateString',
+      },
+    },
+    // Narrative & Indicators Data Fields
     implementationDelays: {
       label: 'Implementation Delays/Status Report Decisions',
       fieldName: 'implementation_delays_status_report_decisions',
@@ -649,17 +660,6 @@ export default function useGetColumnDefs({
         },
       },
     },
-    dateCompletionPerAgreementOrDecision: {
-      label: 'Date of Completion per Agreements or per Decisions',
-      fieldName: 'date_of_completion_per_agreement_or_decisions',
-      group: null,
-      input: false,
-      overrideOptions: {
-        minWidth: 160,
-        cellDataType: 'dateString',
-      },
-    },
-    // Narrative & Indicators Data Fields
     remarksLastYear: {
       label: `Remarks (as of 31 December ${parseInt(year, 10) - 1})`,
       fieldName: 'last_year_remarks',
