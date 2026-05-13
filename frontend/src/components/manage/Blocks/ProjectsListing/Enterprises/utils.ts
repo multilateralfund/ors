@@ -226,3 +226,8 @@ export const getCostEffectivenessApproved = (
 
 export const getFormattedDecimalValue = (value: string | null) =>
   !isNil(value) ? Number(value).toFixed(10).toString() : value
+
+export const getIsAgencyUser = (
+  canViewOnlyOwnAgency: boolean,
+  agency_id: number | undefined,
+) => canViewOnlyOwnAgency && !!agency_id

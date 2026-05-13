@@ -2,12 +2,14 @@ import { useContext } from 'react'
 
 import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseTextField,
   EnterpriseSelectField,
 } from '../FormHelperComponents'
 import useGetEnterpriseFieldsOpts from '../../hooks/useGetEnterpriseFieldsOpts'
 import { EnterpriseFormProps } from '../interfaces'
+import { getIsAgencyUser } from '../utils'
 import { textFields } from '../constants'
 import { useStore } from '@ors/store'
 
@@ -22,8 +24,12 @@ const EnterpriseOverviewSection = ({
 }) => {
   const sectionIdentifier = 'overview'
 
+  const { canViewOnlyOwnAgency } = useContext(PermissionsContext)
+
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+
+  const isAgencyUser = getIsAgencyUser(canViewOnlyOwnAgency, agency_id)
 
   const { enterpriseData, setEnterpriseData } = rest
 
@@ -42,7 +48,7 @@ const EnterpriseOverviewSection = ({
       options: countries,
       isDisabled: mode === 'edit' && !!enterprise?.country,
     },
-    { fieldName: 'agency', options: agencies, isDisabled: !!agency_id },
+    { fieldName: 'agency', options: agencies, isDisabled: isAgencyUser },
     { fieldName: 'project_type', options: project_types },
     { fieldName: 'sector', options: sectors },
     { fieldName: 'subsector', options: subsectors },
