@@ -5981,6 +5981,7 @@ class TestAPREndorseProjectVersioning:
         assert response.status_code == status.HTTP_200_OK
         mock_task.delay.assert_called_once_with(annual_progress_report.id)
 
+
 @pytest.mark.django_db
 class TestAPRExportNumberFormats:
     """Verify cell number_format values for funding, ODP/MT, and CO2 columns."""
