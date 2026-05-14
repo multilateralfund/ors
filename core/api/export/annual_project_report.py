@@ -242,11 +242,11 @@ class APRExportWriter:
         else:
             self.status_worksheet = self.workbook.create_sheet(self.STATUS_SHEET_NAME)
 
-        statuses = ProjectStatus.objects.all().order_by("name")
+        statuses = ProjectStatus.objects.exclude(code="NA").order_by("code")
 
         # Write the status names to the sheet (one per row, in column A)
         for idx, status in enumerate(statuses, start=1):
-            self.status_worksheet.cell(row=idx, column=1, value=status.name)
+            self.status_worksheet.cell(row=idx, column=1, value=status.code)
 
     def _write_data_rows(self):
         """Write all project report data to the worksheet."""
