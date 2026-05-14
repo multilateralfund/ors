@@ -1054,7 +1054,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return sum(candidate_values)
 
     def calc_sum_interest(self, project):
-        prev_versions = self.get_all_previous_versions(project)
+        prev_versions = self.get_all_previous_versions(project) + [project]
         candidate_values = [p.interest or 0 for p in prev_versions]
         return sum(candidate_values)
 
