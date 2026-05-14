@@ -5763,13 +5763,14 @@ class TestSyncAprFromProjectsTask:
             project=new_project,
         ).exists()
 
-    def test_closed_project_not_added_by_sync(
+    def test_closed_project_added_by_sync(
         self,
         annual_agency_report,
         annual_project_report,
         project_closed_status,
     ):
-        # A project that became closed after the APR was created should not be added.
+        # A project that became closed after the APR was created should still be added;
+        # all statuses are included in the APR workspace.
         ProjectFactory(
             agency=annual_agency_report.agency,
             status=project_closed_status,
@@ -5779,7 +5780,7 @@ class TestSyncAprFromProjectsTask:
 
         result = sync_apr_from_projects(annual_agency_report.progress_report.year)
 
-        assert result["added_count"] == 0
+        assert result["added_count"] == 1
 
 
 @pytest.mark.django_db

@@ -767,7 +767,7 @@ def sync_apr_from_projects(year):
             .order_by("code")
         )
         filterset = APRProjectFilter(
-            data={"year": year, "agency": agency.id, "status": "ONG,COM"},
+            data={"year": year, "agency": agency.id},
             queryset=projects_queryset,
         )
         new_projects = [p for p in filterset.qs if p.id not in existing_project_ids]
