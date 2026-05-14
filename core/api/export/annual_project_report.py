@@ -538,6 +538,7 @@ class APRSummaryTablesExportWriter:
             "project__sector",
             "project__status",
             "project__project_type",
+            "main_region",
             "report",
             "report__progress_report",
         )
@@ -1166,7 +1167,7 @@ class APRSummaryTablesExportWriter:
         region_items = list(
             self._compute_grouped_data(
                 records,
-                "project__country__parent__name",
+                "main_region__name",
                 include_odp_co2,
                 sheet_type,
             )

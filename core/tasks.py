@@ -612,11 +612,14 @@ def sync_apr_from_projects(year):
             "project",
             "project__agency",
             "project__cluster",
+            "project__country",
             "project__country__parent",
+            "project__country__parent__parent",
             "project__sector",
             "project__project_type",
             "project__status",
             "project__post_excom_decision__meeting",
+            "main_region",
             "report__progress_report",
         )
     )
@@ -751,6 +754,8 @@ def sync_apr_from_projects(year):
             )
             .select_related(
                 "country",
+                "country__parent",
+                "country__parent__parent",
                 "agency",
                 "sector",
                 "project_type",

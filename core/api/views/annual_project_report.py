@@ -251,6 +251,8 @@ class APRWorkspaceView(RetrieveAPIView):
                 )
                 .select_related(
                     "country",
+                    "country__parent",
+                    "country__parent__parent",
                     "agency",
                     "sector",
                     "project_type",

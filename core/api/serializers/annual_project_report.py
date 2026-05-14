@@ -36,7 +36,10 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         source="cluster_name_denorm", read_only=True, allow_null=True
     )
     region_name = serializers.CharField(
-        source="region_name_denorm", read_only=True, allow_null=True
+        source="main_region.name", read_only=True, allow_null=True
+    )
+    region_abbr = serializers.CharField(
+        source="main_region.abbr", read_only=True, allow_null=True
     )
     country_name = serializers.CharField(source="country_name_denorm", read_only=True)
     type_code = serializers.CharField(source="type_code_denorm", read_only=True)
@@ -236,6 +239,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
         api_only_fields = [
             "id",
             "project_id",
+            "region_abbr",
             # Audit
             "created_at",
             "updated_at",
@@ -253,6 +257,7 @@ class AnnualProjectReportReadSerializer(serializers.ModelSerializer):
             "agency_name",
             "cluster_name",
             "region_name",
+            "region_abbr",
             "country_name",
             "type_code",
             "sector_code",
