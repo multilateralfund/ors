@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from celery.result import AsyncResult
 from constance import config
 from django.db import transaction, models
+from django.utils import timezone
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
@@ -63,6 +64,7 @@ from core.models import (
     Project,
 )
 from core.tasks import (
+    auto_submit_empty_agency_reports,
     send_agency_submission_notification,
     sync_apr_from_projects,
     update_project_statuses_after_apr_endorsement,
@@ -291,6 +293,17 @@ class APRWorkspaceView(RetrieveAPIView):
                 if created or project_report.meta_code_denorm is None:
                     project_report.populate_derived_fields()
                     project_report.save()
+
+            # Fallback: if this agency has no reportable projects, auto-submit their
+            # report so endorsement is never blocked waiting for them to act.
+            if agency_report.project_reports.count() == 0:
+                agency_report.status = (
+                    AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+                )
+                agency_report.submitted_at = timezone.now()
+                agency_report.save(
+                    update_fields=["status", "submitted_at", "updated_at"]
+                )
 
         # Refetch the agency report using the optimized queryset - with prefetches
         return self.get_queryset().get(pk=agency_report.pk)
@@ -1021,6 +1034,9 @@ class APRKickStartView(APIView):
                 remarks_endorsed="",
                 created_by=request.user,
             )
+
+        # Auto-submit APRs for agencies that have no ONG/COM projects for this year
+        auto_submit_empty_agency_reports.delay(progress_report.year)
 
         response_data = {
             "year": progress_report.year,
