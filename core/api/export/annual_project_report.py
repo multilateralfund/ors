@@ -171,6 +171,7 @@ class APRExportWriter:
         self.status_worksheet = None
         self.column_mapping = self.build_column_mapping()
         self.status_column_idx = None
+        self._status_name_to_code = {}
 
         # Find the status column index
         for field, idx in self.column_mapping.items():
@@ -253,9 +254,12 @@ class APRExportWriter:
         else:
             self.status_worksheet = self.workbook.create_sheet(self.STATUS_SHEET_NAME)
 
-        statuses = ProjectStatus.objects.exclude(code="NA").order_by("code")
+        statuses = list(ProjectStatus.objects.exclude(code="NA").order_by("code"))
 
-        # Write the status names to the sheet (one per row, in column A)
+        # Build a name→code lookup used when writing data rows
+        self._status_name_to_code = {s.name: s.code for s in statuses}
+
+        # Write the status codes to the sheet (one per row, in column A)
         for idx, status in enumerate(statuses, start=1):
             self.status_worksheet.cell(row=idx, column=1, value=status.code)
 
@@ -353,6 +357,10 @@ class APRExportWriter:
             if value in (False, 0, "0"):
                 return "No"
             return ""
+
+        # Handle status field - convert stored name to code for dropdown compatibility
+        if field_name == "status":
+            return self._status_name_to_code.get(value, value)
 
         # Handle date fields - convert to date object for Excel
         if field_name in self.DATE_FIELDS:
