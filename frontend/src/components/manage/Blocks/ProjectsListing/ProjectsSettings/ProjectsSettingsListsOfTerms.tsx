@@ -10,9 +10,6 @@ const ProjectsSettingsListsOfTerms = () => {
       <h2 className="mt-2 text-3xl">
         Management of values for the pick lists used in the IA/BA portal
       </h2>
-      <h3 className="mt-2 text-3xl">
-        A) Fields with values configurable from the admin interface.
-      </h3>
       <p>
         Although some data can be changed (rows added, edited or deleted) from
         the Django administration area (<a className="italic text-inherit"
@@ -40,6 +37,9 @@ const ProjectsSettingsListsOfTerms = () => {
         clear image of the database and are not aware of the impacts of the
         respective fields and values.
       </p>
+      <h3 className="mt-2 text-3xl">
+        A) Fields with values configurable from the admin interface.
+      </h3>
       <p>
         <strong className="text-[#0095D5]">Agencies:</strong>
         the value "China (FECO)" is excluded from Business Plans. Values "China
@@ -314,8 +314,8 @@ const ProjectsSettingsListsOfTerms = () => {
         </li>
       </ul>
       <p>
-        After adding a value from one of the tables above, add it to the
-        combination of fields in the table{' '}
+        After adding a value from one of the tables above, add as many records as needed to the
+        combination of fields in the table
         <a
           className="italic text-inherit"
           target="_blank"
@@ -323,8 +323,13 @@ const ProjectsSettingsListsOfTerms = () => {
           href={formatApiUrl('/admin/core/projectspecificfields/')}
         >
           /admin/core/projectspecificfields/
-        </a>
+        </a> by selecting from the coresponding lists a cluster, a type and a sector, as wel as the 
+        combination of project specific fields that should be displayed on the project view/add/edit forms.
+        Some of the project specific fields are common for all project types and will be displayed
+        even if they are not selected from this list (e.g. country, agency, project dates). 
       </p>
+      <img src="/images/projects/project_association_fields.jpg" className="h-[350px]" />
+
 
       <h3 className="mt-2 text-3xl">
         C) Fields that cannot be changed in the Master Database

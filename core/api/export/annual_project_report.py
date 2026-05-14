@@ -171,6 +171,7 @@ class APRExportWriter:
         self.status_worksheet = None
         self.column_mapping = self.build_column_mapping()
         self.status_column_idx = None
+        self._status_name_to_code = {}
 
         # Find the status column index
         for field, idx in self.column_mapping.items():
@@ -187,6 +188,9 @@ class APRExportWriter:
         self._remove_hidden_sheets()
         self._remove_extra_columns()
         self._create_status_sheet()
+
+        # Update dynamic column headers (e.g. year-dependent labels)
+        self._update_dynamic_headers()
 
         # Write data rows
         self._write_data_rows()
@@ -205,6 +209,14 @@ class APRExportWriter:
         """Generate the Excel file and save it to the given file path."""
         self._build_workbook()
         self.workbook.save(filepath)
+
+    def _update_dynamic_headers(self):
+        """Updates column headers that depend on the reporting year."""
+        if self.year and "last_year_remarks" in self.column_mapping:
+            col_idx = self.column_mapping["last_year_remarks"]
+            self.worksheet.cell(self.HEADER_ROW, col_idx).value = (
+                f"Remarks (as of 31 December {self.year - 1})"
+            )
 
     def _remove_hidden_sheets(self):
         """
@@ -242,11 +254,14 @@ class APRExportWriter:
         else:
             self.status_worksheet = self.workbook.create_sheet(self.STATUS_SHEET_NAME)
 
-        statuses = ProjectStatus.objects.all().order_by("name")
+        statuses = list(ProjectStatus.objects.exclude(code="NA").order_by("code"))
 
-        # Write the status names to the sheet (one per row, in column A)
+        # Build a name→code lookup used when writing data rows
+        self._status_name_to_code = {s.name: s.code for s in statuses}
+
+        # Write the status codes to the sheet (one per row, in column A)
         for idx, status in enumerate(statuses, start=1):
-            self.status_worksheet.cell(row=idx, column=1, value=status.name)
+            self.status_worksheet.cell(row=idx, column=1, value=status.code)
 
     def _write_data_rows(self):
         """Write all project report data to the worksheet."""
@@ -342,6 +357,10 @@ class APRExportWriter:
             if value in (False, 0, "0"):
                 return "No"
             return ""
+
+        # Handle status field - convert stored name to code for dropdown compatibility
+        if field_name == "status":
+            return self._status_name_to_code.get(value, value)
 
         # Handle date fields - convert to date object for Excel
         if field_name in self.DATE_FIELDS:
