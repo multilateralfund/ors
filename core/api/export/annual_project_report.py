@@ -188,6 +188,9 @@ class APRExportWriter:
         self._remove_extra_columns()
         self._create_status_sheet()
 
+        # Update dynamic column headers (e.g. year-dependent labels)
+        self._update_dynamic_headers()
+
         # Write data rows
         self._write_data_rows()
 
@@ -205,6 +208,14 @@ class APRExportWriter:
         """Generate the Excel file and save it to the given file path."""
         self._build_workbook()
         self.workbook.save(filepath)
+
+    def _update_dynamic_headers(self):
+        """Updates column headers that depend on the reporting year."""
+        if self.year and "last_year_remarks" in self.column_mapping:
+            col_idx = self.column_mapping["last_year_remarks"]
+            self.worksheet.cell(self.HEADER_ROW, col_idx).value = (
+                f"Remarks (as of 31 December {self.year - 1})"
+            )
 
     def _remove_hidden_sheets(self):
         """
