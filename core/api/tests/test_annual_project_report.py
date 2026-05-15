@@ -3110,7 +3110,9 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         agency_report = AnnualAgencyProjectReport.objects.get(
             progress_report=annual_progress_report, agency=agency
         )
-        assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        assert (
+            agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
         assert agency_report.created_by == apr_agency_viewer_user
 
     def test_workspace_prepopulates_from_previous_year(
