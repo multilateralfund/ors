@@ -1,4 +1,5 @@
 import logging
+from datetime import date as date_type
 
 from django.conf import settings
 from django.db import models
@@ -528,22 +529,27 @@ class AnnualProjectReport(models.Model):
                 candidates.extend(self.project.cached_versions_for_year)
 
             # Add the final version itself if it matches the year__lte criteria
+            # In case we can't compare by post_excom_decision, we use date_approved
             if (
                 self.project.post_excom_decision
                 and self.project.post_excom_decision.meeting.date.year
                 <= self.report_year
+            ) or (
+                not self.project.post_excom_decision
+                and self.project.date_approved
+                and self.project.date_approved.year <= self.report_year
             ):
                 candidates.append(self.project)
 
+            def _version_sort_key(p):
+                # Some projects can be sorted by the decision, some by date_approved
+                if p.post_excom_decision:
+                    return (p.post_excom_decision.meeting.date, p.version)
+                return (p.date_approved or date_type.min, p.version)
+
             # Sort and return the latest
             if candidates:
-                candidates.sort(
-                    key=lambda p: (
-                        p.post_excom_decision.meeting.date,
-                        p.version,
-                    ),
-                    reverse=True,
-                )
+                candidates.sort(key=_version_sort_key, reverse=True)
                 return candidates[0]
             return None
 
