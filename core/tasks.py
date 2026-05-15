@@ -586,14 +586,17 @@ def sync_apr_from_projects(year):
     Only records whose values actually changed are written to the DB,
     so runs where the state has not actually changed are fast.
 
-    This runs in two phases:
-    - it first updates existing APRs based on changed Project data
-    - it then creates specific APRs for projects that have been approved *after*
-      the initial AnnualAgencyProjectReport has been created.
+    This runs in three phases:
+    - it first (Phase 0) deletes APR records for projects that no longer qualify
+      for the year (e.g. date_approved was explicitly set to a future year after the
+      APR record was first created)
+    - it then (Phase 1) updates existing APRs based on changed Project data
+    - it then (Phase 2) creates specific APRs for projects that have been approved
+      *after* the initial AnnualAgencyProjectReport has been created.
       If there is no AnnualAgencyProjectReport for a specific agency (e.g. the workspace
       has not been accessed yet), it will not create new AnnualProjectReport records.
     """
-    # pylint: disable=R0914
+    # pylint: disable=R0914,R0915
     progress_report = AnnualProgressReport.objects.get(year=year)
 
     if progress_report.endorsed:
@@ -601,6 +604,7 @@ def sync_apr_from_projects(year):
             "updated_count": 0,
             "changed_count": 0,
             "added_count": 0,
+            "deleted_count": 0,
             "agencies_count": 0,
             "message": f"APR for year {year} is already endorsed. No sync performed.",
         }
@@ -626,17 +630,61 @@ def sync_apr_from_projects(year):
             "updated_count": 0,
             "changed_count": 0,
             "added_count": 0,
+            "deleted_count": 0,
             "agencies_count": 0,
             "message": "No project reports to sync.",
         }
-
-    agencies_count = len({pr.report_id for pr in project_reports})
 
     # Build a map of existing project IDs per agency report from already-fetched data,
     # to avoid one DB query per agency in the second phase (project "pull") below.
     existing_by_report_id: dict[int, set[int]] = {}
     for pr in project_reports:
         existing_by_report_id.setdefault(pr.report_id, set()).add(pr.project_id)
+
+    # Phase 0: Delete APR records for projects that no longer qualify for this year.
+    # This handles cases where date_approved was updated after the APR record was
+    # initially created.
+    # A project qualifies if:
+    # - it has no date_approved (conservative approach)
+    # - or its live version or v3 archive has date_approved <= `year`.
+    current_final_ids = {
+        pr.project.latest_project_id or pr.project.id for pr in project_reports
+    }
+    valid_project_ids = set(
+        Project.objects.filter(
+            latest_project__isnull=True,
+            version__gte=3,
+            pk__in=current_final_ids,
+        )
+        .filter(
+            django_models.Q(date_approved__isnull=True)
+            | django_models.Q(date_approved__year__lte=year)
+            | django_models.Q(
+                archive_projects__version=3,
+                archive_projects__date_approved__year__lte=year,
+            )
+        )
+        .distinct()
+        .values_list("id", flat=True)
+    )
+
+    to_delete_ids = [
+        pr.id
+        for pr in project_reports
+        if (pr.project.latest_project_id or pr.project.id) not in valid_project_ids
+    ]
+    if to_delete_ids:
+        with transaction.atomic():
+            AnnualProjectReport.objects.filter(id__in=to_delete_ids).delete()
+
+    deleted_count = len(to_delete_ids)
+    project_reports = [
+        pr
+        for pr in project_reports
+        if (pr.project.latest_project_id or pr.project.id) in valid_project_ids
+    ]
+
+    agencies_count = len({pr.report_id for pr in project_reports})
 
     # Collect unique final-project ids
     final_project_ids = set()
@@ -796,10 +844,12 @@ def sync_apr_from_projects(year):
         "updated_count": len(project_reports),
         "changed_count": changed_count,
         "added_count": added_count,
+        "deleted_count": deleted_count,
         "agencies_count": agencies_count,
         "message": (
             f"Synced {len(project_reports)} project report(s) across "
             f"{agencies_count} agency/agencies; {changed_count} record(s) updated, "
-            f"{added_count} new project report(s) added."
+            f"{added_count} new project report(s) added, "
+            f"{deleted_count} stale record(s) deleted."
         ),
     }

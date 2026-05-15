@@ -5782,6 +5782,32 @@ class TestSyncAprFromProjectsTask:
 
         assert result["added_count"] == 1
 
+    def test_stale_project_deleted_by_sync(
+        self,
+        annual_agency_report,
+        annual_project_report,
+    ):
+        # Simulate a project whose date_approved was later set to a year beyond the
+        # APR year (e.g. data was corrected after the APR record was created). The
+        # sync should delete its AnnualProjectReport.
+        year = annual_agency_report.progress_report.year
+        stale_project = ProjectFactory(
+            agency=annual_agency_report.agency,
+            version=3,
+            date_approved=date(year + 1, 1, 15),  # future year — does not qualify
+        )
+        stale_apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=stale_project,
+        )
+
+        result = sync_apr_from_projects(year)
+
+        assert result["deleted_count"] == 1
+        assert not AnnualProjectReport.objects.filter(id=stale_apr.id).exists()
+        # The original APR for the qualifying project should be untouched.
+        assert AnnualProjectReport.objects.filter(id=annual_project_report.id).exists()
+
 
 @pytest.mark.django_db
 class TestAPREndorseProjectVersioning:
