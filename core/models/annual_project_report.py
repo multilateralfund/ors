@@ -1,4 +1,5 @@
 import logging
+from datetime import date as date_type
 
 from django.conf import settings
 from django.db import models
@@ -6,6 +7,7 @@ from django.utils.functional import cached_property
 
 from core.models.utils import get_protected_storage
 from core.models.agency import Agency
+from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.project import Project
 
@@ -310,7 +312,16 @@ class AnnualProjectReport(models.Model):
         null=True,
         blank=True,
         verbose_name="Region Name (denormalized)",
-        help_text="Snapshot of project.country.parent.name at time of reporting",
+        help_text="Snapshot of project.country.parent.name at time of reporting (subregion; kept for reference)",
+    )
+    main_region = models.ForeignKey(
+        Country,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Main Region (FK)",
+        help_text="FK to the main (top-level) Region Country for this project, used in APR reporting",
     )
     country_name_denorm = models.CharField(
         max_length=255,
@@ -510,30 +521,35 @@ class AnnualProjectReport(models.Model):
         Get the latest version created by ExCom meeting in or before the report year,
         using cached prefetch if available.
         """
-        if hasattr(self.project, "cached_archive_versions_for_year"):
+        if hasattr(self.project, "cached_versions_for_year"):
             # Combine the final version (project) with its archives
             candidates = []
 
-            if self.project.cached_archive_versions_for_year:
-                candidates.extend(self.project.cached_archive_versions_for_year)
+            if self.project.cached_versions_for_year:
+                candidates.extend(self.project.cached_versions_for_year)
 
             # Add the final version itself if it matches the year__lte criteria
+            # In case we can't compare by post_excom_decision, we use date_approved
             if (
                 self.project.post_excom_decision
                 and self.project.post_excom_decision.meeting.date.year
                 <= self.report_year
+            ) or (
+                not self.project.post_excom_decision
+                and self.project.date_approved
+                and self.project.date_approved.year <= self.report_year
             ):
                 candidates.append(self.project)
 
+            def _version_sort_key(p):
+                # Some projects can be sorted by the decision, some by date_approved
+                if p.post_excom_decision:
+                    return (p.post_excom_decision.meeting.date, p.version)
+                return (p.date_approved or date_type.min, p.version)
+
             # Sort and return the latest
             if candidates:
-                candidates.sort(
-                    key=lambda p: (
-                        p.post_excom_decision.meeting.date,
-                        p.version,
-                    ),
-                    reverse=True,
-                )
+                candidates.sort(key=_version_sort_key, reverse=True)
                 return candidates[0]
             return None
 
@@ -741,6 +757,7 @@ class AnnualProjectReport(models.Model):
         "agency_name_denorm",
         "cluster_name_denorm",
         "region_name_denorm",
+        "main_region",
         "country_name_denorm",
         "type_code_denorm",
         "sector_code_denorm",
@@ -762,6 +779,44 @@ class AnnualProjectReport(models.Model):
         "date_of_completion_per_agreement_or_decisions_denorm",
         "pcr_due_denorm",
     ]
+
+    # Abbreviations of non-canonical APR regions mapped to "canonical" ones.
+    # Used in _resolve_main_region to resolve intermediate/non-standard regions.
+    REGION_ABBR_REMAP = {
+        "WAS": "ASP",  # West Asia -> Asia and the Pacific
+        "ECA": "EUR",  # Europe and Central Asia -> Europe
+    }
+
+    @staticmethod
+    def _resolve_main_region(country):
+        """
+        Walk the Country hierarchy upwards to find the top-level Region (a node
+        whose parent is None), then apply any abbreviation-based remapping.
+
+        Handles any depth of hierarchy (including messy real-world data) because
+        it simply walks parent links until it reaches a root node.
+        accessing node.parent when parent_id is None does not trigger a DB query,
+        so callers only need select_related up to the depth that exists in the data
+        (country__parent__parent covers the standard 3-level hierarchy).
+        """
+        if country is None:
+            return None
+
+        # Walk up to the root regardless of location_type
+        node = country
+        while node.parent is not None:
+            node = node.parent
+        region = node
+
+        # Remap non-canonical regions via abbreviation
+        target_abbr = AnnualProjectReport.REGION_ABBR_REMAP.get(region.abbr)
+        if target_abbr is not None:
+            region = Country.objects.filter(
+                abbr=target_abbr,
+                location_type=Country.LocationType.REGION,
+            ).first()
+
+        return region
 
     def populate_derived_fields(self):
         """
@@ -793,6 +848,7 @@ class AnnualProjectReport(models.Model):
             self.country_name_denorm = self.project.country.name
             if self.project.country.parent:
                 self.region_name_denorm = self.project.country.parent.name
+            self.main_region = self._resolve_main_region(self.project.country)
 
         # Type and Sector
         if self.project.project_type:

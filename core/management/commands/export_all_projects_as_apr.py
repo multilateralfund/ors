@@ -50,7 +50,6 @@ DENORM_FIELD_MAP = {
     "legacy_code": "legacy_code_denorm",
     "agency_name": "agency_name_denorm",
     "cluster_name": "cluster_name_denorm",
-    "region_name": "region_name_denorm",
     "country_name": "country_name_denorm",
     "type_code": "type_code_denorm",
     "sector_code": "sector_code_denorm",
@@ -83,11 +82,14 @@ def _build_project_dict(apr):
 
     for field_name in excel_fields:
         if field_name in DENORM_FIELD_MAP:
-            value = getattr(apr, DENORM_FIELD_MAP[field_name], None)
+            denorm_attr = DENORM_FIELD_MAP[field_name]
+            value = getattr(apr, denorm_attr, None)
             # Convert date objects to ISO format strings for the export writer
             if isinstance(value, (date, datetime)):
                 value = value.isoformat()
             data[field_name] = value
+        elif field_name == "region_name":
+            data[field_name] = apr.main_region.name if apr.main_region else None
         elif field_name in COMPUTED_FIELDS:
             data[field_name] = getattr(apr, field_name, None)
         elif field_name == "status":
@@ -317,6 +319,7 @@ class Command(BaseCommand):
                 "agency",
                 "country",
                 "country__parent",
+                "country__parent__parent",
                 "cluster",
                 "sector",
                 "project_type",

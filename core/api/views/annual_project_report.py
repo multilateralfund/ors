@@ -218,9 +218,6 @@ class APRWorkspaceView(RetrieveAPIView):
 
         year = int(self.kwargs["year"])
 
-        # Get status filter from query params (defaults are ONG, COM)
-        status_codes = self.request.query_params.get("status", "ONG,COM")
-
         # Check that the annual progress report for the year actually exists
         try:
             progress_report = AnnualProgressReport.objects.get(year=year)
@@ -253,6 +250,8 @@ class APRWorkspaceView(RetrieveAPIView):
                 )
                 .select_related(
                     "country",
+                    "country__parent",
+                    "country__parent__parent",
                     "agency",
                     "sector",
                     "project_type",
@@ -272,7 +271,6 @@ class APRWorkspaceView(RetrieveAPIView):
                 data={
                     "year": year,
                     "agency": agency.id,
-                    "status": status_codes,
                 },
                 queryset=projects_queryset,
             )

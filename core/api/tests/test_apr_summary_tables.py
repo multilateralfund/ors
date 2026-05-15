@@ -7,7 +7,7 @@ from io import BytesIO
 
 import pytest
 from django.contrib.auth.models import Group
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from openpyxl import load_workbook
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -808,107 +808,86 @@ class TestAPRSummaryTablesExport(BaseTest):
 
 
 @pytest.mark.django_db
-class TestAPRSummaryTablesNumberFormats(BaseTest):
-    """Verify that ODP/MT columns use 1-decimal format and CO2/funding use 0-decimal."""
+def test_apr_summary_tables_number_formats():
+    """
+    Verify ODP/MT columns use 1-decimal format and CO2/funding use 0-decimal.
+    All format assertions share a single export call.
+    """
+    agency = AgencyFactory.create(name="NumFmtAgency", code="NFMT")
+    user = UserFactory(username="NumFmtAPRViewer", agency=agency)
+    user.groups.add(Group.objects.get(name="APR - Agency Viewer"))
 
-    url = reverse_lazy("apr-summary-tables-export")
-    # populated by the _setup_wb fixture
-    wb: load_workbook
+    progress_report = AnnualProgressReportFactory(year=2019, endorsed=False)
+    agency_report = AnnualAgencyProjectReportFactory(
+        progress_report=progress_report,
+        agency=agency,
+        is_unlocked=False,
+        created_by=user,
+    )
 
-    @pytest.fixture(autouse=True)
-    def _setup_wb(self, request):
-        """
-        Helper to avoid expensive calls to the export API for all test methods.
-        """
-        agency = AgencyFactory.create(name="NumFmtAgency", code="NFMT")
-        user = UserFactory(username="NumFmtAPRViewer", agency=agency)
-        user.groups.add(Group.objects.get(name="APR - Agency Viewer"))
+    project_status = ProjectStatusFactory.create(name="OngoingNF", code="ONGNF")
+    inv_type = ProjectTypeFactory.create(code="INVNF", name="InvestmentNF")
+    project = ProjectFactory(
+        agency=agency,
+        code="NF/TEST/001",
+        date_approved=date(2019, 1, 15),
+        status=project_status,
+        version=3,
+        total_fund=100000,
+        project_type=inv_type,
+    )
+    AnnualProjectReportFactory(
+        report=agency_report,
+        project=project,
+        consumption_phased_out_odp=1.5,
+        consumption_phased_out_mt=2.3,
+        consumption_phased_out_co2=1000.0,
+    )
 
-        progress_report = AnnualProgressReportFactory(year=2019, endorsed=False)
-        agency_report = AnnualAgencyProjectReportFactory(
-            progress_report=progress_report,
-            agency=agency,
-            is_unlocked=False,
-            created_by=user,
-        )
+    client = APIClient()
+    client.force_authenticate(user=user)
+    response = client.get(reverse("apr-summary-tables-export"))
+    assert response.status_code == status.HTTP_200_OK
+    wb = load_workbook(BytesIO(response.content))
 
-        project_status = ProjectStatusFactory.create(name="OngoingNF", code="ONGNF")
-        inv_type = ProjectTypeFactory.create(code="INVNF", name="InvestmentNF")
-        project = ProjectFactory(
-            agency=agency,
-            code="NF/TEST/001",
-            date_approved=date(2019, 1, 15),
-            status=project_status,
-            version=3,
-            total_fund=100000,
-            project_type=inv_type,
-        )
-        AnnualProjectReportFactory(
-            report=agency_report,
-            project=project,
-            consumption_phased_out_odp=1.5,
-            consumption_phased_out_mt=2.3,
-            consumption_phased_out_co2=1000.0,
-        )
+    # I.1 Summary: ODP and MT rows (offsets 4-7) use 1-decimal format
+    ws_summary = wb[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+    start = APRSummaryTablesExportWriter.SUMMARY_DATA_START_ROW
+    for row_offset in range(4, 8):
+        fmt = ws_summary.cell(start + row_offset, 2).number_format
+        assert (
+            fmt == "#,##0.0"
+        ), f"I.1 row {start + row_offset} expected '#,##0.0', got '{fmt}'"
 
-        client = APIClient()
-        client.force_authenticate(user=user)
-        response = client.get(reverse("apr-summary-tables-export"))
-        assert response.status_code == status.HTTP_200_OK
-        request.cls.wb = load_workbook(BytesIO(response.content))
+    # I.1 Summary: CO2 rows (offsets 8-9) use 0-decimal format
+    for row_offset in range(8, 10):
+        fmt = ws_summary.cell(start + row_offset, 2).number_format
+        assert (
+            fmt == "#,##0"
+        ), f"I.1 row {start + row_offset} expected '#,##0', got '{fmt}'"
 
-    def test_summary_sheet_odp_mt_rows_use_one_decimal(self):
-        ws = self.wb[APRSummaryTablesExportWriter.SHEET_SUMMARY]
-        start = APRSummaryTablesExportWriter.SUMMARY_DATA_START_ROW
-        # Rows 8-11 (index 4-7) are ODP and MT values
-        for row_offset in range(4, 8):
-            fmt = ws.cell(start + row_offset, 2).number_format
-            assert (
-                fmt == "#,##0.0"
-            ), f"I.1 row {start + row_offset} expected '#,##0.0', got '{fmt}'"
+    # Project completion sheet: ODP (col 3) and MT (col 4) use 1-decimal format
+    ws_completion = wb[APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR]
+    cluster_start = APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW
+    for col in [3, 4]:
+        fmt = ws_completion.cell(cluster_start, col).number_format
+        assert (
+            fmt == "#,##0.0"
+        ), f"Completion year col {col} expected '#,##0.0', got '{fmt}'"
 
-    def test_summary_sheet_co2_rows_use_no_decimal(self):
-        ws = self.wb[APRSummaryTablesExportWriter.SHEET_SUMMARY]
-        start = APRSummaryTablesExportWriter.SUMMARY_DATA_START_ROW
-        # Rows 12-13 (index 8-9) are CO2 values
-        for row_offset in range(8, 10):
-            fmt = ws.cell(start + row_offset, 2).number_format
-            assert (
-                fmt == "#,##0"
-            ), f"I.1 row {start + row_offset} expected '#,##0', got '{fmt}'"
+    # Project completion sheet: CO2 (col 5) uses 0-decimal format
+    fmt = ws_completion.cell(cluster_start, 5).number_format
+    assert fmt == "#,##0", f"Completion year CO2 col expected '#,##0', got '{fmt}'"
 
-    def test_completion_year_sheet_odp_mt_use_one_decimal(self):
-        ws = self.wb[APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR]
-        start = APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW
-        # col 3 = ODP, col 4 = MT
-        for col in [3, 4]:
-            fmt = ws.cell(start, col).number_format
-            assert (
-                fmt == "#,##0.0"
-            ), f"Completion year col {col} expected '#,##0.0', got '{fmt}'"
-
-    def test_completion_year_sheet_co2_uses_no_decimal(self):
-        ws = self.wb[APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR]
-        start = APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW
-        # col 5 = CO2
-        fmt = ws.cell(start, 5).number_format
-        assert fmt == "#,##0", f"Completion year CO2 col expected '#,##0', got '{fmt}'"
-
+    # Column specs for ODP/MT fields report 1-decimal format
     # pylint: disable=protected-access
-    def test_get_column_specs_odp_mt_format(self):
-        # workaround to avoid instantiating the writer, we just need its spec map
-        writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
-        specs = writer._get_column_specs("cumulative", include_odp_co2=True)
-        spec_map = dict(specs)
-        assert spec_map["total_consumption_odp"] == "#,##0.0"
-        assert spec_map["total_production_odp"] == "#,##0.0"
-        assert spec_map["total_consumption_mt"] == "#,##0.0"
-        assert spec_map["total_production_mt"] == "#,##0.0"
+    writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
+    spec_map = dict(writer._get_column_specs("cumulative", include_odp_co2=True))
+    assert spec_map["total_consumption_odp"] == "#,##0.0"
+    assert spec_map["total_production_odp"] == "#,##0.0"
+    assert spec_map["total_consumption_mt"] == "#,##0.0"
+    assert spec_map["total_production_mt"] == "#,##0.0"
 
-    def test_get_column_specs_co2_format(self):
-        # workaround to avoid instantiating the writer, we just need its spec map
-        writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
-        specs = writer._get_column_specs("cumulative", include_odp_co2=True)
-        spec_map = dict(specs)
-        assert spec_map["total_consumption_co2"] == "#,##0"
-        assert spec_map["total_production_co2"] == "#,##0"
+    # Column specs for CO2 fields report 0-decimal format
+    assert spec_map["total_consumption_co2"] == "#,##0"
+    assert spec_map["total_production_co2"] == "#,##0"

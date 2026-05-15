@@ -22,21 +22,24 @@ class APRProjectFilter(filters.FilterSet):
         fields = ["year", "agency", "status"]
 
     def filter_by_year(self, queryset, _name, value):
-        return queryset.filter(date_approved__year__lte=value)
+        return queryset.filter(
+            Q(date_approved__year__lte=value)
+            | Q(
+                archive_projects__version=3,
+                archive_projects__date_approved__year__lte=value,
+            )
+        ).distinct()
 
     def filter_by_status(self, queryset, _name, value):
         """
-        Accepts a comma-separated list, defaults to ongoing & completed,
-        which are always included.
+        Accepts a comma-separated list of status codes.
+        When empty, all statuses are included.
         """
         if not value:
-            status_codes = ["ONG", "COM"]
-        else:
-            status_codes = [s.strip() for s in value.split(",") if s.strip()]
-
-        mandatory_statuses = {"ONG", "COM"}
-        status_codes = list(set(status_codes) | mandatory_statuses)
-
+            return queryset
+        status_codes = [s.strip() for s in value.split(",") if s.strip()]
+        if not status_codes:
+            return queryset
         return queryset.filter(status__code__in=status_codes)
 
 
@@ -59,10 +62,7 @@ def build_filter_params_from_query_params(query_params, default_status="ONG,COM"
         region_names = [r.strip() for r in region_param.split(",") if r.strip()]
         filter_params["region"] = Country.objects.filter(
             name__in=region_names,
-            location_type__in=[
-                Country.LocationType.REGION,
-                Country.LocationType.SUBREGION,
-            ],
+            location_type=Country.LocationType.REGION,
         )
 
     cluster_param = query_params.get("cluster")
@@ -104,13 +104,14 @@ def build_filtered_project_reports_queryset(filter_params):
         "project__project_type",
         "project__status",
         "project__cluster",
+        "main_region",
     )
 
     if filter_params.get("country"):
         queryset = queryset.filter(project__country__in=filter_params["country"])
 
     if filter_params.get("region"):
-        queryset = queryset.filter(project__country__parent__in=filter_params["region"])
+        queryset = queryset.filter(main_region__in=filter_params["region"])
 
     if filter_params.get("cluster"):
         cluster_names = [
@@ -161,10 +162,7 @@ class APRGlobalFilter(filters.FilterSet):
 
     region = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.filter(
-            location_type__in=[
-                Country.LocationType.REGION,
-                Country.LocationType.SUBREGION,
-            ]
+            location_type=Country.LocationType.REGION,
         ),
         to_field_name="name",
         widget=CSVWidget,
@@ -233,9 +231,7 @@ class APRGlobalFilter(filters.FilterSet):
         if not value:
             return queryset
 
-        return queryset.filter(
-            project_reports__project__country__parent__in=value
-        ).distinct()
+        return queryset.filter(project_reports__main_region__in=value).distinct()
 
     def filter_by_country(self, queryset, _name, value):
         if not value:
