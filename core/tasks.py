@@ -596,7 +596,7 @@ def sync_apr_from_projects(year):
       If there is no AnnualAgencyProjectReport for a specific agency (e.g. the workspace
       has not been accessed yet), it will not create new AnnualProjectReport records.
     """
-    # pylint: disable=R0914
+    # pylint: disable=R0914,R0915
     progress_report = AnnualProgressReport.objects.get(year=year)
 
     if progress_report.endorsed:
