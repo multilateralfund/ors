@@ -230,7 +230,7 @@ def auto_submit_empty_agency_reports(year):
             "auto_submit_empty_agency_reports: AnnualProgressReport for year %s not found.",
             year,
         )
-        return
+        return {"auto_submitted_count": 0, "agencies": []}
 
     if progress_report.endorsed:
         logger.info(
@@ -238,7 +238,7 @@ def auto_submit_empty_agency_reports(year):
             "Skipping.",
             year,
         )
-        return
+        return {"auto_submitted_count": 0, "agencies": []}
 
     existing_agency_ids = set(
         AnnualAgencyProjectReport.objects.filter(
