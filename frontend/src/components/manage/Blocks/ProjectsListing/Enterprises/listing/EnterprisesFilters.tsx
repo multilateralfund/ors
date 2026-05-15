@@ -23,7 +23,6 @@ const EnterprisesFilters = ({
   handleParamsChange,
 }: any) => {
   const { canViewOnlyOwnAgency } = useContext(PermissionsContext)
-
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
 
@@ -62,7 +61,7 @@ const EnterprisesFilters = ({
         Input={{ placeholder: enterpriseFieldsMapping[field] }}
         options={getFilterOptions(filters, options, filterField)}
         widget="autocomplete"
-        onChange={(_: any, value: any) => {
+        onChange={(_, value) => {
           const filtervalue = filters[filterField] || []
           const newValue = union(filtervalue, value)
 
@@ -78,7 +77,7 @@ const EnterprisesFilters = ({
   }
 
   return (
-    <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
+    <div className="flex h-full flex-wrap items-center gap-2">
       <SearchFilter
         placeholder="Search by keyword..."
         {...{ form, filters, handleFilterChange, handleParamsChange }}
@@ -90,7 +89,7 @@ const EnterprisesFilters = ({
           className="!m-0 h-9 border-2 !pr-0 !text-[16px] text-inherit"
           label="Meeting"
           options={meetings}
-          onChange={(value: any) => {
+          onChange={(value) => {
             const meetingId = filters.meeting_id || []
             const meetingValue = meetings.filter(
               (meeting: any) => meeting.value === value,

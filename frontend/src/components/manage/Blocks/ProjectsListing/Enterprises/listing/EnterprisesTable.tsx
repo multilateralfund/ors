@@ -18,28 +18,28 @@ const EnterprisesTable = ({
   const [idToDelete, setIdToDelete] = useState<number | null>(null)
 
   const { columnDefs, defaultColDef } = getColumnDefs(setIdToDelete)
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 500)
+  const paginationSelectorOpts = getPaginationSelectorOpts(count, 500)
 
   return (
     <>
       {loaded && (
         <ViewTable
-          getRowId={(props) => props.data.id}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
           domLayout="normal"
+          getRowId={(props) => props.data.id}
+          defaultColDef={defaultColDef}
+          columnDefs={columnDefs}
+          loading={loading}
+          loaded={loaded}
+          rowData={results}
+          rowCount={count}
+          rowsVisible={90}
+          rowBuffer={100}
+          tooltipShowDelay={200}
+          resizeGridOnRowUpdate={true}
           suppressScrollOnNewData={true}
           enablePagination={true}
-          loaded={loaded}
-          loading={loading}
           paginationPageSize={getPaginationPageSize(count)}
-          paginationPageSizeSelector={paginationPageSizeSelectorOpts}
-          resizeGridOnRowUpdate={true}
-          rowBuffer={100}
-          rowCount={count}
-          rowData={results}
-          rowsVisible={90}
-          tooltipShowDelay={200}
+          paginationPageSizeSelector={paginationSelectorOpts}
           onGridReady={({ api }) => {
             gridApiRef.current = api
           }}

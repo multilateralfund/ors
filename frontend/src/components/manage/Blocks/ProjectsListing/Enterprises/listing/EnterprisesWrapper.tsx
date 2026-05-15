@@ -2,6 +2,7 @@ import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import Link from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterprisesFiltersWrapper from './EnterprisesFiltersWrapper'
@@ -9,15 +10,12 @@ import EnterprisesTable from './EnterprisesTable'
 import { CreateButton, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { formatApiUrl } from '@ors/helpers'
-import Link from '@ors/components/ui/Link/Link'
 
 import { Redirect } from 'wouter'
 
 export default function EnterprisesWrapper() {
   const { canViewEnterprises, canEditEnterprise } =
     useContext(PermissionsContext)
-
-  const downloadUrlBase = '/api/enterprises/export'
 
   const form = useRef<any>()
 
@@ -31,6 +29,7 @@ export default function EnterprisesWrapper() {
   const enterprises = useGetEnterprises(initialFilters)
   const { loading, params, setParams } = enterprises
 
+  const downloadUrlBase = '/api/enterprises/export'
   const downloadUrl = useMemo(() => {
     const encodedParams = new URLSearchParams(params).toString()
     return formatApiUrl(`${downloadUrlBase}?${encodedParams}`)
@@ -48,7 +47,7 @@ export default function EnterprisesWrapper() {
       />
       <HeaderTitle>
         <div className="flex flex-wrap justify-between gap-3">
-          <div className="flex flex-col">
+          <div>
             <RedirectBackButton />
             <PageHeading>
               <span className="font-medium text-[#4D4D4D]">
@@ -70,7 +69,6 @@ export default function EnterprisesWrapper() {
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-3">
           <EnterprisesFiltersWrapper
-            mode="listing"
             {...{
               form,
               filters,
@@ -81,10 +79,10 @@ export default function EnterprisesWrapper() {
           />
           {canEditEnterprise && (
             <Link
-              className="mb-auto h-10 px-4 py-2 text-lg uppercase md:mb-0.5"
+              className="mb-auto h-10 py-2 text-lg md:mb-0.5"
+              variant="contained"
               color="secondary"
               href={downloadUrl}
-              variant="contained"
               button
               download
             >

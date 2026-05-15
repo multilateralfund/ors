@@ -34,7 +34,9 @@ const EnterpriseFundingDetailsSection = ({
             <div
               key={field}
               className={
-                field !== 'cost_effectiveness_approved' ? 'w-[250px]' : ''
+                field !== 'cost_effectiveness_approved'
+                  ? 'w-full sm:w-[250px]'
+                  : ''
               }
             >
               <EnterpriseNumberField
