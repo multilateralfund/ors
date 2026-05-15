@@ -724,6 +724,25 @@ def sync_apr_from_projects(year):
         if project_key not in latest_version_map:
             latest_version_map[project_key] = p
 
+    # Fallback: for projects whose post_excom_decision is not set, use date_approved.
+    missing_project_ids = final_project_ids - set(latest_version_map.keys())
+    if missing_project_ids:
+        for p in (
+            Project.objects.really_all()
+            .filter(
+                django_models.Q(id__in=missing_project_ids)
+                | django_models.Q(latest_project_id__in=missing_project_ids),
+                post_excom_decision__isnull=True,
+                date_approved__isnull=False,
+                date_approved__year__lte=year,
+            )
+            .select_related("status")
+            .order_by("-date_approved", "-version")
+        ):
+            project_key = p.latest_project_id or p.id
+            if project_key not in latest_version_map:
+                latest_version_map[project_key] = p
+
     # Batch-load all versions approved during `year`
     all_versions_map: dict = {}
     for p in (
