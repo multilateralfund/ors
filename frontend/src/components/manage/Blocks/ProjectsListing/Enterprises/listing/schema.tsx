@@ -10,7 +10,7 @@ import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
 import { FiEdit } from 'react-icons/fi'
-import { find, isNil } from 'lodash'
+import { find } from 'lodash'
 import {
   ICellRendererParams,
   ValueGetterParams,
@@ -35,11 +35,6 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
     data: any,
     field: string,
   ) => find(data, (entry) => entry.id === params.data[field])?.name
-
-  const getDecimalValue = (
-    params: ValueGetterParams | ITooltipParams,
-    field: string,
-  ) => (!isNil(params.data[field]) ? formatNumberColumns(params, field) : '')
 
   return {
     columnDefs: [
@@ -160,17 +155,17 @@ const getColumnDefs = (setIdToDelete: (id: number | null) => void) => {
         headerName: enterpriseFieldsMapping.local_ownership,
         field: 'local_ownership',
         valueGetter: (params: ValueGetterParams) =>
-          getDecimalValue(params, 'local_ownership'),
+          formatNumberColumns(params, 'local_ownership'),
         tooltipValueGetter: (params: ITooltipParams) =>
-          getDecimalValue(params, 'local_ownership'),
+          formatNumberColumns(params, 'local_ownership'),
       },
       {
         headerName: enterpriseFieldsMapping.export_to_non_a5,
         field: 'export_to_non_a5',
         valueGetter: (params: ValueGetterParams) =>
-          getDecimalValue(params, 'export_to_non_a5'),
+          formatNumberColumns(params, 'export_to_non_a5'),
         tooltipValueGetter: (params: ITooltipParams) =>
-          getDecimalValue(params, 'export_to_non_a5'),
+          formatNumberColumns(params, 'export_to_non_a5'),
       },
       {
         headerName: enterpriseFieldsMapping.status,

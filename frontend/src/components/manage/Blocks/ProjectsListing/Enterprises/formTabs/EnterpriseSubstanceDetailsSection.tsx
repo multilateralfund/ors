@@ -202,7 +202,7 @@ const EnterpriseSubstanceDetailsSection = ({
                       FieldProps={{
                         className:
                           defaultProps.FieldProps.className +
-                          ' w-full min-w-64',
+                          ' min-w-56 sm:min-w-64',
                       }}
                     />
                     <FieldErrorIndicator

@@ -167,7 +167,7 @@ export const EnterpriseSelectField = ({
           {...(fieldName === 'subsector' && {
             FieldProps: {
               ...defaultProps.FieldProps,
-              className: defaultProps.FieldProps.className + ' w-[21rem]',
+              className: defaultProps.FieldProps.className + ' sm:w-[21rem]',
             },
           })}
         />
