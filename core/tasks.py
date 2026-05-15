@@ -12,6 +12,7 @@ from django.db import models as django_models
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template import loader
+from django.utils import timezone
 
 from core.api.filters.annual_project_reports import APRProjectFilter
 from core.api.utils import (
@@ -25,6 +26,7 @@ from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
 from core.models import (
+    Agency,
     Project,
     AnnualAgencyProjectReport,
     AnnualProjectReport,
@@ -208,6 +210,75 @@ def send_agency_submission_notification(agency_report_id):
         recipients,
         subject_template_name,
     )
+
+
+@app.task()
+def auto_submit_empty_agency_reports(year):
+    """
+    Auto-submit APRs for agencies that have no ONG/COM projects for the given year.
+
+    Called after a new AnnualProgressReport is kick-started. Iterates every agency
+    in the database and, for those without any live Ongoing or Completed projects
+    approved up to `year`, creates an AnnualAgencyProjectReport and immediately
+    marks it as SUBMITTED. Agencies that already have a report (DRAFT or SUBMITTED)
+    are left untouched.
+    """
+    try:
+        progress_report = AnnualProgressReport.objects.get(year=year)
+    except AnnualProgressReport.DoesNotExist:
+        logger.error(
+            "auto_submit_empty_agency_reports: AnnualProgressReport for year %s not found.",
+            year,
+        )
+        return {"auto_submitted_count": 0, "agencies": []}
+
+    if progress_report.endorsed:
+        logger.info(
+            "auto_submit_empty_agency_reports: APR for year %s is already endorsed. "
+            "Skipping.",
+            year,
+        )
+        return {"auto_submitted_count": 0, "agencies": []}
+
+    existing_agency_ids = set(
+        AnnualAgencyProjectReport.objects.filter(
+            progress_report=progress_report
+        ).values_list("agency_id", flat=True)
+    )
+
+    auto_submitted = []
+    for agency in Agency.objects.all():
+        if agency.id in existing_agency_ids:
+            # Report already exists (DRAFT or SUBMITTED) — do not touch it
+            continue
+
+        has_active_projects = Project.objects.filter(
+            latest_project__isnull=True,
+            version__gte=3,
+            agency=agency,
+            status__code__in=["ONG", "COM"],
+            date_approved__year__lte=year,
+        ).exists()
+
+        if has_active_projects:
+            continue
+
+        AnnualAgencyProjectReport.objects.create(
+            progress_report=progress_report,
+            agency=agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+            submitted_at=timezone.now(),
+            submitted_by=None,
+        )
+        auto_submitted.append(agency.name)
+
+    logger.info(
+        "auto_submit_empty_agency_reports: Auto-submitted %d agency report(s) for year %s: %s",
+        len(auto_submitted),
+        year,
+        auto_submitted,
+    )
+    return {"auto_submitted_count": len(auto_submitted), "agencies": auto_submitted}
 
 
 # Projects

@@ -37,6 +37,7 @@ from core.api.tests.factories import (
 from core.tasks import (
     sync_apr_from_projects,
     update_project_statuses_after_apr_endorsement,
+    auto_submit_empty_agency_reports,
 )
 
 # pylint: disable=W0221,W0613,C0302,R0913,R0914
@@ -190,7 +191,8 @@ class TestAPRWorkspaceView(BaseTest):
         assert response.data["agency_id"] == agency.id
         assert response.data["progress_report_year"] == apr_year
         assert (
-            response.data["status"] == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+            response.data["status"]
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
         )
 
         # Check that a database record was created
@@ -3108,7 +3110,9 @@ class TestAPRWorkspaceAccessControl(BaseTest):
         agency_report = AnnualAgencyProjectReport.objects.get(
             progress_report=annual_progress_report, agency=agency
         )
-        assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+        assert (
+            agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
         assert agency_report.created_by == apr_agency_viewer_user
 
     def test_workspace_prepopulates_from_previous_year(
@@ -6167,3 +6171,181 @@ class TestAPRExportNumberFormats:
             col = self.col_map[field]
             fmt = self.ws.cell(row, col).number_format
             assert fmt == "#,##0", f"CO2 field '{field}' expected '#,##0', got '{fmt}'"
+
+
+@pytest.mark.django_db
+class TestAutoSubmitEmptyAgencyReports(BaseTest):
+    """Tests for the auto_submit_empty_agency_reports Celery task."""
+
+    def test_without_login(self):
+        pass  # task has no HTTP endpoint
+
+    def test_kick_start_triggers_auto_submit_task(
+        self, mlfs_admin_user, annual_progress_report_endorsed
+    ):
+        """Kick-starting a new APR year enqueues the auto-submit task."""
+        self.client.force_authenticate(user=mlfs_admin_user)
+        url = reverse("apr-kick-start")
+
+        with patch(
+            "core.api.views.annual_project_report.auto_submit_empty_agency_reports.delay"
+        ) as mock_delay:
+            response = self.client.post(url, {}, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        next_year = annual_progress_report_endorsed.year + 1
+        mock_delay.assert_called_once_with(next_year)
+
+    def test_task_auto_submits_agency_with_no_active_projects(
+        self, annual_progress_report
+    ):
+        """An agency with no ONG/COM projects gets an auto-submitted report."""
+        agency_without_projects = AgencyFactory()
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        created_report = AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency_without_projects,
+        ).first()
+        assert created_report is not None
+        assert (
+            created_report.status
+            == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert created_report.submitted_at is not None
+        assert created_report.submitted_by is None
+
+    def test_task_skips_agency_with_ong_projects(
+        self, annual_progress_report, apr_year, project_ongoing_status
+    ):
+        """An agency that has ONG projects is not auto-submitted."""
+        agency_with_projects = AgencyFactory()
+        ProjectFactory(
+            agency=agency_with_projects,
+            status=project_ongoing_status,
+            latest_project=None,
+            version=3,
+            date_approved=f"{apr_year - 1}-01-01",
+        )
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency_with_projects,
+        ).exists()
+
+    def test_task_skips_agency_with_com_projects(
+        self, annual_progress_report, apr_year, project_completed_status
+    ):
+        """An agency that has COM projects is not auto-submitted."""
+        agency_with_projects = AgencyFactory()
+        ProjectFactory(
+            agency=agency_with_projects,
+            status=project_completed_status,
+            latest_project=None,
+            version=3,
+            date_approved=f"{apr_year - 1}-01-01",
+        )
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency_with_projects,
+        ).exists()
+
+    def test_task_skips_agency_with_existing_report(self, annual_progress_report):
+        """An agency that already has any report (DRAFT or SUBMITTED) is left alone."""
+        agency_with_report = AgencyFactory()
+        existing = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=agency_with_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+        )
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        existing.refresh_from_db()
+        assert existing.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+
+    def test_task_no_ops_on_endorsed_apr(self, annual_progress_report_endorsed):
+        """Task does nothing when the APR is already endorsed."""
+        agency = AgencyFactory()
+
+        auto_submit_empty_agency_reports(annual_progress_report_endorsed.year)
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report_endorsed,
+            agency=agency,
+        ).exists()
+
+    def test_task_no_ops_on_missing_apr(self):
+        """Task returns early without error when the year doesn't exist."""
+        auto_submit_empty_agency_reports(9999)  # should not raise
+
+    def test_task_returns_count(self, annual_progress_report):
+        """Task returns the number of auto-submitted agencies."""
+        AgencyFactory()
+        AgencyFactory()
+
+        result = auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        assert result["auto_submitted_count"] == 2
+        assert len(result["agencies"]) == 2
+
+
+@pytest.mark.django_db
+class TestWorkspaceFallbackAutoSubmit(BaseTest):
+    """Workspace view auto-submits an agency report when no projects are found."""
+
+    def test_without_login(self):
+        pass
+
+    def test_workspace_auto_submits_when_no_projects(
+        self, apr_agency_viewer_user, annual_progress_report
+    ):
+        """First workspace access with 0 qualifying projects → auto-submitted."""
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": annual_progress_report.year})
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report=annual_progress_report,
+            agency=apr_agency_viewer_user.agency,
+        )
+        assert (
+            agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+        assert agency_report.submitted_at is not None
+
+    def test_workspace_does_not_auto_submit_when_projects_exist(
+        self,
+        apr_agency_viewer_user,
+        agency,
+        annual_progress_report,
+        apr_year,
+        project_ongoing_status,
+    ):
+        """First workspace access with ONG projects → remains DRAFT."""
+        ProjectFactory(
+            agency=agency,
+            status=project_ongoing_status,
+            latest_project=None,
+            version=3,
+            date_approved=f"{apr_year - 1}-01-01",
+        )
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse("apr-workspace", kwargs={"year": annual_progress_report.year})
+
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        agency_report = AnnualAgencyProjectReport.objects.get(
+            progress_report=annual_progress_report,
+            agency=agency,
+        )
+        assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
