@@ -15,7 +15,7 @@ import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
   initialSubstanceDetailsFields,
-  substanceDecimalFields,
+  substanceDetailsFields,
   substanceFields,
 } from '../constants'
 
@@ -28,9 +28,9 @@ const EnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   errors,
-  odsOdpErrors,
+  substancesErrors,
 }: EnterpriseFormProps & {
-  odsOdpErrors: { [key: string]: string[] }[]
+  substancesErrors: { [key: string]: string[] }[]
 }) => {
   const { substances, blends } = useContext(ProjectsDataContext)
 
@@ -160,7 +160,7 @@ const EnterpriseSubstanceDetailsSection = ({
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(substanceDecimalFields, (field, index) => (
+        {map(substanceDetailsFields, (field, index) => (
           <EnterpriseNumberField
             key={index}
             dataType="decimal"
@@ -209,7 +209,7 @@ const EnterpriseSubstanceDetailsSection = ({
                       field={
                         substance.ods_blend ? 'ods_blend' : 'ods_substance'
                       }
-                      errors={odsOdpErrors[dataIndex]}
+                      errors={substancesErrors[dataIndex]}
                     />
                   </div>
                 </div>
@@ -236,7 +236,7 @@ const EnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[dataIndex]}
+                          errors={substancesErrors[dataIndex]}
                         />
                       </div>
                     </div>
@@ -260,7 +260,7 @@ const EnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[dataIndex]}
+                          errors={substancesErrors[dataIndex]}
                         />
                       </div>
                     </div>

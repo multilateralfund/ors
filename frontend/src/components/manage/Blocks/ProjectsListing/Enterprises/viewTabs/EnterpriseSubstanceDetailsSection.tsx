@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
-import { enterpriseFieldsMapping, substanceDecimalFields } from '../constants'
+import { enterpriseFieldsMapping, substanceDetailsFields } from '../constants'
 import { viewColumnsClassName } from '../../constants'
 import { EnterpriseType } from '../interfaces'
 import { formatNumberColumns } from '../../utils'
@@ -108,7 +108,7 @@ const EnterpriseSubstanceDetailsSection = ({
     <>
       <div className="flex flex-col gap-4">
         <div className={viewColumnsClassName}>
-          {map(substanceDecimalFields, (field, index) => (
+          {map(substanceDetailsFields, (field, index) => (
             <div key={index}>
               {numberDetailItem(
                 enterpriseFieldsMapping[field],

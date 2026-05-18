@@ -37,20 +37,10 @@ const EnterpriseCreateWrapper = () => {
 
   return (
     <>
-      <EnterpriseHeader
-        mode="add"
-        {...{
-          enterpriseData,
-          setErrors,
-        }}
-      />
+      <EnterpriseHeader mode="add" {...{ enterpriseData, setErrors }} />
       <EnterpriseCreate
         mode="add"
-        {...{
-          enterpriseData,
-          setEnterpriseData,
-          errors,
-        }}
+        {...{ enterpriseData, setEnterpriseData, errors }}
       />
     </>
   )

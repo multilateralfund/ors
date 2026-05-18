@@ -13,9 +13,8 @@ import {
 } from '../FormHelperComponents'
 import { EnterpriseFormProps } from '../interfaces'
 import {
-  dateFields,
   decimalFields,
-  detailsDateFields,
+  dateFields,
   enterpriseFieldsMapping,
   integerFields,
   textFields,
@@ -55,11 +54,11 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
         ))}
       </div>
       <EnterpriseTextField
-        field={textFields[4]}
+        field={textFields[3]}
         {...{ sectionIdentifier, ...props }}
       />
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
-        {map(detailsDateFields.slice(0, 2), (field, index) => (
+        {map(dateFields.slice(0, 2), (field, index) => (
           <EnterpriseDateField
             key={index}
             {...{
@@ -80,7 +79,7 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
         <EnterpriseTextField
-          field={textFields[3]}
+          field={textFields[4]}
           {...{ sectionIdentifier, ...props }}
         />
         <EnterpriseNumberField
@@ -89,7 +88,7 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
           {...{ sectionIdentifier, ...props }}
         />
         <EnterpriseDateField
-          field={dateFields[0]}
+          field={dateFields[2]}
           {...{ sectionIdentifier, ...props }}
         />
       </div>
@@ -109,7 +108,7 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
             <FieldErrorIndicator field="meeting" {...{ errors }} />
           </div>
         </div>
-        {map(detailsDateFields.slice(2), (field, index) => (
+        {map(dateFields.slice(3), (field, index) => (
           <EnterpriseDateField
             key={index}
             isDisabled={field === 'date_of_approval'}

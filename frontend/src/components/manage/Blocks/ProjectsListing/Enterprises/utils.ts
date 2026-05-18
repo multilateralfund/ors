@@ -203,20 +203,15 @@ export const getFundsApproved = (
 
 export const getCostEffectivenessApproved = (
   ods_odp: EnterpriseSubstanceDetails[],
-  capital_cost_approved: string | null,
-  operating_cost_approved: string | null,
+  funds_approved: string | null,
 ) => {
-  const funds_approved = getFundsApproved(
-    capital_cost_approved,
-    operating_cost_approved,
-  )
   const totalPhaseOut = sumBy(
     ods_odp,
     ({ consumption }) => Number(consumption) || 0,
   )
   const cost_effectiveness_approved =
     !isNil(funds_approved) && totalPhaseOut
-      ? (funds_approved ?? 0) / (totalPhaseOut * 1000)
+      ? (Number(funds_approved) ?? 0) / (totalPhaseOut * 1000)
       : null
 
   return cost_effectiveness_approved && !isNaN(cost_effectiveness_approved)
