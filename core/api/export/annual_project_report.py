@@ -37,13 +37,13 @@ class APRExportWriter:
 
         return load_workbook(BytesIO(cls._template_bytes))
 
-    SHEET_NAME = "Annex I APR report "
+    SHEET_NAME = "Annex I APR report"
     STATUS_SHEET_NAME = "Status Values"
     # Last header row (only one now present in the template)
     HEADER_ROW = 1
     FIRST_DATA_ROW = 2
 
-    DATE_FORMAT = "dd/mm/yyyy"
+    DATE_FORMAT = "mmm/yy"
 
     DATE_FIELDS = {
         "date_approved",
