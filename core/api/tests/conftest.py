@@ -1772,3 +1772,15 @@ def mock_update_project_statuses_after_apr_endorsement():
         ".update_project_statuses_after_apr_endorsement.delay"
     ) as mock_delay:
         yield mock_delay
+
+
+@pytest.fixture(autouse=True)
+def mock_auto_submit_empty_agency_reports():
+    """
+    Automatically patch auto_submit_empty_agency_reports.delay for all APR tests,
+    so we don't need celery/rabbitmq to run them.
+    """
+    with patch(
+        "core.api.views.annual_project_report.auto_submit_empty_agency_reports.delay"
+    ):
+        yield
