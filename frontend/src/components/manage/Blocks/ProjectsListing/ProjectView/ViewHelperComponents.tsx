@@ -141,6 +141,26 @@ export const dateDetailItem = (
     <span className="flex gap-2">
       <span>{fieldName}</span>
       <h4 className="m-0">
+        {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
+      </h4>
+    </span>
+  )
+
+export const aprDateDetailItem = (
+  fieldName: string,
+  fieldValue: string,
+  fieldHistory?: detailItemExtra['fieldHistory'],
+) =>
+  fieldHistory && hasExcomUpdate(fieldHistory, fieldName) ? (
+    <FieldHistoryIndicator
+      dataType="date"
+      history={fieldHistory}
+      fieldName={fieldName}
+    />
+  ) : (
+    <span className="flex gap-2">
+      <span>{fieldName}</span>
+      <h4 className="m-0">
         {(fieldValue && dayjs(fieldValue).format('MMM-YY')) || '-'}
       </h4>
     </span>
