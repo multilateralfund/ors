@@ -261,8 +261,13 @@ export default function useGetColumnDefs({
           getOptionLabel: (option: any) => option?.name ?? '',
           isOptionEqualToValue: (option: any, value: any) =>
             isObject(value) ? isEqual(option, value) : option.name === value,
+          // When an option object is selected, store the full name (not the code).
+          // Also accepts a code string (e.g. pasted abbreviation) and converts it.
           agFormatValue: (value: any) =>
-            projectStatuses.find((s) => s.name === value)?.code ?? '',
+            value?.name ??
+            projectStatuses.find((s) => s.code === value || s.name === value)?.name ??
+            value ??
+            '',
         },
         validators: [
           (value: any) => {
@@ -759,6 +764,16 @@ export default function useGetColumnDefs({
 
                   if (cellDataType === 'boolean') {
                     toBeAdded = value?.toLowerCase() === 'yes'
+                  }
+
+                  // Status is stored as a full name (e.g. "Ongoing") but the
+                  // Excel dropdown and manual input may supply the code abbreviation
+                  // (e.g. "ONG"). Convert either form to the canonical full name.
+                  if (fieldName === 'status' && value) {
+                    const matched = projectStatuses.find(
+                      (s) => s.code === value || s.name === value,
+                    )
+                    toBeAdded = matched?.name ?? value
                   }
 
                   row[fieldName!] = toBeAdded
