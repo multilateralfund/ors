@@ -425,9 +425,13 @@ class APRExportWriter:
         if not self.status_column_idx or not self.project_reports_data:
             return
 
-        status_count = ProjectStatus.objects.count()
+        status_count = len(self._status_name_to_code)
         if status_count == 0:
             return
+
+        # Remove any pre-existing data validations from the template so they
+        # don't conflict with our new code-based dropdown.
+        self.worksheet.data_validations.dataValidation = []
 
         # Create data validation referencing the status sheet
         # Formula references the range in the Status Values sheet
