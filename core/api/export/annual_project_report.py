@@ -43,7 +43,7 @@ class APRExportWriter:
     HEADER_ROW = 1
     FIRST_DATA_ROW = 2
 
-    DATE_FORMAT = "mmm/yy"
+    DATE_FORMAT = "mmm-yy"
 
     DATE_FIELDS = {
         "date_approved",
