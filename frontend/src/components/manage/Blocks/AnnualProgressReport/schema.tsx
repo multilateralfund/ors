@@ -23,6 +23,8 @@ import SelectionCheckbox, {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
+const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'DD/MM/YYYY', 'YYYY-MM-DD']
+
 export const checkboxColumnDef = {
   headerComponent: APRSelectAllCheckbox,
   cellRenderer: SelectionCheckbox,
@@ -56,8 +58,7 @@ export const dataTypeDefinitions: Record<
         return null
       }
       // Convert from display/Excel formats to ISO (YYYY-MM-DD) for storage
-      const tryFormats = ['MMM-YY', 'MMM/YY', 'DD/MM/YYYY', 'YYYY-MM-DD']
-      for (const fmt of tryFormats) {
+      for (const fmt of DATE_PASTE_FORMATS) {
         const parsed = dayjs(params.newValue as string, fmt, true)
         if (parsed.isValid()) {
           return parsed.format('YYYY-MM-DD')
@@ -742,9 +743,8 @@ export default function useGetColumnDefs({
                       // Convert from display/Excel format (MMM-YY, MMM/YY) or legacy
                       // DD/MM/YYYY format to ISO (YYYY-MM-DD) for API submission.
                       // MMM-YY / MMM/YY dates default to day 1 of the given month.
-                      const tryFormats = ['MMM-YY', 'MMM/YY', 'DD/MM/YYYY', 'YYYY-MM-DD']
                       let parsed = null
-                      for (const fmt of tryFormats) {
+                      for (const fmt of DATE_PASTE_FORMATS) {
                         const d = dayjs(value as string, fmt, true)
                         if (d.isValid()) {
                           parsed = d
