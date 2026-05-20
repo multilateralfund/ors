@@ -789,7 +789,7 @@ export default function useGetColumnDefs({
             )
           : undefined,
       cellRenderer: canBeEdited ? CellValidation : undefined,
-      ...(c.overrideOptions?.cellDataType === 'dateString' && { headerTooltip: DATE_PASTE_FORMATS_HINT }),
+      ...((c.overrideOptions as any)?.cellDataType === 'dateString' && { headerTooltip: DATE_PASTE_FORMATS_HINT }),
       ...(c.overrideOptions ?? {}),
     }
   })
