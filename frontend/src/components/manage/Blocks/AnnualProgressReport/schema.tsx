@@ -23,7 +23,7 @@ import SelectionCheckbox, {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
-const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'YYYY-MM-DD']
+const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'YYYY-MM-DD']
 
 export const checkboxColumnDef = {
   headerComponent: APRSelectAllCheckbox,
