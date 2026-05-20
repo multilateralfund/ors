@@ -23,7 +23,8 @@ import SelectionCheckbox, {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
-const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'YYYY-MM-DD']
+const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD']
+const DATE_PASTE_FORMATS_HINT = 'Accepted formats: Jan-24, Jan/24, Jan.24, 31/01/2024, 31.01.2024, 31-01-2024, 2024-01-31'
 
 export const checkboxColumnDef = {
   headerComponent: APRSelectAllCheckbox,
@@ -751,7 +752,7 @@ export default function useGetColumnDefs({
                           break
                         }
                       }
-                      toBeAdded = parsed ? parsed.format('YYYY-MM-DD') : null
+                      toBeAdded = parsed ? parsed.format('YYYY-MM-DD') : row[fieldName!]
                     }
                   }
 
@@ -788,6 +789,7 @@ export default function useGetColumnDefs({
             )
           : undefined,
       cellRenderer: canBeEdited ? CellValidation : undefined,
+      ...(c.overrideOptions?.cellDataType === 'dateString' && { headerTooltip: DATE_PASTE_FORMATS_HINT }),
       ...(c.overrideOptions ?? {}),
     }
   })
