@@ -675,7 +675,7 @@ export default function useGetColumnDefs({
       },
     },
     remarksLastYear: {
-      label: `Remarks (as of 31 December ${parseInt(year, 10) - 1})`,
+      label: `Remarks (as of 31 December ${parseInt(year, 10)})`,
       fieldName: 'last_year_remarks',
       group: 'Narrative & Indicators Data Fields',
       input: true,

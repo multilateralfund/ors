@@ -215,7 +215,7 @@ class APRExportWriter:
         if self.year and "last_year_remarks" in self.column_mapping:
             col_idx = self.column_mapping["last_year_remarks"]
             self.worksheet.cell(self.HEADER_ROW, col_idx).value = (
-                f"Remarks (as of 31 December {self.year - 1})"
+                f"Remarks (as of 31 December {self.year})"
             )
 
     def _remove_hidden_sheets(self):
@@ -481,7 +481,7 @@ class APRExportWriter:
 class APRSummaryTablesExportWriter:
     """
     Generates multi-sheet Excel export with summary tables for APR.
-    Unlike APRExportWriter, this includes *all* data regardless of UI filters.
+    Unlike APRExportWriter, this includes all ONG/COM/FIN data regardless of UI filters.
     """
 
     TEMPLATE_PATH = (
