@@ -82,7 +82,15 @@ function parsePastedHTML(html: string) {
   for (let i = 0; i < elTable.rows.length; i++) {
     result.push([])
     for (let j = 0; j < elTable.rows[i].cells.length; j++) {
-      result[i].push(normalizeCell(elTable.rows[i].cells[j].textContent ?? ''))
+      const cell = elTable.rows[i].cells[j]
+      result[i].push(normalizeCell(cell.textContent ?? ''))
+      // Expand colspan: Excel merges adjacent empty cells into a single <td colspan="N">
+      // instead of emitting N separate empty cells.
+      // Without this, data rows with empty intermediate columns have fewer entries than
+      // the header row, causing all subsequent values to shift left.
+      for (let k = 1; k < (cell.colSpan || 1); k++) {
+        result[i].push('')
+      }
     }
   }
 
@@ -108,10 +116,6 @@ export async function readPastedTableFromNavigator(
 
     if (htmlContent) {
       sourceLang = extractLangFromHTML(htmlContent)
-      console.log(
-        '[paste] detected sourceLang from clipboard HTML:',
-        sourceLang,
-      )
     }
 
     const pastedTable = !!htmlContent

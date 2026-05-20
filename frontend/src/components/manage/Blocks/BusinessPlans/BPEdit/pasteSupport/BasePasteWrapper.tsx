@@ -182,13 +182,10 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
                   const isTextField =
                     (crtFieldObj as any)?.overrideOptions?.cellDataType ===
                     'text'
-                  mutator(
-                    nextForm[i],
-                    isTextField
-                      ? value
-                      : cleanValue(value, decimalSep, thousandSep),
-                    crtFieldObj,
-                  )
+                  const finalValue = isTextField
+                    ? value
+                    : cleanValue(value, decimalSep, thousandSep)
+                  mutator(nextForm[i], finalValue, crtFieldObj)
                   numColsInserted++
                 })
 
@@ -219,8 +216,6 @@ export function BasePasteWrapper(props: BasePasteWrapperProps) {
           }
         }
         setForm(nextForm)
-        console.debug('pendingIds', pendingIds)
-        console.debug('newValues', newValues)
 
         if (numInserted > 0) {
           const successMessage = isMultiple
