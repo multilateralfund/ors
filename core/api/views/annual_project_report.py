@@ -57,6 +57,7 @@ from core.api.utils import (
     get_previous_year_project_reports,
 )
 from core.models import (
+    Agency,
     AnnualProgressReport,
     AnnualAgencyProjectReport,
     AnnualProjectReport,
@@ -633,13 +634,36 @@ class APRSummaryTablesExportView(APIView):
                 type=OpenApiTypes.INT,
                 required=True,
             ),
+            OpenApiParameter(
+                name="agency",
+                location=OpenApiParameter.QUERY,
+                description="Comma-separated Agency IDs to filter by (MLFS users only)",
+                type=OpenApiTypes.STR,
+                required=False,
+            ),
         ],
         responses={200: "Excel file download"},
     )
     def get(self, request):
-        agency = None
-        if request.user.agency:
-            agency = request.user.agency
+        is_mlfs = request.user.has_perm("core.can_view_all_agencies")
+
+        agencies = None
+        submitted_only = False
+
+        if is_mlfs:
+            submitted_only = True
+            agency_param = request.query_params.get("agency", "")
+            if agency_param:
+                try:
+                    agency_ids = [
+                        int(pk) for pk in agency_param.split(",") if pk.strip()
+                    ]
+                    if agency_ids:
+                        agencies = list(Agency.objects.filter(pk__in=agency_ids))
+                except (ValueError, TypeError):
+                    pass
+        elif request.user.agency:
+            agencies = [request.user.agency]
 
         year = request.query_params.get("year")
         if year:
@@ -648,7 +672,11 @@ class APRSummaryTablesExportView(APIView):
             except (ValueError, TypeError):
                 year = None
 
-        writer = APRSummaryTablesExportWriter(agency=agency, year=year)
+        writer = APRSummaryTablesExportWriter(
+            agencies=agencies,
+            year=year,
+            submitted_only=submitted_only,
+        )
         return writer.generate()
 
 
