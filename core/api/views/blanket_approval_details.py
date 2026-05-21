@@ -6,12 +6,16 @@ from typing import TypedDict
 import openpyxl
 from django.conf import settings
 from django.db.models import F
+from django.db.models import IntegerField
 from django.db.models import QuerySet
 from django.db.models import TextField
 from django.db.models import Value
+from django.db.models.functions import Cast
 from django.db.models.functions import Coalesce
 from django.db.models.functions import Concat
 from django.db.models.functions import NullIf
+from django.db.models.functions import Round
+from django.db.models.functions import Upper
 from django.http import JsonResponse
 from django.utils.html import strip_tags
 from rest_framework import mixins
@@ -142,13 +146,19 @@ class BlanketApprovalDetailsViewset(
             ),
             agency_name=F("agency__name"),
             country_pk=F("country"),
-            country_name=F("country__name"),
+            country_name=Upper(F("country__name")),
             cluster_pk=F("cluster"),
-            cluster_name=F("cluster__name"),
+            cluster_name=Upper(F("cluster__name")),
             project_type_pk=F("project_type"),
             project_type_name=F("project_type__name"),
-            hcfc=Coalesce(F("ods_odp__odp"), 0.0),
-            hfc=Coalesce(F("ods_odp__co2_mt"), 0.0),
+            hcfc=Round(Coalesce(F("ods_odp__odp"), 0.0), precision=1),
+            hfc=Cast(
+                Round(
+                    Coalesce(F("ods_odp__co2_mt"), 0.0) / Value(1000.0),
+                    precision=0,
+                ),
+                output_field=IntegerField(),
+            ),
             project_funding=Coalesce(F("total_fund"), 0.0),
             project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
             total=Coalesce(F("total_fund") + F("support_cost_psc"), 0.0),
@@ -264,6 +274,7 @@ class BlanketApprovalDetailsViewset(
         row_project_title = sheet[i + 4]
         row_project_description = sheet[i + 5]
         row_country_total = sheet[i + 7]
+        row_empty = sheet[i + 8]
 
         def add_row(row, styles_from):
             cells = []
@@ -271,7 +282,7 @@ class BlanketApprovalDetailsViewset(
             for idx, val in enumerate(row):
                 src_cell = styles_from[idx]
                 cell = copy(src_cell)
-                for attr in ["font", "number_format", "alignment"]:
+                for attr in ["font", "number_format", "alignment", "border"]:
                     setattr(cell, attr, copy(getattr(src_cell, attr)))
                 cell.value = val
                 cells.append(cell)
@@ -297,6 +308,7 @@ class BlanketApprovalDetailsViewset(
                         row_project_title,
                     )
                     add_row([project["project_description"]], row_project_description)
+                    add_row([""] * 7, row_empty)
             country_total: CountryTotal = country["country_total"]
             add_row(
                 [
