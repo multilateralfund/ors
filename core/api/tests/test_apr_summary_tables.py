@@ -26,7 +26,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     UserFactory,
 )
-from core.models import Country
+from core.models import AnnualAgencyProjectReport, Country
 from core.models.project_metadata import ProjectCluster, ProjectType
 
 # pylint: disable=W0221,W0613,R0913,R0914,R0904
@@ -95,14 +95,16 @@ class TestAPRSummaryTablesExport(BaseTest):
         # B4 = Number of Approvals — should be 1 (only own project)
         assert summary_sheet.cell(4, 2).value == 1
 
-    def test_mlfs_user_sees_all_projects(
+    def test_mlfs_user_sees_all_submitted_projects(
         self,
         secretariat_viewer_user,
         annual_progress_report,
         project_ongoing_status,
     ):
+        # MLFS users see only submitted agency reports
         agency_report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
         project1 = ProjectFactory(
             agency=agency_report1.agency,
@@ -116,6 +118,7 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         agency_report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
         project2 = ProjectFactory(
             agency=agency_report2.agency,
@@ -133,11 +136,11 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert response.status_code == status.HTTP_200_OK
 
-        # Check I.1 summary counts both projects
+        # Check I.1 summary counts both submitted projects
         workbook = load_workbook(BytesIO(response.content))
         summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
 
-        # B4 = Number of Approvals — should be 2 (both projects)
+        # B4 = Number of Approvals — should be 2 (both submitted projects)
         assert summary_sheet.cell(4, 2).value == 2
 
     def test_export_structure_and_metadata(
@@ -805,6 +808,103 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert (
             sheet_b.cell(APRSummaryTablesExportWriter.DATA_START_ROW, 4).value == 75.0
         )
+
+    def test_mlfs_user_excludes_draft_reports(
+        self,
+        secretariat_viewer_user,
+        annual_progress_report,
+        project_ongoing_status,
+    ):
+        """MLFS export only includes submitted agency reports, not drafts."""
+        submitted_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualProjectReportFactory(
+            report=submitted_report,
+            project=ProjectFactory(agency=submitted_report.agency),
+        )
+
+        draft_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+        )
+        AnnualProjectReportFactory(
+            report=draft_report,
+            project=ProjectFactory(agency=draft_report.agency),
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-summary-tables-export")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        # Only the submitted report's project should be counted
+        assert summary_sheet.cell(4, 2).value == 1
+
+    def test_mlfs_user_agency_filter(
+        self,
+        secretariat_viewer_user,
+        annual_progress_report,
+        project_ongoing_status,
+    ):
+        """MLFS export respects the ?agency= query param."""
+        report1 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualProjectReportFactory(
+            report=report1,
+            project=ProjectFactory(agency=report1.agency),
+        )
+
+        report2 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualProjectReportFactory(
+            report=report2,
+            project=ProjectFactory(agency=report2.agency),
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-summary-tables-export")
+        response = self.client.get(url, {"agency": str(report1.agency.id)})
+
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        # Only agency1's project should appear
+        assert summary_sheet.cell(4, 2).value == 1
+
+    def test_agency_user_includes_draft_reports(
+        self,
+        apr_agency_viewer_user,
+        annual_progress_report,
+        project_ongoing_status,
+    ):
+        """Agency user export includes their own draft (not-yet-submitted) reports."""
+        draft_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            agency=apr_agency_viewer_user.agency,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+        )
+        AnnualProjectReportFactory(
+            report=draft_report,
+            project=ProjectFactory(agency=apr_agency_viewer_user.agency),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse("apr-summary-tables-export")
+        response = self.client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        workbook = load_workbook(BytesIO(response.content))
+        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        # Draft report's project is visible to the agency user
+        assert summary_sheet.cell(4, 2).value == 1
 
 
 @pytest.mark.django_db

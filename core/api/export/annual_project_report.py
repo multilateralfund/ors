@@ -13,7 +13,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from core.api.serializers.annual_project_report import AnnualProjectReportReadSerializer
-from core.models import AnnualProjectReport, ProjectStatus
+from core.models import AnnualAgencyProjectReport, AnnualProjectReport, ProjectStatus
 
 # pylint: disable=R0902,R0911,R0913,R0914,R0915,R1705,W0212,C0302
 
@@ -545,8 +545,8 @@ class APRSummaryTablesExportWriter:
             "pct_funds_disbursed": 8,
         }
 
-    def __init__(self, agency=None, year=None):
-        self.agency = agency
+    def __init__(self, agencies=None, year=None, submitted_only=False):
+        self.agencies = list(agencies) if agencies else []
         self.year = year
         self.workbook = None
         self.annual_column_mapping = self.build_annual_column_mapping()
@@ -575,8 +575,12 @@ class APRSummaryTablesExportWriter:
         self._completed_status_names = {
             status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
         }
-        if self.agency:
-            queryset = queryset.filter(project__agency=self.agency)
+        if self.agencies:
+            queryset = queryset.filter(report__agency__in=self.agencies)
+        if submitted_only:
+            queryset = queryset.filter(
+                report__status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            )
         self.queryset = queryset
         # Materialize the queryset once so we don't keep re-querying the DB for each tab
         self.records = list(queryset)
@@ -1483,8 +1487,8 @@ class APRSummaryTablesExportWriter:
         output.seek(0)
 
         filename = "APR_Summary_Tables_Cumulative"
-        if self.agency:
-            filename += f"_{self.agency.name.replace(' ', '_')}"
+        if len(self.agencies) == 1:
+            filename += f"_{self.agencies[0].name.replace(' ', '_')}"
         filename += ".xlsx"
 
         response = HttpResponse(
