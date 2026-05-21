@@ -1374,12 +1374,12 @@ class APRSummaryTablesExportWriter:
         )
 
         data["avg_months_to_disbursement"] = self._calculate_avg_months(
-            records, "project__date_approved", "date_first_disbursement"
+            records, "date_approved_denorm", "date_first_disbursement"
         )
 
         if is_ongoing:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_planned_completion"
+                records, "date_approved_denorm", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
                 records,
@@ -1393,7 +1393,7 @@ class APRSummaryTablesExportWriter:
             data["pct_disbursing"] = (num_disbursing / count) if count > 0 else 0
         else:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_actual_completion"
+                records, "date_approved_denorm", "date_actual_completion"
             )
 
         if include_odp_co2:
