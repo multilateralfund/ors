@@ -45,6 +45,9 @@ class ProjectApprovalSummaryViewSet(
         serializer = ApprovalSummarySerializer(queryset)
         return serializer.data
 
+    def _is_approved_submission_status(self):
+        return self.request.query_params.get("submission_status") == "approved"
+
     def list(self, request, *args, **kwargs):
         return Response(self._extract_data())
 
@@ -112,6 +115,10 @@ class ProjectApprovalSummaryViewSet(
     def export(self, request, *args, **kwargs):
         wb = openpyxl.open(self._template_path)
         sheet = wb.worksheets[0]
+
+        if self._is_approved_submission_status():
+            sheet["E2"] = "Funds approved (US$)"
+
         rows = [
             "".join(c.value for c in r if c.value).strip().lower() for r in sheet.rows
         ]
