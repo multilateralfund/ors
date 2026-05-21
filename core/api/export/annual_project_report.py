@@ -581,6 +581,7 @@ class APRSummaryTablesExportWriter:
             queryset = queryset.filter(
                 report__status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
             )
+
         self.queryset = queryset
         # Materialize the queryset once so we don't keep re-querying the DB for each tab
         self.records = list(queryset)
@@ -1487,8 +1488,13 @@ class APRSummaryTablesExportWriter:
         output.seek(0)
 
         filename = "APR_Summary_Tables_Cumulative"
-        if len(self.agencies) == 1:
-            filename += f"_{self.agencies[0].name.replace(' ', '_')}"
+        if self.agencies:
+            agency_part = "_".join(a.name.replace(" ", "_") for a in self.agencies)
+            if len(agency_part) <= 100:
+                filename += f"_{agency_part}"
+            else:
+                # Keep it short to avoid unreadable names
+                filename += f"_{len(self.agencies)}_agencies"
         filename += ".xlsx"
 
         response = HttpResponse(
