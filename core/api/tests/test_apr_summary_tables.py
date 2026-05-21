@@ -95,39 +95,38 @@ class TestAPRSummaryTablesExport(BaseTest):
         # B4 = Number of Approvals — should be 1 (only own project)
         assert summary_sheet.cell(4, 2).value == 1
 
-    def test_mlfs_user_sees_all_submitted_projects(
+    def test_mlfs_user_sees_submitted_and_excludes_drafts(
         self,
         secretariat_viewer_user,
         annual_progress_report,
         project_ongoing_status,
     ):
-        # MLFS users see only submitted agency reports
+        # MLFS users see all submitted agency reports and none of the drafts
         agency_report1 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
-        project1 = ProjectFactory(
-            agency=agency_report1.agency,
-            code="AGENCY1/001",
-            date_approved=date(2023, 1, 15),
-        )
         AnnualProjectReportFactory(
             report=agency_report1,
-            project=project1,
+            project=ProjectFactory(agency=agency_report1.agency),
         )
 
         agency_report2 = AnnualAgencyProjectReportFactory(
             progress_report=annual_progress_report,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
         )
-        project2 = ProjectFactory(
-            agency=agency_report2.agency,
-            code="AGENCY2/001",
-            date_approved=date(2023, 2, 20),
-        )
         AnnualProjectReportFactory(
             report=agency_report2,
-            project=project2,
+            project=ProjectFactory(agency=agency_report2.agency),
+        )
+
+        draft_report = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
+        )
+        AnnualProjectReportFactory(
+            report=draft_report,
+            project=ProjectFactory(agency=draft_report.agency),
         )
 
         self.client.force_authenticate(user=secretariat_viewer_user)
@@ -136,11 +135,10 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert response.status_code == status.HTTP_200_OK
 
-        # Check I.1 summary counts both submitted projects
         workbook = load_workbook(BytesIO(response.content))
         summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
 
-        # B4 = Number of Approvals — should be 2 (both submitted projects)
+        # B4 = Number of Approvals — both submitted projects counted, draft excluded
         assert summary_sheet.cell(4, 2).value == 2
 
     def test_export_structure_and_metadata(
@@ -808,41 +806,6 @@ class TestAPRSummaryTablesExport(BaseTest):
         assert (
             sheet_b.cell(APRSummaryTablesExportWriter.DATA_START_ROW, 4).value == 75.0
         )
-
-    def test_mlfs_user_excludes_draft_reports(
-        self,
-        secretariat_viewer_user,
-        annual_progress_report,
-        project_ongoing_status,
-    ):
-        """MLFS export only includes submitted agency reports, not drafts."""
-        submitted_report = AnnualAgencyProjectReportFactory(
-            progress_report=annual_progress_report,
-            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
-        )
-        AnnualProjectReportFactory(
-            report=submitted_report,
-            project=ProjectFactory(agency=submitted_report.agency),
-        )
-
-        draft_report = AnnualAgencyProjectReportFactory(
-            progress_report=annual_progress_report,
-            status=AnnualAgencyProjectReport.SubmissionStatus.DRAFT,
-        )
-        AnnualProjectReportFactory(
-            report=draft_report,
-            project=ProjectFactory(agency=draft_report.agency),
-        )
-
-        self.client.force_authenticate(user=secretariat_viewer_user)
-        url = reverse("apr-summary-tables-export")
-        response = self.client.get(url)
-
-        assert response.status_code == status.HTTP_200_OK
-        workbook = load_workbook(BytesIO(response.content))
-        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
-        # Only the submitted report's project should be counted
-        assert summary_sheet.cell(4, 2).value == 1
 
     def test_mlfs_user_agency_filter(
         self,
