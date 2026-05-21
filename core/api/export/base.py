@@ -34,6 +34,7 @@ class BaseWriter:
     ROW_HEIGHT = 30
     COLUMN_WIDTH = 15
     OVERSIZED_CELL_THRESHOLD = 25
+    FONT_NAME = DEFAULT_FONT.name
     header_row_start_idx = 2
 
     def __init__(self, sheet, headers):
@@ -164,7 +165,7 @@ class BaseWriter:
 
     def _write_header_cell(self, row, column, value, comment=None):
         cell = self.sheet.cell(row, column, value)
-        cell.font = Font(name=DEFAULT_FONT.name, bold=True, color=None)
+        cell.font = Font(name=self.FONT_NAME, bold=True, color=None)
         cell.border = Border(
             left=Side(style="thin"),
             right=Side(style="thin"),
@@ -266,6 +267,7 @@ class CPReportBase:
 class WriteOnlyBase:
     ROW_HEIGHT = 30
     COLUMN_WIDTH = 15
+    FONT_NAME = DEFAULT_FONT.name
     header_row_start_idx = 1
 
     def __init__(self, sheet, headers):
@@ -336,7 +338,7 @@ class WriteOnlyBase:
 
     def write_header_cell(self, value, comment=None):
         cell = WriteOnlyCell(self.sheet, value=value)
-        cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+        cell.font = Font(name=self.FONT_NAME, bold=True)
         cell.border = Border(
             left=Side(style="thin"),
             right=Side(style="thin"),
