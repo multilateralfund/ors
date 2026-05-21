@@ -155,6 +155,12 @@ const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
               onChange={handleFilterChanged('tranche')}
               value={rowData.params.tranche}
             />
+            <FilterField
+              label="Funding window"
+              options={getRowFilterOptions('funding_window')}
+              onChange={handleFilterChanged('funding_window_id')}
+              value={rowData.params.funding_window_id}
+            />
           </div>
         ) : null}
       </TableCell>

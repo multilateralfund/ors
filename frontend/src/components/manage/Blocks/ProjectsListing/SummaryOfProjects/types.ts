@@ -17,6 +17,7 @@ export type ApiSummaryOfProjectsFilters = {
   sector: ApiFilterOption[]
   agency: ApiFilterOption[]
   tranche: ApiFilterOption[]
+  funding_window: ApiFilterOption[]
 }
 export type ApiFilterOption = {
   name: string

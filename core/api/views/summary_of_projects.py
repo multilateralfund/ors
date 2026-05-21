@@ -103,6 +103,13 @@ class SummaryOfProjectsViewSet(
                 .distinct()
                 if t is not None
             ],
+            "funding_window": [
+                {"name": description or f"Funding window {pk}", "id": pk}
+                for pk, description in queryset.order_by("funding_window__description")
+                .values_list("funding_window_id", "funding_window__description")
+                .distinct()
+                if pk is not None
+            ],
         }
 
         return Response(result)

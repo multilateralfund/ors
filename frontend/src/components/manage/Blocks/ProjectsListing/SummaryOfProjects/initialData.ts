@@ -11,6 +11,7 @@ export const initialRequestParams = () => ({
   sector_id: '',
   agency_id: '',
   tranche: '',
+  funding_window_id: '',
 })
 
 export const initialRowData = () => {
