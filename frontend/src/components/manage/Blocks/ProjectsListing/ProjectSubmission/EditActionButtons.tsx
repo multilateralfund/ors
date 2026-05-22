@@ -306,37 +306,55 @@ const EditActionButtons = ({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const handleErrors = async (error: any, type?: string) => {
-    const errors =
-      error && typeof error.json === 'function' ? await error.json() : {}
+    let errors: any = {}
 
-    if (error.status === 400) {
-      setErrors(errors)
+    if (error instanceof Response) {
+      const contentType = error.headers.get('content-type') || ''
 
-      const nonFieldErrors = getNonFieldErrors(errors)
-      if (nonFieldErrors.length > 0) {
-        setInlineMessage({
-          type: 'error',
-          errorMessages: nonFieldErrors,
+      if (contentType.includes('application/json')) {
+        errors = await error.json()
+      } else {
+        if (error.status === 413) {
+          setFileErrors(
+            'Uploaded files are too large. Maximum file size allowed is 170MB.',
+          )
+        }
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
         })
+
+        return
       }
 
-      if (errors?.files) {
-        setFileErrors(errors.files)
-      }
+      if (error.status === 400) {
+        setErrors(errors)
 
-      if (errors?.metadata) {
-        setFileErrors(errors.metadata)
-      }
+        const nonFieldErrors = getNonFieldErrors(errors)
+        if (nonFieldErrors.length > 0) {
+          setInlineMessage({
+            type: 'error',
+            errorMessages: nonFieldErrors,
+          })
+        }
 
-      if (errors?.details) {
-        setInlineMessage({
-          type: 'error',
-          message: errors.details,
-        })
-      }
+        if (errors?.files) {
+          setFileErrors(errors.files)
+        }
 
-      if (type === 'files' && errors?.error) {
-        setFileErrors(errors.error)
+        if (errors?.metadata) {
+          setFileErrors(errors.metadata)
+        }
+
+        if (errors?.details) {
+          setInlineMessage({
+            type: 'error',
+            message: errors.details,
+          })
+        }
+
+        if (type === 'files' && errors?.error) {
+          setFileErrors(errors.error)
+        }
       }
     }
 

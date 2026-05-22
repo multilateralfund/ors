@@ -3,7 +3,9 @@ import shutil
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import DateField, DecimalField, F, Max, Min, Sum
 from django.db import models, transaction
+from django.db.models.functions import Cast, Coalesce
 from functools import cached_property
 
 from core.models.funding_window import FundingWindow
@@ -30,6 +32,49 @@ OLD_FIELD_HELP_TEXT = """
     Old field from the initial imported data/implementation of projects.
     TBD if the information can be transferred to the new structure.
 """
+
+
+class MetaProjectQuerySet(models.QuerySet):
+    def with_computed_field_fallbacks(self, prefix="resolved_"):
+        return self.annotate(
+            **{
+                f"{prefix}start_date": Coalesce(
+                    Cast("start_date", output_field=DateField()),
+                    Min("projects__project_start_date"),
+                    output_field=DateField(),
+                ),
+                f"{prefix}end_date": Coalesce(
+                    Cast("end_date", output_field=DateField()),
+                    Max("projects__project_end_date"),
+                    output_field=DateField(),
+                ),
+                f"{prefix}project_funding": Coalesce(
+                    F("project_funding"),
+                    Sum("projects__total_fund"),
+                    output_field=DecimalField(max_digits=30, decimal_places=15),
+                ),
+                f"{prefix}support_cost": Coalesce(
+                    F("support_cost"),
+                    Sum("projects__support_cost_psc"),
+                    output_field=DecimalField(max_digits=30, decimal_places=15),
+                ),
+                f"{prefix}phase_out_co2_eq_t": Coalesce(
+                    F("phase_out_co2_eq_t"),
+                    Sum("projects__ods_odp__co2_mt"),
+                    output_field=DecimalField(max_digits=30, decimal_places=15),
+                ),
+                f"{prefix}phase_out_odp": Coalesce(
+                    F("phase_out_odp"),
+                    Sum("projects__ods_odp__odp"),
+                    output_field=DecimalField(max_digits=30, decimal_places=15),
+                ),
+                f"{prefix}phase_out_mt": Coalesce(
+                    F("phase_out_mt"),
+                    Sum("projects__ods_odp__phase_out_mt"),
+                    output_field=DecimalField(max_digits=30, decimal_places=15),
+                ),
+            }
+        )
 
 
 class MetaProject(models.Model):
@@ -363,6 +408,20 @@ class MetaProject(models.Model):
     )
 
     # END: Task #32217 fields.
+
+    objects = MetaProjectQuerySet.as_manager()
+
+    @classmethod
+    def computed_field_aggregates(cls):
+        return {
+            "start_date": Min("project_start_date"),
+            "end_date": Max("project_end_date"),
+            "project_funding": Sum("total_fund"),
+            "support_cost": Sum("support_cost_psc"),
+            "phase_out_co2_eq_t": Sum("ods_odp__co2_mt"),
+            "phase_out_odp": Sum("ods_odp__odp"),
+            "phase_out_mt": Sum("ods_odp__phase_out_mt"),
+        }
 
     def __str__(self):
         return f"{self.umbrella_code}"

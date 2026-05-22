@@ -1,5 +1,8 @@
 # pylint:disable=abstract-method,arguments-renamed
 
+from decimal import Decimal
+from decimal import ROUND_HALF_UP
+
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Q
@@ -11,14 +14,32 @@ from rest_framework import serializers
 from core.models import Project
 
 
+def _round_decimal(value, places):
+    quantize_value = Decimal("1").scaleb(-places)
+    return Decimal(str(value)).quantize(quantize_value, rounding=ROUND_HALF_UP)
+
+
+def _format_summary_values(values):
+    if "hcfc" in values:
+        values["hcfc"] = float(_round_decimal(values.get("hcfc") or 0, 1))
+
+    if "hfc" in values:
+        scaled_hfc = (values.get("hfc") or 0) / 1000
+        values["hfc"] = int(_round_decimal(scaled_hfc, 0))
+
+    return values
+
+
 def compute_fields(projects: QuerySet[Project]):
-    return projects.aggregate(
-        projects_count=Count("id"),
-        hcfc=Coalesce(Sum("ods_odp__odp"), 0.0),
-        hfc=Coalesce(Sum("ods_odp__co2_mt"), 0.0),
-        project_funding=Coalesce(Sum("total_fund"), 0.0),
-        project_support_cost=Coalesce(Sum("support_cost_psc"), 0.0),
-        total=Coalesce(Sum(F("total_fund") + F("support_cost_psc")), 0.0),
+    return _format_summary_values(
+        projects.aggregate(
+            projects_count=Count("id"),
+            hcfc=Coalesce(Sum("ods_odp__odp"), 0.0),
+            hfc=Coalesce(Sum("ods_odp__co2_mt"), 0.0),
+            project_funding=Coalesce(Sum("total_fund"), 0.0),
+            project_support_cost=Coalesce(Sum("support_cost_psc"), 0.0),
+            total=Coalesce(Sum(F("total_fund") + F("support_cost_psc")), 0.0),
+        )
     )
 
 
@@ -118,16 +139,19 @@ class ApprovalSummaryByPartiesAndImplementingAgenciesSerializer(
     instance: QuerySet[Project]
 
     def to_representation(self, projects: QuerySet[Project]):
-        return projects.values(
-            agency_name=F("agency__name"), agency_type=F("agency__agency_type")
-        ).annotate(
-            projects_count=Count("id", distinct=True),
-            hcfc=Sum("ods_odp__odp"),
-            hfc=Sum("ods_odp__co2_mt"),
-            project_funding=Sum("total_fund"),
-            project_support_cost=Sum("support_cost_psc"),
-            total=Sum(F("total_fund") + F("support_cost_psc")),
-        )
+        return [
+            _format_summary_values(agency)
+            for agency in projects.values(
+                agency_name=F("agency__name"), agency_type=F("agency__agency_type")
+            ).annotate(
+                projects_count=Count("id", distinct=True),
+                hcfc=Sum("ods_odp__odp"),
+                hfc=Sum("ods_odp__co2_mt"),
+                project_funding=Sum("total_fund"),
+                project_support_cost=Sum("support_cost_psc"),
+                total=Sum(F("total_fund") + F("support_cost_psc")),
+            )
+        ]
 
 
 class ApprovalSummarySerializer(serializers.BaseSerializer):

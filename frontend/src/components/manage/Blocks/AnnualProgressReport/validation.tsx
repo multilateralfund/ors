@@ -75,8 +75,13 @@ export function validateDate(value: any) {
     return null
   }
 
-  // Check valid ISO date string
-  return dayjs(value).isValid() ? null : `Invalid date: ${value}`
+  // Dates are stored internally as ISO YYYY-MM-DD strings.
+  // Reject anything that doesn't match that format so mis-parsed pastes
+  // (e.g. a raw "Jan-24" that was never converted) surface a clear error.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !dayjs(value).isValid()) {
+    return `Invalid date: ${value}`
+  }
+  return null
 }
 
 export function validateNumber(value: any) {

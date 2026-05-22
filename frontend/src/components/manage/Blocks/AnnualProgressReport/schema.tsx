@@ -23,6 +23,9 @@ import SelectionCheckbox, {
 } from '@ors/components/manage/Blocks/AnnualProgressReport/SelectionCheckbox.tsx'
 import dayjs from 'dayjs'
 
+const DATE_PASTE_FORMATS = ['MMM-YY', 'MMM/YY', 'MMM.YY', 'DD/MM/YYYY', 'DD.MM.YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD']
+const DATE_PASTE_FORMATS_HINT = 'Accepted formats: Jan-24, Jan/24, Jan.24, 31/01/2024, 31.01.2024, 31-01-2024, 2024-01-31'
+
 export const checkboxColumnDef = {
   headerComponent: APRSelectAllCheckbox,
   cellRenderer: SelectionCheckbox,
@@ -46,8 +49,8 @@ export const dataTypeDefinitions: Record<
     extendsDataType: 'dateString',
     // From date picker to our ISO format (YYYY-MM-DD)
     dateFormatter: (value) => formatDate(value, 'YYYY-MM-DD'),
-    // Format value to UI format (DD/MM/YYYY)
-    valueFormatter: (params) => formatDate(params.value),
+    // Format stored ISO value to display format (MMM-YY, e.g. Jan-24)
+    valueFormatter: (params) => formatDate(params.value, 'MMM-YY'),
     // Parse to date from ISO format
     dateParser: (value) => parseDate(value),
     validators: [validateDate],
@@ -55,7 +58,13 @@ export const dataTypeDefinitions: Record<
       if (isNil(params.newValue) || params.newValue === '') {
         return null
       }
-
+      // Convert from display/Excel formats to ISO (YYYY-MM-DD) for storage
+      for (const fmt of DATE_PASTE_FORMATS) {
+        const parsed = dayjs(params.newValue as string, fmt, true)
+        if (parsed.isValid()) {
+          return parsed.format('YYYY-MM-DD')
+        }
+      }
       return params.newValue
     },
   },
@@ -254,8 +263,13 @@ export default function useGetColumnDefs({
           getOptionLabel: (option: any) => option?.name ?? '',
           isOptionEqualToValue: (option: any, value: any) =>
             isObject(value) ? isEqual(option, value) : option.name === value,
+          // When an option object is selected, store the full name (not the code).
+          // Also accepts a code string (e.g. pasted abbreviation) and converts it.
           agFormatValue: (value: any) =>
-            projectStatuses.find((s) => s.name === value)?.code ?? '',
+            value?.name ??
+            projectStatuses.find((s) => s.code === value || s.name === value)?.name ??
+            value ??
+            '',
         },
         validators: [
           (value: any) => {
@@ -661,7 +675,7 @@ export default function useGetColumnDefs({
       },
     },
     remarksLastYear: {
-      label: `Remarks (as of 31 December ${parseInt(year, 10) - 1})`,
+      label: `Remarks (as of 31 December ${parseInt(year, 10)})`,
       fieldName: 'last_year_remarks',
       group: 'Narrative & Indicators Data Fields',
       input: true,
@@ -724,14 +738,21 @@ export default function useGetColumnDefs({
                   let toBeAdded = value
 
                   if (cellDataType === 'dateString') {
-                    if (value === '') {
+                    if (!value || (typeof value === 'string' && value.trim() === '')) {
                       toBeAdded = null
                     } else {
-                      // Convert from Excel format to ISO
-                      const date = dayjs(value, 'DD/MM/YYYY', true)
-                      if (date.isValid()) {
-                        toBeAdded = date.format('YYYY-MM-DD')
+                      // Convert from display/Excel format (MMM-YY, MMM/YY, MMM.YY)
+                      // or legacy DD/MM/YYYY format to ISO before calling API.
+                      // The default for "MMM-YY" dates is day 1 of the given month.
+                      let parsed = null
+                      for (const fmt of DATE_PASTE_FORMATS) {
+                        const d = dayjs(value as string, fmt, true)
+                        if (d.isValid()) {
+                          parsed = d
+                          break
+                        }
                       }
+                      toBeAdded = parsed ? parsed.format('YYYY-MM-DD') : row[fieldName!]
                     }
                   }
 
@@ -746,6 +767,16 @@ export default function useGetColumnDefs({
                     toBeAdded = value?.toLowerCase() === 'yes'
                   }
 
+                  // Status is stored as a full name (e.g. "Ongoing") but the
+                  // Excel dropdown and manual input may supply the code abbreviation
+                  // (e.g. "ONG"). Convert either form to the canonical full name.
+                  if (fieldName === 'status' && value) {
+                    const matched = projectStatuses.find(
+                      (s) => s.code === value || s.name === value,
+                    )
+                    toBeAdded = matched?.name ?? value
+                  }
+
                   row[fieldName!] = toBeAdded
                 }}
                 form={rows}
@@ -758,6 +789,7 @@ export default function useGetColumnDefs({
             )
           : undefined,
       cellRenderer: canBeEdited ? CellValidation : undefined,
+      ...((c.overrideOptions as any)?.cellDataType === 'dateString' && { headerTooltip: DATE_PASTE_FORMATS_HINT }),
       ...(c.overrideOptions ?? {}),
     }
   })

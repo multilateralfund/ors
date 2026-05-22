@@ -13,7 +13,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from core.api.serializers.annual_project_report import AnnualProjectReportReadSerializer
-from core.models import AnnualProjectReport, ProjectStatus
+from core.models import AnnualAgencyProjectReport, AnnualProjectReport, ProjectStatus
 
 # pylint: disable=R0902,R0911,R0913,R0914,R0915,R1705,W0212,C0302
 
@@ -43,7 +43,7 @@ class APRExportWriter:
     HEADER_ROW = 1
     FIRST_DATA_ROW = 2
 
-    DATE_FORMAT = "mmm/yy"
+    DATE_FORMAT = 'MMM"-"YY'
 
     DATE_FIELDS = {
         "date_approved",
@@ -215,7 +215,7 @@ class APRExportWriter:
         if self.year and "last_year_remarks" in self.column_mapping:
             col_idx = self.column_mapping["last_year_remarks"]
             self.worksheet.cell(self.HEADER_ROW, col_idx).value = (
-                f"Remarks (as of 31 December {self.year - 1})"
+                f"Remarks (as of 31 December {self.year})"
             )
 
     def _remove_hidden_sheets(self):
@@ -425,9 +425,13 @@ class APRExportWriter:
         if not self.status_column_idx or not self.project_reports_data:
             return
 
-        status_count = ProjectStatus.objects.count()
+        status_count = len(self._status_name_to_code)
         if status_count == 0:
             return
+
+        # Remove any pre-existing data validations from the template so they
+        # don't conflict with our new code-based dropdown.
+        self.worksheet.data_validations.dataValidation = []
 
         # Create data validation referencing the status sheet
         # Formula references the range in the Status Values sheet
@@ -477,7 +481,7 @@ class APRExportWriter:
 class APRSummaryTablesExportWriter:
     """
     Generates multi-sheet Excel export with summary tables for APR.
-    Unlike APRExportWriter, this includes *all* data regardless of UI filters.
+    Unlike APRExportWriter, this includes all ONG/COM/FIN data regardless of UI filters.
     """
 
     TEMPLATE_PATH = (
@@ -541,8 +545,8 @@ class APRSummaryTablesExportWriter:
             "pct_funds_disbursed": 8,
         }
 
-    def __init__(self, agency=None, year=None):
-        self.agency = agency
+    def __init__(self, agencies=None, year=None, submitted_only=False):
+        self.agencies = list(agencies) if agencies else []
         self.year = year
         self.workbook = None
         self.annual_column_mapping = self.build_annual_column_mapping()
@@ -571,8 +575,13 @@ class APRSummaryTablesExportWriter:
         self._completed_status_names = {
             status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
         }
-        if self.agency:
-            queryset = queryset.filter(project__agency=self.agency)
+        if self.agencies:
+            queryset = queryset.filter(report__agency__in=self.agencies)
+        if submitted_only:
+            queryset = queryset.filter(
+                report__status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            )
+
         self.queryset = queryset
         # Materialize the queryset once so we don't keep re-querying the DB for each tab
         self.records = list(queryset)
@@ -1365,12 +1374,12 @@ class APRSummaryTablesExportWriter:
         )
 
         data["avg_months_to_disbursement"] = self._calculate_avg_months(
-            records, "project__date_approved", "date_first_disbursement"
+            records, "date_approved_denorm", "date_first_disbursement"
         )
 
         if is_ongoing:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_planned_completion"
+                records, "date_approved_denorm", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
                 records,
@@ -1384,7 +1393,7 @@ class APRSummaryTablesExportWriter:
             data["pct_disbursing"] = (num_disbursing / count) if count > 0 else 0
         else:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_actual_completion"
+                records, "date_approved_denorm", "date_actual_completion"
             )
 
         if include_odp_co2:
@@ -1479,8 +1488,13 @@ class APRSummaryTablesExportWriter:
         output.seek(0)
 
         filename = "APR_Summary_Tables_Cumulative"
-        if self.agency:
-            filename += f"_{self.agency.name.replace(' ', '_')}"
+        if self.agencies:
+            agency_part = "_".join(a.name.replace(" ", "_") for a in self.agencies)
+            if len(agency_part) <= 100:
+                filename += f"_{agency_part}"
+            else:
+                # Keep it short to avoid unreadable names
+                filename += f"_{len(self.agencies)}_agencies"
         filename += ".xlsx"
 
         response = HttpResponse(

@@ -1,6 +1,3 @@
-from django.db.models import Max
-from django.db.models import Min
-from django.db.models import Sum
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
@@ -40,27 +37,21 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
     def _get_computed_values(self, obj):
         if self._cache_computed is None:
             self._cache_computed = obj.projects.aggregate(
-                min_start=Min("project_start_date"),
-                max_end=Max("project_end_date"),
-                total_funding=Sum("total_fund"),
-                total_support=Sum("support_cost_psc"),
-                phase_out_co2_eq_t=Sum("ods_odp__co2_mt"),
-                phase_out_odp=Sum("ods_odp__odp"),
-                phase_out_mt=Sum("ods_odp__phase_out_mt"),
+                **MetaProject.computed_field_aggregates()
             )
         return self._cache_computed
 
     def get_start_date(self, obj):
-        return self._get_computed_values(obj)["min_start"]
+        return self._get_computed_values(obj)["start_date"]
 
     def get_end_date(self, obj):
-        return self._get_computed_values(obj)["max_end"]
+        return self._get_computed_values(obj)["end_date"]
 
     def get_project_funding(self, obj):
-        return self._get_computed_values(obj)["total_funding"]
+        return self._get_computed_values(obj)["project_funding"]
 
     def get_support_cost(self, obj):
-        return self._get_computed_values(obj)["total_support"]
+        return self._get_computed_values(obj)["support_cost"]
 
     def get_phase_out_co2_eq_t(self, obj):
         return self._get_computed_values(obj)["phase_out_co2_eq_t"]
