@@ -56,3 +56,8 @@ class SummaryOfProjectsWriter(WriteOnlyBase):
         cell.font = Font(name=self.FONT_NAME, bold=True, sz=10)
         cell.fill = PatternFill()
         return cell
+
+    def write_record_cell(self, value, read_only=False, align="left", cell_format=None):
+        cell = super().write_record_cell(value, read_only, align, cell_format)
+        cell.font = Font(name=self.FONT_NAME, sz=10)
+        return cell
