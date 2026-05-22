@@ -622,6 +622,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         self,
         secretariat_viewer_user,
         project_approved_status,
+        project_draft_status,
     ):
         fallback_meta_project = MetaProjectFactory.create(
             type=MetaProject.MetaProjectType.MYA,
@@ -655,10 +656,45 @@ class TestProjectV2ExportXLSX(BaseTest):
             phase_out_mt=3,
         )
         ProjectOdsOdp.objects.create(
+            project=fallback_first_project,
+            co2_mt=7,
+            odp=1,
+            phase_out_mt=2,
+        )
+        ProjectOdsOdp.objects.create(
             project=fallback_second_project,
             co2_mt=30,
             odp=4,
             phase_out_mt=5,
+        )
+        draft_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_draft_status,
+            total_fund=500,
+            support_cost_psc=50,
+            project_start_date=date(2024, 1, 1),
+            project_end_date=date(2024, 12, 31),
+        )
+        ProjectOdsOdp.objects.create(
+            project=draft_project,
+            co2_mt=100,
+            odp=10,
+            phase_out_mt=11,
+        )
+        archived_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            latest_project=fallback_first_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=999,
+            support_cost_psc=99,
+        )
+        ProjectOdsOdp.objects.create(
+            project=archived_project,
+            co2_mt=50,
+            odp=5,
+            phase_out_mt=6,
         )
 
         override_meta_project = MetaProjectFactory.create(
@@ -725,14 +761,14 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert (
             sheet[f"{headers['Phase-out (CO2-eq tonnes) (MYA)']}{fallback_row}"].value
-            == 50
+            == 57
         )
         assert (
-            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{fallback_row}"].value == 6
+            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{fallback_row}"].value == 7
         )
         assert (
             sheet[f"{headers['Phase-out (metric tonnes) (MYA)']}{fallback_row}"].value
-            == 8
+            == 10
         )
 
         override_row = next(
@@ -768,6 +804,51 @@ class TestProjectV2ExportXLSX(BaseTest):
             sheet[f"{headers['Phase-out (metric tonnes) (MYA)']}{override_row}"].value
             == 5.25
         )
+
+    def test_export_mya_uses_first_approved_project_lead_agency(
+        self,
+        secretariat_viewer_user,
+        project_approved_status,
+    ):
+        first_lead_agency = AgencyFactory.create(name="Lead agency A")
+        second_lead_agency = AgencyFactory.create(name="Lead agency B")
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            umbrella_code="META-LEAD",
+        )
+        first_project = ProjectFactory.create(
+            meta_project=meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=first_lead_agency,
+        )
+        ProjectFactory.create(
+            meta_project=meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=second_lead_agency,
+        )
+        meta_project.country = first_project.country
+        meta_project.cluster = first_project.cluster
+        meta_project.save()
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response: FileResponse = self.client.get(
+            self.url, {"category": [Project.Category.MYA]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["MYAs"]
+        headers = get_inventory_headers(sheet)
+        row = next(
+            idx
+            for idx in range(2, sheet.max_row + 1)
+            if sheet[f"{headers['Metacode']}{idx}"].value == "META-LEAD"
+        )
+
+        assert sheet[f"{headers['Lead agency']}{row}"].value == first_lead_agency.name
 
 
 class TestProjectV2ExportDOCX(BaseTest):

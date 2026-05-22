@@ -3,10 +3,10 @@ import shutil
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db.models import DateField, DecimalField, F, Max, Min, Sum
 from django.db import models, transaction
-from django.db.models.functions import Cast, Coalesce
 from functools import cached_property
+
+from django.db.models import Prefetch
 
 from core.models.funding_window import FundingWindow
 from core.models.agency import Agency
@@ -35,45 +35,29 @@ OLD_FIELD_HELP_TEXT = """
 
 
 class MetaProjectQuerySet(models.QuerySet):
-    def with_computed_field_fallbacks(self, prefix="resolved_"):
-        return self.annotate(
-            **{
-                f"{prefix}start_date": Coalesce(
-                    Cast("start_date", output_field=DateField()),
-                    Min("projects__project_start_date"),
-                    output_field=DateField(),
-                ),
-                f"{prefix}end_date": Coalesce(
-                    Cast("end_date", output_field=DateField()),
-                    Max("projects__project_end_date"),
-                    output_field=DateField(),
-                ),
-                f"{prefix}project_funding": Coalesce(
-                    F("project_funding"),
-                    Sum("projects__total_fund"),
-                    output_field=DecimalField(max_digits=30, decimal_places=15),
-                ),
-                f"{prefix}support_cost": Coalesce(
-                    F("support_cost"),
-                    Sum("projects__support_cost_psc"),
-                    output_field=DecimalField(max_digits=30, decimal_places=15),
-                ),
-                f"{prefix}phase_out_co2_eq_t": Coalesce(
-                    F("phase_out_co2_eq_t"),
-                    Sum("projects__ods_odp__co2_mt"),
-                    output_field=DecimalField(max_digits=30, decimal_places=15),
-                ),
-                f"{prefix}phase_out_odp": Coalesce(
-                    F("phase_out_odp"),
-                    Sum("projects__ods_odp__odp"),
-                    output_field=DecimalField(max_digits=30, decimal_places=15),
-                ),
-                f"{prefix}phase_out_mt": Coalesce(
-                    F("phase_out_mt"),
-                    Sum("projects__ods_odp__phase_out_mt"),
-                    output_field=DecimalField(max_digits=30, decimal_places=15),
-                ),
-            }
+    def for_mya_update(self):
+        return self.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__category=Project.Category.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+    def for_mya_export(self):
+        return self.for_mya_update().filter(is_draft=False)
+
+    def with_approved_mya_projects(self):
+        return self.prefetch_related(
+            Prefetch(
+                "projects",
+                queryset=Project.objects.filter(
+                    category=Project.Category.MYA,
+                    submission_status__name="Approved",
+                )
+                .select_related("lead_agency")
+                .prefetch_related("ods_odp")
+                .order_by("id"),
+                to_attr="approved_mya_projects",
+            )
         )
 
 
@@ -411,17 +395,71 @@ class MetaProject(models.Model):
 
     objects = MetaProjectQuerySet.as_manager()
 
-    @classmethod
-    def computed_field_aggregates(cls):
-        return {
-            "start_date": Min("project_start_date"),
-            "end_date": Max("project_end_date"),
-            "project_funding": Sum("total_fund"),
-            "support_cost": Sum("support_cost_psc"),
-            "phase_out_co2_eq_t": Sum("ods_odp__co2_mt"),
-            "phase_out_odp": Sum("ods_odp__odp"),
-            "phase_out_mt": Sum("ods_odp__phase_out_mt"),
-        }
+    @staticmethod
+    def approved_mya_projects_base_queryset():
+        return Project.objects.filter(
+            category=Project.Category.MYA,
+            submission_status__name="Approved",
+        ).order_by("id")
+
+    def approved_mya_projects_queryset(self):
+        return self.approved_mya_projects_base_queryset().filter(meta_project=self)
+
+    def first_approved_mya_project(self):
+        projects = getattr(self, "approved_mya_projects", None)
+        if projects is not None:
+            return next(iter(projects), None)
+        return (
+            self.approved_mya_projects_queryset().select_related("lead_agency").first()
+        )
+
+    def get_computed_mya_values(self):
+        """Return computed fallback values for MYA fields based on approved sub-projects."""
+
+        def _agg_or_none(fn, vals):
+            non_null = [v for v in vals if v is not None]
+            return fn(non_null) if non_null else None
+
+        projects = getattr(self, "approved_mya_projects", None)
+        if projects is not None:
+            ods_entries = [entry for p in projects for entry in p.ods_odp.all()]
+            return {
+                "start_date": _agg_or_none(
+                    min, [p.project_start_date for p in projects]
+                ),
+                "end_date": _agg_or_none(max, [p.project_end_date for p in projects]),
+                "project_funding": _agg_or_none(sum, [p.total_fund for p in projects]),
+                "support_cost": _agg_or_none(
+                    sum, [p.support_cost_psc for p in projects]
+                ),
+                "phase_out_co2_eq_t": _agg_or_none(
+                    sum, [e.co2_mt for e in ods_entries]
+                ),
+                "phase_out_odp": _agg_or_none(sum, [e.odp for e in ods_entries]),
+                "phase_out_mt": _agg_or_none(
+                    sum, [e.phase_out_mt for e in ods_entries]
+                ),
+            }
+
+        # Fallback to DB aggregates when approved_mya_projects is not prefetched.
+        # Two separate queries are required: aggregating funds/dates together with
+        # ods_odp fields in a single query inflates the fund sums due to the JOIN fan-out
+        # (one Project row per ODS entry doubles/triples Sum(total_fund)).
+        approved_qs = self.approved_mya_projects_queryset().order_by()
+        result = approved_qs.aggregate(
+            start_date=models.Min("project_start_date"),
+            end_date=models.Max("project_end_date"),
+            project_funding=models.Sum("total_fund"),
+            support_cost=models.Sum("support_cost_psc"),
+        )
+        result.update(
+            ProjectOdsOdp.objects.filter(project__in=approved_qs).aggregate(
+                phase_out_co2_eq_t=models.Sum("co2_mt"),
+                phase_out_odp=models.Sum("odp"),
+                phase_out_mt=models.Sum("phase_out_mt"),
+            )
+        )
+        return result
 
     def __str__(self):
         return f"{self.umbrella_code}"

@@ -36,9 +36,7 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
     def _get_computed_values(self, obj):
         if self._cache_computed is None:
-            self._cache_computed = obj.projects.aggregate(
-                **MetaProject.computed_field_aggregates()
-            )
+            self._cache_computed = obj.get_computed_mya_values()
         return self._cache_computed
 
     def get_start_date(self, obj):
@@ -87,7 +85,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
     def get_projects(self, obj):
         # only approved projects are considered part of the meta project
-        approved_projects = obj.projects.filter(submission_status__name="Approved")
+        approved_projects = obj.approved_mya_projects_queryset()
         return ProjectListV2Serializer(approved_projects, many=True).data
 
     def get_possible_projects(self, obj):
@@ -125,10 +123,10 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         return MetaProjectComputedFieldsSerializer(obj).data
 
     def get_lead_agency(self, obj):
-        lead_agency = obj.projects.first().lead_agency
-        if not lead_agency:
+        lead_agency_project = obj.first_approved_mya_project()
+        if not lead_agency_project or not lead_agency_project.lead_agency:
             return None
-        return AgencySerializer(lead_agency).data
+        return AgencySerializer(lead_agency_project.lead_agency).data
 
 
 class MetaProjectMyaSerializer(serializers.ModelSerializer):
@@ -151,8 +149,10 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
         ]
 
     def get_lead_agency(self, obj):
-        lead_agency = obj.projects.first().lead_agency
-        return AgencySerializer(lead_agency).data
+        lead_agency_project = obj.first_approved_mya_project()
+        if not lead_agency_project or not lead_agency_project.lead_agency:
+            return None
+        return AgencySerializer(lead_agency_project.lead_agency).data
 
     def get_clusters(self, obj):
         clusters = set()
