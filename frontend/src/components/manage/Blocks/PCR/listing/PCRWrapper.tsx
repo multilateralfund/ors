@@ -42,7 +42,7 @@ export default function PCRWrapper() {
       id: 'projects-tab',
       label: 'Projects',
       component: (
-        <form className="flex flex-col gap-6" ref={form} key={key}>
+        <div className="flex flex-col gap-6" key={key}>
           <PCRFiltersWrapper
             {...{
               form,
@@ -54,7 +54,7 @@ export default function PCRWrapper() {
             }}
           />
           <PCRTable {...{ pcrs, selectedProjectId, setSelectedProjectId }} />
-        </form>
+        </div>
       ),
     },
     {

@@ -11,6 +11,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   subsector: 'Subsector',
   category: 'Category',
   pcr_due: 'PCR due',
+  ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submitted: 'PCR submitted',
   submission_date: 'PCR submission date',
 }

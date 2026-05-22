@@ -38,7 +38,7 @@ const PCRFiltersWrapper = ({
   return (
     <div className="flex flex-col gap-2.5">
       <PCRFilters {...props} />
-      {/* <PCRFiltersSelectedOpts {...props} /> */}
+      <PCRFiltersSelectedOpts {...props} />
     </div>
   )
 }

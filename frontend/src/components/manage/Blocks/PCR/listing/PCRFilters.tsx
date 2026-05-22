@@ -18,6 +18,8 @@ const PCRFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
+  const booleanFieldsFilters = ['pcr_due', 'ad_hoc_pcr', 'pcr_submitted']
+
   const getDefaultProps = (field: string) => {
     const filterWidth = ['cooperating_agency'].includes(field)
       ? 'w-[11rem]'
@@ -71,7 +73,7 @@ const PCRFilters = ({
                   checked={map(filters.status, 'code').includes(status.code)}
                 />
               }
-              label={status.code}
+              label={`${status.code} projects`}
               onChange={(_, checked) => {
                 const statusFilters = checked
                   ? union(filters.status, [status])
@@ -92,46 +94,40 @@ const PCRFilters = ({
           </li>
         </Fragment>
       ))}
-      <li>
-        <FormControlLabel
-          className="m-0"
-          control={<Checkbox size="small" checked={filters.pcr_due} />}
-          label={pcrFieldsMapping.pcr_due}
-          onChange={(_, checked) => {
-            handleFilterChange({ pcr_due: checked })
-            handleParamsChange({
-              pcr_due: checked,
-              offset: 0,
-            })
-          }}
-        />
-      </li>
-      <li>
-        <Divider orientation="vertical" />
-      </li>
-      <li>
-        <FormControlLabel
-          className="m-0"
-          control={<Checkbox size="small" checked={filters.pcr_submitted} />}
-          label={pcrFieldsMapping.pcr_submitted}
-          onChange={(_, checked) => {
-            handleFilterChange({ pcr_submitted: checked })
-            handleParamsChange({
-              pcr_submitted: checked,
-              offset: 0,
-            })
-          }}
-        />
-      </li>
+      {booleanFieldsFilters.map((field: string, index: number) => (
+        <Fragment key={field}>
+          <li>
+            <FormControlLabel
+              className="m-0"
+              control={<Checkbox size="small" checked={filters[field]} />}
+              label={pcrFieldsMapping[field]}
+              onChange={(_, checked) => {
+                handleFilterChange({ [field]: checked })
+                handleParamsChange({
+                  [field]: checked,
+                  offset: 0,
+                })
+              }}
+            />
+          </li>
+          {index !== booleanFieldsFilters.length - 1 && (
+            <li>
+              <Divider orientation="vertical" />
+            </li>
+          )}
+        </Fragment>
+      ))}
     </Paper>
   )
 
   return (
     <div className="flex h-full flex-wrap items-center gap-2">
-      <SearchFilter
-        placeholder="Search by keyword..."
-        {...{ form, filters, handleFilterChange, handleParamsChange }}
-      />
+      <form ref={form} onSubmit={(e) => e.preventDefault()}>
+        <SearchFilter
+          placeholder="Search by keyword..."
+          {...{ form, filters, handleFilterChange, handleParamsChange }}
+        />
+      </form>
       <FieldFilter field="region" />
       <FieldFilter field="country" />
       <FieldFilter field="lead_agency" />
@@ -141,7 +137,24 @@ const PCRFilters = ({
       <FieldFilter field="sector" />
       <FieldFilter field="subsector" />
       <FieldFilter field="category" />
-      <FieldFilter field="submission_date" />
+      <Field
+        FieldProps={{ className: 'mb-0 BPList' }}
+        buttonClassName="h-9 !pr-3.5 [font-family:var(--font-roboto-condensed)]"
+        labelClassName="normal-case mt-0.5 text-[#111827]"
+        label={pcrFieldsMapping.submission_date}
+        max={new Date().getFullYear()}
+        min={1990}
+        value={filters.submission_date}
+        widget="yearRange"
+        onChange={(value) => {
+          handleFilterChange({ submission_date: value })
+          handleParamsChange({
+            submission_date: value,
+            offset: 0,
+          })
+        }}
+      />
+
       {statusFilter}
     </div>
   )

@@ -1,14 +1,17 @@
 import { ChangeEvent } from 'react'
 
-import { defaultPropsSimpleField, disabledClassName } from '../constants'
+import {
+  defaultPropsSimpleField,
+  disabledClassName,
+} from '../ProjectsListing/constants'
+
 import {
   EnterpriseData,
   EnterpriseOverview,
-  EnterpriseSubstanceDetails,
   SetEnterpriseData,
 } from './interfaces'
 
-import { find, isNil, keys, sumBy } from 'lodash'
+import { find, isNil, keys } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = (

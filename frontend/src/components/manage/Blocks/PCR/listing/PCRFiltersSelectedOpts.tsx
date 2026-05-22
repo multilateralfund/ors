@@ -1,69 +1,105 @@
-import { useContext } from 'react'
-
-import EnterprisesDataContext from '@ors/contexts/Enterprises/EnterprisesDataContext'
-import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   displaySearchTerm,
   displaySelectedOption,
-} from '../../HelperComponents'
-import { formatEntity, getAreFiltersApplied } from '../../utils'
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  formatEntity,
+  getAreFiltersApplied,
+} from '@ors/components/manage/Blocks/ProjectsListing/utils'
 
 import { Typography } from '@mui/material'
 import { map } from 'lodash'
+import { IoClose } from 'react-icons/io5'
 
 const PCRFiltersSelectedOpts = ({
   form,
-  filterOptions,
+  filterOptions = {},
   initialFilters,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { countries, agencies, project_types, sectors, subsectors } =
-    useContext(ProjectsDataContext)
-  const { statuses } = useContext(EnterprisesDataContext)
-
   const initialParams = {
     search: '',
+    region_id: [],
     country_id: [],
-    agency_id: [],
+    lead_agency_id: [],
+    cooperating_agency_id: [],
+    cluster_id: [],
     project_type_id: [],
     sector_id: [],
     subsector_id: [],
-    status_id: [],
+    category_id: [],
+    submission_date: null,
   }
 
   const filterSelectedOpts = [
     {
-      entities: formatEntity(countries),
+      entities: formatEntity(filterOptions?.region),
+      entityIdentifier: 'region_id',
+    },
+    {
+      entities: formatEntity(filterOptions?.country),
       entityIdentifier: 'country_id',
     },
     {
-      entities: formatEntity(agencies),
-      entityIdentifier: 'agency_id',
+      entities: formatEntity(filterOptions?.lead_agency),
+      entityIdentifier: 'lead_agency_id',
     },
     {
-      entities: formatEntity(project_types),
+      entities: formatEntity(filterOptions?.cooperating_agency),
+      entityIdentifier: 'cooperating_agency_id',
+    },
+    {
+      entities: formatEntity(filterOptions?.cluster),
+      entityIdentifier: 'cluster_id',
+    },
+    {
+      entities: formatEntity(filterOptions?.project_type),
       entityIdentifier: 'project_type_id',
     },
     {
-      entities: formatEntity(sectors),
+      entities: formatEntity(filterOptions?.sector),
       entityIdentifier: 'sector_id',
     },
     {
-      entities: formatEntity(subsectors),
+      entities: formatEntity(filterOptions?.subsector),
       entityIdentifier: 'subsector_id',
     },
     {
-      entities: formatEntity(statuses),
-      entityIdentifier: 'status_id',
+      entities: formatEntity(filterOptions?.category),
+      entityIdentifier: 'category_id',
     },
   ]
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
+  const displaySubmissionDate = !!filters.submission_date && (
+    <Typography
+      className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
+      component="p"
+      variant="h6"
+    >
+      {filters.submission_date.join('-')}
+      <IoClose
+        className="cursor-pointer"
+        size={18}
+        color="#666"
+        onClick={() => {
+          handleFilterChange({
+            submission_date: null,
+          })
+          handleParamsChange({
+            submission_date: null,
+            offset: 0,
+          })
+        }}
+      />
+    </Typography>
+  )
+
   return (
-    (areFiltersApplied || filters?.search) && (
+    (areFiltersApplied || filters?.search || filters?.submission_date) && (
       <div className="mt-1.5 flex flex-wrap gap-2">
         {displaySearchTerm(
           form,
@@ -78,9 +114,9 @@ const PCRFiltersSelectedOpts = ({
             selectedOpt.entityIdentifier,
             handleFilterChange,
             handleParamsChange,
-            selectedOpt.field,
           ),
         )}
+        {displaySubmissionDate}
         <Typography
           className="cursor-pointer content-center text-lg font-medium"
           color="secondary"
