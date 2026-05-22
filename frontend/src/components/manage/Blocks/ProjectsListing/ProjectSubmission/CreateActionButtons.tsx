@@ -117,7 +117,7 @@ const CreateActionButtons = ({
         } else {
           if (error.status === 413) {
             setFileErrors(
-              'Uploaded files are too large. Maximum allowed file size is 170MB.',
+              'Uploaded files are too large. Maximum file size allowed is 170MB.',
             )
           }
           enqueueSnackbar(<>An error occurred. Please try again.</>, {
