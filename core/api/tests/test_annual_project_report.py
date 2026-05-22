@@ -2520,7 +2520,7 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         """
         When a project's updated version has no post_excom_decision set,
         latest_version_for_year must fall back to date_approved to discover it.
-        Adjustment and related fields should be computed correctly in that case.
+        Adjustment and related fields should still be computed correctly in this case.
         """
         version3 = no_post_excom_decision_versions_for_apr[0]
         version4 = no_post_excom_decision_versions_for_apr[1]
@@ -2528,7 +2528,7 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         assert version4.version == 4
         assert version4.post_excom_decision is None
 
-        # Initialize all derived properties via the workspace API
+        # Initialize all derived properties by calling the workspace API
         self.client.force_authenticate(user=apr_agency_viewer_user)
         url = reverse(
             "apr-workspace",
@@ -2537,15 +2537,13 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
-        # Fetch a fresh instance (no prefetch) so the DB fallback path is exercised
         annual_report = AnnualProjectReport.objects.filter(
             project_id=version4.id,
             report_id=annual_agency_report.id,
         ).first()
         assert annual_report is not None
 
-        # latest_version_for_year should find version4 via date_approved fallback,
-        # making adjustment non-None (version4.version > 3).
+        # latest_version_for_year should find version4 via the date_approved fallback
         assert annual_report.adjustment == version4.total_fund - version3.total_fund
         assert annual_report.approved_funding_plus_adjustment == version4.total_fund
         assert (

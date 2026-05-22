@@ -1759,20 +1759,13 @@ def late_post_excom_versions_for_apr(
     return [initial_version, later_version]
 
 
-@pytest.fixture()
-def mock_send_agency_submission_notification():
-    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
-        yield send_mail
-
-
 @pytest.fixture
 def no_post_excom_decision_versions_for_apr(
     agency, country_ro, sector, project_ongoing_status, apr_year
 ):
     """
-    A project where the updated version (v4+) has no post_excom_decision but
-    does have date_approved within the APR year. This exercises the date_approved
-    fallback path in Project.latest_version_for_year.
+    A project where the updated version (v4) has no post_excom_decision, but
+    does have date_approved within the APR year.
     """
     later_version = ProjectFactory(
         agency=agency,
@@ -1801,6 +1794,12 @@ def no_post_excom_decision_versions_for_apr(
         support_cost_psc=10000.0,
     )
     return [initial_version, later_version]
+
+
+@pytest.fixture()
+def mock_send_agency_submission_notification():
+    with patch("core.tasks.send_agency_submission_notification.delay") as send_mail:
+        yield send_mail
 
 
 @pytest.fixture()
