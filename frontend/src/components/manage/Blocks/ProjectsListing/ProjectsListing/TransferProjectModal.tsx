@@ -164,22 +164,35 @@ const ProjectTransferWrapper = ({
   }
 
   const handleErrors = async (error: any) => {
-    let errors = error
+    let errors: any = {}
 
-    if (error?.json && typeof error.json === 'function') {
-      errors = await errors.json()
-    }
+    if (error instanceof Response) {
+      const contentType = error.headers.get('content-type') || ''
 
-    setErrors(errors)
+      if (contentType.includes('application/json')) {
+        errors = await error.json()
+      } else {
+        if (error.status === 413) {
+          setFileErrors('Uploaded files are too large.')
+        }
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
 
-    const fileError = errors?.file || errors?.files || errors?.metadata
-    if (fileError) {
-      setFileErrors(fileError)
-    }
+        return
+      }
 
-    const otherError = errors?.details || errors?.detail
-    if (otherError) {
-      setOtherErrors(otherError)
+      setErrors(errors)
+
+      const fileError = errors?.file || errors?.files || errors?.metadata
+      if (fileError) {
+        setFileErrors(fileError)
+      }
+
+      const otherError = errors?.details || errors?.detail
+      if (otherError) {
+        setOtherErrors(otherError)
+      }
     }
 
     enqueueSnackbar(<>An error occurred. Please try again.</>, {

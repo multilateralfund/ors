@@ -107,32 +107,49 @@ const CreateActionButtons = ({
       })
       setLocation(`/projects-listing/${result.id}/edit`)
     } catch (error) {
-      const errors = await error.json()
+      let errors: any = {}
 
-      if (error.status === 400) {
-        setErrors(errors)
+      if (error instanceof Response) {
+        const contentType = error.headers.get('content-type') || ''
 
-        const nonFieldErrors = getNonFieldErrors(errors)
-        if (nonFieldErrors.length > 0) {
-          setInlineMessage({
-            type: 'error',
-            errorMessages: nonFieldErrors,
+        if (contentType.includes('application/json')) {
+          errors = await error.json()
+        } else {
+          if (error.status === 413) {
+            setFileErrors('Uploaded files are too large.')
+          }
+          enqueueSnackbar(<>An error occurred. Please try again.</>, {
+            variant: 'error',
           })
+
+          return
         }
 
-        if (errors?.files) {
-          setFileErrors(errors.files)
-        }
+        if (error.status === 400) {
+          setErrors(errors)
 
-        if (errors?.details) {
-          setInlineMessage({
-            type: 'error',
-            message: errors.details,
-          })
-        }
+          const nonFieldErrors = getNonFieldErrors(errors)
+          if (nonFieldErrors.length > 0) {
+            setInlineMessage({
+              type: 'error',
+              errorMessages: nonFieldErrors,
+            })
+          }
 
-        if (errors?.metadata) {
-          setFileErrors(errors.metadata)
+          if (errors?.files) {
+            setFileErrors(errors.files)
+          }
+
+          if (errors?.details) {
+            setInlineMessage({
+              type: 'error',
+              message: errors.details,
+            })
+          }
+
+          if (errors?.metadata) {
+            setFileErrors(errors.metadata)
+          }
         }
       }
 
