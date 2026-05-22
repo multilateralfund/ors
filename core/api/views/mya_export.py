@@ -223,6 +223,15 @@ class MyaExport:
     wb: "openpyxl.Workbook"
     sheet: "Worksheet"
     view: "ProjectV2ViewSet"
+    resolved_export_fields = {
+        "start_date": "export_start_date",
+        "end_date": "export_end_date",
+        "project_funding": "export_project_funding",
+        "support_cost": "export_support_cost",
+        "phase_out_co2_eq_t": "export_phase_out_co2_eq_t",
+        "phase_out_odp": "export_phase_out_odp",
+        "phase_out_mt": "export_phase_out_mt",
+    }
 
     def __init__(self, view):
         self.view = view
@@ -235,19 +244,34 @@ class MyaExport:
         self.wb = wb
         self.sheet = sheet
 
-    def export_xls(self):
-        self.setup_workbook()
-        first_project = Project.objects.filter(meta_project=OuterRef("pk")).order_by(
-            "id"
-        )[:1]
-        meta_projects = (
+    def get_export_field_ids(self):
+        return [
+            header["id"]
+            for header in HEADERS
+            if header["id"] not in self.resolved_export_fields
+        ]
+
+    def get_first_project(self):
+        return Project.objects.filter(meta_project=OuterRef("pk")).order_by("id")[:1]
+
+    def get_meta_projects_queryset(self):
+        """Return flat MYA export rows with fallback values under export_* keys.
+
+        The temporary export_* aliases avoid Django annotation name conflicts with
+        existing MetaProject field names while still letting the export query
+        resolve "stored value first, computed value otherwise" in SQL.
+        """
+        first_project = self.get_first_project()
+        return (
             MetaProject.objects.filter(
                 type=MetaProject.MetaProjectType.MYA, is_draft=False
             )
+            .with_computed_field_fallbacks("export_")
             .order_by()
             .distinct()
             .values(
-                *[h["id"] for h in HEADERS if h["id"]],
+                *self.get_export_field_ids(),
+                *self.resolved_export_fields.values(),
                 country_name=F("country__name"),
                 cluster_name=F("cluster__name"),
                 lead_agency_name=Subquery(
@@ -256,7 +280,35 @@ class MyaExport:
             )
         )
 
+    def normalize_meta_project_row(self, meta_project):
+        """Replace temporary export_* keys with the final writer column names.
+
+        The writer and HEADERS expect plain field names like start_date, but the
+        queryset cannot emit those names directly because they would clash with
+        model fields during annotation.
+        """
+        row = {
+            key: value
+            for key, value in meta_project.items()
+            if not key.startswith("export_")
+        }
+        row.update(
+            {
+                field_name: meta_project[export_field_name]
+                for field_name, export_field_name in self.resolved_export_fields.items()
+            }
+        )
+        return row
+
+    def get_meta_project_rows(self):
+        return [
+            self.normalize_meta_project_row(meta_project)
+            for meta_project in self.get_meta_projects_queryset()
+        ]
+
+    def export_xls(self):
+        self.setup_workbook()
         writer = MyaWriter(self.sheet, HEADERS)
-        writer.write(meta_projects)
+        writer.write(self.get_meta_project_rows())
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} MYA warehouse", self.wb)
