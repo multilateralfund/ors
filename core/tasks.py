@@ -781,41 +781,36 @@ def sync_apr_from_projects(year):
         .prefetch_related("ods_odp")
     }
 
-    # Batch-load latest version approved in or before `year`
+    # Batch-load latest version approved in or before `year`.
+    # Uses the same effective_date logic as Project.latest_version_for_year:
+    # post_excom_decision meeting date takes precedence; falls back to date_approved.
     latest_version_map = {}
     for p in (
         Project.objects.really_all()
         .filter(
             django_models.Q(id__in=final_project_ids)
             | django_models.Q(latest_project_id__in=final_project_ids),
-            post_excom_decision__isnull=False,
-            post_excom_decision__meeting__date__year__lte=year,
         )
+        .annotate(
+            effective_date=django_models.Case(
+                django_models.When(
+                    post_excom_decision__isnull=False,
+                    then=django_models.F("post_excom_decision__meeting__date"),
+                ),
+                django_models.When(
+                    post_excom_decision__isnull=True,
+                    then=django_models.F("date_approved"),
+                ),
+                output_field=django_models.DateField(),
+            )
+        )
+        .filter(effective_date__isnull=False, effective_date__year__lte=year)
         .select_related("status", "post_excom_decision__meeting")
-        .order_by("-post_excom_decision__meeting__date", "-version")
+        .order_by("-effective_date", "-version")
     ):
         project_key = p.latest_project_id or p.id
         if project_key not in latest_version_map:
             latest_version_map[project_key] = p
-
-    # Fallback: for projects whose post_excom_decision is not set, use date_approved.
-    missing_project_ids = final_project_ids - set(latest_version_map.keys())
-    if missing_project_ids:
-        for p in (
-            Project.objects.really_all()
-            .filter(
-                django_models.Q(id__in=missing_project_ids)
-                | django_models.Q(latest_project_id__in=missing_project_ids),
-                post_excom_decision__isnull=True,
-                date_approved__isnull=False,
-                date_approved__year__lte=year,
-            )
-            .select_related("status")
-            .order_by("-date_approved", "-version")
-        ):
-            project_key = p.latest_project_id or p.id
-            if project_key not in latest_version_map:
-                latest_version_map[project_key] = p
 
     # Batch-load all versions approved during `year`
     all_versions_map: dict = {}
