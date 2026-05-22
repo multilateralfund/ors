@@ -195,10 +195,17 @@ class ProjectsV2ProjectExportDocx:
 
     def _write_substance_table(self, _, table, data):
         substances = data.get("ods_odp", [])
+        project_ods_odp_by_id = {
+            ods_odp.id: ods_odp
+            for ods_odp in self.project.ods_odp.select_related("ods_replacement")
+        }
         data_fields = [
+            "products_manufactured",
             "ods_display_name",
-            "???",
-            "ods_display_replacement",
+            [
+                "ods_replacement_text",
+                "ods_replacement__name",
+            ],
         ]
 
         for field, label in [
@@ -222,13 +229,45 @@ class ProjectsV2ProjectExportDocx:
 
         for substance in substances:
             row = table.add_row()
+            project_ods_odp = project_ods_odp_by_id.get(substance.get("id"))
             for c_idx, cell in enumerate(row.cells):
                 field = data_fields[c_idx]
-                value = substance.get(field, "")
+                value = self._get_substance_table_value(
+                    data, substance, field, project_ods_odp
+                )
                 if field in ["phase_out_mt", "co2_mt", "odp"]:
                     value = format_decimal(value, is_currency=False)
 
                 cell.text = str(value or "")
+
+    def _get_substance_table_value(self, data, substance, field, project_ods_odp=None):
+        if isinstance(field, list):
+            return next(
+                (
+                    value
+                    for value in (
+                        self._get_substance_table_value(
+                            data, substance, fallback_field, project_ods_odp
+                        )
+                        for fallback_field in field
+                    )
+                    if value
+                ),
+                "",
+            )
+
+        if field == "products_manufactured":
+            return data.get("products_manufactured", "")
+
+        if "__" in field and project_ods_odp:
+            value = project_ods_odp
+            for part in field.split("__"):
+                value = getattr(value, part, None)
+                if value is None:
+                    return ""
+            return value
+
+        return substance.get(field, "")
 
     def _write_impact_target_actual(self, project, headers, table, data):
         planned_headers = {}

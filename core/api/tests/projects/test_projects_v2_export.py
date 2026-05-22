@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import AgencyFactory
+from core.api.tests.factories import AlternativeTechnologyFactory
 from core.api.tests.factories import BPActivityFactory
 from core.api.tests.factories import FundingWindowFactory
 from core.api.tests.factories import MetaProjectFactory
@@ -32,13 +33,17 @@ from core.models import MetaProject
 from core.models import Project
 from core.models.business_plan import BPActivity
 from core.models.project import ProjectOdsOdp
+from core.models.project_metadata import ProjectField
+from core.models.project_metadata import ProjectSpecificFields
 from core.models.substance import Substance
 from core.models.user import User
 
 pytestmark = pytest.mark.django_db
 
 
-def validate_docx_export(project: Project, user: User, response: FileResponse):
+def validate_docx_export(
+    project: Project, user: User, response: FileResponse, content=None
+):
     assert response.status_code == HTTPStatus.OK
     try:
         file_name = project.code.replace("/", "_")
@@ -50,7 +55,7 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-    f = io.BytesIO(response.getvalue())
+    f = io.BytesIO(content if content is not None else response.getvalue())
     doc = docx.Document(f)
     assert f.tell() > 0
 
@@ -93,6 +98,36 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
 
     for t, r in zip(to_find, result):
         assert r is True, f"Could not locate {t} in output."
+
+
+def get_docx_table_rows(content, header_text: str):
+    f = io.BytesIO(content)
+    doc = docx.Document(f)
+    for table in doc.tables:
+        if not table.rows:
+            continue
+        header_cells = [cell.text for cell in table.rows[0].cells]
+        if header_text in header_cells:
+            return [[cell.text for cell in row.cells] for row in table.rows]
+    raise AssertionError(f"Could not locate table with header {header_text}.")
+
+
+def ensure_substance_details_docx_fields(project: Project):
+    project_specific_fields, _ = ProjectSpecificFields.objects.get_or_create(
+        cluster=project.cluster,
+        type=project.project_type,
+        sector=project.sector,
+    )
+    substance_field = ProjectField.objects.create(
+        import_name="ods_display_name",
+        label="Substance",
+        read_field_name="ods_display_name",
+        write_field_name="ods_display_name",
+        table="project_ods_odp",
+        data_type="text",
+        section="Substance Details",
+    )
+    project_specific_fields.fields.add(substance_field)
 
 
 def validate_single_project_export(project: Project, response: FileResponse):
@@ -862,8 +897,40 @@ class TestProjectV2ExportDOCX(BaseTest):
     def test_export_project_agency_submitter(
         self, project_with_linked_bp, agency_inputter_user
     ):
+        ensure_substance_details_docx_fields(project_with_linked_bp)
+        project_with_linked_bp.products_manufactured = "Manufactured product"
+        project_with_linked_bp.save()
+        project_ods_odp = project_with_linked_bp.ods_odp.first()
+        project_ods_odp.ods_display_name = "Text baseline substance"
+        project_ods_odp.ods_replacement_text = "Text replacement substance"
+        project_ods_odp.save()
+        fallback_replacement = AlternativeTechnologyFactory.create(
+            name="FK replacement substance"
+        )
+        ProjectOdsOdp.objects.create(
+            project=project_with_linked_bp,
+            ods_display_name="FK baseline substance",
+            ods_replacement_text="",
+            ods_replacement=fallback_replacement,
+        )
+
         self.client.force_authenticate(user=agency_inputter_user)
         response: FileResponse = self.client.get(
             self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
         )
-        validate_docx_export(project_with_linked_bp, agency_inputter_user, response)
+        content = response.getvalue()
+        validate_docx_export(
+            project_with_linked_bp, agency_inputter_user, response, content
+        )
+        substance_rows = get_docx_table_rows(content, "Substance")
+        substance_columns = [row[:3] for row in substance_rows]
+        assert [
+            "Manufactured product",
+            "Text baseline substance",
+            "Text replacement substance",
+        ] in substance_columns
+        assert [
+            "Manufactured product",
+            "FK baseline substance",
+            "FK replacement substance",
+        ] in substance_columns
