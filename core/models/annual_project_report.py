@@ -727,7 +727,11 @@ class AnnualProjectReport(models.Model):
         # Support cost in the latest version - Support cost in version 3
         latest_version = self.latest_project_version_for_year
 
-        if not latest_version or not latest_version.support_cost_psc:
+        if (
+            not latest_version
+            or latest_version.version <= 3
+            or not latest_version.support_cost_psc
+        ):
             return None
 
         return latest_version.support_cost_psc - (self.support_cost_approved or 0)

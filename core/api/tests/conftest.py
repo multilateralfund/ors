@@ -1765,6 +1765,44 @@ def mock_send_agency_submission_notification():
         yield send_mail
 
 
+@pytest.fixture
+def no_post_excom_decision_versions_for_apr(
+    agency, country_ro, sector, project_ongoing_status, apr_year
+):
+    """
+    A project where the updated version (v4+) has no post_excom_decision but
+    does have date_approved within the APR year. This exercises the date_approved
+    fallback path in Project.latest_version_for_year.
+    """
+    later_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(apr_year, 6, 1),
+        code="TEST/NOPEX/01",
+        version=4,
+        latest_project=None,
+        post_excom_decision=None,
+        total_fund=200000.0,
+        support_cost_psc=20000.0,
+    )
+    initial_version = ProjectFactory(
+        agency=agency,
+        country=country_ro,
+        sector=sector,
+        status=project_ongoing_status,
+        date_approved=date(2021, 6, 1),
+        code="TEST/NOPEX/01",
+        version=3,
+        latest_project=later_version,
+        post_excom_decision=None,
+        total_fund=100000.0,
+        support_cost_psc=10000.0,
+    )
+    return [initial_version, later_version]
+
+
 @pytest.fixture()
 def mock_update_project_statuses_after_apr_endorsement():
     with patch(

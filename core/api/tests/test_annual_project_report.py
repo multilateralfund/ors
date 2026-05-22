@@ -2511,6 +2511,52 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         assert annual_report.support_cost_balance == 10000.0 - 8000.0
         assert annual_report.per_cent_funds_disbursed == 0.8
 
+    def test_derived_properties_with_date_approved_fallback(
+        self,
+        annual_agency_report,
+        apr_agency_viewer_user,
+        no_post_excom_decision_versions_for_apr,
+    ):
+        """
+        When a project's updated version has no post_excom_decision set,
+        latest_version_for_year must fall back to date_approved to discover it.
+        Adjustment and related fields should be computed correctly in that case.
+        """
+        version3 = no_post_excom_decision_versions_for_apr[0]
+        version4 = no_post_excom_decision_versions_for_apr[1]
+        assert version3.version == 3
+        assert version4.version == 4
+        assert version4.post_excom_decision is None
+
+        # Initialize all derived properties via the workspace API
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Fetch a fresh instance (no prefetch) so the DB fallback path is exercised
+        annual_report = AnnualProjectReport.objects.filter(
+            project_id=version4.id,
+            report_id=annual_agency_report.id,
+        ).first()
+        assert annual_report is not None
+
+        # latest_version_for_year should find version4 via date_approved fallback,
+        # making adjustment non-None (version4.version > 3).
+        assert annual_report.adjustment == version4.total_fund - version3.total_fund
+        assert annual_report.approved_funding_plus_adjustment == version4.total_fund
+        assert (
+            annual_report.support_cost_adjustment
+            == version4.support_cost_psc - version3.support_cost_psc
+        )
+        assert (
+            annual_report.support_cost_approved_plus_adjustment
+            == version4.support_cost_psc
+        )
+
     def test_pcr_due_when_ong_to_com_in_same_year(
         self,
         annual_agency_report,
