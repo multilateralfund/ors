@@ -41,12 +41,12 @@ class TestProjectApprovalSummaryExport(BaseTest):
         workbook = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = workbook.worksheets[0]
 
-        assert sheet["B5"].value == pytest.approx(12.3)
-        assert sheet["B5"].number_format == "#,##0.0;-#,##0.0;;@"
-        assert sheet["C5"].value == 4
-        assert sheet["C5"].number_format == "#,##0;-#,##0;;@"
+        assert sheet["C5"].value == pytest.approx(12.3)
+        assert sheet["C5"].number_format == "#,##0.0;-#,##0.0;;@"
+        assert sheet["D5"].value == 5
+        assert sheet["D5"].number_format == "#,##0;-#,##0;;@"
 
-        assert sheet["B23"].value == pytest.approx(12.3)
-        assert sheet["B23"].number_format == "#,##0.0;-#,##0.0;;@"
-        assert sheet["C23"].value == 4
-        assert sheet["C23"].number_format == "#,##0;-#,##0;;@"
+        assert sheet["C23"].value == pytest.approx(12.3)
+        assert sheet["C23"].number_format == "#,##0.0;-#,##0.0;;@"
+        assert sheet["D23"].value == 5
+        assert sheet["D23"].number_format == "#,##0;-#,##0;;@"
