@@ -618,6 +618,157 @@ class TestProjectV2ExportXLSX(BaseTest):
                     assert sheet[f"{ltr}5"].number_format == cell_format
                     assert sheet[f"{ltr}6"].number_format == cell_format
 
+    def test_export_mya_uses_computed_values_only_when_stored_value_missing(
+        self,
+        secretariat_viewer_user,
+        project_approved_status,
+    ):
+        fallback_meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            umbrella_code="META-FALLBACK",
+        )
+        fallback_first_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=100,
+            support_cost_psc=10,
+            project_start_date=date(2024, 1, 15),
+            project_end_date=date(2024, 6, 15),
+        )
+        fallback_second_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=150,
+            support_cost_psc=15,
+            project_start_date=date(2024, 2, 15),
+            project_end_date=date(2024, 7, 20),
+        )
+        fallback_meta_project.country = fallback_first_project.country
+        fallback_meta_project.cluster = fallback_first_project.cluster
+        fallback_meta_project.save()
+        ProjectOdsOdp.objects.create(
+            project=fallback_first_project,
+            co2_mt=20,
+            odp=2,
+            phase_out_mt=3,
+        )
+        ProjectOdsOdp.objects.create(
+            project=fallback_second_project,
+            co2_mt=30,
+            odp=4,
+            phase_out_mt=5,
+        )
+
+        override_meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            umbrella_code="META-OVERRIDE",
+            start_date=datetime(2023, 5, 1, tzinfo=timezone.utc),
+            end_date=datetime(2023, 9, 1, tzinfo=timezone.utc),
+            project_funding=Decimal("999.50"),
+            support_cost=Decimal("88.25"),
+            phase_out_co2_eq_t=Decimal("77.75"),
+            phase_out_odp=Decimal("6.50"),
+            phase_out_mt=Decimal("5.25"),
+        )
+        override_project = ProjectFactory.create(
+            meta_project=override_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=200,
+            support_cost_psc=20,
+            project_start_date=date(2024, 3, 1),
+            project_end_date=date(2024, 10, 1),
+        )
+        override_meta_project.country = override_project.country
+        override_meta_project.cluster = override_project.cluster
+        override_meta_project.save()
+        ProjectOdsOdp.objects.create(
+            project=override_project,
+            co2_mt=40,
+            odp=8,
+            phase_out_mt=9,
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response: FileResponse = self.client.get(
+            self.url, {"category": [Project.Category.MYA]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["MYAs"]
+        headers = get_inventory_headers(sheet)
+
+        fallback_row = next(
+            idx
+            for idx in range(2, sheet.max_row + 1)
+            if sheet[f"{headers['Metacode']}{idx}"].value == "META-FALLBACK"
+        )
+        assert (
+            sheet[f"{headers['Start date (MYA)']}{fallback_row}"].value == "15/01/2024"
+        )
+        assert sheet[f"{headers['End date (MYA)']}{fallback_row}"].value == "20/07/2024"
+        assert (
+            sheet[
+                f"{headers['MYA Total agreed funding in principle (US $)']}{fallback_row}"
+            ].value
+            == 250
+        )
+        assert (
+            sheet[
+                f"{headers['MYA Total support costs in principle (US $)']}{fallback_row}"
+            ].value
+            == 25
+        )
+        assert (
+            sheet[f"{headers['Phase-out (CO2-eq tonnes) (MYA)']}{fallback_row}"].value
+            == 50
+        )
+        assert (
+            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{fallback_row}"].value == 6
+        )
+        assert (
+            sheet[f"{headers['Phase-out (metric tonnes) (MYA)']}{fallback_row}"].value
+            == 8
+        )
+
+        override_row = next(
+            idx
+            for idx in range(2, sheet.max_row + 1)
+            if sheet[f"{headers['Metacode']}{idx}"].value == "META-OVERRIDE"
+        )
+        assert (
+            sheet[f"{headers['Start date (MYA)']}{override_row}"].value == "01/05/2023"
+        )
+        assert sheet[f"{headers['End date (MYA)']}{override_row}"].value == "01/09/2023"
+        assert (
+            sheet[
+                f"{headers['MYA Total agreed funding in principle (US $)']}{override_row}"
+            ].value
+            == 999.5
+        )
+        assert (
+            sheet[
+                f"{headers['MYA Total support costs in principle (US $)']}{override_row}"
+            ].value
+            == 88.25
+        )
+        assert (
+            sheet[f"{headers['Phase-out (CO2-eq tonnes) (MYA)']}{override_row}"].value
+            == 77.75
+        )
+        assert (
+            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{override_row}"].value
+            == 6.5
+        )
+        assert (
+            sheet[f"{headers['Phase-out (metric tonnes) (MYA)']}{override_row}"].value
+            == 5.25
+        )
+
 
 class TestProjectV2ExportDOCX(BaseTest):
     url = reverse("project-v2-export")
