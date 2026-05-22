@@ -1,0 +1,16 @@
+export const pcrFieldsMapping: { [key: string]: string } = {
+  title: 'Title',
+  metacode: 'Metacode',
+  region: 'Region',
+  country: 'Country',
+  lead_agency: 'Lead agency',
+  cooperating_agency: 'Cooperating agency',
+  cluster: 'Cluster',
+  project_type: 'Type',
+  sector: 'Sector',
+  subsector: 'Subsector',
+  category: 'Category',
+  pcr_due: 'PCR due',
+  pcr_submitted: 'PCR submitted',
+  submission_date: 'PCR submission date',
+}
