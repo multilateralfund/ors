@@ -1802,8 +1802,9 @@ class Project(models.Model):
 
     def latest_version_for_year(self, year):
         """
-        Gets the latest version created by ExCom meeting in or before a specific year.
-
+        Gets the most recent version approved in or before a specific year.
+        Uses post_excom_decision meeting date when set; falls back to
+        date_approved if the decision is null.
         Returns None if there's no version fitting the criteria.
         """
         final = self.final_version
@@ -1811,11 +1812,23 @@ class Project(models.Model):
             Project.objects.really_all()
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year__lte=year,
             )
-            .select_related("status")
-            .order_by("-post_excom_decision__meeting__date", "-version")
+            .annotate(
+                effective_date=models.Case(
+                    models.When(
+                        post_excom_decision__isnull=False,
+                        then=models.F("post_excom_decision__meeting__date"),
+                    ),
+                    models.When(
+                        post_excom_decision__isnull=True,
+                        then=models.F("date_approved"),
+                    ),
+                    output_field=models.DateField(),
+                )
+            )
+            .filter(effective_date__isnull=False, effective_date__year__lte=year)
+            .select_related("status", "post_excom_decision__meeting")
+            .order_by("-effective_date", "-version")
             .first()
         )
 
