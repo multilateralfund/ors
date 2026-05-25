@@ -65,6 +65,19 @@ Import all resources (groups, substances, blends, blend components, usages, sect
     python manage.py import_resources_v2 import_project_specific_fields
     python manage.py import_resources_v2 fill_replacement_technologies_field
 ```
+
+>[!WARNING]
+>There is no list of countries per modules for a clean install. As such, please run the following:
+```shell
+   python manage.py shell
+   >>>from core.models import Country
+   >>>from core.models.base import Module
+   >>>modules = Module.objects.filter(code__in=['Projects', 'BP'])
+   >>>for country in Country.objects.all():
+   >>>.   country.modules.add(*modules)
+   >>>.   country.save()
+```
+
 >[!NOTE]
 >You can update the `ClusterTypeSectorLinks.json` using an updated `project_specific_fields.xlsx` file and the `generate_new_cluster_type_sector_file` function from `import_project_resources_v2.py`
 
