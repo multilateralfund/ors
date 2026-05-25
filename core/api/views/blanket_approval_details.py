@@ -107,9 +107,9 @@ class SheetWriter:
             if isinstance(val, MergedValue):
                 to_merge.append(
                     (
-                        self.last_row,
+                        self.last_row + 1,
                         idx + 1,
-                        self.last_row,
+                        self.last_row + 1,
                         idx + 1 + val.size,
                     )
                 )
@@ -335,7 +335,14 @@ class BlanketApprovalDetailsViewset(
         row_country_total = sheet[i + 7]
         row_empty = sheet[i + 8]
 
-        sw = SheetWriter(wb, 3 + 8)
+        # Remove the placeholder rows and their template merge before appending.
+        for merged_range in list(sheet.merged_cells.ranges):
+            if merged_range.min_row >= 4 and merged_range.max_row <= 10:
+                sheet.unmerge_cells(str(merged_range))
+
+        sheet.delete_rows(4, 7)
+
+        sw = SheetWriter(wb, sheet.max_row)
 
         for country in data:
             sw.add_row([country["country_name"]], row_country_name)
@@ -385,8 +392,6 @@ class BlanketApprovalDetailsViewset(
             ],
             row_country_total,
         )
-
-        sheet.delete_rows(4, 7)
 
         return workbook_response("List of projects and activities", wb)
 
