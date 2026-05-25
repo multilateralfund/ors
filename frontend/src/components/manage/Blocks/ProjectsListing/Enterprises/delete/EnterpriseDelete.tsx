@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import DeleteEnterpriseModal from '../listing/DeleteEnterpriseModal'
+import DeleteEnterpriseModal from './DeleteEnterpriseModal'
 import { EnterpriseType } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'

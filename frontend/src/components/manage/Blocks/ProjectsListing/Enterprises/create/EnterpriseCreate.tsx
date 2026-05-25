@@ -9,7 +9,7 @@ import EnterpriseDetailsSection from '../formTabs/EnterpriseDetailsSection.tsx'
 import EnterpriseSubstanceDetailsSection from '../formTabs/EnterpriseSubstanceDetailsSection.tsx'
 import EnterpriseFundingDetailsSection from '../formTabs/EnterpriseFundingDetailsSection.tsx'
 import EnterpriseRemarksSection from '../formTabs/EnterpriseRemarksSection.tsx'
-import EnterpriseDelete from '../view/EnterpriseDelete.tsx'
+import EnterpriseDelete from '../delete/EnterpriseDelete.tsx'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { enterpriseFieldsMapping } from '../constants.ts'
 import {

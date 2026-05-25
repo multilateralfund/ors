@@ -6,7 +6,7 @@ import EnterpriseDetailsSection from '../viewTabs/EnterpriseDetailsSection'
 import EnterpriseSubstanceDetailsSection from '../viewTabs/EnterpriseSubstanceDetailsSection'
 import EnterpriseFundingDetailsSection from '../viewTabs/EnterpriseFundingDetailsSection'
 import EnterpriseRemarksSection from '../viewTabs/EnterpriseRemarksSection'
-import EnterpriseDelete from './EnterpriseDelete'
+import EnterpriseDelete from '../delete/EnterpriseDelete'
 import { EnterpriseType } from '../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
@@ -48,8 +48,8 @@ const EnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
     <>
       <div className="flex items-center justify-between">
         <Tabs
-          aria-label="view-project-enterprise"
           value={activeTab}
+          aria-label="view-enterprise"
           className="sectionsTabs"
           variant="scrollable"
           scrollButtons="auto"
