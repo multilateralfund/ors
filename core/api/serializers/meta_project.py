@@ -62,7 +62,6 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
 
 class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
-
     computed_field_data = serializers.SerializerMethodField()
     field_data = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
@@ -127,6 +126,20 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         if not lead_agency_project or not lead_agency_project.lead_agency:
             return None
         return AgencySerializer(lead_agency_project.lead_agency).data
+
+    def field_data_with_computed_fallbacks(self):
+        result = {}
+
+        field_data = self.data.get("field_data", {})
+        computed_data = self.data.get("computed_field_data", {})
+
+        for field_name, field_info in field_data.items():
+            value = field_info["value"]
+            if value is None and field_name in computed_data:
+                value = computed_data[field_name]
+            result[field_name] = value
+
+        return result
 
 
 class MetaProjectMyaSerializer(serializers.ModelSerializer):

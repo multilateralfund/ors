@@ -95,7 +95,6 @@ class ProjectsV2ProjectExportDocx:
             p._element.getparent().remove(p._element)
 
     def build_front_page(self, data):
-
         # check footers
         for section in self.doc.sections:
             footer_paragraphs = chain(
@@ -178,7 +177,8 @@ class ProjectsV2ProjectExportDocx:
                     if header.get("docx_highlight", False):
                         run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 elif c_idx == 1 and header.get("method"):
-                    cell.text = header["method"](data, header)
+                    method_value = header["method"](data, header)
+                    cell.text = "" if method_value is None else str(method_value)
                 elif c_idx == 1 and is_dollar_value:
                     cell.text = (
                         format_decimal(
@@ -365,6 +365,22 @@ class ProjectsV2ProjectExportDocx:
             headers = get_headers_metaproject()
             writer(headers, table, data)
 
+    @staticmethod
+    def _get_metaproject_data_with_computed_fallbacks(metaproject):
+        result = {}
+
+        metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+        field_data = metaproject_data.get("field_data", {})
+        computed_data = metaproject_data.get("computed_field_data", {})
+
+        for field_name, field_info in field_data.items():
+            value = field_info["value"]
+            if value is None and field_name in computed_data:
+                value = computed_data[field_name]
+            result[field_name] = value
+
+        return result
+
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
             cluster=self.project.cluster,
@@ -428,7 +444,9 @@ class ProjectsV2ProjectExportDocx:
         metaproject_data = {}
 
         if metaproject:
-            metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+            metaproject_data = MetaProjecMyaDetailsSerializer(
+                metaproject
+            ).field_data_with_computed_fallbacks()
 
         self._write_metaproject_fields(
             table=self.find_table("MYA"),

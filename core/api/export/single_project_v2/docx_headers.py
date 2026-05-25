@@ -3,6 +3,7 @@ from typing import List
 from core.api.export.base import HeaderType
 from core.api.export.single_project_v2.helpers import get_date_value
 from core.api.export.single_project_v2.helpers import get_dollar_value
+from core.api.export.single_project_v2.helpers import get_number_value
 from core.api.export.single_project_v2.helpers import get_value_or_dash
 
 
@@ -46,12 +47,12 @@ def get_headers_metaproject() -> List[HeaderType]:
         {
             "id": "phase_out_odp",
             "headerName": "Phase-out (ODP tonnes) (MYA)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "phase_out_mt",
             "headerName": "Phase-out (metric tonnes) (MYA)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "target_reduction",
@@ -61,32 +62,32 @@ def get_headers_metaproject() -> List[HeaderType]:
         {
             "id": "target_co2_eq_t",
             "headerName": "Target in the last year (CO2-eq tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "target_odp",
             "headerName": "Target in the last year (ODP tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "starting_point_odp",
             "headerName": "Starting point for aggregate reductions in consumption or production (ODP tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "starting_point_co2_eq_t",
             "headerName": "Starting point for aggregate reductions in consumption or production (CO2-eq tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "baseline_odp",
             "headerName": "Baseline (ODP tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "baseline_co2_eq_t",
             "headerName": "Baseline (CO2-eq tonnes)",
-            "method": get_value_or_dash,
+            "method": get_number_value,
         },
         {
             "id": "number_of_smes_directly_funded",
