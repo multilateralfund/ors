@@ -618,7 +618,7 @@ def synchronize_decisions():
     decisions_url_params = {
         "include": "field_content",
         "fields[paragraph--edw_rich_text]": "field_body",
-        "sort": "-changed",
+        # "sort": "-changed", #disable temporarly as an error is raised when sorting is passed
     }
 
     if latest_decision and latest_decision.api_changed:
