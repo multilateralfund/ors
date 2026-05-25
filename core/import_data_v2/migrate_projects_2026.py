@@ -37,7 +37,7 @@ from core.import_data_v2.utils import (
     get_type_by_name,
 )
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines
+# pylint: disable=dangerous-default-value,too-many-locals,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace
 
 logger = logging.getLogger(__name__)
 
