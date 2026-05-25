@@ -130,3 +130,11 @@ After that, run the following command:
 ```shell
     python manage.py import_enterprises
 ```
+
+#### 8. Import new user permissions:
+
+```shell
+    python manage.py import_user_permissions all
+    python manage.py migrate_user_type_to_groups
+```
+Only run `migrate_user_type_to_groups` if you have existing users in your database.
