@@ -28,18 +28,22 @@ class AuthDebugView(views.APIView):
 
     def get(self, request):
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
-        raw_token = auth_header.split(" ", 1)[1] if auth_header.startswith("Bearer ") else None
+        raw_token = (
+            auth_header.split(" ", 1)[1] if auth_header.startswith("Bearer ") else None
+        )
 
         data = {
-                "ok": True,
-                "user_id": request.user.id,
-                "username": request.user.get_username(),
-                "is_authenticated": request.user.is_authenticated,
-                "auth_type": type(request.successful_authenticator).__name__
+            "ok": True,
+            "user_id": request.user.id,
+            "username": request.user.get_username(),
+            "is_authenticated": request.user.is_authenticated,
+            "auth_type": (
+                type(request.successful_authenticator).__name__
                 if request.successful_authenticator
-                else None,
+                else None
+            ),
             "request_auth": str(request.auth),  # often decoded token info/object
-            }
+        }
         if settings.DEBUG:
             data["raw_token"] = raw_token
         return Response(data)

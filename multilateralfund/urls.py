@@ -33,7 +33,6 @@ from core.api.views.users import AuthDebugView
 urlpatterns = [
     path("admin/explorer/", include("explorer.urls")),
     path("admin/", admin.site.urls),
-    path('oauth2/', include('django_auth_adfs.urls')),
     # Overriding the dj_rest_auth token view to return long-lived tokens if needed
     path("api/auth/login/", CustomLoginView.as_view(), name="rest_login"),
     path("api/auth/", include("dj_rest_auth.urls")),
@@ -52,9 +51,14 @@ urlpatterns = [
     ),
     path("api/", include("core.api.urls")),
     path("", RedirectView.as_view(pattern_name="admin:index")),
-    path("api/oauth2/", include("django_auth_adfs.drf_urls")),
-    path("api/auth-debug/", AuthDebugView.as_view(), name="auth-debug"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if settings.ADFS_ENABLED:
+    urlpatterns += [
+        path("oauth2/", include("django_auth_adfs.urls")),
+        path("api/oauth2/", include("django_auth_adfs.drf_urls")),
+        path("api/auth-debug/", AuthDebugView.as_view(), name="auth-debug"),
+    ]
 
 if settings.ENABLE_DEBUG_BAR:
     try:
