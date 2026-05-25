@@ -442,8 +442,6 @@ if ADFS_ENABLED:
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
 
 if ADFS_ENABLED:
-    # When ADFS is enabled, we want to allow users to log in via the Django admin login form (using the ModelBackend)
-    # without being redirected to the ADFS login page. This allows for easier admin access and is useful for development.
     LOGIN_URL = "/admin/login/"
     AUTHENTICATION_BACKENDS = (
         "django_auth_adfs.backend.AdfsAccessTokenBackend",
