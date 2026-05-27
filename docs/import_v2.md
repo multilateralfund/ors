@@ -114,7 +114,7 @@ Import all resources (groups, substances, blends, blend components, usages, sect
 For migrating the 2026 projects data, please first download files from nextcloud
 
 - **nextcloud path** OzoneMlf/5. Projects - database/2026 Data/2026_03_30_Inventory_EDW_Migration.xlsx
-- **local path** core/import_data_v2/projects/migrations_2026/
+- **local path** core/import_data_v2/resources/projects/migration_2026/2026_03_30_Inventory_EDW_Migration.xlsx
 
 After that, run the following commands:
 
