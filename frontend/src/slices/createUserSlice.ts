@@ -1,3 +1,4 @@
+import msalInstance from '@ors/config/msalConfig'
 import { ApiUser } from '@ors/types/api_auth_user'
 import type { CreateSliceProps } from '@ors/types/store'
 import type { UserSlice } from '@ors/types/store'
@@ -56,6 +57,15 @@ export const createUserSlice = ({
         method: 'post',
       })
       removeCookies()
+
+      const hasMsalSession = msalInstance.getAllAccounts().length > 0
+
+      if (hasMsalSession) {
+        await msalInstance.logoutRedirect({
+          postLogoutRedirectUri: window.location.origin,
+        })
+      }
+
       setSlice('user', {
         data: null,
         error: null,

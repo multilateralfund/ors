@@ -1,3 +1,5 @@
+import EntraIdLoginButton from './EntraIdLoginButton'
+
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
 import { useLocation } from 'wouter'
 import useSearchParams from '@ors/hooks/useSearchParams'
@@ -107,6 +109,7 @@ export default function LoginForm() {
         >
           Submit
         </Button>
+        <EntraIdLoginButton />
       </Paper>
     </>
   )
