@@ -1786,15 +1786,30 @@ class Project(models.Model):
             Project.objects.really_all()
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
-                models.Q(
-                    post_excom_decision__isnull=False,
-                    post_excom_decision__meeting__date__year=year,
-                )
-                | models.Q(
-                    post_excom_decision__isnull=True,
-                    version=3,
-                ),
             )
+            .annotate(
+                effective_date=models.Case(
+                    models.When(
+                        post_excom_decision__isnull=False,
+                        then=models.F("post_excom_decision__meeting__date"),
+                    ),
+                    models.When(
+                        post_excom_meeting__isnull=False,
+                        then=models.F("post_excom_meeting__date"),
+                    ),
+                    models.When(
+                        transfer_decision__isnull=False,
+                        then=models.F("transfer_decision__meeting__date"),
+                    ),
+                    models.When(
+                        transfer_meeting__isnull=False,
+                        then=models.F("transfer_meeting__date"),
+                    ),
+                    default=models.F("date_approved"),
+                    output_field=models.DateField(),
+                )
+            )
+            .filter(effective_date__year=year)
             .select_related("status")
             .only("id", "version", "status")
             .order_by("version")
@@ -1803,8 +1818,13 @@ class Project(models.Model):
     def latest_version_for_year(self, year):
         """
         Gets the most recent version approved in or before a specific year.
-        Uses post_excom_decision meeting date when set; falls back to
-        date_approved if the decision is null.
+        Uses :
+        - post_excom_decision__meeting date takes precedence; if null, falls back to
+        - post_excom_meeting date; if null, falls back to
+        - transfer_decision__meeting date; if null, falls back to
+        - transfer_meeting date; if null, finally falls back to
+        - date_approved.
+
         Returns None if there's no version fitting the criteria.
         """
         final = self.final_version
@@ -1820,9 +1840,18 @@ class Project(models.Model):
                         then=models.F("post_excom_decision__meeting__date"),
                     ),
                     models.When(
-                        post_excom_decision__isnull=True,
-                        then=models.F("date_approved"),
+                        post_excom_meeting__isnull=False,
+                        then=models.F("post_excom_meeting__date"),
                     ),
+                    models.When(
+                        transfer_decision__isnull=False,
+                        then=models.F("transfer_decision__meeting__date"),
+                    ),
+                    models.When(
+                        transfer_meeting__isnull=False,
+                        then=models.F("transfer_meeting__date"),
+                    ),
+                    default=models.F("date_approved"),
                     output_field=models.DateField(),
                 )
             )
