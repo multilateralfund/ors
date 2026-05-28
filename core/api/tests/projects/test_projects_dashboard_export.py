@@ -1,3 +1,4 @@
+# pylint: disable=W0613,R0904
 import io
 from http import HTTPStatus
 
@@ -57,14 +58,18 @@ class TestProjectsDashboardExport(BaseTest):
         assert response.status_code == HTTPStatus.FORBIDDEN
 
     # Basic structure
-    def test_returns_xlsx_with_three_sheets(self, secretariat_viewer_user, approved_project):
+    def test_returns_xlsx_with_three_sheets(
+        self, secretariat_viewer_user, approved_project
+    ):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"mock_data": "false"})
         assert response.status_code == HTTPStatus.OK
         wb = load_workbook(response)
         assert set(wb.sheetnames) == {"Projects", "Substances", "Funds"}
 
-    def test_projects_sheet_has_expected_headers(self, secretariat_viewer_user, approved_project):
+    def test_projects_sheet_has_expected_headers(
+        self, secretariat_viewer_user, approved_project
+    ):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"mock_data": "false"})
         headers = get_sheet_headers(load_projects_sheet(response))
@@ -79,7 +84,9 @@ class TestProjectsDashboardExport(BaseTest):
         ):
             assert expected in headers, f"Missing header: {expected}"
 
-    def test_actual_funds_and_psc_appear_exactly_once(self, secretariat_viewer_user, approved_project):
+    def test_actual_funds_and_psc_appear_exactly_once(
+        self, secretariat_viewer_user, approved_project
+    ):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"mock_data": "false"})
         header_values = [cell.value for cell in load_projects_sheet(response)[1]]
@@ -87,7 +94,9 @@ class TestProjectsDashboardExport(BaseTest):
         assert header_values.count("Actual PSC") == 1
 
     # latest_only
-    def test_latest_only_true_excludes_older_versions(self, secretariat_viewer_user, approved_project):
+    def test_latest_only_true_excludes_older_versions(
+        self, secretariat_viewer_user, approved_project
+    ):
         older = ProjectFactory.create(
             latest_project_id=approved_project.id,
             meta_project=approved_project.meta_project,
@@ -95,13 +104,17 @@ class TestProjectsDashboardExport(BaseTest):
             submission_status=approved_project.submission_status,
         )
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "true", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "true", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         ids = [sheet[f"A{r}"].value for r in range(2, sheet.max_row + 1)]
         assert approved_project.id in ids
         assert older.id not in ids
 
-    def test_latest_only_false_includes_all_versions(self, secretariat_viewer_user, approved_project):
+    def test_latest_only_false_includes_all_versions(
+        self, secretariat_viewer_user, approved_project
+    ):
         older = ProjectFactory.create(
             latest_project_id=approved_project.id,
             meta_project=approved_project.meta_project,
@@ -109,7 +122,9 @@ class TestProjectsDashboardExport(BaseTest):
             submission_status=approved_project.submission_status,
         )
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         ids = [sheet[f"A{r}"].value for r in range(2, sheet.max_row + 1)]
         assert approved_project.id in ids
@@ -125,7 +140,9 @@ class TestProjectsDashboardExport(BaseTest):
             submission_status=approved_project.submission_status,
         )
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"exclude_production": "true", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"exclude_production": "true", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         ids = [sheet[f"A{r}"].value for r in range(2, sheet.max_row + 1)]
         assert prod.id not in ids
@@ -139,19 +156,27 @@ class TestProjectsDashboardExport(BaseTest):
             submission_status=approved_project.submission_status,
         )
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"exclude_production": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"exclude_production": "false", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         ids = [sheet[f"A{r}"].value for r in range(2, sheet.max_row + 1)]
         assert prod.id in ids
 
     # fill_substance_type
-    def test_fill_substance_type_false_leaves_null(self, secretariat_viewer_user, approved_project):
+    def test_fill_substance_type_false_leaves_null(
+        self, secretariat_viewer_user, approved_project
+    ):
         approved_project.substance_type = None
         approved_project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(
             self.url,
-            {"fill_substance_type": "false", "latest_only": "false", "mock_data": "false"},
+            {
+                "fill_substance_type": "false",
+                "latest_only": "false",
+                "mock_data": "false",
+            },
         )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
@@ -159,13 +184,19 @@ class TestProjectsDashboardExport(BaseTest):
         assert row is not None, "Project not found in export"
         assert sheet[f"{headers['substance_type']}{row}"].value is None
 
-    def test_fill_substance_type_true_fills_with_hfc(self, secretariat_viewer_user, approved_project):
+    def test_fill_substance_type_true_fills_with_hfc(
+        self, secretariat_viewer_user, approved_project
+    ):
         approved_project.substance_type = None
         approved_project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(
             self.url,
-            {"fill_substance_type": "true", "latest_only": "false", "mock_data": "false"},
+            {
+                "fill_substance_type": "true",
+                "latest_only": "false",
+                "mock_data": "false",
+            },
         )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
@@ -182,7 +213,11 @@ class TestProjectsDashboardExport(BaseTest):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(
             self.url,
-            {"merge_methyl_bromide": "false", "latest_only": "false", "mock_data": "false"},
+            {
+                "merge_methyl_bromide": "false",
+                "latest_only": "false",
+                "mock_data": "false",
+            },
         )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
@@ -198,7 +233,11 @@ class TestProjectsDashboardExport(BaseTest):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(
             self.url,
-            {"merge_methyl_bromide": "true", "latest_only": "false", "mock_data": "false"},
+            {
+                "merge_methyl_bromide": "true",
+                "latest_only": "false",
+                "mock_data": "false",
+            },
         )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
@@ -245,7 +284,10 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        assert sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value is None
+        assert (
+            sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
+            is None
+        )
 
     def test_mock_data_true_fills_impact_metrics(
         self, secretariat_viewer_user, approved_project
@@ -266,7 +308,9 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        value = sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
+        value = sheet[
+            f"{headers['total_number_of_technicians_trained_actual']}{row}"
+        ].value
         assert value is not None and value > 0
 
     def test_mock_types_cfc_catches_methyl_bromide(
@@ -289,7 +333,9 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        value = sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
+        value = sheet[
+            f"{headers['total_number_of_technicians_trained_actual']}{row}"
+        ].value
         assert value is not None and value > 0
 
     def test_mock_types_excludes_unmatched_substance_types(
@@ -311,21 +357,34 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        assert sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value is None
+        assert (
+            sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
+            is None
+        )
 
     # Geo / type columns
     def test_geo_columns_populated(self, secretariat_viewer_user, approved_project):
-        region = CountryFactory.create(name="Test Region", location_type=Country.LocationType.REGION, iso3="RGN")
+        region = CountryFactory.create(
+            name="Test Region", location_type=Country.LocationType.REGION, iso3="RGN"
+        )
         subregion = CountryFactory.create(
-            name="Test Subregion", location_type=Country.LocationType.SUBREGION, iso3="SRG", parent=region
+            name="Test Subregion",
+            location_type=Country.LocationType.SUBREGION,
+            iso3="SRG",
+            parent=region,
         )
         country = CountryFactory.create(
-            name="Test Country", location_type=Country.LocationType.COUNTRY, iso3="TCY", parent=subregion
+            name="Test Country",
+            location_type=Country.LocationType.COUNTRY,
+            iso3="TCY",
+            parent=subregion,
         )
         approved_project.country = country
         approved_project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
@@ -339,19 +398,25 @@ class TestProjectsDashboardExport(BaseTest):
         approved_project.project_type = inv_type
         approved_project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
         assert sheet[f"{headers['Type Simple']}{row}"].value == "Investment"
 
-    def test_type_simple_non_investment(self, secretariat_viewer_user, approved_project):
+    def test_type_simple_non_investment(
+        self, secretariat_viewer_user, approved_project
+    ):
         non_inv_type = ProjectTypeFactory.create(code="TAS")
         approved_project.project_type = non_inv_type
         approved_project.save()
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
         sheet = load_projects_sheet(response)
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
@@ -379,6 +444,8 @@ class TestProjectsDashboardExport(BaseTest):
             sort_order=1,
         )
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url, {"latest_only": "false", "mock_data": "false"})
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
         sheet = load_workbook(response)["Substances"]
         assert sheet.max_row > 1

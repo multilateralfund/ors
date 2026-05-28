@@ -58,6 +58,7 @@ _MOCK_BOOL_PROBS_NON_INVESTMENT = {
 
 # Geographic / type helpers
 
+
 def get_country_iso(p, _):
     return p.country.iso3 if p.country else ""
 
@@ -115,10 +116,18 @@ class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
                 "headerName": "Actual PSC",
                 "method": lambda p, _: self.display_support_cost_psc(p, None),
             },
-            {"id": "country_iso", "headerName": "country_iso", "method": get_country_iso},
+            {
+                "id": "country_iso",
+                "headerName": "country_iso",
+                "method": get_country_iso,
+            },
             {"id": "region", "headerName": "Region", "method": get_region},
             {"id": "subregion", "headerName": "Sub-Region", "method": get_subregion},
-            {"id": "type_simple", "headerName": "Type Simple", "method": get_type_simple},
+            {
+                "id": "type_simple",
+                "headerName": "Type Simple",
+                "method": get_type_simple,
+            },
         ]
 
     def _build_headers(self, fields, source=None):
@@ -157,15 +166,15 @@ class ProjectsDashboardDump(ProjectsV2Dump):
         self.latest_only = params.get("latest_only", "true") == "true"
         self.exclude_production = params.get("exclude_production", "true") == "true"
         self.fill_substance_type = params.get("fill_substance_type", "false") == "true"
-        self.merge_methyl_bromide = params.get("merge_methyl_bromide", "false") == "true"
+        self.merge_methyl_bromide = (
+            params.get("merge_methyl_bromide", "false") == "true"
+        )
         self.mock_data = params.get("mock_data", "true") == "true"
         self.mock_types = {
             t.strip().lower()
             for t in params.get("mock_types", "hfc,hcfc,cfc").split(",")
             if t.strip()
         }
-        self.mock_seed = int(params.get("mock_seed", "42"))
-
         # Extend the parent queryset with the geo traversal needed for
         # country_iso, Region, and Sub-Region columns.
         self.queryset = self.queryset.select_related("country__parent__parent")
@@ -187,7 +196,8 @@ class ProjectsDashboardDump(ProjectsV2Dump):
         return projects
 
     def _apply_mock_data(self, projects):
-        rng = np.random.default_rng(self.mock_seed)
+        seed = int(self.view.request.query_params.get("mock_seed", "42"))
+        rng = np.random.default_rng(seed)
 
         for p in projects:
             st = (p.substance_type or "").lower()
