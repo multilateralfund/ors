@@ -1,5 +1,5 @@
 import { detailItem } from '../../ProjectView/ViewHelperComponents'
-import { enterpriseFieldsMapping, remarksFields } from '../constants'
+import { enterpriseFieldsMapping, textAreaFields } from '../constants'
 import { EnterpriseType } from '../interfaces'
 
 import { map } from 'lodash'
@@ -10,7 +10,7 @@ const EnterpriseRemarksSection = ({
   enterprise: EnterpriseType
 }) => (
   <div className="flex flex-col gap-4">
-    {map(remarksFields, (field) => (
+    {map(textAreaFields.slice(1), (field) => (
       <div key={field} className="max-w-[90%]">
         {detailItem(
           enterpriseFieldsMapping[field],

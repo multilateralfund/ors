@@ -1,6 +1,6 @@
 export const textFields = ['name', 'city', 'location', 'application', 'stage']
 export const decimalFields = ['local_ownership', 'export_to_non_a5']
-export const integerFields = ['revision_number']
+export const integerFields = ['project_duration', 'revision_number']
 export const dateFields = [
   'planned_completion_date',
   'actual_completion_date',
@@ -14,7 +14,11 @@ export const substanceFields = [
   'selected_alternative',
   'chemical_phased_in_mt',
 ]
-export const remarksFields = ['agency_remarks', 'secretariat_remarks']
+export const textAreaFields = [
+  'excom_provision',
+  'agency_remarks',
+  'secretariat_remarks',
+]
 
 export const enterpriseFieldsMapping: { [key: string]: string } = {
   id: 'Enterprise',

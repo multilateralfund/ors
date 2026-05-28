@@ -6,18 +6,19 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import { FieldErrorIndicator } from '../../HelperComponents'
 import {
-  EnterpriseDateField,
-  EnterpriseNumberField,
-  EnterpriseTextAreaField,
   EnterpriseTextField,
+  EnterpriseTextAreaField,
+  EnterpriseNumberField,
+  EnterpriseDateField,
 } from '../FormHelperComponents'
 import { EnterpriseFormProps } from '../interfaces'
 import {
+  textFields,
+  textAreaFields,
+  integerFields,
   decimalFields,
   dateFields,
   enterpriseFieldsMapping,
-  integerFields,
-  textFields,
 } from '../constants'
 import { parseNumber } from '@ors/helpers'
 
@@ -61,20 +62,13 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
         {map(dateFields.slice(0, 2), (field, index) => (
           <EnterpriseDateField
             key={index}
-            {...{
-              field,
-              sectionIdentifier,
-              ...props,
-            }}
+            {...{ field, sectionIdentifier, ...props }}
           />
         ))}
         <EnterpriseNumberField
           dataType="integer"
-          field="project_duration"
-          {...{
-            sectionIdentifier,
-            ...props,
-          }}
+          field={integerFields[0]}
+          {...{ sectionIdentifier, ...props }}
         />
       </div>
       <div className="flex flex-wrap gap-x-[5.5rem] gap-y-2">
@@ -84,7 +78,7 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
         />
         <EnterpriseNumberField
           dataType="integer"
-          field={integerFields[0]}
+          field={integerFields[1]}
           {...{ sectionIdentifier, ...props }}
         />
         <EnterpriseDateField
@@ -112,21 +106,14 @@ const EnterpriseDetailsSection = (props: EnterpriseFormProps) => {
           <EnterpriseDateField
             key={index}
             isDisabled={field === 'date_of_approval'}
-            {...{
-              field,
-              sectionIdentifier,
-              ...props,
-            }}
+            {...{ field, sectionIdentifier, ...props }}
           />
         ))}
       </div>
       <div className="max-w-[41rem]">
         <EnterpriseTextAreaField
-          field="excom_provision"
-          {...{
-            sectionIdentifier,
-            ...props,
-          }}
+          field={textAreaFields[0]}
+          {...{ sectionIdentifier, ...props }}
         />
       </div>
     </div>
