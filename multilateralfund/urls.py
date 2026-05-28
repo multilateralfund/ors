@@ -26,6 +26,7 @@ from dj_rest_auth.views import (
     PasswordResetConfirmView,
 )
 from core.api.views import CustomLoginView
+from core.api.views.users import AuthDebugView
 
 # from api import urls as apis_urls
 
@@ -51,6 +52,13 @@ urlpatterns = [
     path("api/", include("core.api.urls")),
     path("", RedirectView.as_view(pattern_name="admin:index")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if settings.ADFS_ENABLED:
+    urlpatterns += [
+        path("oauth2/", include("django_auth_adfs.urls")),
+        path("api/oauth2/", include("django_auth_adfs.drf_urls")),
+        path("api/auth-debug/", AuthDebugView.as_view(), name="auth-debug"),
+    ]
 
 if settings.ENABLE_DEBUG_BAR:
     try:

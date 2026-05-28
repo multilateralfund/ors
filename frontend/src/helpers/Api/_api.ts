@@ -1,3 +1,5 @@
+import msalInstance, { scopes } from '@ors/config/msalConfig'
+
 import Cookies from 'js-cookie'
 import { includes, omit } from 'lodash'
 import hash from 'object-hash'
@@ -113,6 +115,22 @@ export default async function api<T = any>(
   }
 
   async function fetcher() {
+    const account =
+      msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0]
+
+    let authHeaders = {}
+
+    if (account) {
+      const tokenResponse = await msalInstance.acquireTokenSilent({
+        scopes,
+        account,
+      })
+
+      authHeaders = {
+        Authorization: `Bearer ${tokenResponse.accessToken}`,
+      }
+    }
+
     return await fetch(fullPath, {
       credentials: 'include',
       headers: {
@@ -120,6 +138,7 @@ export default async function api<T = any>(
         ...defaultHeaders['common'],
         ...defaultHeaders[method.toLowerCase()],
         ...headers,
+        ...authHeaders,
       },
       method: method.toUpperCase(),
       ...(data ? { body: JSON.stringify(data) } : {}),

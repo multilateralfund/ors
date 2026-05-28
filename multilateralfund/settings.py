@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
     "admin_auto_filters",
+    "django_auth_adfs",
     "drf_spectacular",
     "constance",
     "constance.backends.database",
@@ -370,6 +371,18 @@ LOGGING = {
             "level": LOG_LEVEL,
             "propagate": False,
         },
+        # for debugging authentication issues with Entra ID/Azure AD integration
+        "django_auth_adfs": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "urllib3": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "requests_oauthlib": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
     },
     "root": {
         "handlers": ["console"],
@@ -417,6 +430,25 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+ADFS_ENABLED = env.bool("ADFS_ENABLED", default=False)
+
+if ADFS_ENABLED:
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
+        "rest_framework.authentication.SessionAuthentication",
+        "django_auth_adfs.rest_framework.AdfsAccessTokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    )
+
+AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
+
+if ADFS_ENABLED:
+    LOGIN_URL = "/admin/login/"
+    AUTHENTICATION_BACKENDS = (
+        "django_auth_adfs.backend.AdfsAccessTokenBackend",
+        "django_auth_adfs.backend.AdfsAuthCodeBackend",
+        "django.contrib.auth.backends.ModelBackend",
+    )
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "Multilateral Fund API",
     "DESCRIPTION": "Multilateral Fund API",
@@ -432,6 +464,31 @@ SPECTACULAR_SETTINGS = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=4),
 }
+
+if ADFS_ENABLED:
+    AUTH_ADFS = {
+        "AUDIENCE": [
+            env.str("APPLICATION_ID_URI", default=""),
+            env.str("APPLICATION_ID", default=""),
+        ],
+        "CLIENT_ID": env.str("APPLICATION_ID", default=""),
+        "CLIENT_SECRET": env.str("CLIENT_SECRET", default=""),
+        "CLAIM_MAPPING": {
+            "first_name": "given_name",
+            "last_name": "family_name",
+            "email": "upn",
+        },
+        "GROUPS_CLAIM": "roles",
+        "MIRROR_GROUPS": True,
+        "USERNAME_CLAIM": "upn",
+        "TENANT_ID": env.str("TENANT_ID", default=""),
+        "RELYING_PARTY_ID": env.str("APPLICATION_ID", default=""),
+        "LOGIN_EXEMPT_URLS": [
+            "^api",
+        ],
+    }
+
+LOGIN_REDIRECT_URL = "/admin/"
 
 REST_AUTH = {
     "USE_JWT": True,
