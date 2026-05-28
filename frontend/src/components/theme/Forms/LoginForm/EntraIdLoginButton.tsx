@@ -1,9 +1,11 @@
+import { disabledClassName } from '@ors/components/manage/Blocks/ProjectsListing/constants'
+import { hasMsalConfig, scopes } from '@ors/config/msalConfig'
 import MicrosoftLogo from './MicrosoftLogo.svg'
-import { scopes } from '@ors/config/msalConfig'
 
 import { enqueueSnackbar } from 'notistack'
 import { useMsal } from '@azure/msal-react'
 import { Button } from '@mui/material'
+import cx from 'classnames'
 
 const EntraIdLoginButton = () => {
   const { instance } = useMsal()
@@ -30,8 +32,12 @@ const EntraIdLoginButton = () => {
   return (
     <Button
       variant="contained"
-      className="mx-auto mt-3 h-9 w-fit gap-3 border border-solid border-[#d1d1d1] bg-white px-3 py-1.5 text-lg normal-case text-[#5E5E5E]"
+      className={cx(
+        'mx-auto mt-3 h-9 w-fit gap-3 border border-solid border-[#d1d1d1] bg-white px-3 py-1.5 text-lg normal-case text-[#5E5E5E]',
+        { [disabledClassName]: !hasMsalConfig },
+      )}
       onClick={handleLogin}
+      disabled={!hasMsalConfig}
     >
       <img
         src={MicrosoftLogo}

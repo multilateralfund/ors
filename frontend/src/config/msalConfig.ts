@@ -9,6 +9,8 @@ const APPLICATION_ID_URI = import.meta.env.VITE_APPLICATION_ID_URI
 
 export const scopes = [`${APPLICATION_ID_URI}/.default`]
 
+export const hasMsalConfig = !!CLIENT_ID && !!TENANT_ID && !!APPLICATION_ID_URI
+
 const msalConfig: Configuration = {
   auth: {
     clientId: CLIENT_ID,
