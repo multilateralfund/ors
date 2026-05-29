@@ -672,6 +672,15 @@ class APRSummaryTablesExportWriter:
                 tgt.protection = copy(src.protection)
                 tgt.alignment = copy(src.alignment)
 
+    def _normalize_section_styles(self, ws, section_start, count):
+        """
+        Ensure every row in a data section has the same style as the first row.
+        Handles template rows whose borders/fills differ from the rest of the section
+        (e.g. the last placeholder row in the template often lacks a bottom border).
+        """
+        for i in range(1, count):
+            self._copy_row_style_summary(ws, section_start, section_start + i)
+
     def _adjust_section_rows(self, ws, section_start, template_count, needed_count):
         """
         Resize a contiguous data section from template_count rows to needed_count rows
@@ -1232,6 +1241,8 @@ class APRSummaryTablesExportWriter:
         # Resize the region data section
         region_data_start = self.DATA_START_ROW + 2
         self._adjust_section_rows(ws, region_data_start, template_n_regions, n_regions)
+        # Normalize styles across all region rows
+        self._normalize_section_styles(ws, region_data_start, n_regions)
 
         # After adjustment the Sector header has moved to:
         new_sector_header_row = region_data_start + n_regions
@@ -1239,6 +1250,8 @@ class APRSummaryTablesExportWriter:
         # Resize the sector data section
         sector_data_start = new_sector_header_row + 1
         self._adjust_section_rows(ws, sector_data_start, template_n_sectors, n_sectors)
+        # Same style normalization for the sector section.
+        self._normalize_section_styles(ws, sector_data_start, n_sectors)
 
         # Clear only data rows — section headers ("Region", "Sector") come from the template
         self._clear_template_data_rows(ws, self.DATA_START_ROW, self.DATA_START_ROW)
