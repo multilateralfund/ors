@@ -5950,6 +5950,117 @@ class TestSyncAprFromProjectsTask:
         assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
         assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
 
+    def test_sync_computes_denorm_fields_via_post_excom_decision(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        decision_apr_same_year,
+    ):
+        # Versions setup:
+        # - version 4 is the final version, with a post_excom_decision in apr_year.
+        # - version 3 has no decision.
+        # The task must use post_excom_decision__meeting__date to discover version 4
+        # as the latest version for year, and compute adjustment_denorm from it.
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXDEC/01",
+            version=4,
+            latest_project=None,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=200000.0,
+            support_cost_psc=20000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXDEC/01",
+            version=3,
+            latest_project=version4,
+            post_excom_decision=None,
+            total_fund=100000.0,
+            support_cost_psc=10000.0,
+        )
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+
+    def test_sync_computes_denorm_fields_via_post_excom_meeting(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        meeting_apr_same_year,
+    ):
+        # Versions setup:
+        # - version 4 is the final version with post_excom_meeting in apr_year
+        #   (but no post_excom_decision and no transfer_*).
+        # - version 3 has no meeting/decision.
+        # The task must use post_excom_meeting__date (the new fallback step) to
+        # discover version 4 as latest for year, and compute adjustment_denorm.
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXMTG/01",
+            version=4,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=meeting_apr_same_year,
+            total_fund=200000.0,
+            support_cost_psc=20000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXMTG/01",
+            version=3,
+            latest_project=version4,
+            post_excom_decision=None,
+            post_excom_meeting=None,
+            total_fund=100000.0,
+            support_cost_psc=10000.0,
+        )
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+
 
 @pytest.mark.django_db
 class TestAPREndorseProjectVersioning:
