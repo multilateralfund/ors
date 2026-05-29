@@ -649,7 +649,7 @@ def synchronize_decisions():
 
 
 @app.task()
-def sync_apr_from_projects(year):
+def sync_apr_from_projects(year, dry_run=False):
     """
     Re-synchronize all APR derived fields for a reporting year, for all agencies,
     from the current Project data.
@@ -694,6 +694,9 @@ def sync_apr_from_projects(year):
             "project__project_type",
             "project__status",
             "project__post_excom_decision__meeting",
+            "project__post_excom_meeting",
+            "project__transfer_decision__meeting",
+            "project__transfer_meeting",
             "main_region",
             "report__progress_report",
         )
@@ -747,7 +750,7 @@ def sync_apr_from_projects(year):
         for pr in project_reports
         if (pr.project.latest_project_id or pr.project.id) not in valid_project_ids
     ]
-    if to_delete_ids:
+    if to_delete_ids and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.filter(id__in=to_delete_ids).delete()
 
@@ -782,8 +785,12 @@ def sync_apr_from_projects(year):
     }
 
     # Batch-load latest version approved in or before `year`.
-    # Uses the same effective_date logic as Project.latest_version_for_year:
-    # post_excom_decision meeting date takes precedence; falls back to date_approved.
+    # Uses the same effective_date fallback logic as Project.latest_version_for_year:
+    # - post_excom_decision__meeting date takes precedence; if null, falls back to
+    # - post_excom_meeting date; if null, falls back to
+    # - transfer_decision__meeting date; if null, falls back to
+    # - transfer_meeting date; if null, finally falls back to
+    # - date_approved.
     latest_version_map = {}
     for p in (
         Project.objects.really_all()
@@ -798,9 +805,18 @@ def sync_apr_from_projects(year):
                     then=django_models.F("post_excom_decision__meeting__date"),
                 ),
                 django_models.When(
-                    post_excom_decision__isnull=True,
-                    then=django_models.F("date_approved"),
+                    post_excom_meeting__isnull=False,
+                    then=django_models.F("post_excom_meeting__date"),
                 ),
+                django_models.When(
+                    transfer_decision__isnull=False,
+                    then=django_models.F("transfer_decision__meeting__date"),
+                ),
+                django_models.When(
+                    transfer_meeting__isnull=False,
+                    then=django_models.F("transfer_meeting__date"),
+                ),
+                default=django_models.F("date_approved"),
                 output_field=django_models.DateField(),
             )
         )
@@ -819,12 +835,30 @@ def sync_apr_from_projects(year):
         .filter(
             django_models.Q(id__in=final_project_ids)
             | django_models.Q(latest_project_id__in=final_project_ids),
-            django_models.Q(
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year=year,
-            )
-            | django_models.Q(post_excom_decision__isnull=True, version=3),
         )
+        .annotate(
+            effective_date=django_models.Case(
+                django_models.When(
+                    post_excom_decision__isnull=False,
+                    then=django_models.F("post_excom_decision__meeting__date"),
+                ),
+                django_models.When(
+                    post_excom_meeting__isnull=False,
+                    then=django_models.F("post_excom_meeting__date"),
+                ),
+                django_models.When(
+                    transfer_decision__isnull=False,
+                    then=django_models.F("transfer_decision__meeting__date"),
+                ),
+                django_models.When(
+                    transfer_meeting__isnull=False,
+                    then=django_models.F("transfer_meeting__date"),
+                ),
+                default=django_models.F("date_approved"),
+                output_field=django_models.DateField(),
+            )
+        )
+        .filter(effective_date__year=year)
         .select_related("status")
     ):
         project_key = p.latest_project_id or p.id
@@ -861,7 +895,7 @@ def sync_apr_from_projects(year):
         ):
             to_update.append(project_report)
 
-    if to_update:
+    if to_update and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.bulk_update(
                 to_update, AnnualProjectReport.DENORM_FIELDS, batch_size=500
@@ -911,6 +945,11 @@ def sync_apr_from_projects(year):
         new_projects = [p for p in filterset.qs if p.id not in existing_project_ids]
 
         if not new_projects:
+            continue
+
+        if dry_run:
+            # just increase added_count and break out of the loop for this agency report
+            added_count += len(new_projects)
             continue
 
         previous_reports_dict = get_previous_year_project_reports(agency.id, year)
