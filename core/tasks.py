@@ -649,7 +649,7 @@ def synchronize_decisions():
 
 
 @app.task()
-def sync_apr_from_projects(year):
+def sync_apr_from_projects(year, dry_run=False):
     """
     Re-synchronize all APR derived fields for a reporting year, for all agencies,
     from the current Project data.
@@ -750,7 +750,7 @@ def sync_apr_from_projects(year):
         for pr in project_reports
         if (pr.project.latest_project_id or pr.project.id) not in valid_project_ids
     ]
-    if to_delete_ids:
+    if to_delete_ids and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.filter(id__in=to_delete_ids).delete()
 
@@ -895,7 +895,7 @@ def sync_apr_from_projects(year):
         ):
             to_update.append(project_report)
 
-    if to_update:
+    if to_update and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.bulk_update(
                 to_update, AnnualProjectReport.DENORM_FIELDS, batch_size=500
@@ -945,6 +945,11 @@ def sync_apr_from_projects(year):
         new_projects = [p for p in filterset.qs if p.id not in existing_project_ids]
 
         if not new_projects:
+            continue
+
+        if dry_run:
+            # just increase added_count and break out of the loop for this agency report
+            added_count += len(new_projects)
             continue
 
         previous_reports_dict = get_previous_year_project_reports(agency.id, year)
