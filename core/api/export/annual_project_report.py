@@ -990,13 +990,18 @@ class APRSummaryTablesExportWriter:
         ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
 
         # Explicitly reset the font on every cell we wrote so that residual
-        # template styles (bold Total row, red sample data, etc.) are cleared.
+        # template styles (bold, red sample data, etc.) are never inherited.
         for c in range(1, max(col_map.values()) + 1):
             ws.cell(row, c).font = Font(bold=bold)
 
     def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
         ws = self.workbook[self.SHEET_ANNUAL]
+
+        # Normalize all template data rows to the first data row's style,
+        # so rows with inconsistent template styles are brought into line.
+        template_row_count = ws.max_row - self.DATA_START_ROW + 1
+        self._normalize_section_styles(ws, self.DATA_START_ROW, template_row_count)
 
         self._clear_template_data_rows(ws, self.DATA_START_ROW)
 
