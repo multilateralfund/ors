@@ -683,11 +683,10 @@ class APRSummaryTablesExportWriter:
             n_insert = needed_count - template_count
             insert_at = section_start + template_count
             ws.insert_rows(insert_at, n_insert)
-            style_source = (
-                section_start + template_count - 1
-                if template_count > 0
-                else section_start
-            )
+            # Always copy from the first template data row so inserted rows
+            # get the standard data-row style, not the (potentially different)
+            # style of the last template row (e.g. red font, heavy border).
+            style_source = section_start
             for i in range(n_insert):
                 self._copy_row_style_summary(ws, style_source, insert_at + i)
         else:
@@ -967,9 +966,7 @@ class APRSummaryTablesExportWriter:
 
     def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
         """Helper for writing a single data row in the annual summary sheet."""
-        label_cell = ws.cell(row, col_map["approval_year"], row_data["label"])
-        if bold:
-            label_cell.font = Font(bold=True)
+        ws.cell(row, col_map["approval_year"], row_data["label"])
         ws.cell(row, col_map["num_approvals"], row_data["num_approvals"])
         ws.cell(row, col_map["num_completed"], row_data["num_completed"])
         ws.cell(row, col_map["pct_completed"], row_data["pct_completed"])
@@ -982,6 +979,11 @@ class APRSummaryTablesExportWriter:
         for col_name in ["approved_funding", "funds_disbursed", "balance"]:
             ws.cell(row, col_map[col_name]).number_format = "#,##0"
         ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
+
+        # Explicitly reset the font on every cell we wrote so that residual
+        # template styles (bold Total row, red sample data, etc.) are cleared.
+        for c in range(1, max(col_map.values()) + 1):
+            ws.cell(row, c).font = Font(bold=bold)
 
     def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
@@ -1267,14 +1269,16 @@ class APRSummaryTablesExportWriter:
     def _write_aggregation_row(self, ws, row, label, data, column_specs, bold=False):
         """Write a single aggregation data row to the worksheet."""
         cell = ws.cell(row, 1, label)
-        if bold:
-            cell.font = Font(bold=True)
+        # Always set the font explicitly so residual template styles (bold, red
+        # colour on negative sample values, etc.) are never inherited.
+        cell.font = Font(bold=bold)
 
         col = 2
         for field_name, number_format in column_specs:
             cell = ws.cell(row, col, data.get(field_name) or 0)
             if number_format:
                 cell.number_format = number_format
+            cell.font = Font(bold=bold)
             col += 1
 
     def _get_column_specs(self, sheet_type, include_odp_co2):
