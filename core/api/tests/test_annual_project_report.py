@@ -34,6 +34,7 @@ from core.api.tests.factories import (
     ProjectFactory,
     MetaProjectFactory,
     ProjectClusterFactory,
+    ProjectStatusFactory,
     UserFactory,
 )
 from core.tasks import (
@@ -6472,8 +6473,6 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         An agency with only non-ONG/COM projects (e.g. FIN) gets an auto-submitted
         report AND AnnualProjectReport records created for those projects.
         """
-        from core.api.tests.factories import ProjectStatusFactory
-
         fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
         agency = AgencyFactory()
         project = ProjectFactory(
