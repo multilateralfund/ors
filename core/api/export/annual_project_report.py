@@ -1208,10 +1208,17 @@ class APRSummaryTablesExportWriter:
 
         # Pre-compute all data before touching the sheet structure
         total_data = self._compute_group_data(records, include_odp_co2, sheet_type)
+
+        def _region_label(apr):
+            region = apr.main_region
+            if region is None:
+                return None
+            return region.name_for_apr or region.name
+
         region_items = list(
             self._compute_grouped_data(
                 records,
-                "main_region__name",
+                _region_label,
                 include_odp_co2,
                 sheet_type,
             )
@@ -1466,11 +1473,16 @@ class APRSummaryTablesExportWriter:
     def _compute_grouped_data(self, records, group_field, include_odp_co2, sheet_type):
         """
         Helper for computing aggregation data grouped by a field.
+        group_field may be a dotted/double-underscore field path string, or a
+        callable that accepts an AnnualProjectReport instance and returns a value.
         Returns list of (name, data) tuples, sorted by group value.
         """
         buckets = {}
         for apr in records:
-            val = self._get_field_value(apr, group_field)
+            if callable(group_field):
+                val = group_field(apr)
+            else:
+                val = self._get_field_value(apr, group_field)
             key = val if val is not None else ""
             if key not in buckets:
                 buckets[key] = []

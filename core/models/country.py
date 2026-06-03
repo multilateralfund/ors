@@ -60,6 +60,10 @@ class Country(models.Model):
     consumption_category = models.CharField(max_length=100, blank=True)
     consumption_group = models.CharField(max_length=100, blank=True)
 
+    # APR-specific fields
+    abbr_for_apr = models.CharField(max_length=10, null=True, blank=True)
+    name_for_apr = models.CharField(max_length=100, null=True, blank=True)
+
     objects = CountryManager()
 
     def is_ceit_for_year(self, year):
