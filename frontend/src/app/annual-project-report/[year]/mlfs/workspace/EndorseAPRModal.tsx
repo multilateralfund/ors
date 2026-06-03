@@ -91,6 +91,7 @@ export default function EndorseAprModal({
         },
       })
 
+      onClose()
       revalidateData()
       enqueueSnackbar(<>APR endorsed.</>, {
         variant: 'success',
