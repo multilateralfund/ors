@@ -6465,6 +6465,42 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         assert created_report.submitted_at is not None
         assert created_report.submitted_by is None
 
+    def test_task_creates_project_reports_for_non_ong_com_projects(
+        self, annual_progress_report, apr_year
+    ):
+        """
+        An agency with only non-ONG/COM projects (e.g. FIN) gets an auto-submitted
+        report AND AnnualProjectReport records created for those projects.
+        """
+        from core.api.tests.factories import ProjectStatusFactory
+
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        agency = AgencyFactory()
+        project = ProjectFactory(
+            agency=agency,
+            status=fin_status,
+            latest_project=None,
+            version=3,
+            date_approved=date(apr_year - 1, 6, 1),
+        )
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        agency_report = AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency,
+        ).first()
+        assert agency_report is not None
+        assert (
+            agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        project_report = AnnualProjectReport.objects.filter(
+            report=agency_report,
+            project=project,
+        ).first()
+        assert project_report is not None
+
     def test_task_skips_agency_with_ong_projects(
         self, annual_progress_report, apr_year, project_ongoing_status
     ):

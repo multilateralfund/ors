@@ -1,3 +1,5 @@
+# pylint: disable=C0302
+
 from urllib.parse import urlencode
 from datetime import datetime
 
@@ -263,13 +265,59 @@ def auto_submit_empty_agency_reports(year):
         if has_active_projects:
             continue
 
-        AnnualAgencyProjectReport.objects.create(
+        agency_report = AnnualAgencyProjectReport.objects.create(
             progress_report=progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
             submitted_at=timezone.now(),
             submitted_by=None,
         )
+
+        # Create AnnualProjectReport records for any non-ONG/COM projects
+        # this agency has (e.g. FIN projects approved up to this year).
+        previous_reports_dict = get_previous_year_project_reports(agency.id, year)
+
+        projects_queryset = (
+            Project.objects.filter(
+                latest_project__isnull=True,
+                version__gte=3,
+            )
+            .select_related(
+                "country",
+                "country__parent",
+                "country__parent__parent",
+                "agency",
+                "sector",
+                "project_type",
+                "status",
+                "meeting",
+                "decision",
+            )
+            .prefetch_related(
+                "subsectors",
+                "ods_odp",
+                "ods_odp__ods_substance",
+                "ods_odp__ods_blend",
+            )
+            .order_by("code")
+        )
+        filterset = APRProjectFilter(
+            data={"year": year, "agency": agency.id},
+            queryset=projects_queryset,
+        )
+        for project in filterset.qs:
+            key = (project.code, agency.id)
+            default_data = {"status": project.status.name}
+            previous_data = previous_reports_dict.get(key, default_data)
+            project_report, created = AnnualProjectReport.objects.get_or_create(
+                project=project,
+                report=agency_report,
+                defaults=previous_data,
+            )
+            if created or project_report.meta_code_denorm is None:
+                project_report.populate_derived_fields()
+                project_report.save()
+
         auto_submitted.append(agency.name)
 
     logger.info(
