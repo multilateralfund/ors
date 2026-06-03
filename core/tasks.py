@@ -18,6 +18,8 @@ from django.utils import timezone
 
 from core.api.filters.annual_project_reports import APRProjectFilter
 from core.api.utils import (
+    all_versions_for_year_base_qs,
+    latest_version_base_qs,
     COUNTRY_USER_GROUP,
     COUNTRY_SUBMITTER_GROUP,
     get_previous_year_project_reports,
@@ -833,82 +835,18 @@ def sync_apr_from_projects(year, dry_run=False):
     }
 
     # Batch-load latest version approved in or before `year`.
-    # Uses the same effective_date fallback logic as Project.latest_version_for_year:
-    # - post_excom_decision__meeting date takes precedence; if null, falls back to
-    # - post_excom_meeting date; if null, falls back to
-    # - transfer_decision__meeting date; if null, falls back to
-    # - transfer_meeting date; if null, finally falls back to
-    # - date_approved.
+    project_id_filter = django_models.Q(id__in=final_project_ids) | django_models.Q(
+        latest_project_id__in=final_project_ids
+    )
     latest_version_map = {}
-    for p in (
-        Project.objects.really_all()
-        .filter(
-            django_models.Q(id__in=final_project_ids)
-            | django_models.Q(latest_project_id__in=final_project_ids),
-        )
-        .annotate(
-            effective_date=django_models.Case(
-                django_models.When(
-                    post_excom_decision__isnull=False,
-                    then=django_models.F("post_excom_decision__meeting__date"),
-                ),
-                django_models.When(
-                    post_excom_meeting__isnull=False,
-                    then=django_models.F("post_excom_meeting__date"),
-                ),
-                django_models.When(
-                    transfer_decision__isnull=False,
-                    then=django_models.F("transfer_decision__meeting__date"),
-                ),
-                django_models.When(
-                    transfer_meeting__isnull=False,
-                    then=django_models.F("transfer_meeting__date"),
-                ),
-                default=django_models.F("date_approved"),
-                output_field=django_models.DateField(),
-            )
-        )
-        .filter(effective_date__isnull=False, effective_date__year__lte=year)
-        .select_related("status", "post_excom_decision__meeting")
-        .order_by("-effective_date", "-version")
-    ):
+    for p in latest_version_base_qs(year).filter(project_id_filter):
         project_key = p.latest_project_id or p.id
         if project_key not in latest_version_map:
             latest_version_map[project_key] = p
 
     # Batch-load all versions approved during `year`
     all_versions_map: dict = {}
-    for p in (
-        Project.objects.really_all()
-        .filter(
-            django_models.Q(id__in=final_project_ids)
-            | django_models.Q(latest_project_id__in=final_project_ids),
-        )
-        .annotate(
-            effective_date=django_models.Case(
-                django_models.When(
-                    post_excom_decision__isnull=False,
-                    then=django_models.F("post_excom_decision__meeting__date"),
-                ),
-                django_models.When(
-                    post_excom_meeting__isnull=False,
-                    then=django_models.F("post_excom_meeting__date"),
-                ),
-                django_models.When(
-                    transfer_decision__isnull=False,
-                    then=django_models.F("transfer_decision__meeting__date"),
-                ),
-                django_models.When(
-                    transfer_meeting__isnull=False,
-                    then=django_models.F("transfer_meeting__date"),
-                ),
-                default=django_models.F("date_approved"),
-                output_field=django_models.DateField(),
-            )
-        )
-        .filter(effective_date__year=year)
-        .select_related("status")
-    ):
+    for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
         project_key = p.latest_project_id or p.id
         all_versions_map.setdefault(project_key, []).append(p)
 

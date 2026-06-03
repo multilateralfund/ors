@@ -465,7 +465,42 @@ class MetaProject(models.Model):
         return f"{self.umbrella_code}"
 
 
-class ProjectManager(models.Manager):
+class ProjectQuerySet(models.QuerySet):
+    def with_effective_date(self):
+        """
+        Annotates each project version with its "effective date" — the date that
+        determines when the version was approved/approved by ExCom. Priority:
+        post_excom_decision > post_excom_meeting > transfer_decision >
+        transfer_meeting > date_approved.
+
+        Used by all_versions_for_year() and latest_version_for_year() instance
+        methods, and by the APR view/task helpers that do the same bulk lookups.
+        """
+        return self.annotate(
+            effective_date=models.Case(
+                models.When(
+                    post_excom_decision__isnull=False,
+                    then=models.F("post_excom_decision__meeting__date"),
+                ),
+                models.When(
+                    post_excom_meeting__isnull=False,
+                    then=models.F("post_excom_meeting__date"),
+                ),
+                models.When(
+                    transfer_decision__isnull=False,
+                    then=models.F("transfer_decision__meeting__date"),
+                ),
+                models.When(
+                    transfer_meeting__isnull=False,
+                    then=models.F("transfer_meeting__date"),
+                ),
+                default=models.F("date_approved"),
+                output_field=models.DateField(),
+            )
+        )
+
+
+class ProjectManager(models.Manager.from_queryset(ProjectQuerySet)):
     def get_next_serial_number(self, country_id):
         return (
             self.select_for_update()
@@ -1787,28 +1822,7 @@ class Project(models.Model):
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
             )
-            .annotate(
-                effective_date=models.Case(
-                    models.When(
-                        post_excom_decision__isnull=False,
-                        then=models.F("post_excom_decision__meeting__date"),
-                    ),
-                    models.When(
-                        post_excom_meeting__isnull=False,
-                        then=models.F("post_excom_meeting__date"),
-                    ),
-                    models.When(
-                        transfer_decision__isnull=False,
-                        then=models.F("transfer_decision__meeting__date"),
-                    ),
-                    models.When(
-                        transfer_meeting__isnull=False,
-                        then=models.F("transfer_meeting__date"),
-                    ),
-                    default=models.F("date_approved"),
-                    output_field=models.DateField(),
-                )
-            )
+            .with_effective_date()
             .filter(effective_date__year=year)
             .select_related("status")
             .only("id", "version", "status")
@@ -1833,28 +1847,7 @@ class Project(models.Model):
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
             )
-            .annotate(
-                effective_date=models.Case(
-                    models.When(
-                        post_excom_decision__isnull=False,
-                        then=models.F("post_excom_decision__meeting__date"),
-                    ),
-                    models.When(
-                        post_excom_meeting__isnull=False,
-                        then=models.F("post_excom_meeting__date"),
-                    ),
-                    models.When(
-                        transfer_decision__isnull=False,
-                        then=models.F("transfer_decision__meeting__date"),
-                    ),
-                    models.When(
-                        transfer_meeting__isnull=False,
-                        then=models.F("transfer_meeting__date"),
-                    ),
-                    default=models.F("date_approved"),
-                    output_field=models.DateField(),
-                )
-            )
+            .with_effective_date()
             .filter(effective_date__isnull=False, effective_date__year__lte=year)
             .select_related("status", "post_excom_decision__meeting")
             .order_by("-effective_date", "-version")
