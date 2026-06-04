@@ -267,6 +267,15 @@ def auto_submit_empty_agency_reports(year):
         if has_active_projects:
             continue
 
+        has_any_projects = Project.objects.filter(
+            latest_project__isnull=True,
+            version__gte=3,
+            agency=agency,
+        ).exists()
+
+        if not has_any_projects:
+            continue
+
         agency_report = AnnualAgencyProjectReport.objects.create(
             progress_report=progress_report,
             agency=agency,

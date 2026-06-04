@@ -6447,16 +6447,24 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         mock_delay.assert_called_once_with(next_year)
 
     def test_task_auto_submits_agency_with_no_active_projects(
-        self, annual_progress_report
+        self, annual_progress_report, apr_year
     ):
-        """An agency with no ONG/COM projects gets an auto-submitted report."""
-        agency_without_projects = AgencyFactory()
+        """An agency with only non-ONG/COM projects gets an auto-submitted report."""
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        agency_without_active_projects = AgencyFactory()
+        ProjectFactory(
+            agency=agency_without_active_projects,
+            status=fin_status,
+            latest_project=None,
+            version=3,
+            date_approved=date(apr_year - 1, 6, 1),
+        )
 
         auto_submit_empty_agency_reports(annual_progress_report.year)
 
         created_report = AnnualAgencyProjectReport.objects.filter(
             progress_report=annual_progress_report,
-            agency=agency_without_projects,
+            agency=agency_without_active_projects,
         ).first()
         assert created_report is not None
         assert (
@@ -6569,10 +6577,29 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         """Task returns early without error when the year doesn't exist."""
         auto_submit_empty_agency_reports(9999)  # should not raise
 
-    def test_task_returns_count(self, annual_progress_report):
+    def test_task_skips_agency_with_no_projects_at_all(self, annual_progress_report):
+        """An agency that has no projects at all is not auto-submitted."""
+        agency_no_projects = AgencyFactory()
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency_no_projects,
+        ).exists()
+
+    def test_task_returns_count(self, annual_progress_report, apr_year):
         """Task returns the number of auto-submitted agencies."""
-        AgencyFactory()
-        AgencyFactory()
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        for _ in range(2):
+            agency = AgencyFactory()
+            ProjectFactory(
+                agency=agency,
+                status=fin_status,
+                latest_project=None,
+                version=3,
+                date_approved=date(apr_year - 1, 6, 1),
+            )
 
         result = auto_submit_empty_agency_reports(annual_progress_report.year)
 
