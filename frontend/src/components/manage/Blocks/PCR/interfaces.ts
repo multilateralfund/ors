@@ -1,4 +1,6 @@
-import { SetStateAction } from 'react'
+import { Dispatch, SetStateAction } from 'react'
+
+import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 
 export interface AgencyOverview {
   agency: number | null
@@ -12,6 +14,7 @@ export interface AgencyOverview {
 
 export interface RatingAdditionalComment {
   user_type: number | null
+  other_user_type: string
   comment: string
 }
 
@@ -144,7 +147,7 @@ export interface PCRSdgContribution {
   sgds: SGDs[]
 }
 
-export type EnterpriseType = PCROverview &
+export type PCRType = PCROverview &
   PCRSummaryAndDelays[] &
   PCRResultsAssessment[] &
   PCRCausesOfDelay[] &
@@ -162,19 +165,28 @@ export interface PCRData {
   sdg_contribution: PCRSdgContribution[]
 }
 
-export type SetEnterpriseData = (
+export type SetPCRData = (
   updater: SetStateAction<PCRData>,
   fieldName?: string,
 ) => void
 
-export type EnterpriseFormProps = {
-  enterpriseData: PCRData
-  setEnterpriseData: SetEnterpriseData
-  errors: { [key: string]: string[] }
-  enterprise?: EnterpriseType
+export type PCRFormData = { PCRData: PCRData; setPCRData: SetPCRData }
+
+export type PCRFormProps = PCRFormData & {
+  PCR?: PCRType
+  errors: { [key: string]: string[] | { [key: string]: [] }[] }
 }
 
 export interface EnterpriseHeaderProps {
   enterpriseData: PCRData
   setErrors: (value: { [key: string]: string[] }) => void
 }
+
+export type PCROverviewProps = PCRFormData & {
+  errors: { [key: string]: string[] | { [key: string]: [] }[] }
+}
+
+export type PCROverviewSectionProps = PCRFormData &
+  PCROverviewProps & {
+    setCurrentTab: Dispatch<SetStateAction<number>>
+  }

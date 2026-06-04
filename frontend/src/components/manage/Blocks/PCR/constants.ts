@@ -14,6 +14,21 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   ad_hoc_pcr: 'Ad-hoc PCR',
   pcr_submitted: 'PCR submitted',
   submission_date: 'PCR submission date',
+  meeting: 'Executive Committee meeting',
+  date_of_approval: 'Date of approval of the project',
+  date_of_completion: 'Date of completion of the project',
+  financial_figures_type: 'Financial figures type',
+  financial_figures_type_explanation:
+    'Please provide a brief explanation if needed',
+  project_goals_achieved: 'All project goals achieved',
+  project_goals_achieved_explanation: 'Please provide a brief explanation',
+  rating: 'Rating',
+  other_rating_comment: 'Specify rating',
+  rating_explanation: 'Please explain your rating',
+  completion_report_done_by: 'Completion report done by',
+  user_type: 'User type',
+  other_user_type: 'Specify user type',
+  comment: 'Additional comment',
 }
 
 export const initialOverviewFields = {
@@ -50,7 +65,11 @@ export const initialAgencyOverview = {
   total_mlf_funding_disbursed: null,
   total_mlf_funding_returned: null,
 }
-export const initialRatingAdditionalComment = { user_type: null, comment: '' }
+export const initialRatingAdditionalComment = {
+  user_type: null,
+  other_user_type: '',
+  comment: '',
+}
 
 export const initialSummaryAndDelaysFieldsEntry = {
   project_code: '',
@@ -145,3 +164,42 @@ export const initialSGDs = {
   sgd_id: null,
   description: '',
 }
+
+export const financialTypeOpts = [
+  { id: 1, name: 'Provisional' },
+  { id: 2, name: 'Final' },
+]
+
+export const projectGoalsAchievedOpts = [
+  { id: 1, name: 'Yes' },
+  { id: 2, name: 'No' },
+  { id: 3, name: 'N/A' },
+]
+
+export const ratingOpts = [
+  { id: 1, name: 'Highly satisfactory' },
+  { id: 2, name: 'Satisfactory as planned' },
+  { id: 3, name: 'Satisfactory but not as planned' },
+  { id: 4, name: 'Unsatisfactory' },
+  { id: 5, name: 'Other, please specify' },
+]
+
+export const completionReportAuthorOpts = [
+  { id: 1, name: 'Lead agency' },
+  { id: 2, name: 'Cooperating agency' },
+  { id: 3, name: 'National coordinating agency/NOU' },
+  { id: 4, name: 'Local executing agency' },
+  { id: 5, name: 'Other' },
+]
+
+export const ratingEntityUserOpts = [
+  { id: 1, name: 'Cooperating agency' },
+  { id: 2, name: 'Government/NOU' },
+  { id: 3, name: 'Enterprises' },
+  { id: 4, name: 'Consultants' },
+  {
+    id: 5,
+    name: 'Project management officers in the Multilateral Fund Secretariat',
+  },
+  { id: 6, name: 'Other, please specify' },
+]

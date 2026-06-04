@@ -203,3 +203,11 @@ export const getFundsApproved = (
           Number(operating_cost_approved ?? 0)
         ).toFixed(10),
       )
+
+export const getSectionErrors = (
+  fields: string[],
+  errors: { [key: string]: string[] },
+) =>
+  Object.fromEntries(
+    Object.entries(errors).filter(([key]) => fields.includes(key)),
+  )

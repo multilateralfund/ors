@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { useGetProject } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProject'
 import {
   FileMetaDataType,
   ProjectFilesObject,
@@ -10,6 +11,8 @@ import { initialOverviewFields } from '../constants'
 import { PCRData } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
+import { useParams } from 'wouter'
+
 const PCRCreateWrapper = () => {
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
@@ -17,6 +20,9 @@ const PCRCreateWrapper = () => {
   useEffect(() => {
     clearUpdatedFields()
   }, [])
+
+  const { project_id } = useParams<Record<string, string>>()
+  const { data: project } = useGetProject(project_id)
 
   const [PCRData, setPCRData] = useState<PCRData>({
     overview: initialOverviewFields,
@@ -35,6 +41,22 @@ const PCRCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+
+  useEffect(() => {
+    if (project) {
+      setPCRData((prev) => ({
+        ...prev,
+        overview: {
+          ...prev.overview,
+          country: project.country,
+          metacode: project.metacode,
+          meeting: project.meeting,
+          date_of_approval: project.date_approved,
+          date_of_completion: project.date_completion,
+        },
+      }))
+    }
+  }, [project])
 
   const setPCRDataWithEditTracking = (
     updater: React.SetStateAction<PCRData>,
