@@ -691,9 +691,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": "project_category",
                 "headerName": "Category",
-                "method": lambda project, _: (
-                    project.category
-                ),
+                "method": lambda project, _: (project.category),
             },
             {
                 "id": "funding_window",
