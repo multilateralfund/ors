@@ -3,9 +3,6 @@ from copy import copy
 from typing import TYPE_CHECKING
 
 import openpyxl
-from django.db.models import F
-from django.db.models import OuterRef
-from django.db.models import Subquery
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 
@@ -14,7 +11,6 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import format_iso_date
 from core.api.utils import workbook_response
 from core.models import MetaProject
-from core.models import Project
 
 if TYPE_CHECKING:
     from core.api.views import ProjectV2ViewSet
@@ -223,14 +219,14 @@ class MyaExport:
     wb: "openpyxl.Workbook"
     sheet: "Worksheet"
     view: "ProjectV2ViewSet"
-    resolved_export_fields = {
-        "start_date": "export_start_date",
-        "end_date": "export_end_date",
-        "project_funding": "export_project_funding",
-        "support_cost": "export_support_cost",
-        "phase_out_co2_eq_t": "export_phase_out_co2_eq_t",
-        "phase_out_odp": "export_phase_out_odp",
-        "phase_out_mt": "export_phase_out_mt",
+    computed_fields = {
+        "start_date",
+        "end_date",
+        "project_funding",
+        "support_cost",
+        "phase_out_co2_eq_t",
+        "phase_out_odp",
+        "phase_out_mt",
     }
 
     def __init__(self, view):
@@ -244,65 +240,46 @@ class MyaExport:
         self.wb = wb
         self.sheet = sheet
 
-    def get_export_field_ids(self):
-        return [
-            header["id"]
-            for header in HEADERS
-            if header["id"] not in self.resolved_export_fields
-        ]
-
-    def get_first_project(self):
-        return Project.objects.filter(meta_project=OuterRef("pk")).order_by("id")[:1]
-
     def get_meta_projects_queryset(self):
-        """Return flat MYA export rows with fallback values under export_* keys.
-
-        The temporary export_* aliases avoid Django annotation name conflicts with
-        existing MetaProject field names while still letting the export query
-        resolve "stored value first, computed value otherwise" in SQL.
-        """
-        first_project = self.get_first_project()
         return (
-            MetaProject.objects.filter(
-                type=MetaProject.MetaProjectType.MYA, is_draft=False
-            )
-            .with_computed_field_fallbacks("export_")
+            MetaProject.objects.for_mya_export()
+            .with_approved_mya_projects()
+            .select_related("country", "cluster")
             .order_by()
-            .distinct()
-            .values(
-                *self.get_export_field_ids(),
-                *self.resolved_export_fields.values(),
-                country_name=F("country__name"),
-                cluster_name=F("cluster__name"),
-                lead_agency_name=Subquery(
-                    first_project.values("lead_agency__name")[:1],
-                ),
-            )
         )
 
-    def normalize_meta_project_row(self, meta_project):
-        """Replace temporary export_* keys with the final writer column names.
+    def get_meta_project_value(self, meta_project, field_id, computed):
+        val = getattr(meta_project, field_id)
 
-        The writer and HEADERS expect plain field names like start_date, but the
-        queryset cannot emit those names directly because they would clash with
-        model fields during annotation.
-        """
+        if val is None and field_id in self.computed_fields:
+            val = computed.get(field_id)
+
+        return val
+
+    def get_meta_project_row(self, meta_project):
+        computed = meta_project.get_computed_mya_values()
+        first_project = meta_project.first_approved_mya_project()
         row = {
-            key: value
-            for key, value in meta_project.items()
-            if not key.startswith("export_")
+            "country_name": meta_project.country.name if meta_project.country else None,
+            "cluster_name": meta_project.cluster.name if meta_project.cluster else None,
+            "lead_agency_name": (
+                first_project.lead_agency.name
+                if first_project and first_project.lead_agency
+                else None
+            ),
         }
-        row.update(
-            {
-                field_name: meta_project[export_field_name]
-                for field_name, export_field_name in self.resolved_export_fields.items()
-            }
-        )
+
+        for header in HEADERS:
+            if header["id"] not in row:
+                row[header["id"]] = self.get_meta_project_value(
+                    meta_project, header["id"], computed
+                )
+
         return row
 
     def get_meta_project_rows(self):
         return [
-            self.normalize_meta_project_row(meta_project)
+            self.get_meta_project_row(meta_project)
             for meta_project in self.get_meta_projects_queryset()
         ]
 

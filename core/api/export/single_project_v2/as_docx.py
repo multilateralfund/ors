@@ -95,7 +95,6 @@ class ProjectsV2ProjectExportDocx:
             p._element.getparent().remove(p._element)
 
     def build_front_page(self, data):
-
         # check footers
         for section in self.doc.sections:
             footer_paragraphs = chain(
@@ -178,7 +177,8 @@ class ProjectsV2ProjectExportDocx:
                     if header.get("docx_highlight", False):
                         run.font.highlight_color = WD_COLOR_INDEX.YELLOW
                 elif c_idx == 1 and header.get("method"):
-                    cell.text = header["method"](data, header)
+                    method_value = header["method"](data, header)
+                    cell.text = "" if method_value is None else str(method_value)
                 elif c_idx == 1 and is_dollar_value:
                     cell.text = (
                         format_decimal(
@@ -195,10 +195,17 @@ class ProjectsV2ProjectExportDocx:
 
     def _write_substance_table(self, _, table, data):
         substances = data.get("ods_odp", [])
+        project_ods_odp_by_id = {
+            ods_odp.id: ods_odp
+            for ods_odp in self.project.ods_odp.select_related("ods_replacement")
+        }
         data_fields = [
+            "products_manufactured",
             "ods_display_name",
-            "???",
-            "ods_display_replacement",
+            [
+                "ods_replacement_text",
+                "ods_replacement__name",
+            ],
         ]
 
         for field, label in [
@@ -222,13 +229,45 @@ class ProjectsV2ProjectExportDocx:
 
         for substance in substances:
             row = table.add_row()
+            project_ods_odp = project_ods_odp_by_id.get(substance.get("id"))
             for c_idx, cell in enumerate(row.cells):
                 field = data_fields[c_idx]
-                value = substance.get(field, "")
+                value = self._get_substance_table_value(
+                    data, substance, field, project_ods_odp
+                )
                 if field in ["phase_out_mt", "co2_mt", "odp"]:
                     value = format_decimal(value, is_currency=False)
 
                 cell.text = str(value or "")
+
+    def _get_substance_table_value(self, data, substance, field, project_ods_odp=None):
+        if isinstance(field, list):
+            return next(
+                (
+                    value
+                    for value in (
+                        self._get_substance_table_value(
+                            data, substance, fallback_field, project_ods_odp
+                        )
+                        for fallback_field in field
+                    )
+                    if value
+                ),
+                "",
+            )
+
+        if field == "products_manufactured":
+            return data.get("products_manufactured", "")
+
+        if "__" in field and project_ods_odp:
+            value = project_ods_odp
+            for part in field.split("__"):
+                value = getattr(value, part, None)
+                if value is None:
+                    return ""
+            return value
+
+        return substance.get(field, "")
 
     def _write_impact_target_actual(self, project, headers, table, data):
         planned_headers = {}
@@ -326,6 +365,22 @@ class ProjectsV2ProjectExportDocx:
             headers = get_headers_metaproject()
             writer(headers, table, data)
 
+    @staticmethod
+    def _get_metaproject_data_with_computed_fallbacks(metaproject):
+        result = {}
+
+        metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+        field_data = metaproject_data.get("field_data", {})
+        computed_data = metaproject_data.get("computed_field_data", {})
+
+        for field_name, field_info in field_data.items():
+            value = field_info["value"]
+            if value is None and field_name in computed_data:
+                value = computed_data[field_name]
+            result[field_name] = value
+
+        return result
+
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
             cluster=self.project.cluster,
@@ -389,7 +444,9 @@ class ProjectsV2ProjectExportDocx:
         metaproject_data = {}
 
         if metaproject:
-            metaproject_data = MetaProjecMyaDetailsSerializer(metaproject).data
+            metaproject_data = MetaProjecMyaDetailsSerializer(
+                metaproject
+            ).field_data_with_computed_fallbacks()
 
         self._write_metaproject_fields(
             table=self.find_table("MYA"),

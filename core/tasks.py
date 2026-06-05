@@ -1,3 +1,5 @@
+# pylint: disable=C0302
+
 from urllib.parse import urlencode
 from datetime import datetime
 
@@ -16,6 +18,8 @@ from django.utils import timezone
 
 from core.api.filters.annual_project_reports import APRProjectFilter
 from core.api.utils import (
+    all_versions_for_year_base_qs,
+    latest_version_base_qs,
     COUNTRY_USER_GROUP,
     COUNTRY_SUBMITTER_GROUP,
     get_previous_year_project_reports,
@@ -263,13 +267,68 @@ def auto_submit_empty_agency_reports(year):
         if has_active_projects:
             continue
 
-        AnnualAgencyProjectReport.objects.create(
+        has_any_projects = Project.objects.filter(
+            latest_project__isnull=True,
+            version__gte=3,
+            agency=agency,
+        ).exists()
+
+        if not has_any_projects:
+            continue
+
+        agency_report = AnnualAgencyProjectReport.objects.create(
             progress_report=progress_report,
             agency=agency,
             status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
             submitted_at=timezone.now(),
             submitted_by=None,
         )
+
+        # Create AnnualProjectReport records for any non-ONG/COM projects
+        # this agency has (e.g. FIN projects approved up to this year).
+        previous_reports_dict = get_previous_year_project_reports(agency.id, year)
+
+        projects_queryset = (
+            Project.objects.filter(
+                latest_project__isnull=True,
+                version__gte=3,
+            )
+            .select_related(
+                "country",
+                "country__parent",
+                "country__parent__parent",
+                "agency",
+                "sector",
+                "project_type",
+                "status",
+                "meeting",
+                "decision",
+            )
+            .prefetch_related(
+                "subsectors",
+                "ods_odp",
+                "ods_odp__ods_substance",
+                "ods_odp__ods_blend",
+            )
+            .order_by("code")
+        )
+        filterset = APRProjectFilter(
+            data={"year": year, "agency": agency.id},
+            queryset=projects_queryset,
+        )
+        for project in filterset.qs:
+            key = (project.code, agency.id)
+            default_data = {"status": project.status.name}
+            previous_data = previous_reports_dict.get(key, default_data)
+            project_report, created = AnnualProjectReport.objects.get_or_create(
+                project=project,
+                report=agency_report,
+                defaults=previous_data,
+            )
+            if created or project_report.meta_code_denorm is None:
+                project_report.populate_derived_fields()
+                project_report.save()
+
         auto_submitted.append(agency.name)
 
     logger.info(
@@ -618,7 +677,7 @@ def synchronize_decisions():
     decisions_url_params = {
         "include": "field_content",
         "fields[paragraph--edw_rich_text]": "field_body",
-        "sort": "-changed",
+        # "sort": "-changed", #disable temporarly as an error is raised when sorting is passed
     }
 
     if latest_decision and latest_decision.api_changed:
@@ -649,7 +708,7 @@ def synchronize_decisions():
 
 
 @app.task()
-def sync_apr_from_projects(year):
+def sync_apr_from_projects(year, dry_run=False):
     """
     Re-synchronize all APR derived fields for a reporting year, for all agencies,
     from the current Project data.
@@ -694,6 +753,9 @@ def sync_apr_from_projects(year):
             "project__project_type",
             "project__status",
             "project__post_excom_decision__meeting",
+            "project__post_excom_meeting",
+            "project__transfer_decision__meeting",
+            "project__transfer_meeting",
             "main_region",
             "report__progress_report",
         )
@@ -709,11 +771,16 @@ def sync_apr_from_projects(year):
             "message": "No project reports to sync.",
         }
 
-    # Build a map of existing project IDs per agency report from already-fetched data,
-    # to avoid one DB query per agency in the second phase (project "pull") below.
+    # Build a map of existing *final* project IDs per agency report from
+    # already-fetched data, to avoid one DB query per agency in the second phase
+    # (project "pull") below.
+    # We resolve through latest_project_id so that, if a project gained a new live
+    # version between runs, the archived FK is still recognised as "already covered"
+    # and we don't create a duplicate AnnualProjectReport for the new live row.
     existing_by_report_id: dict[int, set[int]] = {}
     for pr in project_reports:
-        existing_by_report_id.setdefault(pr.report_id, set()).add(pr.project_id)
+        final_id = pr.project.latest_project_id or pr.project.id
+        existing_by_report_id.setdefault(pr.report_id, set()).add(final_id)
 
     # Phase 0: Delete APR records for projects that no longer qualify for this year.
     # This handles cases where date_approved was updated after the APR record was
@@ -747,7 +814,7 @@ def sync_apr_from_projects(year):
         for pr in project_reports
         if (pr.project.latest_project_id or pr.project.id) not in valid_project_ids
     ]
-    if to_delete_ids:
+    if to_delete_ids and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.filter(id__in=to_delete_ids).delete()
 
@@ -781,57 +848,19 @@ def sync_apr_from_projects(year):
         .prefetch_related("ods_odp")
     }
 
-    # Batch-load latest version approved in or before `year`
+    # Batch-load latest version approved in or before `year`.
+    project_id_filter = django_models.Q(id__in=final_project_ids) | django_models.Q(
+        latest_project_id__in=final_project_ids
+    )
     latest_version_map = {}
-    for p in (
-        Project.objects.really_all()
-        .filter(
-            django_models.Q(id__in=final_project_ids)
-            | django_models.Q(latest_project_id__in=final_project_ids),
-            post_excom_decision__isnull=False,
-            post_excom_decision__meeting__date__year__lte=year,
-        )
-        .select_related("status", "post_excom_decision__meeting")
-        .order_by("-post_excom_decision__meeting__date", "-version")
-    ):
+    for p in latest_version_base_qs(year).filter(project_id_filter):
         project_key = p.latest_project_id or p.id
         if project_key not in latest_version_map:
             latest_version_map[project_key] = p
 
-    # Fallback: for projects whose post_excom_decision is not set, use date_approved.
-    missing_project_ids = final_project_ids - set(latest_version_map.keys())
-    if missing_project_ids:
-        for p in (
-            Project.objects.really_all()
-            .filter(
-                django_models.Q(id__in=missing_project_ids)
-                | django_models.Q(latest_project_id__in=missing_project_ids),
-                post_excom_decision__isnull=True,
-                date_approved__isnull=False,
-                date_approved__year__lte=year,
-            )
-            .select_related("status")
-            .order_by("-date_approved", "-version")
-        ):
-            project_key = p.latest_project_id or p.id
-            if project_key not in latest_version_map:
-                latest_version_map[project_key] = p
-
     # Batch-load all versions approved during `year`
     all_versions_map: dict = {}
-    for p in (
-        Project.objects.really_all()
-        .filter(
-            django_models.Q(id__in=final_project_ids)
-            | django_models.Q(latest_project_id__in=final_project_ids),
-            django_models.Q(
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year=year,
-            )
-            | django_models.Q(post_excom_decision__isnull=True, version=3),
-        )
-        .select_related("status")
-    ):
+    for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
         project_key = p.latest_project_id or p.id
         all_versions_map.setdefault(project_key, []).append(p)
 
@@ -866,13 +895,28 @@ def sync_apr_from_projects(year):
         ):
             to_update.append(project_report)
 
-    if to_update:
+    if to_update and not dry_run:
         with transaction.atomic():
             AnnualProjectReport.objects.bulk_update(
                 to_update, AnnualProjectReport.DENORM_FIELDS, batch_size=500
             )
 
     changed_count = len(to_update)
+
+    # Migrate stale project FKs: if the project an AnnualProjectReport points to
+    # has since been archived (latest_project_id is now set), update the FK to
+    # point at the new live version. Without this, anything that follows the FK
+    # directly (e.g. select_related("project__meeting")) would get archived data.
+    to_update_fk = [
+        pr for pr in project_reports if pr.project.latest_project_id is not None
+    ]
+    if to_update_fk and not dry_run:
+        for pr in to_update_fk:
+            pr.project_id = pr.project.latest_project_id
+        with transaction.atomic():
+            AnnualProjectReport.objects.bulk_update(
+                to_update_fk, ["project_id"], batch_size=500
+            )
 
     # Now pull in projects that were added after the APR was first initialized
     agency_reports = AnnualAgencyProjectReport.objects.filter(
@@ -916,6 +960,11 @@ def sync_apr_from_projects(year):
         new_projects = [p for p in filterset.qs if p.id not in existing_project_ids]
 
         if not new_projects:
+            continue
+
+        if dry_run:
+            # just increase added_count and break out of the loop for this agency report
+            added_count += len(new_projects)
             continue
 
         previous_reports_dict = get_previous_year_project_reports(agency.id, year)

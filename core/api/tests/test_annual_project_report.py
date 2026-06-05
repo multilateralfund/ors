@@ -29,9 +29,12 @@ from core.api.tests.factories import (
     AnnualProjectReportFactory,
     AnnualAgencyProjectReportFactory,
     AnnualProjectReportFileFactory,
+    DecisionFactory,
+    MeetingFactory,
     ProjectFactory,
     MetaProjectFactory,
     ProjectClusterFactory,
+    ProjectStatusFactory,
     UserFactory,
 )
 from core.tasks import (
@@ -2511,6 +2514,50 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
         assert annual_report.support_cost_balance == 10000.0 - 8000.0
         assert annual_report.per_cent_funds_disbursed == 0.8
 
+    def test_derived_properties_with_date_approved_fallback(
+        self,
+        annual_agency_report,
+        apr_agency_viewer_user,
+        no_post_excom_decision_versions_for_apr,
+    ):
+        """
+        When a project's updated version has no post_excom_decision set,
+        latest_version_for_year must fall back to date_approved to discover it.
+        Adjustment and related fields should still be computed correctly in this case.
+        """
+        version3 = no_post_excom_decision_versions_for_apr[0]
+        version4 = no_post_excom_decision_versions_for_apr[1]
+        assert version3.version == 3
+        assert version4.version == 4
+        assert version4.post_excom_decision is None
+
+        # Initialize all derived properties by calling the workspace API
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        url = reverse(
+            "apr-workspace",
+            kwargs={"year": annual_agency_report.progress_report.year},
+        )
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        annual_report = AnnualProjectReport.objects.filter(
+            project_id=version4.id,
+            report_id=annual_agency_report.id,
+        ).first()
+        assert annual_report is not None
+
+        # latest_version_for_year should find version4 via the date_approved fallback
+        assert annual_report.adjustment == version4.total_fund - version3.total_fund
+        assert annual_report.approved_funding_plus_adjustment == version4.total_fund
+        assert (
+            annual_report.support_cost_adjustment
+            == version4.support_cost_psc - version3.support_cost_psc
+        )
+        assert (
+            annual_report.support_cost_approved_plus_adjustment
+            == version4.support_cost_psc
+        )
+
     def test_pcr_due_when_ong_to_com_in_same_year(
         self,
         annual_agency_report,
@@ -4792,6 +4839,8 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         country_europe,
         project_ongoing_status,
     ):
+        country_europe.abbr_for_apr = "EUR"
+        country_europe.save()
         country_ro.parent = country_europe
         country_ro.save()
 
@@ -4841,7 +4890,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert project_data["legacy_code"] == "ROM/80/TAS/123"
         assert project_data["agency_name"] == project.agency.name
         assert project_data["cluster_name"] == project.cluster.name
-        assert project_data["region_name"] == project.country.parent.abbr
+        assert project_data["region_name"] == project.country.parent.abbr_for_apr
         assert project_data["country_name"] == project.country.name
         assert project_data["type_code"] == project.project_type.code
         assert project_data["sector_code"] == project.sector.code
@@ -5812,6 +5861,209 @@ class TestSyncAprFromProjectsTask:
         # The original APR for the qualifying project should be untouched.
         assert AnnualProjectReport.objects.filter(id=annual_project_report.id).exists()
 
+    def test_sync_computes_denorm_fields_with_date_approved_fallback(
+        self,
+        annual_agency_report,
+        no_post_excom_decision_versions_for_apr,
+    ):
+        # Versions setup:
+        # - version 4 is the final version
+        # - there is no post_excom_decision on either version 3 or 4.
+        # The task must use date_approved to discover version 4 as the latest for year.
+        version3, version4 = no_post_excom_decision_versions_for_apr
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+        # Manually reset the APR's denorm field (it's auto-populated in the fixture)
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+        assert (
+            apr.support_cost_adjustment_denorm
+            == version4.support_cost_psc - version3.support_cost_psc
+        )
+
+    def test_sync_picks_newer_date_approved_over_older_decision(
+        self,
+        annual_agency_report,
+        apr_year,
+        project_ongoing_status,
+        agency,
+        country_ro,
+        sector,
+    ):
+        # Versions setup:
+        # - version has a post_excom_decision from the previous year.
+        # - version 4 (final) has no decision, but a date_approved in the APR year
+        # The logic should pick version4, not version3.
+        old_meeting = MeetingFactory(
+            number=501,
+            date=date(apr_year - 1, 6, 1),
+            end_date=date(apr_year - 1, 6, 2),
+        )
+        old_decision = DecisionFactory(number=501, meeting=old_meeting)
+
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(apr_year, 6, 1),
+            code="TEST/MIXDT/01",
+            version=4,
+            latest_project=None,
+            post_excom_decision=None,
+            total_fund=200000.0,
+            support_cost_psc=20000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/MIXDT/01",
+            version=3,
+            latest_project=version4,
+            post_excom_decision=old_decision,
+            total_fund=100000.0,
+            support_cost_psc=10000.0,
+        )
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+
+        # Manually reset the APR's denorm field (it's auto-populated in the fixture)
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        # And now the sync should recalcuate it
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+
+    def test_sync_computes_denorm_fields_via_post_excom_decision(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        decision_apr_same_year,
+    ):
+        # Versions setup:
+        # - version 4 is the final version, with a post_excom_decision in apr_year.
+        # - version 3 has no decision.
+        # The task must use post_excom_decision__meeting__date to discover version 4
+        # as the latest version for year, and compute adjustment_denorm from it.
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXDEC/01",
+            version=4,
+            latest_project=None,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=200000.0,
+            support_cost_psc=20000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXDEC/01",
+            version=3,
+            latest_project=version4,
+            post_excom_decision=None,
+            total_fund=100000.0,
+            support_cost_psc=10000.0,
+        )
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+
+    def test_sync_computes_denorm_fields_via_post_excom_meeting(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        meeting_apr_same_year,
+    ):
+        # Versions setup:
+        # - version 4 is the final version with post_excom_meeting in apr_year
+        #   (but no post_excom_decision and no transfer_*).
+        # - version 3 has no meeting/decision.
+        # The task must use post_excom_meeting__date (the new fallback step) to
+        # discover version 4 as latest for year, and compute adjustment_denorm.
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXMTG/01",
+            version=4,
+            latest_project=None,
+            post_excom_decision=None,
+            post_excom_meeting=meeting_apr_same_year,
+            total_fund=200000.0,
+            support_cost_psc=20000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PEXMTG/01",
+            version=3,
+            latest_project=version4,
+            post_excom_decision=None,
+            post_excom_meeting=None,
+            total_fund=100000.0,
+            support_cost_psc=10000.0,
+        )
+        apr = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version4,
+        )
+        apr.adjustment_denorm = None
+        apr.save(update_fields=["adjustment_denorm"])
+
+        result = sync_apr_from_projects(annual_agency_report.progress_report.year)
+
+        assert result["changed_count"] >= 1
+        apr.refresh_from_db()
+        assert apr.adjustment_denorm == version4.total_fund - version3.total_fund
+        assert apr.approved_funding_plus_adjustment_denorm == version4.total_fund
+
 
 @pytest.mark.django_db
 class TestAPREndorseProjectVersioning:
@@ -6197,16 +6449,24 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         mock_delay.assert_called_once_with(next_year)
 
     def test_task_auto_submits_agency_with_no_active_projects(
-        self, annual_progress_report
+        self, annual_progress_report, apr_year
     ):
-        """An agency with no ONG/COM projects gets an auto-submitted report."""
-        agency_without_projects = AgencyFactory()
+        """An agency with only non-ONG/COM projects gets an auto-submitted report."""
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        agency_without_active_projects = AgencyFactory()
+        ProjectFactory(
+            agency=agency_without_active_projects,
+            status=fin_status,
+            latest_project=None,
+            version=3,
+            date_approved=date(apr_year - 1, 6, 1),
+        )
 
         auto_submit_empty_agency_reports(annual_progress_report.year)
 
         created_report = AnnualAgencyProjectReport.objects.filter(
             progress_report=annual_progress_report,
-            agency=agency_without_projects,
+            agency=agency_without_active_projects,
         ).first()
         assert created_report is not None
         assert (
@@ -6215,6 +6475,40 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         )
         assert created_report.submitted_at is not None
         assert created_report.submitted_by is None
+
+    def test_task_creates_project_reports_for_non_ong_com_projects(
+        self, annual_progress_report, apr_year
+    ):
+        """
+        An agency with only non-ONG/COM projects (e.g. FIN) gets an auto-submitted
+        report AND AnnualProjectReport records created for those projects.
+        """
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        agency = AgencyFactory()
+        project = ProjectFactory(
+            agency=agency,
+            status=fin_status,
+            latest_project=None,
+            version=3,
+            date_approved=date(apr_year - 1, 6, 1),
+        )
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        agency_report = AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency,
+        ).first()
+        assert agency_report is not None
+        assert (
+            agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+        )
+
+        project_report = AnnualProjectReport.objects.filter(
+            report=agency_report,
+            project=project,
+        ).first()
+        assert project_report is not None
 
     def test_task_skips_agency_with_ong_projects(
         self, annual_progress_report, apr_year, project_ongoing_status
@@ -6285,10 +6579,29 @@ class TestAutoSubmitEmptyAgencyReports(BaseTest):
         """Task returns early without error when the year doesn't exist."""
         auto_submit_empty_agency_reports(9999)  # should not raise
 
-    def test_task_returns_count(self, annual_progress_report):
+    def test_task_skips_agency_with_no_projects_at_all(self, annual_progress_report):
+        """An agency that has no projects at all is not auto-submitted."""
+        agency_no_projects = AgencyFactory()
+
+        auto_submit_empty_agency_reports(annual_progress_report.year)
+
+        assert not AnnualAgencyProjectReport.objects.filter(
+            progress_report=annual_progress_report,
+            agency=agency_no_projects,
+        ).exists()
+
+    def test_task_returns_count(self, annual_progress_report, apr_year):
         """Task returns the number of auto-submitted agencies."""
-        AgencyFactory()
-        AgencyFactory()
+        fin_status = ProjectStatusFactory(name="Finalized", code="FIN")
+        for _ in range(2):
+            agency = AgencyFactory()
+            ProjectFactory(
+                agency=agency,
+                status=fin_status,
+                latest_project=None,
+                version=3,
+                date_approved=date(apr_year - 1, 6, 1),
+            )
 
         result = auto_submit_empty_agency_reports(annual_progress_report.year)
 

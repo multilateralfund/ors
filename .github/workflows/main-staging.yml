@@ -13,6 +13,10 @@ jobs:
     with:
       SENTRY_DSN: ${{ vars.STAGING_SENTRY_DSN }}
       SENTRY_ENVIRONMENT: ${{ vars.STAGING_SENTRY_ENVIRONMENT }}
+    secrets:
+      VITE_TENANT_ID: ${{ secrets.STAGING_VITE_TENANT_ID || '' }}
+      VITE_FRONTEND_CLIENT_ID: ${{ secrets.STAGING_VITE_FRONTEND_CLIENT_ID || '' }}
+      VITE_APPLICATION_ID_URI: ${{ secrets.STAGING_VITE_APPLICATION_ID_URI || '' }}
   deploy-staging:
     needs: docker-build
     uses: ./.github/workflows/deploy-staging.yml

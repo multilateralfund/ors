@@ -130,7 +130,7 @@ class ProjectApprovalSummaryViewSet(
         sheet = wb.worksheets[0]
 
         if self._is_approved_submission_status():
-            sheet["E2"] = "Funds approved (US$)"
+            sheet["E3"] = "Funds approved (US$)"
 
         rows = [
             "".join(c.value for c in r if c.value).strip().lower() for r in sheet.rows

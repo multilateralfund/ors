@@ -1,0 +1,47 @@
+.ms-login-wrap {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.ms-login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #8c8c8c;
+  background: #fff;
+  color: #1f1f1f;
+  text-decoration: none;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+.ms-login-btn:hover {
+  background: #f5f5f5;
+  border-color: #6f6f6f;
+  color: #111;
+}
+
+.ms-login-btn:focus-visible {
+  outline: 2px solid #005a9e;
+  outline-offset: 2px;
+}
+
+.ms-logo {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 7px);
+  grid-template-rows: repeat(2, 7px);
+  gap: 2px;
+}
+
+.ms-logo .sq { display: block; width: 7px; height: 7px; }
+.ms-logo .red    { background: #f25022; }
+.ms-logo .green  { background: #7fba00; }
+.ms-logo .blue   { background: #00a4ef; }
+.ms-logo .yellow { background: #ffb900; }

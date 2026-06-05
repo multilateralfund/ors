@@ -14,7 +14,12 @@ from django_filters import rest_framework as filters
 from django_clamd.validators import validate_file_infection
 from openpyxl.worksheet.page import PageMargins
 
-from core.models import AnnualProgressReport, AnnualAgencyProjectReport, ProjectHistory
+from core.models import (
+    AnnualProgressReport,
+    AnnualAgencyProjectReport,
+    Project,
+    ProjectHistory,
+)
 
 User = get_user_model()
 
@@ -227,3 +232,35 @@ def get_previous_year_project_reports(agency_id, year):
         }
 
     return reports_map
+
+
+def latest_version_base_qs(year):
+    """
+    Base queryset for the latest archive-project version approved in or before `year`,
+    ordered by effective_date desc then version desc.
+    This way, the first result per project is the most recent.
+
+    Mirrors Project.latest_version_for_year().
+    """
+    return (
+        Project.objects.really_all()
+        .with_effective_date()
+        .filter(effective_date__isnull=False, effective_date__year__lte=year)
+        .select_related("status", "post_excom_decision__meeting")
+        .order_by("-effective_date", "-version")
+    )
+
+
+def all_versions_for_year_base_qs(year):
+    """
+    Base queryset for all archive-project versions whose effective_date falls in `year`.
+    Mirrors how Project.all_versions_for_year() works.
+    """
+    # TODO: it's only used for the pcr_due field, so should probably remove.
+    return (
+        Project.objects.really_all()
+        .with_effective_date()
+        .filter(effective_date__year=year)
+        .select_related("status")
+        .order_by("version")
+    )

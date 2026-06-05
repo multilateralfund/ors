@@ -125,5 +125,6 @@ class UserAdmin(admin.ModelAdmin):
             level=messages.SUCCESS,
         )
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+    # Allow users to be deleted temporarily while the Entra ID is implemented
+    # def has_delete_permission(self, request, obj=None):
+    #     return False

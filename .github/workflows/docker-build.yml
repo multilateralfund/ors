@@ -11,6 +11,13 @@ on:
         required: false
         type: string
         default: "production"
+    secrets:
+      VITE_FRONTEND_CLIENT_ID:
+        required: false
+      VITE_TENANT_ID:
+        required: false
+      VITE_APPLICATION_ID_URI:
+        required: false
 
 env:
   REGISTRY: ghcr.io
@@ -69,3 +76,6 @@ jobs:
           build-args: |
             VITE_PUBLIC_SENTRY_DSN=${{ inputs.SENTRY_DSN }}
             VITE_PUBLIC_SENTRY_ENVIRONMENT=${{ inputs.SENTRY_ENVIRONMENT }}
+            VITE_TENANT_ID=${{ secrets.VITE_TENANT_ID || '' }}
+            VITE_FRONTEND_CLIENT_ID=${{ secrets.VITE_FRONTEND_CLIENT_ID || '' }}
+            VITE_APPLICATION_ID_URI=${{ secrets.VITE_APPLICATION_ID_URI || '' }}

@@ -667,7 +667,6 @@ class AnnualProjectReport(models.Model):
 
     @cached_property
     def approved_funding(self):
-        # TODO: are we sure it's .total_fund and not .total_fund_approved?
         if not self.project_version_3:
             return None
 
@@ -680,9 +679,13 @@ class AnnualProjectReport(models.Model):
         if not latest_version or latest_version.version <= 3:
             return None
 
-        latest_funding = latest_version.total_fund
-        if latest_funding is None:
+        if latest_version.total_fund is None:
             return None
+
+        # fund_transferred is negative when funds are taken away
+        latest_funding = latest_version.total_fund + (
+            latest_version.fund_transferred or 0
+        )
 
         return latest_funding - (self.approved_funding or 0)
 
@@ -693,9 +696,11 @@ class AnnualProjectReport(models.Model):
         if not latest_version:
             if not self.project_version_3:
                 return None
+
+            # No fund_transferred on V3 projects, apparently (either null or 0)
             return self.project_version_3.total_fund
 
-        return latest_version.total_fund
+        return (latest_version.total_fund or 0) + (latest_version.fund_transferred or 0)
 
     @property
     def per_cent_funds_disbursed(self):
@@ -725,12 +730,17 @@ class AnnualProjectReport(models.Model):
     @cached_property
     def support_cost_adjustment(self):
         # Support cost in the latest version - Support cost in version 3
+        # But also including latest_version.psc_transferred
         latest_version = self.latest_project_version_for_year
 
-        if not latest_version or not latest_version.support_cost_psc:
+        if not latest_version or latest_version.version <= 3:
             return None
 
-        return latest_version.support_cost_psc - (self.support_cost_approved or 0)
+        return (
+            (latest_version.support_cost_psc or 0)
+            + (latest_version.psc_transferred or 0)
+            - (self.support_cost_approved or 0)
+        )
 
     @cached_property
     def support_cost_approved_plus_adjustment(self):

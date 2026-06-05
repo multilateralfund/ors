@@ -1,5 +1,6 @@
 import pathlib
 from copy import copy
+from dataclasses import dataclass
 from typing import Iterable
 from typing import TypedDict
 
@@ -78,6 +79,68 @@ class CountryEntry(TypedDict):
     country_name: str
     country_data: CountryData
     country_total: CountryTotal
+
+
+@dataclass
+class MergedValue:
+    value: float | int | str
+    size: int
+
+
+class SheetWriter:
+    def __init__(self, wb, last_row):
+        self.wb = wb
+        self.sheet = wb.active
+        self.last_row = last_row
+
+    def add_row(self, row, styles_from):
+        cells = []
+
+        to_merge = []
+
+        idx = 0
+        for val in row:
+            src_cell = styles_from[idx]
+            cell = copy(src_cell)
+            for attr in ["font", "number_format", "alignment", "border"]:
+                setattr(cell, attr, copy(getattr(src_cell, attr)))
+            if idx == 0:
+                alignment = copy(cell.alignment)
+                alignment.wrap_text = True
+                cell.alignment = alignment
+            if isinstance(val, MergedValue):
+                to_merge.append(
+                    (
+                        self.last_row + 1,
+                        idx + 1,
+                        self.last_row + 1,
+                        idx + 1 + val.size,
+                    )
+                )
+                merged_value = val.value
+                cell.value = None if merged_value == 0 else merged_value
+                cells.append(cell)
+
+                # Add placeholders for the extra merged columns
+                for _ in range(val.size):
+                    cells.append(None)
+
+                idx += val.size + 1
+            else:
+                cell.value = None if val == 0 else val
+                cells.append(cell)
+                idx += 1
+
+        self.sheet.append(cells)
+        self.last_row += 1
+
+        for start_row, start_column, end_row, end_column in to_merge:
+            self.sheet.merge_cells(
+                start_row=start_row,
+                start_column=start_column,
+                end_row=end_row,
+                end_column=end_column,
+            )
 
 
 class BlanketApprovalDetailsViewset(
@@ -264,38 +327,35 @@ class BlanketApprovalDetailsViewset(
     def _export_wb(self):
         wb = openpyxl.open(self._template_path)
         sheet = wb.active
+
         _, grand_total, data = self._extract_data()
         data: list[CountryEntry] = data
 
-        i = 3
+        i = 4
         row_country_name = sheet[i + 1]
         row_country_cluster = sheet[i + 2]
         row_country_type = sheet[i + 3]
         row_project_title = sheet[i + 4]
         row_project_description = sheet[i + 5]
+        row_empty = sheet[i + 6]
         row_country_total = sheet[i + 7]
-        row_empty = sheet[i + 8]
 
-        def add_row(row, styles_from):
-            cells = []
+        # Remove the placeholder rows and their template merge before appending.
+        for merged_range in list(sheet.merged_cells.ranges):
+            if merged_range.min_row >= 5 and merged_range.max_row <= 11:
+                sheet.unmerge_cells(str(merged_range))
 
-            for idx, val in enumerate(row):
-                src_cell = styles_from[idx]
-                cell = copy(src_cell)
-                for attr in ["font", "number_format", "alignment", "border"]:
-                    setattr(cell, attr, copy(getattr(src_cell, attr)))
-                cell.value = val
-                cells.append(cell)
+        sheet.delete_rows(5, 7)
 
-            sheet.append(cells)
+        sw = SheetWriter(wb, sheet.max_row)
 
         for country in data:
-            add_row([country["country_name"]], row_country_name)
+            sw.add_row([country["country_name"]], row_country_name)
             for country_data in country["country_data"]:
-                add_row([country_data["cluster_name"]], row_country_cluster)
-                add_row([country_data["project_type_name"]], row_country_type)
+                sw.add_row([country_data["cluster_name"]], row_country_cluster)
+                sw.add_row([country_data["project_type_name"]], row_country_type)
                 for project in country_data["projects"]:
-                    add_row(
+                    sw.add_row(
                         [
                             project["project_title"],
                             project["agency_name"],
@@ -307,13 +367,16 @@ class BlanketApprovalDetailsViewset(
                         ],
                         row_project_title,
                     )
-                    add_row([project["project_description"]], row_project_description)
-                    add_row([""] * 7, row_empty)
+                    sw.add_row(
+                        [project["project_description"]], row_project_description
+                    )
+                    sw.add_row([""] * 7, row_empty)
             country_total: CountryTotal = country["country_total"]
-            add_row(
+            sw.add_row(
                 [
-                    None,
-                    f"Total for {country['country_name']}",
+                    MergedValue(
+                        f"Total for {country['country_name'].title()}", size=+1
+                    ),
                     country_total["hcfc"],
                     country_total["hfc"],
                     country_total["project_funding"],
@@ -323,10 +386,9 @@ class BlanketApprovalDetailsViewset(
                 row_country_total,
             )
 
-        add_row(
+        sw.add_row(
             [
-                None,
-                "Grand total",
+                MergedValue("Grand total", size=+1),
                 grand_total["hcfc"],
                 grand_total["hfc"],
                 grand_total["project_funding"],
@@ -335,8 +397,6 @@ class BlanketApprovalDetailsViewset(
             ],
             row_country_total,
         )
-
-        sheet.delete_rows(4, 7)
 
         return workbook_response("List of projects and activities", wb)
 

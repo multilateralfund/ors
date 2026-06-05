@@ -1,3 +1,5 @@
+# pylint: disable=too-many-lines
+
 import io
 from datetime import date
 from datetime import datetime
@@ -18,6 +20,7 @@ from rest_framework.response import Response
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import AgencyFactory
+from core.api.tests.factories import AlternativeTechnologyFactory
 from core.api.tests.factories import BPActivityFactory
 from core.api.tests.factories import FundingWindowFactory
 from core.api.tests.factories import MetaProjectFactory
@@ -32,13 +35,17 @@ from core.models import MetaProject
 from core.models import Project
 from core.models.business_plan import BPActivity
 from core.models.project import ProjectOdsOdp
+from core.models.project_metadata import ProjectField
+from core.models.project_metadata import ProjectSpecificFields
 from core.models.substance import Substance
 from core.models.user import User
 
 pytestmark = pytest.mark.django_db
 
 
-def validate_docx_export(project: Project, user: User, response: FileResponse):
+def validate_docx_export(
+    project: Project, user: User, response: FileResponse, content=None
+):
     assert response.status_code == HTTPStatus.OK
     try:
         file_name = project.code.replace("/", "_")
@@ -50,7 +57,7 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
         == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-    f = io.BytesIO(response.getvalue())
+    f = io.BytesIO(content if content is not None else response.getvalue())
     doc = docx.Document(f)
     assert f.tell() > 0
 
@@ -93,6 +100,46 @@ def validate_docx_export(project: Project, user: User, response: FileResponse):
 
     for t, r in zip(to_find, result):
         assert r is True, f"Could not locate {t} in output."
+
+
+def get_docx_table_rows(content, header_text: str):
+    f = io.BytesIO(content)
+    doc = docx.Document(f)
+    for table in doc.tables:
+        if not table.rows:
+            continue
+        header_cells = [cell.text for cell in table.rows[0].cells]
+        if header_text in header_cells:
+            return [[cell.text for cell in row.cells] for row in table.rows]
+    raise AssertionError(f"Could not locate table with header {header_text}.")
+
+
+def get_docx_field_values(content):
+    doc = docx.Document(io.BytesIO(content))
+    return {
+        row.cells[0].text: row.cells[1].text
+        for table in doc.tables
+        for row in table.rows
+        if len(row.cells) >= 2
+    }
+
+
+def ensure_substance_details_docx_fields(project: Project):
+    project_specific_fields, _ = ProjectSpecificFields.objects.get_or_create(
+        cluster=project.cluster,
+        type=project.project_type,
+        sector=project.sector,
+    )
+    substance_field = ProjectField.objects.create(
+        import_name="ods_display_name",
+        label="Substance",
+        read_field_name="ods_display_name",
+        write_field_name="ods_display_name",
+        table="project_ods_odp",
+        data_type="text",
+        section="Substance Details",
+    )
+    project_specific_fields.fields.add(substance_field)
 
 
 def validate_single_project_export(project: Project, response: FileResponse):
@@ -622,6 +669,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         self,
         secretariat_viewer_user,
         project_approved_status,
+        project_draft_status,
     ):
         fallback_meta_project = MetaProjectFactory.create(
             type=MetaProject.MetaProjectType.MYA,
@@ -655,10 +703,45 @@ class TestProjectV2ExportXLSX(BaseTest):
             phase_out_mt=3,
         )
         ProjectOdsOdp.objects.create(
+            project=fallback_first_project,
+            co2_mt=7,
+            odp=1,
+            phase_out_mt=2,
+        )
+        ProjectOdsOdp.objects.create(
             project=fallback_second_project,
             co2_mt=30,
             odp=4,
             phase_out_mt=5,
+        )
+        draft_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_draft_status,
+            total_fund=500,
+            support_cost_psc=50,
+            project_start_date=date(2024, 1, 1),
+            project_end_date=date(2024, 12, 31),
+        )
+        ProjectOdsOdp.objects.create(
+            project=draft_project,
+            co2_mt=100,
+            odp=10,
+            phase_out_mt=11,
+        )
+        archived_project = ProjectFactory.create(
+            meta_project=fallback_meta_project,
+            latest_project=fallback_first_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=999,
+            support_cost_psc=99,
+        )
+        ProjectOdsOdp.objects.create(
+            project=archived_project,
+            co2_mt=50,
+            odp=5,
+            phase_out_mt=6,
         )
 
         override_meta_project = MetaProjectFactory.create(
@@ -725,14 +808,14 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert (
             sheet[f"{headers['Phase-out (CO2-eq tonnes) (MYA)']}{fallback_row}"].value
-            == 50
+            == 57
         )
         assert (
-            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{fallback_row}"].value == 6
+            sheet[f"{headers['Phase-out (ODP tonnes) (MYA)']}{fallback_row}"].value == 7
         )
         assert (
             sheet[f"{headers['Phase-out (metric tonnes) (MYA)']}{fallback_row}"].value
-            == 8
+            == 10
         )
 
         override_row = next(
@@ -769,6 +852,51 @@ class TestProjectV2ExportXLSX(BaseTest):
             == 5.25
         )
 
+    def test_export_mya_uses_first_approved_project_lead_agency(
+        self,
+        secretariat_viewer_user,
+        project_approved_status,
+    ):
+        first_lead_agency = AgencyFactory.create(name="Lead agency A")
+        second_lead_agency = AgencyFactory.create(name="Lead agency B")
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            umbrella_code="META-LEAD",
+        )
+        first_project = ProjectFactory.create(
+            meta_project=meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=first_lead_agency,
+        )
+        ProjectFactory.create(
+            meta_project=meta_project,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=second_lead_agency,
+        )
+        meta_project.country = first_project.country
+        meta_project.cluster = first_project.cluster
+        meta_project.save()
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response: FileResponse = self.client.get(
+            self.url, {"category": [Project.Category.MYA]}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["MYAs"]
+        headers = get_inventory_headers(sheet)
+        row = next(
+            idx
+            for idx in range(2, sheet.max_row + 1)
+            if sheet[f"{headers['Metacode']}{idx}"].value == "META-LEAD"
+        )
+
+        assert sheet[f"{headers['Lead agency']}{row}"].value == first_lead_agency.name
+
 
 class TestProjectV2ExportDOCX(BaseTest):
     url = reverse("project-v2-export")
@@ -781,8 +909,129 @@ class TestProjectV2ExportDOCX(BaseTest):
     def test_export_project_agency_submitter(
         self, project_with_linked_bp, agency_inputter_user
     ):
+        ensure_substance_details_docx_fields(project_with_linked_bp)
+        project_with_linked_bp.products_manufactured = "Manufactured product"
+        project_with_linked_bp.save()
+        project_ods_odp = project_with_linked_bp.ods_odp.first()
+        project_ods_odp.ods_display_name = "Text baseline substance"
+        project_ods_odp.ods_replacement_text = "Text replacement substance"
+        project_ods_odp.save()
+        fallback_replacement = AlternativeTechnologyFactory.create(
+            name="FK replacement substance"
+        )
+        ProjectOdsOdp.objects.create(
+            project=project_with_linked_bp,
+            ods_display_name="FK baseline substance",
+            ods_replacement_text="",
+            ods_replacement=fallback_replacement,
+        )
+
         self.client.force_authenticate(user=agency_inputter_user)
         response: FileResponse = self.client.get(
             self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
         )
-        validate_docx_export(project_with_linked_bp, agency_inputter_user, response)
+        content = response.getvalue()
+        validate_docx_export(
+            project_with_linked_bp, agency_inputter_user, response, content
+        )
+        substance_rows = get_docx_table_rows(content, "Substance")
+        substance_columns = [row[:3] for row in substance_rows]
+        assert [
+            "Manufactured product",
+            "Text baseline substance",
+            "Text replacement substance",
+        ] in substance_columns
+        assert [
+            "Manufactured product",
+            "FK baseline substance",
+            "FK replacement substance",
+        ] in substance_columns
+
+    def test_export_project_mya_uses_computed_values_only_when_stored_value_missing(
+        self,
+        secretariat_viewer_user,
+        project_approved_status,
+        project_draft_status,
+    ):
+        cluster = ProjectClusterFactory.create(category=Project.Category.MYA)
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            cluster=cluster,
+            project_funding=Decimal("999.50"),
+            phase_out_odp=Decimal("6.50"),
+        )
+        project_specs = [
+            (
+                project_approved_status,
+                100,
+                10,
+                date(2024, 1, 15),
+                date(2024, 6, 15),
+                20,
+                2,
+                3,
+            ),
+            (
+                project_approved_status,
+                150,
+                15,
+                date(2024, 2, 15),
+                date(2024, 7, 20),
+                30,
+                4,
+                5,
+            ),
+            (
+                project_draft_status,
+                500,
+                50,
+                date(2024, 1, 1),
+                date(2024, 12, 31),
+                100,
+                10,
+                11,
+            ),
+        ]
+        projects = []
+        for (
+            status,
+            fund,
+            support,
+            start,
+            end,
+            co2_mt,
+            odp,
+            phase_out_mt,
+        ) in project_specs:
+            mya_project = ProjectFactory.create(
+                meta_project=meta_project,
+                category=Project.Category.MYA,
+                cluster=cluster,
+                submission_status=status,
+                total_fund=fund,
+                support_cost_psc=support,
+                project_start_date=start,
+                project_end_date=end,
+            )
+            ProjectOdsOdp.objects.create(
+                project=mya_project,
+                co2_mt=co2_mt,
+                odp=odp,
+                phase_out_mt=phase_out_mt,
+            )
+            projects.append(mya_project)
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response: FileResponse = self.client.get(
+            self.url, {"project_id": projects[0].id, "output_format": "docx"}
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        field_values = get_docx_field_values(response.getvalue())
+        assert field_values["Start date (MYA)"] == "15/01/2024"
+        assert field_values["End date (MYA)"] == "20/07/2024"
+        assert field_values["MYA Total agreed funding in principle (US $)"] == "$999.50"
+        assert field_values["MYA Total support costs in principle (US $)"] == "$25.00"
+        assert Decimal(field_values["Phase-out (CO2-eq tonnes) (MYA)"]) == Decimal("50")
+        assert Decimal(field_values["Phase-out (ODP tonnes) (MYA)"]) == Decimal("6.5")
+        assert Decimal(field_values["Phase-out (metric tonnes) (MYA)"]) == Decimal("8")

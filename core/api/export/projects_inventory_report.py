@@ -689,17 +689,15 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": lambda project, _: project.tranche,
             },
             {
-                "id": "metaproject_category",
+                "id": "project_category",
                 "headerName": "Category",
-                "method": lambda project, _: (
-                    project.meta_project.type if project.meta_project else ""
-                ),
+                "method": lambda project, _: (project.category),
             },
             {
                 "id": "funding_window",
                 "headerName": "Funding window",
                 "method": lambda project, _: (
-                    project.funding_window.meeting.number
+                    getattr(project.funding_window.meeting, "number", "")
                     if project.funding_window
                     else ""
                 ),
