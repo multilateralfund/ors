@@ -270,7 +270,10 @@ const normalizeOdsOdp = (
 
 const formatActualData = (data: Record<string, any>) =>
   Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [key, !value ? null : value]),
+    Object.entries(data).map(([key, value]) => [
+      key,
+      value === '' ? null : value,
+    ]),
   )
 
 export const formatSubmitData = (
