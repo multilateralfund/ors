@@ -140,6 +140,52 @@ class TestProjectApprovalSummaryExport(BaseTest):
         assert sheet["F6"].value == 56
         assert sheet["G6"].value == 1290
 
+    def test_summary_counts_project_money_once_with_multiple_ods_rows(
+        self,
+        secretariat_approver_edit_access_user,
+        project_approved_status,
+    ):
+        selected_meeting = MeetingFactory()
+        agency = AgencyFactory(name="Australia", agency_type="National")
+        cluster = ProjectClusterFactory(name="HPMP", code="HPMP-I")
+
+        project = ProjectFactory(
+            agency=agency,
+            cluster=cluster,
+            meeting=selected_meeting,
+            submission_status=project_approved_status,
+            version=3,
+            total_fund=1234,
+            support_cost_psc=56,
+        )
+        ProjectOdsOdpFactory(project=project, odp=1.2, co2_mt=1500)
+        ProjectOdsOdpFactory(project=project, odp=2.3, co2_mt=2500)
+
+        self.client.force_authenticate(user=secretariat_approver_edit_access_user)
+        response = self.client.get(
+            self.preview_url,
+            {
+                "meeting_id": selected_meeting.id,
+                "submission_status": "approved",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.data["grand_total"]["hcfc"] == pytest.approx(3.5)
+        assert response.data["grand_total"]["hfc"] == 4
+        assert response.data["grand_total"]["project_funding"] == 1234
+        assert response.data["grand_total"]["project_support_cost"] == 56
+        assert response.data["grand_total"]["total"] == 1290
+
+        agency_summary = response.data["summary_by_parties_and_implementing_agencies"][
+            0
+        ]
+        assert agency_summary["hcfc"] == pytest.approx(3.5)
+        assert agency_summary["hfc"] == 4
+        assert agency_summary["project_funding"] == 1234
+        assert agency_summary["project_support_cost"] == 56
+        assert agency_summary["total"] == 1290
+
     def test_recommended_summary_does_not_apply_v3_filter(
         self,
         secretariat_approver_edit_access_user,

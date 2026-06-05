@@ -154,6 +154,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     inlines = [ProjectFileInline]
     search_fields = [
+        "id",
         "title",
         "code",
         "metacode",
@@ -336,12 +337,16 @@ class ProjectCommentAdmin(admin.ModelAdmin):
 @admin.register(ProjectOdsOdp)
 class ProjectOdsOdpAdmin(admin.ModelAdmin):
     search_fields = [
+        "project__id",
         "project__title",
     ]
     list_filter = [
         "ods_type",
         AutocompleteFilterFactory("ods_substance", "ods_substance"),
         AutocompleteFilterFactory("project", "project"),
+    ]
+    raw_id_fields = [
+        "project",
     ]
 
     def get_list_display(self, request):
@@ -446,6 +451,10 @@ class MeetingAdmin(admin.ModelAdmin):
 @admin.register(Decision)
 class DecisionAdmin(admin.ModelAdmin):
     search_fields = ["number"]
+
+    list_filter = [
+        AutocompleteFilterFactory("meeting", "meeting"),
+    ]
 
     def get_list_display(self, request):
         exclude = [
