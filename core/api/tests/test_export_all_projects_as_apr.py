@@ -56,6 +56,7 @@ def second_project_v3(ongoing_status):
         latest_project=None,
         total_fund=5000.0,
         support_cost_psc=500.0,
+        date_approved=date(2021, 3, 1),
         status=ongoing_status,
     )
 
