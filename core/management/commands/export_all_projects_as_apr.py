@@ -17,12 +17,13 @@ from datetime import date, datetime
 
 from django.core.management import BaseCommand
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Q
 
 from core.api.export.annual_project_report import APRExportWriter
 from core.api.serializers.annual_project_report import (
     AnnualProjectReportReadSerializer,
 )
+from core.api.utils import all_versions_for_year_base_qs, latest_version_base_qs
 from core.models import (
     AnnualAgencyProjectReport,
     AnnualProgressReport,
@@ -101,41 +102,71 @@ def _build_project_dict(apr):
     return data
 
 
-def _generate_project_dicts(projects, year):
+def _attach_version_cache(projects_list, year):
+    """
+    Attach cached_version_3_list, cached_versions_for_year, and
+    cached_all_versions_for_year to each project in projects_list.
+
+    Mirrors the bulk-prefetch logic in the workspace view, so populate_derived_fields()
+    uses the same effective_date-based version lookups, avoiding extra per-row DB hits.
+    """
+    if not projects_list:
+        return
+
+    project_ids = [p.id for p in projects_list]
+    project_id_filter = Q(id__in=project_ids) | Q(latest_project_id__in=project_ids)
+
+    version_3_map = {}
+    for v3 in (
+        Project.objects.really_all()
+        .filter(project_id_filter, version=3)
+        .select_related("status", "post_excom_decision__meeting")
+    ):
+        key = v3.latest_project_id or v3.id
+        version_3_map[key] = v3
+
+    latest_version_map = {}
+    for p in latest_version_base_qs(year).filter(project_id_filter):
+        key = p.latest_project_id or p.id
+        if key not in latest_version_map:
+            latest_version_map[key] = p
+
+    all_versions_map: dict = {}
+    for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
+        key = p.latest_project_id or p.id
+        all_versions_map.setdefault(key, []).append(p)
+
+    for project in projects_list:
+        project_key = project.latest_project_id or project.id
+        project.cached_version_3_list = (
+            [version_3_map[project_key]]
+            if project_key in version_3_map
+            else ([project] if project.version == 3 else [])
+        )
+        project.cached_versions_for_year = (
+            [latest_version_map[project_key]]
+            if project_key in latest_version_map
+            else []
+        )
+        project.cached_all_versions_for_year = all_versions_map.get(project_key, [])
+
+
+def _generate_project_dicts(projects_list, year):
     """
     Generator that yields one APR-style dict per project.
 
-    `projects` comes from the default Project queryset (latest_project=None),
-    so each project is already the final/highest-version record — archived
-    copies (lower versions with latest_project set) are excluded.
-
-    Because the imported Project data lacks post_excom_decision entries, we cannot
-    use the normal year-based `latest_project_version_for_year` method, which filters on
-    post_excom_decision__meeting__date).
-    Instead we inject the project itself as latest_project_version_for_year,
-    to obtain correct all-time derived values:
-      - adjustment         (final.total_fund − version_3.total_fund, or None if v <= 3)
-      - approved_funding_plus_adjustment  (final.total_fund)
-      - support_cost_adjustment / support_cost_approved_plus_adjustment
-      - date_of_completion_per_agreement_or_decisions  (final.date_completion)
+    Expects projects_list to already have cached_version_3_list,
+    cached_versions_for_year, and cached_all_versions_for_year attached,
+    so populate_derived_fields() uses effective_date-based version lookups.
     """
-    for project in projects:
+    for project in projects_list:
         apr = AnnualProjectReport(project=project)
         apr.project_id = project.id
-
-        # Set status from the project's current status
         apr.status = project.status.name if project.status else ""
-
-        # Bypass the year-based ExCom-decision lookup entirely, as the data misses this.
-        # The default Project queryset returns only final versions (latest_project=None),
-        # so `project` is the all-time latest version.
-        apr.__dict__["latest_project_version_for_year"] = project
-        # Also set the report year as it's used in `populate_derived_fields`
+        # report_year is a cached_property that normally reads from apr.report;
+        # inject it directly since these APR objects are never persisted.
         apr.__dict__["report_year"] = year
-
-        # Compute all derived/denormalized fields from the project
         apr.populate_derived_fields()
-
         yield _build_project_dict(apr)
 
 
@@ -180,16 +211,19 @@ class Command(BaseCommand):
         output = options["output"] or f"APR_All_Projects_{year}.xlsx"
 
         self.stdout.write("Querying all projects...")
-        projects = self._get_projects_queryset()
-        total = projects.count()
+        projects_list = list(self._get_projects_queryset(year))
+        total = len(projects_list)
         self.stdout.write(f"Found {total} projects.")
+
+        self.stdout.write("Prefetching version data...")
+        _attach_version_cache(projects_list, year)
 
         if write_to_db:
             self.stdout.write("Writing APR records to DB (skipping Excel export)...")
-            self._commit_aprs_to_db(projects, year)
+            self._commit_aprs_to_db(projects_list, year)
         else:
             self.stdout.write("Building export data...")
-            project_data = list(_generate_project_dicts(projects, year))
+            project_data = list(_generate_project_dicts(projects_list, year))
 
             self.stdout.write(f"Writing {len(project_data)} rows to {output}...")
 
@@ -211,13 +245,16 @@ class Command(BaseCommand):
                 )
             )
 
-    def _commit_aprs_to_db(self, projects, year):
+    def _commit_aprs_to_db(self, projects_list, year):
         """
         Save AnnualProjectReport records to the database.
 
         get_or_create an AnnualProgressReport for `year`,
         then get_or_create one AnnualAgencyProjectReport per agency,
-        and finally create an AnnualProjectReport for every project that doesn't have one
+        and finally create an AnnualProjectReport for every project that doesn't have one.
+
+        Expects projects_list to already have version caches attached via
+        _attach_version_cache().
         """
         with transaction.atomic():
             progress_report, created = AnnualProgressReport.objects.get_or_create(
@@ -228,8 +265,6 @@ class Command(BaseCommand):
             self.stdout.write(f"{action} AnnualProgressReport for year {year}.")
 
             # Pre-create one AnnualAgencyProjectReport for each distinct agency
-            # Materialize the queryset
-            projects_list = list(projects)
             seen_agency_ids = {p.agency_id for p in projects_list}
             agency_reports: dict = {}
             for agency_id in seen_agency_ids:
@@ -254,8 +289,7 @@ class Command(BaseCommand):
             )
 
             to_create = []
-            num_skipped = num_future = 0
-            year_end = date(year, 12, 31)
+            num_skipped = 0
             for project in projects_list:
                 if project.id in existing_project_ids:
                     num_skipped += 1
@@ -267,19 +301,8 @@ class Command(BaseCommand):
                 )
                 apr.project_id = project.id
                 apr.status = project.status.name if project.status else ""
-                apr.__dict__["latest_project_version_for_year"] = project
                 apr.__dict__["report_year"] = year
                 apr.populate_derived_fields()
-
-                # Only include projects approved on or before the end of the report year.
-                # Projects approved later cannot be part of this report.
-                if (
-                    apr.date_approved_denorm is not None
-                    and apr.date_approved_denorm > year_end
-                ):
-                    num_future += 1
-                    continue
-
                 to_create.append(apr)
 
             AnnualProjectReport.objects.bulk_create(to_create, batch_size=500)
@@ -288,34 +311,32 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"DB write complete: {num_created} APR(s) created, "
-                f"{num_skipped} already existed, "
-                f"{num_future} skipped (approved after {year_end})."
+                f"{num_skipped} already existed."
             )
         )
 
-    def _get_projects_queryset(self):
+    def _get_projects_queryset(self, year):
         """
-        Query all current (non-archived) projects with the related data needed
-        by populate_derived_fields.
-        """
-        # Version 3 archives — needed by project_version_3
-        version_3_prefetch = Prefetch(
-            "archive_projects",
-            queryset=(
-                Project.objects.really_all()
-                .filter(version=3)
-                .select_related("status", "post_excom_decision__meeting")
-                .prefetch_related(
-                    "ods_odp",
-                    "ods_odp__ods_substance",
-                    "ods_odp__ods_blend",
-                )
-            ),
-            to_attr="cached_version_3_list",
-        )
+        Query approved (version >= 3), current (non-archived) projects that were
+        approved on or before `year`, with the related data needed by
+        populate_derived_fields.
 
+        Mirrors the APRProjectFilter.filter_by_year logic from the workspace view:
+        include a project if its own date_approved year <= year, OR if any of its
+        version-3 archives has date_approved year <= year.
+        """
         return (
-            Project.objects.select_related(
+            Project.objects.filter(
+                version__gte=3,
+            )
+            .filter(
+                Q(date_approved__year__lte=year)
+                | Q(
+                    archive_projects__version=3,
+                    archive_projects__date_approved__year__lte=year,
+                )
+            )
+            .select_related(
                 "agency",
                 "country",
                 "country__parent",
@@ -326,8 +347,6 @@ class Command(BaseCommand):
                 "status",
                 "post_excom_decision__meeting",
             )
-            .prefetch_related(
-                version_3_prefetch,
-            )
+            .distinct()
             .order_by("code")
         )
