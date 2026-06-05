@@ -418,9 +418,8 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert sheet[f"{headers['Tranche number']}{row}"].value == project.tranche
         assert sheet[f"{headers['Category']}{row}"].value == meta_project.type
-        assert (
-            sheet[f"{headers['Funding window']}{row}"].value
-            == funding_window.meeting.number
+        assert sheet[f"{headers['Funding window']}{row}"].value == str(
+            funding_window.decision.number
         )
         assert sheet[f"{headers['Production']}{row}"].value == "Yes"
         assert (
