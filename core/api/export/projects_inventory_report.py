@@ -697,7 +697,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "id": "funding_window",
                 "headerName": "Funding window",
                 "method": lambda project, _: (
-                    getattr(project.funding_window.meeting, "number", "")
+                    getattr(project.funding_window.decision, "number", "")
                     if project.funding_window
                     else ""
                 ),
