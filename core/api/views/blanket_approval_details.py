@@ -104,6 +104,10 @@ class SheetWriter:
             cell = copy(src_cell)
             for attr in ["font", "number_format", "alignment", "border"]:
                 setattr(cell, attr, copy(getattr(src_cell, attr)))
+            if idx == 0:
+                alignment = copy(cell.alignment)
+                alignment.wrap_text = True
+                cell.alignment = alignment
             if isinstance(val, MergedValue):
                 to_merge.append(
                     (
@@ -323,24 +327,25 @@ class BlanketApprovalDetailsViewset(
     def _export_wb(self):
         wb = openpyxl.open(self._template_path)
         sheet = wb.active
+
         _, grand_total, data = self._extract_data()
         data: list[CountryEntry] = data
 
-        i = 3
+        i = 4
         row_country_name = sheet[i + 1]
         row_country_cluster = sheet[i + 2]
         row_country_type = sheet[i + 3]
         row_project_title = sheet[i + 4]
         row_project_description = sheet[i + 5]
+        row_empty = sheet[i + 6]
         row_country_total = sheet[i + 7]
-        row_empty = sheet[i + 8]
 
         # Remove the placeholder rows and their template merge before appending.
         for merged_range in list(sheet.merged_cells.ranges):
-            if merged_range.min_row >= 4 and merged_range.max_row <= 10:
+            if merged_range.min_row >= 5 and merged_range.max_row <= 11:
                 sheet.unmerge_cells(str(merged_range))
 
-        sheet.delete_rows(4, 7)
+        sheet.delete_rows(5, 7)
 
         sw = SheetWriter(wb, sheet.max_row)
 
