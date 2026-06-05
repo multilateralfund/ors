@@ -61,8 +61,12 @@ class Country(models.Model):
     consumption_group = models.CharField(max_length=100, blank=True)
 
     # APR-specific fields
-    abbr_for_apr = models.CharField(max_length=10, null=True, blank=True)
-    name_for_apr = models.CharField(max_length=100, null=True, blank=True)
+    abbr_for_apr = models.CharField(
+        max_length=10, null=True, blank=True, verbose_name="Abbrevation for APR"
+    )
+    name_for_apr = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Name for APR"
+    )
 
     objects = CountryManager()
 
