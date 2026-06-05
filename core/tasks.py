@@ -771,11 +771,16 @@ def sync_apr_from_projects(year, dry_run=False):
             "message": "No project reports to sync.",
         }
 
-    # Build a map of existing project IDs per agency report from already-fetched data,
-    # to avoid one DB query per agency in the second phase (project "pull") below.
+    # Build a map of existing *final* project IDs per agency report from
+    # already-fetched data, to avoid one DB query per agency in the second phase
+    # (project "pull") below.
+    # We resolve through latest_project_id so that, if a project gained a new live
+    # version between runs, the archived FK is still recognised as "already covered"
+    # and we don't create a duplicate AnnualProjectReport for the new live row.
     existing_by_report_id: dict[int, set[int]] = {}
     for pr in project_reports:
-        existing_by_report_id.setdefault(pr.report_id, set()).add(pr.project_id)
+        final_id = pr.project.latest_project_id or pr.project.id
+        existing_by_report_id.setdefault(pr.report_id, set()).add(final_id)
 
     # Phase 0: Delete APR records for projects that no longer qualify for this year.
     # This handles cases where date_approved was updated after the APR record was
@@ -897,6 +902,21 @@ def sync_apr_from_projects(year, dry_run=False):
             )
 
     changed_count = len(to_update)
+
+    # Migrate stale project FKs: if the project an AnnualProjectReport points to
+    # has since been archived (latest_project_id is now set), update the FK to
+    # point at the new live version. Without this, anything that follows the FK
+    # directly (e.g. select_related("project__meeting")) would get archived data.
+    to_update_fk = [
+        pr for pr in project_reports if pr.project.latest_project_id is not None
+    ]
+    if to_update_fk and not dry_run:
+        for pr in to_update_fk:
+            pr.project_id = pr.project.latest_project_id
+        with transaction.atomic():
+            AnnualProjectReport.objects.bulk_update(
+                to_update_fk, ["project_id"], batch_size=500
+            )
 
     # Now pull in projects that were added after the APR was first initialized
     agency_reports = AnnualAgencyProjectReport.objects.filter(
