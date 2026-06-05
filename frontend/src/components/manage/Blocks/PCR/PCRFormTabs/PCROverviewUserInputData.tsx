@@ -42,7 +42,7 @@ const PCROverviewUserInputData = ({
 
   console.log(PCRData.overview)
 
-  const onAddSubstance = () => {
+  const onAddRatingAdditionalComments = () => {
     setPCRData((prevData) => {
       const sectionData =
         prevData[sectionIdentifier][ratingAdditionalCommentsField] || []
@@ -60,7 +60,7 @@ const PCROverviewUserInputData = ({
     }, ratingAdditionalCommentsField)
   }
 
-  const onRemoveOdsOdp = (index: number) => {
+  const onRemoveRatingAdditionalComments = (index: number) => {
     setPCRData((prevData) => {
       const sectionData =
         prevData[sectionIdentifier][ratingAdditionalCommentsField] || []
@@ -166,8 +166,8 @@ const PCROverviewUserInputData = ({
                     'user_type',
                     ratingEntityUserOpts,
                     ratingAdditionalCommentsErrors,
-                    ratingAdditionalCommentsField,
                     index,
+                    ratingAdditionalCommentsField,
                   )}
                   {ratingAdditionalCommentsData[index].user_type ===
                     getOtherOptId(ratingEntityUserOpts) &&
@@ -177,8 +177,8 @@ const PCROverviewUserInputData = ({
                       sectionIdentifier,
                       'other_user_type',
                       ratingAdditionalCommentsErrors,
-                      ratingAdditionalCommentsField,
                       index,
+                      ratingAdditionalCommentsField,
                     )}
                   {widgets['text_area']<PCRData, PCROverview>(
                     PCRData,
@@ -186,15 +186,15 @@ const PCROverviewUserInputData = ({
                     sectionIdentifier,
                     'comment',
                     ratingAdditionalCommentsErrors,
-                    ratingAdditionalCommentsField,
                     index,
+                    ratingAdditionalCommentsField,
                   )}
 
                   <IoTrash
                     className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                     size={16}
                     onClick={() => {
-                      onRemoveOdsOdp(index)
+                      onRemoveRatingAdditionalComments(index)
                     }}
                   />
                 </div>
@@ -206,8 +206,8 @@ const PCROverviewUserInputData = ({
           </div>
         </div>
         <SubmitButton
-          title="Add substance"
-          onSubmit={onAddSubstance}
+          title="Add additional comments"
+          onSubmit={onAddRatingAdditionalComments}
           className="mr-auto h-8"
         />
       </>

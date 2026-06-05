@@ -4,7 +4,11 @@ import { ChangeEvent } from 'react'
 import { pcrFieldsMapping } from '../constants'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { OptionsType } from '../../ProjectsListing/interfaces'
+import {
+  FieldHandler,
+  FieldType,
+  OptionsType,
+} from '../../ProjectsListing/interfaces'
 import { Dispatch, SetStateAction } from 'react'
 
 // import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
@@ -55,10 +59,6 @@ import {
   //   lowerFirst,
 } from 'lodash'
 import {
-  changeHandler,
-  getValue,
-} from '../../ProjectsListing/ProjectsCreate/SpecificFieldsHelpers'
-import {
   defaultProps,
   formatClassName,
   textAreaClassname,
@@ -66,6 +66,27 @@ import {
 import { FieldErrorIndicator } from '../../ProjectsListing/HelperComponents'
 import { getOptionLabel } from '../../BusinessPlans/BPEdit/editSchemaHelpers'
 import { onTextareaFocus } from '../../ProjectsListing/utils'
+import {
+  changeField,
+  changeNestedField,
+} from '../../ProjectsListing/ProjectsCreate/SpecificFieldsHelpers'
+
+const getValue = <T,>(
+  fields: T,
+  sectionIdentifier: keyof T,
+  fieldName: string,
+  subField?: string,
+  index?: number,
+) => {
+  const sectionData = fields[sectionIdentifier] as Record<string, any>
+  const subSectionData = sectionData[subField as string] || []
+
+  return subField && !isNil(index)
+    ? subSectionData?.[index]?.[fieldName]
+    : !isNil(index)
+      ? sectionData?.[index]?.[fieldName]
+      : sectionData[fieldName]
+}
 
 // const getFieldDefaultProps = (
 //   editableFields: string[],
@@ -90,124 +111,84 @@ import { onTextareaFocus } from '../../ProjectsListing/utils'
 //   }
 // }
 
-// const changeNestedField: FieldHandler = (
-//   value,
-//   field,
-//   setState,
-//   section,
-//   subField,
-//   index,
-// ) => {
-//   const approvalIdentifier = 'approvalFields'
+export const changeArrayField: FieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  _,
+  index,
+) => {
+  console.log('eu')
+  if (!isNil(index)) {
+    setState((prevData: any) => {
+      const sectionData = prevData[section] || []
 
-//   if (!isNil(index) && subField) {
-//     setState((prevData: any) => {
-//       const sectionData = prevData[section] as Record<string, any>
-//       const subSectionData = sectionData[subField] || []
+      sectionData[index] = {
+        ...sectionData[index],
+        [field]: value,
+      }
 
-//       subSectionData[index] = {
-//         ...subSectionData[index],
-//         [field]: value,
-//       }
+      return { ...prevData, [field]: sectionData }
+    }, field)
+  }
+}
 
-//       let computedTotal: Record<string, number> = {}
+const onFieldChange: FieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  subField,
+  index,
+) => {
+  console.log(subField)
+  if (subField && !isNil(index)) {
+    changeNestedField(value, field, setState, section, subField, index)
+  } else if (!isNil(index)) {
+    changeArrayField(value, field, setState, section, subField, index)
+  } else {
+    changeField(value, field, setState, section)
+  }
+}
 
-//       const approvalField = Object.keys(approvalToOdsMap).find(
-//         (key) =>
-//           approvalToOdsMap[key as keyof typeof approvalToOdsMap] === field,
-//       )
+export const changeHandler: Record<FieldType, FieldHandler> = {
+  text: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value
+    onFieldChange(formattedVal, field, setState, section, subField, index)
+  },
+  number: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value
 
-//       if (
-//         approvalField &&
-//         isUndefined(prevData[approvalIdentifier][approvalField])
-//       ) {
-//         const computedField = `computed_${approvalField}`
+    if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
+      const finalVal = formattedVal ? parseInt(formattedVal) : null
+      onFieldChange(finalVal, field, setState, section, subField, index)
+    } else {
+      value.preventDefault()
+    }
+  },
+  decimal: (value, field, setState, section, subField, index) => {
+    const val = value.target.value
+    const formattedVal = val === '' ? null : val
 
-//         const total = subSectionData.reduce(
-//           (sum: number, item: any) => sum + (Number(item[field]) || 0),
-//           0,
-//         )
-
-//         computedTotal[computedField] = total
-//       }
-
-//       return {
-//         ...prevData,
-//         [section]: {
-//           ...prevData[section],
-//           [subField]: subSectionData,
-//         },
-//         [approvalIdentifier]: {
-//           ...prevData[approvalIdentifier],
-//           ...computedTotal,
-//         },
-//       }
-//     }, field)
-//   }
-// }
-
-// export const changeField: FieldHandler = (value, field, setState, section) => {
-//   setState(
-//     (prevData) => ({
-//       ...prevData,
-//       [section]: { ...prevData[section], [field]: value },
-//     }),
-//     field,
-//   )
-// }
-
-// const onFieldChange: FieldHandler = (
-//   value,
-//   field,
-//   setState,
-//   section,
-//   subField,
-//   index,
-// ) => {
-//   if (subField && !isNil(index)) {
-//     changeNestedField(value, field, setState, section, subField, index)
-//   } else {
-//     changeField(value, field, setState, section)
-//   }
-// }
-
-// export const changeHandler: Record<FieldType, FieldHandler> = {
-//   text: (value, field, setState, section, subField, index) => {
-//     const formattedVal = value.target.value
-//     onFieldChange(formattedVal, field, setState, section, subField, index)
-//   },
-//   number: (value, field, setState, section, subField, index) => {
-//     const formattedVal = value.target.value
-
-//     if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
-//       const finalVal = formattedVal ? parseInt(formattedVal) : null
-//       onFieldChange(finalVal, field, setState, section, subField, index)
-//     } else {
-//       value.preventDefault()
-//     }
-//   },
-//   decimal: (value, field, setState, section, subField, index) => {
-//     const val = value.target.value
-//     const formattedVal = val === '' ? null : val
-
-//     if (!isNaN(Number(formattedVal))) {
-//       onFieldChange(formattedVal, field, setState, section, subField, index)
-//     } else {
-//       value.preventDefault()
-//     }
-//   },
-//   drop_down: (value, field, setState, section, subField, index) => {
-//     const formattedVal = value?.id ?? null
-//     onFieldChange(formattedVal, field, setState, section, subField, index)
-//   },
-//   boolean: (value, field, setState, section, subField, index) => {
-//     onFieldChange(value, field, setState, section, subField, index)
-//   },
-//   date: (value, field, setState, section, subField, index) => {
-//     const formattedVal = value.target.value || null
-//     onFieldChange(formattedVal, field, setState, section, subField, index)
-//   },
-// }
+    if (!isNaN(Number(formattedVal))) {
+      onFieldChange(formattedVal, field, setState, section, subField, index)
+    } else {
+      value.preventDefault()
+    }
+  },
+  drop_down: (value, field, setState, section, subField, index) => {
+    const formattedVal = value?.id ?? null
+    onFieldChange(formattedVal, field, setState, section, subField, index)
+  },
+  boolean: (value, field, setState, section, subField, index) => {
+    onFieldChange(value, field, setState, section, subField, index)
+  },
+  date: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value || null
+    onFieldChange(formattedVal, field, setState, section, subField, index)
+  },
+}
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: formatClassName('w-full min-w-56 md:min-w-64'),
@@ -221,8 +202,8 @@ export const AutocompleteWidget = <T, W>(
   field: string,
   options: OptionsType[],
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  subField?: string,
   index?: number,
+  subField?: string,
 ) => {
   const value = getValue(data, sectionIdentifier, field, subField, index)
   const formattedValue = find(options, { id: value }) || null
@@ -268,8 +249,8 @@ export const TextAreaWidget = <T, W>(
   sectionIdentifier: keyof T,
   field: string,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  subField?: string,
   index?: number,
+  subField?: string,
 ) => {
   const value = getValue(data, sectionIdentifier, field, subField, index)
 

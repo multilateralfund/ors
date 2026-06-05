@@ -70,7 +70,7 @@ const getFieldDefaultProps = (
   }
 }
 
-const changeNestedField: FieldHandler = (
+export const changeNestedField: FieldHandler = (
   value,
   field,
   setState,

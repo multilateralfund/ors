@@ -43,7 +43,6 @@ import { PCRFormProps } from '../interfaces'
 //   getFieldData,
 //   formatOptions,
 //   getOdsOdpFields,
-//   isOtherOdsReplacement,
 // } from '../utils.ts'
 import {
   formatErrors,
@@ -54,9 +53,11 @@ import { getSectionErrors } from '../utils'
 
 // import { find, has, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
-import { keys } from 'lodash'
+import { has, isEmpty, keys, map } from 'lodash'
 import { initialOverviewFields } from '../constants'
 import PCROverviewSection from '../PCRFormTabs/PCROverviewSection'
+import PCRResultsAssessmentSection from '../PCRFormTabs/PCRResultsAssessmentSection'
+import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -94,6 +95,7 @@ const PCRCreate = ({
   // const { agency_id } = userSlice.data
   // const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
   //   PCRData ?? {}
+  const { summary_and_delays } = PCRData ?? {}
   // const { project_type, sector } = crossCuttingFields
   // const fieldsOpts = useGetProjectFieldsOpts(PCRData, setPCRData, mode)
   // const isEditMode = project && mode === 'edit'
@@ -169,6 +171,46 @@ const PCRCreate = ({
     () => getSectionErrors(keys(initialOverviewFields), errors),
     [errors],
   )
+  // const summaryAndDelaysErrors = []
+  // const formattedOdsOdp = map(
+  //   summary_and_delays,
+  //   (_, index) =>
+  //     ((errors?.summary_and_delays ?? [])[index] as Record<string, []>) || {},
+  // )
+
+  // const filteredOdsOdpErrors = map(formattedOdsOdp, (odp, index) =>
+  //   !isEmpty(odp) ? { ...odp, id: index } : {},
+  // ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
+
+  // const formattedOdsOdpErrors = map(
+  //   filteredOdsOdpErrors,
+  //   ({ id, ...fields }) => {
+  //     const substanceNo = Number(id) + 1
+  //     const fieldLabels = Object.entries(
+  //       fields as Record<string, string[]>,
+  //     ).filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
+  //     if (fieldLabels.length === 0) return null
+  //     const invalidFields = fieldLabels
+  //       .filter(
+  //         ([_, errors]) =>
+  //           errors[0] !== `This field is required${errorMessageExtension}.`,
+  //       )
+  //       .map(([field]) => getFieldLabel(specificFields, field))
+  //     const messages = [
+  //       invalidFields.length > 0
+  //         ? `${invalidFields.join(', ')}: ${
+  //             invalidFields.length > 1 ? 'These fields are' : 'This field is'
+  //           } not valid.`
+  //         : null,
+  //     ].filter(Boolean)
+  //     const odsOdpType =  `Entry ${substanceNo}`
+  //     return { message: `${odsOdpType} - ` + messages.join(' ') }
+  //   },
+  // ).filter(Boolean)
+  // const odsOdpErrors = map(
+  //   formattedOdsOdp as { [key: string]: [] }[],
+  //   (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
+  // )
   // const projIdentifiersErrors = useMemo(
   //   () =>
   //     getProjIdentifiersErrors(
@@ -349,6 +391,64 @@ const PCRCreate = ({
         />
       ),
       errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-summary-and-delays',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Summary of key data and delays in project implementation
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCROverviewSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          // errors={overviewErrors}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-results-assessment',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Project results overall assessment highlights
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRResultsAssessmentSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-causes-of-delay',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Causes of delay</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRCausesOfDelaySection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
     },
     //   {
     //     id: 'project-identifiers',

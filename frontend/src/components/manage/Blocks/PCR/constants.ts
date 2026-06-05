@@ -29,6 +29,11 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   user_type: 'User type',
   other_user_type: 'Specify user type',
   comment: 'Additional comment',
+  activity_type: 'Type of activity',
+  planned_outputs: 'Planned output(s)',
+  actual_activity_outputs: 'Actual activity output(s)',
+  additional_remarks: 'Additional remarks, if applicable',
+  agency: 'Agency',
 }
 
 export const initialOverviewFields = {
@@ -202,4 +207,20 @@ export const ratingEntityUserOpts = [
     name: 'Project management officers in the Multilateral Fund Secretariat',
   },
   { id: 6, name: 'Other, please specify' },
+]
+
+export const projectElementOpts = [
+  { id: 1, name: 'Project design and preparation' },
+  {
+    id: 2,
+    name: 'Project implementation (including training and capacity building - data collection and availability)',
+  },
+  { id: 3, name: 'Funding and procurement' },
+  { id: 4, name: 'Sustainability of Montreal Protocol achievements' },
+  {
+    id: 5,
+    name: 'Institutional framework, policy and regulations',
+  },
+  { id: 6, name: 'Exogenous factors' },
+  { id: 7, name: 'Technology, innovation and markets' },
 ]
