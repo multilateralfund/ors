@@ -208,7 +208,7 @@ export default function APRWorkspace() {
               {isDraft ? 'DRAFT' : 'SUBMITTED'}
             </span>
           ) : (
-            <CircularProgress size={20} />
+            <CircularProgress color="inherit" size={20} />
           )}
           {apr?.is_endorsed && (
             <span className="rounded border border-solid px-1 text-lg">
