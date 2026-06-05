@@ -77,9 +77,29 @@ const getValue = <T,>(
   fieldName: string,
   subField?: string,
   index?: number,
+  index2?: number,
+  subField2?: string,
+  index3?: number,
+  subfield3?: string,
 ) => {
   const sectionData = fields[sectionIdentifier] as Record<string, any>
   const subSectionData = sectionData[subField as string] || []
+
+  if (
+    !isNil(index) &&
+    !isNil(index2) &&
+    !isNil(index3) &&
+    subField2 &&
+    subfield3
+  ) {
+    return sectionData?.[index]?.[subField2]?.[index2]?.[subfield3]?.[index3]?.[
+      fieldName
+    ]
+  }
+
+  if (!isNil(index) && !isNil(index2) && subField2) {
+    return sectionData?.[index]?.[subField2]?.[index2]?.[fieldName]
+  }
 
   return subField && !isNil(index)
     ? subSectionData?.[index]?.[fieldName]
@@ -119,7 +139,6 @@ export const changeArrayField: FieldHandler = (
   _,
   index,
 ) => {
-  console.log('eu')
   if (!isNil(index)) {
     setState((prevData: any) => {
       const sectionData = prevData[section] || []
@@ -134,6 +153,90 @@ export const changeArrayField: FieldHandler = (
   }
 }
 
+export const changeArrayField2: FieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  _,
+  index,
+  index2,
+  subfield2,
+) => {
+  if (!isNil(index) && !isNil(index2)) {
+    setState((prevData: any) => {
+      const sectionData = prevData[section] || []
+
+      return {
+        ...prevData,
+        [section]: sectionData.map((agency, agencyIndex) =>
+          agencyIndex === index
+            ? {
+                ...agency,
+                [subfield2]: agency[subfield2]?.map(
+                  (projectElement: any, peIndex: number) =>
+                    peIndex === index2
+                      ? {
+                          ...projectElement,
+                          [field]: value,
+                        }
+                      : projectElement,
+                ),
+              }
+            : agency,
+        ),
+      }
+    }, field)
+  }
+}
+
+export const changeArrayField3: FieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  _,
+  index,
+  index2,
+  subfield2,
+  index3,
+  subfield3,
+) => {
+  if (!isNil(index) && !isNil(index2) && !isNil(index3)) {
+    setState((prevData: any) => {
+      const sectionData = prevData[section] || []
+
+      return {
+        ...prevData,
+        [section]: sectionData.map((agency, agencyIndex) =>
+          agencyIndex === index
+            ? {
+                ...agency,
+                [subfield2]: agency[subfield2]?.map(
+                  (projectElement: any, peIndex: number) =>
+                    peIndex === index2
+                      ? {
+                          ...projectElement,
+                          [subfield3]: projectElement[subfield3]?.map(
+                            (cause_of_delay: any, cdIndex: number) =>
+                              cdIndex === index3
+                                ? {
+                                    ...cause_of_delay,
+                                    [field]: value,
+                                  }
+                                : cause_of_delay,
+                          ),
+                        }
+                      : projectElement,
+                ),
+              }
+            : agency,
+        ),
+      }
+    }, field)
+  }
+}
+
 const onFieldChange: FieldHandler = (
   value,
   field,
@@ -141,8 +244,46 @@ const onFieldChange: FieldHandler = (
   section,
   subField,
   index,
+  index2,
+  subfield2,
+  index3,
+  subfield3,
 ) => {
-  console.log(subField)
+  if (
+    !isNil(index) &&
+    !isNil(index2) &&
+    subfield2 &&
+    !isNil(index3) &&
+    subfield3
+  ) {
+    changeArrayField3(
+      value,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+      index3,
+      subfield3,
+    )
+    return
+  }
+
+  if (!isNil(index) && !isNil(index2) && subfield2) {
+    changeArrayField2(
+      value,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+    )
+    return
+  }
   if (subField && !isNil(index)) {
     changeNestedField(value, field, setState, section, subField, index)
   } else if (!isNil(index)) {
@@ -153,40 +294,172 @@ const onFieldChange: FieldHandler = (
 }
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
-  text: (value, field, setState, section, subField, index) => {
+  text: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
     const formattedVal = value.target.value
-    onFieldChange(formattedVal, field, setState, section, subField, index)
+    onFieldChange(
+      formattedVal,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+      index3,
+      subfield3,
+    )
   },
-  number: (value, field, setState, section, subField, index) => {
+  number: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
     const formattedVal = value.target.value
 
     if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
       const finalVal = formattedVal ? parseInt(formattedVal) : null
-      onFieldChange(finalVal, field, setState, section, subField, index)
+      onFieldChange(
+        finalVal,
+        field,
+        setState,
+        section,
+        subField,
+        index,
+        index2,
+        subfield2,
+        index3,
+        subfield3,
+      )
     } else {
       value.preventDefault()
     }
   },
-  decimal: (value, field, setState, section, subField, index) => {
+  decimal: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
     const val = value.target.value
     const formattedVal = val === '' ? null : val
 
     if (!isNaN(Number(formattedVal))) {
-      onFieldChange(formattedVal, field, setState, section, subField, index)
+      onFieldChange(
+        formattedVal,
+        field,
+        setState,
+        section,
+        subField,
+        index,
+        index2,
+        subfield2,
+        index3,
+        subfield3,
+      )
     } else {
       value.preventDefault()
     }
   },
-  drop_down: (value, field, setState, section, subField, index) => {
+  drop_down: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
     const formattedVal = value?.id ?? null
-    onFieldChange(formattedVal, field, setState, section, subField, index)
+    onFieldChange(
+      formattedVal,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+      index3,
+      subfield3,
+    )
   },
-  boolean: (value, field, setState, section, subField, index) => {
-    onFieldChange(value, field, setState, section, subField, index)
+  boolean: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
+    onFieldChange(
+      value,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+      index3,
+      subfield3,
+    )
   },
-  date: (value, field, setState, section, subField, index) => {
+  date: (
+    value,
+    field,
+    setState,
+    section,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  ) => {
     const formattedVal = value.target.value || null
-    onFieldChange(formattedVal, field, setState, section, subField, index)
+    onFieldChange(
+      formattedVal,
+      field,
+      setState,
+      section,
+      subField,
+      index,
+      index2,
+      subfield2,
+      index3,
+      subfield3,
+    )
   },
 }
 
@@ -204,8 +477,23 @@ export const AutocompleteWidget = <T, W>(
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   index?: number,
   subField?: string,
+  index2?: number,
+  subfield2?: string,
+  index3?: number,
+  subfield3?: string,
 ) => {
-  const value = getValue(data, sectionIdentifier, field, subField, index)
+  const value = getValue(
+    data,
+    sectionIdentifier,
+    field,
+    subField,
+    index,
+    index2,
+    subfield2,
+    index3,
+    subfield3,
+  )
+
   const formattedValue = find(options, { id: value }) || null
 
   return (
@@ -224,6 +512,10 @@ export const AutocompleteWidget = <T, W>(
               sectionIdentifier,
               subField,
               index,
+              index2,
+              subfield2,
+              index3,
+              subfield3,
             )
           }
           getOptionLabel={(option) => getOptionLabel(options, option)}
@@ -251,8 +543,22 @@ export const TextAreaWidget = <T, W>(
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   index?: number,
   subField?: string,
+  index2?: number,
+  subField2?: string,
+  index3?: number,
+  subfield3?: string,
 ) => {
-  const value = getValue(data, sectionIdentifier, field, subField, index)
+  const value = getValue(
+    data,
+    sectionIdentifier,
+    field,
+    subField,
+    index,
+    index2,
+    subField2,
+    index3,
+    subfield3,
+  )
 
   return (
     <div className="w-full md:w-auto">
@@ -269,6 +575,10 @@ export const TextAreaWidget = <T, W>(
               sectionIdentifier,
               subField,
               index,
+              index2,
+              subField2,
+              index3,
+              subfield3,
             )
           }
           className={cx(

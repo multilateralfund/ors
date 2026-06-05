@@ -34,6 +34,9 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   actual_activity_outputs: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
   agency: 'Agency',
+  project_element_id: 'Project element',
+  cause_of_delay_id: 'Cause of delay',
+  description: 'Description',
 }
 
 export const initialOverviewFields = {
@@ -223,4 +226,27 @@ export const projectElementOpts = [
   },
   { id: 6, name: 'Exogenous factors' },
   { id: 7, name: 'Technology, innovation and markets' },
+]
+
+export const causeOfDelayOpts = [
+  { id: 1, name: 'Implementing/cooperating agency' },
+  {
+    id: 2,
+    name: 'Due to governmental delays (NOU structure changes, ministry/institution structure changes) ',
+  },
+  {
+    id: 3,
+    name: `Project design, preparation and implementation process (timeframe, beneficiaries' profile (e.g., gender participation, beneficiaries' skills, etc.)`,
+  },
+  { id: 4, name: 'Procurement delay (Enterprise and supplier delays' },
+  {
+    id: 5,
+    name: 'Policy and regulatory framework (e.g., relevant legislation, etc.)',
+  },
+  { id: 6, name: 'Availability of alternative technology' },
+  {
+    id: 7,
+    name: 'Funding process (delays in funding following tranches, low disbursement of funds)',
+  },
+  { id: 8, name: 'Other, describe' },
 ]
