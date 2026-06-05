@@ -4839,6 +4839,8 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         country_europe,
         project_ongoing_status,
     ):
+        country_europe.abbr_for_apr = "EUR"
+        country_europe.save()
         country_ro.parent = country_europe
         country_ro.save()
 
@@ -4888,7 +4890,7 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         assert project_data["legacy_code"] == "ROM/80/TAS/123"
         assert project_data["agency_name"] == project.agency.name
         assert project_data["cluster_name"] == project.cluster.name
-        assert project_data["region_name"] == project.country.parent.abbr
+        assert project_data["region_name"] == project.country.parent.abbr_for_apr
         assert project_data["country_name"] == project.country.name
         assert project_data["type_code"] == project.project_type.code
         assert project_data["sector_code"] == project.sector.code
