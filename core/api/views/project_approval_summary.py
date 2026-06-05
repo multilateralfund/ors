@@ -128,7 +128,6 @@ class ProjectApprovalSummaryViewSet(
     def export(self, request, *args, **kwargs):
         wb = openpyxl.open(self._template_path)
         sheet = wb.worksheets[0]
-        sheet.insert_rows(1)
 
         if self._is_approved_submission_status():
             sheet["E3"] = "Funds approved (US$)"
