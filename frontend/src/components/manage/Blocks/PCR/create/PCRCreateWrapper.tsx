@@ -30,13 +30,17 @@ const PCRCreateWrapper = () => {
     agency,
     project_element: [],
   }))
+  const initialLessonsLearnedFields = map(agencies, (agency) => ({
+    agency,
+    project_element: [],
+  }))
 
   const [PCRData, setPCRData] = useState<PCRData>({
     overview: initialOverviewFields,
     summary_and_delays: [],
     results_assessment: [],
     causes_of_delay: initialCausesOfDelayFields,
-    lessons_learned: [],
+    lessons_learned: initialLessonsLearnedFields,
     gender_mainstreaming: [],
     sdg_contribution: [],
   })

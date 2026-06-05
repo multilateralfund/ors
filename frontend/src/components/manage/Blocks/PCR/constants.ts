@@ -36,6 +36,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   agency: 'Agency',
   project_element_id: 'Project element',
   cause_of_delay_id: 'Cause of delay',
+  lesson_learned_id: 'Lesson learned',
   description: 'Description',
 }
 
@@ -128,10 +129,6 @@ export const initialResultsAssessmentFieldsEntry = {
   additional_remarks: '',
 }
 
-export const initialCausesOfDelayFieldsEntry = {
-  agency: null,
-  project_element: [],
-}
 export const initialProjectElementCauseOfDelay = {
   project_element_id: null,
   cause_of_delay: [],
@@ -141,13 +138,9 @@ export const initialCauseOfDelay = {
   description: '',
 }
 
-export const initialLessonsLearnedEntry = {
-  agency: null,
-  project_element: [],
-}
 export const initialProjectElementLessonsLearned = {
   project_element_id: null,
-  lessons_learned: [],
+  lesson_learned: [],
 }
 export const initialLessonsLearned = {
   lessons_learned_id: null,
@@ -232,7 +225,7 @@ export const causeOfDelayOpts = [
   { id: 1, name: 'Implementing/cooperating agency' },
   {
     id: 2,
-    name: 'Due to governmental delays (NOU structure changes, ministry/institution structure changes) ',
+    name: 'Due to governmental delays (NOU structure changes, ministry/institution structure changes)',
   },
   {
     id: 3,
@@ -249,4 +242,34 @@ export const causeOfDelayOpts = [
     name: 'Funding process (delays in funding following tranches, low disbursement of funds)',
   },
   { id: 8, name: 'Other, describe' },
+]
+
+export const lessonLearnedOpts = [
+  { id: 1, name: 'Regional context' },
+  { id: 2, name: 'National policy framework' },
+  {
+    id: 3,
+    name: 'Engagement of national stakeholders (civil societies, private sector, etc.)',
+  },
+  { id: 4, name: 'Technical aspects ?' },
+  { id: 5, name: 'Sectoral lessons' },
+  { id: 6, name: 'Customs and imports' },
+  { id: 7, name: 'Capacity-building and training' },
+  { id: 8, name: 'Project design and impact of implementation' },
+  { id: 9, name: 'Energy efficiency' },
+  { id: 10, name: 'Climate benefits' },
+  { id: 11, name: 'Disposal' },
+  { id: 12, name: 'Recovery, recycling and reclamation' },
+  { id: 13, name: 'Data availability and accuracy' },
+  { id: 14, name: 'Sustainability of achievements (factors to ensure it)' },
+  {
+    id: 15,
+    name: 'Exogenous factors (beyond the control of the implementers, such as natural disasters, political istability, pandemics, etc.)',
+  },
+  { id: 16, name: 'Contribution to sustainable development goals (SDGs)' },
+  {
+    id: 17,
+    name: `Gender (as per the Multilateral Fund's operational policy)`,
+  },
+  { id: 18, name: 'Other (please specify)' },
 ]

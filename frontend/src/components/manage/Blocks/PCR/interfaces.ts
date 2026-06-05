@@ -114,7 +114,7 @@ export interface ProjectElementCauseOfDelay {
 
 export interface ProjectElementLessonsLearned {
   project_element_id: number | null
-  lessons_learned: LessonsLearned[]
+  lesson_learned: LessonsLearned[]
 }
 
 export interface PCRCausesOfDelay {

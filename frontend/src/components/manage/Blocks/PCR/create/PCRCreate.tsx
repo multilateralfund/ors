@@ -58,6 +58,7 @@ import { initialOverviewFields } from '../constants'
 import PCROverviewSection from '../PCRFormTabs/PCROverviewSection'
 import PCRResultsAssessmentSection from '../PCRFormTabs/PCRResultsAssessmentSection'
 import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
+import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -444,6 +445,24 @@ const PCRCreate = ({
       ),
       component: (
         <PCRCausesOfDelaySection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-lessons-learned',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Lessons learned</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRLessonsLearnedSection
           {...{ PCRData, setPCRData, setCurrentTab }}
           errors={{}}
         />
