@@ -203,9 +203,11 @@ export default function APRWorkspace() {
         <PageHeading className="flex min-w-fit items-center gap-x-2">
           {`Annual Progress Report workspace`}
           <AprYearDropdown />
-          <span className="rounded border border-solid px-1 text-lg">
-            {isDraft ? 'DRAFT' : 'SUBMITTED'}
-          </span>
+          {loaded && (
+            <span className="rounded border border-solid px-1 text-lg">
+              {isDraft ? 'DRAFT' : 'SUBMITTED'}
+            </span>
+          )}
           {apr?.is_endorsed && (
             <span className="rounded border border-solid px-1 text-lg">
               ENDORSED
