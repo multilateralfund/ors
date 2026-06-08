@@ -103,7 +103,7 @@ export interface CauseOfDelay {
 }
 
 export interface LessonsLearned {
-  lessons_learned_id: number | null
+  lesson_learned_id: number | null
   description: string
 }
 
@@ -128,7 +128,7 @@ export interface PCRLessonsLearned {
 }
 
 export interface PCRGenderMainstreaming {
-  agengy: number | null
+  agency: number | null
   phases: GenderMainstreamingPhase[]
 }
 
@@ -186,7 +186,16 @@ export type PCROverviewProps = PCRFormData & {
   errors: { [key: string]: string[] | { [key: string]: [] }[] }
 }
 
-export type PCROverviewSectionProps = PCRFormData &
+export type PCRSectionsProps = PCRFormData &
   PCROverviewProps & {
     setCurrentTab: Dispatch<SetStateAction<number>>
   }
+
+export type FieldHandler = <T, K>(
+  value: any,
+  field: keyof K,
+  setState: (updater: SetStateAction<T>, fieldName?: keyof K) => void,
+  section: keyof T,
+  subFields?: string[],
+  indexes?: number[],
+) => void

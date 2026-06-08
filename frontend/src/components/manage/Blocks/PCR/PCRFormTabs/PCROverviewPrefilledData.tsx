@@ -4,11 +4,9 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 // import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 // import {
-//   ProjectData,
 //   ProjIdentifiers,
 // } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
-// import { changeHandler } from './SpecificFieldsHelpers'
 // import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import { PCROverviewProps } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
@@ -18,9 +16,7 @@ import {
   defaultPropsSimpleField,
   disabledClassName,
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
-// import { ApiAgency } from '@ors/types/api_agencies'
 // import { Cluster, Country } from '@ors/types/store'
-// import { parseNumber } from '@ors/helpers'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import dayjs from 'dayjs'
 
@@ -51,42 +47,6 @@ const PCROverviewPrefilledData = ({
   const defaultPropsDateInput = {
     className: 'BPListUpload !ml-0 h-10 w-40 !flex-grow-0',
   }
-
-  // const handleChangeCountry = (country: Country) => {
-  //   changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-  //     country,
-  //     'country',
-  //     setPCRData,
-  //     sectionIdentifier,
-  //   )
-  // }
-
-  // const handleChangeAgency = (value: ApiAgency | null) => {
-  //   changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-  //     value,
-  //     'agency',
-  //     setPCRData,
-  //     sectionIdentifier,
-  //   )
-  // }
-
-  // const handleChangeLeadAgency = (value: ApiAgency | null) => {
-  //   changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-  //     value,
-  //     'lead_agency',
-  //     setPCRData,
-  //     sectionIdentifier,
-  //   )
-  // }
-
-  // const handleChangeCluster = (cluster: Cluster) => {
-  //   changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-  //     cluster,
-  //     'cluster',
-  //     setPCRData,
-  //     sectionIdentifier,
-  //   )
-  // }
 
   return (
     <div className="flex flex-col gap-y-2">

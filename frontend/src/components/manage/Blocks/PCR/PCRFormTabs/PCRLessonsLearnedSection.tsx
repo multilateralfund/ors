@@ -1,8 +1,4 @@
-import {
-  PCRData,
-  PCROverviewSectionProps,
-  PCRLessonsLearned,
-} from '../interfaces'
+import { PCRData, PCRSectionsProps, PCRLessonsLearned } from '../interfaces'
 import { SubmitButton } from '../../ProjectsListing/HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 
@@ -14,7 +10,7 @@ import { useContext, useState } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { Tabs } from '@mui/material'
 import {
-  causeOfDelayOpts,
+  lessonLearnedOpts,
   initialLessonsLearned,
   initialProjectElementLessonsLearned,
   projectElementOpts,
@@ -25,7 +21,7 @@ const PCRLessonsLearnedSection = ({
   setPCRData,
   errors,
   setCurrentTab,
-}: PCROverviewSectionProps & { errors: { [key: string]: string[] } }) => {
+}: PCRSectionsProps & { errors: { [key: string]: string[] } }) => {
   const sectionIdentifier = 'lessons_learned'
   const projectElementField = 'project_element'
   const lessonLearnedField = 'lesson_learned'
@@ -205,10 +201,8 @@ const PCRLessonsLearnedSection = ({
                                     'project_element_id',
                                     projectElementOpts,
                                     errors,
-                                    crtAgency,
-                                    undefined,
-                                    index,
-                                    'project_element',
+                                    [crtAgency, index],
+                                    ['', 'project_element'],
                                   )}
 
                                   <IoTrash
@@ -234,14 +228,18 @@ const PCRLessonsLearnedSection = ({
                                                   setPCRData,
                                                   sectionIdentifier,
                                                   'lesson_learned_id',
-                                                  causeOfDelayOpts,
+                                                  lessonLearnedOpts,
                                                   errors,
-                                                  crtAgency,
-                                                  undefined,
-                                                  index,
-                                                  'project_element',
-                                                  index_lesson_learned,
-                                                  'lesson_learned',
+                                                  [
+                                                    crtAgency,
+                                                    index,
+                                                    index_lesson_learned,
+                                                  ],
+                                                  [
+                                                    '',
+                                                    'project_element',
+                                                    'lesson_learned',
+                                                  ],
                                                 )}
                                                 {widgets['text_area']<
                                                   PCRData,
@@ -252,12 +250,16 @@ const PCRLessonsLearnedSection = ({
                                                   sectionIdentifier,
                                                   'description',
                                                   errors,
-                                                  crtAgency,
-                                                  undefined,
-                                                  index,
-                                                  'project_element',
-                                                  index_lesson_learned,
-                                                  'lesson_learned',
+                                                  [
+                                                    crtAgency,
+                                                    index,
+                                                    index_lesson_learned,
+                                                  ],
+                                                  [
+                                                    '',
+                                                    'project_element',
+                                                    'lesson_learned',
+                                                  ],
                                                 )}
 
                                                 <IoTrash

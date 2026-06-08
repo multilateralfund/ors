@@ -1,7 +1,7 @@
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import PCROverviewUserInputData from './PCROverviewUserInputData'
-import { PCROverviewSectionProps } from '../interfaces'
+import { PCRSectionsProps } from '../interfaces'
 
 import { Divider } from '@mui/material'
 
@@ -10,7 +10,7 @@ const PCROverviewSection = ({
   setPCRData,
   setCurrentTab,
   errors,
-}: PCROverviewSectionProps) => {
+}: PCRSectionsProps) => {
   return (
     <>
       <PCROverviewPrefilledData {...{ PCRData, setPCRData, errors }} />

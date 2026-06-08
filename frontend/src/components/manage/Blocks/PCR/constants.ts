@@ -38,6 +38,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   cause_of_delay_id: 'Cause of delay',
   lesson_learned_id: 'Lesson learned',
   description: 'Description',
+  phase_id: 'Phase',
+  meets_criteria: 'Meets criteria',
 }
 
 export const initialOverviewFields = {
@@ -143,14 +145,10 @@ export const initialProjectElementLessonsLearned = {
   lesson_learned: [],
 }
 export const initialLessonsLearned = {
-  lessons_learned_id: null,
+  lesson_learned_id: null,
   description: '',
 }
 
-export const initialGenderMainstreamingFieldsEntry = {
-  agency: null,
-  phases: [],
-}
 export const initialGenderMainstreamingPhase = {
   phase_id: null,
   meets_criteria: false,
@@ -251,25 +249,37 @@ export const lessonLearnedOpts = [
     id: 3,
     name: 'Engagement of national stakeholders (civil societies, private sector, etc.)',
   },
-  { id: 4, name: 'Technical aspects ?' },
-  { id: 5, name: 'Sectoral lessons' },
-  { id: 6, name: 'Customs and imports' },
-  { id: 7, name: 'Capacity-building and training' },
-  { id: 8, name: 'Project design and impact of implementation' },
-  { id: 9, name: 'Energy efficiency' },
-  { id: 10, name: 'Climate benefits' },
-  { id: 11, name: 'Disposal' },
-  { id: 12, name: 'Recovery, recycling and reclamation' },
-  { id: 13, name: 'Data availability and accuracy' },
-  { id: 14, name: 'Sustainability of achievements (factors to ensure it)' },
+  { id: 4, name: 'Technical/equipment issues', category: 'Technical aspects' },
   {
-    id: 15,
+    id: 5,
+    name: 'Availability of alternative technologies',
+    category: 'Technical aspects',
+  },
+  { id: 6, name: 'Sectoral lessons' },
+  { id: 7, name: 'Customs and imports' },
+  { id: 8, name: 'Capacity-building and training' },
+  { id: 9, name: 'Project design and impact of implementation' },
+  { id: 10, name: 'Energy efficiency' },
+  { id: 11, name: 'Climate benefits' },
+  { id: 12, name: 'Disposal' },
+  { id: 13, name: 'Recovery, recycling and reclamation' },
+  { id: 14, name: 'Data availability and accuracy' },
+  { id: 15, name: 'Sustainability of achievements (factors to ensure it)' },
+  {
+    id: 16,
     name: 'Exogenous factors (beyond the control of the implementers, such as natural disasters, political istability, pandemics, etc.)',
   },
-  { id: 16, name: 'Contribution to sustainable development goals (SDGs)' },
+  { id: 17, name: 'Contribution to sustainable development goals (SDGs)' },
   {
-    id: 17,
+    id: 18,
     name: `Gender (as per the Multilateral Fund's operational policy)`,
   },
-  { id: 18, name: 'Other (please specify)' },
+  { id: 19, name: 'Other (please specify)' },
+]
+
+export const phasesOpts = [
+  { id: 1, name: 'Project preparation' },
+  { id: 2, name: 'Planning/Formulation' },
+  { id: 3, name: 'Implementation' },
+  { id: 4, name: 'Monitoring and Reporting' },
 ]

@@ -166,8 +166,8 @@ const PCROverviewUserInputData = ({
                     'user_type',
                     ratingEntityUserOpts,
                     ratingAdditionalCommentsErrors,
-                    index,
-                    ratingAdditionalCommentsField,
+                    [index],
+                    [ratingAdditionalCommentsField],
                   )}
                   {ratingAdditionalCommentsData[index].user_type ===
                     getOtherOptId(ratingEntityUserOpts) &&
@@ -177,8 +177,8 @@ const PCROverviewUserInputData = ({
                       sectionIdentifier,
                       'other_user_type',
                       ratingAdditionalCommentsErrors,
-                      index,
-                      ratingAdditionalCommentsField,
+                      [index],
+                      [ratingAdditionalCommentsField],
                     )}
                   {widgets['text_area']<PCRData, PCROverview>(
                     PCRData,
@@ -186,8 +186,8 @@ const PCROverviewUserInputData = ({
                     sectionIdentifier,
                     'comment',
                     ratingAdditionalCommentsErrors,
-                    index,
-                    ratingAdditionalCommentsField,
+                    [index],
+                    [ratingAdditionalCommentsField],
                   )}
 
                   <IoTrash

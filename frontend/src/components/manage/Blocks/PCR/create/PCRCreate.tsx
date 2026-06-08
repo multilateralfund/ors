@@ -59,6 +59,7 @@ import PCROverviewSection from '../PCRFormTabs/PCROverviewSection'
 import PCRResultsAssessmentSection from '../PCRFormTabs/PCRResultsAssessmentSection'
 import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
 import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
+import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -463,6 +464,24 @@ const PCRCreate = ({
       ),
       component: (
         <PCRLessonsLearnedSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-gender-mainstreaming',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Gender mainstreaming</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRGenderMainstreamingSection
           {...{ PCRData, setPCRData, setCurrentTab }}
           errors={{}}
         />

@@ -1,8 +1,4 @@
-import {
-  PCRData,
-  PCROverviewSectionProps,
-  PCRResultsAssessment,
-} from '../interfaces'
+import { PCRData, PCRSectionsProps, PCRResultsAssessment } from '../interfaces'
 import { initialResultsAssessmentFieldsEntry } from '../constants'
 import { SubmitButton } from '../../ProjectsListing/HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
@@ -18,7 +14,7 @@ const PCRResultsAssessmentSection = ({
   setPCRData,
   errors,
   setCurrentTab,
-}: PCROverviewSectionProps & { errors: { [key: string]: string[] } }) => {
+}: PCRSectionsProps & { errors: { [key: string]: string[] } }) => {
   const sectionIdentifier = 'results_assessment'
 
   const resultsAssessmentData = PCRData[sectionIdentifier] || []
@@ -70,7 +66,7 @@ const PCRResultsAssessmentSection = ({
                             sectionIdentifier,
                             field,
                             resultsAssessmentErrors,
-                            index,
+                            [index],
                           )}
                         </React.Fragment>
                       ),

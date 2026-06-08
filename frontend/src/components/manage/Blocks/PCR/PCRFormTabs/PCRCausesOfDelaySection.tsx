@@ -1,8 +1,4 @@
-import {
-  PCRData,
-  PCROverviewSectionProps,
-  PCRCausesOfDelay,
-} from '../interfaces'
+import { PCRData, PCRSectionsProps, PCRCausesOfDelay } from '../interfaces'
 import { SubmitButton } from '../../ProjectsListing/HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 
@@ -25,7 +21,7 @@ const PCRCausesOfDelaySection = ({
   setPCRData,
   errors,
   setCurrentTab,
-}: PCROverviewSectionProps & { errors: { [key: string]: string[] } }) => {
+}: PCRSectionsProps & { errors: { [key: string]: string[] } }) => {
   const sectionIdentifier = 'causes_of_delay'
   const projectElementField = 'project_element'
   const causeOfDelayField = 'cause_of_delay'
@@ -205,10 +201,8 @@ const PCRCausesOfDelaySection = ({
                                     'project_element_id',
                                     projectElementOpts,
                                     errors,
-                                    crtAgency,
-                                    undefined,
-                                    index,
-                                    'project_element',
+                                    [crtAgency, index],
+                                    ['', 'project_element'],
                                   )}
 
                                   <IoTrash
@@ -236,12 +230,16 @@ const PCRCausesOfDelaySection = ({
                                                   'cause_of_delay_id',
                                                   causeOfDelayOpts,
                                                   errors,
-                                                  crtAgency,
-                                                  undefined,
-                                                  index,
-                                                  'project_element',
-                                                  index_cause_of_delay,
-                                                  'cause_of_delay',
+                                                  [
+                                                    crtAgency,
+                                                    index,
+                                                    index_cause_of_delay,
+                                                  ],
+                                                  [
+                                                    '',
+                                                    'project_element',
+                                                    'cause_of_delay',
+                                                  ],
                                                 )}
                                                 {widgets['text_area']<
                                                   PCRData,
@@ -252,12 +250,16 @@ const PCRCausesOfDelaySection = ({
                                                   sectionIdentifier,
                                                   'description',
                                                   errors,
-                                                  crtAgency,
-                                                  undefined,
-                                                  index,
-                                                  'project_element',
-                                                  index_cause_of_delay,
-                                                  'cause_of_delay',
+                                                  [
+                                                    crtAgency,
+                                                    index,
+                                                    index_cause_of_delay,
+                                                  ],
+                                                  [
+                                                    '',
+                                                    'project_element',
+                                                    'cause_of_delay',
+                                                  ],
                                                 )}
 
                                                 <IoTrash

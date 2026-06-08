@@ -1,15 +1,9 @@
-import { ChangeEvent } from 'react'
-// import {  Dispatch, SetStateAction } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { pcrFieldsMapping } from '../constants'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import {
-  FieldHandler,
-  FieldType,
-  OptionsType,
-} from '../../ProjectsListing/interfaces'
-import { Dispatch, SetStateAction } from 'react'
+import { FieldType, OptionsType } from '../../ProjectsListing/interfaces'
 
 // import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 // import Field from '@ors/components/manage/Form/Field'
@@ -43,8 +37,7 @@ import { STYLE } from '../../Replenishment/Inputs/constants'
 //   approvalToOdsMap,
 // } from '../constants'
 
-import { TextareaAutosize } from '@mui/material'
-// import { Checkbox } from '@mui/material'
+import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 // import dayjs from 'dayjs'
 import {
@@ -70,41 +63,36 @@ import {
   changeField,
   changeNestedField,
 } from '../../ProjectsListing/ProjectsCreate/SpecificFieldsHelpers'
+import { FieldHandler } from '../interfaces'
 
 const getValue = <T,>(
   fields: T,
   sectionIdentifier: keyof T,
   fieldName: string,
-  subField?: string,
-  index?: number,
-  index2?: number,
-  subField2?: string,
-  index3?: number,
-  subfield3?: string,
+  subFields?: string[],
+  indexes?: number[],
 ) => {
+  const [index, index2, index3] = indexes ?? []
+  const [subField, subField2, subfield3] = subFields ?? []
+
+  const indexesLength = indexes?.length
+  const subfieldsLength = subFields?.length
+
   const sectionData = fields[sectionIdentifier] as Record<string, any>
   const subSectionData = sectionData[subField as string] || []
 
-  if (
-    !isNil(index) &&
-    !isNil(index2) &&
-    !isNil(index3) &&
-    subField2 &&
-    subfield3
-  ) {
-    return sectionData?.[index]?.[subField2]?.[index2]?.[subfield3]?.[index3]?.[
-      fieldName
-    ]
+  if (indexesLength === 3 && subfieldsLength === 3) {
+    return sectionData[index][subField2][index2][subfield3][index3][fieldName]
   }
 
-  if (!isNil(index) && !isNil(index2) && subField2) {
-    return sectionData?.[index]?.[subField2]?.[index2]?.[fieldName]
+  if (indexesLength === 2 && subfieldsLength === 2) {
+    return sectionData[index][subField2][index2][fieldName]
   }
 
-  return subField && !isNil(index)
-    ? subSectionData?.[index]?.[fieldName]
-    : !isNil(index)
-      ? sectionData?.[index]?.[fieldName]
+  return indexesLength === 1 && subfieldsLength === 1
+    ? subSectionData[index][fieldName]
+    : indexes && indexes.length === 1
+      ? sectionData[index][fieldName]
       : sectionData[fieldName]
 }
 
@@ -136,17 +124,13 @@ export const changeArrayField: FieldHandler = (
   field,
   setState,
   section,
-  _,
   index,
 ) => {
   if (!isNil(index)) {
     setState((prevData: any) => {
       const sectionData = prevData[section] || []
 
-      sectionData[index] = {
-        ...sectionData[index],
-        [field]: value,
-      }
+      sectionData[index] = { ...sectionData[index], [field]: value }
 
       return { ...prevData, [field]: sectionData }
     }, field)
@@ -158,12 +142,13 @@ export const changeArrayField2: FieldHandler = (
   field,
   setState,
   section,
-  _,
-  index,
-  index2,
   subfield2,
+  indexes,
 ) => {
-  if (!isNil(index) && !isNil(index2)) {
+  console.log(subfield2)
+  const [index, index2] = indexes ?? []
+
+  if (indexes?.length === 2) {
     setState((prevData: any) => {
       const sectionData = prevData[section] || []
 
@@ -176,10 +161,7 @@ export const changeArrayField2: FieldHandler = (
                 [subfield2]: agency[subfield2]?.map(
                   (projectElement: any, peIndex: number) =>
                     peIndex === index2
-                      ? {
-                          ...projectElement,
-                          [field]: value,
-                        }
+                      ? { ...projectElement, [field]: value }
                       : projectElement,
                 ),
               }
@@ -195,14 +177,15 @@ export const changeArrayField3: FieldHandler = (
   field,
   setState,
   section,
-  _,
-  index,
-  index2,
-  subfield2,
-  index3,
-  subfield3,
+  subFields,
+  indexes,
 ) => {
-  if (!isNil(index) && !isNil(index2) && !isNil(index3)) {
+  const indexesLength = indexes?.length
+
+  const [index, index2, index3] = indexes ?? []
+  const [_, subfield2, subfield3] = subFields ?? []
+
+  if (indexesLength === 3) {
     setState((prevData: any) => {
       const sectionData = prevData[section] || []
 
@@ -242,230 +225,80 @@ const onFieldChange: FieldHandler = (
   field,
   setState,
   section,
-  subField,
-  index,
-  index2,
-  subfield2,
-  index3,
-  subfield3,
+  subFields,
+  indexes,
 ) => {
-  if (
-    !isNil(index) &&
-    !isNil(index2) &&
-    subfield2 &&
-    !isNil(index3) &&
-    subfield3
-  ) {
-    changeArrayField3(
-      value,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-      index3,
-      subfield3,
-    )
+  const [index] = indexes ?? []
+  const [subField, subField2] = subFields ?? []
+
+  const indexesLength = indexes?.length
+  const subfieldsLength = subFields?.length
+
+  if (indexesLength === 3 && subfieldsLength === 3) {
+    changeArrayField3(value, field, setState, section, subFields, indexes)
     return
   }
 
-  if (!isNil(index) && !isNil(index2) && subfield2) {
-    changeArrayField2(
-      value,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-    )
+  if (indexesLength === 2 && subfieldsLength === 2) {
+    changeArrayField2(value, field, setState, section, subField2, indexes)
     return
   }
-  if (subField && !isNil(index)) {
-    changeNestedField(value, field, setState, section, subField, index)
-  } else if (!isNil(index)) {
-    changeArrayField(value, field, setState, section, subField, index)
+  if (indexesLength === 1 && subfieldsLength === 1) {
+    changeNestedField(value, field, setState, section, subField, indexes)
+    return
+  } else if (indexesLength === 1) {
+    changeArrayField(value, field, setState, section, index)
+    return
   } else {
     changeField(value, field, setState, section)
+    return
   }
 }
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
-  text: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
+  text: (value, field, setState, section, subFields, indexes) => {
     const formattedVal = value.target.value
-    onFieldChange(
-      formattedVal,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-      index3,
-      subfield3,
-    )
+    onFieldChange(formattedVal, field, setState, section, subFields, indexes)
   },
-  number: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
+  number: (value, field, setState, section, subFields, indexes) => {
     const formattedVal = value.target.value
 
     if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
       const finalVal = formattedVal ? parseInt(formattedVal) : null
-      onFieldChange(
-        finalVal,
-        field,
-        setState,
-        section,
-        subField,
-        index,
-        index2,
-        subfield2,
-        index3,
-        subfield3,
-      )
+      onFieldChange(finalVal, field, setState, section, subFields, indexes)
     } else {
       value.preventDefault()
     }
   },
-  decimal: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
+  decimal: (value, field, setState, section, subFields, indexes) => {
     const val = value.target.value
     const formattedVal = val === '' ? null : val
 
     if (!isNaN(Number(formattedVal))) {
-      onFieldChange(
-        formattedVal,
-        field,
-        setState,
-        section,
-        subField,
-        index,
-        index2,
-        subfield2,
-        index3,
-        subfield3,
-      )
+      onFieldChange(formattedVal, field, setState, section, subFields, indexes)
     } else {
       value.preventDefault()
     }
   },
-  drop_down: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
+  drop_down: (value, field, setState, section, subFields, indexes) => {
     const formattedVal = value?.id ?? null
-    onFieldChange(
-      formattedVal,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-      index3,
-      subfield3,
-    )
+    onFieldChange(formattedVal, field, setState, section, subFields, indexes)
   },
-  boolean: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
-    onFieldChange(
-      value,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-      index3,
-      subfield3,
-    )
+  boolean: (value, field, setState, section, subFields, indexes) => {
+    onFieldChange(value, field, setState, section, subFields, indexes)
   },
-  date: (
-    value,
-    field,
-    setState,
-    section,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  ) => {
+  date: (value, field, setState, section, subFields, indexes) => {
     const formattedVal = value.target.value || null
-    onFieldChange(
-      formattedVal,
-      field,
-      setState,
-      section,
-      subField,
-      index,
-      index2,
-      subfield2,
-      index3,
-      subfield3,
-    )
+    onFieldChange(formattedVal, field, setState, section, subFields, indexes)
   },
 }
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: formatClassName('w-full min-w-56 md:min-w-64'),
   completion_report_done_by: formatClassName('w-full min-w-56 md:min-w-72'),
+  lesson_learned_id: {
+    groupBy: (option: OptionsType & { category?: string }) => option.category,
+  },
 }
 
 export const AutocompleteWidget = <T, W>(
@@ -475,24 +308,10 @@ export const AutocompleteWidget = <T, W>(
   field: string,
   options: OptionsType[],
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  index?: number,
-  subField?: string,
-  index2?: number,
-  subfield2?: string,
-  index3?: number,
-  subfield3?: string,
+  indexes?: number[],
+  subFields?: string[],
 ) => {
-  const value = getValue(
-    data,
-    sectionIdentifier,
-    field,
-    subField,
-    index,
-    index2,
-    subfield2,
-    index3,
-    subfield3,
-  )
+  const value = getValue(data, sectionIdentifier, field, subFields, indexes)
 
   const formattedValue = find(options, { id: value }) || null
 
@@ -510,12 +329,8 @@ export const AutocompleteWidget = <T, W>(
               field as keyof W,
               setData,
               sectionIdentifier,
-              subField,
-              index,
-              index2,
-              subfield2,
-              index3,
-              subfield3,
+              subFields,
+              indexes,
             )
           }
           getOptionLabel={(option) => getOptionLabel(options, option)}
@@ -524,8 +339,8 @@ export const AutocompleteWidget = <T, W>(
         />
         <FieldErrorIndicator
           errors={
-            !isNil(index)
-              ? (errors as { [key: string]: string[] }[])[index]
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
               : errors
           }
           field={field}
@@ -541,24 +356,10 @@ export const TextAreaWidget = <T, W>(
   sectionIdentifier: keyof T,
   field: string,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  index?: number,
-  subField?: string,
-  index2?: number,
-  subField2?: string,
-  index3?: number,
-  subfield3?: string,
+  indexes?: number[],
+  subFields?: string[],
 ) => {
-  const value = getValue(
-    data,
-    sectionIdentifier,
-    field,
-    subField,
-    index,
-    index2,
-    subField2,
-    index3,
-    subfield3,
-  )
+  const value = getValue(data, sectionIdentifier, field, subFields, indexes)
 
   return (
     <div className="w-full md:w-auto">
@@ -573,12 +374,8 @@ export const TextAreaWidget = <T, W>(
               field as keyof W,
               setData,
               sectionIdentifier,
-              subField,
-              index,
-              index2,
-              subField2,
-              index3,
-              subfield3,
+              subFields,
+              indexes,
             )
           }
           className={cx(
@@ -590,8 +387,57 @@ export const TextAreaWidget = <T, W>(
         />
         <FieldErrorIndicator
           errors={
-            !isNil(index)
-              ? (errors as { [key: string]: string[] }[])[index]
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
+}
+
+const BooleanWidget = <T, W>(
+  data: T,
+  setData: Dispatch<SetStateAction<T>>,
+  sectionIdentifier: keyof T,
+  field: string,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  indexes?: number[],
+  subFields?: string[],
+) => {
+  const value = getValue(data, sectionIdentifier, field, subFields, indexes)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <Checkbox
+          className="pb-1 pl-2 pt-0"
+          checked={Boolean(value)}
+          onChange={(_, value) =>
+            changeHandler['boolean']<T, W>(
+              value,
+              field as keyof W,
+              setData,
+              sectionIdentifier,
+              subFields,
+              indexes,
+            )
+          }
+          inputProps={{ tabIndex: 0 }}
+          sx={{
+            '&.Mui-focusVisible': {
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            },
+            color: 'black',
+          }}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
               : errors
           }
           field={field}
@@ -749,69 +595,6 @@ export const TextAreaWidget = <T, W>(
 //   )
 // }
 
-// const BooleanWidget = <T,>(
-//   fields: T,
-//   setFields: Dispatch<SetStateAction<T>>,
-//   field: ProjectSpecificFields,
-//   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-//   editableFields: string[],
-//   sectionIdentifier: keyof T = identifier as keyof T,
-//   subField?: string,
-//   index?: number,
-// ) => {
-//   const fieldName = field.write_field_name
-//   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-
-//   const isDisabledImpactField =
-//     field.section === 'Impact' && !canEditField(editableFields, fieldName)
-//   const isActualImpactField = field.section === 'Impact' && field.is_actual
-
-//   return (
-//     <div className="col-span-full flex w-full">
-//       <Label
-//         className={cx({
-//           italic: isDisabledImpactField,
-//           '!font-medium': isActualImpactField,
-//         })}
-//       >
-//         {field.label}
-//         {getFieldExtraLabel(isDisabledImpactField, field.label)}
-//       </Label>
-//       <div className="flex items-center">
-//         <Checkbox
-//           className="pb-1 pl-2 pt-0"
-//           checked={Boolean(value)}
-//           disabled={!canEditField(editableFields, fieldName)}
-//           onChange={(_: React.SyntheticEvent, value) =>
-//             changeHandler[field.data_type]<T, SpecificFields>(
-//               value,
-//               fieldName,
-//               setFields,
-//               sectionIdentifier,
-//               subField,
-//               index,
-//             )
-//           }
-//           inputProps={{ tabIndex: 0 }}
-//           sx={{
-//             '&.Mui-focusVisible': {
-//               backgroundColor: 'rgba(0, 0, 0, 0.03)',
-//             },
-//             color: 'black',
-//           }}
-//         />
-//         <FieldErrorIndicator
-//           errors={
-//             !isNil(index)
-//               ? (errors as { [key: string]: string[] }[])[index]
-//               : errors
-//           }
-//           field={field.label}
-//         />
-//       </div>
-//     </div>
-//   )
-// }
 
 // const DateWidget = <T,>(
 //   fields: T,
@@ -882,6 +665,6 @@ export const widgets = {
   // simpleText: TextWidget,
   // number: NumberWidget,
   // decimal: NumberWidget,
-  // boolean: BooleanWidget,
+  boolean: BooleanWidget,
   // date: DateWidget,
 }
