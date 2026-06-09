@@ -138,13 +138,13 @@ export interface GenderMainstreamingPhase {
   description: string
 }
 
-export interface SGDs {
-  sgd_id: number | null
+export interface SDGs {
+  sdg_id: number | null
   description: string
 }
 export interface PCRSdgContribution {
   agency: number | null
-  sgds: SGDs[]
+  sdgs: SDGs[]
 }
 
 export type PCRType = PCROverview &

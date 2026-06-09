@@ -38,6 +38,10 @@ const PCRCreateWrapper = () => {
     agency,
     phases: [],
   }))
+  const initialSDGFields = map(agencies, (agency) => ({
+    agency,
+    sdgs: [],
+  }))
 
   const [PCRData, setPCRData] = useState<PCRData>({
     overview: initialOverviewFields,
@@ -46,7 +50,7 @@ const PCRCreateWrapper = () => {
     causes_of_delay: initialCausesOfDelayFields,
     lessons_learned: initialLessonsLearnedFields,
     gender_mainstreaming: initialGenderMainstreamingFields,
-    sdg_contribution: [],
+    sdg_contribution: initialSDGFields,
   })
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],

@@ -60,6 +60,7 @@ import PCRResultsAssessmentSection from '../PCRFormTabs/PCRResultsAssessmentSect
 import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
 import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
 import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
+import PCRSDGSection from '../PCRFormTabs/PCRSDGSection'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -482,6 +483,26 @@ const PCRCreate = ({
       ),
       component: (
         <PCRGenderMainstreamingSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-sdgs',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Contribution to the sustainable development goals (SDGs) (Optional)
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRSDGSection
           {...{ PCRData, setPCRData, setCurrentTab }}
           errors={{}}
         />
