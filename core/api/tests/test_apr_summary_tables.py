@@ -582,7 +582,7 @@ class TestAPRSummaryTablesExport(BaseTest):
             status=project_completed_status,
             cluster=cluster,
         )
-        AnnualProjectReportFactory(
+        apr = AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
             status="Completed",
@@ -593,6 +593,9 @@ class TestAPRSummaryTablesExport(BaseTest):
             consumption_phased_out_co2=1000,
             production_phased_out_co2=500,
         )
+        # post_generation overwrites pcr_due_denorm via populate_derived_fields();
+        # use update() to bypass model save and set the flag directly.
+        type(apr).objects.filter(pk=apr.pk).update(pcr_due_denorm=True)
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         report_year = annual_progress_report.year
