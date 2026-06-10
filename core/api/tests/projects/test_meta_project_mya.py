@@ -253,7 +253,7 @@ class TestProjectV2List(BaseTest):
 
         assert response.status_code == 403
 
-    def test_view_metaproject_not_found_for_unapproved_only_meta_project(
+    def test_view_metaproject_works_for_unapproved_project_meta_project(
         self,
         project_draft_status,
         mlfs_admin_user,
@@ -269,4 +269,4 @@ class TestProjectV2List(BaseTest):
         self.client.force_authenticate(user=mlfs_admin_user)
         response = self.client.get(mp_url, format="json")
 
-        assert response.status_code == 404
+        assert response.status_code == 200

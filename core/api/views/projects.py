@@ -200,7 +200,7 @@ class MetaProjectMyaDetailsViewSet(
     mixins.UpdateModelMixin,
 ):
     serializer_class = MetaProjecMyaDetailsSerializer
-    queryset = MetaProject.objects.for_mya_update()
+    queryset = MetaProject.objects.all()
     permission_classes = [HasProjectV2MyaAccess]
 
     def get_serializer_context(self):
