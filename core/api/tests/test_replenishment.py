@@ -11,6 +11,7 @@ from django.utils.datetime_safe import datetime
 from rest_framework.test import APIClient
 
 from core.api.tests.base import BaseTest
+from core.api.views.utils import SummaryStatusOfContributionsAggregator
 from core.api.tests.factories import (
     CountryFactory,
     ReplenishmentFactory,
@@ -2890,3 +2891,42 @@ class TestDisputedContributionLifecycle(BaseTest):
         self._reload()
         assert self.annuals[2025].agreed_contributions == self.base
         assert self.triennial.agreed_contributions == self.base * 3
+
+
+class TestSummaryBilateralNullPropagation:
+    """
+    Regression test for the Finland-1996 bug.
+    A country:
+    - whose only bilateral amount is inside the special-case 1994-1999 group
+      (stored as a triennial row),
+    - and which has no bilateral rows *outside* the special case,
+    Must still show its bilateral in the summary.
+
+    Previously the per-country annotation added an uncoalesced subquery.
+    With no post-1999 rows, that subquery returned NULL, and `Sum(...) + NULL = NULL`
+    zeroed the whole annotation (rendered as None/0 in the summary and export).
+    """
+
+    def test_in_band_only_bilateral_is_not_nulled(self):
+        country = CountryFactory.create(name="Suomi", iso3="FIN")
+        triennial = TriennialContributionStatusFactory.create(
+            country=country,
+            start_year=1994,
+            end_year=1996,
+            bilateral_assistance=Decimal("103440.00"),
+        )
+        # Only an in-band (excluded) bilateral row, mirroring Finland's 1996 entry.
+        # There are deliberately NO bilateral rows outside 1994-1999.
+        BilateralAssistanceFactory.create(
+            country=country, year=1996, amount=Decimal("103440.00")
+        )
+
+        row = (
+            SummaryStatusOfContributionsAggregator()
+            .get_status_of_contributions_qs()
+            .get(id=country.id)
+        )
+
+        # Must equal the stored triennial bilateral, not None.
+        assert row.bilateral_assistance is not None
+        assert row.bilateral_assistance == triennial.bilateral_assistance
