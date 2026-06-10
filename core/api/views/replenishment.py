@@ -1145,10 +1145,61 @@ class DisputedContributionViewSet(
             return queryset.filter(country_id=user.country_id).select_related("country")
         return queryset.select_related("country")
 
+    @staticmethod
+    def _sync_contribution_status(country_id, year, delta):
+        """
+        Apply ``delta`` to the *stored* annual and triennial agreed (and
+        outstanding) contributions for ``country_id`` / ``year``.
+
+        Disputed contributions are baked into the stored status rows rather
+        than computed on the fly, so every lifecycle event must keep those rows
+        in sync:
+
+        * ``create``  -> ``delta = -amount`` (bake the disputed amount in)
+        * ``destroy`` -> ``delta = +amount`` (reverse it)
+
+        Passing the *signed* amount keeps reversals correct even for the
+        negative "compensating" rows treasurers enter to undo a mistake. If the
+        matching status rows don't exist (e.g. a disputed row with no country),
+        this is a no-op, mirroring the previous create behaviour.
+
+        outstanding_contributions is adjusted alongside agreed_contributions
+        because it is stored, not derived, and its value depends on
+        agreed_contributions.
+        """
+        try:
+            annual_contribution = AnnualContributionStatus.objects.get(
+                country_id=country_id,
+                year=year,
+            )
+            triennial_contribution = TriennialContributionStatus.objects.get(
+                country_id=country_id,
+                start_year__lte=year,
+                end_year__gte=year,
+            )
+        except (
+            AnnualContributionStatus.DoesNotExist,
+            TriennialContributionStatus.DoesNotExist,
+        ):
+            return
+
+        annual_contribution.agreed_contributions += delta
+        annual_contribution.outstanding_contributions += delta
+        annual_contribution.save(
+            update_fields=["agreed_contributions", "outstanding_contributions"]
+        )
+
+        triennial_contribution.agreed_contributions += delta
+        triennial_contribution.outstanding_contributions += delta
+        triennial_contribution.save(
+            update_fields=["agreed_contributions", "outstanding_contributions"]
+        )
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         """
-        Override base DRF create to update annual/triennial agreed contributions.
+        Override base DRF create to "bake" the disputed amount into the stored
+        annual/triennial agreed/outstanding contributions.
         """
         amount = request.data.get("amount")
         country_id = request.data.get("country")
@@ -1156,35 +1207,30 @@ class DisputedContributionViewSet(
 
         ret = super().create(request, *args, **kwargs)
 
-        try:
-            annual_contribution = AnnualContributionStatus.objects.get(
-                country_id=int(country_id),
-                year=int(year),
-            )
-            triennial_contribution = TriennialContributionStatus.objects.get(
-                country_id=int(country_id),
-                start_year__lte=int(year),
-                end_year__gte=int(year),
-            )
-        except AnnualContributionStatus.DoesNotExist:
-            return ret
-        except TriennialContributionStatus.DoesNotExist:
-            return ret
+        if country_id is not None and year is not None:
+            self._sync_contribution_status(int(country_id), int(year), -Decimal(amount))
 
-        annual_contribution.agreed_contributions -= Decimal(amount)
-        # It may seem wrong to substract from outstanding_contributions as well,
-        # but because outstanding_contributions is not calculated on the fly, and
-        # its value depends on agreed_contributions, we need to update it as well.
-        annual_contribution.outstanding_contributions -= Decimal(amount)
-        annual_contribution.save(
-            update_fields=["agreed_contributions", "outstanding_contributions"]
-        )
+        return ret
 
-        triennial_contribution.agreed_contributions -= Decimal(amount)
-        triennial_contribution.outstanding_contributions -= Decimal(amount)
-        triennial_contribution.save(
-            update_fields=["agreed_contributions", "outstanding_contributions"]
-        )
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        """
+        Override base DRF destroy to reverse the adjustment that ``create`` "baked" into
+        the stored annual/triennial contributions.
+
+        Without this, deleting a disputed contribution (from the UI or the API)
+        leaves the stored agreed/outstanding values permanently reduced, with no
+        DisputedContribution row left to explain or offset them (orphaned).
+        """
+        instance = self.get_object()
+        country_id = instance.country_id
+        year = instance.year
+        amount = instance.amount
+
+        ret = super().destroy(request, *args, **kwargs)
+
+        if country_id is not None:
+            self._sync_contribution_status(country_id, year, Decimal(amount))
 
         return ret
 
