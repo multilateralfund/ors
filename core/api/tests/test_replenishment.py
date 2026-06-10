@@ -11,6 +11,7 @@ from django.utils.datetime_safe import datetime
 from rest_framework.test import APIClient
 
 from core.api.tests.base import BaseTest
+from core.api.views.utils import SummaryStatusOfContributionsAggregator
 from core.api.tests.factories import (
     CountryFactory,
     ReplenishmentFactory,
@@ -2783,3 +2784,149 @@ class TestInvoiceStatusFilter(BaseTest):
         assert len(r.data) == 1
         assert r.data[0]["country"]["id"] == country_d.id
         assert r.data[0].get("number") is None
+
+
+class TestDisputedContributionLifecycle(BaseTest):
+    """
+    A disputed contribution is *baked* into the stored annual/triennial
+    agreed (and outstanding) contributions on `create`. These tests guard the
+    full lifecycle so the "baked" adjustment is always reversed on delete.
+
+    The previous behaviour left an orphaned reduction with no row to explain it.
+    """
+
+    list_url = reverse("replenishment-disputed-contributions-list")
+    url = list_url
+
+    # Populated by the autouse _setup fixture below.
+    treasurer_user = None
+    country = None
+    base = None
+    annuals = None
+    triennial = None
+
+    @staticmethod
+    def _detail_url(pk):
+        return reverse("replenishment-disputed-contributions-detail", args=[pk])
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, treasurer_user):
+        self.treasurer_user = treasurer_user
+        self.country = CountryFactory.create()
+        self.base = Decimal("38544000.00")
+        # A clean triennium: three equal annual rows + the triennial row.
+        self.annuals = {
+            year: AnnualContributionStatusFactory.create(
+                country=self.country,
+                year=year,
+                agreed_contributions=self.base,
+                outstanding_contributions=self.base,
+            )
+            for year in (2024, 2025, 2026)
+        }
+        self.triennial = TriennialContributionStatusFactory.create(
+            country=self.country,
+            start_year=2024,
+            end_year=2026,
+            agreed_contributions=self.base * 3,
+            outstanding_contributions=self.base * 3,
+        )
+
+    def _create_disputed(self, year, amount):
+        self.client.force_authenticate(user=self.treasurer_user)
+        response = self.client.post(
+            self.list_url,
+            {"country": self.country.id, "year": year, "amount": amount},
+            format="json",
+        )
+        assert response.status_code == 201, response.data
+        return response.data["id"]
+
+    def _reload(self):
+        for annual in self.annuals.values():
+            annual.refresh_from_db()
+        self.triennial.refresh_from_db()
+
+    def test_create_then_delete_restores_stored_values(self):
+        amount = Decimal("258923.00")
+        disputed_id = self._create_disputed(2024, amount)
+
+        # Create baked the amount into the 2024 annual + the triennial only.
+        self._reload()
+        assert self.annuals[2024].agreed_contributions == self.base - amount
+        assert self.annuals[2024].outstanding_contributions == self.base - amount
+        assert self.annuals[2025].agreed_contributions == self.base
+        assert self.annuals[2026].agreed_contributions == self.base
+        assert self.triennial.agreed_contributions == self.base * 3 - amount
+        assert self.triennial.outstanding_contributions == self.base * 3 - amount
+
+        # Delete must reverse it -- this is the bug being fixed.
+        self.client.force_authenticate(user=self.treasurer_user)
+        response = self.client.delete(self._detail_url(disputed_id))
+        assert response.status_code == 204
+        assert not DisputedContribution.objects.filter(id=disputed_id).exists()
+
+        self._reload()
+        assert self.annuals[2024].agreed_contributions == self.base
+        assert self.annuals[2024].outstanding_contributions == self.base
+        assert self.annuals[2025].agreed_contributions == self.base
+        assert self.annuals[2026].agreed_contributions == self.base
+        assert self.triennial.agreed_contributions == self.base * 3
+        assert self.triennial.outstanding_contributions == self.base * 3
+
+    def test_negative_compensating_row_round_trip(self):
+        # Treasurers undo a mistake with a negative "compensating" row; the
+        # signed amount must be reversed correctly on delete too.
+        amount = Decimal("-200000.00")
+        disputed_id = self._create_disputed(2025, amount)
+
+        self._reload()
+        assert self.annuals[2025].agreed_contributions == self.base - amount
+        assert self.triennial.agreed_contributions == self.base * 3 - amount
+
+        self.client.force_authenticate(user=self.treasurer_user)
+        response = self.client.delete(self._detail_url(disputed_id))
+        assert response.status_code == 204
+
+        self._reload()
+        assert self.annuals[2025].agreed_contributions == self.base
+        assert self.triennial.agreed_contributions == self.base * 3
+
+
+class TestSummaryBilateralNullPropagation:
+    """
+    Regression test for the Finland-1996 bug.
+    A country:
+    - whose only bilateral amount is inside the special-case 1994-1999 group
+      (stored as a triennial row),
+    - and which has no bilateral rows *outside* the special case,
+    Must still show its bilateral in the summary.
+
+    Previously the per-country annotation added an uncoalesced subquery.
+    With no post-1999 rows, that subquery returned NULL, and `Sum(...) + NULL = NULL`
+    zeroed the whole annotation (rendered as None/0 in the summary and export).
+    """
+
+    def test_in_band_only_bilateral_is_not_nulled(self):
+        country = CountryFactory.create(name="Suomi", iso3="FIN")
+        triennial = TriennialContributionStatusFactory.create(
+            country=country,
+            start_year=1994,
+            end_year=1996,
+            bilateral_assistance=Decimal("103440.00"),
+        )
+        # Only an in-band (excluded) bilateral row, mirroring Finland's 1996 entry.
+        # There are deliberately NO bilateral rows outside 1994-1999.
+        BilateralAssistanceFactory.create(
+            country=country, year=1996, amount=Decimal("103440.00")
+        )
+
+        row = (
+            SummaryStatusOfContributionsAggregator()
+            .get_status_of_contributions_qs()
+            .get(id=country.id)
+        )
+
+        # Must equal the stored triennial bilateral, not None.
+        assert row.bilateral_assistance is not None
+        assert row.bilateral_assistance == triennial.bilateral_assistance
