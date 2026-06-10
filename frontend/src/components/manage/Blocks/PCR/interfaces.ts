@@ -1,7 +1,5 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
-
 export interface AgencyOverview {
   agency: number | null
   mlf_funding_approved: string | null
@@ -49,15 +47,10 @@ export interface AlternativeTechnology {
   substance_converted_to: number | null
 }
 
-export interface Trainees {
-  trainee_type: string
-  number_trainees: string | null
-}
-
 export interface Enterprises {
   number_enterprises: string | null
   enterprises_address: string
-  total_number_trainees: Trainees[]
+  total_number_trainees: string | null
 }
 
 export interface OdsEquipmentFate {
@@ -67,7 +60,7 @@ export interface OdsEquipmentFate {
   date_of_disposal: string | null
 }
 
-interface PCRSummaryAndDelays {
+export interface PCRSummaryAndDelays {
   project_code: string
   project_type: number | null
   sector: number | null

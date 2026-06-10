@@ -61,6 +61,7 @@ import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
 import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
 import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
 import PCRSDGSection from '../PCRFormTabs/PCRSDGSection'
+import PCRSummaryAndDelaysSection from '../PCRFormTabs/PCRSummaryAndDelaysSection'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -408,9 +409,9 @@ const PCRCreate = ({
         </div>
       ),
       component: (
-        <PCROverviewSection
+        <PCRSummaryAndDelaysSection
           {...{ PCRData, setPCRData, setCurrentTab }}
-          // errors={overviewErrors}
+          errors={{}}
         />
       ),
       // errors: [...formatErrors(overviewErrors)],

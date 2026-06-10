@@ -40,8 +40,6 @@ const PCROverviewUserInputData = ({
   const ratingAdditionalCommentsErrors =
     errors?.[ratingAdditionalCommentsField] ?? []
 
-  console.log(PCRData.overview)
-
   const onAddRatingAdditionalComments = () => {
     setPCRData((prevData) => {
       const sectionData =

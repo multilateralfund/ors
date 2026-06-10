@@ -41,6 +41,24 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   phase_id: 'Phase',
   meets_criteria: 'Meets criteria',
   sdg_id: 'SDGs MLF',
+  project_code: 'Project code',
+  tranche: 'Tranche',
+  date_approved: 'Date approved',
+  date_completion_actual: 'Actual date of completion',
+  funds_approved: 'Funds approved',
+  odp_phase_out_approved: 'ODP phase-out (Approved)',
+  odp_phase_out_actual: 'ODP phase-out (Actual)',
+  hfc_phased_down_approved: 'HFCs phased down (CO2 eq-tonnes) (Approved)',
+  hfc_phased_down_actual: 'HFCs phased down (CO2 eq-tonnes) (Actual)',
+  funds_disbursed: 'Funds disbursed',
+  substance_converted_from: 'Substance converted from',
+  substance_converted_to: 'Substance converted to',
+  number_enterprises: 'Number of enterprises',
+  enterprises_address: 'Address of enterprises',
+  total_number_trainees: 'Total number of trainees',
+  equipment_name: 'Name of equipment',
+  disposal_type: 'Disposal type',
+  date_of_disposal: 'Date of disposal',
 }
 
 export const initialOverviewFields = {
@@ -112,7 +130,7 @@ export const initialAlternativeTechnology = {
 export const initialEnterprises = {
   number_enterprises: null,
   enterprises_address: '',
-  total_number_trainees: [],
+  total_number_trainees: null,
 }
 export const initialTrainees = {
   trainee_type: '',
@@ -299,4 +317,9 @@ export const sdgOpts = [
   { id: 15, name: 'Goal 15: Life on land' },
   { id: 16, name: 'Goal 16: Peace, justice and strong institutions' },
   { id: 17, name: 'Goal 17: Partnerships for the goals' },
+]
+
+export const disposalTypeOpts = [
+  { id: 1, name: 'Disposal nr 1' },
+  { id: 2, name: 'Disposal nr 2' },
 ]

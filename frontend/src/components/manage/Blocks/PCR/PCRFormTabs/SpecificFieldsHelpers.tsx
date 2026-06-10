@@ -6,14 +6,11 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { FieldType, OptionsType } from '../../ProjectsListing/interfaces'
 
 // import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-// import Field from '@ors/components/manage/Form/Field'
-// import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-// import {
-//   DateInput,
-//   FormattedNumberInput,
-// } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  DateInput,
+  FormattedNumberInput,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '../../Replenishment/Inputs/constants'
-// import { FieldErrorIndicator } from '../HelperComponents'
 // import {
 //   canEditField,
 //   formatOptions,
@@ -22,9 +19,7 @@ import { STYLE } from '../../Replenishment/Inputs/constants'
 // } from '../utils'
 // import {
 //   ProjectSpecificFields,
-//   FieldType,
 //   FieldHandler,
-//   OptionsType,
 //   SpecificFields,
 // } from '../interfaces'
 // import {
@@ -39,10 +34,11 @@ import { STYLE } from '../../Replenishment/Inputs/constants'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
-// import dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import {
   find,
   isNil,
+  omit,
   //   get,
   //   isObject,
   //   isBoolean,
@@ -53,6 +49,7 @@ import {
 } from 'lodash'
 import {
   defaultProps,
+  defaultPropsSimpleField,
   formatClassName,
   textAreaClassname,
 } from '../../ProjectsListing/constants'
@@ -96,28 +93,17 @@ const getValue = <T,>(
       : sectionData[fieldName]
 }
 
-// const getFieldDefaultProps = (
-//   editableFields: string[],
-//   field: ProjectSpecificFields,
-// ) => {
-//   const fieldName = field.write_field_name
-//   const isOdp = field.table === 'ods_odp' && field.section !== 'Approval'
-
-//   return {
-//     ...{
-//       ...defaultPropsSimpleField,
-//       className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
-//         'w-[125px]': isOdp,
-//         [disabledClassName]: !canEditField(editableFields, fieldName),
-//         '!flex-grow-0': field.data_type === 'date',
-//         '!bg-mlfs-bannerColor': field.is_actual,
-//       }),
-//       containerClassName: cx(defaultPropsSimpleField.containerClassName, {
-//         'w-[125px]': isOdp,
-//       }),
-//     },
-//   }
-// }
+const getFieldDefaultProps = (fieldName: string) => {
+  return {
+    ...{
+      ...defaultPropsSimpleField,
+      className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
+        // 'w-[125px]': isOdp,
+        // '!flex-grow-0': field.data_type === 'date',
+      }),
+    },
+  }
+}
 
 export const changeArrayField: FieldHandler = (
   value,
@@ -350,6 +336,53 @@ export const AutocompleteWidget = <T, W>(
   )
 }
 
+const NumberWidget = <T, W>(
+  data: T,
+  setData: Dispatch<SetStateAction<T>>,
+  sectionIdentifier: keyof T,
+  field: string,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  isDecimal: boolean,
+  indexes?: number[],
+  subFields?: string[],
+) => {
+  const value = getValue(data, sectionIdentifier, field, subFields, indexes)
+  const fieldType = isDecimal ? 'decimal' : 'number'
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <FormattedNumberInput
+          id={field}
+          value={value ?? ''}
+          withoutDefaultValue={true}
+          decimalDigits={fieldType === 'number' ? 0 : 2}
+          onChange={(value) =>
+            changeHandler[fieldType]<T, W>(
+              value,
+              field as keyof W,
+              setData,
+              sectionIdentifier,
+              subFields,
+              indexes,
+            )
+          }
+          {...omit(getFieldDefaultProps(field), 'containerClassName')}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
+}
+
 export const TextAreaWidget = <T, W>(
   data: T,
   setData: Dispatch<SetStateAction<T>>,
@@ -385,6 +418,52 @@ export const TextAreaWidget = <T, W>(
           style={STYLE}
           minRows={7}
         />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
+}
+
+const DateWidget = <T, W>(
+  data: T,
+  setData: Dispatch<SetStateAction<T>>,
+  sectionIdentifier: keyof T,
+  field: string,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  indexes?: number[],
+  subFields?: string[],
+) => {
+  const value = getValue(data, sectionIdentifier, field, subFields, indexes)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <div className="w-40">
+          <DateInput
+            id={field}
+            value={value}
+            formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
+            onChange={(value) =>
+              changeHandler['date']<T, W>(
+                value,
+                field as keyof W,
+                setData,
+                sectionIdentifier,
+                subFields,
+                indexes,
+              )
+            }
+            {...omit(getFieldDefaultProps(field), 'containerClassName')}
+          />
+        </div>
         <FieldErrorIndicator
           errors={
             !isNil(indexes?.[0])
@@ -505,166 +584,14 @@ const BooleanWidget = <T, W>(
 //     </div>
 //   )
 // }
-
-// const NumberWidget = <T,>(
-//   fields: T,
-//   setFields: Dispatch<SetStateAction<T>>,
-//   field: ProjectSpecificFields,
-//   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-//   editableFields: string[],
-//   sectionIdentifier: keyof T = identifier as keyof T,
-//   subField?: string,
-//   index?: number,
-// ) => {
-//   const isApprovalOdp =
-//     field.section === 'Approval' && field.table === 'ods_odp'
-
-//   const fieldName = field.write_field_name
-
-//   const fieldForValue =
-//     isApprovalOdp && isUndefined(fields[sectionIdentifier][fieldName])
-//       ? `computed_${fieldName}`
-//       : fieldName
-//   const value = getValue(
-//     fields,
-//     sectionIdentifier,
-//     fieldForValue,
-//     subField,
-//     index,
-//   )
-
-//   const isDisabledImpactField =
-//     field.section === 'Impact' && !canEditField(editableFields, fieldName)
-//   const isActualImpactField = field.section === 'Impact' && field.is_actual
-
-//   return (
-//     <div
-//       className={cx('flex h-full flex-col', {
-//         'justify-between':
-//           (field.table !== 'ods_odp' && field.section !== 'Header') ||
-//           field.section === 'Approval',
-//       })}
-//     >
-//       <Label
-//         className={cx({
-//           italic: isDisabledImpactField,
-//           '!font-medium': isActualImpactField,
-//         })}
-//       >
-//         {field.label}
-//         {getFieldExtraLabel(isDisabledImpactField, field.label)}
-//       </Label>
-//       <div className="flex items-center">
-//         <FormattedNumberInput
-//           id={fieldName}
-//           value={value ?? ''}
-//           withoutDefaultValue={true}
-//           decimalDigits={field.data_type === 'number' ? 0 : 2}
-//           disabled={!canEditField(editableFields, fieldName)}
-//           onChange={(value) =>
-//             changeHandler[field.data_type]<T, SpecificFields>(
-//               value,
-//               fieldName,
-//               setFields,
-//               sectionIdentifier,
-//               subField,
-//               index,
-//             )
-//           }
-//           {...omit(
-//             getFieldDefaultProps(editableFields, field),
-//             'containerClassName',
-//           )}
-//         />
-//         <div
-//           className={cx({
-//             'w-8': field.section === 'Approval' && field.table === 'ods_odp',
-//           })}
-//         >
-//           <FieldErrorIndicator
-//             errors={
-//               !isNil(index)
-//                 ? (errors as { [key: string]: string[] }[])[index]
-//                 : errors
-//             }
-//             field={field.label}
-//           />
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-
-// const DateWidget = <T,>(
-//   fields: T,
-//   setFields: Dispatch<SetStateAction<T>>,
-//   field: ProjectSpecificFields,
-//   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-//   editableFields: string[],
-//   sectionIdentifier: keyof T = identifier as keyof T,
-//   subField?: string,
-//   index?: number,
-// ) => {
-//   const fieldName = field.write_field_name
-//   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
-
-//   return (
-//     <div>
-//       <Label>{field.label}</Label>
-//       <div className="flex items-center">
-//         <div className="w-40">
-//           <DateInput
-//             id={fieldName}
-//             value={value}
-//             disabled={!canEditField(editableFields, fieldName)}
-//             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
-//             onChange={(value) => {
-//               changeHandler[field.data_type]<T, SpecificFields>(
-//                 value,
-//                 fieldName,
-//                 setFields,
-//                 sectionIdentifier,
-//                 subField,
-//                 index,
-//               )
-
-//               if (fieldName === 'date_completion') {
-//                 changeHandler[field.data_type]<T, SpecificFields>(
-//                   value,
-//                   'project_end_date' as keyof SpecificFields,
-//                   setFields,
-//                   'crossCuttingFields' as keyof T,
-//                   subField,
-//                   index,
-//                 )
-//               }
-//             }}
-//             {...omit(getFieldDefaultProps(editableFields, field), [
-//               'containerClassName',
-//             ])}
-//           />
-//         </div>
-//         <FieldErrorIndicator
-//           errors={
-//             !isNil(index)
-//               ? (errors as { [key: string]: string[] }[])[index]
-//               : errors
-//           }
-//           field={field.label}
-//         />
-//       </div>
-//     </div>
-//   )
-// } */
+ */
 }
 
 export const widgets = {
   drop_down: AutocompleteWidget,
   text_area: TextAreaWidget,
   // simpleText: TextWidget,
-  // number: NumberWidget,
-  // decimal: NumberWidget,
+  number: NumberWidget,
   boolean: BooleanWidget,
-  // date: DateWidget,
+  date: DateWidget,
 }

@@ -7,7 +7,10 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreate from './PCRCreate'
-import { initialOverviewFields } from '../constants'
+import {
+  initialOverviewFields,
+  initialSummaryAndDelaysFieldsEntry,
+} from '../constants'
 import { PCRData, ProjectElementCauseOfDelay } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
@@ -26,6 +29,11 @@ const PCRCreateWrapper = () => {
   const { data: project } = useGetProject(project_id)
 
   const agencies = [1, 2, 3, 4]
+
+  const initialSummaryAndDelaysFields = map(agencies, (agency) => ({
+    ...initialSummaryAndDelaysFieldsEntry,
+    agency,
+  }))
   const initialCausesOfDelayFields = map(agencies, (agency) => ({
     agency,
     project_element: [],
@@ -45,7 +53,7 @@ const PCRCreateWrapper = () => {
 
   const [PCRData, setPCRData] = useState<PCRData>({
     overview: initialOverviewFields,
-    summary_and_delays: [],
+    summary_and_delays: initialSummaryAndDelaysFields,
     results_assessment: [],
     causes_of_delay: initialCausesOfDelayFields,
     lessons_learned: initialLessonsLearnedFields,
@@ -61,6 +69,8 @@ const PCRCreateWrapper = () => {
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
+  console.log(PCRData)
+
   useEffect(() => {
     if (project) {
       setPCRData((prev) => ({
@@ -73,6 +83,20 @@ const PCRCreateWrapper = () => {
           date_of_approval: project.date_approved,
           date_of_completion: project.date_completion,
         },
+        summary_and_delays: map(prev.summary_and_delays, (entry) => ({
+          ...entry,
+          project_code: project.code,
+          project_type: project.project_type?.name,
+          sector: project.sector?.name,
+          tranche: project.tranche,
+          date_approved: project.date_approved,
+          date_completion_actual: project.date_completion,
+          funds_approved: project.total_fund,
+          odp_phase_out_approved: '7',
+          odp_phase_out_actual: '8',
+          hfc_phased_down_approved: '9',
+          hfc_phased_down_actual: '10',
+        })),
       }))
     }
   }, [project])
