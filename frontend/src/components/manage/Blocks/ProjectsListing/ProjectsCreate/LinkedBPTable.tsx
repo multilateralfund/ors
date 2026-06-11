@@ -126,11 +126,7 @@ const LinkedBPTable = ({
         </div>
       ) : null}
       <LatestEndorsedBPActivities
-        {...{
-          projectData,
-          activities,
-          filters,
-        }}
+        {...{ projectData, activities, filters }}
         {...rest}
       />
     </>
@@ -142,12 +138,11 @@ type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
+  mode: string
   project?: ProjectTypeApi
 }
 
-export type LinkableActivity = ApiBPActivity & {
-  selected: boolean
-}
+export type LinkableActivity = ApiBPActivity & { selected: boolean }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const {
@@ -162,6 +157,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   } = props
   const { results, ...restActivities } = activities
   const { bpId, isLinkedToBP } = projectData.bpLinking
+  const { mode } = rest
 
   const { canViewBp } = useContext(PermissionsContext)
   const { editableFields } = useStore((state) => state.projectFields)
@@ -193,10 +189,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
 
         return {
           ...prevData,
-          bpLinking: {
-            ...bpLinking,
-            bpId: crtActivityId,
-          },
+          bpLinking: { ...bpLinking, bpId: crtActivityId },
         }
       })
     }
@@ -204,7 +197,8 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
 
   useEffect(() => {
     const hasResults = formattedResults.length > 0
-    const crtIsLinkedToBP = canEditBp ? hasResults : isLinkedToBP
+    const crtIsLinkedToBP =
+      mode === 'add' && canEditBp ? hasResults : isLinkedToBP
 
     setProjectData((prevData) => ({
       ...prevData,

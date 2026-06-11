@@ -46,7 +46,6 @@ import {
   hasFields,
   getApprovalErrors,
   getAgencyErrorType,
-  canEditField,
   getPostExcomApprovalErrors,
   getFieldData,
   formatOptions,
@@ -87,8 +86,8 @@ const ProjectsCreate = ({
   approvalFields = [],
   specificFieldsLoaded,
   loadedFiles,
-  onBpDataChange,
   bpData,
+  onBpDataChange,
   filesMetaData,
   setFilesMetaData,
   metaProjectId,
@@ -129,7 +128,6 @@ const ProjectsCreate = ({
 
   const {
     projIdentifiers,
-    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -368,7 +366,7 @@ const ProjectsCreate = ({
     }
   }, [myaAllErrors, allMpErrors])
 
-  const { canEditApprovedProjects, canViewBp } = useContext(PermissionsContext)
+  const { canEditApprovedProjects } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
 
   const hasV3EditPermissions =
@@ -390,20 +388,6 @@ const ProjectsCreate = ({
     !!project &&
     project.component &&
     project.component.original_project_id === project.id
-
-  const bpErrorMessage = 'A business plan activity should be selected.'
-  const shouldValidateBp =
-    canViewBp && mode === 'edit' && canEditField(editableFields, 'bp_activity')
-
-  const hasBpDefaultErrors =
-    shouldValidateBp && bpData.hasBpData && !bpLinking.bpId
-
-  const allBpErrors = hasBpDefaultErrors
-    ? {
-        ...bpErrors,
-        bp_activity: [bpErrorMessage],
-      }
-    : bpErrors
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -572,7 +556,6 @@ const ProjectsCreate = ({
                     projIdentifiers.post_excom_decision
                   )) ||
                 hasSectionErrors(postExcomMeetingErrors) ||
-                hasBpDefaultErrors ||
                 hasSectionErrors(bpErrors)) && (
                 <SectionErrorIndicator errors={[]} />
               )}
@@ -591,13 +574,13 @@ const ProjectsCreate = ({
             postExComUpdate,
             isV3ProjectEditable,
             specificFieldsLoaded,
-            onBpDataChange,
             bpData,
+            onBpDataChange,
+            bpErrors,
           }}
           areNextSectionsDisabled={areFieldsDisabled}
           isNextBtnEnabled={canLinkToBp}
           errors={{ ...projIdentifiersErrors, ...postExcomMeetingErrors }}
-          bpErrors={allBpErrors}
         />
       ),
       errors: [
@@ -618,7 +601,6 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(hasBpDefaultErrors ? [{ message: bpErrorMessage }] : []),
       ],
     },
     {
