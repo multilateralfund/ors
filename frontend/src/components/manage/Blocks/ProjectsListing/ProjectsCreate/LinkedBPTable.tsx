@@ -126,11 +126,7 @@ const LinkedBPTable = ({
         </div>
       ) : null}
       <LatestEndorsedBPActivities
-        {...{
-          projectData,
-          activities,
-          filters,
-        }}
+        {...{ projectData, activities, filters }}
         {...rest}
       />
     </>
@@ -142,12 +138,11 @@ type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
   bpData: BpDataProps
   onBpDataChange: (bpData: BpDataProps) => void
+  mode: string
   project?: ProjectTypeApi
 }
 
-export type LinkableActivity = ApiBPActivity & {
-  selected: boolean
-}
+export type LinkableActivity = ApiBPActivity & { selected: boolean }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const {
@@ -162,6 +157,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   } = props
   const { results, ...restActivities } = activities
   const { bpId, isLinkedToBP } = projectData.bpLinking
+  const { mode } = rest
 
   const { canViewBp } = useContext(PermissionsContext)
   const { editableFields } = useStore((state) => state.projectFields)
@@ -179,32 +175,32 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const areActivitiesLoaded = restActivities.loaded
 
   useEffect(() => {
-    const isActivityAvailable = find(results, (result) => result.id === bpId)
+    if (isLinkedToBP) {
+      const isActivityAvailable = find(results, (result) => result.id === bpId)
 
-    if (areActivitiesLoaded && !isActivityAvailable) {
-      const crtActivityId =
-        find(
-          results,
-          ({ initial_id }) => initial_id === project?.bp_activity?.initial_id,
-        )?.id ?? null
+      if (areActivitiesLoaded && !isActivityAvailable) {
+        const crtActivityId =
+          find(
+            results,
+            ({ initial_id }) => initial_id === project?.bp_activity?.initial_id,
+          )?.id ?? null
 
-      setProjectData((prevData) => {
-        const { bpLinking } = prevData
+        setProjectData((prevData) => {
+          const { bpLinking } = prevData
 
-        return {
-          ...prevData,
-          bpLinking: {
-            ...bpLinking,
-            bpId: crtActivityId,
-          },
-        }
-      })
+          return {
+            ...prevData,
+            bpLinking: { ...bpLinking, bpId: crtActivityId },
+          }
+        })
+      }
     }
   }, [areActivitiesLoaded])
 
   useEffect(() => {
     const hasResults = formattedResults.length > 0
-    const crtIsLinkedToBP = canEditBp ? hasResults : isLinkedToBP
+    const crtIsLinkedToBP =
+      mode === 'add' && canEditBp ? hasResults : isLinkedToBP
 
     setProjectData((prevData) => ({
       ...prevData,
