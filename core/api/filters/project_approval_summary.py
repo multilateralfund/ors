@@ -37,4 +37,7 @@ class ProjectApprovalSummaryFilter(filters.FilterSet):
         if value.lower() == "approved":
             queryset = queryset.filter(version=3)
 
+        elif value.lower() == "recommended":
+            queryset = queryset.filter(latest_project=None)
+
         return queryset
