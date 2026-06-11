@@ -1,3 +1,4 @@
+import datetime
 from functools import cached_property
 from functools import partial
 from itertools import chain
@@ -16,6 +17,7 @@ from django.db.models.fields import DateTimeField
 from django.db.models.fields.related import ForeignKey
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.fields.reverse_related import ForeignObjectRel
+from django.utils import timezone
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import format_iso_date
@@ -41,9 +43,16 @@ def get_field_value(project, header):
     return getattr(context, field_name, "")
 
 
-def get_value_date(project, header):
+def get_value_date(project, header, date_format="%d/%m/%Y"):
     value = get_field_value(project, header)
-    return format_iso_date(value)
+    if date_format:
+        return format_iso_date(value, date_format)
+
+    elif value and isinstance(value, datetime.datetime):
+        if timezone.is_aware(value):
+            value = timezone.localtime(value).replace(tzinfo=None)
+
+    return value
 
 
 def get_value_boolean(project, header):
