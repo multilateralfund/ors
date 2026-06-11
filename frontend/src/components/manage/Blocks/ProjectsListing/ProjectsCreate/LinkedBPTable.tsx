@@ -175,23 +175,25 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const areActivitiesLoaded = restActivities.loaded
 
   useEffect(() => {
-    const isActivityAvailable = find(results, (result) => result.id === bpId)
+    if (isLinkedToBP) {
+      const isActivityAvailable = find(results, (result) => result.id === bpId)
 
-    if (areActivitiesLoaded && !isActivityAvailable) {
-      const crtActivityId =
-        find(
-          results,
-          ({ initial_id }) => initial_id === project?.bp_activity?.initial_id,
-        )?.id ?? null
+      if (areActivitiesLoaded && !isActivityAvailable) {
+        const crtActivityId =
+          find(
+            results,
+            ({ initial_id }) => initial_id === project?.bp_activity?.initial_id,
+          )?.id ?? null
 
-      setProjectData((prevData) => {
-        const { bpLinking } = prevData
+        setProjectData((prevData) => {
+          const { bpLinking } = prevData
 
-        return {
-          ...prevData,
-          bpLinking: { ...bpLinking, bpId: crtActivityId },
-        }
-      })
+          return {
+            ...prevData,
+            bpLinking: { ...bpLinking, bpId: crtActivityId },
+          }
+        })
+      }
     }
   }, [areActivitiesLoaded])
 
