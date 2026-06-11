@@ -48,7 +48,7 @@ def get_value_date(project, header, date_format="%d/%m/%Y"):
     if date_format:
         return format_iso_date(value, date_format)
 
-    elif value and isinstance(value, datetime.datetime):
+    if value and isinstance(value, datetime.datetime):
         if timezone.is_aware(value):
             value = timezone.localtime(value).replace(tzinfo=None)
 
