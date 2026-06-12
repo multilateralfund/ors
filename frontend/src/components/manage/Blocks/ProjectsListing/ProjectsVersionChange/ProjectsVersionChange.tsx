@@ -144,7 +144,7 @@ const ProjectsVersionChange = ({
           isLoaded={loaded}
           canRefreshStatus={!isSaveSuccessful && !!hasErrors}
         />
-        {!isSubmit && (
+        {!isSubmit && !isSaveSuccessful && (
           <FormControlLabel
             className="w-fit"
             label="Please confirm this has been cleared by Quality Assurance before recommending."

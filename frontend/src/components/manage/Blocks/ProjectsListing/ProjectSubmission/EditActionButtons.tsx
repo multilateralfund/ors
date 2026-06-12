@@ -15,7 +15,6 @@ import {
   projectPhaseOutFields,
 } from '../constants'
 import {
-  canEditField,
   checkInvalidValue,
   formatApprovalData,
   formatFiles,
@@ -40,7 +39,6 @@ import {
   ActionButtons,
   RelatedProjectsType,
   ProjectSpecificFields,
-  BpDataProps,
   FileMetaDataType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
@@ -75,7 +73,6 @@ const EditActionButtons = ({
   approvalFields = [],
   specificFieldsLoaded,
   postExComUpdate,
-  bpData,
   filesMetaData,
   shouldValidateTotalFund,
 }: ActionButtons & {
@@ -86,7 +83,6 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
-  bpData: BpDataProps
   shouldValidateTotalFund: boolean
 }) => {
   const [_, setLocation] = useLocation()
@@ -99,7 +95,6 @@ const EditActionButtons = ({
     canRecommendProjects,
     canApproveProjects,
     canEditApprovedProjects,
-    canViewBp,
   } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
 
@@ -108,9 +103,7 @@ const EditActionButtons = ({
   )
 
   const { defaultMpErrors } = useStore((state) => state.mpData)
-  const { projectFields, editableFields } = useStore(
-    (state) => state.projectFields,
-  )
+  const { projectFields } = useStore((state) => state.projectFields)
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
@@ -134,7 +127,6 @@ const EditActionButtons = ({
   } = project
   const {
     projIdentifiers,
-    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -262,14 +254,7 @@ const EditActionButtons = ({
     (errors) => errors.length > 0,
   )
 
-  const disableSubmit =
-    !specificFieldsLoaded ||
-    isSubmitDisabled ||
-    hasErrors ||
-    (canViewBp &&
-      canEditField(editableFields, 'bp_activity') &&
-      bpData.hasBpData &&
-      !bpLinking.bpId)
+  const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
 
   const disableUpdateForV3AndWithdrawn =
     editable_for_actual_fields && !editable && !postExComUpdate
@@ -306,37 +291,55 @@ const EditActionButtons = ({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const handleErrors = async (error: any, type?: string) => {
-    const errors =
-      error && typeof error.json === 'function' ? await error.json() : {}
+    let errors: any = {}
 
-    if (error.status === 400) {
-      setErrors(errors)
+    if (error instanceof Response) {
+      const contentType = error.headers.get('content-type') || ''
 
-      const nonFieldErrors = getNonFieldErrors(errors)
-      if (nonFieldErrors.length > 0) {
-        setInlineMessage({
-          type: 'error',
-          errorMessages: nonFieldErrors,
+      if (contentType.includes('application/json')) {
+        errors = await error.json()
+      } else {
+        if (error.status === 413) {
+          setFileErrors(
+            'Uploaded files are too large. Maximum file size allowed is 170MB.',
+          )
+        }
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
         })
+
+        return
       }
 
-      if (errors?.files) {
-        setFileErrors(errors.files)
-      }
+      if (error.status === 400) {
+        setErrors(errors)
 
-      if (errors?.metadata) {
-        setFileErrors(errors.metadata)
-      }
+        const nonFieldErrors = getNonFieldErrors(errors)
+        if (nonFieldErrors.length > 0) {
+          setInlineMessage({
+            type: 'error',
+            errorMessages: nonFieldErrors,
+          })
+        }
 
-      if (errors?.details) {
-        setInlineMessage({
-          type: 'error',
-          message: errors.details,
-        })
-      }
+        if (errors?.files) {
+          setFileErrors(errors.files)
+        }
 
-      if (type === 'files' && errors?.error) {
-        setFileErrors(errors.error)
+        if (errors?.metadata) {
+          setFileErrors(errors.metadata)
+        }
+
+        if (errors?.details) {
+          setInlineMessage({
+            type: 'error',
+            message: errors.details,
+          })
+        }
+
+        if (type === 'files' && errors?.error) {
+          setFileErrors(errors.error)
+        }
       }
     }
 

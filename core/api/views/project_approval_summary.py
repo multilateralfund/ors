@@ -21,6 +21,9 @@ class ProjectApprovalSummaryViewSet(
 ):
     """ViewSet for approval summary."""
 
+    HCFC_NUMBER_FORMAT = "#,##0.0;-#,##0.0;;@"
+    HFC_NUMBER_FORMAT = "#,##0;-#,##0;;@"
+
     filterset_class = ProjectApprovalSummaryFilter
     permission_classes = (HasProjectV2ApproveAccess,)
 
@@ -45,6 +48,9 @@ class ProjectApprovalSummaryViewSet(
         serializer = ApprovalSummarySerializer(queryset)
         return serializer.data
 
+    def _is_approved_submission_status(self):
+        return self.request.query_params.get("submission_status") == "approved"
+
     def list(self, request, *args, **kwargs):
         return Response(self._extract_data())
 
@@ -66,6 +72,12 @@ class ProjectApprovalSummaryViewSet(
                 break
         return result
 
+    def _set_number_format(self, cell, column_name):
+        if column_name == "hcfc":
+            cell.number_format = self.HCFC_NUMBER_FORMAT
+        elif column_name == "hfc":
+            cell.number_format = self.HFC_NUMBER_FORMAT
+
     def _write_section(self, name, sheet, rows, data, mapping):
         found_now = self._find_row(name, rows)
         for sector, options in mapping.items():
@@ -79,14 +91,18 @@ class ProjectApprovalSummaryViewSet(
                 data_from = data[options["data_key"]]
                 for w_idx, c in enumerate(options["columns"], start=writing_offset):
                     if c is not None:
-                        sheet[idx][w_idx].value = data_from.get(c) or None
+                        cell = sheet[idx][w_idx]
+                        cell.value = data_from.get(c) or None
+                        self._set_number_format(cell, c)
 
     def _write_full_row(self, sheet, row_idx, name, data, col_offset=1):
         columns = self._make_row()
         sheet[row_idx][col_offset].value = name
         for w_idx, c in enumerate(columns, start=col_offset + 1):
             if c is not None:
-                sheet[row_idx][w_idx].value = data[c]
+                cell = sheet[row_idx][w_idx]
+                cell.value = data[c]
+                self._set_number_format(cell, c)
 
     @staticmethod
     def _duplicate_row(
@@ -112,6 +128,10 @@ class ProjectApprovalSummaryViewSet(
     def export(self, request, *args, **kwargs):
         wb = openpyxl.open(self._template_path)
         sheet = wb.worksheets[0]
+
+        if self._is_approved_submission_status():
+            sheet["E3"] = "Funds approved (US$)"
+
         rows = [
             "".join(c.value for c in r if c.value).strip().lower() for r in sheet.rows
         ]

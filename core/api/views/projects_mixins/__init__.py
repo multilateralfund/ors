@@ -1,5 +1,6 @@
 from .project_approve_reject import ProjectApproveRejectMixin
 from .project_association import ProjectAssociationMixin
+from .project_dashboard_export import ProjectDashboardExportMixin
 from .project_export import ProjectExportMixin
 from .project_file_create import ProjectFileCreateMixin
 from .project_previous_tranches import ProjectListPreviousTranchesMixin

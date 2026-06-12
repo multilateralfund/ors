@@ -117,18 +117,18 @@ const ColsFundsRecommended = (props: {
 }) => {
   const { data, cellClass } = props
 
-  const dollarValueOrNull = useCallback(
-    (value: number | string) => (value ? `$${formatNumberValue(value)}` : null),
+  const numberValueOrNull = useCallback(
+    (value: number | string) => (value ? formatNumberValue(value) : null),
     [],
   )
 
   return (
     <>
-      <td className={cellClass}>{dollarValueOrNull(data.project_funding)}</td>
+      <td className={cellClass}>{numberValueOrNull(data.project_funding)}</td>
       <td className={cellClass}>
-        {dollarValueOrNull(data.project_support_cost)}
+        {numberValueOrNull(data.project_support_cost)}
       </td>
-      <td className={cellClass}>{dollarValueOrNull(data.total)}</td>
+      <td className={cellClass}>{numberValueOrNull(data.total)}</td>
     </>
   )
 }
@@ -236,8 +236,16 @@ const RowSectionWorkProgrammeAmendment = (props: {
   )
 }
 
-const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
-  const { previewData } = props
+const ApprovalSummaryPreview = (props: {
+  previewData: ApiApprovalSummary
+  submissionStatus: string
+}) => {
+  const { previewData, submissionStatus } = props
+  const fundsHeader =
+    submissionStatus === 'approved'
+      ? 'Funds approved (US$)'
+      : 'Funds recommended (US$)'
+
   return (
     <Box className="flex justify-center shadow-none">
       <table className="border-collapse sm:w-full md:w-3/5">
@@ -246,7 +254,7 @@ const ApprovalSummaryPreview = (props: { previewData: ApiApprovalSummary }) => {
             <th>Sector</th>
             <th>HCFC</th>
             <th>HFC</th>
-            <th colSpan={3}>Funds reccommended (US $)</th>
+            <th colSpan={3}>{fundsHeader}</th>
           </tr>
           <tr>
             <th></th>
@@ -466,7 +474,12 @@ const ApprovalSummary = () => {
           hasPreviewData={!!previewData}
         />
         <Divider className="my-2 border-0" />
-        {previewData && <ApprovalSummaryPreview previewData={previewData} />}
+        {previewData && (
+          <ApprovalSummaryPreview
+            previewData={previewData}
+            submissionStatus={requestParams.submission_status}
+          />
+        )}
         <Divider className="my-2 border-0" />
         {previewData && (
           <ApprovalSummaryPreviewTable projectsData={previewData.projects} />

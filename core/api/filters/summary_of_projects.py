@@ -3,6 +3,7 @@ from django_filters.widgets import CSVWidget
 
 from core.models import Agency
 from core.models import Country
+from core.models import FundingWindow
 from core.models import Project
 from core.models import ProjectCluster
 from core.models import ProjectSector
@@ -67,6 +68,13 @@ class SummaryOfProjectsFilter(filters.FilterSet):
 
     tranche = NumberInFilter(field_name="tranche", lookup_expr="in")
 
+    funding_window_id = filters.ModelMultipleChoiceFilter(
+        field_name="funding_window",
+        queryset=FundingWindow.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by funding window. Multiple values can be separated by comma.",
+    )
+
     class Meta:
         model = Project
         fields = [
@@ -79,4 +87,5 @@ class SummaryOfProjectsFilter(filters.FilterSet):
             "sector_id",
             "agency_id",
             "tranche",
+            "funding_window_id",
         ]

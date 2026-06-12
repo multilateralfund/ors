@@ -71,6 +71,7 @@ fabric.properties
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+env.js
 
 
 ### Linux template
@@ -442,6 +443,7 @@ cython_debug/
 /.fs
 
 /core/import_data_v2/resources/projects/migration_2026/
+/core/import_data_v2/resources/enterprises/
 
 /docker-compose.override.yml
 

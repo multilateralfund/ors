@@ -5,6 +5,7 @@ from datetime import datetime
 from django.db import models
 
 from django.db.models import Q, F, QuerySet
+from django.db.models.functions import Coalesce
 from openpyxl.utils import get_column_letter
 from rest_framework.exceptions import ValidationError
 
@@ -621,16 +622,24 @@ class SummaryStatusOfContributionsAggregator:
                     ),
                     default=0,
                 )
-                + models.Subquery(
-                    BilateralAssistance.objects.exclude(
-                        year__in=self.bilateral_triennial_years
-                    )
-                    .filter(
-                        country=models.OuterRef("pk"),
-                    )
-                    .values("country__pk")
-                    .annotate(total=models.Sum("amount", default=0))
-                    .values("total")[:1]
+                # Coalesce the subquery: a country whose only bilateral rows are
+                # inside the excluded 1994-1999 band (e.g. Finland's 1996 row)
+                # produces no groups here, so the bare subquery returns NULL and
+                # `Sum(...) + NULL = NULL`, zeroing the whole annotation.
+                + Coalesce(
+                    models.Subquery(
+                        BilateralAssistance.objects.exclude(
+                            year__in=self.bilateral_triennial_years
+                        )
+                        .filter(
+                            country=models.OuterRef("pk"),
+                        )
+                        .values("country__pk")
+                        .annotate(total=models.Sum("amount", default=0))
+                        .values("total")[:1]
+                    ),
+                    models.Value(0),
+                    output_field=models.DecimalField(),
                 ),
                 promissory_notes=models.Sum(
                     "triennialcontributionview__promissory_notes", default=0
@@ -639,11 +648,15 @@ class SummaryStatusOfContributionsAggregator:
                     "triennialcontributionview__current_outstanding_contributions",
                     default=0,
                 ),
-                gain_loss=models.Subquery(
-                    FermGainLoss.objects.filter(country=models.OuterRef("pk"))
-                    .values("country__pk")
-                    .annotate(total=models.Sum("amount", default=0))
-                    .values("total")[:1]
+                gain_loss=Coalesce(
+                    models.Subquery(
+                        FermGainLoss.objects.filter(country=models.OuterRef("pk"))
+                        .values("country__pk")
+                        .annotate(total=models.Sum("amount", default=0))
+                        .values("total")[:1]
+                    ),
+                    models.Value(0),
+                    output_field=models.DecimalField(),
                 ),
             )
             .order_by("name")

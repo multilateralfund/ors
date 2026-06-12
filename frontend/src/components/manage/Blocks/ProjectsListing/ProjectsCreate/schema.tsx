@@ -43,9 +43,7 @@ const bpLinkColumnDefs = (
                   )
                 }
               }}
-              sx={{
-                color: 'black',
-              }}
+              sx={{ color: 'black' }}
             />
           ),
         },

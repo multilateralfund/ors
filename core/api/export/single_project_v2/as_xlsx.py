@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Annotated
 
 import openpyxl
@@ -14,6 +15,7 @@ from core.api.export.single_project_v2.xlsx_headers import (
 from core.api.export.single_project_v2.helpers import get_activity_data
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.utils import workbook_response
+from core.models import AlternativeTechnology
 from core.models import Project, ProjectField
 from core.models import ProjectSpecificFields
 from core.models import User
@@ -123,6 +125,18 @@ class ProjectsV2ProjectExport:
                 sheet = self.add_sheet(sheet_name)
                 ProjectWriter(sheet, headers).write(data)
 
+    def _prepare_ods_odp(self, ods_odp, data):
+        result = deepcopy(ods_odp)
+        result["products_manufactured"] = data.get("products_manufactured")
+        ods_replacement_rext = result.get("ods_replacement_text")
+        ods_replacement = result.get("ods_replacement")
+
+        if not ods_replacement_rext and ods_replacement:
+            result["ods_replacement_text"] = AlternativeTechnology.objects.get(
+                id=ods_replacement
+            ).name
+        return result
+
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
             cluster=self.project.cluster,
@@ -142,10 +156,7 @@ class ProjectsV2ProjectExport:
                 project_specific_fields_obj,
                 "Substance Details",
                 "SI - Substance details",
-                [
-                    {**d, "products_manufactured": data.get("products_manufactured")}
-                    for d in data.get("ods_odp", [])
-                ],
+                [self._prepare_ods_odp(d, data) for d in data.get("ods_odp", [])],
             )
 
             self._write_project_specific_fields(

@@ -1,6 +1,3 @@
-from django.db.models import Max
-from django.db.models import Min
-from django.db.models import Sum
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
@@ -39,28 +36,20 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
     def _get_computed_values(self, obj):
         if self._cache_computed is None:
-            self._cache_computed = obj.projects.aggregate(
-                min_start=Min("project_start_date"),
-                max_end=Max("project_end_date"),
-                total_funding=Sum("total_fund"),
-                total_support=Sum("support_cost_psc"),
-                phase_out_co2_eq_t=Sum("ods_odp__co2_mt"),
-                phase_out_odp=Sum("ods_odp__odp"),
-                phase_out_mt=Sum("ods_odp__phase_out_mt"),
-            )
+            self._cache_computed = obj.get_computed_mya_values()
         return self._cache_computed
 
     def get_start_date(self, obj):
-        return self._get_computed_values(obj)["min_start"]
+        return self._get_computed_values(obj)["start_date"]
 
     def get_end_date(self, obj):
-        return self._get_computed_values(obj)["max_end"]
+        return self._get_computed_values(obj)["end_date"]
 
     def get_project_funding(self, obj):
-        return self._get_computed_values(obj)["total_funding"]
+        return self._get_computed_values(obj)["project_funding"]
 
     def get_support_cost(self, obj):
-        return self._get_computed_values(obj)["total_support"]
+        return self._get_computed_values(obj)["support_cost"]
 
     def get_phase_out_co2_eq_t(self, obj):
         return self._get_computed_values(obj)["phase_out_co2_eq_t"]
@@ -73,7 +62,6 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
 
 class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
-
     computed_field_data = serializers.SerializerMethodField()
     field_data = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
@@ -96,7 +84,7 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
     def get_projects(self, obj):
         # only approved projects are considered part of the meta project
-        approved_projects = obj.projects.filter(submission_status__name="Approved")
+        approved_projects = obj.approved_mya_projects_queryset()
         return ProjectListV2Serializer(approved_projects, many=True).data
 
     def get_possible_projects(self, obj):
@@ -134,10 +122,24 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
         return MetaProjectComputedFieldsSerializer(obj).data
 
     def get_lead_agency(self, obj):
-        lead_agency = obj.projects.first().lead_agency
-        if not lead_agency:
+        lead_agency_project = obj.first_approved_mya_project()
+        if not lead_agency_project or not lead_agency_project.lead_agency:
             return None
-        return AgencySerializer(lead_agency).data
+        return AgencySerializer(lead_agency_project.lead_agency).data
+
+    def field_data_with_computed_fallbacks(self):
+        result = {}
+
+        field_data = self.data.get("field_data", {})
+        computed_data = self.data.get("computed_field_data", {})
+
+        for field_name, field_info in field_data.items():
+            value = field_info["value"]
+            if value is None and field_name in computed_data:
+                value = computed_data[field_name]
+            result[field_name] = value
+
+        return result
 
 
 class MetaProjectMyaSerializer(serializers.ModelSerializer):
@@ -160,8 +162,10 @@ class MetaProjectMyaSerializer(serializers.ModelSerializer):
         ]
 
     def get_lead_agency(self, obj):
-        lead_agency = obj.projects.first().lead_agency
-        return AgencySerializer(lead_agency).data
+        lead_agency_project = obj.first_approved_mya_project()
+        if not lead_agency_project or not lead_agency_project.lead_agency:
+            return None
+        return AgencySerializer(lead_agency_project.lead_agency).data
 
     def get_clusters(self, obj):
         clusters = set()

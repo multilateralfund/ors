@@ -3,9 +3,6 @@ from copy import copy
 from typing import TYPE_CHECKING
 
 import openpyxl
-from django.db.models import F
-from django.db.models import OuterRef
-from django.db.models import Subquery
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 
@@ -14,7 +11,6 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.single_project_v2.helpers import format_iso_date
 from core.api.utils import workbook_response
 from core.models import MetaProject
-from core.models import Project
 
 if TYPE_CHECKING:
     from core.api.views import ProjectV2ViewSet
@@ -223,6 +219,15 @@ class MyaExport:
     wb: "openpyxl.Workbook"
     sheet: "Worksheet"
     view: "ProjectV2ViewSet"
+    computed_fields = {
+        "start_date",
+        "end_date",
+        "project_funding",
+        "support_cost",
+        "phase_out_co2_eq_t",
+        "phase_out_odp",
+        "phase_out_mt",
+    }
 
     def __init__(self, view):
         self.view = view
@@ -235,28 +240,52 @@ class MyaExport:
         self.wb = wb
         self.sheet = sheet
 
-    def export_xls(self):
-        self.setup_workbook()
-        first_project = Project.objects.filter(meta_project=OuterRef("pk")).order_by(
-            "id"
-        )[:1]
-        meta_projects = (
-            MetaProject.objects.filter(
-                type=MetaProject.MetaProjectType.MYA, is_draft=False
-            )
+    def get_meta_projects_queryset(self):
+        return (
+            MetaProject.objects.for_mya_export()
+            .with_approved_mya_projects()
+            .select_related("country", "cluster")
             .order_by()
-            .distinct()
-            .values(
-                *[h["id"] for h in HEADERS if h["id"]],
-                country_name=F("country__name"),
-                cluster_name=F("cluster__name"),
-                lead_agency_name=Subquery(
-                    first_project.values("lead_agency__name")[:1],
-                ),
-            )
         )
 
+    def get_meta_project_value(self, meta_project, field_id, computed):
+        val = getattr(meta_project, field_id)
+
+        if val is None and field_id in self.computed_fields:
+            val = computed.get(field_id)
+
+        return val
+
+    def get_meta_project_row(self, meta_project):
+        computed = meta_project.get_computed_mya_values()
+        first_project = meta_project.first_approved_mya_project()
+        row = {
+            "country_name": meta_project.country.name if meta_project.country else None,
+            "cluster_name": meta_project.cluster.name if meta_project.cluster else None,
+            "lead_agency_name": (
+                first_project.lead_agency.name
+                if first_project and first_project.lead_agency
+                else None
+            ),
+        }
+
+        for header in HEADERS:
+            if header["id"] not in row:
+                row[header["id"]] = self.get_meta_project_value(
+                    meta_project, header["id"], computed
+                )
+
+        return row
+
+    def get_meta_project_rows(self):
+        return [
+            self.get_meta_project_row(meta_project)
+            for meta_project in self.get_meta_projects_queryset()
+        ]
+
+    def export_xls(self):
+        self.setup_workbook()
         writer = MyaWriter(self.sheet, HEADERS)
-        writer.write(meta_projects)
+        writer.write(self.get_meta_project_rows())
         timestamp = datetime.today().strftime("%Y.%m")
         return workbook_response(f"{timestamp} MYA warehouse", self.wb)

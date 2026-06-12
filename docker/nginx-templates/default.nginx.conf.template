@@ -25,7 +25,7 @@ server {
         expires 365d;
     }
 
-    location ~ ^/(admin|api|__debug__)/ {
+    location ~ ^/(admin|api|__debug__|oauth2)/ {
         client_max_body_size 174m;
         include /etc/nginx/conf.d/proxy_pass_backend;
     }

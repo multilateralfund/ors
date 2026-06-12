@@ -58,7 +58,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
     METAPROJECT_FIELD_TITLES = {
-        "end_date": "End date (MYA)",
+        "end_date": "MYA Completion Date",
     }
 
     def __init__(
@@ -99,8 +99,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
             [
                 {
                     "id": "fund_transferred",
-                    "headerName": "Fund transferred",
+                    "headerName": "Total Fund Adjustments",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self.calc_sum_total_fund_transferred(
                         project
@@ -108,8 +109,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 },
                 {
                     "id": "psc_transferred",
-                    "headerName": "PSC transferred",
+                    "headerName": "Total Support Cost Adjustments",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self.calc_sum_total_psc_transferred(
                         project
@@ -117,15 +119,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 },
                 {
                     "id": "actual_fund",
-                    "headerName": "Actual funds",
+                    "headerName": "Total Funds Approved",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self._p_actual_fund(project),
                 },
                 {
                     "id": "actual_psc",
-                    "headerName": "Actual PSC",
+                    "headerName": "Total Support Costs Approved",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self._p_actual_psc(project),
                 },
@@ -133,6 +137,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "apr_funds_disbursed",
                     "headerName": "Total Funds Disbursed",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "funds_disbursed", None
@@ -142,6 +147,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "apr_support_cost_disbursed",
                     "headerName": "Total Support Costs Disbursed",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "support_cost_disbursed", None
@@ -151,6 +157,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "interest",
                     "headerName": "Interest",
                     "type": "number",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self.calc_sum_interest(project),
                 },
@@ -164,7 +171,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "substance_type",
                 ],
                 title_overrides={
-                    "substance_type": "Substance type",
+                    "substance_type": "Substance",
                 },
             )
         )
@@ -182,7 +189,15 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "total_phase_out_metric_tonnes": "Total MT Approved",
                     "total_phase_out_co2_tonnes": "Total CO2-eq Approved",
                 },
-                id_suffix="ods_total",
+                header_overrides={
+                    "total_phase_out_odp_tonnes": {
+                        "cell_format": "#,##0.0;-#,##0.0;;@"
+                    },
+                    "total_phase_out_metric_tonnes": {
+                        "cell_format": "#,##0.0;-#,##0.0;;@"
+                    },
+                    "total_phase_out_co2_tonnes": {"cell_format": "#,##0;-#,##0;;@"},
+                },
             )
         )
 
@@ -191,6 +206,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "apr_odp_actual",
                     "headerName": "Total ODP Actual",
+                    "cell_format": "#,##0.0;-#,##0.0;;@",
                     "align": "right",
                     "method": lambda project, _: self._apr_phase_out_total(
                         self._get_latest_apr(project),
@@ -201,6 +217,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "apr_mt_actual",
                     "headerName": "Total MT Actual",
+                    "cell_format": "#,##0.0;-#,##0.0;;@",
                     "align": "right",
                     "method": lambda project, _: self._apr_phase_out_total(
                         self._get_latest_apr(project),
@@ -211,6 +228,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 {
                     "id": "apr_co2_actual",
                     "headerName": "Total CO2-eq Actual",
+                    "cell_format": "#,##0;-#,##0;;@",
                     "align": "right",
                     "method": lambda project, _: self._apr_phase_out_total(
                         self._get_latest_apr(project),
@@ -233,18 +251,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "project_duration",
                     "date_completion",
                 ],
+                title_overrides={
+                    "project_duration": "Duration (Months)",
+                    "date_completion": "Approved Date Completion",
+                },
+                header_overrides={
+                    "date_completion": {
+                        "cell_format": "MMM-YYYY",
+                    },
+                },
             )
-        )
-
-        headers.append(
-            {
-                "id": "extended_date_completion",
-                "headerName": "Extended date of completion",
-                "type": "date",
-                "method": lambda project, _: self.get_extended_date_of_completion(
-                    project
-                ),
-            },
         )
 
         headers.extend(
@@ -253,30 +269,49 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 source="meta_project",
                 include_names=["end_date"],
                 title_overrides=self.METAPROJECT_FIELD_TITLES,
+                header_overrides={
+                    "end_date": {
+                        "cell_format": "MMM-YYYY",
+                    },
+                },
             )
+        )
+
+        headers.append(
+            {
+                "id": "extended_date_completion",
+                "headerName": "Extended Date",
+                "type": "date",
+                "cell_format": "MMM-YYYY",
+                "method": lambda project, _: self.get_extended_date_of_completion(
+                    project
+                ),
+            },
         )
 
         headers.extend(
             [
                 {
                     "id": "apr_date_completion_revised",
-                    "headerName": "Date completion revised",
+                    "headerName": "Date Completion Revised",
                     "type": "date",
+                    "cell_format": "MMM-YYYY",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "date_planned_completion", None
                     ),
                 },
                 {
                     "id": "apr_date_completed",
-                    "headerName": "Date completed",
+                    "headerName": "Date Completed",
                     "type": "date",
+                    "cell_format": "MMM-YYYY",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "date_actual_completion", None
                     ),
                 },
                 {
                     "id": "apr_date_financially_completed",
-                    "headerName": "Date financially completed",
+                    "headerName": "Date Financially Completed",
                     "type": "date",
                     "method": lambda project, _: getattr(
                         self._get_latest_apr(project), "date_financial_completion", None
@@ -290,8 +325,13 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 self.project_fields,
                 include_names=["transfer_meeting", "transfer_decision"],
                 title_overrides={
-                    "transfer_meeting": "Transfer meeting",
-                    "transfer_decision": "Transfer decision",
+                    "transfer_meeting": "Transfer Meeting",
+                    "transfer_decision": "Transfer Decision",
+                },
+                header_overrides={
+                    "transfer_meeting": {
+                        "method": partial(get_value_fk, None, attr_name="number")
+                    }
                 },
             )
         )
@@ -299,7 +339,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         headers.append(
             {
                 "id": "transferred_from",
-                "headerName": "Transferred from",
+                "headerName": "Agency Transferred From",
                 "method": lambda project, _: (
                     project.transferred_from.agency.name
                     if project.transferred_from
@@ -377,9 +417,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "number_of_production_lines_assisted_actual",
                     "ad_hoc_pcr",
                     "pcr_waived",
-                    "total_phase_out_metric_tonnes",
-                    "total_phase_out_odp_tonnes",
-                    "total_phase_out_co2_tonnes",
                     "total_number_of_technicians_trained",
                     "total_number_of_technicians_trained_actual",
                     "number_of_female_technicians_trained",
@@ -594,7 +631,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": "metacode",
-                "headerName": "Metacode",
+                "headerName": "Meta Code",
                 "method": lambda project, _: project.metacode,
             },
             {
@@ -605,9 +642,18 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": "code_legacy",
-                "headerName": "Legacy code",
+                "headerName": "Legacy Code",
                 "column_width": self.COLUMN_WIDTH * 2,
                 "method": lambda project, _: project.legacy_code,
+            },
+            {
+                "id": "project_category",
+                "headerName": "Category",
+                "method": lambda project, _: (
+                    {"Individual": "IND", "Multi-year agreement": "MYA"}.get(
+                        project.category, project.category
+                    )
+                ),
             },
             {
                 "id": "agency",
@@ -616,7 +662,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": "lead_agency",
-                "headerName": "Lead agency",
+                "headerName": "Lead Agency",
                 "method": partial(get_value_fk, None),
             },
             {
@@ -643,12 +689,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": "sector_legacy",
-                "headerName": "Sector legacy",
+                "headerName": "Sector Legacy",
                 "method": lambda project, _: project.sector_legacy,
             },
             {
                 "id": "subsectors_list",
-                "headerName": "Sub-sector(s)",
+                "headerName": "Subsector",
                 "column_width": self.COLUMN_WIDTH * 1.5,
                 "method": lambda project, _: ", ".join(
                     subsector.name for subsector in project.subsectors.all()
@@ -656,24 +702,24 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": "subsector_legacy",
-                "headerName": "Subsector legacy",
+                "headerName": "Subsector Legacy",
                 "method": lambda project, _: project.subsector_legacy,
             },
             {
                 "id": "title",
-                "headerName": "Title",
+                "headerName": "Project Title",
                 "column_width": self.COLUMN_WIDTH * 5,
                 "method": lambda project, _: project.title,
             },
             {
                 "id": "description",
-                "headerName": "Description",
+                "headerName": "Project Description",
                 "column_width": self.COLUMN_WIDTH * 5,
                 "method": lambda project, _: project.description,
             },
             {
                 "id": "excom_provision",
-                "headerName": "Executive Committee provision",
+                "headerName": "ExCom Provision",
                 "column_width": self.COLUMN_WIDTH * 5,
                 "method": lambda project, _: project.excom_provision,
             },
@@ -689,17 +735,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": lambda project, _: project.tranche,
             },
             {
-                "id": "metaproject_category",
-                "headerName": "Category",
-                "method": lambda project, _: (
-                    project.meta_project.type if project.meta_project else ""
-                ),
-            },
-            {
                 "id": "funding_window",
                 "headerName": "Funding window",
                 "method": lambda project, _: (
-                    project.funding_window.meeting.number
+                    getattr(project.funding_window.decision, "number", "")
                     if project.funding_window
                     else ""
                 ),
@@ -836,6 +875,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         include_names=None,
         exclude_names=None,
         title_overrides=None,
+        header_overrides=None,
         id_suffix=None,
     ):
         result = []
@@ -862,10 +902,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "source": source,
             }
             if isinstance(field, DateField):
-                header["method"] = get_value_date
+                header["method"] = partial(get_value_date, date_format=None)
             elif isinstance(field, DateTimeField):
-                header["method"] = get_value_date
-            elif isinstance(field, BooleanField):
+                header["method"] = partial(get_value_date, date_format=None)
+            if isinstance(field, BooleanField):
                 header["method"] = get_value_boolean
             elif isinstance(field, CharField) and field.choices:
                 header["method"] = partial(get_choice_value, dict(field.choices))
@@ -882,6 +922,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     header["method"] = partial(get_value_fk, field)
             elif isinstance(field, ManyToManyField):
                 header["method"] = partial(get_value_m2m, field)
+
+            if header_overrides:
+                header.update(header_overrides.get(field.name, {}))
 
             result.append(header)
         return result
@@ -1091,7 +1134,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return [
             {
                 "id": f"funds_approved_v{version}",
-                "headerName": f"Project funding meeting {idx}",
+                "headerName": f"Funds Approved {idx}",
                 "method": lambda project, _: (
                     self._p_fund_approved(self.get_version(project, version))
                     if not_trf_or_adj(self.get_version(project, version))
@@ -1099,10 +1142,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ),
                 "type": "number",
                 "align": "right",
+                "cell_format": "#,##0;-#,##0;;@",
             },
             {
                 "id": f"psc_v{version}",
-                "headerName": f"PSC meeting {idx}",
+                "headerName": f"Support Costs Approved {idx}",
                 "method": lambda project, _: (
                     self._p_psc_approved(self.get_version(project, version))
                     if not_trf_or_adj(self.get_version(project, version))
@@ -1110,6 +1154,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ),
                 "type": "number",
                 "align": "right",
+                "cell_format": "#,##0;-#,##0;;@",
             },
             {
                 "id": f"post_excom_meeting_v{version}",
@@ -1124,6 +1169,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "id": f"date_approved_v{version}",
                 "headerName": f"Date Approved {idx}",
                 "type": "date",
+                "cell_format": "MMM-YYYY",
                 "method": lambda project, _: (
                     self.get_version(project, version).date_approved
                     if not_trf_or_adj(self.get_version(project, version))
@@ -1133,7 +1179,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         ]
 
     def adjustment_headers(self, v_idx, idx):
-
         return [
             {
                 "id": f"funds_adjustment_v{idx}",
@@ -1145,6 +1190,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ),
                 "type": "number",
                 "align": "right",
+                "cell_format": "#,##0;-#,##0;;@",
             },
             {
                 "id": f"psc_adjustment_v{idx}",
@@ -1154,6 +1200,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 ),
                 "type": "number",
                 "align": "right",
+                "cell_format": "#,##0;-#,##0;;@",
             },
             {
                 "id": f"adjustment_meeting_v{idx}",
@@ -1168,6 +1215,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "id": f"adjustment_date_v{idx}",
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
+                "cell_format": "MMM-YYYY",
                 "method": lambda project, _: (
                     self.get_trf_or_adj_version(project, v_idx).date_approved
                     if self.get_trf_or_adj_version(project, v_idx)
@@ -1180,7 +1228,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return [
             {
                 "id": f"ods_odp__ods_substance_{idx}",
-                "headerName": f"ODS_Name {idx}",
+                "headerName": f"ODS Name {idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project,
                     idx - 1,
@@ -1189,28 +1237,31 @@ class ProjectsInventoryReportWriter(BaseWriter):
             },
             {
                 "id": f"ods_odp__odp_{idx}",
-                "headerName": f"ODP_{idx}",
+                "headerName": f"ODP {idx}",
+                "cell_format": "#,##0.0;-#,##0.0;;@",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.odp
                 ),
             },
             {
                 "id": f"ods_odp__phase_out_mt_{idx}",
-                "headerName": f"MT_{idx}",
+                "headerName": f"MT {idx}",
+                "cell_format": "#,##0.0;-#,##0.0;;@",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.phase_out_mt
                 ),
             },
             {
                 "id": f"ods_odp__co2_mt_{idx}",
-                "headerName": f"CO2_{idx}",
+                "headerName": f"CO2-eq {idx}",
+                "cell_format": "#,##0;-#,##0;;@",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.co2_mt
                 ),
             },
             {
                 "id": f"ods_odp__ods_replacement_text_{idx}",
-                "headerName": f"ODS_replacement_{idx}",
+                "headerName": f"ODS Replacement {idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project, idx - 1, lambda ods_odp: ods_odp.ods_replacement_text
                 ),

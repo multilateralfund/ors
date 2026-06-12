@@ -116,11 +116,7 @@ class MetaProjectCountryListView(generics.ListAPIView):
     serializer_class = CountrySerializer
 
     def get_queryset(self):
-        meta_projects = MetaProject.objects.filter(
-            type=MetaProject.MetaProjectType.MYA,
-            projects__submission_status__name="Approved",
-            is_draft=False,
-        ).distinct()
+        meta_projects = MetaProject.objects.for_mya_export()
 
         return Country.objects.filter(meta_projects__in=meta_projects).distinct()
 
@@ -134,11 +130,7 @@ class MetaProjectClusterListView(generics.ListAPIView):
     serializer_class = ProjectClusterSerializer
 
     def get_queryset(self):
-        meta_projects = MetaProject.objects.filter(
-            type=MetaProject.MetaProjectType.MYA,
-            projects__submission_status__name="Approved",
-            is_draft=False,
-        ).distinct()
+        meta_projects = MetaProject.objects.for_mya_export()
 
         return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
 
@@ -157,7 +149,7 @@ class MetaProjectLeadAgencyListView(generics.ListAPIView):
         projects = Project.objects.filter(
             category=Project.Category.MYA,
             submission_status__name="Approved",
-            meta_project__isnull=False,
+            meta_project__in=MetaProject.objects.for_mya_export(),
         ).distinct()
 
         agencies = Agency.objects.filter(
@@ -182,10 +174,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
 
     def get_queryset(self):
         result = (
-            MetaProject.objects.filter(
-                projects__category=Project.Category.MYA,
-                projects__submission_status__name="Approved",
-            ).prefetch_related(
+            MetaProject.objects.for_mya_update().prefetch_related(
                 "projects",
                 "projects__agency",
                 "projects__cluster",

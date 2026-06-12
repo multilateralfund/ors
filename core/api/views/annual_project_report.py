@@ -52,11 +52,14 @@ from core.api.serializers.annual_project_report import (
     AnnualProjectReportKickStartStatusSerializer,
 )
 from core.api.utils import (
+    all_versions_for_year_base_qs,
+    latest_version_base_qs,
     get_latest_endorsed_year,
     get_unendorsed_years,
     get_previous_year_project_reports,
 )
 from core.models import (
+    Agency,
     AnnualProgressReport,
     AnnualAgencyProjectReport,
     AnnualProjectReport,
@@ -71,7 +74,7 @@ from core.tasks import (
 )
 
 
-# pylint: disable=C0302
+# pylint: disable=C0302,R0914
 
 
 logger = logging.getLogger(__name__)
@@ -98,13 +101,7 @@ def get_latest_version_prefetch(year):
     """
     return Prefetch(
         "project_reports__project__archive_projects",
-        queryset=Project.objects.really_all()
-        .filter(
-            post_excom_decision__isnull=False,
-            post_excom_decision__meeting__date__year__lte=year,
-        )
-        .select_related("status", "post_excom_decision__meeting")
-        .order_by("-post_excom_decision__meeting__date", "-version"),
+        queryset=latest_version_base_qs(year),
         to_attr="cached_versions_for_year",
     )
 
@@ -116,15 +113,7 @@ def get_all_versions_for_year_prefetch(year):
     """
     return Prefetch(
         "project_reports__project__archive_projects",
-        queryset=Project.objects.really_all()
-        .filter(
-            models.Q(
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year=year,
-            )
-            | models.Q(post_excom_decision__isnull=True, version=3)
-        )
-        .select_related("status"),
+        queryset=all_versions_for_year_base_qs(year),
         to_attr="cached_all_versions_for_year",
     )
 
@@ -253,6 +242,7 @@ class APRWorkspaceView(RetrieveAPIView):
                     "country__parent",
                     "country__parent__parent",
                     "agency",
+                    "cluster",
                     "sector",
                     "project_type",
                     "status",
@@ -274,23 +264,77 @@ class APRWorkspaceView(RetrieveAPIView):
                 },
                 queryset=projects_queryset,
             )
-            projects = filterset.qs
+            projects = list(filterset.qs)
 
-            for project in projects:
-                # Check if previously-reported data exists for this project & agency
-                key = (project.code, agency.id)
-                # If no previous APR exists for this, we default to the project's status
-                default_data = {"status": project.status.name}
-                previous_data = previous_reports_dict.get(key, default_data)
-
-                project_report, created = AnnualProjectReport.objects.get_or_create(
-                    project=project,
-                    report=agency_report,
-                    defaults=previous_data,
+            if projects:
+                project_ids = [p.id for p in projects]
+                project_id_filter = models.Q(id__in=project_ids) | models.Q(
+                    latest_project_id__in=project_ids
                 )
-                if created or project_report.meta_code_denorm is None:
+
+                # Prefetch archive version data for all projects in 3 bulk queries
+                # so that populate_derived_fields() runs without any extra DB hits.
+                # Uses the same base querysets as the prefetch helpers (and therefore
+                # the same effective_date logic as the canonical model methods).
+                version_3_map = {}
+                for v3 in (
+                    Project.objects.really_all()
+                    .filter(project_id_filter, version=3)
+                    .select_related("status", "post_excom_decision__meeting")
+                ):
+                    key = v3.latest_project_id or v3.id
+                    version_3_map[key] = v3
+
+                latest_version_map = {}
+                for p in latest_version_base_qs(year).filter(project_id_filter):
+                    key = p.latest_project_id or p.id
+                    if key not in latest_version_map:
+                        latest_version_map[key] = p
+
+                all_versions_map: dict = {}
+                for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
+                    key = p.latest_project_id or p.id
+                    all_versions_map.setdefault(key, []).append(p)
+
+                # Attach cached archive data to each project instance so that
+                # populate_derived_fields() uses the cache instead of hitting the DB.
+                for project in projects:
+                    project_key = project.latest_project_id or project.id
+                    project.cached_version_3_list = (
+                        [version_3_map[project_key]]
+                        if project_key in version_3_map
+                        else ([project] if project.version == 3 else [])
+                    )
+                    project.cached_versions_for_year = (
+                        [latest_version_map[project_key]]
+                        if project_key in latest_version_map
+                        else []
+                    )
+                    project.cached_all_versions_for_year = all_versions_map.get(
+                        project_key, []
+                    )
+
+                # Build all AnnualProjectReport objects *in memory*, then bulk-insert.
+                # data for populate_derived_fields() is attached as cached_* attributes.
+                to_create = []
+                for project in projects:
+                    key = (project.code, agency.id)
+                    default_data = {"status": project.status.name}
+                    previous_data = previous_reports_dict.get(key, default_data)
+
+                    project_report = AnnualProjectReport(
+                        project=project,
+                        report=agency_report,
+                        **previous_data,
+                    )
                     project_report.populate_derived_fields()
-                    project_report.save()
+                    to_create.append(project_report)
+
+                AnnualProjectReport.objects.bulk_create(
+                    to_create,
+                    ignore_conflicts=True,
+                    batch_size=500,
+                )
 
             # Fallback: if this agency has no reportable projects, auto-submit their
             # report so endorsement is never blocked waiting for them to act.
@@ -633,13 +677,36 @@ class APRSummaryTablesExportView(APIView):
                 type=OpenApiTypes.INT,
                 required=True,
             ),
+            OpenApiParameter(
+                name="agency",
+                location=OpenApiParameter.QUERY,
+                description="Comma-separated Agency IDs to filter by (MLFS users only)",
+                type=OpenApiTypes.STR,
+                required=False,
+            ),
         ],
         responses={200: "Excel file download"},
     )
     def get(self, request):
-        agency = None
-        if request.user.agency:
-            agency = request.user.agency
+        is_mlfs = request.user.has_perm("core.can_view_all_agencies")
+
+        agencies = None
+        submitted_only = False
+
+        if is_mlfs:
+            submitted_only = True
+            agency_param = request.query_params.get("agency", "")
+            if agency_param:
+                try:
+                    agency_ids = [
+                        int(pk) for pk in agency_param.split(",") if pk.strip()
+                    ]
+                    if agency_ids:
+                        agencies = list(Agency.objects.filter(pk__in=agency_ids))
+                except (ValueError, TypeError):
+                    pass
+        elif request.user.agency:
+            agencies = [request.user.agency]
 
         year = request.query_params.get("year")
         if year:
@@ -648,7 +715,11 @@ class APRSummaryTablesExportView(APIView):
             except (ValueError, TypeError):
                 year = None
 
-        writer = APRSummaryTablesExportWriter(agency=agency, year=year)
+        writer = APRSummaryTablesExportWriter(
+            agencies=agencies,
+            year=year,
+            submitted_only=submitted_only,
+        )
         return writer.generate()
 
 

@@ -6,6 +6,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
 from functools import cached_property
 
+from django.db.models import Prefetch
+
 from core.models.funding_window import FundingWindow
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -30,6 +32,33 @@ OLD_FIELD_HELP_TEXT = """
     Old field from the initial imported data/implementation of projects.
     TBD if the information can be transferred to the new structure.
 """
+
+
+class MetaProjectQuerySet(models.QuerySet):
+    def for_mya_update(self):
+        return self.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__category=Project.Category.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+    def for_mya_export(self):
+        return self.for_mya_update().filter(is_draft=False)
+
+    def with_approved_mya_projects(self):
+        return self.prefetch_related(
+            Prefetch(
+                "projects",
+                queryset=Project.objects.filter(
+                    category=Project.Category.MYA,
+                    submission_status__name="Approved",
+                )
+                .select_related("lead_agency")
+                .prefetch_related("ods_odp")
+                .order_by("id"),
+                to_attr="approved_mya_projects",
+            )
+        )
 
 
 class MetaProject(models.Model):
@@ -364,11 +393,114 @@ class MetaProject(models.Model):
 
     # END: Task #32217 fields.
 
+    objects = MetaProjectQuerySet.as_manager()
+
+    @staticmethod
+    def approved_mya_projects_base_queryset():
+        return Project.objects.filter(
+            category=Project.Category.MYA,
+            submission_status__name="Approved",
+        ).order_by("id")
+
+    def approved_mya_projects_queryset(self):
+        return self.approved_mya_projects_base_queryset().filter(meta_project=self)
+
+    def first_approved_mya_project(self):
+        projects = getattr(self, "approved_mya_projects", None)
+        if projects is not None:
+            return next(iter(projects), None)
+        return (
+            self.approved_mya_projects_queryset().select_related("lead_agency").first()
+        )
+
+    def get_computed_mya_values(self):
+        """Return computed fallback values for MYA fields based on approved sub-projects."""
+
+        def _agg_or_none(fn, vals):
+            non_null = [v for v in vals if v is not None]
+            return fn(non_null) if non_null else None
+
+        projects = getattr(self, "approved_mya_projects", None)
+        if projects is not None:
+            ods_entries = [entry for p in projects for entry in p.ods_odp.all()]
+            return {
+                "start_date": _agg_or_none(
+                    min, [p.project_start_date for p in projects]
+                ),
+                "end_date": _agg_or_none(max, [p.project_end_date for p in projects]),
+                "project_funding": _agg_or_none(sum, [p.total_fund for p in projects]),
+                "support_cost": _agg_or_none(
+                    sum, [p.support_cost_psc for p in projects]
+                ),
+                "phase_out_co2_eq_t": _agg_or_none(
+                    sum, [e.co2_mt for e in ods_entries]
+                ),
+                "phase_out_odp": _agg_or_none(sum, [e.odp for e in ods_entries]),
+                "phase_out_mt": _agg_or_none(
+                    sum, [e.phase_out_mt for e in ods_entries]
+                ),
+            }
+
+        # Fallback to DB aggregates when approved_mya_projects is not prefetched.
+        # Two separate queries are required: aggregating funds/dates together with
+        # ods_odp fields in a single query inflates the fund sums due to the JOIN fan-out
+        # (one Project row per ODS entry doubles/triples Sum(total_fund)).
+        approved_qs = self.approved_mya_projects_queryset().order_by()
+        result = approved_qs.aggregate(
+            start_date=models.Min("project_start_date"),
+            end_date=models.Max("project_end_date"),
+            project_funding=models.Sum("total_fund"),
+            support_cost=models.Sum("support_cost_psc"),
+        )
+        result.update(
+            ProjectOdsOdp.objects.filter(project__in=approved_qs).aggregate(
+                phase_out_co2_eq_t=models.Sum("co2_mt"),
+                phase_out_odp=models.Sum("odp"),
+                phase_out_mt=models.Sum("phase_out_mt"),
+            )
+        )
+        return result
+
     def __str__(self):
         return f"{self.umbrella_code}"
 
 
-class ProjectManager(models.Manager):
+class ProjectQuerySet(models.QuerySet):
+    def with_effective_date(self):
+        """
+        Annotates each project version with its "effective date" — the date that
+        determines when the version was approved/approved by ExCom. Priority:
+        post_excom_decision > post_excom_meeting > transfer_decision >
+        transfer_meeting > date_approved.
+
+        Used by all_versions_for_year() and latest_version_for_year() instance
+        methods, and by the APR view/task helpers that do the same bulk lookups.
+        """
+        return self.annotate(
+            effective_date=models.Case(
+                models.When(
+                    post_excom_decision__isnull=False,
+                    then=models.F("post_excom_decision__meeting__date"),
+                ),
+                models.When(
+                    post_excom_meeting__isnull=False,
+                    then=models.F("post_excom_meeting__date"),
+                ),
+                models.When(
+                    transfer_decision__isnull=False,
+                    then=models.F("transfer_decision__meeting__date"),
+                ),
+                models.When(
+                    transfer_meeting__isnull=False,
+                    then=models.F("transfer_meeting__date"),
+                ),
+                default=models.F("date_approved"),
+                output_field=models.DateField(),
+            )
+        )
+
+
+class ProjectManager(models.Manager.from_queryset(ProjectQuerySet)):
     def get_next_serial_number(self, country_id):
         return (
             self.select_for_update()
@@ -1689,15 +1821,9 @@ class Project(models.Model):
             Project.objects.really_all()
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
-                models.Q(
-                    post_excom_decision__isnull=False,
-                    post_excom_decision__meeting__date__year=year,
-                )
-                | models.Q(
-                    post_excom_decision__isnull=True,
-                    version=3,
-                ),
             )
+            .with_effective_date()
+            .filter(effective_date__year=year)
             .select_related("status")
             .only("id", "version", "status")
             .order_by("version")
@@ -1705,7 +1831,13 @@ class Project(models.Model):
 
     def latest_version_for_year(self, year):
         """
-        Gets the latest version created by ExCom meeting in or before a specific year.
+        Gets the most recent version approved in or before a specific year.
+        Uses :
+        - post_excom_decision__meeting date takes precedence; if null, falls back to
+        - post_excom_meeting date; if null, falls back to
+        - transfer_decision__meeting date; if null, falls back to
+        - transfer_meeting date; if null, finally falls back to
+        - date_approved.
 
         Returns None if there's no version fitting the criteria.
         """
@@ -1714,11 +1846,11 @@ class Project(models.Model):
             Project.objects.really_all()
             .filter(
                 models.Q(id=final.id) | models.Q(latest_project_id=final.id),
-                post_excom_decision__isnull=False,
-                post_excom_decision__meeting__date__year__lte=year,
             )
-            .select_related("status")
-            .order_by("-post_excom_decision__meeting__date", "-version")
+            .with_effective_date()
+            .filter(effective_date__isnull=False, effective_date__year__lte=year)
+            .select_related("status", "post_excom_decision__meeting")
+            .order_by("-effective_date", "-version")
             .first()
         )
 

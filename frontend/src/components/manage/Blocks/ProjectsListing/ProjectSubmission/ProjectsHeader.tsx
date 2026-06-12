@@ -179,7 +179,6 @@ const ProjectsHeader = ({
                 specificFields,
                 approvalFields,
                 postExComUpdate,
-                bpData,
                 filesMetaData,
               }}
               {...rest}

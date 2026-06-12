@@ -14,6 +14,8 @@ from core.import_data.utils import (
 )
 
 from core.models import (
+    Agency,
+    FundingWindow,
     Meeting,
     MetaProject,
     Project,
@@ -35,7 +37,7 @@ from core.import_data_v2.utils import (
     get_type_by_name,
 )
 
-# pylint: disable=dangerous-default-value,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace, too-many-lines
+# pylint: disable=dangerous-default-value,too-many-locals,too-many-statements,inconsistent-return-statements,broad-exception-caught,too-many-branches,too-many-lines,trailing-whitespace
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +115,12 @@ def create_missing_clusters_types_sectors_subsectors(dry_run=True):
         ProjectSubSector.objects.get_or_create(name="Air-conditioning")
         ProjectSubSector.objects.get_or_create(name="Other AC components")
 
+        world_bank = Agency.objects.filter(name="IBRD").first()
+        if world_bank:
+            world_bank.name = "World Bank"
+            world_bank.code = "WB"
+            world_bank.save()
+
 
 def create_new_project(row, dry_run=True):
     # Implement logic to create a new project based on the row data
@@ -143,6 +151,10 @@ def create_new_project(row, dry_run=True):
     else:
         production = False
 
+    funding_window = FundingWindow.objects.get_or_create(
+        description=row["FUNDING_WINDOWS"]
+    )[0]
+
     meeting_number = row["CODE"].split("/")[2]
     meeting = Meeting.objects.filter(number=meeting_number).first()
     if not meeting:
@@ -167,7 +179,7 @@ def create_new_project(row, dry_run=True):
         sector=sector,
         sector_legacy=row["SEC"],
         subsector_legacy=row["SUBSECTOR"],
-        funding_window=row["FUNDING_WINDOWS"],
+        funding_window=funding_window,
         excom_provision=row["EXCOM_PROVISION"],
         additional_funding=row["HFC_PLUS"],
         total_fund_approved=total_fund_approved,
@@ -221,10 +233,12 @@ def process_current_invetory_sheet(dry_run=True):
             if row["ID"]:
                 count += 1
                 logger.warning(f"⚠️ Project with legacy code '{row['CODE']}' not found")
-                continue
             create_new_project(row, dry_run=dry_run)
         else:
             country_value = get_country_by_name(row["COUNTRY"])
+            funding_window = FundingWindow.objects.get_or_create(
+                description=row["FUNDING_WINDOWS"]
+            )[0]
             update_field(project, "country", country_value)
             agency = get_agency_by_name(row["AGENCY"])
             update_field(project, "agency", agency)
@@ -239,7 +253,7 @@ def process_current_invetory_sheet(dry_run=True):
                 logging_message=False,
             )
             update_field(
-                project, "funding_window", row["FUNDING_WINDOWS"], logging_message=False
+                project, "funding_window", funding_window, logging_message=False
             )
             update_field(
                 project,

@@ -3,8 +3,8 @@ import { AnnualProjectReport } from '@ors/app/annual-project-report/types'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { NavigationButton } from '../HelperComponents'
 import {
+  aprDateDetailItem,
   booleanDetailItem,
-  dateDetailItem,
   detailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
@@ -71,7 +71,7 @@ const ProjectHistory = ({
           <div className="flex w-full flex-col gap-4">
             <div className={viewColumnsClassName}>
               {map(keys(dateFields), (field) =>
-                dateDetailItem(
+                aprDateDetailItem(
                   dateFields[field],
                   latestApr[field as keyof typeof latestApr] as string,
                 ),

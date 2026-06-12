@@ -269,7 +269,11 @@ def migrate_subsectors_sector_data():
                 subsector.delete()
         else:
             first_subsector = subsectors_with_the_same_name[0]
-            sectors = [subsector.sector for subsector in subsectors_with_the_same_name]
+            sectors = [
+                subsector.sector
+                for subsector in subsectors_with_the_same_name
+                if subsector.sector is not None
+            ]
             first_subsector.sectors.set(sectors)
             first_subsector.save()
     logger.info("✅ Successfully migrated subsectors sector data.")

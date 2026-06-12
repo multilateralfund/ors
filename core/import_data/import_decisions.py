@@ -15,7 +15,7 @@ def import_decisions():
             number=meeting.number,
             defaults={
                 "meeting_id": meeting.id,
-                "description": "Test",
+                "title": "Test",
             },
         )
 

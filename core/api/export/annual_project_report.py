@@ -13,7 +13,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from core.api.serializers.annual_project_report import AnnualProjectReportReadSerializer
-from core.models import AnnualProjectReport, ProjectStatus
+from core.models import AnnualAgencyProjectReport, AnnualProjectReport, ProjectStatus
 
 # pylint: disable=R0902,R0911,R0913,R0914,R0915,R1705,W0212,C0302
 
@@ -37,13 +37,13 @@ class APRExportWriter:
 
         return load_workbook(BytesIO(cls._template_bytes))
 
-    SHEET_NAME = "Annex I APR report "
+    SHEET_NAME = "Annex I APR report"
     STATUS_SHEET_NAME = "Status Values"
     # Last header row (only one now present in the template)
     HEADER_ROW = 1
     FIRST_DATA_ROW = 2
 
-    DATE_FORMAT = "dd/mm/yyyy"
+    DATE_FORMAT = 'MMM"-"YY'
 
     DATE_FIELDS = {
         "date_approved",
@@ -215,7 +215,7 @@ class APRExportWriter:
         if self.year and "last_year_remarks" in self.column_mapping:
             col_idx = self.column_mapping["last_year_remarks"]
             self.worksheet.cell(self.HEADER_ROW, col_idx).value = (
-                f"Remarks (as of 31 December {self.year - 1})"
+                f"Remarks (as of 31 December {self.year})"
             )
 
     def _remove_hidden_sheets(self):
@@ -425,9 +425,13 @@ class APRExportWriter:
         if not self.status_column_idx or not self.project_reports_data:
             return
 
-        status_count = ProjectStatus.objects.count()
+        status_count = len(self._status_name_to_code)
         if status_count == 0:
             return
+
+        # Remove any pre-existing data validations from the template so they
+        # don't conflict with our new code-based dropdown.
+        self.worksheet.data_validations.dataValidation = []
 
         # Create data validation referencing the status sheet
         # Formula references the range in the Status Values sheet
@@ -477,7 +481,7 @@ class APRExportWriter:
 class APRSummaryTablesExportWriter:
     """
     Generates multi-sheet Excel export with summary tables for APR.
-    Unlike APRExportWriter, this includes *all* data regardless of UI filters.
+    Unlike APRExportWriter, this includes all ONG/COM/FIN data regardless of UI filters.
     """
 
     TEMPLATE_PATH = (
@@ -541,8 +545,8 @@ class APRSummaryTablesExportWriter:
             "pct_funds_disbursed": 8,
         }
 
-    def __init__(self, agency=None, year=None):
-        self.agency = agency
+    def __init__(self, agencies=None, year=None, submitted_only=False):
+        self.agencies = list(agencies) if agencies else []
         self.year = year
         self.workbook = None
         self.annual_column_mapping = self.build_annual_column_mapping()
@@ -571,8 +575,13 @@ class APRSummaryTablesExportWriter:
         self._completed_status_names = {
             status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
         }
-        if self.agency:
-            queryset = queryset.filter(project__agency=self.agency)
+        if self.agencies:
+            queryset = queryset.filter(report__agency__in=self.agencies)
+        if submitted_only:
+            queryset = queryset.filter(
+                report__status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED
+            )
+
         self.queryset = queryset
         # Materialize the queryset once so we don't keep re-querying the DB for each tab
         self.records = list(queryset)
@@ -663,6 +672,15 @@ class APRSummaryTablesExportWriter:
                 tgt.protection = copy(src.protection)
                 tgt.alignment = copy(src.alignment)
 
+    def _normalize_section_styles(self, ws, section_start, count):
+        """
+        Ensure every row in a data section has the same style as the first row.
+        Handles template rows whose borders/fills differ from the rest of the section
+        (e.g. the last placeholder row in the template often lacks a bottom border).
+        """
+        for i in range(1, count):
+            self._copy_row_style_summary(ws, section_start, section_start + i)
+
     def _adjust_section_rows(self, ws, section_start, template_count, needed_count):
         """
         Resize a contiguous data section from template_count rows to needed_count rows
@@ -674,11 +692,10 @@ class APRSummaryTablesExportWriter:
             n_insert = needed_count - template_count
             insert_at = section_start + template_count
             ws.insert_rows(insert_at, n_insert)
-            style_source = (
-                section_start + template_count - 1
-                if template_count > 0
-                else section_start
-            )
+            # Always copy from the first template data row so inserted rows
+            # get the standard data-row style, not the (potentially different)
+            # style of the last template row (e.g. red font, heavy border).
+            style_source = section_start
             for i in range(n_insert):
                 self._copy_row_style_summary(ws, style_source, insert_at + i)
         else:
@@ -871,13 +888,15 @@ class APRSummaryTablesExportWriter:
         """Project completion in the reporting year, grouped by cluster"""
         ws = self.workbook[self.SHEET_COMPLETION_YEAR]
 
-        # Filter and group by cluster in-memory, to avoid repeated DB hits
+        # Filter and group by cluster in-memory, to avoid repeated DB hits.
+        # Use pcr_due_denorm (ONG→COM/FIN transition within the year) rather than
+        # current project status, so historically-completed projects don't inflate
+        # the count when their APRs are carried forward into subsequent years.
         if self.year:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.project.status
-                and apr.project.status.code in ("COM", "FIN")
+                if apr.pcr_due_denorm
                 and apr.report
                 and apr.report.progress_report
                 and apr.report.progress_report.year == self.year
@@ -958,9 +977,7 @@ class APRSummaryTablesExportWriter:
 
     def _write_annual_row(self, ws, row, col_map, row_data, bold=False):
         """Helper for writing a single data row in the annual summary sheet."""
-        label_cell = ws.cell(row, col_map["approval_year"], row_data["label"])
-        if bold:
-            label_cell.font = Font(bold=True)
+        ws.cell(row, col_map["approval_year"], row_data["label"])
         ws.cell(row, col_map["num_approvals"], row_data["num_approvals"])
         ws.cell(row, col_map["num_completed"], row_data["num_completed"])
         ws.cell(row, col_map["pct_completed"], row_data["pct_completed"])
@@ -974,9 +991,19 @@ class APRSummaryTablesExportWriter:
             ws.cell(row, col_map[col_name]).number_format = "#,##0"
         ws.cell(row, col_map["pct_funds_disbursed"]).number_format = "0"
 
+        # Explicitly reset the font on every cell we wrote so that residual
+        # template styles (bold, red sample data, etc.) are never inherited.
+        for c in range(1, max(col_map.values()) + 1):
+            ws.cell(row, c).font = Font(bold=bold)
+
     def _write_annual_summary_sheet(self):
         """Sheet (a): Annual summary data by approval year"""
         ws = self.workbook[self.SHEET_ANNUAL]
+
+        # Normalize all template data rows to the first data row's style,
+        # so rows with inconsistent template styles are brought into line.
+        template_row_count = ws.max_row - self.DATA_START_ROW + 1
+        self._normalize_section_styles(ws, self.DATA_START_ROW, template_row_count)
 
         self._clear_template_data_rows(ws, self.DATA_START_ROW)
 
@@ -1183,10 +1210,17 @@ class APRSummaryTablesExportWriter:
 
         # Pre-compute all data before touching the sheet structure
         total_data = self._compute_group_data(records, include_odp_co2, sheet_type)
+
+        def _region_label(apr):
+            region = apr.main_region
+            if region is None:
+                return None
+            return region.name_for_apr or region.name
+
         region_items = list(
             self._compute_grouped_data(
                 records,
-                "main_region__name",
+                _region_label,
                 include_odp_co2,
                 sheet_type,
             )
@@ -1221,6 +1255,8 @@ class APRSummaryTablesExportWriter:
         # Resize the region data section
         region_data_start = self.DATA_START_ROW + 2
         self._adjust_section_rows(ws, region_data_start, template_n_regions, n_regions)
+        # Normalize styles across all region rows
+        self._normalize_section_styles(ws, region_data_start, n_regions)
 
         # After adjustment the Sector header has moved to:
         new_sector_header_row = region_data_start + n_regions
@@ -1228,6 +1264,8 @@ class APRSummaryTablesExportWriter:
         # Resize the sector data section
         sector_data_start = new_sector_header_row + 1
         self._adjust_section_rows(ws, sector_data_start, template_n_sectors, n_sectors)
+        # Same style normalization for the sector section.
+        self._normalize_section_styles(ws, sector_data_start, n_sectors)
 
         # Clear only data rows — section headers ("Region", "Sector") come from the template
         self._clear_template_data_rows(ws, self.DATA_START_ROW, self.DATA_START_ROW)
@@ -1258,14 +1296,16 @@ class APRSummaryTablesExportWriter:
     def _write_aggregation_row(self, ws, row, label, data, column_specs, bold=False):
         """Write a single aggregation data row to the worksheet."""
         cell = ws.cell(row, 1, label)
-        if bold:
-            cell.font = Font(bold=True)
+        # Always set the font explicitly so residual template styles (bold, red
+        # colour on negative sample values, etc.) are never inherited.
+        cell.font = Font(bold=bold)
 
         col = 2
         for field_name, number_format in column_specs:
             cell = ws.cell(row, col, data.get(field_name) or 0)
             if number_format:
                 cell.number_format = number_format
+            cell.font = Font(bold=bold)
             col += 1
 
     def _get_column_specs(self, sheet_type, include_odp_co2):
@@ -1365,12 +1405,12 @@ class APRSummaryTablesExportWriter:
         )
 
         data["avg_months_to_disbursement"] = self._calculate_avg_months(
-            records, "project__date_approved", "date_first_disbursement"
+            records, "date_approved_denorm", "date_first_disbursement"
         )
 
         if is_ongoing:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_planned_completion"
+                records, "date_approved_denorm", "date_planned_completion"
             )
             data["avg_delay"] = self._calculate_avg_months(
                 records,
@@ -1384,7 +1424,7 @@ class APRSummaryTablesExportWriter:
             data["pct_disbursing"] = (num_disbursing / count) if count > 0 else 0
         else:
             data["avg_months_to_completion"] = self._calculate_avg_months(
-                records, "project__date_approved", "date_actual_completion"
+                records, "date_approved_denorm", "date_actual_completion"
             )
 
         if include_odp_co2:
@@ -1435,11 +1475,16 @@ class APRSummaryTablesExportWriter:
     def _compute_grouped_data(self, records, group_field, include_odp_co2, sheet_type):
         """
         Helper for computing aggregation data grouped by a field.
+        group_field may be a dotted/double-underscore field path string, or a
+        callable that accepts an AnnualProjectReport instance and returns a value.
         Returns list of (name, data) tuples, sorted by group value.
         """
         buckets = {}
         for apr in records:
-            val = self._get_field_value(apr, group_field)
+            if callable(group_field):
+                val = group_field(apr)
+            else:
+                val = self._get_field_value(apr, group_field)
             key = val if val is not None else ""
             if key not in buckets:
                 buckets[key] = []
@@ -1479,8 +1524,13 @@ class APRSummaryTablesExportWriter:
         output.seek(0)
 
         filename = "APR_Summary_Tables_Cumulative"
-        if self.agency:
-            filename += f"_{self.agency.name.replace(' ', '_')}"
+        if self.agencies:
+            agency_part = "_".join(a.name.replace(" ", "_") for a in self.agencies)
+            if len(agency_part) <= 100:
+                filename += f"_{agency_part}"
+            else:
+                # Keep it short to avoid unreadable names
+                filename += f"_{len(self.agencies)}_agencies"
         filename += ".xlsx"
 
         response = HttpResponse(

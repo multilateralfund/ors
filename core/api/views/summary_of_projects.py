@@ -103,6 +103,13 @@ class SummaryOfProjectsViewSet(
                 .distinct()
                 if t is not None
             ],
+            "funding_window": [
+                {"name": description or f"Funding window {pk}", "id": pk}
+                for pk, description in queryset.order_by("funding_window__description")
+                .values_list("funding_window_id", "funding_window__description")
+                .distinct()
+                if pk is not None
+            ],
         }
 
         return Response(result)
@@ -143,15 +150,19 @@ class SummaryOfProjectsViewSet(
         total = {"text": "Total"}
 
         total.update(self.get_totals(params))
+        total["countries_count"] = ""
+        total["amounts_in_principle"] = ""
         row_data.append(total)
 
-        SummaryOfProjectsWriter(sheet).write(row_data)
+        is_blanket_approval = (
+            params[-1]["params"].get("blanket_or_individual_consideration") == "blanket"
+        )
+        SummaryOfProjectsWriter(sheet, is_blanket_approval).write(row_data)
 
         return workbook_response("Summary of projects", wb)
 
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
-
         params: str = request.query_params.get("row_data")
         is_debug_request = settings.DEBUG and request.query_params.get("debug")
 

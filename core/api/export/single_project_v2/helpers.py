@@ -16,7 +16,7 @@ from core.models import Project
 logger = logging.getLogger(__name__)
 
 
-def format_iso_date(isodate=None):
+def format_iso_date(isodate=None, date_format="%d/%m/%Y"):
     if isodate:
         if isinstance(isodate, str):
             try:
@@ -27,7 +27,7 @@ def format_iso_date(isodate=None):
             date = isodate
         else:
             return ""
-        return date.strftime("%d/%m/%Y")
+        return date.strftime(date_format)
     return ""
 
 
@@ -76,14 +76,13 @@ def get_consumption_level_status_value(row: dict, header: HeaderType):
     return value
 
 
-def field_value(data, header):
+def field_value(field_data, header):
     name = header["id"]
-    field_data = data["field_data"]
-    return field_data.get(name, {}).get("value")
+    return field_data.get(name)
 
 
 def value_or_empty_value(value, empty_value=None):
-    return {value} if value else empty_value
+    return value if value not in [None, ""] else empty_value
 
 
 value_or_dash = partial(value_or_empty_value, empty_value="-")
@@ -110,6 +109,11 @@ def get_formatted_field_value(
 get_value_or_dash = partial(
     get_formatted_field_value,
     formatters=[value_or_dash],
+)
+
+get_number_value = partial(
+    get_formatted_field_value,
+    formatters=[partial(format_decimal, is_currency=False), value_or_dash],
 )
 
 get_dollar_value = partial(

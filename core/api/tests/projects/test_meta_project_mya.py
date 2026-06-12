@@ -1,8 +1,12 @@
 import pytest
 from django.urls import reverse
 
+from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.tests.base import BaseTest
+from core.api.tests.factories import AgencyFactory
 from core.api.tests.factories import MetaProjectFactory
+from core.api.tests.factories import ProjectFactory
+from core.api.tests.factories import ProjectOdsOdpFactory
 from core.models.project import MetaProject
 from core.models.project import Project
 
@@ -79,6 +83,145 @@ class TestProjectV2List(BaseTest):
         for field_name, field_data in data["field_data"].items():
             assert field_data["value"] is None, field_name
 
+    def test_view_metaproject_computed_values_ignore_unapproved_projects(
+        self,
+        project_approved_status,
+        project_draft_status,
+        mlfs_admin_user,
+    ):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=100,
+            support_cost_psc=10,
+        )
+        approved_project = ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=100,
+            support_cost_psc=10,
+        )
+        ProjectOdsOdpFactory.create(
+            project=approved_project, co2_mt=2, odp=1, phase_out_mt=3
+        )
+        ProjectOdsOdpFactory.create(
+            project=approved_project, co2_mt=4, odp=2, phase_out_mt=5
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_draft_status,
+            total_fund=200,
+            support_cost_psc=20,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 200
+        assert len(response.data["projects"]) == 2
+        assert response.data["possible_projects"] == []
+        assert response.data["computed_field_data"]["project_funding"] == 200
+        assert response.data["computed_field_data"]["support_cost"] == 20
+        assert response.data["computed_field_data"]["phase_out_co2_eq_t"] == 6
+        assert response.data["computed_field_data"]["phase_out_odp"] == 3
+        assert response.data["computed_field_data"]["phase_out_mt"] == 8
+
+    def test_list_metaprojects_lead_agency_uses_first_approved_project(
+        self,
+        project_approved_status,
+        mlfs_admin_user,
+    ):
+        first_lead_agency = AgencyFactory.create(name="Lead agency A")
+        second_lead_agency = AgencyFactory.create(name="Lead agency B")
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        first_project = ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=first_lead_agency,
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=second_lead_agency,
+        )
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.get(self.url, format="json")
+
+        assert response.status_code == 200
+        data = next(item for item in response.data if item["id"] == mp.id)
+        assert data["lead_agency"]["name"] == first_lead_agency.name
+        assert mp.first_approved_mya_project().id == first_project.id
+
+    def test_view_metaproject_lead_agency_uses_first_approved_project(
+        self,
+        project_approved_status,
+        mlfs_admin_user,
+    ):
+        first_lead_agency = AgencyFactory.create(name="Lead agency A")
+        second_lead_agency = AgencyFactory.create(name="Lead agency B")
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        first_project = ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=first_lead_agency,
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=second_lead_agency,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 200
+        assert response.data["lead_agency"]["name"] == first_lead_agency.name
+        assert mp.first_approved_mya_project().id == first_project.id
+
+    def test_view_metaproject_lead_agency_returns_none_without_lead_agency(
+        self,
+        project_approved_status,
+        mlfs_admin_user,
+    ):
+        second_lead_agency = AgencyFactory.create(name="Lead agency B")
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=None,
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=second_lead_agency,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 200
+        assert response.data["lead_agency"] is None
+
+    def test_first_approved_mya_project_returns_none_without_approved_projects(self):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+
+        assert mp.first_approved_mya_project() is None
+        assert MetaProjectMyaSerializer(mp).data["lead_agency"] is None
+
     def test_edit_metaproject(
         self,
         _setup_metaprojects_list,
@@ -109,3 +252,21 @@ class TestProjectV2List(BaseTest):
         response = self.client.put(mp_url, data=data, format="json")
 
         assert response.status_code == 403
+
+    def test_view_metaproject_works_for_unapproved_project_meta_project(
+        self,
+        project_draft_status,
+        mlfs_admin_user,
+    ):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_draft_status,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=mlfs_admin_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 200

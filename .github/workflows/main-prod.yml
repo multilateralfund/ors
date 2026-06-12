@@ -9,6 +9,10 @@ jobs:
     with:
       SENTRY_DSN: ${{ vars.PROD_SENTRY_DSN }}
       SENTRY_ENVIRONMENT: ${{ vars.PROD_SENTRY_ENVIRONMENT }}
+    secrets:
+      VITE_TENANT_ID: ${{ secrets.PROD_VITE_TENANT_ID || '' }}
+      VITE_FRONTEND_CLIENT_ID: ${{ secrets.PROD_VITE_FRONTEND_CLIENT_ID || '' }}
+      VITE_APPLICATION_ID_URI: ${{ secrets.PROD_VITE_APPLICATION_ID_URI || '' }}
   deploy-prod:
     needs: docker-build
     uses: ./.github/workflows/deploy-prod.yml

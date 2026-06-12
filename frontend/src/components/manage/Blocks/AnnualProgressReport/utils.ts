@@ -1,6 +1,9 @@
 import { enqueueSnackbar } from 'notistack'
 import { isNil } from 'lodash'
 import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+
+dayjs.extend(customParseFormat)
 
 export function formatDate(value: any, format = 'DD/MM/YYYY') {
   if (isNil(value)) {
