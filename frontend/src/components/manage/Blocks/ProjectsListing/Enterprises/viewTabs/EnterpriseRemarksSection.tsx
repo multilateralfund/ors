@@ -15,9 +15,7 @@ const EnterpriseRemarksSection = ({
         {detailItem(
           enterpriseFieldsMapping[field],
           enterprise[field as keyof typeof enterprise] as string,
-          {
-            detailClassname: 'self-start',
-          },
+          { detailClassname: 'self-start' },
         )}
       </div>
     ))}

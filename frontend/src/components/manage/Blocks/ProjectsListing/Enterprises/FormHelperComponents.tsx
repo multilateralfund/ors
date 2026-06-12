@@ -90,10 +90,14 @@ export const EnterpriseNumberField = ({
   errors,
 }: EnterpriseFieldsProps & { dataType: string; prefix?: string }) => {
   const isInteger = dataType === 'integer'
+  const computedFields = ['funds_approved', 'cost_effectiveness_approved']
 
   return (
     <div>
-      <Label>{enterpriseFieldsMapping[field]}</Label>
+      <Label>
+        {enterpriseFieldsMapping[field]}
+        {computedFields.includes(field) && ' (computed)'}
+      </Label>
       <div className="flex items-center">
         <FormattedNumberInput
           id={field}

@@ -1,7 +1,7 @@
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import {
-  dateDetailItem,
   detailItem,
+  dateDetailItem,
   numberDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
 import { dateFields, enterpriseFieldsMapping } from '../constants'
@@ -74,9 +74,7 @@ const EnterpriseDetailsSection = ({
       {detailItem(
         enterpriseFieldsMapping.excom_provision,
         enterprise.excom_provision,
-        {
-          detailClassname: 'self-start',
-        },
+        { detailClassname: 'self-start' },
       )}
     </div>
   </div>

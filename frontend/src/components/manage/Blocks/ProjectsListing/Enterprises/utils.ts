@@ -8,7 +8,7 @@ import {
   SetEnterpriseData,
 } from './interfaces'
 
-import { find, isNil, keys, sumBy } from 'lodash'
+import { find, isNaN, isNil, keys, sumBy } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = (
@@ -185,8 +185,8 @@ export const getFieldErrors = (
   }
 }
 
-export const getEntityById = (data: any, id: number | null) =>
-  find(data, (entry) => entry.id === id)
+export const getEntityNameById = (data: any, id: number | null) =>
+  find(data, (entry) => entry.id === id)?.name
 
 export const getFundsApproved = (
   capital_cost_approved: string | null,
@@ -219,8 +219,15 @@ export const getCostEffectivenessApproved = (
     : null
 }
 
-export const getFormattedDecimalValue = (value: string | null) =>
-  !isNil(value) ? Number(value).toFixed(10).toString() : value
+export const getFormattedDecimalValue = (value: string | null) => {
+  const numberValue = Number(value)
+
+  if (isNaN(numberValue)) {
+    return null
+  }
+
+  return !isNil(value) ? numberValue.toFixed(10).toString() : value
+}
 
 export const getIsAgencyUser = (
   canViewOnlyOwnAgency: boolean,

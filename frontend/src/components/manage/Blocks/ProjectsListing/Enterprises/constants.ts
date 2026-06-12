@@ -54,9 +54,8 @@ export const enterpriseFieldsMapping: { [key: string]: string } = {
   chemical_phased_in_mt: 'Chemical phased in (mt)',
   capital_cost_approved: 'Capital cost approved (US $)',
   operating_cost_approved: 'Operating cost approved (US $)',
-  funds_approved: 'Funds approved (US $) (computed)',
-  cost_effectiveness_approved:
-    'Cost effectiveness approved (US $/kg) (computed)',
+  funds_approved: 'Funds approved (US $)',
+  cost_effectiveness_approved: 'Cost effectiveness approved (US $/kg)',
   cost_effectiveness_actual: 'Cost effectiveness actual (US $/kg)',
   funds_disbursed: 'Funds disbursed (US $)',
   funds_transferred: 'Funds transferred (US $)',
