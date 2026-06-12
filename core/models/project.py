@@ -1789,14 +1789,6 @@ class Project(models.Model):
         return self.title
 
     @property
-    def latest_file(self):
-        files = list(self.files.all())
-        if not files:
-            return None
-        files.sort(key=lambda f: f.date_created, reverse=True)
-        return files[0]
-
-    @property
     def final_version(self):
         return self.latest_project if self.latest_project else self
 

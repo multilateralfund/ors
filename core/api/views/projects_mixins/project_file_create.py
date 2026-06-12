@@ -50,6 +50,11 @@ class ProjectFileCreateMixin:
                     {"file": f"File extension {extension} is not valid"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            if file.size > 20 * 1024 * 1024:
+                return Response(
+                    {"file": "File size should not exceed 10MB"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         if len(set(filenames)) != len(filenames):
             return Response(
                 {"files": "Duplicate filenames in the upload"},
