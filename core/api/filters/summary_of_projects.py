@@ -21,10 +21,7 @@ class SummaryOfProjectsFilter(filters.FilterSet):
 
     meeting_id = filters.NumberFilter(field_name="meeting")
 
-    submission_status = filters.CharFilter(
-        field_name="submission_status__name",
-        lookup_expr="iexact",
-    )
+    submission_status = filters.CharFilter(method="filter_submission_status")
 
     blanket_or_individual_consideration = filters.CharFilter(
         field_name="blanket_or_individual_consideration",
@@ -89,3 +86,17 @@ class SummaryOfProjectsFilter(filters.FilterSet):
             "tranche",
             "funding_window_id",
         ]
+
+    def filter_submission_status(self, queryset, _, value):
+        if not value:
+            return queryset
+
+        queryset = queryset.filter(submission_status__name__iexact=value)
+
+        if value.lower() == "approved":
+            queryset = queryset.filter(version=3)
+
+        elif value.lower() == "recommended":
+            queryset = queryset.filter(version=2)
+
+        return queryset

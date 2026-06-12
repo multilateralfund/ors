@@ -465,7 +465,7 @@ class MetaProject(models.Model):
         return f"{self.umbrella_code}"
 
 
-class ProjectQuerySet(models.QuerySet):
+class ProjectQuerySet(models.QuerySet["Project"]):
     def with_effective_date(self):
         """
         Annotates each project version with its "effective date" — the date that
@@ -500,7 +500,7 @@ class ProjectQuerySet(models.QuerySet):
         )
 
 
-class ProjectManager(models.Manager.from_queryset(ProjectQuerySet)):
+class ProjectManager(models.Manager["Project"].from_queryset(ProjectQuerySet)):
     def get_next_serial_number(self, country_id):
         return (
             self.select_for_update()
@@ -534,6 +534,8 @@ class ProjectComponents(models.Model):
 
 
 class Project(models.Model):
+    objects: "ProjectManager"
+
     class SubmissionCategory(models.TextChoices):
         BIL_COOP = (
             "bilateral cooperation",
