@@ -32,8 +32,16 @@ class SummaryOfProjectsViewSet(
     """ViewSet for summary of projects."""
 
     filterset_class = SummaryOfProjectsFilter
-    queryset = Project.objects.really_all()
     permission_classes = (HasProjectV2ApproveAccess,)
+
+    def get_queryset(self):
+        queryset = Project.objects.really_all()
+
+        # Requested in #35434.
+        if self.request.user.has_perm("core.is_mlfs_user"):
+            queryset = queryset.exclude(submission_status__name="Draft")
+
+        return queryset
 
     def _extract_data(self, projects: QuerySet[Project]):
         meta_project_funding_expression = Coalesce(
