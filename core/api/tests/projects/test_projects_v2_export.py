@@ -935,15 +935,46 @@ class TestProjectV2ExportDOCX(BaseTest):
         validate_docx_export(
             project_with_linked_bp, agency_inputter_user, response, content
         )
-        substance_rows = get_docx_table_rows(content, "Substance")
-        substance_columns = [row[:3] for row in substance_rows]
-        assert [
+
+        products_manufactured_rows = get_docx_table_rows(
+            content, "Products manufactured"
+        )
+        assert products_manufactured_rows[0] == [
+            "Products manufactured",
             "Manufactured product",
+        ]
+
+        substance_rows = get_docx_table_rows(content, "Baseline substance")
+        substance_columns = [row[:2] for row in substance_rows]
+        assert [
             "Text baseline substance",
             "Text replacement substance",
         ] in substance_columns
         assert [
-            "Manufactured product",
+            "FK baseline substance",
+            "FK replacement substance",
+        ] in substance_columns
+
+        project_with_linked_bp.products_manufactured = ""
+        project_with_linked_bp.save()
+        response = self.client.get(
+            self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
+        )
+        content = response.getvalue()
+        validate_docx_export(
+            project_with_linked_bp, agency_inputter_user, response, content
+        )
+
+        with pytest.raises(AssertionError):
+            get_docx_table_rows(content, "Products manufactured")
+
+        substance_rows = get_docx_table_rows(content, "Baseline substance")
+        substance_columns = [row[:2] for row in substance_rows]
+        assert [
+            "Text baseline substance",
+            "Text replacement substance",
+        ] in substance_columns
+        assert [
             "FK baseline substance",
             "FK replacement substance",
         ] in substance_columns
