@@ -6,11 +6,7 @@ import type { UserSlice } from '@ors/types/store'
 import Cookies from 'js-cookie'
 
 import api from '@ors/helpers/Api/_api'
-import {
-  fetchSliceData,
-  getInitialSliceData,
-  setSlice,
-} from '@ors/helpers/Store/Store'
+import { getInitialSliceData, setSlice } from '@ors/helpers/Store/Store'
 
 function removeCookies() {
   Cookies.remove('csrftoken')
@@ -24,7 +20,24 @@ export const createUserSlice = ({
   ...getInitialSliceData<ApiUser, Record<string, any> | null | undefined>(),
   // Get user
   getUser: async () => {
-    fetchSliceData({ apiSettings: { path: 'api/auth/user/' }, slice: 'user' })
+    setSlice('user', { loaded: false, loading: true })
+    try {
+      const apiUser = await api<ApiUser>('api/auth/user/', {})
+
+      setSlice('user', {
+        data: apiUser,
+        error: null,
+        loaded: true,
+        loading: false,
+      })
+    } catch (error) {
+      setSlice('user', {
+        data: null,
+        error,
+        loaded: true,
+        loading: false,
+      })
+    }
   },
   // Login
   login: async (username, password) => {

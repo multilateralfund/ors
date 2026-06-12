@@ -5,20 +5,17 @@ import type {
   StoreState,
 } from '@ors/types/store'
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useRef } from 'react'
 
-import { merge } from 'lodash'
 import { useStore as useZustandStore } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import { createStore as createZustandStore } from 'zustand/vanilla'
 
 import createSlices from '@ors/slices'
 
-import { setStore, store } from './_store'
+import { setStore } from './_store'
 
 export type Store = ReturnType<typeof createStore>
-
-export const initialStore = createZustandStore<InitialStoreState>(() => ({}))
 
 export const createStore = (initialState: InitialStoreState) => {
   return createZustandStore<StoreState>((set, get) => ({
@@ -29,27 +26,15 @@ export const createStore = (initialState: InitialStoreState) => {
 export const StoreContext = createContext<Store | null>(null)
 
 export function StoreProvider({ children, initialState }: StoreProviderProps) {
-  const [, setMounted] = useState(false)
-  // Set initial store state
-  initialStore.setState(initialState)
-  // Hydrate store with initial state
-  setStore(useRef(createStore(initialStore.getState())))
-  // Re-hydrate store with new initial state
-  const unsubscribeRehydrate = initialStore.subscribe((state, prevState) => {
-    if (JSON.stringify(state) !== JSON.stringify(prevState)) {
-      store.current.setState(merge(store.current.getState(), state))
-    }
-  })
+  const storeRef = useRef<Store | null>(null)
 
-  useEffect(() => {
-    // Unsubscribe store re-hydration on initial render and trigger rerender
-    unsubscribeRehydrate()
-    setMounted(true)
-    /* eslint-disable-next-line */
-  }, [])
+  if (!storeRef.current) {
+    storeRef.current = createStore(initialState)
+    setStore(storeRef)
+  }
 
   return (
-    <StoreContext.Provider value={store.current}>
+    <StoreContext.Provider value={storeRef.current}>
       {children}
     </StoreContext.Provider>
   )
