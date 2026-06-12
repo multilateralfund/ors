@@ -30,6 +30,8 @@ export const createUserSlice = ({
         loaded: true,
         loading: false,
       })
+
+      return apiUser || null
     } catch (error) {
       setSlice('user', {
         data: null,
@@ -37,6 +39,8 @@ export const createUserSlice = ({
         loaded: true,
         loading: false,
       })
+
+      return null
     }
   },
   // Login
