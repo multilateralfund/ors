@@ -544,7 +544,7 @@ const ProjectsEdit = ({
   useEffect(() => {
     if (invalidFiles.length > 0) {
       setFileSizeErrors(
-        `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
+        `${map(invalidFiles, (file) => file.name).join(', ')}: File size exceeds 20 MB.`,
       )
     } else {
       setFileSizeErrors('')

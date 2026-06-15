@@ -11,12 +11,13 @@ import { FieldErrorIndicator } from '../HelperComponents'
 import ExportConfirmModal from './ExportConfirmModal'
 import { defaultProps, exportButtonClassname } from '../constants'
 import { ProjectDocs, ProjectFile } from '../interfaces'
+import { getInvalidSizeFiles } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
+import { filter, find, isNil, map, reduce } from 'lodash'
 import { CircularProgress, Divider } from '@mui/material'
-import { filter, find, isNil, map } from 'lodash'
 import { TbFiles } from 'react-icons/tb'
 import cx from 'classnames'
 
@@ -62,6 +63,22 @@ export function FilesViewer(props: ProjectDocs) {
   >(null)
 
   const { addUpdatedField } = useUpdatedFields()
+
+  const invalidFilesIndexes = reduce(
+    currentFiles,
+    (acc: number[], file, index) => {
+      if (
+        file instanceof File &&
+        file.size &&
+        getInvalidSizeFiles([file]).length > 0
+      ) {
+        acc = [...acc, index]
+      }
+
+      return acc
+    },
+    [],
+  )
 
   useEffect(() => {
     const existingFiles = filter(
@@ -246,12 +263,18 @@ export function FilesViewer(props: ProjectDocs) {
                           />
                           <FieldErrorIndicator
                             errors={{
-                              file: filter(
-                                errors,
-                                (error) => error?.id === index,
-                              ).map(
-                                (error) => error?.message.split(' - ')[1] || '',
-                              ),
+                              file: [
+                                ...(invalidFilesIndexes.includes(index)
+                                  ? ['File size exceeds 20 MB']
+                                  : []),
+                                ...filter(
+                                  errors,
+                                  (error) => error?.id === index,
+                                ).map(
+                                  (error) =>
+                                    error?.message.split(' - ')[1] || '',
+                                ),
+                              ],
                             }}
                             field="file"
                           />
@@ -259,12 +282,10 @@ export function FilesViewer(props: ProjectDocs) {
                       </div>
                     ) : (
                       <div className="mb-1 text-lg italic">
-                        (
                         {find(
                           fileTypes,
                           (type) => type[0] === file.type,
                         )?.[1] ?? ''}
-                        )
                       </div>
                     )}
                     {isFileEditable && (
