@@ -8,11 +8,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
-import {
-  getDefaultValues,
-  hasSpecificField,
-  getInvalidSizeFiles,
-} from '../utils.ts'
+import { getDefaultValues, hasSpecificField } from '../utils.ts'
 import {
   defaultTrancheErrors,
   initialCrossCuttingFields,
@@ -31,7 +27,7 @@ import {
 import { api } from '@ors/helpers/index.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { debounce, groupBy, map } from 'lodash'
+import { debounce, groupBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsCreateWrapper = () => {
@@ -114,7 +110,6 @@ const ProjectsCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [fileSizeErrors, setFileSizeErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
 
@@ -195,21 +190,6 @@ const ProjectsCreateWrapper = () => {
     }
   }, [country, cluster, tranche, specificFields])
 
-  const invalidFiles = useMemo(
-    () => getInvalidSizeFiles(files.newFiles ?? []),
-    [files],
-  )
-
-  useEffect(() => {
-    if (invalidFiles.length > 0) {
-      setFileSizeErrors(
-        `${map(invalidFiles, (file) => file.name).join(', ')}: File size exceeds 20 MB.`,
-      )
-    } else {
-      setFileSizeErrors('')
-    }
-  }, [files])
-
   const onBpDataChange = (bpData: BpDataProps) => {
     setBpData(bpData)
   }
@@ -248,7 +228,6 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
-          invalidFiles,
         }}
       />
       <ProjectsCreate
@@ -270,7 +249,6 @@ const ProjectsCreateWrapper = () => {
           shouldValidateTotalFund,
           relatedProjects,
           setErrors,
-          fileSizeErrors,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />

@@ -13,6 +13,7 @@ import {
   VersionsList,
 } from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
+import { MAX_FILE_SIZE } from '../constants'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -40,7 +41,6 @@ const ProjectsHeader = ({
   bpData,
   filesMetaData,
   loadedFiles,
-  invalidFiles,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -51,7 +51,6 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
   shouldValidateTotalFund: boolean
-  invalidFiles: File[]
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -89,8 +88,10 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    invalidFiles.length > 0 ||
-    !!find(filesMetaData, (metadata) => !metadata.type) ||
+    !!find(
+      filesMetaData,
+      (metadata) => !metadata.type || (metadata.size ?? 0 > MAX_FILE_SIZE),
+    ) ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&
       hasTrancheErrors)

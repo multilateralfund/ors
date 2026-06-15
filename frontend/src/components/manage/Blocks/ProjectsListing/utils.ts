@@ -7,6 +7,7 @@ import {
   approvalOdsFields,
   approvalToOdsMap,
   initialTranferedProjectData,
+  MAX_FILE_SIZE,
   PROJECTS_PER_PAGE,
   tableColumns,
 } from './constants'
@@ -1438,10 +1439,4 @@ export const formatMetaprojectData = (
   }
 
   return result
-}
-
-export const getInvalidSizeFiles = (files: File[]) => {
-  const MAX_FILE_SIZE = 20 * 1024 * 1024
-
-  return filter(files, (file) => file.size > MAX_FILE_SIZE)
 }

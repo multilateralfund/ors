@@ -10,7 +10,7 @@ import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
-import { initialTranferedProjectData } from '../constants'
+import { initialTranferedProjectData, MAX_FILE_SIZE } from '../constants'
 import {
   FileMetaDataType,
   ProjectFilesObject,
@@ -22,7 +22,6 @@ import {
   getFormattedDecimalValue,
   getNonFieldErrors,
   getTransferErrors,
-  getInvalidSizeFiles,
 } from '../utils'
 import { formatApiUrl, uploadFiles } from '@ors/helpers'
 
@@ -60,7 +59,6 @@ const ProjectTransferWrapper = ({
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
-  const [fileSizeErrors, setFileSizeErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
@@ -99,36 +97,23 @@ const ProjectTransferWrapper = ({
     [projectData, shouldValidateTotalFund],
   )
 
-  const invalidFiles = useMemo(
-    () => getInvalidSizeFiles(files.newFiles ?? []),
-    [files],
-  )
-
-  useEffect(() => {
-    if (invalidFiles.length > 0) {
-      setFileSizeErrors(
-        `${map(invalidFiles, (file) => file.name).join(', ')}: File size exceeds 20 MB.`,
-      )
-    } else {
-      setFileSizeErrors('')
-    }
-  }, [files])
-
   const allFileErrors = [
     ...(fileErrors ? [{ message: fileErrors }] : []),
-    ...(fileSizeErrors ? [{ message: fileSizeErrors }] : []),
     ...(files.newFiles?.length === 0
       ? [{ message: 'At least one file must be attached.' }]
       : []),
   ]
-  const missingFileTypeErrors = map(filesMetaData, ({ type }, index) =>
-    !type
+  const missingFileTypeErrors = map(filesMetaData, ({ type, size }, index) => {
+    const typeErrorMessage = 'Type is required.'
+    const sizeErrorMessage = 'File size exceeds 20 MB.'
+
+    return !type || (size ?? 0) > MAX_FILE_SIZE
       ? {
           id: index,
-          message: `Attachment ${Number(index) + 1} - Type is required.`,
+          message: `Attachment ${Number(index) + 1} - ${typeErrorMessage} ${sizeErrorMessage}`,
         }
-      : null,
-  ).filter(Boolean)
+      : null
+  }).filter(Boolean)
 
   const filteredErrors = useMemo(
     () =>
@@ -144,8 +129,7 @@ const ProjectTransferWrapper = ({
   const disableTransfer =
     Object.values(transferErrors).some((errors: any) => errors.length > 0) ||
     missingFileTypeErrors.length > 0 ||
-    files.newFiles?.length === 0 ||
-    invalidFiles.length > 0
+    files.newFiles?.length === 0
 
   useEffect(() => {
     setProjectData((prevData) => ({

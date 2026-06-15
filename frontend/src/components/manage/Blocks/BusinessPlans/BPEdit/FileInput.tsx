@@ -53,6 +53,7 @@ const FileInput = (props: BpFileInput) => {
             id: null,
             name: file.name,
             type: null,
+            size: file.size,
           })),
         ])
       }
