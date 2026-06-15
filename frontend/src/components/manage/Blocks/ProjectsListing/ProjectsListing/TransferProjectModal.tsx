@@ -22,6 +22,7 @@ import {
   getFormattedDecimalValue,
   getNonFieldErrors,
   getTransferErrors,
+  getInvalidSizeFiles,
 } from '../utils'
 import { formatApiUrl, uploadFiles } from '@ors/helpers'
 
@@ -97,20 +98,23 @@ const ProjectTransferWrapper = ({
     [projectData, shouldValidateTotalFund],
   )
 
+  const invalidFiles = useMemo(
+    () => getInvalidSizeFiles(files.newFiles ?? []),
+    [files],
+  )
+
+  useEffect(() => {
+    if (invalidFiles.length > 0) {
+      setFileErrors(
+        `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
+      )
+    }
+  }, [files])
+
   const allFileErrors = [
-    ...(fileErrors
-      ? [
-          {
-            message: fileErrors,
-          },
-        ]
-      : []),
+    ...(fileErrors ? [{ message: fileErrors }] : []),
     ...(files.newFiles?.length === 0
-      ? [
-          {
-            message: 'At least one file must be attached.',
-          },
-        ]
+      ? [{ message: 'At least one file must be attached.' }]
       : []),
   ]
   const missingFileTypeErrors = map(filesMetaData, ({ type }, index) =>
@@ -121,6 +125,7 @@ const ProjectTransferWrapper = ({
         }
       : null,
   ).filter(Boolean)
+
   const filteredErrors = useMemo(
     () =>
       Object.fromEntries(
@@ -135,7 +140,8 @@ const ProjectTransferWrapper = ({
   const disableTransfer =
     Object.values(transferErrors).some((errors: any) => errors.length > 0) ||
     missingFileTypeErrors.length > 0 ||
-    files.newFiles?.length === 0
+    files.newFiles?.length === 0 ||
+    invalidFiles.length > 0
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -186,9 +192,12 @@ const ProjectTransferWrapper = ({
 
       setErrors(errors)
 
-      const fileError = errors?.file || errors?.files || errors?.metadata
-      if (fileError) {
-        setFileErrors(fileError)
+      if (errors?.files ?? errors?.file ?? errors?.metadata) {
+        setFileErrors(
+          [errors?.files, errors?.file, errors?.metadata]
+            .filter(Boolean)
+            .join('\n'),
+        )
       }
 
       const otherError = errors?.details || errors?.detail

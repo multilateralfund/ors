@@ -17,6 +17,7 @@ import {
   getOdsOdpFields,
   getProjectDuration,
   hasSpecificField,
+  getInvalidSizeFiles,
 } from '../utils'
 import {
   OdsOdpFields,
@@ -533,6 +534,16 @@ const ProjectsEdit = ({
       debouncedGetTrancheErrors()
     }
   }, [country, cluster, tranche, project_id, specificFields])
+
+  useEffect(() => {
+    const invalidFiles = getInvalidSizeFiles(files.newFiles ?? [])
+
+    if (invalidFiles.length > 0) {
+      setFileErrors(
+        `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
+      )
+    }
+  }, [files])
 
   const setProjectDataWithEditTracking = (
     updater: React.SetStateAction<ProjectData>,

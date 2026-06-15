@@ -12,7 +12,11 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
+import {
+  getDefaultImpactErrors,
+  getIsSaveDisabled,
+  getInvalidSizeFiles,
+} from '../utils'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -87,6 +91,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
+    getInvalidSizeFiles(files.newFiles ?? []).length > 0 ||
     !!find(filesMetaData, (metadata) => !metadata.type) ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&

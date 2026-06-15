@@ -10,7 +10,11 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange.ts'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects.tsx'
 import { useGetTrancheErrors } from '../hooks/useGetTrancheErrors.ts'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
-import { getDefaultValues, hasSpecificField } from '../utils.ts'
+import {
+  getDefaultValues,
+  hasSpecificField,
+  getInvalidSizeFiles,
+} from '../utils.ts'
 import {
   defaultTrancheErrors,
   initialCrossCuttingFields,
@@ -29,8 +33,8 @@ import {
 import { api } from '@ors/helpers/index.ts'
 import { useStore } from '@ors/store.tsx'
 
+import { debounce, groupBy, map } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
-import { debounce, groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
@@ -191,6 +195,16 @@ const ProjectsCreateWrapper = () => {
       debouncedGetTrancheErrors()
     }
   }, [country, cluster, tranche, specificFields])
+
+  useEffect(() => {
+    const invalidFiles = getInvalidSizeFiles(files.newFiles ?? [])
+
+    if (invalidFiles.length > 0) {
+      setFileErrors(
+        `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
+      )
+    }
+  }, [files])
 
   const onBpDataChange = (bpData: BpDataProps) => {
     setBpData(bpData)
