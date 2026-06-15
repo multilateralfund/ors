@@ -60,6 +60,7 @@ const ProjectTransferWrapper = ({
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+  const [fileSizeErrors, setFileSizeErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
 
   const nonFieldsErrors = getNonFieldErrors(errors)
@@ -105,14 +106,17 @@ const ProjectTransferWrapper = ({
 
   useEffect(() => {
     if (invalidFiles.length > 0) {
-      setFileErrors(
+      setFileSizeErrors(
         `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
       )
+    } else {
+      setFileSizeErrors('')
     }
   }, [files])
 
   const allFileErrors = [
     ...(fileErrors ? [{ message: fileErrors }] : []),
+    ...(fileSizeErrors ? [{ message: fileSizeErrors }] : []),
     ...(files.newFiles?.length === 0
       ? [{ message: 'At least one file must be attached.' }]
       : []),

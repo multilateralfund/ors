@@ -95,6 +95,7 @@ const ProjectsCreate = ({
   setRefetchRelatedProjects,
   shouldValidateTotalFund,
   setErrors,
+  fileSizeErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -120,6 +121,7 @@ const ProjectsCreate = ({
     setRefetchRelatedProjects?: (refetch: boolean) => void
     shouldValidateTotalFund: boolean
     setErrors: (value: { [key: string]: [] }) => void
+    fileSizeErrors: string
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -733,7 +735,10 @@ const ProjectsCreate = ({
           <div className="leading-tight">Attachments</div>
           {mode !== 'add' && !loadedFiles ? (
             LoadingTab
-          ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
+          ) : fileErrors ||
+            hasNoFiles ||
+            missingFileTypeErrors.length > 0 ||
+            fileSizeErrors ? (
             areNextSectionsDisabled || bpData.bpDataLoading ? (
               DisabledAlert
             ) : (
@@ -767,13 +772,8 @@ const ProjectsCreate = ({
         />
       ),
       errors: [
-        ...(fileErrors
-          ? [
-              {
-                message: fileErrors,
-              },
-            ]
-          : []),
+        ...(fileErrors ? [{ message: fileErrors }] : []),
+        ...(fileSizeErrors ? [{ message: fileSizeErrors }] : []),
         ...(hasNoFiles
           ? [
               {

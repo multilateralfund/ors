@@ -249,6 +249,7 @@ const ProjectsEdit = ({
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+  const [fileSizeErrors, setFileSizeErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
 
@@ -535,13 +536,18 @@ const ProjectsEdit = ({
     }
   }, [country, cluster, tranche, project_id, specificFields])
 
-  useEffect(() => {
-    const invalidFiles = getInvalidSizeFiles(files.newFiles ?? [])
+  const invalidFiles = useMemo(
+    () => getInvalidSizeFiles(files.newFiles ?? []),
+    [files],
+  )
 
+  useEffect(() => {
     if (invalidFiles.length > 0) {
-      setFileErrors(
+      setFileSizeErrors(
         `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
       )
+    } else {
+      setFileSizeErrors('')
     }
   }, [files])
 
@@ -585,6 +591,7 @@ const ProjectsEdit = ({
             bpData,
             filesMetaData,
             shouldValidateTotalFund,
+            invalidFiles,
           }}
           loadedFiles={areFilesLoaded}
         />
@@ -615,6 +622,7 @@ const ProjectsEdit = ({
             setRefetchRelatedProjects,
             shouldValidateTotalFund,
             setErrors,
+            fileSizeErrors,
           }}
           setProjectData={setProjectDataWithEditTracking}
           specificFieldsLoaded={

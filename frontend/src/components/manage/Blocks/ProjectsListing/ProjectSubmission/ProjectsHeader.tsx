@@ -12,11 +12,7 @@ import {
   RedirectBackButton,
   VersionsList,
 } from '../HelperComponents'
-import {
-  getDefaultImpactErrors,
-  getIsSaveDisabled,
-  getInvalidSizeFiles,
-} from '../utils'
+import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -44,6 +40,7 @@ const ProjectsHeader = ({
   bpData,
   filesMetaData,
   loadedFiles,
+  invalidFiles,
   ...rest
 }: ProjectHeader & {
   mode: string
@@ -54,6 +51,7 @@ const ProjectsHeader = ({
   bpData: BpDataProps
   loadedFiles?: boolean
   shouldValidateTotalFund: boolean
+  invalidFiles: File[]
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -91,7 +89,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    getInvalidSizeFiles(files.newFiles ?? []).length > 0 ||
+    invalidFiles.length > 0 ||
     !!find(filesMetaData, (metadata) => !metadata.type) ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&

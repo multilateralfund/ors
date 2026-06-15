@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
@@ -116,6 +114,7 @@ const ProjectsCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+  const [fileSizeErrors, setFileSizeErrors] = useState<string>('')
   const [trancheErrors, setTrancheErrors] =
     useState<TrancheErrorType>(defaultTrancheErrors)
 
@@ -196,13 +195,18 @@ const ProjectsCreateWrapper = () => {
     }
   }, [country, cluster, tranche, specificFields])
 
-  useEffect(() => {
-    const invalidFiles = getInvalidSizeFiles(files.newFiles ?? [])
+  const invalidFiles = useMemo(
+    () => getInvalidSizeFiles(files.newFiles ?? []),
+    [files],
+  )
 
+  useEffect(() => {
     if (invalidFiles.length > 0) {
-      setFileErrors(
+      setFileSizeErrors(
         `${map(invalidFiles, (file) => file.name).join(', ')}: File size should not exceed 20MB.`,
       )
+    } else {
+      setFileSizeErrors('')
     }
   }, [files])
 
@@ -244,6 +248,7 @@ const ProjectsCreateWrapper = () => {
           bpData,
           filesMetaData,
           shouldValidateTotalFund,
+          invalidFiles,
         }}
       />
       <ProjectsCreate
@@ -265,6 +270,7 @@ const ProjectsCreateWrapper = () => {
           shouldValidateTotalFund,
           relatedProjects,
           setErrors,
+          fileSizeErrors,
         }}
         setProjectData={setProjectDataWithEditTracking}
       />
