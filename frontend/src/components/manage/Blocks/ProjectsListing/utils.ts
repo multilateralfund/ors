@@ -7,7 +7,6 @@ import {
   approvalOdsFields,
   approvalToOdsMap,
   initialTranferedProjectData,
-  MAX_FILE_SIZE,
   PROJECTS_PER_PAGE,
   tableColumns,
 } from './constants'

@@ -27,8 +27,8 @@ import {
 import { api } from '@ors/helpers/index.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { debounce, groupBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
+import { debounce, groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)

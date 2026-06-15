@@ -104,10 +104,11 @@ const ProjectTransferWrapper = ({
       : []),
   ]
   const missingFileTypeErrors = map(filesMetaData, ({ type, size }, index) => {
-    const typeErrorMessage = 'Type is required.'
-    const sizeErrorMessage = 'File size exceeds 20 MB.'
+    const typeErrorMessage = !type ? 'Type is required.' : ''
+    const sizeErrorMessage =
+      (size ?? 0) > MAX_FILE_SIZE ? 'File size exceeds 20 MB.' : ''
 
-    return !type || (size ?? 0) > MAX_FILE_SIZE
+    return typeErrorMessage || sizeErrorMessage
       ? {
           id: index,
           message: `Attachment ${Number(index) + 1} - ${typeErrorMessage} ${sizeErrorMessage}`,

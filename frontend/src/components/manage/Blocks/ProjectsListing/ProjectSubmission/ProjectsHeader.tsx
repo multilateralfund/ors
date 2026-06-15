@@ -90,7 +90,7 @@ const ProjectsHeader = ({
     bpData.bpDataLoading ||
     !!find(
       filesMetaData,
-      (metadata) => !metadata.type || (metadata.size ?? 0 > MAX_FILE_SIZE),
+      (metadata) => !metadata.type || (metadata.size ?? 0) > MAX_FILE_SIZE,
     ) ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&
