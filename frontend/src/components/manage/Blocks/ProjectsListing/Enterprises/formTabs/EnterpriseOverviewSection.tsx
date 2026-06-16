@@ -19,9 +19,7 @@ const EnterpriseOverviewSection = ({
   mode,
   enterprise,
   ...rest
-}: EnterpriseFormProps & {
-  mode: string
-}) => {
+}: EnterpriseFormProps & { mode: string }) => {
   const sectionIdentifier = 'overview'
 
   const { countries, agencies, project_types } = useContext(ProjectsDataContext)

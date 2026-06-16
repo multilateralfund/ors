@@ -94,3 +94,12 @@ export interface EnterpriseHeaderProps {
   enterpriseData: EnterpriseData
   setErrors: (value: { [key: string]: string[] }) => void
 }
+
+export type EnterpriseFieldsProps = {
+  enterpriseData: EnterpriseData
+  setEnterpriseData: SetEnterpriseData
+  sectionIdentifier: keyof EnterpriseData
+  field: string
+  errors: { [key: string]: string[] }
+  isDisabled?: boolean
+}
