@@ -33,12 +33,7 @@ const EnterpriseOverviewSection = ({
 
   const isAgencyUser = getIsAgencyUser(canViewOnlyOwnAgency, agency_id)
 
-  const { enterpriseData, setEnterpriseData } = rest
-  const { sectors, subsectors } = useGetEnterpriseFieldsOpts(
-    enterpriseData,
-    setEnterpriseData,
-    mode,
-  )
+  const { sectors, subsectors } = useGetEnterpriseFieldsOpts(mode)
 
   const selectFields = [
     {

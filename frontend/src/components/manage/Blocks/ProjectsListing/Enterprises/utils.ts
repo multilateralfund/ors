@@ -29,9 +29,7 @@ export const handleChangeSelectValues = (
               [field]: formattedValue,
             },
           }
-        : {
-            [field]: formattedValue,
-          }),
+        : { [field]: formattedValue }),
     }),
     field,
   )
