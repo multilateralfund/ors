@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext.tsx'
