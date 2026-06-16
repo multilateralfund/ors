@@ -59,13 +59,11 @@ def get_headers_cross_cutting(
             "id": "project_type",
             "headerName": "Type",
             "method": lambda r, h: r[h["id"]]["name"],
-            "docx_highlight": True,
         },
         {
             "id": "sector",
             "headerName": "Sector",
             "method": lambda r, h: r[h["id"]]["name"],
-            "docx_highlight": True,
         },
         {
             "id": "subsectors",
@@ -129,7 +127,6 @@ def get_headers_cross_cutting(
     ]
     result = []
     for header in default_headers:
-
         if header["id"] in fields.values_list("read_field_name", flat=True):
             result.append(header)
     return result
