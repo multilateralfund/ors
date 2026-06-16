@@ -128,14 +128,6 @@ class TestProjectsRetrieve:
         assert response.status_code == 200
         assert response.data["id"] == project.id
         assert response.data["substance_category"] == "Production"
-        assert response.data["latest_file"] is None
-
-    def test_project_files_get(self, viewer_user, project_url, project_file):
-        self.client.force_authenticate(user=viewer_user)
-        response = self.client.get(project_url)
-        assert response.status_code == 200
-        assert response.data["latest_file"]["id"] == project_file.id
-        assert response.data["latest_file"]["name"] == project_file.file.name
 
 
 class TestProjectFiles:

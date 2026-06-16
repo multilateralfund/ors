@@ -322,12 +322,12 @@ const EditActionButtons = ({
           })
         }
 
-        if (errors?.files) {
-          setFileErrors(errors.files)
-        }
-
-        if (errors?.metadata) {
-          setFileErrors(errors.metadata)
+        if (errors?.files ?? errors?.file ?? errors?.metadata) {
+          setFileErrors(
+            [errors?.files, errors?.file, errors?.metadata]
+              .filter(Boolean)
+              .join('\n'),
+          )
         }
 
         if (errors?.details) {

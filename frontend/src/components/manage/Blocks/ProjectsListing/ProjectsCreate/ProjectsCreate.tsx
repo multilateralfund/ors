@@ -19,7 +19,7 @@ import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import { useGetProjectsAPRData } from '../hooks/useGetProjectsAPRData.ts'
 import { useGetMetaProjectDetails } from '../UpdateMyaData/hooks.ts'
-import { projectPhaseOutFields } from '../constants.ts'
+import { MAX_FILE_SIZE, projectPhaseOutFields } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -530,14 +530,18 @@ const ProjectsCreate = ({
 
   const missingFileTypeErrors =
     mode === 'add' || loadedFiles
-      ? map(filesMetaData, ({ type }, index) =>
-          !type
+      ? map(filesMetaData, ({ type, size }, index) => {
+          const typeErrorMessage = !type ? 'Type is required.' : ''
+          const sizeErrorMessage =
+            (size ?? 0) > MAX_FILE_SIZE ? 'File size exceeds 20 MB.' : ''
+
+          return typeErrorMessage || sizeErrorMessage
             ? {
                 id: index,
-                message: `Attachment ${Number(index) + 1} - Type is required.`,
+                message: `Attachment ${Number(index) + 1} - ${typeErrorMessage} ${sizeErrorMessage}`,
               }
-            : null,
-        ).filter(Boolean)
+            : null
+        }).filter(Boolean)
       : []
 
   const steps = [
@@ -767,13 +771,7 @@ const ProjectsCreate = ({
         />
       ),
       errors: [
-        ...(fileErrors
-          ? [
-              {
-                message: fileErrors,
-              },
-            ]
-          : []),
+        ...(fileErrors ? [{ message: fileErrors }] : []),
         ...(hasNoFiles
           ? [
               {

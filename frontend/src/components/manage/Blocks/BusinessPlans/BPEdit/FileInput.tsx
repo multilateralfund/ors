@@ -52,6 +52,7 @@ const FileInput = (props: BpFileInput) => {
           ...map(uploadedFiles, (file) => ({
             id: null,
             name: file.name,
+            size: file.size,
             type: null,
           })),
         ])

@@ -207,9 +207,10 @@ const ProjectsEdit = ({
 
         setFilesMetaData((prev) => [
           ...prev,
-          ...map(data, (file) => ({
+          ...map(data, (file, index) => ({
             id: null,
             name: file.filename,
+            size: resolvedFiles[index].size,
             type: file.type,
           })),
         ])
@@ -513,9 +514,7 @@ const ProjectsEdit = ({
           An error occurred during previous tranches validation. Please try
           again.
         </>,
-        {
-          variant: 'error',
-        },
+        { variant: 'error' },
       )
 
       return true

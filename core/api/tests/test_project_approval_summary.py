@@ -186,7 +186,7 @@ class TestProjectApprovalSummaryExport(BaseTest):
         assert agency_summary["project_support_cost"] == 56
         assert agency_summary["total"] == 1290
 
-    def test_recommended_summary_uses_latest_project_version(
+    def test_recommended_summary_uses_v2_project_version(
         self,
         secretariat_approver_edit_access_user,
         project_recommended_status,
@@ -226,8 +226,9 @@ class TestProjectApprovalSummaryExport(BaseTest):
 
         assert response.status_code == HTTPStatus.OK
         assert response.data["projects"]["count"] == 1
-        assert response.data["grand_total"]["hcfc"] == pytest.approx(2)
-        assert response.data["grand_total"]["hfc"] == 2
-        assert response.data["grand_total"]["project_funding"] == 10000000000
-        assert response.data["grand_total"]["project_support_cost"] == 5012000
-        assert response.data["grand_total"]["total"] == 10005012000
+        assert response.data["projects"]["data"][0]["id"] == archived_project.id
+        assert response.data["grand_total"]["hcfc"] == pytest.approx(1)
+        assert response.data["grand_total"]["hfc"] == 1
+        assert response.data["grand_total"]["project_funding"] == 5000000
+        assert response.data["grand_total"]["project_support_cost"] == 12000
+        assert response.data["grand_total"]["total"] == 5012000

@@ -372,6 +372,7 @@ export interface FileMetaDataType {
   id: number | null
   name: string
   type: string | null
+  size?: number
 }
 
 export interface FileMetaDataProps {
