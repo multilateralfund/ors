@@ -279,7 +279,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "group_id",
             "consumption_level_status",
             "energy_savings",
-            "latest_file",
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meps_developed_domestic_refrigeration",
@@ -563,7 +562,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
     )
-    latest_file = ProjectV2FileSerializer(many=False, read_only=True)
     meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
@@ -600,7 +598,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "cluster_id",
             "lead_agency",
             "lead_agency_data",
-            "latest_file",
             "latest_project",
             "meta_project",
             "ods_odp",

@@ -138,8 +138,12 @@ const CreateActionButtons = ({
             })
           }
 
-          if (errors?.files) {
-            setFileErrors(errors.files)
+          if (errors?.files ?? errors?.file ?? errors?.metadata) {
+            setFileErrors(
+              [errors?.files, errors?.file, errors?.metadata]
+                .filter(Boolean)
+                .join('\n'),
+            )
           }
 
           if (errors?.details) {
@@ -147,10 +151,6 @@ const CreateActionButtons = ({
               type: 'error',
               message: errors.details,
             })
-          }
-
-          if (errors?.metadata) {
-            setFileErrors(errors.metadata)
           }
         }
       }

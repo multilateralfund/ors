@@ -13,6 +13,7 @@ import {
   VersionsList,
 } from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
+import { MAX_FILE_SIZE } from '../constants'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -87,7 +88,10 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     hasValidationErrors ||
     bpData.bpDataLoading ||
-    !!find(filesMetaData, (metadata) => !metadata.type) ||
+    !!find(
+      filesMetaData,
+      (metadata) => !metadata.type || (metadata.size ?? 0) > MAX_FILE_SIZE,
+    ) ||
     (mode === 'edit' &&
       project?.submission_status !== 'Draft' &&
       hasTrancheErrors)
@@ -179,7 +183,6 @@ const ProjectsHeader = ({
                 specificFields,
                 approvalFields,
                 postExComUpdate,
-                bpData,
                 filesMetaData,
               }}
               {...rest}

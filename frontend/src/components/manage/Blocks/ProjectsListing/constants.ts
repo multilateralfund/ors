@@ -190,3 +190,5 @@ export const defaultTrancheErrors = {
 }
 
 export const projectPhaseOutFields = ['co2_mt', 'odp', 'phase_out_mt']
+
+export const MAX_FILE_SIZE = 20 * 1024 * 1024

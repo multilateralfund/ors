@@ -49,6 +49,12 @@ class ProjectExportMixin:
                 description="Queries ALL projects.",
                 type=OpenApiTypes.BOOL,
             ),
+            OpenApiParameter(
+                name="inventory_report",
+                location=OpenApiParameter.QUERY,
+                description="If true, exports the inventory report.",
+                type=OpenApiTypes.BOOL,
+            ),
         ],
     )
     @action(methods=["GET"], detail=False)

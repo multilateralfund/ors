@@ -259,12 +259,10 @@ export function FilesViewer(props: ProjectDocs) {
                       </div>
                     ) : (
                       <div className="mb-1 text-lg italic">
-                        (
                         {find(
                           fileTypes,
                           (type) => type[0] === file.type,
                         )?.[1] ?? ''}
-                        )
                       </div>
                     )}
                     {isFileEditable && (
