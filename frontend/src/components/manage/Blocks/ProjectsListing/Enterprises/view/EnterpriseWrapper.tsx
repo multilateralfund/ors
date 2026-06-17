@@ -47,7 +47,7 @@ const EnterpriseWrapper = () => {
         <>
           <HeaderTitle>
             <div className="flex flex-wrap justify-between gap-3">
-              <div className="flex flex-col">
+              <div>
                 <RedirectBackButton />
                 <PageHeading>
                   <PageTitle
@@ -64,7 +64,7 @@ const EnterpriseWrapper = () => {
                 {canEditEnterprise && (
                   <CustomLink
                     href={`/projects-listing/enterprises/${enterprise_id}/edit`}
-                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                    className="border border-solid border-secondary px-4 hover:border-primary"
                     variant="contained"
                     color="secondary"
                     size="large"

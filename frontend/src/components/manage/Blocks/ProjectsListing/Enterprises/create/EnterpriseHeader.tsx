@@ -15,8 +15,8 @@ import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { CircularProgress, Button } from '@mui/material'
-import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 import { find } from 'lodash'
 import cx from 'classnames'
 
@@ -31,23 +31,23 @@ const EnterpriseHeader = ({
 }) => {
   const [_, setLocation] = useLocation()
 
-  const { enterprise_id } = useParams<Record<string, string>>()
   const { statuses } = useContext(EnterprisesDataContext)
-
   const { setInlineMessage } = useStore((state) => state.inlineMessage)
   const { clearUpdatedFields } = useUpdatedFields()
-
-  const formatStatus = (enterpriseStatus?: number | null) =>
-    find(statuses, (status) => status.id === enterpriseStatus)?.name ?? ''
 
   const [enterpriseStatus, setEnterpriseStatus] = useState('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  useEffect(() => {
-    setEnterpriseStatus(formatStatus(enterprise?.status))
-  }, [statuses])
-
   const isEdit = mode === 'edit' && !!enterprise
+
+  const formatStatus = (statusId: number | null) =>
+    find(statuses, (status) => status.id === statusId)?.name ?? ''
+
+  useEffect(() => {
+    if (isEdit) {
+      setEnterpriseStatus(formatStatus(enterprise.status))
+    }
+  }, [statuses])
 
   const overviewErrors = getFieldErrors(enterpriseData.overview, {})
   const isActionDisabled = hasSectionErrors(overviewErrors)
@@ -68,7 +68,7 @@ const EnterpriseHeader = ({
       }
 
       const requestUrl = isEdit
-        ? `api/enterprises/${enterprise_id}/`
+        ? `api/enterprises/${enterprise.id}/`
         : 'api/enterprises/'
       const requestMethod = isEdit ? 'PUT' : 'POST'
 
@@ -81,9 +81,7 @@ const EnterpriseHeader = ({
 
       enqueueSnackbar(
         <>{isEdit ? 'Updated' : 'Created'} enterprise successfully.</>,
-        {
-          variant: 'success',
-        },
+        { variant: 'success' },
       )
 
       if (isEdit) {
@@ -106,7 +104,7 @@ const EnterpriseHeader = ({
 
   return (
     <HeaderTitle>
-      <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
+      <div className="align-center flex flex-wrap gap-4">
         <div className="flex flex-col">
           <EnterpriseCancelButton mode="redirect" {...{ isEdit }} />
           <PageHeading>
@@ -137,11 +135,11 @@ const EnterpriseHeader = ({
               />
             ) : (
               <Button
-                className={cx('px-4 py-2 shadow-none', {
+                className={cx('px-4', {
                   [enabledButtonClassname]: !isActionDisabled,
                 })}
-                onClick={onSubmit}
                 disabled={isActionDisabled}
+                onClick={onSubmit}
                 variant="contained"
                 size="large"
               >

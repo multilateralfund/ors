@@ -19,11 +19,11 @@ const EnterpriseOverviewSection = ({
   mode,
   enterprise,
   ...rest
-}: EnterpriseFormProps & {
-  mode: string
-}) => {
+}: EnterpriseFormProps & { mode: string }) => {
   const sectionIdentifier = 'overview'
 
+  const { countries, agencies, project_types } = useContext(ProjectsDataContext)
+  const { statuses } = useContext(EnterprisesDataContext)
   const { canViewOnlyOwnAgency } = useContext(PermissionsContext)
 
   const userSlice = useStore((state) => state.user)
@@ -31,16 +31,7 @@ const EnterpriseOverviewSection = ({
 
   const isAgencyUser = getIsAgencyUser(canViewOnlyOwnAgency, agency_id)
 
-  const { enterpriseData, setEnterpriseData } = rest
-
-  const { sectors, subsectors } = useGetEnterpriseFieldsOpts(
-    enterpriseData,
-    setEnterpriseData,
-    mode,
-  )
-
-  const { countries, agencies, project_types } = useContext(ProjectsDataContext)
-  const { statuses } = useContext(EnterprisesDataContext)
+  const { sectors, subsectors } = useGetEnterpriseFieldsOpts(mode)
 
   const selectFields = [
     {

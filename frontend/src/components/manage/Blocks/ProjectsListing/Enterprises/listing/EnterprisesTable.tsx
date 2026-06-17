@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import DeleteEnterpriseModal from './DeleteEnterpriseModal'
+import DeleteEnterpriseModal from '../delete/DeleteEnterpriseModal'
 import getColumnDefs from './schema'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { getPaginationPageSize, getPaginationSelectorOpts } from '../../utils'
