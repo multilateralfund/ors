@@ -8,22 +8,23 @@ import {
   DateInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { FieldErrorIndicator } from '../HelperComponents'
-import { EnterpriseData, SetEnterpriseData } from './interfaces'
 import { getNonFieldErrors, onTextareaFocus } from '../utils'
 import { enterpriseFieldsMapping } from './constants'
-import {
-  getFieldDefaultProps,
-  handleChangeIntegerValues,
-  handleChangeDecimalValues,
-  handleChangeSelectValues,
-  handleChangeTextValues,
-  handleChangeDateValues,
-} from './utils'
+import { EnterpriseFieldsProps } from './interfaces'
+import { OptionsType } from '../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
   textAreaClassname,
 } from '../constants'
+import {
+  getFieldDefaultProps,
+  handleChangeTextValues,
+  handleChangeSelectValues,
+  handleChangeIntegerValues,
+  handleChangeDecimalValues,
+  handleChangeDateValues,
+} from './utils'
 import { InlineMessage } from '@ors/types/store'
 
 import { TextareaAutosize } from '@mui/material'
@@ -32,47 +33,50 @@ import { omit } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-type EnterpriseFieldsProps = {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: SetEnterpriseData
-  field: string
-  sectionIdentifier: keyof EnterpriseData
-  errors: { [key: string]: string[] }
-  isDisabled?: boolean
-}
+export const EnterpriseStatus = ({ status }: { status: string }) => (
+  <div className="mt-4 flex items-center gap-1.5">
+    <span>Status:</span>
+    {!!status ? (
+      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+        {status}
+      </span>
+    ) : (
+      '-'
+    )}
+  </div>
+)
 
 export const EnterpriseTextField = ({
   enterpriseData,
   setEnterpriseData,
-  field,
   sectionIdentifier,
-  isDisabled,
+  field,
   errors,
+  isDisabled,
 }: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
     <div className="flex items-center">
       <SimpleInput
         id={field}
+        type="text"
         disabled={isDisabled}
-        onFocus={onTextareaFocus}
         value={
           (enterpriseData[sectionIdentifier] as Record<string, any>)[field]
         }
         onChange={(event) =>
           handleChangeTextValues(
-            field,
-            setEnterpriseData,
             event,
             sectionIdentifier,
+            field,
+            setEnterpriseData,
           )
         }
-        type="text"
+        onFocus={onTextareaFocus}
         {...getFieldDefaultProps(isDisabled)}
-        containerClassName={cx(
-          defaultPropsSimpleField.containerClassName,
-          field !== 'stage' && ' w-full max-w-[41rem]',
-        )}
+        containerClassName={cx(defaultPropsSimpleField.containerClassName, {
+          'w-full max-w-[41rem]': field !== 'stage',
+        })}
       />
       <FieldErrorIndicator {...{ field, errors }} />
     </div>
@@ -82,25 +86,29 @@ export const EnterpriseTextField = ({
 export const EnterpriseNumberField = ({
   enterpriseData,
   setEnterpriseData,
+  sectionIdentifier,
   field,
+  errors,
+  isDisabled,
   dataType,
   prefix,
-  sectionIdentifier,
-  isDisabled,
-  errors,
 }: EnterpriseFieldsProps & { dataType: string; prefix?: string }) => {
   const isInteger = dataType === 'integer'
+  const computedFields = ['funds_approved', 'cost_effectiveness_approved']
 
   return (
     <div>
-      <Label>{enterpriseFieldsMapping[field]}</Label>
+      <Label>
+        {enterpriseFieldsMapping[field]}
+        {computedFields.includes(field) && ' (computed)'}
+      </Label>
       <div className="flex items-center">
         <FormattedNumberInput
           id={field}
           disabled={isDisabled}
+          prefix={prefix}
           withoutDefaultValue={true}
           decimalDigits={isInteger ? 0 : 2}
-          prefix={prefix}
           value={
             ((enterpriseData[sectionIdentifier] as Record<string, any>)[
               field
@@ -109,16 +117,16 @@ export const EnterpriseNumberField = ({
           onChange={(event) =>
             isInteger
               ? handleChangeIntegerValues(
-                  field,
-                  setEnterpriseData,
                   event,
                   sectionIdentifier,
+                  field,
+                  setEnterpriseData,
                 )
               : handleChangeDecimalValues(
-                  field,
-                  setEnterpriseData,
                   event,
                   sectionIdentifier,
+                  field,
+                  setEnterpriseData,
                 )
           }
           {...omit(getFieldDefaultProps(isDisabled), 'containerClassName')}
@@ -132,12 +140,12 @@ export const EnterpriseNumberField = ({
 export const EnterpriseSelectField = ({
   enterpriseData,
   setEnterpriseData,
-  field,
   sectionIdentifier,
-  isDisabled,
+  field,
   errors,
+  isDisabled,
 }: Omit<EnterpriseFieldsProps, 'field'> & {
-  field: { fieldName: string; options: any }
+  field: { fieldName: string; options: OptionsType[] }
 }) => {
   const { fieldName, options } = field
 
@@ -149,6 +157,7 @@ export const EnterpriseSelectField = ({
           widget="autocomplete"
           disabled={isDisabled}
           options={options}
+          getOptionLabel={(option) => getOptionLabel(options, option)}
           value={
             (enterpriseData[sectionIdentifier] as Record<string, any>)[
               fieldName
@@ -156,18 +165,17 @@ export const EnterpriseSelectField = ({
           }
           onChange={(_, value) =>
             handleChangeSelectValues(
-              fieldName,
-              setEnterpriseData,
               value,
               sectionIdentifier,
+              fieldName,
+              setEnterpriseData,
             )
           }
-          getOptionLabel={(option) => getOptionLabel(options, option)}
           {...defaultProps}
           {...(fieldName === 'subsector' && {
             FieldProps: {
               ...defaultProps.FieldProps,
-              className: defaultProps.FieldProps.className + ' sm:w-[21rem]',
+              className: cx('sm:w-[21rem]', defaultProps.FieldProps.className),
             },
           })}
         />
@@ -182,17 +190,16 @@ export const EnterpriseSelectField = ({
 export const EnterpriseTextAreaField = ({
   enterpriseData,
   setEnterpriseData,
-  field,
   sectionIdentifier,
-  isDisabled,
+  field,
   errors,
+  isDisabled,
 }: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]} (max 500 characters)</Label>
     <div className="flex items-center">
       <TextareaAutosize
         disabled={isDisabled}
-        onFocus={onTextareaFocus}
         value={
           (enterpriseData[sectionIdentifier] as Record<string, any>)[
             field
@@ -200,12 +207,13 @@ export const EnterpriseTextAreaField = ({
         }
         onChange={(event) =>
           handleChangeTextValues(
-            field,
-            setEnterpriseData,
             event,
             sectionIdentifier,
+            field,
+            setEnterpriseData,
           )
         }
+        onFocus={onTextareaFocus}
         className={cx(textAreaClassname, 'max-w-[45rem]')}
         maxLength={500}
         style={STYLE}
@@ -219,10 +227,10 @@ export const EnterpriseTextAreaField = ({
 export const EnterpriseDateField = ({
   enterpriseData,
   setEnterpriseData,
-  field,
   sectionIdentifier,
-  isDisabled,
+  field,
   errors,
+  isDisabled,
 }: EnterpriseFieldsProps) => (
   <div>
     <Label>{enterpriseFieldsMapping[field]}</Label>
@@ -238,10 +246,10 @@ export const EnterpriseDateField = ({
         formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
         onChange={(event) =>
           handleChangeDateValues(
-            field,
-            setEnterpriseData,
             event,
             sectionIdentifier,
+            field,
+            setEnterpriseData,
           )
         }
         {...omit(getFieldDefaultProps(isDisabled), 'containerClassName')}
@@ -281,16 +289,3 @@ export const handleErrors = async (
     variant: 'error',
   })
 }
-
-export const EnterpriseStatus = ({ status }: { status: string }) => (
-  <div className="mt-4 flex items-center gap-1.5">
-    <span>Status:</span>
-    {!!status ? (
-      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
-        {status}
-      </span>
-    ) : (
-      '-'
-    )}
-  </div>
-)

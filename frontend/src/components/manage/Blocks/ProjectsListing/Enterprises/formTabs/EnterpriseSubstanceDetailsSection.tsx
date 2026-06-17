@@ -1,4 +1,4 @@
-import { ChangeEvent, useContext } from 'react'
+import { useContext, ChangeEvent } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -15,7 +15,7 @@ import { onTextareaFocus } from '../../utils'
 import {
   enterpriseFieldsMapping,
   initialSubstanceDetailsFields,
-  substanceDecimalFields,
+  substanceDetailsFields,
   substanceFields,
 } from '../constants'
 
@@ -28,15 +28,15 @@ const EnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   errors,
-  odsOdpErrors,
+  substancesErrors,
 }: EnterpriseFormProps & {
-  odsOdpErrors: { [key: string]: string[] }[]
+  substancesErrors: { [key: string]: string[] }[]
 }) => {
-  const { substances, blends } = useContext(ProjectsDataContext)
-
   const sectionIdentifier = 'substance_fields'
   const sectionId = 'substance_details'
   const substanceData = enterpriseData[sectionId] || []
+
+  const { substances, blends } = useContext(ProjectsDataContext)
 
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,
@@ -50,9 +50,9 @@ const EnterpriseSubstanceDetailsSection = ({
     label: blend.name + ' (' + blend.composition + ')',
     is_substance: false,
   }))
-  const options = [...substancesOptions, ...blendOptions]
+  const chemicalOpts = [...substancesOptions, ...blendOptions]
 
-  const handleChangeDropdownValues = (value: any, index: number) => {
+  const handleChangeSelectValues = (value: any, index: number) => {
     const [fieldName = '', fieldValue] = split(value?.id ?? '', '_')
     const finalValue = parseInt(fieldValue) ?? null
 
@@ -65,10 +65,7 @@ const EnterpriseSubstanceDetailsSection = ({
         ods_substance: fieldName === 'substance' ? finalValue : null,
         ods_blend: fieldName === 'blend' ? finalValue : null,
       }
-      return {
-        ...prevData,
-        [sectionId]: updatedData,
-      }
+      return { ...prevData, [sectionId]: updatedData }
     }, 'substance')
   }
 
@@ -83,10 +80,8 @@ const EnterpriseSubstanceDetailsSection = ({
       const sectionData = prevData[sectionId] || []
       const updatedData = [...sectionData]
 
-      updatedData[index] = {
-        ...updatedData[index],
-        [field]: value,
-      }
+      updatedData[index] = { ...updatedData[index], [field]: value }
+
       return {
         ...prevData,
         [sectionId]: updatedData,
@@ -114,14 +109,9 @@ const EnterpriseSubstanceDetailsSection = ({
         const sectionData = prevData[sectionId] || []
         const updatedData = [...sectionData]
 
-        updatedData[index] = {
-          ...updatedData[index],
-          [field]: value,
-        }
-        return {
-          ...prevData,
-          [sectionId]: updatedData,
-        }
+        updatedData[index] = { ...updatedData[index], [field]: value }
+
+        return { ...prevData, [sectionId]: updatedData }
       }, field)
     } else {
       event.preventDefault()
@@ -160,7 +150,7 @@ const EnterpriseSubstanceDetailsSection = ({
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-2">
-        {map(substanceDecimalFields, (field, index) => (
+        {map(substanceDetailsFields, (field, index) => (
           <EnterpriseNumberField
             key={index}
             dataType="decimal"
@@ -177,25 +167,25 @@ const EnterpriseSubstanceDetailsSection = ({
 
       <Divider className="my-6" />
 
-      <div className="flex flex-col flex-wrap gap-y-2">
+      <div className="flex flex-col gap-y-2">
         {substanceData.map((substance, dataIndex) => (
-          <span key={dataIndex} className="flex flex-col flex-wrap gap-y-4">
-            <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-2">
+          <span key={dataIndex} className="flex flex-col gap-y-4">
+            <div className="align-center flex flex-wrap gap-x-7 gap-y-2">
               <>
                 <div>
                   <Label>{enterpriseFieldsMapping.ods_substance}</Label>
                   <div className="flex items-center">
                     <Field
                       widget="autocomplete"
-                      options={options}
+                      options={chemicalOpts}
                       value={getSubstanceValue(substance)}
                       onChange={(_, value) =>
-                        handleChangeDropdownValues(value, dataIndex)
+                        handleChangeSelectValues(value, dataIndex)
                       }
                       getOptionLabel={(option: any) =>
                         (isObject(option)
                           ? get(option, 'label')
-                          : (find(options, { id: option }) as OptionsType)
+                          : (find(chemicalOpts, { id: option }) as OptionsType)
                               ?.label) || ''
                       }
                       {...defaultProps}
@@ -209,7 +199,7 @@ const EnterpriseSubstanceDetailsSection = ({
                       field={
                         substance.ods_blend ? 'ods_blend' : 'ods_substance'
                       }
-                      errors={odsOdpErrors[dataIndex]}
+                      errors={substancesErrors[dataIndex]}
                     />
                   </div>
                 </div>
@@ -236,7 +226,7 @@ const EnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[dataIndex]}
+                          errors={substancesErrors[dataIndex]}
                         />
                       </div>
                     </div>
@@ -260,7 +250,7 @@ const EnterpriseSubstanceDetailsSection = ({
                         />
                         <FieldErrorIndicator
                           {...{ field }}
-                          errors={odsOdpErrors[dataIndex]}
+                          errors={substancesErrors[dataIndex]}
                         />
                       </div>
                     </div>
@@ -268,7 +258,7 @@ const EnterpriseSubstanceDetailsSection = ({
                 )}
               </>
               <IoTrash
-                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                className="mt-12 min-h-4 min-w-4 cursor-pointer fill-gray-400"
                 size={16}
                 onClick={() => {
                   onRemoveSubstance(dataIndex)

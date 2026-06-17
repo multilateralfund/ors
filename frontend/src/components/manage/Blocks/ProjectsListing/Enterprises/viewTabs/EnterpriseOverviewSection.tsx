@@ -6,8 +6,7 @@ import { detailItem } from '../../ProjectView/ViewHelperComponents'
 import { enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
 import { EnterpriseType } from '../interfaces'
-import { getEntityById } from '../utils'
-import { find } from 'lodash'
+import { getEntityNameById } from '../utils'
 
 const EnterpriseOverviewSection = ({
   enterprise,
@@ -18,16 +17,12 @@ const EnterpriseOverviewSection = ({
     useContext(ProjectsDataContext)
   const { statuses } = useContext(EnterprisesDataContext)
 
-  const country = getEntityById(countries, enterprise.country)?.name
-  const agency = getEntityById(agencies, enterprise.agency)?.name
-  const project_type = getEntityById(
-    project_types,
-    enterprise.project_type,
-  )?.name
-  const sector = getEntityById(sectors, enterprise.sector)?.name
-  const subsector = getEntityById(subsectors, enterprise.subsector)?.name
-  const status =
-    find(statuses, (status) => status.id === enterprise.status)?.name ?? ''
+  const country = getEntityNameById(countries, enterprise.country)
+  const agency = getEntityNameById(agencies, enterprise.agency)
+  const project_type = getEntityNameById(project_types, enterprise.project_type)
+  const sector = getEntityNameById(sectors, enterprise.sector)
+  const subsector = getEntityNameById(subsectors, enterprise.subsector)
+  const status = getEntityNameById(statuses, enterprise.status) ?? ''
 
   return (
     <div className="flex flex-col gap-4">

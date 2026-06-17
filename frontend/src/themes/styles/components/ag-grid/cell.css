@@ -286,7 +286,7 @@
 }
 
 .ag-table .ag-cell.ag-cell-no-border-r {
-  @apply border-r-0;
+  @apply border-r-0 pl-2.5;
 }
 
 .ag-table.metaproject-selection-table {

@@ -28,11 +28,11 @@ const EnterpriseFundingDetailsSection = ({
 
   return (
     <div className="flex flex-col gap-2">
-      {fields.map(({ slice, isDisabled }, idx) => (
-        <div key={idx} className="flex flex-wrap gap-x-20 gap-y-2">
-          {map(keys(sectionData).slice(...slice), (field) => (
+      {fields.map(({ slice, isDisabled }, index) => (
+        <div key={index} className="flex flex-wrap gap-x-20 gap-y-2">
+          {map(keys(sectionData).slice(...slice), (field, idx) => (
             <div
-              key={field}
+              key={idx}
               className={
                 field !== 'cost_effectiveness_approved'
                   ? 'w-full sm:w-[250px]'

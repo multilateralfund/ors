@@ -364,7 +364,7 @@ class ProjectsV2ProjectExportDocx:
         self._write_project_cross_cutting_fields(
             table=self.find_table("Cross-cutting fields"),
             fields=self._get_fields_for_section(section_name="Cross-Cutting").exclude(
-                label__in=["Description", "Type", "Sector"]
+                label__in=["Description"]
             ),
             data=data,
         )
