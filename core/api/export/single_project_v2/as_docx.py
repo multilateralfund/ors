@@ -9,6 +9,7 @@ from django.http import FileResponse
 from docx.enum.text import WD_COLOR_INDEX, WD_ALIGN_PARAGRAPH
 from docx.oxml import CT_P
 from docx.oxml import CT_Tbl
+from docx.shared import Cm
 from docx.table import Table
 
 from core.api.export import TEMPLATE_DIR
@@ -47,7 +48,7 @@ class ProjectsV2ProjectExportDocx:
     def __init__(self, project, user):
         self.user = user
         self.project = project
-        self._known_tables = []
+        self._known_tables: list[tuple[CT_P | None, Table]] = []
         with self.template_path.open("rb") as tpl:
             self.doc = docx.Document(tpl)
 
@@ -70,10 +71,40 @@ class ProjectsV2ProjectExportDocx:
 
         return found
 
+    def find_next_table(self, table: CT_Tbl, exclude_from_cleanup=False):
+        found = None
+
+        next_el = table._tbl.getnext()
+
+        while next_el is not None:
+            if isinstance(next_el, CT_Tbl):
+                found = Table(next_el, self.doc)
+                break
+
+            next_el = next_el.getnext()
+
+        if found and not exclude_from_cleanup:
+            self._known_tables.append((None, found))
+
+        return found
+
+    def exclude_table_from_cleanup(self, table: CT_Tbl):
+        for idx, (_, tbl) in enumerate(self._known_tables):
+            if tbl is table:
+                self._known_tables.pop(idx)
+                break
+
+    def exclude_table_paragraph_from_cleanup(self, table: CT_Tbl):
+        for idx, (_, tbl) in enumerate(self._known_tables):
+            if tbl is table:
+                self._known_tables[idx] = (None, tbl)
+                break
+
     @staticmethod
-    def remove_empty_table(table: Table, paragraph: CT_P):
+    def remove_empty_table(table: Table, paragraph: CT_P | None):
         table._element.getparent().remove(table._element)
-        paragraph.getparent().remove(paragraph)
+        if paragraph:
+            paragraph.getparent().remove(paragraph)
 
     def remove_empty_tables(self):
         for p, table in self._known_tables:
@@ -199,8 +230,15 @@ class ProjectsV2ProjectExportDocx:
             ods_odp.id: ods_odp
             for ods_odp in self.project.ods_odp.select_related("ods_replacement")
         }
+        products_manufactured = data.get("products_manufactured", "")
+
+        if products_manufactured:
+            table.rows[0].cells[-1].text = products_manufactured
+            self.exclude_table_from_cleanup(table)
+
+        substance_table = self.find_next_table(table)
+
         data_fields = [
-            "products_manufactured",
             "ods_display_name",
             [
                 "ods_replacement_text",
@@ -208,18 +246,23 @@ class ProjectsV2ProjectExportDocx:
             ],
         ]
 
-        for field, label in [
-            ("phase_out_mt", "Phase out MT"),
-            ("co2_mt", "Phase out CO2"),
-            ("odp", "Phase out ODP"),
+        for field, label, size in [
+            ("phase_out_mt", "Phase out MT", 4.5),
+            ("co2_mt", "Phase out CO2", 4.5),
+            ("odp", "Phase out ODP", 4.5),
         ]:
             has_data = any(s[field] is not None for s in substances)
 
             if has_data:
+                # If the project has substance data but no "Products manufactured" then
+                # the header paragraph will get removed together with the
+                # "Products manufactured" table so we need to prevent that by calling
+                # self.exclude_table_paragraph_from_cleanup passing the table provided.
+                self.exclude_table_paragraph_from_cleanup(table)
                 data_fields.append(field)
 
-                table.add_column(70)
-                cell = table.rows[0].cells[-1]
+                new_column = substance_table.add_column(Cm(size))
+                cell = new_column.cells[0]
                 cell.text = ""
                 paragraph = cell.paragraphs[0]
                 paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -228,7 +271,7 @@ class ProjectsV2ProjectExportDocx:
                 run.underline = True
 
         for substance in substances:
-            row = table.add_row()
+            row = substance_table.add_row()
             project_ods_odp = project_ods_odp_by_id.get(substance.get("id"))
             for c_idx, cell in enumerate(row.cells):
                 field = data_fields[c_idx]
@@ -255,9 +298,6 @@ class ProjectsV2ProjectExportDocx:
                 ),
                 "",
             )
-
-        if field == "products_manufactured":
-            return data.get("products_manufactured", "")
 
         if "__" in field and project_ods_odp:
             value = project_ods_odp
@@ -324,7 +364,7 @@ class ProjectsV2ProjectExportDocx:
         self._write_project_cross_cutting_fields(
             table=self.find_table("Cross-cutting fields"),
             fields=self._get_fields_for_section(section_name="Cross-Cutting").exclude(
-                label="Description"
+                label__in=["Description"]
             ),
             data=data,
         )

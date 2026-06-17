@@ -10,7 +10,7 @@ import ProjectTransfer from './ProjectTransfer'
 import { CancelButton } from '../HelperComponents'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { useGetProject } from '../hooks/useGetProject'
-import { initialTranferedProjectData } from '../constants'
+import { initialTranferedProjectData, MAX_FILE_SIZE } from '../constants'
 import {
   FileMetaDataType,
   ProjectFilesObject,
@@ -98,29 +98,24 @@ const ProjectTransferWrapper = ({
   )
 
   const allFileErrors = [
-    ...(fileErrors
-      ? [
-          {
-            message: fileErrors,
-          },
-        ]
-      : []),
+    ...(fileErrors ? [{ message: fileErrors }] : []),
     ...(files.newFiles?.length === 0
-      ? [
-          {
-            message: 'At least one file must be attached.',
-          },
-        ]
+      ? [{ message: 'At least one file must be attached.' }]
       : []),
   ]
-  const missingFileTypeErrors = map(filesMetaData, ({ type }, index) =>
-    !type
+  const missingFileTypeErrors = map(filesMetaData, ({ type, size }, index) => {
+    const typeErrorMessage = !type ? 'Type is required.' : ''
+    const sizeErrorMessage =
+      (size ?? 0) > MAX_FILE_SIZE ? 'File size exceeds 20 MB.' : ''
+
+    return typeErrorMessage || sizeErrorMessage
       ? {
           id: index,
-          message: `Attachment ${Number(index) + 1} - Type is required.`,
+          message: `Attachment ${Number(index) + 1} - ${typeErrorMessage} ${sizeErrorMessage}`,
         }
-      : null,
-  ).filter(Boolean)
+      : null
+  }).filter(Boolean)
+
   const filteredErrors = useMemo(
     () =>
       Object.fromEntries(
@@ -186,9 +181,12 @@ const ProjectTransferWrapper = ({
 
       setErrors(errors)
 
-      const fileError = errors?.file || errors?.files || errors?.metadata
-      if (fileError) {
-        setFileErrors(fileError)
+      if (errors?.files ?? errors?.file ?? errors?.metadata) {
+        setFileErrors(
+          [errors?.files, errors?.file, errors?.metadata]
+            .filter(Boolean)
+            .join('\n'),
+        )
       }
 
       const otherError = errors?.details || errors?.detail

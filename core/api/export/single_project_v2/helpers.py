@@ -16,7 +16,7 @@ from core.models import Project
 logger = logging.getLogger(__name__)
 
 
-def format_iso_date(isodate=None):
+def format_iso_date(isodate=None, date_format="%d/%m/%Y"):
     if isodate:
         if isinstance(isodate, str):
             try:
@@ -27,7 +27,7 @@ def format_iso_date(isodate=None):
             date = isodate
         else:
             return ""
-        return date.strftime("%d/%m/%Y")
+        return date.strftime(date_format)
     return ""
 
 

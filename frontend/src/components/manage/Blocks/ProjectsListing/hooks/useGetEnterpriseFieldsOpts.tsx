@@ -1,20 +1,12 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
-import { EnterpriseData } from '../Enterprises/interfaces'
 import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { api } from '@ors/helpers'
 
-import { debounce, filter, find, sortBy } from 'lodash'
+import { debounce, filter, sortBy } from 'lodash'
 
-const useGetEnterpriseFieldsOpts = (
-  enterpriseData: EnterpriseData,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
-  mode: string,
-) => {
-  const sectionIdentifier = 'overview'
-  const { subsector } = enterpriseData[sectionIdentifier]
-
+const useGetEnterpriseFieldsOpts = (mode: string) => {
   const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
   const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
   const sectors = mode === 'edit' ? sectorsOpts : crtSectorsOpts
@@ -55,10 +47,7 @@ const useGetEnterpriseFieldsOpts = (
       const res = await api(
         'api/project-subsector/',
         {
-          params: {
-            // sector_id: sector,
-            include_obsoletes: true,
-          },
+          params: { include_obsoletes: true },
           withStoreCache: true,
         },
         false,
@@ -72,43 +61,11 @@ const useGetEnterpriseFieldsOpts = (
 
   const debouncedFetchProjectSubsectors = debounce(fetchProjectSubsectors, 0)
 
-  // if we want a relation between sector and subsector
-
-  // useEffect(() => {
-  //   if (sector) {
-  //     debouncedFetchProjectSubsectors()
-  //   } else {
-  //     setSubsectorsOpts([])
-  //   }
-  // }, [sector])
-
   useEffect(() => {
     debouncedFetchProjectSubsectors()
   }, [])
 
-  useEffect(() => {
-    if (
-      // !sector ||
-      subsectors.length > 0 &&
-      !find(subsectors, (crtSubsector) => subsector === crtSubsector.id)
-    ) {
-      setEnterpriseData((prev) => ({
-        ...prev,
-        ...{
-          [sectionIdentifier]: {
-            ...prev[sectionIdentifier],
-            subsector: null,
-          },
-        },
-      }))
-    }
-  }, [JSON.stringify(subsectors)])
-  // }, [JSON.stringify(subsectors), sector])
-
-  return {
-    sectors,
-    subsectors,
-  }
+  return { sectors, subsectors }
 }
 
 export default useGetEnterpriseFieldsOpts

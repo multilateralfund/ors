@@ -31,16 +31,21 @@ def _format_summary_values(values):
 
 
 def compute_fields(projects: QuerySet[Project]):
-    return _format_summary_values(
-        projects.aggregate(
-            projects_count=Count("id"),
-            hcfc=Coalesce(Sum("ods_odp__odp"), 0.0),
-            hfc=Coalesce(Sum("ods_odp__co2_mt"), 0.0),
-            project_funding=Coalesce(Sum("total_fund"), 0.0),
-            project_support_cost=Coalesce(Sum("support_cost_psc"), 0.0),
-            total=Coalesce(Sum(F("total_fund") + F("support_cost_psc")), 0.0),
-        )
+    project_values = projects.aggregate(
+        projects_count=Count("id"),
+        project_funding=Coalesce(Sum("total_fund"), 0.0),
+        project_support_cost=Coalesce(Sum("support_cost_psc"), 0.0),
     )
+    ods_values = projects.aggregate(
+        hcfc=Coalesce(Sum("ods_odp__odp"), 0.0),
+        hfc=Coalesce(Sum("ods_odp__co2_mt"), 0.0),
+    )
+    values = {**project_values, **ods_values}
+    values["total"] = (values["project_funding"] or 0) + (
+        values["project_support_cost"] or 0
+    )
+
+    return _format_summary_values(values)
 
 
 def grand_total(values):
@@ -139,19 +144,40 @@ class ApprovalSummaryByPartiesAndImplementingAgenciesSerializer(
     instance: QuerySet[Project]
 
     def to_representation(self, projects: QuerySet[Project]):
-        return [
-            _format_summary_values(agency)
-            for agency in projects.values(
-                agency_name=F("agency__name"), agency_type=F("agency__agency_type")
-            ).annotate(
-                projects_count=Count("id", distinct=True),
-                hcfc=Sum("ods_odp__odp"),
-                hfc=Sum("ods_odp__co2_mt"),
-                project_funding=Sum("total_fund"),
-                project_support_cost=Sum("support_cost_psc"),
-                total=Sum(F("total_fund") + F("support_cost_psc")),
-            )
-        ]
+        agency_annotations = {
+            "agency_name": F("agency__name"),
+            "agency_type": F("agency__agency_type"),
+        }
+        project_values = projects.values(**agency_annotations).annotate(
+            projects_count=Count("id"),
+            project_funding=Sum("total_fund"),
+            project_support_cost=Sum("support_cost_psc"),
+        )
+        ods_values = projects.values(**agency_annotations).annotate(
+            hcfc=Sum("ods_odp__odp"),
+            hfc=Sum("ods_odp__co2_mt"),
+        )
+
+        def agency_key(row):
+            return row["agency_name"], row["agency_type"]
+
+        ods_by_agency = {
+            agency_key(row): {"hcfc": row["hcfc"], "hfc": row["hfc"]}
+            for row in ods_values
+        }
+
+        result = []
+        for agency in project_values:
+            project_funding = agency["project_funding"] or 0
+            project_support_cost = agency["project_support_cost"] or 0
+            summary = {
+                **agency,
+                **ods_by_agency.get(agency_key(agency), {}),
+                "total": project_funding + project_support_cost,
+            }
+            result.append(_format_summary_values(summary))
+
+        return result
 
 
 class ApprovalSummarySerializer(serializers.BaseSerializer):

@@ -390,37 +390,37 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert row is not None
         assert sheet[f"{headers['id']}{row}"].value == project.id
         assert sheet[f"{headers['Country']}{row}"].value == project.country.name
-        assert sheet[f"{headers['Metacode']}{row}"].value == project.metacode
+        assert sheet[f"{headers['Meta Code']}{row}"].value == project.metacode
         assert sheet[f"{headers['Code']}{row}"].value == project.code
-        assert sheet[f"{headers['Legacy code']}{row}"].value == project.legacy_code
+        assert sheet[f"{headers['Legacy Code']}{row}"].value == project.legacy_code
         assert sheet[f"{headers['Agency']}{row}"].value == project.agency.name
-        assert sheet[f"{headers['Lead agency']}{row}"].value == lead_agency.name
+        assert sheet[f"{headers['Lead Agency']}{row}"].value == lead_agency.name
         assert sheet[f"{headers['Cluster']}{row}"].value == project.cluster.name
         assert sheet[f"{headers['Type']}{row}"].value == project.project_type.code
         assert sheet[f"{headers['Sector']}{row}"].value == project.sector.name
-        assert sheet[f"{headers['Sector legacy']}{row}"].value == project.sector_legacy
-        assert sheet[f"{headers['Sub-sector(s)']}{row}"].value == ", ".join(
+        assert sheet[f"{headers['Sector Legacy']}{row}"].value == project.sector_legacy
+        assert sheet[f"{headers['Subsector']}{row}"].value == ", ".join(
             [subsector_one.name, subsector_two.name]
         )
         assert (
-            sheet[f"{headers['Subsector legacy']}{row}"].value
+            sheet[f"{headers['Subsector Legacy']}{row}"].value
             == project.subsector_legacy
         )
-        assert sheet[f"{headers['Title']}{row}"].value == project.title
-        assert sheet[f"{headers['Description']}{row}"].value == project.description
+        assert sheet[f"{headers['Project Title']}{row}"].value == project.title
         assert (
-            sheet[f"{headers['Executive Committee provision']}{row}"].value
-            == project.excom_provision
+            sheet[f"{headers['Project Description']}{row}"].value == project.description
+        )
+        assert (
+            sheet[f"{headers['ExCom Provision']}{row}"].value == project.excom_provision
         )
         assert (
             sheet[f"{headers['Product manufactured']}{row}"].value
             == project.products_manufactured
         )
         assert sheet[f"{headers['Tranche number']}{row}"].value == project.tranche
-        assert sheet[f"{headers['Category']}{row}"].value == meta_project.type
-        assert (
-            sheet[f"{headers['Funding window']}{row}"].value
-            == funding_window.meeting.number
+        assert sheet[f"{headers['Category']}{row}"].value == "MYA"
+        assert sheet[f"{headers['Funding window']}{row}"].value == str(
+            funding_window.decision.number
         )
         assert sheet[f"{headers['Production']}{row}"].value == "Yes"
         assert (
@@ -429,12 +429,13 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert sheet[f"{headers['Additional funding']}{row}"].value == "Yes"
         assert last_header == "cost_effectiveness_co2_actual"
-        assert sheet[
-            f"{headers['End date (MYA)']}{row}"
-        ].value == meta_project.end_date.strftime("%d/%m/%Y")
-        assert sheet[f"{headers['Transfer meeting']}{row}"].value in (None, "")
-        assert sheet[f"{headers['Transfer decision']}{row}"].value in (None, "")
-        assert sheet[f"{headers['Transferred from']}{row}"].value in (None, "")
+        assert (
+            sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
+            == meta_project.end_date.date()
+        )
+        assert sheet[f"{headers['Transfer Meeting']}{row}"].value in (None, "")
+        assert sheet[f"{headers['Transfer Decision']}{row}"].value in (None, "")
+        assert sheet[f"{headers['Agency Transferred From']}{row}"].value in (None, "")
 
     def test_export_inventory_report_populates_prior_meeting_columns(self, admin_user):
         final_project = ProjectFactory.create(
@@ -489,10 +490,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             2: {"fund": 20, "psc": 2, "meeting": 204, "date": date(2024, 4, 15)},
             3: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
         }
-        currency_format = "###,###,##0.00#############"
+        currency_format = "#,##0;-#,##0;;@"
         for idx, values in expected.items():
-            fund_cell = sheet[f"{headers[f'Project funding meeting {idx}']}{row}"]
-            psc_cell = sheet[f"{headers[f'PSC meeting {idx}']}{row}"]
+            fund_cell = sheet[f"{headers[f'Funds Approved {idx}']}{row}"]
+            psc_cell = sheet[f"{headers[f'Support Costs Approved {idx}']}{row}"]
 
             assert fund_cell.value == values["fund"]
             assert fund_cell.number_format == currency_format
@@ -572,7 +573,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             2: {"fund": 20, "psc": 2, "meeting": 205, "date": date(2024, 5, 15)},
             3: {"fund": 20, "psc": 2, "meeting": 206, "date": date(2024, 6, 15)},
         }
-        currency_format = "###,###,##0.00#############"
+        currency_format = "#,##0;-#,##0;;@"
         for idx, values in expected.items():
             fund_cell = sheet[f"{headers[f'Fund Adjustments {idx}']}{row}"]
             psc_cell = sheet[f"{headers[f'Support Cost Adjustments {idx}']}{row}"]
@@ -934,15 +935,46 @@ class TestProjectV2ExportDOCX(BaseTest):
         validate_docx_export(
             project_with_linked_bp, agency_inputter_user, response, content
         )
-        substance_rows = get_docx_table_rows(content, "Substance")
-        substance_columns = [row[:3] for row in substance_rows]
-        assert [
+
+        products_manufactured_rows = get_docx_table_rows(
+            content, "Products manufactured"
+        )
+        assert products_manufactured_rows[0] == [
+            "Products manufactured",
             "Manufactured product",
+        ]
+
+        substance_rows = get_docx_table_rows(content, "Baseline substance")
+        substance_columns = [row[:2] for row in substance_rows]
+        assert [
             "Text baseline substance",
             "Text replacement substance",
         ] in substance_columns
         assert [
-            "Manufactured product",
+            "FK baseline substance",
+            "FK replacement substance",
+        ] in substance_columns
+
+        project_with_linked_bp.products_manufactured = ""
+        project_with_linked_bp.save()
+        response = self.client.get(
+            self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
+        )
+        content = response.getvalue()
+        validate_docx_export(
+            project_with_linked_bp, agency_inputter_user, response, content
+        )
+
+        with pytest.raises(AssertionError):
+            get_docx_table_rows(content, "Products manufactured")
+
+        substance_rows = get_docx_table_rows(content, "Baseline substance")
+        substance_columns = [row[:2] for row in substance_rows]
+        assert [
+            "Text baseline substance",
+            "Text replacement substance",
+        ] in substance_columns
+        assert [
             "FK baseline substance",
             "FK replacement substance",
         ] in substance_columns

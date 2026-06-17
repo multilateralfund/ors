@@ -1,10 +1,10 @@
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import {
-  dateDetailItem,
   detailItem,
+  dateDetailItem,
   numberDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
-import { detailsDateFields, enterpriseFieldsMapping } from '../constants'
+import { dateFields, enterpriseFieldsMapping } from '../constants'
 import { viewColumnsClassName } from '../../constants'
 import { EnterpriseType } from '../interfaces'
 
@@ -30,7 +30,7 @@ const EnterpriseDetailsSection = ({
     </div>
     {detailItem(enterpriseFieldsMapping.application, enterprise.application)}
     <div className={viewColumnsClassName}>
-      {map(detailsDateFields.slice(0, 2), (field, index) => (
+      {map(dateFields.slice(0, 2), (field, index) => (
         <div key={index}>
           {dateDetailItem(
             enterpriseFieldsMapping[field],
@@ -61,7 +61,7 @@ const EnterpriseDetailsSection = ({
         enterpriseFieldsMapping.meeting,
         getMeetingNr(enterprise?.meeting ?? undefined)?.toString() as string,
       )}
-      {map(detailsDateFields.slice(2), (field, index) => (
+      {map(dateFields.slice(3), (field, index) => (
         <div key={index}>
           {dateDetailItem(
             enterpriseFieldsMapping[field],
@@ -74,9 +74,7 @@ const EnterpriseDetailsSection = ({
       {detailItem(
         enterpriseFieldsMapping.excom_provision,
         enterprise.excom_provision,
-        {
-          detailClassname: 'self-start',
-        },
+        { detailClassname: 'self-start' },
       )}
     </div>
   </div>

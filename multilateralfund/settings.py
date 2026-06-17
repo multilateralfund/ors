@@ -525,7 +525,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "synchronize_decisions": {
         "task": "core.tasks.synchronize_decisions",
-        "schedule": crontab(minute="10", hour="0"),
+        "schedule": crontab(minute="0"),
     },
 }
 

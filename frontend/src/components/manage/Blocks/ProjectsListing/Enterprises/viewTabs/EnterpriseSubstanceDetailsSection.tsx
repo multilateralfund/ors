@@ -3,18 +3,18 @@ import { useContext } from 'react'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
-import { enterpriseFieldsMapping, substanceDecimalFields } from '../constants'
+import { enterpriseFieldsMapping, substanceDetailsFields } from '../constants'
 import { viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../interfaces'
 import { formatNumberColumns } from '../../utils'
+import { EnterpriseType } from '../interfaces'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
 
 import { find, isNil, map, sumBy } from 'lodash'
 import {
-  CellClassParams,
   GetRowIdParams,
   ITooltipParams,
+  CellClassParams,
   ValueGetterParams,
 } from 'ag-grid-community'
 
@@ -26,23 +26,6 @@ const EnterpriseSubstanceDetailsSection = ({
   const { substances, blends } = useContext(ProjectsDataContext)
 
   const odsOdpData = enterprise.ods_odp ?? []
-
-  const getFieldValue = (params: ITooltipParams | ValueGetterParams) => {
-    if (params.node?.rowPinned) {
-      return 'TOTAL'
-    }
-
-    const options: (ApiSubstance | ApiBlend)[] = params.data.ods_substance
-      ? substances
-      : blends
-    const field = params.data.ods_substance ? 'ods_substance' : 'ods_blend'
-    const currentValueObj = find(options, { id: params.data[field] })
-
-    return (
-      currentValueObj?.name +
-      (field === 'ods_blend' ? (currentValueObj as ApiBlend)?.composition : '')
-    )
-  }
 
   const totalRow =
     odsOdpData.length > 0
@@ -61,7 +44,27 @@ const EnterpriseSubstanceDetailsSection = ({
         ]
       : []
 
-  const getDecimalValue = (
+  const getOdsFieldValue = (params: ITooltipParams | ValueGetterParams) => {
+    if (params.node?.rowPinned) {
+      return 'TOTAL'
+    }
+
+    const odsSubstanceValue = params.data.ods_substance
+    const field = odsSubstanceValue ? 'ods_substance' : 'ods_blend'
+    const options: (ApiSubstance | ApiBlend)[] = odsSubstanceValue
+      ? substances
+      : blends
+    const currentValueObj = find(options, { id: params.data[field] })
+
+    return (
+      currentValueObj?.name +
+      (field === 'ods_blend'
+        ? ` (${(currentValueObj as ApiBlend)?.composition})`
+        : '')
+    )
+  }
+
+  const getDecimalFieldValue = (
     params: ValueGetterParams | ITooltipParams,
     field: string,
   ) => (!isNil(params.data[field]) ? formatNumberColumns(params, field) : '')
@@ -76,9 +79,10 @@ const EnterpriseSubstanceDetailsSection = ({
   const columnDefs = [
     {
       headerName: enterpriseFieldsMapping.ods_substance,
-      valueGetter: (params: ValueGetterParams) => getFieldValue(params) || '-',
+      valueGetter: (params: ValueGetterParams) =>
+        getOdsFieldValue(params) || '-',
       tooltipValueGetter: (params: ITooltipParams) =>
-        getFieldValue(params) || '-',
+        getOdsFieldValue(params) || '-',
       cellClassRules: {
         'font-bold': (params: CellClassParams) => !!params.node?.rowPinned,
       },
@@ -86,9 +90,9 @@ const EnterpriseSubstanceDetailsSection = ({
     {
       headerName: enterpriseFieldsMapping.consumption,
       valueGetter: (params: ValueGetterParams) =>
-        getDecimalValue(params, 'consumption'),
+        getDecimalFieldValue(params, 'consumption'),
       tooltipValueGetter: (params: ITooltipParams) =>
-        getDecimalValue(params, 'consumption'),
+        getDecimalFieldValue(params, 'consumption'),
     },
     {
       headerName: enterpriseFieldsMapping.selected_alternative,
@@ -98,9 +102,9 @@ const EnterpriseSubstanceDetailsSection = ({
     {
       headerName: enterpriseFieldsMapping.chemical_phased_in_mt,
       valueGetter: (params: ValueGetterParams) =>
-        getDecimalValue(params, 'chemical_phased_in_mt'),
+        getDecimalFieldValue(params, 'chemical_phased_in_mt'),
       tooltipValueGetter: (params: ITooltipParams) =>
-        getDecimalValue(params, 'chemical_phased_in_mt'),
+        getDecimalFieldValue(params, 'chemical_phased_in_mt'),
     },
   ]
 
@@ -108,7 +112,7 @@ const EnterpriseSubstanceDetailsSection = ({
     <>
       <div className="flex flex-col gap-4">
         <div className={viewColumnsClassName}>
-          {map(substanceDecimalFields, (field, index) => (
+          {map(substanceDetailsFields, (field, index) => (
             <div key={index}>
               {numberDetailItem(
                 enterpriseFieldsMapping[field],
@@ -119,12 +123,12 @@ const EnterpriseSubstanceDetailsSection = ({
           ))}
         </div>
         <ViewTable
+          className={odsOdpData.length > 0 ? 'enterprise-table' : ''}
           getRowId={(props: GetRowIdParams) => props.data.id}
           rowData={odsOdpData}
           defaultColDef={defaultColDef}
           columnDefs={columnDefs}
           pinnedBottomRowData={totalRow}
-          className={odsOdpData.length > 0 ? 'enterprise-table' : ''}
           domLayout="autoHeight"
           enablePagination={false}
           suppressCellFocus={true}

@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { EnterpriseTextAreaField } from '../FormHelperComponents'
 import { EnterpriseFormProps } from '../interfaces'
-import { remarksFields } from '../constants'
+import { textAreaFields } from '../constants'
 import { getIsAgencyUser } from '../utils'
 import { useStore } from '@ors/store'
 
@@ -19,7 +19,7 @@ const EnterpriseRemarksSection = (props: EnterpriseFormProps) => {
 
   return (
     <div className="flex max-w-[41rem] flex-col gap-y-2">
-      {map(remarksFields, (field, index) => (
+      {map(textAreaFields.slice(1), (field, index) => (
         <EnterpriseTextAreaField
           key={index}
           sectionIdentifier="remarks"

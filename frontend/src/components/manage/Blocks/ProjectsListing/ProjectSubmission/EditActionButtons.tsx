@@ -15,7 +15,6 @@ import {
   projectPhaseOutFields,
 } from '../constants'
 import {
-  canEditField,
   checkInvalidValue,
   formatApprovalData,
   formatFiles,
@@ -40,7 +39,6 @@ import {
   ActionButtons,
   RelatedProjectsType,
   ProjectSpecificFields,
-  BpDataProps,
   FileMetaDataType,
 } from '../interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
@@ -75,7 +73,6 @@ const EditActionButtons = ({
   approvalFields = [],
   specificFieldsLoaded,
   postExComUpdate,
-  bpData,
   filesMetaData,
   shouldValidateTotalFund,
 }: ActionButtons & {
@@ -86,7 +83,6 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   approvalFields?: ProjectSpecificFields[]
   postExComUpdate?: boolean
-  bpData: BpDataProps
   shouldValidateTotalFund: boolean
 }) => {
   const [_, setLocation] = useLocation()
@@ -99,7 +95,6 @@ const EditActionButtons = ({
     canRecommendProjects,
     canApproveProjects,
     canEditApprovedProjects,
-    canViewBp,
   } = useContext(PermissionsContext)
   const { altTechs } = useContext(ProjectsDataContext)
 
@@ -108,9 +103,7 @@ const EditActionButtons = ({
   )
 
   const { defaultMpErrors } = useStore((state) => state.mpData)
-  const { projectFields, editableFields } = useStore(
-    (state) => state.projectFields,
-  )
+  const { projectFields } = useStore((state) => state.projectFields)
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
@@ -134,7 +127,6 @@ const EditActionButtons = ({
   } = project
   const {
     projIdentifiers,
-    bpLinking,
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
@@ -262,14 +254,7 @@ const EditActionButtons = ({
     (errors) => errors.length > 0,
   )
 
-  const disableSubmit =
-    !specificFieldsLoaded ||
-    isSubmitDisabled ||
-    hasErrors ||
-    (canViewBp &&
-      canEditField(editableFields, 'bp_activity') &&
-      bpData.hasBpData &&
-      !bpLinking.bpId)
+  const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
 
   const disableUpdateForV3AndWithdrawn =
     editable_for_actual_fields && !editable && !postExComUpdate
@@ -337,12 +322,12 @@ const EditActionButtons = ({
           })
         }
 
-        if (errors?.files) {
-          setFileErrors(errors.files)
-        }
-
-        if (errors?.metadata) {
-          setFileErrors(errors.metadata)
+        if (errors?.files ?? errors?.file ?? errors?.metadata) {
+          setFileErrors(
+            [errors?.files, errors?.file, errors?.metadata]
+              .filter(Boolean)
+              .join('\n'),
+          )
         }
 
         if (errors?.details) {
