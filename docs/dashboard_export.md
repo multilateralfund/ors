@@ -68,12 +68,12 @@ These columns do not exist in the original raw database export and are added ser
 
 Impact metrics (e.g. "Total number of technicians trained - actual", "Number of SMEs directly funded - actual") are often null because projects haven't submitted final reports yet. The mock filling generates plausible values so dashboards can show complete visualisations during development.
 
-**The values are proportional to funding.** A $1M project will have roughly 10× as many trained technicians as a $100k project. Technically this uses a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) where the expected count = `(funding in $M) × rate`. The Poisson distribution produces natural-looking integer counts with realistic variance.
+**Most values are proportional to funding.** A $1M project will have roughly 10× as many trained technicians as a $100k project. Integer counts use a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) where the expected count = `(funding in $M) × rate`, producing natural-looking integers with realistic variance. Continuous quantities (energy savings, tonnes destroyed, HFC-23 quantities) use a funding-scaled lognormal draw so they stay positive and non-integer. A few fields are not funding-scaled: booleans are Yes/No at a fixed probability, and the HFC-23 generation rate (%) is drawn from a fixed band (1.5–4%).
 
 **Different project types get different metrics filled:**
-- **Investment projects** (project_type = Investment): enterprise counts — SMEs funded, non-SMEs funded, enterprises included but not directly funded.
-- **Non-investment projects** (technical assistance, institutional strengthening, etc.): training metrics — technicians trained/certified, customs officers trained, trainers trained, equipment distributed, bans, licensing upgrades, recovery/recycling scheme establishment.
-- **Production projects**: production lines assisted.
+- **Investment projects** (project_type = Investment): enterprise counts — SMEs funded, non-SMEs funded, enterprises included but not directly funded - plus energy savings (kWh/year).
+- **Non-investment projects** (technical assistance, institutional strengthening, etc.): training metrics — technicians trained/certified, customs officers trained, trainers trained, equipment distributed, bans, licensing upgrades, recovery/recycling scheme establishment — plus NOU personnel supported (total + female), controlled substances destroyed (metric & CO2-eq tonnes), and the energy-efficiency booleans (demonstration project, MEPS for domestic/commercial refrigeration and residential/commercial AC).
+- **Production projects**: production lines assisted, plus HFC-23 by-product fields (generated/destroyed/emitted tonnes and generation rate %). **Note:** these HFC-23 fields are only filled when production projects are in scope, so pass `exclude_production=false` to see them (the export excludes production projects by default).
 
 **Substance-type gating** (`mock_types`) lets you fill metrics for some substance types while leaving others with real data. For example, `mock_types=hfc` fills only HFC projects, leaving HCFC and CFC projects showing their real (possibly null) values. This supports a phased rollout where data for some substance types has been reported and others haven't.
 
@@ -103,6 +103,8 @@ Non-investment projects (per $1M funding):
 | Female customs officers trained | 5 |
 | Bans on equipment | 0.5 |
 | Bans on substances | 0.5 |
+| NOU personnel supported (total) | 2 |
+| NOU personnel supported (female) | 1 |
 
 Non-investment boolean fields (probability of "Yes"):
 
@@ -112,6 +114,28 @@ Non-investment boolean fields (probability of "Yes"):
 | Reclamation scheme established/upgraded | 25% |
 | Import/export licensing system upgraded | 40% |
 | Quota system upgraded | 30% |
+| Energy-efficiency demonstration project included | 30% |
+| MEPS for domestic refrigeration | 25% |
+| MEPS for commercial refrigeration | 20% |
+| MEPS for residential AC | 25% |
+| MEPS for commercial AC | 20% |
+
+Continuous (funding-scaled lognormal) fields — median magnitude per $1M funding:
+
+| Field | Project type | Median per $1M |
+|-------|-------------|----------------|
+| Energy savings (kWh/year) | Investment | 75,000 |
+| Controlled substances destroyed (metric tonnes) | Non-investment | 5 |
+| Controlled substances destroyed (CO2-eq tonnes) | Non-investment | 8,000 |
+| HFC-23 by-product generated (metric tonnes) | Production | 3 |
+| HFC-23 by-product destroyed (metric tonnes) | Production | 2.5 |
+| HFC-23 by-product emitted (metric tonnes) | Production | 0.3 |
+
+Bounded fields (not funding-scaled):
+
+| Field | Project type | Range |
+|-------|-------------|-------|
+| HFC-23 by-product generation rate (%) | Production | 1.5–4.0 |
 
 ---
 

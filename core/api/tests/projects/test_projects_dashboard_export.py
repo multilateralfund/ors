@@ -311,10 +311,14 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        assert (
-            sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
-            is None
-        )
+
+        def cell(field):
+            return sheet[f"{headers[field]}{row}"].value
+
+        assert cell("total_number_of_technicians_trained_actual") is None
+        # New fields (float + bool) are likewise empty when mock_data is off.
+        assert cell("energy_savings_actual") is None
+        assert cell("quantity_controlled_substances_destroyed_mt_actual") is None
 
     def test_mock_data_true_fills_impact_metrics(
         self, secretariat_viewer_user, approved_project
@@ -335,10 +339,26 @@ class TestProjectsDashboardExport(BaseTest):
         headers = get_sheet_headers(sheet)
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
-        value = sheet[
-            f"{headers['total_number_of_technicians_trained_actual']}{row}"
-        ].value
-        assert value is not None and value > 0
+
+        def cell(field):
+            return sheet[f"{headers[field]}{row}"].value
+
+        assert cell("total_number_of_technicians_trained_actual") > 0
+        # NOU personnel (Poisson) and controlled-substance destruction
+        # (funding-scaled float) are non-investment metrics too.
+        assert cell("total_number_of_nou_personnel_supported_actual") >= 0
+        assert cell("number_of_female_nou_personnel_supported_actual") >= 0
+        assert cell("quantity_controlled_substances_destroyed_mt_actual") > 0
+        assert cell("quantity_controlled_substances_destroyed_co2_eq_t_actual") > 0
+        # Energy-efficiency / MEPS booleans render as Yes/No.
+        for boolean_field in (
+            "ee_demonstration_project_actual",
+            "meps_developed_domestic_refrigeration_actual",
+            "meps_developed_commercial_refrigeration_actual",
+            "meps_developed_residential_ac_actual",
+            "meps_developed_commercial_ac_actual",
+        ):
+            assert cell(boolean_field) in ("Yes", "No")
 
     def test_mock_types_cfc_catches_methyl_bromide(
         self, secretariat_viewer_user, approved_project
@@ -388,6 +408,126 @@ class TestProjectsDashboardExport(BaseTest):
             sheet[f"{headers['total_number_of_technicians_trained_actual']}{row}"].value
             is None
         )
+
+    def _mock_cells(self, response, project_id, field_names):
+        """Read several columns for one project from a single response.
+
+        The response body is a stream that can only be consumed once, so load
+        the workbook here and resolve all requested fields from it.
+        """
+        sheet = load_projects_sheet(response)
+        headers = get_sheet_headers(sheet)
+        row = get_project_row(sheet, project_id)
+        assert row is not None, "Project not found in export"
+        return {f: sheet[f"{headers[f]}{row}"].value for f in field_names}
+
+    def test_mock_data_fills_energy_savings_float(
+        self, secretariat_viewer_user, approved_project
+    ):
+        approved_project.project_type = ProjectTypeFactory.create(code="INV")
+        approved_project.substance_type = "HCFC"
+        approved_project.total_fund = 1_000_000
+        approved_project.save()
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(
+            self.url,
+            {"mock_data": "true", "mock_types": "hcfc", "latest_only": "false"},
+        )
+        cells = self._mock_cells(
+            response, approved_project.id, ["energy_savings_actual"]
+        )
+        value = cells["energy_savings_actual"]
+        assert value is not None and value > 0
+        # Funding-scaled magnitude, not a tiny integer count.
+        assert value > 1000
+
+    def test_mock_data_fills_hfc23_production_fields(
+        self, secretariat_viewer_user, approved_project
+    ):
+        prod = ProjectFactory.create(
+            production=True,
+            substance_type="HCFC",
+            total_fund=1_000_000,
+            status=approved_project.status,
+            submission_status=approved_project.submission_status,
+        )
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(
+            self.url,
+            {
+                "mock_data": "true",
+                "mock_types": "hcfc",
+                "exclude_production": "false",
+                "latest_only": "false",
+            },
+        )
+        quantity_fields = [
+            "quantity_hfc_23_by_product_generated_actual",
+            "quantity_hfc_23_by_product_destroyed_actual",
+            "quantity_hfc_23_by_product_emitted_actual",
+        ]
+        cells = self._mock_cells(
+            response,
+            prod.id,
+            quantity_fields + ["hfc_23_by_product_generation_rate_actual"],
+        )
+        for field in quantity_fields:
+            assert cells[field] is not None and cells[field] > 0
+        assert 1.5 <= cells["hfc_23_by_product_generation_rate_actual"] <= 4.0
+
+    def test_mock_data_hfc23_rate_does_not_scale_with_funding(
+        self, secretariat_viewer_user, approved_project
+    ):
+        prod = ProjectFactory.create(
+            production=True,
+            substance_type="HCFC",
+            total_fund=100_000_000,
+            status=approved_project.status,
+            submission_status=approved_project.submission_status,
+        )
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(
+            self.url,
+            {
+                "mock_data": "true",
+                "mock_types": "hcfc",
+                "exclude_production": "false",
+                "latest_only": "false",
+            },
+        )
+        cells = self._mock_cells(
+            response, prod.id, ["hfc_23_by_product_generation_rate_actual"]
+        )
+        # Bounded regardless of (large) funding.
+        assert 1.5 <= cells["hfc_23_by_product_generation_rate_actual"] <= 4.0
+
+    def test_mock_data_reproducible_with_seed(
+        self, secretariat_viewer_user, approved_project
+    ):
+        approved_project.substance_type = "HCFC"
+        approved_project.total_fund = 1_000_000
+        approved_project.save()
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        params = {
+            "mock_data": "true",
+            "mock_types": "hcfc",
+            "latest_only": "false",
+            "mock_seed": "7",
+        }
+        field = "quantity_controlled_substances_destroyed_mt_actual"
+        first = self._mock_cells(
+            self.client.get(self.url, params), approved_project.id, [field]
+        )[field]
+        same = self._mock_cells(
+            self.client.get(self.url, params), approved_project.id, [field]
+        )[field]
+        different = self._mock_cells(
+            self.client.get(self.url, {**params, "mock_seed": "8"}),
+            approved_project.id,
+            [field],
+        )[field]
+        assert first == same
+        assert first != different
 
     # Geo / type columns
     def test_geo_columns_populated(self, secretariat_viewer_user, approved_project):

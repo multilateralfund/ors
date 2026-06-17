@@ -44,6 +44,8 @@ _MOCK_RATES_NON_INVESTMENT = {
     "number_of_female_customs_officers_trained_actual": 5.0,
     "number_of_bans_on_equipment_actual": 0.5,
     "number_of_bans_on_substances_actual": 0.5,
+    "total_number_of_nou_personnel_supported_actual": 2.0,
+    "number_of_female_nou_personnel_supported_actual": 1.0,
 }
 
 _MOCK_RATES_PRODUCTION = {
@@ -56,6 +58,40 @@ _MOCK_BOOL_PROBS_NON_INVESTMENT = {
     "establishment_of_reclamation_scheme_actual": 0.25,
     "upgrade_of_imp_exp_licensing_actual": 0.40,
     "upgrade_of_quota_system_actual": 0.30,
+    "ee_demonstration_project_actual": 0.30,
+    "meps_developed_domestic_refrigeration_actual": 0.25,
+    "meps_developed_commercial_refrigeration_actual": 0.20,
+    "meps_developed_residential_ac_actual": 0.25,
+    "meps_developed_commercial_ac_actual": 0.20,
+}
+
+# Base magnitudes for funding-scaled continuous (lognormal) mock fields, keyed
+# by project class. Value = approximate median output per $1M of funding. Drawn
+# as median * lognormal(0, _MOCK_FLOAT_SIGMA), so values scale with funding,
+# stay positive, and are plausible non-integer magnitudes.
+_MOCK_FLOAT_RATES_INVESTMENT = {
+    "energy_savings_actual": 75_000.0,
+}
+
+_MOCK_FLOAT_RATES_NON_INVESTMENT = {
+    "quantity_controlled_substances_destroyed_mt_actual": 5.0,
+    "quantity_controlled_substances_destroyed_co2_eq_t_actual": 8_000.0,
+}
+
+_MOCK_FLOAT_RATES_PRODUCTION = {
+    "quantity_hfc_23_by_product_generated_actual": 3.0,
+    "quantity_hfc_23_by_product_destroyed_actual": 2.5,
+    "quantity_hfc_23_by_product_emitted_actual": 0.3,
+}
+
+# Log-space spread for the lognormal float draw. Modest, so values stay within a
+# believable band around the funding-scaled median.
+_MOCK_FLOAT_SIGMA = 0.4
+
+# Percentage fields drawn uniformly within (low, high), independent of funding
+# (a generation rate does not grow with project size).
+_MOCK_PERCENT_BOUNDS_PRODUCTION = {
+    "hfc_23_by_product_generation_rate_actual": (1.5, 4.0),
 }
 
 # The free-text GLOBAL_FIELD_1/2/3 placeholders don't appear to contain real data.
@@ -224,6 +260,10 @@ class ProjectsDashboardDump(ProjectsV2Dump):
         return projects
 
     def _apply_mock_data(self, projects):
+        # Metrics are filled per project class (investment / non-investment /
+        # production). The HFC-23 fields live in the production bucket, so they
+        # are only populated when production projects are present — i.e. when the
+        # caller passes exclude_production=false (the export defaults to true).
         seed = int(self.view.request.query_params.get("mock_seed", "42"))
         rng = np.random.default_rng(seed)
 
@@ -242,12 +282,18 @@ class ProjectsDashboardDump(ProjectsV2Dump):
             if is_production:
                 numeric_rates = _MOCK_RATES_PRODUCTION
                 bool_probs = {}
+                float_rates = _MOCK_FLOAT_RATES_PRODUCTION
+                percent_bounds = _MOCK_PERCENT_BOUNDS_PRODUCTION
             elif is_investment:
                 numeric_rates = _MOCK_RATES_INVESTMENT
                 bool_probs = {}
+                float_rates = _MOCK_FLOAT_RATES_INVESTMENT
+                percent_bounds = {}
             else:
                 numeric_rates = _MOCK_RATES_NON_INVESTMENT
                 bool_probs = _MOCK_BOOL_PROBS_NON_INVESTMENT
+                float_rates = _MOCK_FLOAT_RATES_NON_INVESTMENT
+                percent_bounds = {}
 
             for field_name, rate in numeric_rates.items():
                 lam = max(funding_m * rate, 0.01)
@@ -255,6 +301,18 @@ class ProjectsDashboardDump(ProjectsV2Dump):
 
             for field_name, prob in bool_probs.items():
                 setattr(p, field_name, "Yes" if rng.random() < prob else "No")
+
+            # Continuous funding-scaled magnitudes. lognormal(0, sigma) has
+            # median 1.0, so values center on the funding-scaled base, stay
+            # positive, and are plausible non-integers.
+            for field_name, base in float_rates.items():
+                median = base * max(funding_m, 0.01)
+                value = median * float(rng.lognormal(mean=0.0, sigma=_MOCK_FLOAT_SIGMA))
+                setattr(p, field_name, round(value, 2))
+
+            # Bounded percentages, independent of funding.
+            for field_name, (low, high) in percent_bounds.items():
+                setattr(p, field_name, round(float(rng.uniform(low, high)), 2))
 
         return projects
 
