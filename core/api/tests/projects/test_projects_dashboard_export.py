@@ -1,9 +1,11 @@
 # pylint: disable=W0613,R0904
 import io
+from decimal import Decimal
 from http import HTTPStatus
 
 import openpyxl
 import pytest
+from constance import config
 from django.urls import reverse
 from openpyxl.utils import get_column_letter
 
@@ -58,14 +60,39 @@ class TestProjectsDashboardExport(BaseTest):
         assert response.status_code == HTTPStatus.FORBIDDEN
 
     # Basic structure
-    def test_returns_xlsx_with_three_sheets(
+    def test_returns_xlsx_with_expected_sheets(
         self, secretariat_viewer_user, approved_project
     ):
         self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"mock_data": "false"})
         assert response.status_code == HTTPStatus.OK
         wb = load_workbook(response)
-        assert set(wb.sheetnames) == {"Projects", "Substances", "Funds"}
+        assert set(wb.sheetnames) == {
+            "Projects",
+            "Substances",
+            "Funds",
+            "Global fields",
+        }
+
+    def test_global_fields_sheet_lists_constant_values(
+        self, secretariat_viewer_user, approved_project
+    ):
+        config.TOTAL_SAVINGS_TO_SOCIETY_IN_US_DOLLAR = Decimal("123.45")
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(self.url, {"mock_data": "false"})
+        sheet = load_workbook(response)["Global fields"]
+
+        assert [c.value for c in sheet[1]] == ["Field", "Value"]
+
+        rows = {
+            sheet[f"A{r}"].value: sheet[f"B{r}"].value
+            for r in range(2, sheet.max_row + 1)
+        }
+        # Decimal value is written as a number, and the empty GLOBAL_FIELD_*
+        # placeholders are excluded.
+        assert rows["Total savings to society in US $"] == 123.45
+        assert "Global field 1" not in rows
 
     def test_projects_sheet_has_expected_headers(
         self, secretariat_viewer_user, approved_project

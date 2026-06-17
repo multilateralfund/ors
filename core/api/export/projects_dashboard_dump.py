@@ -1,14 +1,17 @@
 """
 Dashboard export endpoint: GET /api/projects/v2/dashboards/all/
 
-Produces a 3-sheet Excel workbook (Projects, Substances, Funds) ready for
+Produces a 4-sheet Excel workbook (Projects, Substances, Funds, Global fields) ready for
 Power BI import with all transformations applied server-side. See
 docs/dashboard_export.md for full parameter documentation.
 """
 
+from decimal import Decimal
 from time import time
 
 import numpy as np
+from constance import config
+from django.conf import settings
 
 from core.api.export.projects_v2_dump import (
     ProjectsFundsWriter,
@@ -55,6 +58,10 @@ _MOCK_BOOL_PROBS_NON_INVESTMENT = {
     "upgrade_of_quota_system_actual": 0.30,
 }
 
+# The free-text GLOBAL_FIELD_1/2/3 placeholders don't appear to contain real data.
+# Excluding them from the export.
+_GLOBAL_FIELDS_EXCLUDE = {"GLOBAL_FIELD_1", "GLOBAL_FIELD_2", "GLOBAL_FIELD_3"}
+
 
 # Geographic / type helpers
 
@@ -89,6 +96,27 @@ def get_type_simple(p, _):
     if p.project_type:
         return "Non-Investment"
     return ""
+
+
+class GlobalFieldsWriter:
+    """
+    Writes the "Global fields" sheet: one row per PROJECTS_GLOBAL_FIELDS
+    constant (the impact/cost-effectiveness values edited from the Projects
+    settings UI). Two columns: the human-readable title and the current value.
+    """
+
+    def __init__(self, sheet):
+        self.sheet = sheet
+        self.sheet.append(["Field", "Value"])
+
+    def write(self):
+        for name, (_default, title, d_type) in settings.PROJECTS_GLOBAL_FIELDS.items():
+            if name in _GLOBAL_FIELDS_EXCLUDE:
+                continue
+            value = getattr(config, name)
+            if d_type == Decimal and isinstance(value, Decimal):
+                value = float(value)
+            self.sheet.append([title, value])
 
 
 class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
@@ -142,8 +170,8 @@ class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
 
 class ProjectsDashboardDump(ProjectsV2Dump):
     """
-    Produces GET /api/projects/v2/dashboards/all/ — a 3-sheet xlsx workbook
-    (Projects, Substances, Funds) with all transformations applied server-side.
+    Produces GET /api/projects/v2/dashboards/all/ — a 4-sheet xlsx workbook
+    (Projects, Substances, Funds, Global fields) with all transformations applied server-side.
 
     Extends ProjectsV2Dump: inherits queryset construction, workbook setup,
     and all field/sheet helpers. Adds query-param-driven filtering, substance
@@ -255,6 +283,8 @@ class ProjectsDashboardDump(ProjectsV2Dump):
             odp_writer.write,
             funds_writer.write,
         )
+
+        GlobalFieldsWriter(self._make_sheet("Global fields")).write()
 
         print(f"Done in {time() - t0:.2f} seconds.")
         return workbook_response("Projects dashboard dump", self.wb)

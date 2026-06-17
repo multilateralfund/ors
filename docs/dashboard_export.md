@@ -2,7 +2,7 @@
 
 `GET /api/projects/v2/dashboards/all/`
 
-Returns a 3-sheet Excel workbook (Projects, Substances, Funds) ready for direct import into Power BI or other tools — no post-processing script needed.
+Returns a 4-sheet Excel workbook (Projects, Substances, Funds, Global fields) ready for direct import into Power BI or other tools — no post-processing script needed.
 
 This endpoint replaces the previous workflow of:
 1. Downloading the raw dump (`/api/projects/v2/export/?really_all=true`)
@@ -20,6 +20,7 @@ All transformations that were previously done in Power Query M or in `prepare_po
 | **Projects** | ~152 | One row per project (version). Includes all project fields plus `country_iso`, `Region`, `Sub-Region`, and `Type Simple`. |
 | **Substances** | 15 | One row per ODS/ODP substance entry per project. |
 | **Funds** | 15 | One row per project version with funding approval details. |
+| **Global fields** | 2 | One row per global constant (impact / cost-effectiveness values edited from the Projects settings UI), as `Field` / `Value`. Sourced from the `PROJECTS_GLOBAL_FIELDS` constance config; the empty `GLOBAL_FIELD_*` placeholders are omitted. |
 
 ---
 
