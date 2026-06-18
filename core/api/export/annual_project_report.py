@@ -572,6 +572,9 @@ class APRSummaryTablesExportWriter:
             )
         )
         queryset = queryset.filter(status__in=list(status_by_code.values()))
+        # Filter by the selected reporting year to discount prior/later years' records.
+        if self.year:
+            queryset = queryset.filter(report__progress_report__year=self.year)
         self._completed_status_names = {
             status_by_code[c] for c in ("COM", "FIN") if c in status_by_code
         }

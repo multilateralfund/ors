@@ -451,6 +451,7 @@ export default function APRWorkspace() {
                   handleExport(
                     formatApiUrl(
                       `api/annual-project-report/summary-tables/export/`,
+                      { year },
                     ),
                     setLoadingSummaryTables,
                   )
