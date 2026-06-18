@@ -181,6 +181,9 @@ class TestAPRSummaryTablesExport(BaseTest):
         url = reverse("apr-summary-tables-export")
         response = self.client.get(f"{url}?year=2024")
         assert response.status_code == status.HTTP_200_OK
+        # Filename carries the reporting year (not the "Cumulative" fallback)
+        assert "APR_Summary_Tables_2024" in response["Content-Disposition"]
+        assert "Cumulative" not in response["Content-Disposition"]
         workbook = load_workbook(BytesIO(response.content))
         summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
         assert summary_sheet.cell(4, 2).value == 1

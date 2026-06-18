@@ -1526,7 +1526,10 @@ class APRSummaryTablesExportWriter:
         self.workbook.save(output)
         output.seek(0)
 
-        filename = "APR_Summary_Tables_Cumulative"
+        # Carry the reporting year when we have one (the data is year-scoped);
+        # fall back to "Cumulative" only for an unscoped, all-years export.
+        filename = "APR_Summary_Tables"
+        filename += f"_{self.year}" if self.year else "_Cumulative"
         if self.agencies:
             agency_part = "_".join(a.name.replace(" ", "_") for a in self.agencies)
             if len(agency_part) <= 100:
