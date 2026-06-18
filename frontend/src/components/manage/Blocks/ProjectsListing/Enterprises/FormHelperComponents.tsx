@@ -264,24 +264,38 @@ export const handleErrors = async (
   setErrors: (errors: { [key: string]: string[] }) => void,
   setInlineMessage: (message: InlineMessage) => void,
 ) => {
-  const errors = await error.json()
+  let errors: any = {}
 
-  if (error.status === 400) {
-    setErrors(errors)
+  if (error instanceof Response) {
+    const contentType = error.headers.get('content-type') || ''
 
-    const nonFieldErrors = getNonFieldErrors(errors)
-    if (nonFieldErrors.length > 0) {
-      setInlineMessage({
-        type: 'error',
-        errorMessages: nonFieldErrors,
+    if (contentType.includes('application/json')) {
+      errors = await error.json()
+    } else {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
       })
+
+      return
     }
 
-    if (errors?.details) {
-      setInlineMessage({
-        type: 'error',
-        message: errors.details,
-      })
+    if (error.status === 400) {
+      setErrors(errors)
+
+      const nonFieldErrors = getNonFieldErrors(errors)
+      if (nonFieldErrors.length > 0) {
+        setInlineMessage({
+          type: 'error',
+          errorMessages: nonFieldErrors,
+        })
+      }
+
+      if (errors?.details) {
+        setInlineMessage({
+          type: 'error',
+          message: errors.details,
+        })
+      }
     }
   }
 
