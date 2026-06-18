@@ -16,7 +16,6 @@ from core.api.serializers.project import (
 from core.api.serializers.project_history import ProjectHistorySerializer
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 
-from core.models.business_plan import BusinessPlan
 from core.models.country import Country
 from core.models.group import Group
 from core.models.meeting import Meeting, Decision
@@ -27,7 +26,6 @@ from core.models.project import (
     ProjectOdsOdp,
 )
 from core.models import (
-    Agency,
     Blend,
     Substance,
 )
@@ -1478,39 +1476,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 )
         return errors
 
-    def validate_bp(self, errors):
-        """
-        Validate that the project's BP activity is complete
-        """
-        latest_endorsed_bp = (
-            BusinessPlan.objects.filter(status=BusinessPlan.Status.endorsed)
-            .order_by("-year_end")
-            .first()
-        )
-        if not latest_endorsed_bp:
-            return errors
-        countries = [self.instance.country.id]
-        global_country = Country.objects.filter(abbr="GLO").first()
-        if global_country:
-            countries.append(global_country.id)
-        agencies = [self.instance.agency.id]
-        all_agencies_option = Agency.objects.filter(name="All agencies").first()
-        if all_agencies_option:
-            agencies.append(all_agencies_option.id)
-        bp_activities = latest_endorsed_bp.activities.filter(
-            country__in=countries,
-            agency__in=agencies,
-            project_cluster=self.instance.cluster,
-        )
-        if bp_activities.exists() and not self.instance.bp_activity:
-            errors["bp_activity"] = (
-                """
-                    A BP Activity is required for submission if an option
-                    is available in the latest endorsed Business Plan.
-                """
-            )
-        return errors
-
     def validate_previous_tranches(self, errors):
         """
         Validate that the project's previous tranches have at least one actual field completed
@@ -1563,8 +1528,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
         self.validate_required_fields(errors)
 
         self.validate_previous_tranches(errors)
-
-        self.validate_bp(errors)
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -1626,7 +1589,6 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
             )
 
         self.validate_required_fields(errors)
-        self.validate_bp(errors)
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
