@@ -476,6 +476,62 @@ class TestAPRBulkUpdateView(BaseTest):
         assert response.data["updated_count"] == 2
         assert response.data["error_count"] == 0
 
+    def test_bulk_update_gender_policy_empty_clears_to_null(
+        self,
+        apr_agency_inputter_user,
+        annual_agency_report,
+        multiple_projects_for_apr,
+    ):
+        """An empty gender_policy must be stored as NULL, never coerced to a bool."""
+        report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=multiple_projects_for_apr[0],
+            gender_policy=True,
+        )
+
+        self.client.force_authenticate(user=apr_agency_inputter_user)
+        url = reverse(
+            "apr-update",
+            kwargs={
+                "year": annual_agency_report.progress_report.year,
+                "agency_id": annual_agency_report.agency.id,
+            },
+        )
+
+        # Sending null clears the value.
+        response = self.client.post(
+            url,
+            {
+                "project_reports": [
+                    {
+                        "project_code": multiple_projects_for_apr[0].code,
+                        "gender_policy": None,
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        report.refresh_from_db()
+        assert report.gender_policy is None
+
+        # Sending an explicit value still sets it correctly.
+        response = self.client.post(
+            url,
+            {
+                "project_reports": [
+                    {
+                        "project_code": multiple_projects_for_apr[0].code,
+                        "gender_policy": True,
+                    }
+                ]
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        report.refresh_from_db()
+        assert report.gender_policy is True
+
     def test_bulk_update_requires_edit_permission(
         self, apr_agency_viewer_user, annual_agency_report
     ):
@@ -6662,3 +6718,16 @@ class TestWorkspaceFallbackAutoSubmit(BaseTest):
             agency=agency,
         )
         assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+
+
+@pytest.mark.django_db
+class TestAPRGenderPolicyNullable:
+    """gender_policy must stay empty (NULL) when blank, never default to a bool."""
+
+    def test_gender_policy_can_be_null(self, agency, country_ro):
+        apr = AnnualProjectReportFactory(
+            project=ProjectFactory(agency=agency, country=country_ro),
+            gender_policy=None,
+        )
+        apr.refresh_from_db()
+        assert apr.gender_policy is None

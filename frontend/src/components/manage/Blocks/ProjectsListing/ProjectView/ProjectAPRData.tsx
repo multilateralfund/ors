@@ -134,8 +134,10 @@ const ProjectHistory = ({
             {map(keys(booleanFields), (field) =>
               booleanDetailItem(
                 booleanFields[field],
-                (latestApr[field as keyof typeof latestApr] ??
-                  false) as boolean,
+                latestApr[field as keyof typeof latestApr] as
+                  | boolean
+                  | null
+                  | undefined,
               ),
             )}
           </div>

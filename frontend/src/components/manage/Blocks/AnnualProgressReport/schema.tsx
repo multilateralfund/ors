@@ -764,7 +764,16 @@ export default function useGetColumnDefs({
                   }
 
                   if (cellDataType === 'boolean') {
-                    toBeAdded = value?.toLowerCase() === 'yes'
+                    // A blank/cleared cell must stay empty (null) rather than
+                    // defaulting to false.
+                    if (
+                      value == null ||
+                      (typeof value === 'string' && value.trim() === '')
+                    ) {
+                      toBeAdded = null
+                    } else {
+                      toBeAdded = value.toLowerCase() === 'yes'
+                    }
                   }
 
                   // Status is stored as a full name (e.g. "Ongoing") but the
