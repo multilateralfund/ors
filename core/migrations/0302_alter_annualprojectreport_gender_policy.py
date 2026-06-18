@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0301_alter_project_substance_type'),
+        ("core", "0301_alter_project_substance_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='annualprojectreport',
-            name='gender_policy',
-            field=models.BooleanField(blank=True, null=True, verbose_name='Gender Policy for All Projects Approved from 85th Mtg'),
+            model_name="annualprojectreport",
+            name="gender_policy",
+            field=models.BooleanField(
+                blank=True,
+                null=True,
+                verbose_name="Gender Policy for All Projects Approved from 85th Mtg",
+            ),
         ),
     ]
