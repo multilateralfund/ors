@@ -9,9 +9,11 @@ class ProjectsCompareVersionsFilter(filters.FilterSet):
     """
 
     meeting_id = filters.NumberFilter(field_name="meeting")
+    agency_id = filters.NumberFilter(field_name="agency")
 
     class Meta:
         model = Project
         fields = [
             "meeting_id",
+            "agency_id",
         ]

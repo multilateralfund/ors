@@ -100,7 +100,11 @@ class SummaryOfProjectsViewSet(
 
         result = {
             "country": get_available_values(queryset, "country"),
-            "cluster": get_available_values(queryset, "cluster"),
+            "cluster": get_available_values(
+                queryset,
+                "cluster",
+                extra_fields=("code",),
+            ),
             "project_type": get_available_values(queryset, "project_type"),
             "sector": get_available_values(queryset, "sector"),
             "agency": get_available_values(queryset, "agency"),
