@@ -1284,6 +1284,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         model = Project
         fields = [
             "meeting",  # *
+            "post_excom_meeting",
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
@@ -1305,9 +1306,15 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting"].end_date
-        # project_end_date should take the value of date_completion at this point
-        validated_data["project_end_date"] = validated_data["date_completion"]
+        if validated_data.get("post_excom_meeting"):
+            # receving this field means this is a post excom update and date approved should be set from there
+            validated_data["date_approved"] = validated_data[
+                "post_excom_meeting"
+            ].end_date
+        else:
+            validated_data["date_approved"] = validated_data["meeting"].end_date
+            # project_end_date should take the value of date_completion at this point
+            validated_data["project_end_date"] = validated_data["date_completion"]
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")

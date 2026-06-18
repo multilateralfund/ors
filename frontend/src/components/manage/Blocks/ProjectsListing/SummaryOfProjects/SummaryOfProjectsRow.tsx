@@ -130,6 +130,7 @@ const SummaryOfProjectsRow = (props: SummaryOfProjectsRowProps) => {
               options={getRowFilterOptions('cluster')}
               onChange={handleFilterChanged('cluster_id')}
               value={rowData.params.cluster_id}
+              getOptionLabel={(option) => option.code || option.name}
             />
             <FilterField
               label="Type"

@@ -15,6 +15,7 @@ import cx from 'classnames'
 interface Option {
   id: number
   name: string
+  code?: string
   disabled?: boolean
 }
 
@@ -23,12 +24,19 @@ type MultiselectWithSelectAllProps = {
   id: AutocompleteWidgetProps['id']
   value: Option['id'][]
   onChange: (value: Option['id'][]) => void
+  getOptionLabel?: (option: Option) => string
 }
 
 const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
   props,
 ) => {
-  const { options, id, value: propValue, onChange } = props
+  const {
+    options,
+    id,
+    value: propValue,
+    onChange,
+    getOptionLabel = (option) => option.name,
+  } = props
 
   // State to track if the dropdown is open
   const [open, setOpen] = useState(false)
@@ -57,6 +65,13 @@ const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
   const enabledOptions = options.filter((option) => !option.disabled)
   const numEnabled = enabledOptions.length
   const isAllSelected = internalSelection.length === numEnabled
+  const optionMatchesSearch = (option: Option, searchTerm: string) => {
+    const normalizedSearchTerm = searchTerm.toLowerCase()
+
+    return [getOptionLabel(option), option.name].some((optionValue) =>
+      optionValue.toLowerCase().includes(normalizedSearchTerm),
+    )
+  }
 
   const handleToggleAll = () => {
     const newSelection = isAllSelected ? [] : enabledOptions
@@ -114,7 +129,7 @@ const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
                 key={key}
                 {...menuItemProps}
                 onClick={handleToggleAll}
-                sx={{ minHeight: 32 }}
+                sx={{ alignItems: 'flex-start', minHeight: 32 }}
                 className={menuItemClassName}
               >
                 <Checkbox
@@ -123,18 +138,30 @@ const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
                   size="small"
                   sx={{ py: 0 }}
                 />
-                <ListItemText primary="Select All / Deselect All" />
+                <ListItemText
+                  primary="Select All / Deselect All"
+                  primaryTypographyProps={{
+                    sx: {
+                      lineHeight: 1.3,
+                      overflowWrap: 'anywhere',
+                      whiteSpace: 'normal',
+                    },
+                  }}
+                />
               </MenuItem>
             )
           }
+
+          const optionLabel = getOptionLabel(option)
 
           return (
             <MenuItem
               key={key}
               {...menuItemProps}
               disabled={option.disabled}
-              sx={{ minHeight: 32 }}
+              sx={{ alignItems: 'flex-start', minHeight: 32 }}
               className={menuItemClassName}
+              title={option.name}
             >
               <Checkbox
                 checked={isSelected}
@@ -142,7 +169,16 @@ const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
                 size="small"
                 sx={{ py: 0 }}
               />
-              <ListItemText primary={option.name} />
+              <ListItemText
+                primary={optionLabel}
+                primaryTypographyProps={{
+                  sx: {
+                    lineHeight: 1.3,
+                    overflowWrap: 'anywhere',
+                    whiteSpace: 'normal',
+                  },
+                }}
+              />
             </MenuItem>
           )
         }}
@@ -178,9 +214,7 @@ const MultiselectWithSelectAll: React.FC<MultiselectWithSelectAllProps> = (
 
           return options.filter(
             (option) =>
-              option.name
-                .toLowerCase()
-                .includes(state.inputValue.toLowerCase()) && !option.disabled,
+              optionMatchesSearch(option, state.inputValue) && !option.disabled,
           )
         }}
       />
