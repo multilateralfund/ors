@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0300_alter_country_abbr_for_apr_and_more'),
+        ('core', '0301_alter_project_substance_type'),
     ]
 
     operations = [
