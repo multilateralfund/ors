@@ -92,14 +92,27 @@ const PCRSummaryAndDelaysUserInputData = ({
 
   return (
     <>
-      {widgets['number']<PCRData, PCRSummaryAndDelays>(
-        PCRData,
-        setPCRData,
-        sectionIdentifier,
-        'funds_disbursed',
-        errors,
-        true,
-      )}
+      <div className="flex flex-col gap-y-2">
+        <div className="flex flex-wrap gap-x-20 gap-y-3">
+          {widgets['number']<PCRData, PCRSummaryAndDelays>(
+            PCRData,
+            setPCRData,
+            sectionIdentifier,
+            'funds_disbursed',
+            errors,
+            true,
+            [crtAgency],
+          )}
+          {widgets['date']<PCRData, PCRSummaryAndDelays>(
+            PCRData,
+            setPCRData,
+            sectionIdentifier,
+            'date_completion_planned',
+            errors,
+            [crtAgency],
+          )}
+        </div>
+      </div>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-col flex-wrap gap-x-20">
           {map(alternativeTechnologyData, (_, index) => (
