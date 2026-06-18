@@ -29,7 +29,7 @@ from core.api.tests.factories import (
 from core.models import AnnualAgencyProjectReport, Country
 from core.models.project_metadata import ProjectCluster, ProjectType
 
-# pylint: disable=W0221,W0613,R0913,R0914,R0904
+# pylint: disable=W0221,W0613,R0913,R0914,R0904,C0302
 
 
 @pytest.mark.django_db
