@@ -206,7 +206,7 @@ export const changeArrayField3: FieldHandler = (
   }
 }
 
-const onFieldChange: FieldHandler = (
+export const onFieldChange: FieldHandler = (
   value,
   field,
   setState,

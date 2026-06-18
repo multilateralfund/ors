@@ -44,7 +44,7 @@ const PCRSummaryAndDelaysPrefilledData = ({
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-y-2">
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           <div>
@@ -248,7 +248,7 @@ const PCRSummaryAndDelaysPrefilledData = ({
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

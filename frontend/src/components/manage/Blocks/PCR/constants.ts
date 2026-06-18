@@ -60,6 +60,9 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   disposal_type: 'Disposal type',
   date_of_disposal: 'Date of disposal',
   date_completion_planned: 'Planned date of completion',
+  duration_planned: 'Planned duration (months)',
+  duration_actual: 'Actual duration (months)',
+  delay: 'Delay (months)',
 }
 
 export const initialOverviewFields = {

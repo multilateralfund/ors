@@ -6,20 +6,32 @@ import {
   OdsEquipmentFate,
   Enterprises,
 } from '../interfaces'
-import { SubmitButton } from '../../ProjectsListing/HelperComponents'
-import { widgets } from './SpecificFieldsHelpers'
+import {
+  FieldErrorIndicator,
+  SubmitButton,
+} from '../../ProjectsListing/HelperComponents'
+import { onFieldChange, widgets } from './SpecificFieldsHelpers'
 
-import { map, sortBy } from 'lodash'
+import { map, omit, sortBy } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { useContext } from 'react'
+import { useContext, useEffect } from 'react'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import {
   disposalTypeOpts,
   initialAlternativeTechnology,
   initialEnterprises,
   initialOdsEquipmentFate,
+  pcrFieldsMapping,
 } from '../constants'
+import { Label } from '../../BusinessPlans/BPUpload/helpers'
+import {
+  defaultPropsSimpleField,
+  disabledClassName,
+} from '../../ProjectsListing/constants'
+import cx from 'classnames'
+import { FormattedNumberInput } from '../../Replenishment/Inputs'
+import { getProjectDuration } from '../../ProjectsListing/utils'
 
 const PCRSummaryAndDelaysUserInputData = ({
   PCRData,
@@ -32,6 +44,15 @@ const PCRSummaryAndDelaysUserInputData = ({
   const alternativeTechnologyField = 'alternative_technology'
   const enterprisesField = 'enterprises'
   const odsEquipmentFateField = 'ods_equipment_fate'
+
+  const {
+    date_approved,
+    date_completion_planned,
+    date_completion_actual,
+    duration_planned,
+    duration_actual,
+    delay,
+  } = PCRData[sectionIdentifier][crtAgency]
 
   const alternativeTechnologyData =
     crtAgencyData[alternativeTechnologyField] || []
@@ -90,6 +111,59 @@ const PCRSummaryAndDelaysUserInputData = ({
     }, field)
   }
 
+  const getFieldDefaultProps = (field: string) => ({
+    ...defaultPropsSimpleField,
+    className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
+      [disabledClassName]: [
+        'duration_planned',
+        'duration_actual',
+        'delay',
+      ].includes(field),
+    }),
+  })
+
+  useEffect(() => {
+    const duration_planned = getProjectDuration({
+      project_start_date: date_approved,
+      project_end_date: date_completion_planned,
+    })
+
+    onFieldChange(
+      duration_planned,
+      'duration_planned',
+      setPCRData,
+      sectionIdentifier,
+      undefined,
+      [crtAgency],
+    )
+  }, [date_approved, date_completion_planned])
+
+  useEffect(() => {
+    const duration_actual = getProjectDuration({
+      project_start_date: date_approved,
+      project_end_date: date_completion_actual,
+    })
+
+    onFieldChange(
+      duration_actual,
+      'duration_actual',
+      setPCRData,
+      sectionIdentifier,
+      undefined,
+      [crtAgency],
+    )
+  }, [date_approved, date_completion_actual])
+
+  useEffect(() => {
+    const delay = !(duration_actual && duration_planned)
+      ? null
+      : Number(duration_actual ?? 0) - Number(duration_planned ?? 0)
+
+    onFieldChange(delay, 'delay', setPCRData, sectionIdentifier, undefined, [
+      crtAgency,
+    ])
+  }, [duration_planned, duration_actual])
+
   return (
     <>
       <div className="flex flex-col gap-y-2">
@@ -111,6 +185,54 @@ const PCRSummaryAndDelaysUserInputData = ({
             errors,
             [crtAgency],
           )}
+          <div>
+            <Label>{pcrFieldsMapping.duration_planned}</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="duration_planned"
+                value={duration_planned ?? ''}
+                withoutDefaultValue={true}
+                decimalDigits={0}
+                disabled={true}
+                {...omit(
+                  getFieldDefaultProps('duration_planned'),
+                  'containerClassName',
+                )}
+              />
+              <FieldErrorIndicator errors={errors} field="duration_planned" />
+            </div>
+          </div>
+          <div>
+            <Label>{pcrFieldsMapping.duration_actual}</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="duration_actual"
+                value={duration_actual ?? ''}
+                withoutDefaultValue={true}
+                decimalDigits={0}
+                disabled={true}
+                {...omit(
+                  getFieldDefaultProps('duration_actual'),
+                  'containerClassName',
+                )}
+              />
+              <FieldErrorIndicator errors={errors} field="duration_actual" />
+            </div>
+          </div>
+          <div>
+            <Label>{pcrFieldsMapping.delay}</Label>
+            <div className="flex items-center">
+              <FormattedNumberInput
+                id="delay"
+                value={delay ?? ''}
+                withoutDefaultValue={true}
+                decimalDigits={0}
+                disabled={true}
+                {...omit(getFieldDefaultProps('delay'), 'containerClassName')}
+              />
+              <FieldErrorIndicator errors={errors} field="delay" />
+            </div>
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-y-2">
