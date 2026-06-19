@@ -190,11 +190,12 @@ export const MetaProjectEdit = (props: {
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
 
-    const isEndDateDisabled =
-      fd.name === 'end_date' &&
-      (!!mp?.field_data?.end_date || !!mp?.computed_field_data?.end_date)
+    const hasEndDate =
+      !!mp?.field_data?.end_date?.value || !!mp?.computed_field_data?.end_date
+
+    const isEndDateDisabled = fd.name === 'end_date' && hasEndDate
     const isExtendedDateCOmpletionDisabled =
-      fd.name === 'extended_completion_date' && !isEndDateDisabled
+      fd.name === 'extended_date_of_completion' && !hasEndDate
 
     const isFieldDisabled =
       fd.name === projectDuration ||
@@ -316,14 +317,14 @@ export const MetaProjectEdit = (props: {
               <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
-              {renderFieldData(fieldData.slice(5, 6))}
+              {renderFieldData(fieldData.slice(6, 7))}
               {groupFields(baselineFields)}
               {groupFields(targetFields)}
             </div>
             <div className="flex-grow">
               {groupFields(phaseOutFields)}
               {groupFields(startingPointFields)}
-              {renderFieldData(fieldData).slice(16, 20)}
+              {renderFieldData(fieldData).slice(17, 21)}
               {groupFields(costEffectivenessFields)}
             </div>
           </div>

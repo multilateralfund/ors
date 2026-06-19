@@ -54,7 +54,7 @@ const ProjectMyaUpdate = ({
     !isDraftMetaProject || hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) =>
-    [projectDuration, 'extended_completion_date'].includes(field) ||
+    [projectDuration, 'extended_date_of_completion'].includes(field) ||
     !isDraftMetaProject
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
@@ -289,14 +289,14 @@ const ProjectMyaUpdate = ({
               <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
-              {renderFieldData(fieldData.slice(5, 6))}
+              {renderFieldData(fieldData.slice(6, 7))}
               {groupFields(baselineFields)}
               {groupFields(targetFields)}
             </div>
             <div className="flex-grow">
               {groupFields(phaseOutFields)}
               {groupFields(startingPointFields)}
-              {renderFieldData(fieldData).slice(16, 20)}
+              {renderFieldData(fieldData).slice(17, 21)}
               {groupFields(costEffectivenessFields)}
             </div>
           </div>
