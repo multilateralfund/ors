@@ -54,7 +54,8 @@ const ProjectMyaUpdate = ({
     !isDraftMetaProject || hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) =>
-    field === projectDuration || !isDraftMetaProject
+    [projectDuration, 'extended_completion_date'].includes(field) ||
+    !isDraftMetaProject
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
   const {
