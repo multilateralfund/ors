@@ -100,7 +100,7 @@ export const numberDetailItem = (
 
 export const booleanDetailItem = (
   fieldName: string,
-  fieldValue: boolean,
+  fieldValue: boolean | null | undefined,
   fieldHistory?: detailItemExtra['fieldHistory'],
   className?: string,
   isDisabledImpactField?: boolean,
@@ -122,7 +122,9 @@ export const booleanDetailItem = (
       <span>
         {fieldName} {getFieldExtraLabel(isDisabledImpactField, fieldName)}
       </span>
-      <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
+      <h4 className="m-0">
+        {fieldValue == null ? '-' : fieldValue ? 'Yes' : 'No'}
+      </h4>
     </span>
   )
 

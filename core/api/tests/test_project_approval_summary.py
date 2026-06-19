@@ -232,3 +232,51 @@ class TestProjectApprovalSummaryExport(BaseTest):
         assert response.data["grand_total"]["project_funding"] == 5000000
         assert response.data["grand_total"]["project_support_cost"] == 12000
         assert response.data["grand_total"]["total"] == 5012000
+
+    def test_recommended_summary_keeps_v2_history_for_approved_latest_project(
+        self,
+        secretariat_approver_edit_access_user,
+        project_approved_status,
+        project_recommended_status,
+    ):
+        selected_meeting = MeetingFactory()
+        cluster = ProjectClusterFactory(name="HPMP", code="HPMP-I")
+
+        latest_project = ProjectFactory(
+            cluster=cluster,
+            meeting=selected_meeting,
+            submission_status=project_approved_status,
+            version=3,
+            total_fund=10000000000,
+            support_cost_psc=5012000,
+        )
+        ProjectOdsOdpFactory(project=latest_project, odp=2, co2_mt=2000)
+
+        archived_project = ProjectFactory(
+            cluster=cluster,
+            meeting=selected_meeting,
+            submission_status=project_recommended_status,
+            version=2,
+            latest_project=latest_project,
+            total_fund=5000000,
+            support_cost_psc=12000,
+        )
+        ProjectOdsOdpFactory(project=archived_project, odp=1, co2_mt=1000)
+
+        self.client.force_authenticate(user=secretariat_approver_edit_access_user)
+        response = self.client.get(
+            self.preview_url,
+            {
+                "meeting_id": selected_meeting.id,
+                "submission_status": "recommended",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.data["projects"]["count"] == 1
+        assert response.data["projects"]["data"][0]["id"] == archived_project.id
+        assert response.data["grand_total"]["hcfc"] == pytest.approx(1)
+        assert response.data["grand_total"]["hfc"] == 1
+        assert response.data["grand_total"]["project_funding"] == 5000000
+        assert response.data["grand_total"]["project_support_cost"] == 12000
+        assert response.data["grand_total"]["total"] == 5012000

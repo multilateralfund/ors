@@ -253,7 +253,7 @@ class AnnualProjectReport(models.Model):
     last_year_remarks = models.TextField(blank=True)
     current_year_remarks = models.TextField(blank=True)
     gender_policy = models.BooleanField(
-        default=False,
+        null=True,
         blank=True,
         verbose_name="Gender Policy for All Projects Approved from 85th Mtg",
     )

@@ -6,7 +6,7 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import { useMeetingOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
 import Field from '@ors/components/manage/Form/Field.tsx'
 import { IoChevronDown } from 'react-icons/io5'
-import { ApiFilters, RequestParams } from './types.ts'
+import { RequestParams } from './types.ts'
 import { initialRequestParams } from './initialData.ts'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import { formatApiUrl } from '@ors/helpers'
@@ -83,7 +83,6 @@ const Filters = (props: {
                 agency_id: value?.id.toString() ?? '',
               }))
             }}
-            required
             {...defaultProps}
           />
         </div>
@@ -163,7 +162,6 @@ const ProjectsCompareVersions = () => {
                 disabled={
                   !(
                     requestParams.meeting_id &&
-                    requestParams.agency_id &&
                     requestParams.submission_status_left_id &&
                     requestParams.submission_status_right_id
                   )

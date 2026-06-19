@@ -359,8 +359,12 @@ export const formatApprovalData = (
   projectFields: ProjectSpecificFields[],
   altTechs: OptionsType[],
 ) => {
-  const { crossCuttingFields, projectSpecificFields, approvalFields } =
-    projectData
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields,
+  } = projectData
 
   const fields = filter(
     specificFields,
@@ -373,10 +377,7 @@ export const formatApprovalData = (
   ]
 
   const crtProjectSpecificFields = pick(
-    {
-      ...crossCuttingFields,
-      ...approvalFields,
-    },
+    { ...crossCuttingFields, ...approvalFields },
     specificFieldsAvailable,
   )
 
@@ -407,6 +408,7 @@ export const formatApprovalData = (
 
   return {
     ...normalizeValues(crtProjectSpecificFields),
+    post_excom_meeting: projIdentifiers.post_excom_meeting,
     ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
       omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),

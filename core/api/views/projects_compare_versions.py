@@ -149,8 +149,8 @@ class ProjectsCompareVersionsViewset(
     def build_filename(self, candidate_count: int) -> str:
         meeting = self.request.query_params.get("meeting_id")
 
-        agency = self.request.query_params.get("agency_id")
-        agency = Agency.objects.get(id=agency)
+        agency_id = self.request.query_params.get("agency_id")
+        agency = Agency.objects.get(id=agency_id).name if agency_id else "All agencies"
 
         left = int(self.request.query_params["submission_status_left_id"])
         left = ProjectSubmissionStatus.objects.get(id=left)

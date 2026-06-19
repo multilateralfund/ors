@@ -848,7 +848,7 @@ export default function APRMLFSWorkspace() {
                     handleExport(
                       formatApiUrl(
                         `api/annual-project-report/summary-tables/export/`,
-                        params.agency ? { agency: params.agency } : undefined,
+                        params.agency ? { year, agency: params.agency } : { year },
                       ),
                       setLoadingSummaryTables,
                     )

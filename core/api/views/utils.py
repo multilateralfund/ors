@@ -64,19 +64,33 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
 }
 
 
-def get_available_values(queryset: QuerySet, field_name: str, order_by: tuple = ()):
+def get_available_values(
+    queryset: QuerySet,
+    field_name: str,
+    order_by: tuple = (),
+    extra_fields: tuple = (),
+):
     rel_name = f"{field_name}__name"
+    extra_rel_names = tuple(f"{field_name}__{field}" for field in extra_fields)
 
     if not order_by:
         order_by = (rel_name,)
 
     values = (
         queryset.order_by(*order_by)
-        .values_list(f"{field_name}_id", rel_name)
+        .values_list(f"{field_name}_id", rel_name, *extra_rel_names)
         .distinct()
     )
 
-    return [{"name": name, "id": pk} for pk, name in values if pk is not None]
+    return [
+        {
+            "name": name,
+            "id": pk,
+            **dict(zip(extra_fields, extra_values)),
+        }
+        for pk, name, *extra_values in values
+        if pk is not None
+    ]
 
 
 def get_country_region_dict():

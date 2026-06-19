@@ -4,10 +4,24 @@ from django.db import models
 
 class SubstancesType(models.TextChoices):
     CFC = "CFC", "CFC"
-    HCFC = "HCFC", "HCFC"
+    CFC_CTC = "CFC, CTC", "CFC, CTC"
+    CFC_CTC_METBR = "CFC, CTC, Methyl Bromide", "CFC, CTC, Methyl Bromide"
+    CFC_CTC_TCA = "CFC, CTC, TCA", "CFC, CTC, TCA"
+    CFC_HALON = "CFC, Halon", "CFC, Halon"
+    CFC_HALON_CTC = "CFC, Halon, CTC", "CFC, Halon, CTC"
+    CFC_HALON_TCA = "CFC, Halon, TCA", "CFC, Halon, TCA"
+    CFC_METBR = "CFC, Methyl Bromide", "CFC, Methyl Bromide"
+    CFC_TCA = "CFC, TCA", "CFC, TCA"
+    CTC = "CTC", "CTC"
+    CTC_TCA = "CTC, TCA", "CTC, TCA"
+    HALON = "Halon", "Halon"
     HFC = "HFC", "HFC"
-    BOTH = "BOTH", "Both"
     METBR = "Methyl Bromide", "Methyl Bromide"
+    HCFC = "HCFC", "HCFC"
+    NA = "N/A", "N/A"
+    ODS = "ODS", "ODS"
+    TCA = "TCA", "TCA"
+    BOTH = "BOTH", "Both"
     HFC_Plus = "HFC_Plus", "HFC_Plus"
 
 

@@ -29,7 +29,7 @@ from core.api.tests.factories import (
 from core.models import AnnualAgencyProjectReport, Country
 from core.models.project_metadata import ProjectCluster, ProjectType
 
-# pylint: disable=W0221,W0613,R0913,R0914,R0904
+# pylint: disable=W0221,W0613,R0913,R0914,R0904,C0302
 
 
 @pytest.mark.django_db
@@ -140,6 +140,53 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         # B4 = Number of Approvals — both submitted projects counted, draft excluded
         assert summary_sheet.cell(4, 2).value == 2
+
+    def test_year_param_scopes_counts_to_reporting_year(
+        self,
+        secretariat_viewer_user,
+        annual_progress_report,
+        project_ongoing_status,
+    ):
+        """
+        The summary tables must be scoped to the requested reporting year.
+        APRs carried forward into other years should not inflate the counts.
+        """
+        # annual_progress_report is for 2024 (apr_year fixture)
+        report_2024 = AnnualAgencyProjectReportFactory(
+            progress_report=annual_progress_report,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualProjectReportFactory(
+            report=report_2024,
+            project=ProjectFactory(agency=report_2024.agency),
+        )
+
+        # A different year's report/APR that must be excluded when year=2024
+        progress_report_2023 = AnnualProgressReportFactory(year=2023, endorsed=False)
+        report_2023 = AnnualAgencyProjectReportFactory(
+            progress_report=progress_report_2023,
+            status=AnnualAgencyProjectReport.SubmissionStatus.SUBMITTED,
+        )
+        AnnualProjectReportFactory(
+            report=report_2023,
+            project=ProjectFactory(agency=report_2023.agency),
+        )
+
+        # Writer scoped to 2024 only sees the 2024 APR; unscoped sees both.
+        assert len(APRSummaryTablesExportWriter(year=2024).records) == 1
+        assert len(APRSummaryTablesExportWriter(year=None).records) == 2
+
+        # End-to-end: the endpoint must scope B4 (Number of Approvals) to the year.
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        url = reverse("apr-summary-tables-export")
+        response = self.client.get(f"{url}?year=2024")
+        assert response.status_code == status.HTTP_200_OK
+        # Filename carries the reporting year (not the "Cumulative" fallback)
+        assert "APR_Summary_Tables_2024" in response["Content-Disposition"]
+        assert "Cumulative" not in response["Content-Disposition"]
+        workbook = load_workbook(BytesIO(response.content))
+        summary_sheet = workbook[APRSummaryTablesExportWriter.SHEET_SUMMARY]
+        assert summary_sheet.cell(4, 2).value == 1
 
     def test_export_structure_and_metadata(
         self,

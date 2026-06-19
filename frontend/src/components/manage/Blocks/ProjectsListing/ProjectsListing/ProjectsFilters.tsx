@@ -246,7 +246,7 @@ const ProjectsFilters = ({
           }}
           {...defaultProps}
           FieldProps={{
-            className: defaultProps.FieldProps.className + ' md:!w-[19rem]',
+            className: defaultProps.FieldProps.className + ' md:!w-[21rem]',
           }}
         />
       )}
