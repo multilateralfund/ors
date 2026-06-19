@@ -189,17 +189,30 @@ export const MetaProjectEdit = (props: {
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
-    const isFieldDisabled = fd.name === projectDuration
+
+    const isEndDateDisabled =
+      fd.name === 'end_date' &&
+      (!!mp?.field_data?.end_date || !!mp?.computed_field_data?.end_date)
+    const isExtendedDateCOmpletionDisabled =
+      fd.name === 'extended_completion_date' && !isEndDateDisabled
+
+    const isFieldDisabled =
+      fd.name === projectDuration ||
+      isEndDateDisabled ||
+      isExtendedDateCOmpletionDisabled
 
     switch (fd.type) {
       case 'DateTimeField':
         return (
           <DateInput
             id={fd.name}
-            className="BPListUpload !ml-0 h-8 !w-[125px]"
+            className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
+              [disabledClassName]: isFieldDisabled,
+            })}
             value={fieldValue.toString()}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
             onChange={changeSimpleInput(fd.name)}
+            disabled={isFieldDisabled}
           />
         )
       case 'DecimalField':
@@ -243,11 +256,7 @@ export const MetaProjectEdit = (props: {
         <div key={fd.name} className="py-2">
           {isIndividualField && (
             <Label htmlFor={fd.name}>
-              <span
-                className={cx('font-semibold', {
-                  'text-red-500': errors,
-                })}
-              >
+              <span className={cx('font-semibold', { 'text-red-500': errors })}>
                 {formattedLabel}
               </span>
             </Label>
