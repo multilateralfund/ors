@@ -8,6 +8,7 @@ import {
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreate from './PCRCreate'
 import {
+  initialAgencyOverview,
   initialOverviewFields,
   initialSummaryAndDelaysFieldsEntry,
 } from '../constants'
@@ -30,6 +31,10 @@ const PCRCreateWrapper = () => {
 
   const agencies = [1, 2, 3, 4]
 
+  const initialOverviewAgencyDataFields = map(agencies, (agency) => ({
+    ...initialAgencyOverview,
+    agency,
+  }))
   const initialSummaryAndDelaysFields = map(agencies, (agency) => ({
     ...initialSummaryAndDelaysFieldsEntry,
     agency,
@@ -52,7 +57,10 @@ const PCRCreateWrapper = () => {
   }))
 
   const [PCRData, setPCRData] = useState<PCRData>({
-    overview: initialOverviewFields,
+    overview: {
+      ...initialOverviewFields,
+      agency_overview: initialOverviewAgencyDataFields,
+    },
     summary_and_delays: initialSummaryAndDelaysFields,
     results_assessment: [],
     causes_of_delay: initialCausesOfDelayFields,

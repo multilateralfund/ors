@@ -179,10 +179,9 @@ export type PCROverviewProps = PCRFormData & {
   errors: { [key: string]: string[] | { [key: string]: [] }[] }
 }
 
-export type PCRSectionsProps = PCRFormData &
-  PCROverviewProps & {
-    setCurrentTab: Dispatch<SetStateAction<number>>
-  }
+export type PCRSectionsProps = PCROverviewProps & {
+  setCurrentTab: Dispatch<SetStateAction<number>>
+}
 
 export type FieldHandler = <T, K>(
   value: any,

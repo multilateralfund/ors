@@ -131,7 +131,6 @@ export const changeArrayField2: FieldHandler = (
   subfield2,
   indexes,
 ) => {
-  console.log(subfield2)
   const [index, index2] = indexes ?? []
 
   if (indexes?.length === 2) {

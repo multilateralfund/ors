@@ -1,12 +1,12 @@
 // import { useContext, useEffect, } from 'react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import {
   FileMetaDataProps,
   ProjectFiles,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
-import { PCRFormProps } from '../interfaces'
+import { PCRData, PCRFormProps, PCROverview } from '../interfaces'
 
 // import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 // import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
@@ -62,6 +62,7 @@ import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
 import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
 import PCRSDGSection from '../PCRFormTabs/PCRSDGSection'
 import PCRSummaryAndDelaysSection from '../PCRFormTabs/PCRSummaryAndDelaysSection'
+import { changeHandler } from '../PCRFormTabs/SpecificFieldsHelpers'
 // import { Tabs, Tab, Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
@@ -171,6 +172,75 @@ const PCRCreate = ({
   //   areProjectSpecificTabsDisabled ||
   //   impactFields.length < 1 ||
   //   !hasFields(projectFields, viewableFields, 'Impact')
+
+  const totalsByAgency = useMemo(() => {
+    return PCRData.summary_and_delays.reduce(
+      (acc, entry) => {
+        const agency = entry.agency
+
+        acc[agency] ??= {
+          funds_approved: 0,
+          funds_disbursed: 0,
+        }
+
+        acc[agency].funds_approved += Number(entry.funds_approved) || 0
+        acc[agency].funds_disbursed += Number(entry.funds_disbursed) || 0
+
+        return acc
+      },
+      {} as Record<number, { funds_approved: number; funds_disbursed: number }>,
+    )
+  }, [
+    PCRData.summary_and_delays
+      .map(
+        ({ agency, funds_approved, funds_disbursed }) =>
+          `${agency}-${funds_approved}-${funds_disbursed}`,
+      )
+      .join('|'),
+  ])
+
+  useEffect(() => {
+    setPCRData((prevData: any) => {
+      const agencyOverview = prevData.overview.agency_overview
+
+      const updatedAgencyOverview = agencyOverview.map((agency) => {
+        const funds_approved =
+          totalsByAgency[agency.agency]?.funds_approved ?? 0
+        const funds_disbursed =
+          totalsByAgency[agency.agency]?.funds_disbursed ?? 0
+
+        if (
+          agency.mlf_funding_approved === funds_approved &&
+          agency.mlf_funding_disbursed === funds_disbursed
+        ) {
+          return agency
+        }
+
+        return {
+          ...agency,
+          mlf_funding_approved: funds_approved,
+          mlf_funding_disbursed: funds_disbursed,
+        }
+      })
+
+      const changed = updatedAgencyOverview.some(
+        (agency, index) => agency !== agencyOverview[index],
+      )
+
+      if (!changed) {
+        return prevData
+      }
+
+      return {
+        ...prevData,
+        overview: {
+          ...prevData.overview,
+          agency_overview: updatedAgencyOverview,
+        },
+      }
+    })
+  }, [totalsByAgency])
+
   const overviewErrors = useMemo(
     () => getSectionErrors(keys(initialOverviewFields), errors),
     [errors],

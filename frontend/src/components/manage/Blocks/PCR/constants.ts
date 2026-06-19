@@ -63,6 +63,12 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   duration_planned: 'Planned duration (months)',
   duration_actual: 'Actual duration (months)',
   delay: 'Delay (months)',
+  mlf_funding_approved: 'MLF funding approved',
+  mlf_funding_disbursed: 'MLF funding disbursed',
+  mlf_funding_returned: 'MLF funding returned',
+  total_mlf_funding_approved: 'Total MLF funding approved',
+  total_mlf_funding_disbursed: 'Total MLF funding disbursed',
+  total_mlf_funding_returned: 'Total project (metacode) MLF funding returned',
 }
 
 export const initialOverviewFields = {
