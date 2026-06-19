@@ -12,6 +12,7 @@ class MetaProjectFieldSerializer(serializers.ModelSerializer):
             "project_cost",
             "start_date",
             "end_date",
+            "extended_date_of_completion",
             "project_duration",
             "phase_out_co2_eq_t",
             "phase_out_odp",

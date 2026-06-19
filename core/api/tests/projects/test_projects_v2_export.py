@@ -647,8 +647,7 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb["MYAs"]
-
-        assert sheet.auto_filter.ref == "A1:Z3"
+        assert sheet.auto_filter.ref == "A1:AA3"
         assert sheet["A4"].value is None, "Spacer row not empty."
         assert sheet["A5"].value == "Subtotal (filtered results)"
         assert sheet["A6"].value == "Grand total"

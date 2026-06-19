@@ -33,6 +33,11 @@ HEADERS = [
         "method": lambda r, h: format_iso_date(r[h["id"]]),
     },
     {
+        "headerName": "Extended date of completion",
+        "id": "extended_date_of_completion",
+        "method": lambda r, h: format_iso_date(r[h["id"]]),
+    },
+    {
         "headerName": "Project duration (months)",
         "id": "project_duration",
     },
