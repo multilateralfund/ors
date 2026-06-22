@@ -36,10 +36,12 @@ const projectDuration = 'project_duration'
 
 const ProjectMyaUpdate = ({
   metaprojectData,
+  refreshMetaProjectDetails,
   mode,
   setErrors,
 }: {
   metaprojectData: Partial<MetaProjectDetailType> | null
+  refreshMetaProjectDetails?: () => void
   mode: string
   setErrors?: (value: { [key: string]: [] }) => void
 }) => {
@@ -53,9 +55,20 @@ const ProjectMyaUpdate = ({
   const isSaveDisabled =
     !isDraftMetaProject || hasSectionErrors(defaultMpErrors)
 
-  const isFieldDisabled = (field: string) =>
-    [projectDuration, 'extended_date_of_completion'].includes(field) ||
-    !isDraftMetaProject
+  const isFieldDisabled = (field: string) => {
+    const hasEndDate = !!metaprojectData?.field_data?.end_date?.value
+
+    const isEndDateDisabled = field === 'end_date' && hasEndDate
+    const isExtendedDateCOmpletionDisabled =
+      field === 'extended_date_of_completion' && !hasEndDate
+
+    return (
+      field === projectDuration ||
+      isEndDateDisabled ||
+      isExtendedDateCOmpletionDisabled ||
+      !isDraftMetaProject
+    )
+  }
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
   const {
@@ -212,6 +225,7 @@ const ProjectMyaUpdate = ({
         data: mpData,
         method: 'PUT',
       })
+      refreshMetaProjectDetails?.()
       setInlineMessage({
         type: 'success',
         message:

@@ -180,12 +180,13 @@ const ProjectsCreate = ({
   const submissionStatus =
     project && mode === 'edit' ? project.submission_status : null
 
-  const { data: metaprojectData } = useGetMetaProjectDetails(
-    meta_project_id,
-    mode,
-    projIdentifiers,
-    submissionStatus,
-  )
+  const { data: metaprojectData, refresh: refreshMetaProjectDetails } =
+    useGetMetaProjectDetails(
+      meta_project_id,
+      mode,
+      projIdentifiers,
+      submissionStatus,
+    )
 
   const {
     mpData,
@@ -841,6 +842,7 @@ const ProjectsCreate = ({
             setRefetchRelatedProjects,
             setCurrentTab,
             metaprojectData,
+            refreshMetaProjectDetails,
             mode,
             setErrors,
           }}
