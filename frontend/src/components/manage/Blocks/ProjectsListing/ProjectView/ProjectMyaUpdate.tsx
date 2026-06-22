@@ -120,9 +120,12 @@ const ProjectMyaUpdate = ({
           return (
             <DateInput
               id={fd.name}
-              className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
-                [disabledClassName]: isFieldDisabled(fd.name),
-              })}
+              className={cx(
+                'BPListUpload !ml-0 h-8 !w-[125px] !max-w-[125px]',
+                {
+                  [disabledClassName]: isFieldDisabled(fd.name),
+                },
+              )}
               value={fieldValue.toString()}
               onChange={changeSimpleInput(fd.name)}
               formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}

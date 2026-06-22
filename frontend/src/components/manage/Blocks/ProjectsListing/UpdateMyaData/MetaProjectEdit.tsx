@@ -190,8 +190,7 @@ export const MetaProjectEdit = (props: {
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
 
-    const hasEndDate =
-      !!mp?.field_data?.end_date?.value || !!mp?.computed_field_data?.end_date
+    const hasEndDate = !!mp?.field_data?.end_date?.value
 
     const isEndDateDisabled = fd.name === 'end_date' && hasEndDate
     const isExtendedDateCOmpletionDisabled =
@@ -207,7 +206,7 @@ export const MetaProjectEdit = (props: {
         return (
           <DateInput
             id={fd.name}
-            className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
+            className={cx('BPListUpload !ml-0 h-8 !w-[125px] !max-w-[125px]', {
               [disabledClassName]: isFieldDisabled,
             })}
             value={fieldValue.toString()}
