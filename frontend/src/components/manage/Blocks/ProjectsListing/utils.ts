@@ -722,7 +722,7 @@ export const getMpErrors = (
     'end_date',
   ]
 
-  const { start_date, end_date } = mpData
+  const { start_date, end_date, extended_date_of_completion } = mpData
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) => allKeys.includes(key)),
@@ -734,6 +734,11 @@ export const getMpErrors = (
     }),
     ...(dayjs(end_date).isBefore(dayjs(start_date)) && {
       end_date: ['Start date cannot be later than end date.'],
+    }),
+    ...(dayjs(extended_date_of_completion).isBefore(dayjs(start_date)) && {
+      extended_date_of_completion: [
+        'Start date cannot be later than extended date of completion.',
+      ],
     }),
     ...filteredErrors,
   }
