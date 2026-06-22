@@ -55,7 +55,7 @@ FIELDS_WITH_ACTUAL_VALUES = {
     "Cost effectiveness (US $/kg)": "Cost effectiveness (US $/kg) actual",
     "Cost effectiveness (US $/CO2-eq tonnes)": "Cost effectiveness (US $/CO2-eq tonnes) actual",
     "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq) actual",
-    "Capacity-building programmes (e.g., end users, government entities, other stakeholders)": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) actual"
+    "Capacity-building programmes (e.g., end users, government entities, other stakeholders)": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) actual",
 }
 
 
