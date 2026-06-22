@@ -38,7 +38,7 @@ const ProjectUmbrellaProjectDetails = ({
   setRefetchRelatedProjects?: (refetch: boolean) => void
   canDisassociate?: boolean
   metaprojectData: MetaProjectDetailType | null
-  refreshMetaProjectDetails: () => void
+  refreshMetaProjectDetails?: () => void
   mode: string
   isMya: boolean
   isPrevButtonDisabled?: boolean

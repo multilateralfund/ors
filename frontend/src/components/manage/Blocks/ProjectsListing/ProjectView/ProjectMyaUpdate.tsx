@@ -41,7 +41,7 @@ const ProjectMyaUpdate = ({
   setErrors,
 }: {
   metaprojectData: Partial<MetaProjectDetailType> | null
-  refreshMetaProjectDetails: () => void
+  refreshMetaProjectDetails?: () => void
   mode: string
   setErrors?: (value: { [key: string]: [] }) => void
 }) => {
@@ -225,7 +225,7 @@ const ProjectMyaUpdate = ({
         data: mpData,
         method: 'PUT',
       })
-      refreshMetaProjectDetails()
+      refreshMetaProjectDetails?.()
       setInlineMessage({
         type: 'success',
         message:
