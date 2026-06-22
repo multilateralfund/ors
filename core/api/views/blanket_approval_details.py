@@ -7,8 +7,10 @@ from typing import TypedDict
 import openpyxl
 from django.conf import settings
 from django.db.models import F
+from django.db.models import FloatField
 from django.db.models import IntegerField
 from django.db.models import QuerySet
+from django.db.models import Sum
 from django.db.models import TextField
 from django.db.models import Value
 from django.db.models.functions import Cast
@@ -214,10 +216,18 @@ class BlanketApprovalDetailsViewset(
             cluster_name=Upper(F("cluster__name")),
             project_type_pk=F("project_type"),
             project_type_name=F("project_type__name"),
-            hcfc=Round(Coalesce(F("ods_odp__odp"), 0.0), precision=1),
+            hcfc=Round(
+                Coalesce(Sum("ods_odp__odp"), 0.0, output_field=FloatField()),
+                precision=1,
+            ),
             hfc=Cast(
                 Round(
-                    Coalesce(F("ods_odp__co2_mt"), 0.0) / Value(1000.0),
+                    Coalesce(
+                        Sum("ods_odp__co2_mt"),
+                        0.0,
+                        output_field=FloatField(),
+                    )
+                    / Value(1000.0),
                     precision=0,
                 ),
                 output_field=IntegerField(),

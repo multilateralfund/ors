@@ -7,6 +7,7 @@ import { ProjectViewProps } from '../interfaces'
 import {
   canViewField,
   getFieldData,
+  filterEmptyOdsOdpRows,
   getOdsOdpFields,
   getSectionFields,
   hasFields,
@@ -50,7 +51,7 @@ const ProjectSpecificInfo = ({
   )
 
   const data =
-    project?.[field]?.sort(
+    filterEmptyOdsOdpRows([...(project?.[field] || [])]).sort(
       (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
     ) || []
 
