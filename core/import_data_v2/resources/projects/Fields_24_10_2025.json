@@ -1602,6 +1602,18 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+        "IMPORT_NAME": "Extended date of completion",
+        "LABEL": "Extended date of completion",
+        "WRITE_FIELD_NAME": "extended_date_of_completion",
+        "READ_FIELD_NAME": "extended_date_of_completion",
+        "TABLE": "meta_project",
+        "DATA_TYPE": "date",
+        "SECTION": "MYA",
+        "SORT_ORDER": 128,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
         "IMPORT_NAME": "Project duration (months)",
         "LABEL": "Project duration (months)",
         "WRITE_FIELD_NAME": "project_duration",

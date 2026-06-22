@@ -6,9 +6,11 @@ import { enqueueSnackbar } from 'notistack'
 import { useMsal } from '@azure/msal-react'
 import { Button } from '@mui/material'
 import cx from 'classnames'
+import { useStore } from '@ors/store'
 
 const EntraIdLoginButton = () => {
   const { instance } = useMsal()
+  const user = useStore((state) => state.user)
 
   const handleLogin = async () => {
     try {
@@ -17,6 +19,16 @@ const EntraIdLoginButton = () => {
 
       if (account) {
         instance.setActiveAccount(account)
+
+        const apiUser = await user.getUser()
+
+        if (!apiUser) {
+          enqueueSnackbar(
+            <>An error occurred during sign in. Please try again.</>,
+            { variant: 'error' },
+          )
+        }
+
         return
       }
 

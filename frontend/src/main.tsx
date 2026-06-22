@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { initializeSentry } from './instrumentation'
 import { MsalProvider } from '@azure/msal-react'
+import { BrowserAuthErrorCodes } from '@azure/msal-browser'
 
 initializeSentry()
 
@@ -25,7 +26,12 @@ const initializeApp = async () => {
       }
     }
   } catch (err) {
-    console.error(err)
+    if (
+      (err as { errorCode?: string }).errorCode !==
+      BrowserAuthErrorCodes.noTokenRequestCacheError
+    ) {
+      console.error(err)
+    }
   }
 
   createRoot(document.getElementById('main')!).render(

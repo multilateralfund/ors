@@ -150,6 +150,9 @@ class MetaProject(models.Model):
         null=True, blank=True, help_text="Start date (MYA)"
     )
     end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
+    extended_date_of_completion = models.DateTimeField(
+        null=True, blank=True, help_text="Extended date of completion"
+    )
     project_duration = models.IntegerField(
         null=True,
         blank=True,
@@ -256,139 +259,6 @@ class MetaProject(models.Model):
         null=True,
         blank=True,
         help_text="Cost effectiveness (US $/CO2-eq tonnes) ",
-    )
-
-    draft_project_funding = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="MYA Total agreed funding in principle (US $) (draft)",
-    )
-    draft_support_cost = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="MYA Total support costs in principle (US $) (draft)",
-    )
-    draft_project_cost = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="MYA Total agreed costs in principle (US $) (draft)",
-    )
-    draft_start_date = models.DateTimeField(
-        null=True, blank=True, help_text="Start date (MYA)"
-    )
-    draft_end_date = models.DateTimeField(
-        null=True, blank=True, help_text="End date (MYA)"
-    )
-    draft_project_duration = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Project duration (months) (draft)",
-    )
-    draft_phase_out_co2_eq_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase-out (CO2-eq tonnes) (MYA) (draft)",
-    )
-    draft_phase_out_odp = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase-out (ODP tonnes) (MYA)",
-    )
-    draft_phase_out_mt = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Phase-out (metric tonnes) (MYA)",
-    )
-    draft_target_reduction = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Target in the last year (reduction in %) (draft)",
-    )
-    draft_target_co2_eq_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Target in the last year (CO2-eq tonnes) (draft)",
-    )
-    draft_target_odp = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Target in the last year (ODP tonnes) (draft)",
-    )
-    draft_starting_point_odp = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Starting point for aggregate reductions in consumption or production (ODP tonnes) (draft)",
-    )
-    draft_starting_point_co2_eq_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Starting point for aggregate reductions in consumption or production (CO2-eq tonnes) (draft)",
-    )
-    draft_baseline_odp = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Baseline (ODP tonnes)",
-    )
-    draft_baseline_co2_eq_t = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Baseline (CO2-eq tonnes)",
-    )
-    draft_number_of_smes_directly_funded = models.IntegerField(
-        null=True, blank=True, help_text="Number of SMEs directly funded (draft)"
-    )
-    draft_number_of_non_sme_directly_funded = models.IntegerField(
-        null=True, blank=True, help_text="Number of non-SMEs directly funded (draft)"
-    )
-    draft_number_of_both_sme_non_sme_not_directly_funded = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of both SMEs and non-SMEs included in the project but not directly funded (draft)",
-    )
-    draft_number_of_production_lines_assisted = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Production sector: number of production lines assisted",
-    )
-    draft_cost_effectiveness_kg = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US $/kg)",
-    )
-    draft_cost_effectiveness_co2 = models.DecimalField(
-        max_digits=30,
-        decimal_places=15,
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US $/CO2-eq tonnes)",
     )
 
     # END: Task #32217 fields.
