@@ -69,6 +69,14 @@ HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.\n
 
 
 class UpdateOdsOdpEntries:
+    ignored_empty_ods_odp_fields = {"id", "project_id", "sort_order", "ods_type"}
+
+    def _has_ods_odp_values(self, ods_odp):
+        return any(
+            value not in [None, ""]
+            for field, value in ods_odp.items()
+            if field not in self.ignored_empty_ods_odp_fields
+        )
 
     def _update_or_create_ods_odp(self, instance, ods_odp_data):
         existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
@@ -76,6 +84,8 @@ class UpdateOdsOdpEntries:
         ods_odp_to_create = []
         incoming_ids = set()
         for ods_odp in ods_odp_data:
+            if not self._has_ods_odp_values(ods_odp):
+                continue
             if not ods_odp.get("ods_type", None):
                 ods_odp.pop("ods_type", None)
             item_id = ods_odp.get("id")

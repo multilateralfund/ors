@@ -225,6 +225,26 @@ const normalizeValues = (data: Record<string, any>) =>
     ]),
   )
 
+const emptyOdsOdpIgnoredFields = new Set([
+  'id',
+  'project_id',
+  'sort_order',
+  'ods_type',
+])
+
+export const filterEmptyOdsOdpRows = <T extends Record<string, any>>(
+  odsOdpRows: T[],
+) =>
+  odsOdpRows.filter((odsOdp) =>
+    Object.entries(odsOdp).some(
+      ([key, value]) =>
+        !emptyOdsOdpIgnoredFields.has(key) &&
+        value !== null &&
+        value !== undefined &&
+        value !== '',
+    ),
+  )
+
 const normalizeOdsOdp = (
   projectSpecificFields: SpecificFields,
   specificFieldsAvailable: string[],
@@ -321,11 +341,13 @@ export const formatSubmitData = (
     (field) => field.table === 'ods_odp',
   )
   const updatedOdsOdpValues = hasOdsOdpFields
-    ? normalizeOdsOdp(
-        projectSpecificFields,
-        specificFieldsAvailable,
-        projectFields,
-        altTechs,
+    ? filterEmptyOdsOdpRows(
+        normalizeOdsOdp(
+          projectSpecificFields,
+          specificFieldsAvailable,
+          projectFields,
+          altTechs,
+        ),
       )
     : []
 
@@ -383,11 +405,13 @@ export const formatApprovalData = (
 
   const hasOdsOdpFields = fields.find((field) => field.table === 'ods_odp')
   const updatedOdsOdpValues = hasOdsOdpFields
-    ? normalizeOdsOdp(
-        projectSpecificFields,
-        specificFieldsAvailable,
-        projectFields,
-        altTechs,
+    ? filterEmptyOdsOdpRows(
+        normalizeOdsOdp(
+          projectSpecificFields,
+          specificFieldsAvailable,
+          projectFields,
+          altTechs,
+        ),
       )
     : []
 

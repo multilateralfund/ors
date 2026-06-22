@@ -54,7 +54,8 @@ const ProjectMyaUpdate = ({
     !isDraftMetaProject || hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) =>
-    field === projectDuration || !isDraftMetaProject
+    [projectDuration, 'extended_date_of_completion'].includes(field) ||
+    !isDraftMetaProject
 
   const fieldData = orderFieldData(metaprojectData?.field_data ?? {})
   const {
@@ -119,9 +120,12 @@ const ProjectMyaUpdate = ({
           return (
             <DateInput
               id={fd.name}
-              className={cx('BPListUpload !ml-0 h-8 !w-[125px]', {
-                [disabledClassName]: isFieldDisabled(fd.name),
-              })}
+              className={cx(
+                'BPListUpload !ml-0 h-8 !w-[125px] !max-w-[125px]',
+                {
+                  [disabledClassName]: isFieldDisabled(fd.name),
+                },
+              )}
               value={fieldValue.toString()}
               onChange={changeSimpleInput(fd.name)}
               formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
@@ -288,14 +292,14 @@ const ProjectMyaUpdate = ({
               <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
-              {renderFieldData(fieldData.slice(5, 6))}
+              {renderFieldData(fieldData.slice(6, 7))}
               {groupFields(baselineFields)}
               {groupFields(targetFields)}
             </div>
             <div className="flex-grow">
               {groupFields(phaseOutFields)}
               {groupFields(startingPointFields)}
-              {renderFieldData(fieldData).slice(16, 20)}
+              {renderFieldData(fieldData).slice(17, 21)}
               {groupFields(costEffectivenessFields)}
             </div>
           </div>

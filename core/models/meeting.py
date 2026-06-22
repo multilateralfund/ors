@@ -18,6 +18,7 @@ class Meeting(models.Model):
 
     class Meta:
         verbose_name_plural = "Meetings"
+        ordering = ("number",)
 
     def __str__(self):
         return f"Meeting {self.number}"
@@ -37,6 +38,7 @@ class Decision(models.Model):
 
     class Meta:
         verbose_name_plural = "Decisions"
+        ordering = ("meeting__number", "number")
 
     def __str__(self):
         title = self.title
