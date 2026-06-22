@@ -184,6 +184,8 @@ class ProjectAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "component",
         "meeting",
+        "post_excom_meeting",
+        "meeting_transf",
         "transfer_meeting",
         "transfer_decision",
         "decision",
