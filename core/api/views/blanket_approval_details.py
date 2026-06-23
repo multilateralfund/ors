@@ -42,6 +42,14 @@ def get_available_values(queryset: QuerySet[Project], field_name: str):
     return [{"name": name, "id": pk} for pk, name in values if pk is not None]
 
 
+def round_hcfc(value):
+    return round(value or 0.0, 1)
+
+
+def round_hfc(value):
+    return int(round(value or 0.0))
+
+
 class ProjectData(TypedDict):
     project_id: int
     project_title: str
@@ -246,6 +254,8 @@ class BlanketApprovalDetailsViewset(
         for project in filtered_projects:
             key = f"{project['project_type_pk']}, {project['cluster_pk']}"
 
+            project["hcfc"] = round_hcfc(project["hcfc"])
+            project["hfc"] = round_hfc(project["hfc"])
             project["project_description"] = (
                 strip_tags(project["project_description"])
                 if project["project_description"]

@@ -69,6 +69,55 @@ def test_blanket_approval_details_aggregates_phaseout_once_per_project():
     assert project_data["project_funding"] == 1_332_750
 
 
+def test_blanket_approval_details_rounds_phaseout_values_and_totals():
+    submission_status = ProjectSubmissionStatusFactory.create(name="Recommended")
+    country = CountryFactory.create(name="Mexico")
+    cluster = ProjectClusterFactory.create(name="KIGALI IMPLEMENTATION PLAN STAGE 1")
+    project_type = ProjectTypeFactory.create(name="Investment")
+
+    project = ProjectFactory.create(
+        title="KIP - SI T2 - Foam",
+        country=country,
+        cluster=cluster,
+        project_type=project_type,
+        submission_status=submission_status,
+    )
+    for odp, co2_mt in [(1.111, 1200.2), (2.222, 1450.7)]:
+        ProjectOdsOdpFactory.create(
+            project=project,
+            odp=odp,
+            co2_mt=co2_mt,
+            phase_out_mt=None,
+        )
+
+    second_project = ProjectFactory.create(
+        title="KIP - SI T3 - Foam",
+        country=country,
+        cluster=cluster,
+        project_type=project_type,
+        submission_status=submission_status,
+    )
+    ProjectOdsOdpFactory.create(
+        project=second_project,
+        odp=1.26,
+        co2_mt=1499.9,
+        phase_out_mt=None,
+    )
+
+    _, grand_total, result = get_blanket_approval_view()._extract_data()
+
+    projects = result[0]["country_data"][0]["projects"]
+    assert projects[0]["hcfc"] == 3.3
+    assert projects[0]["hfc"] == 3
+    assert isinstance(projects[0]["hfc"], int)
+    assert projects[1]["hcfc"] == 1.3
+    assert projects[1]["hfc"] == 1
+    assert result[0]["country_total"]["hcfc"] == 4.6
+    assert result[0]["country_total"]["hfc"] == 4
+    assert grand_total["hcfc"] == 4.6
+    assert grand_total["hfc"] == 4
+
+
 def test_blanket_approval_details_orders_alphabetically():
     submission_status = ProjectSubmissionStatusFactory.create(name="Recommended")
     cluster = ProjectClusterFactory.create(name="KIGALI IMPLEMENTATION PLAN STAGE 1")
