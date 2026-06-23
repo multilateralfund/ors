@@ -11,8 +11,11 @@ import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/u
 const dollarValueOrNull = (value: number | string) =>
   value ? `$${formatNumberValue(value)}` : null
 
-const numberValueOrNull = (value: number | string) =>
-  value ? formatNumberValue(value) : null
+const hcfcValueOrNull = (value: number | string) =>
+  value ? formatNumberValue(value, 1, 1) : null
+
+const hfcValueOrNull = (value: number | string) =>
+  value ? formatNumberValue(value, 0, 0) : null
 
 type BlanketApprovalDetailsProjectRowProps = {
   project: ApiBlanketApprovalDetailsProject
@@ -29,8 +32,8 @@ const BlanketApprovalDetailsProjectRow = (
         <div className="italic">{project.project_description}</div>
       </td>
       <td>{project.agency_name}</td>
-      <td>{numberValueOrNull(project.hcfc)}</td>
-      <td>{numberValueOrNull(project.hfc)}</td>
+      <td>{hcfcValueOrNull(project.hcfc)}</td>
+      <td>{hfcValueOrNull(project.hfc)}</td>
       <td className="text-right">
         {dollarValueOrNull(project.project_funding)}
       </td>
@@ -94,8 +97,8 @@ const BlanketApprovalDetailsCountryEntry = (
         <th colSpan={2} className="text-right">
           Total for {countryEntry.country_name}
         </th>
-        <th>{numberValueOrNull(countryEntry.country_total.hcfc)}</th>
-        <th>{numberValueOrNull(countryEntry.country_total.hfc)}</th>
+        <th>{hcfcValueOrNull(countryEntry.country_total.hcfc)}</th>
+        <th>{hfcValueOrNull(countryEntry.country_total.hfc)}</th>
         <th className="text-right">
           {dollarValueOrNull(countryEntry.country_total.project_funding)}
         </th>
@@ -151,8 +154,8 @@ const BlanketApprovalDetailsTable = (props: {
             <th colSpan={2} className="text-right">
               Grand total
             </th>
-            <th>{numberValueOrNull(apiData.grand_total.hcfc)}</th>
-            <th>{numberValueOrNull(apiData.grand_total.hfc)}</th>
+            <th>{hcfcValueOrNull(apiData.grand_total.hcfc)}</th>
+            <th>{hfcValueOrNull(apiData.grand_total.hfc)}</th>
             <th className="text-right">
               {dollarValueOrNull(apiData.grand_total.project_funding)}
             </th>
