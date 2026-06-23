@@ -69,6 +69,46 @@ def test_blanket_approval_details_aggregates_phaseout_once_per_project():
     assert project_data["project_funding"] == 1_332_750
 
 
+def test_blanket_approval_details_orders_alphabetically():
+    submission_status = ProjectSubmissionStatusFactory.create(name="Recommended")
+    cluster = ProjectClusterFactory.create(name="KIGALI IMPLEMENTATION PLAN STAGE 1")
+    project_type = ProjectTypeFactory.create(name="Investment")
+
+    mexico = CountryFactory.create(name="Mexico")
+    canada = CountryFactory.create(name="Canada")
+
+    ProjectFactory.create(
+        title="Bravo",
+        country=mexico,
+        cluster=cluster,
+        project_type=project_type,
+        submission_status=submission_status,
+    )
+    ProjectFactory.create(
+        title="Alpha",
+        country=mexico,
+        cluster=cluster,
+        project_type=project_type,
+        submission_status=submission_status,
+    )
+    ProjectFactory.create(
+        title="Zulu",
+        country=canada,
+        cluster=cluster,
+        project_type=project_type,
+        submission_status=submission_status,
+    )
+
+    _, _, result = get_blanket_approval_view()._extract_data()
+
+    assert [country["country_name"] for country in result] == ["CANADA", "MEXICO"]
+    mexico_projects = result[1]["country_data"][0]["projects"]
+    assert [project["project_title"] for project in mexico_projects] == [
+        "Alpha",
+        "Bravo",
+    ]
+
+
 def test_project_v2_update_removes_blank_ods_odp_rows():
     project = ProjectFactory.create()
     existing_phaseout = ProjectOdsOdpFactory.create(

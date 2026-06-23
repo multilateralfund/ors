@@ -235,6 +235,12 @@ class BlanketApprovalDetailsViewset(
             project_funding=Coalesce(F("total_fund"), 0.0),
             project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
             total=Coalesce(F("total_fund") + F("support_cost_psc"), 0.0),
+        ).order_by(
+            "country_name",
+            "cluster_name",
+            "project_type_name",
+            "project_title",
+            "project_id",
         )
 
         for project in filtered_projects:
