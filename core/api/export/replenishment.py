@@ -1,5 +1,7 @@
 # pylint: disable=C0302
 
+import re
+
 from copy import copy
 from datetime import datetime
 from decimal import Decimal
@@ -21,6 +23,65 @@ from core.models import (
 EMPTY_ROW = (None, None, None)
 # pylint: disable=W0612
 # pylint: disable=R0913
+
+
+# Matches a single A1-style cell reference, capturing an optional sheet/external
+# qualifier (e.g. ``'YR2024'!`` or ``[3]Summary!``) so qualified references can be
+# left untouched. Lookbehind/lookahead keep us from matching the tail of a function
+# name or an identifier (e.g. the ``LOG10`` in ``LOG10(...)``).
+_CELL_REF_RE = re.compile(
+    r"""
+    (?<![A-Za-z0-9_.])
+    (?P<qual>
+        (?: '[^']*' | \[[0-9]+\][^!\s'"()+\-*/,]* | [A-Za-z_][A-Za-z0-9_.]* )!
+    )?
+    (?P<col>\$?[A-Za-z]{1,3})
+    (?P<row>\$?[0-9]+)
+    (?![A-Za-z0-9_(.])
+    """,
+    re.VERBOSE,
+)
+
+
+def _translate_row(row, position, count, deleting):
+    """
+    Translate a single (1-based) row number the same way Excel does when rows are
+    inserted at / deleted from ``position``.
+
+    On insert, ``count`` rows are added at ``position`` (existing rows >= position
+    shift down). On delete, ``count`` rows starting at ``position`` are removed.
+    """
+    if deleting:
+        if row >= position + count:
+            return row - count
+        if row >= position:
+            # Reference fell inside the deleted block; clamp to the row just above
+            # it (mirrors how an over-reaching range endpoint collapses). This never
+            # happens for the totals/aggregation ranges we deal with here.
+            return max(position - 1, 1)
+        return row
+    if row >= position:
+        return row + count
+    return row
+
+
+def translate_formula_rows(formula, position, count, deleting):
+    """
+    Rewrite every same-sheet row reference in ``formula`` to reflect rows being
+    inserted at / deleted from ``position``. Qualified (cross-sheet / external)
+    references are left untouched.
+    """
+
+    def _replace(match):
+        if match.group("qual"):
+            return match.group(0)
+        row_token = match.group("row")
+        has_dollar = row_token.startswith("$")
+        row = int(row_token[1:] if has_dollar else row_token)
+        new_row = _translate_row(row, position, count, deleting)
+        return f"{match.group('col')}{'$' if has_dollar else ''}{new_row}"
+
+    return _CELL_REF_RE.sub(_replace, formula)
 
 
 class DashboardWriter(WriteOnlyBase):
@@ -391,9 +452,6 @@ class BaseTemplateSheetWriter:
 
     CONVERT_BOOL_TO_NUMERIC = True
 
-    # Distance between last data row and the totals row
-    TOTALS_ROW_OFFSET = None
-
     def __init__(
         self,
         sheet,
@@ -425,9 +483,25 @@ class BaseTemplateSheetWriter:
             new_cell.number_format = copy(source_cell.number_format)
             new_cell.protection = copy(source_cell.protection)
 
+    def _translate_formulas(self, position, count, deleting):
+        """
+        openpyxl moves cells when rows are inserted/deleted but leaves their formula
+        text untouched, so every reference still points at the template's original
+        rows. Rewrite all same-sheet references the way Excel would, so totals and
+        other aggregations keep tracking the actual data range.
+        """
+        for row in self.sheet.iter_rows():
+            for cell in row:
+                value = cell.value
+                if isinstance(value, str) and value.startswith("="):
+                    cell.value = translate_formula_rows(
+                        value, position, count, deleting
+                    )
+
     def _delete_middle_rows(self, rows_number):
         start_row = self.TEMPLATE_FIRST_DATA_ROW + 1
         self.sheet.delete_rows(start_row, rows_number)
+        self._translate_formulas(start_row, rows_number, deleting=True)
 
         # Shift merged cells to avoid footer breaking down
         merged_cells_range = self.sheet.merged_cells.ranges
@@ -447,6 +521,7 @@ class BaseTemplateSheetWriter:
                 merged_cell.shift(0, extra_rows)
 
         self.sheet.insert_rows(start_row, extra_rows)
+        self._translate_formulas(start_row, extra_rows, deleting=False)
 
         # also copy row styles (based on row just above the inserted ones)
         for inserted_row in range(start_row, start_row + extra_rows):
@@ -475,9 +550,6 @@ class BaseTemplateSheetWriter:
         # Write data
         for row_data in self.data:
             self.write_row(row_data, row_data["no"])
-
-        # Write totals rows (existing formulas may need updating)
-        self.write_totals()
 
     def write_row(self, row_data, row_index):
         """
@@ -514,25 +586,6 @@ class BaseTemplateSheetWriter:
         cell.value = value
         if cell_type in (Decimal, float) and cell_format is not None:
             cell.number_format = format
-
-    def write_totals(self):
-        """
-        If the number of data rows changes, formulas need to be updated
-        """
-        if not self.TOTALS_ROW_OFFSET or not self.DATA_MAPPING:
-            return
-        # The last row of the actual output
-        last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
-        # The totals row of the actual output
-        totals_row = last_row + self.TOTALS_ROW_OFFSET
-        # Update sum values
-        for key, item in self.DATA_MAPPING.items():
-            cell = self.sheet.cell(totals_row, item["column"])
-            value = cell.value
-            if value and isinstance(value, str) and "=SUM" in value:
-                cell.value = value.replace(
-                    str(self.TEMPLATE_LAST_DATA_ROW), str(last_row)
-                )
 
 
 class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
@@ -595,9 +648,6 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
     HEADERS_ROW = 1
     TEMPLATE_FIRST_DATA_ROW = 2
     TEMPLATE_LAST_DATA_ROW = 50
-
-    # Totals row immediately under last data row
-    TOTALS_ROW_OFFSET = 1
 
     def write_headers(self):
         for key, item in self.DATA_MAPPING.items():
