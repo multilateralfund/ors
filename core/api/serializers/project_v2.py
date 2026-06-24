@@ -16,7 +16,6 @@ from core.api.serializers.project import (
 from core.api.serializers.project_history import ProjectHistorySerializer
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 
-from core.models.business_plan import BusinessPlan
 from core.models.country import Country
 from core.models.group import Group
 from core.models.meeting import Meeting, Decision
@@ -27,7 +26,6 @@ from core.models.project import (
     ProjectOdsOdp,
 )
 from core.models import (
-    Agency,
     Blend,
     Substance,
 )
@@ -71,6 +69,14 @@ HISTORY_ASSOCIATION_MADE = """Associate project to meta project {}.\n
 
 
 class UpdateOdsOdpEntries:
+    ignored_empty_ods_odp_fields = {"id", "project_id", "sort_order", "ods_type"}
+
+    def _has_ods_odp_values(self, ods_odp):
+        return any(
+            value not in [None, ""]
+            for field, value in ods_odp.items()
+            if field not in self.ignored_empty_ods_odp_fields
+        )
 
     def _update_or_create_ods_odp(self, instance, ods_odp_data):
         existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
@@ -78,6 +84,8 @@ class UpdateOdsOdpEntries:
         ods_odp_to_create = []
         incoming_ids = set()
         for ods_odp in ods_odp_data:
+            if not self._has_ods_odp_values(ods_odp):
+                continue
             if not ods_odp.get("ods_type", None):
                 ods_odp.pop("ods_type", None)
             item_id = ods_odp.get("id")
@@ -1284,6 +1292,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         model = Project
         fields = [
             "meeting",  # *
+            "post_excom_meeting",
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
@@ -1305,9 +1314,15 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting"].end_date
-        # project_end_date should take the value of date_completion at this point
-        validated_data["project_end_date"] = validated_data["date_completion"]
+        if validated_data.get("post_excom_meeting"):
+            # receving this field means this is a post excom update and date approved should be set from there
+            validated_data["date_approved"] = validated_data[
+                "post_excom_meeting"
+            ].end_date
+        else:
+            validated_data["date_approved"] = validated_data["meeting"].end_date
+            # project_end_date should take the value of date_completion at this point
+            validated_data["project_end_date"] = validated_data["date_completion"]
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1471,39 +1486,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 )
         return errors
 
-    def validate_bp(self, errors):
-        """
-        Validate that the project's BP activity is complete
-        """
-        latest_endorsed_bp = (
-            BusinessPlan.objects.filter(status=BusinessPlan.Status.endorsed)
-            .order_by("-year_end")
-            .first()
-        )
-        if not latest_endorsed_bp:
-            return errors
-        countries = [self.instance.country.id]
-        global_country = Country.objects.filter(abbr="GLO").first()
-        if global_country:
-            countries.append(global_country.id)
-        agencies = [self.instance.agency.id]
-        all_agencies_option = Agency.objects.filter(name="All agencies").first()
-        if all_agencies_option:
-            agencies.append(all_agencies_option.id)
-        bp_activities = latest_endorsed_bp.activities.filter(
-            country__in=countries,
-            agency__in=agencies,
-            project_cluster=self.instance.cluster,
-        )
-        if bp_activities.exists() and not self.instance.bp_activity:
-            errors["bp_activity"] = (
-                """
-                    A BP Activity is required for submission if an option
-                    is available in the latest endorsed Business Plan.
-                """
-            )
-        return errors
-
     def validate_previous_tranches(self, errors):
         """
         Validate that the project's previous tranches have at least one actual field completed
@@ -1556,8 +1538,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
         self.validate_required_fields(errors)
 
         self.validate_previous_tranches(errors)
-
-        self.validate_bp(errors)
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -1619,7 +1599,6 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
             )
 
         self.validate_required_fields(errors)
-        self.validate_bp(errors)
         if errors:
             raise serializers.ValidationError(errors)
         return attrs

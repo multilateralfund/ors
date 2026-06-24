@@ -1,5 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
+from django.db.models import Q
 
 from core.models import Agency
 from core.models import Country
@@ -97,6 +98,9 @@ class SummaryOfProjectsFilter(filters.FilterSet):
             queryset = queryset.filter(version=3)
 
         elif value.lower() == "recommended":
-            queryset = queryset.filter(version=2)
+            queryset = queryset.filter(version=2).filter(
+                Q(latest_project__isnull=True)
+                | Q(latest_project__submission_status__name__iexact=value)
+            )
 
         return queryset

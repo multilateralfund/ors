@@ -225,6 +225,26 @@ const normalizeValues = (data: Record<string, any>) =>
     ]),
   )
 
+const emptyOdsOdpIgnoredFields = new Set([
+  'id',
+  'project_id',
+  'sort_order',
+  'ods_type',
+])
+
+export const filterEmptyOdsOdpRows = <T extends Record<string, any>>(
+  odsOdpRows: T[],
+) =>
+  odsOdpRows.filter((odsOdp) =>
+    Object.entries(odsOdp).some(
+      ([key, value]) =>
+        !emptyOdsOdpIgnoredFields.has(key) &&
+        value !== null &&
+        value !== undefined &&
+        value !== '',
+    ),
+  )
+
 const normalizeOdsOdp = (
   projectSpecificFields: SpecificFields,
   specificFieldsAvailable: string[],
@@ -321,11 +341,13 @@ export const formatSubmitData = (
     (field) => field.table === 'ods_odp',
   )
   const updatedOdsOdpValues = hasOdsOdpFields
-    ? normalizeOdsOdp(
-        projectSpecificFields,
-        specificFieldsAvailable,
-        projectFields,
-        altTechs,
+    ? filterEmptyOdsOdpRows(
+        normalizeOdsOdp(
+          projectSpecificFields,
+          specificFieldsAvailable,
+          projectFields,
+          altTechs,
+        ),
       )
     : []
 
@@ -359,8 +381,12 @@ export const formatApprovalData = (
   projectFields: ProjectSpecificFields[],
   altTechs: OptionsType[],
 ) => {
-  const { crossCuttingFields, projectSpecificFields, approvalFields } =
-    projectData
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields,
+  } = projectData
 
   const fields = filter(
     specificFields,
@@ -373,20 +399,19 @@ export const formatApprovalData = (
   ]
 
   const crtProjectSpecificFields = pick(
-    {
-      ...crossCuttingFields,
-      ...approvalFields,
-    },
+    { ...crossCuttingFields, ...approvalFields },
     specificFieldsAvailable,
   )
 
   const hasOdsOdpFields = fields.find((field) => field.table === 'ods_odp')
   const updatedOdsOdpValues = hasOdsOdpFields
-    ? normalizeOdsOdp(
-        projectSpecificFields,
-        specificFieldsAvailable,
-        projectFields,
-        altTechs,
+    ? filterEmptyOdsOdpRows(
+        normalizeOdsOdp(
+          projectSpecificFields,
+          specificFieldsAvailable,
+          projectFields,
+          altTechs,
+        ),
       )
     : []
 
@@ -407,6 +432,7 @@ export const formatApprovalData = (
 
   return {
     ...normalizeValues(crtProjectSpecificFields),
+    post_excom_meeting: projIdentifiers.post_excom_meeting,
     ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
       omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),
@@ -696,7 +722,7 @@ export const getMpErrors = (
     'end_date',
   ]
 
-  const { start_date, end_date } = mpData
+  const { start_date, end_date, extended_date_of_completion } = mpData
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) => allKeys.includes(key)),
@@ -708,6 +734,11 @@ export const getMpErrors = (
     }),
     ...(dayjs(end_date).isBefore(dayjs(start_date)) && {
       end_date: ['Start date cannot be later than end date.'],
+    }),
+    ...(dayjs(extended_date_of_completion).isBefore(dayjs(start_date)) && {
+      extended_date_of_completion: [
+        'Start date cannot be later than extended date of completion.',
+      ],
     }),
     ...filteredErrors,
   }

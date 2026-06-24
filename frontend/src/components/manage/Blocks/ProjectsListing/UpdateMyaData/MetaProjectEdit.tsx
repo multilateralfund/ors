@@ -189,17 +189,30 @@ export const MetaProjectEdit = (props: {
 
   const fieldComponent = (fd: any) => {
     const fieldValue = getFieldValue(fd.name)
-    const isFieldDisabled = fd.name === projectDuration
+
+    const hasEndDate = !!mp?.field_data?.end_date?.value
+
+    const isEndDateDisabled = fd.name === 'end_date' && hasEndDate
+    const isExtendedDateCOmpletionDisabled =
+      fd.name === 'extended_date_of_completion' && !hasEndDate
+
+    const isFieldDisabled =
+      fd.name === projectDuration ||
+      isEndDateDisabled ||
+      isExtendedDateCOmpletionDisabled
 
     switch (fd.type) {
       case 'DateTimeField':
         return (
           <DateInput
             id={fd.name}
-            className="BPListUpload !ml-0 h-8 !w-[125px]"
+            className={cx('BPListUpload !ml-0 h-8 !w-[125px] !max-w-[125px]', {
+              [disabledClassName]: isFieldDisabled,
+            })}
             value={fieldValue.toString()}
             formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
             onChange={changeSimpleInput(fd.name)}
+            disabled={isFieldDisabled}
           />
         )
       case 'DecimalField':
@@ -243,11 +256,7 @@ export const MetaProjectEdit = (props: {
         <div key={fd.name} className="py-2">
           {isIndividualField && (
             <Label htmlFor={fd.name}>
-              <span
-                className={cx('font-semibold', {
-                  'text-red-500': errors,
-                })}
-              >
+              <span className={cx('font-semibold', { 'text-red-500': errors })}>
                 {formattedLabel}
               </span>
             </Label>
@@ -307,14 +316,14 @@ export const MetaProjectEdit = (props: {
               <div className="flex flex-wrap gap-x-6">
                 {renderFieldData(dateFields)}
               </div>
-              {renderFieldData(fieldData.slice(5, 6))}
+              {renderFieldData(fieldData.slice(6, 7))}
               {groupFields(baselineFields)}
               {groupFields(targetFields)}
             </div>
             <div className="flex-grow">
               {groupFields(phaseOutFields)}
               {groupFields(startingPointFields)}
-              {renderFieldData(fieldData).slice(16, 20)}
+              {renderFieldData(fieldData).slice(17, 21)}
               {groupFields(costEffectivenessFields)}
             </div>
           </div>

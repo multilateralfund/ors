@@ -21,6 +21,7 @@ export type ApiSummaryOfProjectsFilters = {
 }
 export type ApiFilterOption = {
   name: string
+  code?: string
   id: number
 }
 export type GlobalRequestParams = ReturnType<typeof initialGlobalRequestParams>

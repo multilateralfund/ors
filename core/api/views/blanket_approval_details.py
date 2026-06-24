@@ -7,8 +7,10 @@ from typing import TypedDict
 import openpyxl
 from django.conf import settings
 from django.db.models import F
+from django.db.models import FloatField
 from django.db.models import IntegerField
 from django.db.models import QuerySet
+from django.db.models import Sum
 from django.db.models import TextField
 from django.db.models import Value
 from django.db.models.functions import Cast
@@ -38,6 +40,14 @@ def get_available_values(queryset: QuerySet[Project], field_name: str):
     )
 
     return [{"name": name, "id": pk} for pk, name in values if pk is not None]
+
+
+def round_hcfc(value):
+    return round(value or 0.0, 1)
+
+
+def round_hfc(value):
+    return int(round(value or 0.0))
 
 
 class ProjectData(TypedDict):
@@ -214,10 +224,18 @@ class BlanketApprovalDetailsViewset(
             cluster_name=Upper(F("cluster__name")),
             project_type_pk=F("project_type"),
             project_type_name=F("project_type__name"),
-            hcfc=Round(Coalesce(F("ods_odp__odp"), 0.0), precision=1),
+            hcfc=Round(
+                Coalesce(Sum("ods_odp__odp"), 0.0, output_field=FloatField()),
+                precision=1,
+            ),
             hfc=Cast(
                 Round(
-                    Coalesce(F("ods_odp__co2_mt"), 0.0) / Value(1000.0),
+                    Coalesce(
+                        Sum("ods_odp__co2_mt"),
+                        0.0,
+                        output_field=FloatField(),
+                    )
+                    / Value(1000.0),
                     precision=0,
                 ),
                 output_field=IntegerField(),
@@ -225,11 +243,19 @@ class BlanketApprovalDetailsViewset(
             project_funding=Coalesce(F("total_fund"), 0.0),
             project_support_cost=Coalesce(F("support_cost_psc"), 0.0),
             total=Coalesce(F("total_fund") + F("support_cost_psc"), 0.0),
+        ).order_by(
+            "country_name",
+            "cluster_name",
+            "project_type_name",
+            "project_title",
+            "project_id",
         )
 
         for project in filtered_projects:
             key = f"{project['project_type_pk']}, {project['cluster_pk']}"
 
+            project["hcfc"] = round_hcfc(project["hcfc"])
+            project["hfc"] = round_hfc(project["hfc"])
             project["project_description"] = (
                 strip_tags(project["project_description"])
                 if project["project_description"]

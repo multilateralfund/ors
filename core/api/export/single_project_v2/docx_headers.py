@@ -35,6 +35,11 @@ def get_headers_metaproject() -> List[HeaderType]:
             "method": get_date_value,
         },
         {
+            "id": "extended_date_of_completion",
+            "headerName": "Extended date of completion",
+            "method": get_date_value,
+        },
+        {
             "id": "project_duration",
             "headerName": "Project duration (months)",
             "method": get_value_or_dash,

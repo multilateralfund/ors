@@ -1,7 +1,5 @@
 import React from 'react'
 
-import { useLocation } from 'wouter'
-
 import Print from '@ors/components/manage/Utils/Print'
 import Footer from '@ors/components/theme/Footer/AuthorizedFooter'
 import Header from '@ors/components/theme/Header/AuthorizedHeader'
@@ -13,16 +11,7 @@ export default function AuthorizedView({
 }: {
   children: React.ReactNode
 }) {
-  const [pathname, setLocation] = useLocation()
   const user = useStore((state) => state.user?.data)
-
-  React.useEffect(() => {
-    if (!user) {
-      setLocation(
-        pathname && pathname !== '/' ? `/login?redirect=${pathname}` : '/login',
-      )
-    }
-  }, [user, pathname, setLocation])
 
   if (!user) {
     return <Loading className="bg-action-disabledBackground" />

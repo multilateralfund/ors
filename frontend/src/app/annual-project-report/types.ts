@@ -67,7 +67,7 @@ export interface AnnualProjectReport {
   date_of_completion_per_agreement_or_decisions: string | null
   last_year_remarks: string
   current_year_remarks: string
-  gender_policy: boolean
+  gender_policy: boolean | null
   id: number
   project_id: number
   created_at: string

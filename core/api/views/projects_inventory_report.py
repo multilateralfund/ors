@@ -53,6 +53,7 @@ class ProjectsInventoryReportExport:
             .filter(
                 version__gte=MIN_PROJECT_VERSION,
                 latest_project__isnull=True,
+                submission_status__name="Approved",
             )
             .prefetch_related(None)
             .select_related(

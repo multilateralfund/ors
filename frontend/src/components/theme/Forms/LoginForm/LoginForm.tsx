@@ -1,28 +1,15 @@
 import EntraIdLoginButton from './EntraIdLoginButton'
 
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
-import { useLocation } from 'wouter'
-import useSearchParams from '@ors/hooks/useSearchParams'
 
 import Field from '@ors/components/manage/Form/Field'
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 import Link from '@ors/components/ui/Link/Link'
 
 import { useStore } from '@ors/store'
-import { store } from '@ors/_store'
 
 export default function LoginForm() {
-  const [_, setLocation] = useLocation()
-  const searchParams = useSearchParams()
   const user = useStore((state) => state.user)
-
-  // useEffect(() => {
-  //   if (user.data) {
-  //     setTimeout(() => {
-  //       setLocation(searchParams.get('redirect') || '/')
-  //     }, 500)
-  //   }
-  // }, [user, setLocation, searchParams])
 
   return (
     <>
@@ -41,12 +28,6 @@ export default function LoginForm() {
             form.get('username')?.toString() || '',
             form.get('password')?.toString() || '',
           )
-
-          const { data, error } = store.current.getState().user
-
-          if (data && !error) {
-            window.location.href = searchParams.get('redirect') || '/'
-          }
         }}
       >
         <Typography

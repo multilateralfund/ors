@@ -33,6 +33,7 @@ FIELDS_WITH_ACTUAL_VALUES = {
     "Upgrade of quota system - planned": "Upgrade of quota system - actual",
     "Number of bans on equipment - planned": "Number of bans on equipment - actual",
     "Number of bans on substances - planned": "Number of bans on substances - actual",
+    "Number of toolkits and equipment distributed - planned": "Number of toolkits and equipment distributed - actual",
     "Energy savings - planned (kWh/year)": "Energy savings - actual (kWh/year)",
     "MEPS to be developed/enhanced for domestic refrigeration": "MEPS to be developed/enhanced for domestic refrigeration actual",
     "MEPS or equivalent standard to be developed/enhanced for commercial refrigeration": "MEPS or equivalent standard to be developed/enhanced for commercial refrigeration actual",
@@ -52,7 +53,9 @@ FIELDS_WITH_ACTUAL_VALUES = {
     "Number of non-SMEs directly funded": "Number of non-SMEs directly funded actual",
     "Number of both SMEs and non-SMEs included in the project but not directly funded": "Number of both SMEs and non-SMEs included in the project but not directly funded actual",
     "Cost effectiveness (US $/kg)": "Cost effectiveness (US $/kg) actual",
+    "Cost effectiveness (US $/CO2-eq tonnes)": "Cost effectiveness (US $/CO2-eq tonnes) actual",
     "Cost effectiveness (US$/ CO2-eq)": "Cost effectiveness (US$/ CO2-eq) actual",
+    "Capacity-building programmes (e.g., end users, government entities, other stakeholders)": "Capacity-building programmes (e.g., end users, government entities, other stakeholders) actual",
 }
 
 

@@ -260,7 +260,7 @@ export interface ThemeSlice {
 
 export interface UserSlice
   extends SliceData<ApiUser, Record<string, any> | null | undefined> {
-  getUser: () => Promise<void>
+  getUser: () => Promise<ApiUser | null>
   login: (username: string, password: string) => void
   logout: () => Promise<void>
 }

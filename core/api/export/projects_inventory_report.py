@@ -59,6 +59,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
     header_row_start_idx = 1
     METAPROJECT_FIELD_TITLES = {
         "end_date": "MYA Completion Date",
+        "extended_date_of_completion": "Extended Date",
     }
 
     def __init__(
@@ -277,16 +278,18 @@ class ProjectsInventoryReportWriter(BaseWriter):
             )
         )
 
-        headers.append(
-            {
-                "id": "extended_date_completion",
-                "headerName": "Extended Date",
-                "type": "date",
-                "cell_format": "MMM-YYYY",
-                "method": lambda project, _: self.get_extended_date_of_completion(
-                    project
-                ),
-            },
+        headers.extend(
+            self.build_headers(
+                self.metaproject_fields,
+                source="meta_project",
+                include_names=["extended_date_of_completion"],
+                title_overrides=self.METAPROJECT_FIELD_TITLES,
+                header_overrides={
+                    "extended_date_of_completion": {
+                        "cell_format": "MMM-YYYY",
+                    },
+                },
+            )
         )
 
         headers.extend(
@@ -1102,10 +1105,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return sum(candidate_values)
 
     def get_extended_date_of_completion(self, project):
-        v3 = self.get_version(project, 3)
-        if v3 and v3.date_completion != project.date_completion:
-            return v3.date_completion
-        return None
+        return project.meta
 
     def _p_meeting_approved(self, project):
         if project is None:

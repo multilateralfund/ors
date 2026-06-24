@@ -8,8 +8,9 @@ export const FilterField = (props: {
   options: ({ disabled?: boolean } & ApiFilterOption)[]
   onChange: (value: string) => void
   value: any
+  getOptionLabel?: (option: ApiFilterOption) => string
 }) => {
-  const { options, label, value, onChange } = props
+  const { options, label, value, onChange, getOptionLabel } = props
   return (
     <div className="flex gap-x-2">
       <Label htmlFor={`filter${label}`} className="w-32">
@@ -20,6 +21,7 @@ export const FilterField = (props: {
         onChange={(value) => onChange(value.length ? value.join(',') : '')}
         id={`filter${label}`}
         options={options}
+        getOptionLabel={getOptionLabel}
       />
     </div>
   )
