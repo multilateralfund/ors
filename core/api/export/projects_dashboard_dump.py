@@ -305,11 +305,56 @@ class ProjectsDashboardDump(ProjectsV2Dump):
                 p.substance_type = "CFC"
         return projects
 
+    @staticmethod
+    def _mock_rates_for(p):
+        # (numeric_rates, bool_probs, float_rates, percent_bounds) for a
+        # project's class. HFC-23 fields live in the production bucket, so they
+        # only fill when production projects are in scope (exclude_production=false).
+        if p.production:
+            return (
+                _MOCK_RATES_PRODUCTION,
+                {},
+                _MOCK_FLOAT_RATES_PRODUCTION,
+                _MOCK_PERCENT_BOUNDS_PRODUCTION,
+            )
+        if p.project_type and p.project_type.code == "INV":
+            return (_MOCK_RATES_INVESTMENT, {}, _MOCK_FLOAT_RATES_INVESTMENT, {})
+        return (
+            _MOCK_RATES_NON_INVESTMENT,
+            _MOCK_BOOL_PROBS_NON_INVESTMENT,
+            _MOCK_FLOAT_RATES_NON_INVESTMENT,
+            {},
+        )
+
+    @staticmethod
+    def _fill_poisson(p, rng, rates, funding_m):
+        # Integer counts scaled by funding: expected count = funding_m * rate.
+        for field_name, rate in rates.items():
+            lam = max(funding_m * rate, 0.01)
+            setattr(p, field_name, float(rng.poisson(lam=lam)))
+
+    @staticmethod
+    def _fill_bools(p, rng, probs):
+        for field_name, prob in probs.items():
+            setattr(p, field_name, "Yes" if rng.random() < prob else "No")
+
+    @staticmethod
+    def _fill_lognormal(p, rng, rates, funding_m):
+        # Continuous funding-scaled magnitudes. lognormal(0, sigma) has median
+        # 1.0, so values center on the funding-scaled base, stay positive, and
+        # are plausible non-integers.
+        for field_name, base in rates.items():
+            median = base * max(funding_m, 0.01)
+            value = median * float(rng.lognormal(mean=0.0, sigma=_MOCK_FLOAT_SIGMA))
+            setattr(p, field_name, round(value, 2))
+
+    @staticmethod
+    def _fill_percent(p, rng, bounds):
+        # Bounded percentages, independent of funding.
+        for field_name, (low, high) in bounds.items():
+            setattr(p, field_name, round(float(rng.uniform(low, high)), 2))
+
     def _apply_mock_data(self, projects):
-        # Metrics are filled per project class (investment / non-investment /
-        # production). The HFC-23 fields live in the production bucket, so they
-        # are only populated when production projects are present — i.e. when the
-        # caller passes exclude_production=false (the export defaults to true).
         seed = int(self.view.request.query_params.get("mock_seed", "42"))
         rng = np.random.default_rng(seed)
 
@@ -322,43 +367,13 @@ class ProjectsDashboardDump(ProjectsV2Dump):
                 continue
 
             funding_m = max((p.total_fund or 0) / 1_000_000, 0.0)
-            is_investment = p.project_type and p.project_type.code == "INV"
-            is_production = bool(p.production)
-
-            if is_production:
-                numeric_rates = _MOCK_RATES_PRODUCTION
-                bool_probs = {}
-                float_rates = _MOCK_FLOAT_RATES_PRODUCTION
-                percent_bounds = _MOCK_PERCENT_BOUNDS_PRODUCTION
-            elif is_investment:
-                numeric_rates = _MOCK_RATES_INVESTMENT
-                bool_probs = {}
-                float_rates = _MOCK_FLOAT_RATES_INVESTMENT
-                percent_bounds = {}
-            else:
-                numeric_rates = _MOCK_RATES_NON_INVESTMENT
-                bool_probs = _MOCK_BOOL_PROBS_NON_INVESTMENT
-                float_rates = _MOCK_FLOAT_RATES_NON_INVESTMENT
-                percent_bounds = {}
-
-            for field_name, rate in numeric_rates.items():
-                lam = max(funding_m * rate, 0.01)
-                setattr(p, field_name, float(rng.poisson(lam=lam)))
-
-            for field_name, prob in bool_probs.items():
-                setattr(p, field_name, "Yes" if rng.random() < prob else "No")
-
-            # Continuous funding-scaled magnitudes. lognormal(0, sigma) has
-            # median 1.0, so values center on the funding-scaled base, stay
-            # positive, and are plausible non-integers.
-            for field_name, base in float_rates.items():
-                median = base * max(funding_m, 0.01)
-                value = median * float(rng.lognormal(mean=0.0, sigma=_MOCK_FLOAT_SIGMA))
-                setattr(p, field_name, round(value, 2))
-
-            # Bounded percentages, independent of funding.
-            for field_name, (low, high) in percent_bounds.items():
-                setattr(p, field_name, round(float(rng.uniform(low, high)), 2))
+            numeric_rates, bool_probs, float_rates, percent_bounds = (
+                self._mock_rates_for(p)
+            )
+            self._fill_poisson(p, rng, numeric_rates, funding_m)
+            self._fill_bools(p, rng, bool_probs)
+            self._fill_lognormal(p, rng, float_rates, funding_m)
+            self._fill_percent(p, rng, percent_bounds)
 
         return projects
 
