@@ -74,6 +74,12 @@ export function formatPercent(value: any) {
 }
 
 export function formatBoolean(value: any) {
+  // A blank/cleared cell (null/undefined) must stay empty rather than
+  // being shown as "No"; only an explicit false renders as "No".
+  if (value == null) {
+    return ''
+  }
+
   if (!value) {
     return 'No'
   }
