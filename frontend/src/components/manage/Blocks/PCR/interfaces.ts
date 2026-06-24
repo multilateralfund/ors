@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from 'react'
+import { FileMetaDataType, ProjectFile } from '../ProjectsListing/interfaces'
 
 export interface AgencyOverview {
   agency: number | null
@@ -191,3 +192,38 @@ export type FieldHandler = <T, K>(
   subFields?: string[],
   indexes?: number[],
 ) => void
+
+export type PCRFilesObject = {
+  agency: number | null
+  deletedFilesIds?: number[]
+  newFiles?: File[]
+}
+
+export interface PCRFiles {
+  files?: PCRFilesObject[]
+  setFiles?: Dispatch<SetStateAction<PCRFilesObject[]>>
+}
+
+export type FilesViewerProps = PCRFiles & {
+  setFilesMetaData?: Dispatch<SetStateAction<FileMetaDataType[]>>
+  crtAgency: number
+}
+
+export interface PCRDocs extends PCRFiles, FileMetaDataProps {
+  mode: string
+  loadedFiles?: boolean
+  PCRFiles?: ProjectFile[]
+  errors?: Array<{ id: number; message: string } | null>
+  allFileErrors?: { message: string }[]
+  crtAgency: number
+}
+
+export type PCRFileMetadata = {
+  agency: number
+  filesMetaData: FileMetaDataType[]
+}
+
+export interface FileMetaDataProps {
+  filesMetaData?: PCRFileMetadata[]
+  setFilesMetaData?: Dispatch<SetStateAction<PCRFileMetadata[]>>
+}

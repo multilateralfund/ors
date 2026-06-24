@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useGetProject } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProject'
-import {
-  FileMetaDataType,
-  ProjectFilesObject,
-} from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
+import { FileMetaDataType } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreate from './PCRCreate'
 import {
@@ -12,7 +9,7 @@ import {
   initialOverviewFields,
   initialSummaryAndDelaysFieldsEntry,
 } from '../constants'
-import { PCRData, ProjectElementCauseOfDelay } from '../interfaces'
+import { PCRFilesObject, PCRData, PCRFileMetadata } from '../interfaces'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { useParams } from 'wouter'
@@ -55,6 +52,15 @@ const PCRCreateWrapper = () => {
     agency,
     sdgs: [],
   }))
+  const initialFiles = map(agencies, (agency) => ({
+    agency,
+    deletedFilesIds: [],
+    newFiles: [],
+  }))
+  const initialFilesMetadata = map(agencies, (agency) => ({
+    agency,
+    filesMetaData: [],
+  }))
 
   const [PCRData, setPCRData] = useState<PCRData>({
     overview: {
@@ -68,11 +74,9 @@ const PCRCreateWrapper = () => {
     gender_mainstreaming: initialGenderMainstreamingFields,
     sdg_contribution: initialSDGFields,
   })
-  const [files, setFiles] = useState<ProjectFilesObject>({
-    deletedFilesIds: [],
-    newFiles: [],
-  })
-  const [filesMetaData, setFilesMetaData] = useState<FileMetaDataType[]>([])
+  const [files, setFiles] = useState<PCRFilesObject[]>(initialFiles)
+  const [filesMetaData, setFilesMetaData] =
+    useState<PCRFileMetadata[]>(initialFilesMetadata)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')

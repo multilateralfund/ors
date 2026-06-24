@@ -3,10 +3,12 @@ import { useState, useMemo, useEffect } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import {
+  PCRData,
+  PCRFiles,
+  PCRFormProps,
+  PCROverview,
   FileMetaDataProps,
-  ProjectFiles,
-} from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
-import { PCRData, PCRFormProps, PCROverview } from '../interfaces'
+} from '../interfaces'
 
 // import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 // import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
@@ -28,7 +30,6 @@ import { PCRData, PCRFormProps, PCROverview } from '../interfaces'
 //   ProjectSpecificFields,
 //   ProjectTypeApi,
 //   ProjectDataProps,
-//   FileMetaDataProps,
 //   OdsOdpFields,
 // } from '../interfaces.ts'
 // import {
@@ -62,8 +63,9 @@ import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
 import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
 import PCRSDGSection from '../PCRFormTabs/PCRSDGSection'
 import PCRSummaryAndDelaysSection from '../PCRFormTabs/PCRSummaryAndDelaysSection'
-import { changeHandler } from '../PCRFormTabs/SpecificFieldsHelpers'
-// import { Tabs, Tab, Typography } from '@mui/material'
+import { LoadingTab } from '../../ProjectsListing/HelperComponents'
+import PCRDocumentation from '../PCRFormTabs/PCRDocumentation'
+// import { Typography } from '@mui/material'
 // import { useParams } from 'wouter'
 
 const PCRCreate = ({
@@ -84,7 +86,7 @@ const PCRCreate = ({
   // setErrors,
   // ...rest
 }: PCRFormProps &
-  ProjectFiles &
+  PCRFiles &
   FileMetaDataProps & {
     //     specificFields: ProjectSpecificFields[]
     mode: string
@@ -199,6 +201,16 @@ const PCRCreate = ({
       .join('|'),
   ])
 
+  const total_funds_approved = PCRData.summary_and_delays.reduce(
+    (acc, entry) => acc + (Number(entry.funds_approved) || 0),
+    0,
+  )
+
+  const total_funds_disbursed = PCRData.summary_and_delays.reduce(
+    (acc, entry) => acc + (Number(entry.funds_disbursed) || 0),
+    0,
+  )
+
   useEffect(() => {
     setPCRData((prevData: any) => {
       const agencyOverview = prevData.overview.agency_overview
@@ -209,17 +221,15 @@ const PCRCreate = ({
         const funds_disbursed =
           totalsByAgency[agency.agency]?.funds_disbursed ?? 0
 
-        if (
-          agency.mlf_funding_approved === funds_approved &&
-          agency.mlf_funding_disbursed === funds_disbursed
-        ) {
-          return agency
-        }
-
         return {
           ...agency,
           mlf_funding_approved: funds_approved,
           mlf_funding_disbursed: funds_disbursed,
+          mlf_funding_returned: funds_approved - funds_disbursed,
+          total_mlf_funding_approved: total_funds_approved,
+          total_mlf_funding_disbursed: total_funds_disbursed,
+          total_mlf_funding_returned:
+            total_funds_approved - total_funds_disbursed,
         }
       })
 
@@ -579,6 +589,52 @@ const PCRCreate = ({
         />
       ),
       // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-documentation',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Other supporting evidence</div>
+          {/* {mode !== 'add' && !loadedFiles ? (
+            LoadingTab
+          ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
+            areNextSectionsDisabled ? (
+              DisabledAlert
+            ) : (
+              <SectionErrorIndicator errors={[]} />
+            )
+          ) : null} */}
+        </div>
+      ),
+      component: (
+        <PCRDocumentation
+          {...{
+            // projectFiles,
+            files,
+            setFiles,
+            mode,
+            // project,
+            // loadedFiles,
+            setCurrentTab,
+            filesMetaData,
+            setFilesMetaData,
+            // disableV3Edit,
+          }}
+
+          // errors={missingFileTypeErrors}
+        />
+      ),
+      // errors: [
+      //   ...(fileErrors ? [{ message: fileErrors }] : []),
+      //   ...(hasNoFiles
+      //     ? [
+      //         {
+      //           message: `At least one file must be attached to this version${errorMessageExtension}.`,
+      //         },
+      //       ]
+      //     : []),
+      //   ...missingFileTypeErrors,
+      // ],
     },
     //   {
     //     id: 'project-identifiers',
