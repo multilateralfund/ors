@@ -1,9 +1,9 @@
 """
 Dashboard export endpoint: GET /api/projects/v2/dashboards/all/
 
-Produces a 4-sheet Excel workbook (Projects, Substances, Funds, Global fields) ready for
-Power BI import with all transformations applied server-side. See
-docs/dashboard_export.md for full parameter documentation.
+Produces a 5-sheet Excel workbook (Projects, Substances, Funds, Global fields,
+MetaProjects) ready for Power BI import with all transformations applied
+server-side. See docs/dashboard_export.md for full parameter documentation.
 """
 
 from decimal import Decimal
@@ -20,6 +20,8 @@ from core.api.export.projects_v2_dump import (
     ProjectsV2DumpWriter,
 )
 from core.api.utils import workbook_response
+from core.api.views.mya_export import HEADERS as MYA_HEADERS
+from core.api.views.mya_export import MyaExport
 
 
 # Poisson rates for mock impact-metric filling, keyed by project class.
@@ -155,6 +157,49 @@ class GlobalFieldsWriter:
             self.sheet.append([title, value])
 
 
+class DashboardMyaExport(MyaExport):
+    """
+    MyaExport for the Power BI dashboard: the only spin is excluding metaprojects
+    whose umbrella_code still carries a TEMP segment.
+    Subclasses MyaExport to keep the base queryset and aggregation logic unchanged.
+    """
+
+    def get_meta_projects_queryset(self):
+        return (
+            super()
+            .get_meta_projects_queryset()
+            .exclude(umbrella_code__contains="TEMP")
+            .order_by("umbrella_code")
+        )
+
+
+class MetaProjectsWriter:
+    """
+    Writes the "MetaProjects" sheet from DashboardMyaExport rows — same columns,
+    labels, and figures as the MYA export. Drops the subtotal/total
+    rows and styling for data-only export.
+    """
+
+    headers = MYA_HEADERS
+
+    def __init__(self, sheet, view):
+        self.sheet = sheet
+        self.view = view
+        self.sheet.append([h["headerName"] for h in self.headers])
+
+    @staticmethod
+    def _cell(row, header):
+        # Same lookup as BaseWriter.write_data (so HEADERS' methods like date
+        # formatting apply), minus its type coercion — nulls stay blank
+        if method := header.get("method"):
+            return method(row, header)
+        return row.get(header["id"])
+
+    def write(self):
+        for row in DashboardMyaExport(self.view).get_meta_project_rows():
+            self.sheet.append([self._cell(row, h) for h in self.headers])
+
+
 class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
     """
     Builds the Projects sheet for the dashboard export.
@@ -206,8 +251,9 @@ class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
 
 class ProjectsDashboardDump(ProjectsV2Dump):
     """
-    Produces GET /api/projects/v2/dashboards/all/ — a 4-sheet xlsx workbook
-    (Projects, Substances, Funds, Global fields) with all transformations applied server-side.
+    Produces GET /api/projects/v2/dashboards/all/ — a 5-sheet xlsx workbook
+    (Projects, Substances, Funds, Global fields, MetaProjects) with all
+    transformations applied server-side.
 
     Extends ProjectsV2Dump: inherits queryset construction, workbook setup,
     and all field/sheet helpers. Adds query-param-driven filtering, substance
@@ -343,6 +389,8 @@ class ProjectsDashboardDump(ProjectsV2Dump):
         )
 
         GlobalFieldsWriter(self._make_sheet("Global fields")).write()
+
+        MetaProjectsWriter(self._make_sheet("MetaProjects"), self.view).write()
 
         print(f"Done in {time() - t0:.2f} seconds.")
         return workbook_response("Projects dashboard dump", self.wb)

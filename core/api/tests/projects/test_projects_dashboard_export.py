@@ -12,11 +12,13 @@ from openpyxl.utils import get_column_letter
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     CountryFactory,
+    MetaProjectFactory,
     ProjectFactory,
     ProjectTypeFactory,
 )
+from core.api.views.mya_export import HEADERS as MYA_HEADERS
 from core.models.country import Country
-from core.models.project import ProjectOdsOdp
+from core.models.project import MetaProject, Project, ProjectOdsOdp
 from core.models.project_metadata import ProjectField
 
 pytestmark = pytest.mark.django_db
@@ -72,6 +74,7 @@ class TestProjectsDashboardExport(BaseTest):
             "Substances",
             "Funds",
             "Global fields",
+            "MetaProjects",
         }
 
     def test_global_fields_sheet_lists_constant_values(
@@ -616,3 +619,96 @@ class TestProjectsDashboardExport(BaseTest):
         )
         sheet = load_workbook(response)["Substances"]
         assert sheet.max_row > 1
+
+    # MetaProjects sheet — reuses MyaExport, so these only cover the
+    # dashboard-specific bits: header parity, TEMP exclusion, fallback flow.
+    def test_metaprojects_sheet_headers_match_mya_export(
+        self, secretariat_viewer_user, approved_project
+    ):
+        # Fails loudly if MyaExport restructures HEADERS.
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(self.url, {"mock_data": "false"})
+        sheet = load_workbook(response)["MetaProjects"]
+        header_row = [c.value for c in sheet[1]]
+        assert header_row == [h["headerName"] for h in MYA_HEADERS]
+
+    def test_metaprojects_sheet_includes_non_draft_excludes_temp(
+        self, secretariat_viewer_user, project_approved_status
+    ):
+        # Permanent umbrella_code should be included; project_cost is
+        # hand-entered so the stored value must appear.
+        included_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            is_draft=False,
+            umbrella_code="BTN/CPOP/32",
+            project_cost=Decimal("123456.50"),
+        )
+        ProjectFactory.create(
+            meta_project=included_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+        )
+
+        # TEMP segment in umbrella_code (not yet ready) → excluded.
+        temp_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            is_draft=False,
+            umbrella_code="KNA/HPMP2/TEMP/1",
+            project_cost=Decimal("999.00"),
+        )
+        ProjectFactory.create(
+            meta_project=temp_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(self.url, {"mock_data": "false"})
+        sheet = load_workbook(response)["MetaProjects"]
+        headers = get_sheet_headers(sheet)
+
+        metacode_col = headers["Metacode"]
+        cost_col = headers["MYA Total agreed costs in principle (US $)"]
+        rows = {
+            sheet[f"{metacode_col}{r}"].value: sheet[f"{cost_col}{r}"].value
+            for r in range(2, sheet.max_row + 1)
+        }
+        assert rows["BTN/CPOP/32"] == 123456.50
+        assert "KNA/HPMP2/TEMP/1" not in rows
+
+    def test_metaprojects_sheet_uses_computed_fallback(
+        self, secretariat_viewer_user, project_approved_status
+    ):
+        # Null funding + approved sub-projects → MyaExport's fallback sums
+        # total_fund. Proves the shared calc flows through (not raw nulls).
+        mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            is_draft=False,
+            umbrella_code="BTN/CPOP/40",
+            project_funding=None,
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=100,
+        )
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            total_fund=250,
+        )
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(self.url, {"mock_data": "false"})
+        sheet = load_workbook(response)["MetaProjects"]
+        headers = get_sheet_headers(sheet)
+
+        metacode_col = headers["Metacode"]
+        funding_col = headers["MYA Total agreed funding in principle (US $)"]
+        rows = {
+            sheet[f"{metacode_col}{r}"].value: sheet[f"{funding_col}{r}"].value
+            for r in range(2, sheet.max_row + 1)
+        }
+        assert rows["BTN/CPOP/40"] == 350.0
