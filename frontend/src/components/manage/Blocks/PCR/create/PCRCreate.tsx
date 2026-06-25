@@ -10,7 +10,6 @@ import {
   FileMetaDataProps,
 } from '../interfaces'
 
-// import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 // import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 // import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext.tsx'
 // import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
@@ -19,7 +18,6 @@ import {
 // import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 // import ProjectImpact from './ProjectImpact.tsx'
 // import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
-// import ProjectUmbrellaProjectDetails from '../ProjectView/ProjectUmbrellaProjectsDetails.tsx'
 // import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
 // import ProjectDelete from './ProjectDelete.tsx'
 // import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
@@ -834,47 +832,6 @@ const PCRCreate = ({
     //       ...missingFileTypeErrors,
     //     ],
     //   },
-    //   {
-    //     id: 'project-related-projects-section',
-    //     label: (
-    //       <div className="relative flex items-center justify-between gap-x-2">
-    //         <div className="leading-tight">Umbrella project details</div>
-    //         {isTabDisabled ? (
-    //           DisabledAlert
-    //         ) : (
-    //           <SectionErrorIndicator errors={[]} />
-    //         )}
-    //       </div>
-    //     ),
-    //     disabled: areNextSectionsDisabled,
-    //     component: (
-    //       <ProjectUmbrellaProjectDetails
-    //         canDisassociate={true}
-    //         {...{
-    //           project,
-    //           setCurrentTab,
-    //           mode,
-    //           setErrors,
-    //         }}
-    //         isMya={projIdentifiers.category === 'MYA'}
-    //         isPrevButtonDisabled={false}
-    //       />
-    //     ),
-    //   },
-    //   ...(isEditMode
-    //     ? [
-    //         {
-    //           id: 'project-history-section',
-    //           label: (
-    //             <div className="relative flex items-center justify-between gap-x-2">
-    //               <div className="leading-tight">History</div>
-    //             </div>
-    //           ),
-    //           disabled: areNextSectionsDisabled,
-    //           component: <ProjectHistory {...{ project, setCurrentTab }} />,
-    //         },
-    //       ]
-    //     : []),
   ]
 
   return (

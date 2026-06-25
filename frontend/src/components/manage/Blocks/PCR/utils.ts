@@ -211,3 +211,69 @@ export const getSectionErrors = (
   Object.fromEntries(
     Object.entries(errors).filter(([key]) => fields.includes(key)),
   )
+
+export const formatSubmitData = (
+  projectData: ProjectData,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
+) => {
+  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+    projectData
+
+  const filteredFields = filter(specificFields, (field) => !field.is_actual)
+  const specificFieldsAvailable = map(filteredFields, 'write_field_name')
+
+  const filteredActualFields = filter(
+    specificFields,
+    (field) => field.is_actual,
+  )
+  const specificActualFieldsAvailable = map(
+    filteredActualFields,
+    'write_field_name',
+  )
+
+  const crtProjectSpecificFields = getCrtProjectSpecificFields(
+    filteredFields,
+    projectData,
+    specificFieldsAvailable,
+  )
+  const updatedOldSpecificFieldsValues = defaultOldFields(
+    projectData.projectSpecificFields,
+    [...specificFieldsAvailable, ...specificActualFieldsAvailable],
+    projectFields,
+  )
+
+  const hasOdsOdpFields = filteredFields.find(
+    (field) => field.table === 'ods_odp',
+  )
+  const updatedOdsOdpValues = hasOdsOdpFields
+    ? filterEmptyOdsOdpRows(
+        normalizeOdsOdp(
+          projectSpecificFields,
+          specificFieldsAvailable,
+          projectFields,
+          altTechs,
+        ),
+      )
+    : []
+
+  setProjectData((prevData) => ({
+    ...prevData,
+    projectSpecificFields: {
+      ...prevData.projectSpecificFields,
+      ...updatedOldSpecificFieldsValues,
+      ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+        omit(normalizeValues(ods_odp), ['ods_blend_id', 'ods_substance_id']),
+      ),
+    },
+  }))
+
+  return {
+    ...projIdentifiers,
+    ...normalizeValues(crossCuttingFields),
+    ...normalizeValues(crtProjectSpecificFields),
+    ...updatedOldSpecificFieldsValues,
+    ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+      omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
+    ),
+  }
+}

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import { useGetProject } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProject'
-import { FileMetaDataType } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRCreate from './PCRCreate'
 import {
@@ -14,6 +13,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import { useParams } from 'wouter'
 import { map } from 'lodash'
+import PCRHeader from './PCRHeader'
 
 const PCRCreateWrapper = () => {
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
@@ -132,23 +132,17 @@ const PCRCreateWrapper = () => {
 
   return (
     <>
-      {/* <ProjectsHeader
+      <PCRHeader
         mode="add"
         {...{
-          projectData,
+          PCRData,
+          setPCRData,
           files,
           setErrors,
           setFileErrors,
-          specificFields,
-          trancheErrors,
-          getTrancheErrors,
-          specificFieldsLoaded,
-          setProjectData,
-          bpData,
           filesMetaData,
-          shouldValidateTotalFund,
         }}
-      /> */}
+      />
       <PCRCreate
         mode="add"
         {...{

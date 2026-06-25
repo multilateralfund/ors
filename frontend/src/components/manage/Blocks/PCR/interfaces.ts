@@ -147,7 +147,7 @@ export type PCRType = PCROverview &
   PCRCausesOfDelay[] &
   PCRLessonsLearned[] &
   PCRGenderMainstreaming[] &
-  PCRSdgContribution[]
+  PCRSdgContribution[] & { status: number | null }
 
 export interface PCRData {
   overview: PCROverview
@@ -226,4 +226,15 @@ export type PCRFileMetadata = {
 export interface FileMetaDataProps {
   filesMetaData?: PCRFileMetadata[]
   setFilesMetaData?: Dispatch<SetStateAction<PCRFileMetadata[]>>
+}
+
+export type PCRHeaderType = PCRFormData & {
+  files: PCRFilesObject[]
+  setErrors: (value: { [key: string]: [] }) => void
+  setFileErrors: (value: string) => void
+  filesMetaData: PCRFileMetadata[]
+  mode: string
+  PCR?: PCRType
+  setProjectFiles?: (value: ProjectFile[]) => void
+  loadedFiles?: boolean
 }
