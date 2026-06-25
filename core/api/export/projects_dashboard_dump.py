@@ -1,14 +1,17 @@
 """
 Dashboard export endpoint: GET /api/projects/v2/dashboards/all/
 
-Produces a 3-sheet Excel workbook (Projects, Substances, Funds) ready for
-Power BI import with all transformations applied server-side. See
-docs/dashboard_export.md for full parameter documentation.
+Produces a 5-sheet Excel workbook (Projects, Substances, Funds, Global fields,
+MetaProjects) ready for Power BI import with all transformations applied
+server-side. See docs/dashboard_export.md for full parameter documentation.
 """
 
+from decimal import Decimal
 from time import time
 
 import numpy as np
+from constance import config
+from django.conf import settings
 
 from core.api.export.projects_v2_dump import (
     ProjectsFundsWriter,
@@ -17,6 +20,8 @@ from core.api.export.projects_v2_dump import (
     ProjectsV2DumpWriter,
 )
 from core.api.utils import workbook_response
+from core.api.views.mya_export import HEADERS as MYA_HEADERS
+from core.api.views.mya_export import MyaExport
 
 
 # Poisson rates for mock impact-metric filling, keyed by project class.
@@ -41,6 +46,8 @@ _MOCK_RATES_NON_INVESTMENT = {
     "number_of_female_customs_officers_trained_actual": 5.0,
     "number_of_bans_on_equipment_actual": 0.5,
     "number_of_bans_on_substances_actual": 0.5,
+    "total_number_of_nou_personnel_supported_actual": 2.0,
+    "number_of_female_nou_personnel_supported_actual": 1.0,
 }
 
 _MOCK_RATES_PRODUCTION = {
@@ -53,7 +60,45 @@ _MOCK_BOOL_PROBS_NON_INVESTMENT = {
     "establishment_of_reclamation_scheme_actual": 0.25,
     "upgrade_of_imp_exp_licensing_actual": 0.40,
     "upgrade_of_quota_system_actual": 0.30,
+    "ee_demonstration_project_actual": 0.30,
+    "meps_developed_domestic_refrigeration_actual": 0.25,
+    "meps_developed_commercial_refrigeration_actual": 0.20,
+    "meps_developed_residential_ac_actual": 0.25,
+    "meps_developed_commercial_ac_actual": 0.20,
 }
+
+# Base magnitudes for funding-scaled continuous (lognormal) mock fields, keyed
+# by project class. Value = approximate median output per $1M of funding. Drawn
+# as median * lognormal(0, _MOCK_FLOAT_SIGMA), so values scale with funding,
+# stay positive, and are plausible non-integer magnitudes.
+_MOCK_FLOAT_RATES_INVESTMENT = {
+    "energy_savings_actual": 75_000.0,
+}
+
+_MOCK_FLOAT_RATES_NON_INVESTMENT = {
+    "quantity_controlled_substances_destroyed_mt_actual": 5.0,
+    "quantity_controlled_substances_destroyed_co2_eq_t_actual": 8_000.0,
+}
+
+_MOCK_FLOAT_RATES_PRODUCTION = {
+    "quantity_hfc_23_by_product_generated_actual": 3.0,
+    "quantity_hfc_23_by_product_destroyed_actual": 2.5,
+    "quantity_hfc_23_by_product_emitted_actual": 0.3,
+}
+
+# Log-space spread for the lognormal float draw. Modest, so values stay within a
+# believable band around the funding-scaled median.
+_MOCK_FLOAT_SIGMA = 0.4
+
+# Percentage fields drawn uniformly within (low, high), independent of funding
+# (a generation rate does not grow with project size).
+_MOCK_PERCENT_BOUNDS_PRODUCTION = {
+    "hfc_23_by_product_generation_rate_actual": (1.5, 4.0),
+}
+
+# The free-text GLOBAL_FIELD_1/2/3 placeholders don't appear to contain real data.
+# Excluding them from the export.
+_GLOBAL_FIELDS_EXCLUDE = {"GLOBAL_FIELD_1", "GLOBAL_FIELD_2", "GLOBAL_FIELD_3"}
 
 
 # Geographic / type helpers
@@ -89,6 +134,70 @@ def get_type_simple(p, _):
     if p.project_type:
         return "Non-Investment"
     return ""
+
+
+class GlobalFieldsWriter:
+    """
+    Writes the "Global fields" sheet: one row per PROJECTS_GLOBAL_FIELDS
+    constant (the impact/cost-effectiveness values edited from the Projects
+    settings UI). Two columns: the human-readable title and the current value.
+    """
+
+    def __init__(self, sheet):
+        self.sheet = sheet
+        self.sheet.append(["Field", "Value"])
+
+    def write(self):
+        for name, (_default, title, d_type) in settings.PROJECTS_GLOBAL_FIELDS.items():
+            if name in _GLOBAL_FIELDS_EXCLUDE:
+                continue
+            value = getattr(config, name)
+            if d_type == Decimal and isinstance(value, Decimal):
+                value = float(value)
+            self.sheet.append([title, value])
+
+
+class DashboardMyaExport(MyaExport):
+    """
+    MyaExport for the Power BI dashboard: the only spin is excluding metaprojects
+    whose umbrella_code still carries a TEMP segment.
+    Subclasses MyaExport to keep the base queryset and aggregation logic unchanged.
+    """
+
+    def get_meta_projects_queryset(self):
+        return (
+            super()
+            .get_meta_projects_queryset()
+            .exclude(umbrella_code__contains="TEMP")
+            .order_by("umbrella_code")
+        )
+
+
+class MetaProjectsWriter:
+    """
+    Writes the "MetaProjects" sheet from DashboardMyaExport rows — same columns,
+    labels, and figures as the MYA export. Drops the subtotal/total
+    rows and styling for data-only export.
+    """
+
+    headers = MYA_HEADERS
+
+    def __init__(self, sheet, view):
+        self.sheet = sheet
+        self.view = view
+        self.sheet.append([h["headerName"] for h in self.headers])
+
+    @staticmethod
+    def _cell(row, header):
+        # Same lookup as BaseWriter.write_data (so HEADERS' methods like date
+        # formatting apply), minus its type coercion — nulls stay blank
+        if method := header.get("method"):
+            return method(row, header)
+        return row.get(header["id"])
+
+    def write(self):
+        for row in DashboardMyaExport(self.view).get_meta_project_rows():
+            self.sheet.append([self._cell(row, h) for h in self.headers])
 
 
 class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
@@ -142,8 +251,9 @@ class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
 
 class ProjectsDashboardDump(ProjectsV2Dump):
     """
-    Produces GET /api/projects/v2/dashboards/all/ — a 3-sheet xlsx workbook
-    (Projects, Substances, Funds) with all transformations applied server-side.
+    Produces GET /api/projects/v2/dashboards/all/ — a 5-sheet xlsx workbook
+    (Projects, Substances, Funds, Global fields, MetaProjects) with all
+    transformations applied server-side.
 
     Extends ProjectsV2Dump: inherits queryset construction, workbook setup,
     and all field/sheet helpers. Adds query-param-driven filtering, substance
@@ -195,6 +305,55 @@ class ProjectsDashboardDump(ProjectsV2Dump):
                 p.substance_type = "CFC"
         return projects
 
+    @staticmethod
+    def _mock_rates_for(p):
+        # (numeric_rates, bool_probs, float_rates, percent_bounds) for a
+        # project's class. HFC-23 fields live in the production bucket, so they
+        # only fill when production projects are in scope (exclude_production=false).
+        if p.production:
+            return (
+                _MOCK_RATES_PRODUCTION,
+                {},
+                _MOCK_FLOAT_RATES_PRODUCTION,
+                _MOCK_PERCENT_BOUNDS_PRODUCTION,
+            )
+        if p.project_type and p.project_type.code == "INV":
+            return (_MOCK_RATES_INVESTMENT, {}, _MOCK_FLOAT_RATES_INVESTMENT, {})
+        return (
+            _MOCK_RATES_NON_INVESTMENT,
+            _MOCK_BOOL_PROBS_NON_INVESTMENT,
+            _MOCK_FLOAT_RATES_NON_INVESTMENT,
+            {},
+        )
+
+    @staticmethod
+    def _fill_poisson(p, rng, rates, funding_m):
+        # Integer counts scaled by funding: expected count = funding_m * rate.
+        for field_name, rate in rates.items():
+            lam = max(funding_m * rate, 0.01)
+            setattr(p, field_name, float(rng.poisson(lam=lam)))
+
+    @staticmethod
+    def _fill_bools(p, rng, probs):
+        for field_name, prob in probs.items():
+            setattr(p, field_name, "Yes" if rng.random() < prob else "No")
+
+    @staticmethod
+    def _fill_lognormal(p, rng, rates, funding_m):
+        # Continuous funding-scaled magnitudes. lognormal(0, sigma) has median
+        # 1.0, so values center on the funding-scaled base, stay positive, and
+        # are plausible non-integers.
+        for field_name, base in rates.items():
+            median = base * max(funding_m, 0.01)
+            value = median * float(rng.lognormal(mean=0.0, sigma=_MOCK_FLOAT_SIGMA))
+            setattr(p, field_name, round(value, 2))
+
+    @staticmethod
+    def _fill_percent(p, rng, bounds):
+        # Bounded percentages, independent of funding.
+        for field_name, (low, high) in bounds.items():
+            setattr(p, field_name, round(float(rng.uniform(low, high)), 2))
+
     def _apply_mock_data(self, projects):
         seed = int(self.view.request.query_params.get("mock_seed", "42"))
         rng = np.random.default_rng(seed)
@@ -208,25 +367,13 @@ class ProjectsDashboardDump(ProjectsV2Dump):
                 continue
 
             funding_m = max((p.total_fund or 0) / 1_000_000, 0.0)
-            is_investment = p.project_type and p.project_type.code == "INV"
-            is_production = bool(p.production)
-
-            if is_production:
-                numeric_rates = _MOCK_RATES_PRODUCTION
-                bool_probs = {}
-            elif is_investment:
-                numeric_rates = _MOCK_RATES_INVESTMENT
-                bool_probs = {}
-            else:
-                numeric_rates = _MOCK_RATES_NON_INVESTMENT
-                bool_probs = _MOCK_BOOL_PROBS_NON_INVESTMENT
-
-            for field_name, rate in numeric_rates.items():
-                lam = max(funding_m * rate, 0.01)
-                setattr(p, field_name, float(rng.poisson(lam=lam)))
-
-            for field_name, prob in bool_probs.items():
-                setattr(p, field_name, "Yes" if rng.random() < prob else "No")
+            numeric_rates, bool_probs, float_rates, percent_bounds = (
+                self._mock_rates_for(p)
+            )
+            self._fill_poisson(p, rng, numeric_rates, funding_m)
+            self._fill_bools(p, rng, bool_probs)
+            self._fill_lognormal(p, rng, float_rates, funding_m)
+            self._fill_percent(p, rng, percent_bounds)
 
         return projects
 
@@ -255,6 +402,10 @@ class ProjectsDashboardDump(ProjectsV2Dump):
             odp_writer.write,
             funds_writer.write,
         )
+
+        GlobalFieldsWriter(self._make_sheet("Global fields")).write()
+
+        MetaProjectsWriter(self._make_sheet("MetaProjects"), self.view).write()
 
         print(f"Done in {time() - t0:.2f} seconds.")
         return workbook_response("Projects dashboard dump", self.wb)

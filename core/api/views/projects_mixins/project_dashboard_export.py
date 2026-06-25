@@ -9,8 +9,9 @@ from core.api.export.projects_dashboard_dump import ProjectsDashboardDump
 class ProjectDashboardExportMixin:
     @extend_schema(
         description="""
-        Export all projects as an Excel workbook (.xlsx) with three sheets
-        (Projects, Substances, Funds) ready for Power BI or similar tools.
+        Export all projects as an Excel workbook (.xlsx) with five sheets
+        (Projects, Substances, Funds, Global fields, MetaProjects) ready for
+        Power BI or similar tools.
 
         All transformations are applied server-side: filtering to latest versions,
         excluding production projects, substance type cleanup, geographic enrichment
