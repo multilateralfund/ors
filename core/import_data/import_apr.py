@@ -94,10 +94,14 @@ def _process_rows(df, progress_report, dry_run):
         legacy_code = str(legacy_code).strip()
 
         try:
-            project = Project.objects.filter(
-                Q(legacy_code=legacy_code) | Q(code=project_code),
-                version__gte=3,
-            ).first()
+            project = (
+                Project.objects.filter(
+                    Q(legacy_code=legacy_code) | Q(code=project_code),
+                    version__gte=3,
+                )
+                .select_related("meta_project")
+                .first()
+            )
 
             if not project:
                 logger.info(

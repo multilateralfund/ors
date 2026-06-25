@@ -248,6 +248,7 @@ class APRWorkspaceView(RetrieveAPIView):
                     "status",
                     "meeting",
                     "decision",
+                    "meta_project",
                 )
                 .prefetch_related(
                     "subsectors",
