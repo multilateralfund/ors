@@ -336,7 +336,9 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
 
-    def test_export_inventory_report_reads_project_objects_directly(self, admin_user):
+    def test_export_inventory_report_reads_project_objects_directly(
+        self, admin_user, project_approved_status
+    ):
         lead_agency = AgencyFactory.create(name="Lead agency")
         cluster = ProjectClusterFactory.create(name="Cluster A")
         funding_window = FundingWindowFactory.create(description="Window A")
@@ -363,6 +365,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             meta_project=meta_project,
             cluster=cluster,
             subsectors=[subsector_one, subsector_two],
+            submission_status=project_approved_status,
         )
         bp_activity = BPActivityFactory.create(
             agency=project.agency,
@@ -437,14 +440,43 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert sheet[f"{headers['Transfer Decision']}{row}"].value in (None, "")
         assert sheet[f"{headers['Agency Transferred From']}{row}"].value in (None, "")
 
-    def test_export_inventory_report_populates_prior_meeting_columns(self, admin_user):
+    def test_export_inventory_report_only_includes_approved_projects(
+        self, admin_user, project_approved_status, project_recommended_status
+    ):
+        approved_project = ProjectFactory.create(
+            version=3,
+            code="APPROVED-CODE",
+            submission_status=project_approved_status,
+        )
+        recommended_project = ProjectFactory.create(
+            version=3,
+            code="RECOMMENDED-CODE",
+            submission_status=project_recommended_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+
+        assert get_inventory_project_row(sheet, approved_project.id) is not None
+        assert get_inventory_project_row(sheet, recommended_project.id) is None
+
+    def test_export_inventory_report_populates_prior_meeting_columns(
+        self, admin_user, project_approved_status
+    ):
         final_project = ProjectFactory.create(
             version=6,
+            code="PRIOR-MEETING-CODE",
             total_fund=160,
             support_cost_psc=16,
             meeting=MeetingFactory.create(number=306),
             post_excom_meeting=MeetingFactory.create(number=206),
             date_approved=date(2024, 6, 15),
+            submission_status=project_approved_status,
         )
         ProjectFactory.create(
             latest_project=final_project,
@@ -508,9 +540,12 @@ class TestProjectV2ExportXLSX(BaseTest):
                 == values["date"]
             )
 
-    def test_export_inventory_report_populates_adjustment_columns(self, admin_user):
+    def test_export_inventory_report_populates_adjustment_columns(
+        self, admin_user, project_approved_status
+    ):
         final_project = ProjectFactory.create(
             version=6,
+            code="ADJUSTMENT-CODE",
             total_fund=160,
             support_cost_psc=16,
             meeting=MeetingFactory.create(number=306),
@@ -520,6 +555,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             adjustment=True,
             fund_transferred=9,
             psc_transferred=3,
+            submission_status=project_approved_status,
         )
         ProjectFactory.create(
             latest_project=final_project,

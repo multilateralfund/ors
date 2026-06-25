@@ -157,6 +157,10 @@ const useInternalNavSectionsIaBaPortal = () => {
                 },
               ]
             : []),
+          {
+            label: 'CNTRB internal dashboard',
+            url: 'https://app.powerbi.com/groups/4a9130ea-fe2e-4538-845a-65af312b9997/reports/8f88d02f-e3d0-4cc4-8deb-ceab660d22b3/b4d219601eca808cae7d?experience=power-bi',
+          },
         ],
         url: '/projects-listing/listing',
       },
@@ -193,30 +197,29 @@ const useMenuItems = () => {
       makeExternalNavItem('Governance', '/about/governance'),
       makeExternalNavItem('Partners', '/about/partners'),
       makeExternalNavItem('Secretariat', '/about/secretariat'),
-      makeExternalNavItem(
-        'Monitoring & Evaluation',
-        '/about/monitoring-evaluation',
-      ),
+      makeExternalNavItem('Evaluation', '/about/evaluation'),
       makeExternalNavItem(
         'Greening our operations',
         '/greening-our-operations',
       ),
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
-    makeExternalNavItem('Projects & Data', '/projects-data', [
+    makeExternalNavItem('Our work', '/our-work', [
       makeExternalNavItem(
-        'Projects and impact',
-        '/projects-data/projects-impacts',
+        'Project performance',
+        '/our-work/project-performance',
       ),
-      makeExternalNavItem('Countries', '/projects-data/countries'),
-      makeExternalNavItem('CP Data Center', '/projects-data/cp-data-center'),
+      makeExternalNavItem('Project portfolio', '/our-work/project-portfolio'),
+      makeExternalNavItem('Project analytics', '/our-work/project-analytics'),
+      makeExternalNavItem('Country profiles', '/country-profiles'),
+      makeExternalNavItem('CP Data Center', '/our-work/cp-data-center'),
       ...useInternalNavSections(),
       makeExternalNavItem(
         'Contributions',
-        '/projects-data/contributions',
+        '/our-work/contributions',
         useInternalNavSectionsReplenishment(),
       ),
-      makeExternalNavItem('Portals', '/projects-data/portals'),
+      makeExternalNavItem('Portals', '/our-work/portals'),
       ...useInternalNavSectionsIaBaPortal(),
     ]),
     makeExternalNavItem('Resources', '/resources', [

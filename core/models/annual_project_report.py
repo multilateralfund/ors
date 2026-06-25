@@ -613,11 +613,54 @@ class AnnualProjectReport(models.Model):
         return self.project_version_3.date_approved if self.project_version_3 else None
 
     @property
+    def extended_date_of_completion(self):
+        """
+        "Extended Date" as shown in the master/inventory report: the
+        MetaProject.extended_date_of_completion field (returned as a plain date
+        to match the DateField this feeds into).
+
+        This is the same stored field the inventory report renders under the
+        "Extended Date" column (ProjectsInventoryReportWriter, source
+        "meta_project", field "extended_date_of_completion").
+        """
+        meta_project = self.project.meta_project
+        if meta_project and meta_project.extended_date_of_completion:
+            extended_date = meta_project.extended_date_of_completion
+            # MetaProject.extended_date_of_completion is a DateTimeField; normalize.
+            return (
+                extended_date.date()
+                if hasattr(extended_date, "date")
+                else extended_date
+            )
+        return None
+
+    @property
+    def mya_completion_date(self):
+        """
+        "MYA Completion Date" as shown in the master/inventory report: the
+        end date of the project's MetaProject (returned as a plain date to match
+        the DateField this feeds into).
+
+        This is the same stored field the inventory report renders under the
+        "MYA Completion Date" column (ProjectsInventoryReportWriter, source
+        "meta_project", field "end_date").
+        """
+        meta_project = self.project.meta_project
+        if meta_project and meta_project.end_date:
+            end_date = meta_project.end_date
+            # MetaProject.end_date is a DateTimeField; normalize to a date.
+            return end_date.date() if hasattr(end_date, "date") else end_date
+        return None
+
+    @property
     def date_of_completion_per_agreement_or_decisions(self):
-        latest_version = self.latest_project_version_for_year
-        if not latest_version:
-            latest_version = self.project_version_3
-        return latest_version.date_completion if latest_version else None
+        """
+        Per the client spec, this mirrors the master report's split of this column
+        into "MYA Completion Date" and "Extended Date":
+          - if an Extended Date exists, use it;
+          - otherwise, use the MYA Completion Date.
+        """
+        return self.extended_date_of_completion or self.mya_completion_date
 
     @property
     def date_completion_proposal(self):

@@ -346,6 +346,7 @@ class Command(BaseCommand):
                 "project_type",
                 "status",
                 "post_excom_decision__meeting",
+                "meta_project",
             )
             .distinct()
             .order_by("code")

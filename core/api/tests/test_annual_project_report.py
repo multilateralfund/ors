@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from core.api.export.annual_project_report import APRExportWriter
+from core.api.export.projects_v2_dump import get_field_value
 from core.api.tests.base import BaseTest
 from core.models import (
     AnnualProgressReport,
@@ -4265,6 +4266,15 @@ class TestAPRMLFSExportView(BaseTest):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
+        # date_of_completion_per_agreement_or_decisions mirrors the master report's
+        # MetaProject columns: "Extended Date" (extended_date_of_completion) when
+        # present, otherwise "MYA Completion Date" (end_date).
+        latest_version.meta_project = MetaProjectFactory(
+            end_date=timezone.make_aware(datetime(2026, 9, 30)),
+            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
+        )
+        latest_version.save()
+
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=latest_version,
@@ -4368,7 +4378,9 @@ class TestAPRMLFSExportView(BaseTest):
         )
 
         # Date fields: date_approved and date_completion_proposal from version 3;
-        # date_of_completion_per_agreement_or_decisions from latest version
+        # date_of_completion_per_agreement_or_decisions follows the master report:
+        # the "Extended Date" (MetaProject.extended_date_of_completion) is used when
+        # present, otherwise the "MYA Completion Date" (MetaProject.end_date).
         date_approved_cell = worksheet.cell(
             first_data_row, columns["date_approved"]
         ).value
@@ -4379,11 +4391,12 @@ class TestAPRMLFSExportView(BaseTest):
         ).value
         assert date_completion_proposal_cell.date() == version3.date_completion
 
+        # Extended Date is set on the MetaProject, so it wins over MYA Completion Date.
         date_completion_agreement_cell = worksheet.cell(
             first_data_row,
             columns["date_of_completion_per_agreement_or_decisions"],
         ).value
-        assert date_completion_agreement_cell.date() == latest_version.date_completion
+        assert date_completion_agreement_cell.date() == date(2026, 7, 15)
 
     def test_derived_fields_with_archive_version_apr(
         self, mlfs_admin_user, annual_agency_report, multiple_project_versions_for_apr
@@ -4961,6 +4974,15 @@ class TestAPRDerivedFieldsAPI(BaseTest):
         version3 = multiple_project_versions_for_apr[0]
         latest_version = multiple_project_versions_for_apr[2]
 
+        # date_of_completion_per_agreement_or_decisions mirrors the master report's
+        # MetaProject columns: "Extended Date" (extended_date_of_completion) when
+        # present, otherwise "MYA Completion Date" (end_date).
+        latest_version.meta_project = MetaProjectFactory(
+            end_date=timezone.make_aware(datetime(2026, 9, 30)),
+            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
+        )
+        latest_version.save()
+
         AnnualProjectReportFactory(
             report=annual_agency_report,
             project=latest_version,
@@ -4993,10 +5015,10 @@ class TestAPRDerivedFieldsAPI(BaseTest):
             == version3.date_completion.isoformat()
         )
 
-        # date_of_completion_per_agreement_or_decisions comes from latest version >= 3
+        # Extended Date is set on the MetaProject, so it wins over MYA Completion Date.
         assert (
             project_data["date_of_completion_per_agreement_or_decisions"]
-            == latest_version.date_completion.isoformat()
+            == date(2026, 7, 15).isoformat()
         )
 
     def test_phaseout_proposal_derived_fields(
@@ -6718,6 +6740,103 @@ class TestWorkspaceFallbackAutoSubmit(BaseTest):
             agency=agency,
         )
         assert agency_report.status == AnnualAgencyProjectReport.SubmissionStatus.DRAFT
+
+
+@pytest.mark.django_db
+class TestAPRDateOfCompletionDerivation:
+    """
+    date_of_completion_per_agreement_or_decisions mirrors the master/inventory
+    report's split of this column into two MetaProject fields:
+      - "Extended Date" -> MetaProject.extended_date_of_completion;
+      - "MYA Completion Date" -> MetaProject.end_date.
+    Use the Extended Date if present, otherwise the MYA Completion Date.
+    """
+
+    def _make_apr(self, agency, country_ro, code, meta_project=None):
+        project = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            code=code,
+            version=3,
+            latest_project=None,
+            meta_project=meta_project,
+            date_completion=date(2026, 5, 1),
+        )
+        return AnnualProjectReportFactory(project=project)
+
+    def test_uses_extended_date_when_present(self, agency, country_ro):
+        meta_project = MetaProjectFactory(
+            end_date=timezone.make_aware(datetime(2026, 9, 30)),
+            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/EXT/01", meta_project=meta_project
+        )
+
+        # Extended Date is set -> it wins over the MYA Completion Date.
+        assert apr.extended_date_of_completion == date(2026, 7, 15)
+        assert apr.mya_completion_date == date(2026, 9, 30)
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 7, 15)
+
+    def test_falls_back_to_mya_completion_date(self, agency, country_ro):
+        meta_project = MetaProjectFactory(
+            end_date=timezone.make_aware(datetime(2026, 9, 30)),
+            extended_date_of_completion=None,
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/MYA/01", meta_project=meta_project
+        )
+
+        # No Extended Date -> MYA Completion Date is used.
+        assert apr.extended_date_of_completion is None
+        assert apr.mya_completion_date == date(2026, 9, 30)
+        assert apr.date_of_completion_per_agreement_or_decisions == date(2026, 9, 30)
+
+    def test_none_when_no_meta_project(self, agency, country_ro):
+        apr = self._make_apr(agency, country_ro, "TEST/APR/NONE/01", meta_project=None)
+
+        assert apr.extended_date_of_completion is None
+        assert apr.mya_completion_date is None
+        assert apr.date_of_completion_per_agreement_or_decisions is None
+
+    def test_none_when_meta_project_dates_empty(self, agency, country_ro):
+        meta_project = MetaProjectFactory(
+            end_date=None,
+            extended_date_of_completion=None,
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/EMPTY/01", meta_project=meta_project
+        )
+
+        assert apr.date_of_completion_per_agreement_or_decisions is None
+
+    def test_matches_inventory_report_extended_date(self, agency, country_ro):
+        """
+        The APR value must equal the master/inventory report's rendering of the
+        same MetaProject fields, so the two reports never disagree.
+        """
+        meta_project = MetaProjectFactory(
+            end_date=timezone.make_aware(datetime(2026, 9, 30)),
+            extended_date_of_completion=timezone.make_aware(datetime(2026, 7, 15)),
+        )
+        apr = self._make_apr(
+            agency, country_ro, "TEST/APR/PARITY/01", meta_project=meta_project
+        )
+
+        # Read the very same MetaProject fields the inventory report renders, via
+        # the same helper (get_field_value with source="meta_project").
+        inventory_extended = get_field_value(
+            apr.project,
+            {"id": "extended_date_of_completion", "source": "meta_project"},
+        )
+        inventory_mya = get_field_value(
+            apr.project,
+            {"id": "end_date", "source": "meta_project"},
+        )
+        expected = inventory_extended or inventory_mya
+        expected = expected.date() if hasattr(expected, "date") else expected
+
+        assert apr.date_of_completion_per_agreement_or_decisions == expected
 
 
 @pytest.mark.django_db

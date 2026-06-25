@@ -303,6 +303,7 @@ def auto_submit_empty_agency_reports(year):
                 "status",
                 "meeting",
                 "decision",
+                "meta_project",
             )
             .prefetch_related(
                 "subsectors",
@@ -756,6 +757,7 @@ def sync_apr_from_projects(year, dry_run=False):
             "project__post_excom_meeting",
             "project__transfer_decision__meeting",
             "project__transfer_meeting",
+            "project__meta_project",
             "main_region",
             "report__progress_report",
         )
@@ -944,6 +946,7 @@ def sync_apr_from_projects(year, dry_run=False):
                 "status",
                 "meeting",
                 "decision",
+                "meta_project",
             )
             .prefetch_related(
                 "subsectors",
