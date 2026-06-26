@@ -9,6 +9,7 @@ from .enterprise import *
 from .group import *
 from .funding_window import *
 from .project import *
+from .project_pcr_exclusion import *
 from .project_complition_report import *
 from .project_history import *
 from .project_metadata import *
