@@ -370,6 +370,8 @@ class ProjectV2ViewSet(
         else:
             queryset = Project.objects.all()
         queryset = self.filter_permissions_queryset(queryset)
+        if self.request.query_params.get("pcr_required", "false").lower() == "true":
+            queryset = queryset.pcr_required()
         queryset = (
             queryset.select_related(
                 "agency",
@@ -448,6 +450,15 @@ class ProjectV2ViewSet(
                 name="really_all",
                 location=OpenApiParameter.QUERY,
                 description="Queries ALL projects.",
+                type=OpenApiTypes.BOOL,
+            ),
+            OpenApiParameter(
+                name="pcr_required",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "When true, excludes projects matching active PCR required "
+                    "exclusion rules."
+                ),
                 type=OpenApiTypes.BOOL,
             ),
         ],
