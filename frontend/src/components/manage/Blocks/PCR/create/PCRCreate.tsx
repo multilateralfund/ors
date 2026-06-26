@@ -1,0 +1,892 @@
+// import { useContext, useEffect, } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
+import {
+  PCRData,
+  PCRFiles,
+  PCRFormProps,
+  PCROverview,
+  FileMetaDataProps,
+} from '../interfaces'
+
+// import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+// import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext.tsx'
+// import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
+// import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
+// import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
+// import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
+// import ProjectImpact from './ProjectImpact.tsx'
+// import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
+// import ProjectsInlineMessage from './ProjectsInlineMessage.tsx'
+// import ProjectDelete from './ProjectDelete.tsx'
+// import { DisabledAlert, ErrorsList, LoadingTab } from '../HelperComponents.tsx'
+// import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
+// import { projectPhaseOutFields } from '../constants.ts'
+// import {
+//   ProjectFile,
+//   ProjectSpecificFields,
+//   ProjectTypeApi,
+//   ProjectDataProps,
+//   OdsOdpFields,
+// } from '../interfaces.ts'
+// import {
+//   canGoToSecondStep,
+//   checkInvalidValue,
+//   getCrossCuttingErrors,
+//   getFieldLabel,
+//   getSectionFields,
+//   getSpecificFieldsErrors,
+//   getHasNoFiles,
+//   hasFields,
+//   getFieldData,
+//   formatOptions,
+//   getOdsOdpFields,
+// } from '../utils.ts'
+import {
+  formatErrors,
+  hasSectionErrors,
+} from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import { getSectionErrors } from '../utils'
+// import { useStore } from '@ors/store.tsx'
+
+// import { find, has, isEmpty, map, mapKeys } from 'lodash'
+import { Tabs, Tab } from '@mui/material'
+import { has, isEmpty, keys, map } from 'lodash'
+import { initialOverviewFields } from '../constants'
+import PCROverviewSection from '../PCRFormTabs/PCROverviewSection'
+import PCRResultsAssessmentSection from '../PCRFormTabs/PCRResultsAssessmentSection'
+import PCRCausesOfDelaySection from '../PCRFormTabs/PCRCausesOfDelaySection'
+import PCRLessonsLearnedSection from '../PCRFormTabs/PCRLessonsLearnedSection'
+import PCRGenderMainstreamingSection from '../PCRFormTabs/PCRGenderMainstreamingSection'
+import PCRSDGSection from '../PCRFormTabs/PCRSDGSection'
+import PCRSummaryAndDelaysSection from '../PCRFormTabs/PCRSummaryAndDelaysSection'
+import { LoadingTab } from '../../ProjectsListing/HelperComponents'
+import PCRDocumentation from '../PCRFormTabs/PCRDocumentation'
+// import { Typography } from '@mui/material'
+// import { useParams } from 'wouter'
+
+const PCRCreate = ({
+  PCRData,
+  setPCRData,
+  PCR,
+  // specificFields,
+  mode,
+  files,
+  setFiles,
+  // projectFiles,
+  errors,
+  fileErrors,
+  // specificFieldsLoaded,
+  // loadedFiles,
+  filesMetaData,
+  setFilesMetaData,
+  // setErrors,
+  // ...rest
+}: PCRFormProps &
+  PCRFiles &
+  FileMetaDataProps & {
+    //     specificFields: ProjectSpecificFields[]
+    mode: string
+    fileErrors: string
+    //     project: ProjectTypeApi
+    //     projectFiles?: ProjectFile[]
+    //     specificFieldsLoaded: boolean
+    //     loadedFiles?: boolean
+    //     setErrors: (value: { [key: string]: [] }) => void
+  }) => {
+  // const { project_id } = useParams<Record<string, string>>()
+  // const userSlice = useStore((state) => state.user)
+  // const { agency_id } = userSlice.data
+  // const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+  //   PCRData ?? {}
+  const { summary_and_delays } = PCRData ?? {}
+  // const { project_type, sector } = crossCuttingFields
+  // const fieldsOpts = useGetProjectFieldsOpts(PCRData, setPCRData, mode)
+  // const isEditMode = project && mode === 'edit'
+  // const shouldValidateRequiredFields = !(
+  //   mode === 'edit' && project?.submission_status === 'Approved'
+  // )
+  // const canLinkToBp = canGoToSecondStep(
+  //   projIdentifiers,
+  //   agency_id,
+  //   shouldValidateRequiredFields,
+  // )
+  // const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 5 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(0)
+  // const areFieldsDisabled = !canLinkToBp || currentStep < 1
+  // const areNextSectionsDisabled = areFieldsDisabled
+  // const areProjectSpecificTabsDisabled =
+  //   areNextSectionsDisabled || !project_type || !sector
+  // const [overviewFields, substanceDetailsFields, impactFields] = [
+  //   getSectionFields(specificFields, 'Header'),
+  //   getSectionFields(specificFields, 'Substance Details'),
+  //   getSectionFields(specificFields, 'Impact'),
+  // ]
+  // const odsOdpFields = getOdsOdpFields(substanceDetailsFields)
+  // const odsDisplayField = getFieldData(odsOdpFields, 'ods_display_name')
+  // const { warnings } = useStore((state) => state.projectWarnings)
+  // const { projectFields, viewableFields } = useStore(
+  //   (state) => state.projectFields,
+  // )
+  // const groupField = getFieldData(overviewFields, 'group')
+  // const specificFieldsIdentifiers = 'projectSpecificFields'
+  // const specificFieldsData = PCRData[specificFieldsIdentifiers] || []
+  // const { inlineMessage, setInlineMessage } = useStore(
+  //   (state) => state.inlineMessage,
+  // )
+  // useEffect(() => {
+  //   setInlineMessage(null)
+  // }, [])
+  // useEffect(() => {
+  //   if (groupField) {
+  //     const groupOptions = formatOptions(groupField, specificFieldsData)
+  //     const validData = find(
+  //       groupOptions,
+  //       (option) => option.id === specificFieldsData.group,
+  //     )
+  //     if (!validData) {
+  //       setPCRData((prevData) => ({
+  //         ...prevData,
+  //         [specificFieldsIdentifiers]: {
+  //           ...prevData[specificFieldsIdentifiers],
+  //           group: null,
+  //         },
+  //       }))
+  //     }
+  //   }
+  // }, [groupField])
+  // const isTabDisabled = areNextSectionsDisabled
+  // const isCrossCuttingTabDisabled =
+  //   isTabDisabled || !hasFields(projectFields, viewableFields, 'Cross-Cutting')
+  // const hasNoSpecificInfoFields =
+  //   overviewFields.length < 1 && substanceDetailsFields.length < 1
+  // const isSpecificInfoTabDisabled =
+  //   !specificFieldsLoaded ||
+  //   areProjectSpecificTabsDisabled ||
+  //   hasNoSpecificInfoFields ||
+  //   (!hasFields(projectFields, viewableFields, 'Header') &&
+  //     !hasFields(projectFields, viewableFields, 'Substance Details'))
+  // const isImpactTabDisabled =
+  //   !specificFieldsLoaded ||
+  //   areProjectSpecificTabsDisabled ||
+  //   impactFields.length < 1 ||
+  //   !hasFields(projectFields, viewableFields, 'Impact')
+
+  const totalsByAgency = useMemo(() => {
+    return PCRData.summary_and_delays.reduce(
+      (acc, entry) => {
+        const agency = entry.agency
+
+        acc[agency] ??= {
+          funds_approved: 0,
+          funds_disbursed: 0,
+        }
+
+        acc[agency].funds_approved += Number(entry.funds_approved) || 0
+        acc[agency].funds_disbursed += Number(entry.funds_disbursed) || 0
+
+        return acc
+      },
+      {} as Record<number, { funds_approved: number; funds_disbursed: number }>,
+    )
+  }, [
+    PCRData.summary_and_delays
+      .map(
+        ({ agency, funds_approved, funds_disbursed }) =>
+          `${agency}-${funds_approved}-${funds_disbursed}`,
+      )
+      .join('|'),
+  ])
+
+  const total_funds_approved = PCRData.summary_and_delays.reduce(
+    (acc, entry) => acc + (Number(entry.funds_approved) || 0),
+    0,
+  )
+
+  const total_funds_disbursed = PCRData.summary_and_delays.reduce(
+    (acc, entry) => acc + (Number(entry.funds_disbursed) || 0),
+    0,
+  )
+
+  useEffect(() => {
+    setPCRData((prevData: any) => {
+      const agencyOverview = prevData.overview.agency_overview
+
+      const updatedAgencyOverview = agencyOverview.map((agency) => {
+        const funds_approved =
+          totalsByAgency[agency.agency]?.funds_approved ?? 0
+        const funds_disbursed =
+          totalsByAgency[agency.agency]?.funds_disbursed ?? 0
+
+        return {
+          ...agency,
+          mlf_funding_approved: funds_approved,
+          mlf_funding_disbursed: funds_disbursed,
+          mlf_funding_returned: funds_approved - funds_disbursed,
+          total_mlf_funding_approved: total_funds_approved,
+          total_mlf_funding_disbursed: total_funds_disbursed,
+          total_mlf_funding_returned:
+            total_funds_approved - total_funds_disbursed,
+        }
+      })
+
+      const changed = updatedAgencyOverview.some(
+        (agency, index) => agency !== agencyOverview[index],
+      )
+
+      if (!changed) {
+        return prevData
+      }
+
+      return {
+        ...prevData,
+        overview: {
+          ...prevData.overview,
+          agency_overview: updatedAgencyOverview,
+        },
+      }
+    })
+  }, [totalsByAgency])
+
+  const overviewErrors = useMemo(
+    () => getSectionErrors(keys(initialOverviewFields), errors),
+    [errors],
+  )
+  // const summaryAndDelaysErrors = []
+  // const formattedOdsOdp = map(
+  //   summary_and_delays,
+  //   (_, index) =>
+  //     ((errors?.summary_and_delays ?? [])[index] as Record<string, []>) || {},
+  // )
+
+  // const filteredOdsOdpErrors = map(formattedOdsOdp, (odp, index) =>
+  //   !isEmpty(odp) ? { ...odp, id: index } : {},
+  // ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
+
+  // const formattedOdsOdpErrors = map(
+  //   filteredOdsOdpErrors,
+  //   ({ id, ...fields }) => {
+  //     const substanceNo = Number(id) + 1
+  //     const fieldLabels = Object.entries(
+  //       fields as Record<string, string[]>,
+  //     ).filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
+  //     if (fieldLabels.length === 0) return null
+  //     const invalidFields = fieldLabels
+  //       .filter(
+  //         ([_, errors]) =>
+  //           errors[0] !== `This field is required${errorMessageExtension}.`,
+  //       )
+  //       .map(([field]) => getFieldLabel(specificFields, field))
+  //     const messages = [
+  //       invalidFields.length > 0
+  //         ? `${invalidFields.join(', ')}: ${
+  //             invalidFields.length > 1 ? 'These fields are' : 'This field is'
+  //           } not valid.`
+  //         : null,
+  //     ].filter(Boolean)
+  //     const odsOdpType =  `Entry ${substanceNo}`
+  //     return { message: `${odsOdpType} - ` + messages.join(' ') }
+  //   },
+  // ).filter(Boolean)
+  // const odsOdpErrors = map(
+  //   formattedOdsOdp as { [key: string]: [] }[],
+  //   (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
+  // )
+  // const projIdentifiersErrors = useMemo(
+  //   () =>
+  //     getProjIdentifiersErrors(
+  //       projIdentifiers,
+  //       errors,
+  //       shouldValidateRequiredFields,
+  //     ),
+  //   [projIdentifiers, errors],
+  // )
+  // const crossCuttingErrors = useMemo(
+  //   () =>
+  //     getCrossCuttingErrors(
+  //       crossCuttingFields,
+  //       errors,
+  //       mode,
+  //       mode === 'edit' ? project : undefined,
+  //       true,
+  //       true,
+  //       shouldValidateRequiredFields,
+  //     ),
+  //   [crossCuttingFields, errors, mode],
+  // )
+  // const { canEditApprovedProjects } = useContext(PermissionsContext)
+  // const { altTechs } = useContext(ProjectsDataContext)
+  // const hasV3EditPermissions =
+  //   !!project && mode === 'edit' && canEditApprovedProjects
+  // const editableByAdmin = ['Approved', 'Withdrawn', 'Not approved'].includes(
+  //   project?.submission_status ?? '',
+  // )
+  // const isV3ProjectEditable =
+  //   hasV3EditPermissions &&
+  //   (editableByAdmin || project.submission_status === 'Recommended')
+  // const disableV3Edit =
+  //   !!project &&
+  //   mode === 'edit' &&
+  //   !project.editable &&
+  //   project.editable_for_actual_fields
+  // const specificFieldsErrors = useMemo(
+  //   () =>
+  //     getSpecificFieldsErrors(
+  //       projectSpecificFields,
+  //       specificFields,
+  //       errors,
+  //       mode,
+  //       canEditApprovedProjects,
+  //       shouldValidateRequiredFields,
+  //       project,
+  //     ),
+  //   [projectSpecificFields, specificFields, errors, mode, project],
+  // )
+  // const overviewErrors = specificFieldsErrors['Header'] || {}
+  // const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
+  // const allImpactErrors = specificFieldsErrors['Impact'] || {}
+  // const isActualFieldEmpty = ([key, value]: [string, string[]]) =>
+  //   key.includes('- actual') && value?.[0]?.includes('not completed')
+  // const impactErrors = Object.fromEntries(
+  //   Object.entries(allImpactErrors).filter(
+  //     (error) => !isActualFieldEmpty(error),
+  //   ),
+  // )
+  // const fieldsForValidation = map(odsOdpFields, 'write_field_name').filter(
+  //   (field) => !projectPhaseOutFields.includes(field),
+  // )
+  // const odsOdpData = projectSpecificFields?.ods_odp ?? []
+  // const errorMessageExtension =
+  //   project?.submission_status === 'Draft' ? ' for submission' : ''
+  // const odsOpdDataErrors =
+  //   odsOdpFields.length > 0
+  //     ? map(odsOdpData, (odsOdp) => {
+  //         const errors = map(fieldsForValidation, (field) => {
+  //           const formattedField =
+  //             field !== 'ods_replacement_text' ||
+  //             isOtherOdsReplacement(altTechs, odsOdp['ods_replacement'])
+  //               ? field
+  //               : 'ods_replacement'
+  //           return mode === 'edit' &&
+  //             shouldValidateRequiredFields &&
+  //             checkInvalidValue(odsOdp[formattedField as keyof OdsOdpFields])
+  //             ? [field, [`This field is required${errorMessageExtension}.`]]
+  //             : null
+  //         }).filter(Boolean) as [string, string[]][]
+  //         return Object.fromEntries(errors)
+  //       })
+  //     : []
+  // const formattedOdsOdp = map(odsOpdDataErrors, (error, index) => ({
+  //   ...error,
+  //   ...(((errors?.ods_odp ?? [])[index] as Record<string, []>) || {}),
+  // }))
+  // const filteredOdsOdpErrors = map(formattedOdsOdp, (odp, index) =>
+  //   !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
+  // ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
+  // const formatFieldName = (field: string) =>
+  //   ['ods_substance_id', 'ods_blend_id'].includes(field)
+  //     ? 'ods_display_name'
+  //     : field === 'ods_replacement'
+  //       ? 'ods_replacement_text'
+  //       : field
+  // const formattedOdsOdpErrors = map(
+  //   filteredOdsOdpErrors,
+  //   ({ id, ...fields }) => {
+  //     const substanceNo = Number(id) + 1
+  //     const fieldLabels = Object.entries(
+  //       fields as Record<string, string[]>,
+  //     ).filter(([_, errors]) => Array.isArray(errors) && errors.length > 0)
+  //     if (fieldLabels.length === 0) return null
+  //     const missingFields = fieldLabels
+  //       .filter(
+  //         ([_, errors]) =>
+  //           errors[0] === `This field is required${errorMessageExtension}.`,
+  //       )
+  //       .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+  //     const invalidFields = fieldLabels
+  //       .filter(
+  //         ([_, errors]) =>
+  //           errors[0] !== `This field is required${errorMessageExtension}.`,
+  //       )
+  //       .map(([field]) => getFieldLabel(specificFields, formatFieldName(field)))
+  //     const messages = [
+  //       missingFields.length > 0
+  //         ? `${missingFields.join(', ')}: ${
+  //             missingFields.length > 1 ? 'These fields are' : 'This field is'
+  //           } required${errorMessageExtension}.`
+  //         : null,
+  //       invalidFields.length > 0
+  //         ? `${invalidFields.join(', ')}: ${
+  //             invalidFields.length > 1 ? 'These fields are' : 'This field is'
+  //           } not valid.`
+  //         : null,
+  //     ].filter(Boolean)
+  //     const odsOdpType = odsDisplayField
+  //       ? `Substance ${substanceNo}`
+  //       : 'Phase out'
+  //     return { message: `${odsOdpType} - ` + messages.join(' ') }
+  //   },
+  // ).filter(Boolean)
+  // const odsOdpErrors = map(
+  //   formattedOdsOdp as { [key: string]: [] }[],
+  //   (error) =>
+  //     mapKeys(error, (_, key) =>
+  //       getFieldLabel(specificFields, formatFieldName(key)),
+  //     ),
+  // )
+  // const hasNoFiles =
+  //   loadedFiles &&
+  //   mode === 'edit' &&
+  //   project?.submission_status !== 'Withdrawn' &&
+  //   (project?.submission_status !== 'Draft' || project?.version === 1) &&
+  //   (project?.version ?? 0) < 3 &&
+  //   (!project?.component ||
+  //     project?.id === project?.component.original_project_id) &&
+  //   getHasNoFiles(parseInt(project_id), files, projectFiles)
+  // const missingFileTypeErrors =
+  //   mode === 'add' || loadedFiles
+  //     ? map(filesMetaData, ({ type }, index) =>
+  //         !type
+  //           ? {
+  //               id: index,
+  //               message: `Attachment ${Number(index) + 1} - Type is required.`,
+  //             }
+  //           : null,
+  //       ).filter(Boolean)
+  //     : []
+  const steps = [
+    {
+      id: 'pcr-overview',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Overview</div>
+          {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
+      component: (
+        <PCROverviewSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={overviewErrors}
+        />
+      ),
+      errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-summary-and-delays',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Summary of key data and delays in project implementation
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRSummaryAndDelaysSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-results-assessment',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Project results overall assessment highlights
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRResultsAssessmentSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-causes-of-delay',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Causes of delay</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRCausesOfDelaySection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-lessons-learned',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Lessons learned</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRLessonsLearnedSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-gender-mainstreaming',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Gender mainstreaming</div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRGenderMainstreamingSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-sdgs',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">
+            Contribution to the sustainable development goals (SDGs) (Optional)
+          </div>
+          {/* {hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+        </div>
+      ),
+      component: (
+        <PCRSDGSection
+          {...{ PCRData, setPCRData, setCurrentTab }}
+          errors={{}}
+        />
+      ),
+      // errors: [...formatErrors(overviewErrors)],
+    },
+    {
+      id: 'pcr-documentation',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Other supporting evidence</div>
+          {/* {mode !== 'add' && !loadedFiles ? (
+            LoadingTab
+          ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
+            areNextSectionsDisabled ? (
+              DisabledAlert
+            ) : (
+              <SectionErrorIndicator errors={[]} />
+            )
+          ) : null} */}
+        </div>
+      ),
+      component: (
+        <PCRDocumentation
+          {...{
+            // projectFiles,
+            files,
+            setFiles,
+            mode,
+            // project,
+            // loadedFiles,
+            setCurrentTab,
+            filesMetaData,
+            setFilesMetaData,
+            // disableV3Edit,
+          }}
+
+          // errors={missingFileTypeErrors}
+        />
+      ),
+      // errors: [
+      //   ...(fileErrors ? [{ message: fileErrors }] : []),
+      //   ...(hasNoFiles
+      //     ? [
+      //         {
+      //           message: `At least one file must be attached to this version${errorMessageExtension}.`,
+      //         },
+      //       ]
+      //     : []),
+      //   ...missingFileTypeErrors,
+      // ],
+    },
+    //   {
+    //     id: 'project-identifiers',
+    //     label: (
+    //       <div className="relative flex items-center justify-between gap-x-2">
+    //         <div className="leading-tight">Identifiers</div>
+    //         {hasSectionErrors(projIdentifiersErrors) && (
+    //           <SectionErrorIndicator errors={[]} />
+    //         )}
+    //       </div>
+    //     ),
+    //     disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
+    //     component: (
+    //       <ProjectIdentifiersSection
+    //         {...{
+    //           PCRData,
+    //           setPCRData,
+    //           setCurrentStep,
+    //           setCurrentTab,
+    //           mode,
+    //           project,
+    //           isV3ProjectEditable,
+    //           specificFieldsLoaded,
+    //         }}
+    //         areNextSectionsDisabled={areFieldsDisabled}
+    //         isNextBtnEnabled={canLinkToBp}
+    //         errors={projIdentifiersErrors}
+    //       />
+    //     ),
+    //     errors: [...formatErrors(projIdentifiersErrors)],
+    //   },
+    //   {
+    //     id: 'project-cross-cutting-section',
+    //     label: (
+    //       <div className="relative flex items-center justify-between gap-x-2">
+    //         <div className="leading-tight">Cross-Cutting</div>
+    //         {hasSectionErrors(crossCuttingErrors) &&
+    //           (isCrossCuttingTabDisabled ? (
+    //             DisabledAlert
+    //           ) : (
+    //             <SectionErrorIndicator errors={[]} />
+    //           ))}
+    //       </div>
+    //     ),
+    //     disabled: isCrossCuttingTabDisabled,
+    //     component: (
+    //       <ProjectCrossCuttingFields
+    //         {...{
+    //           PCRData,
+    //           setPCRData,
+    //           project,
+    //           setCurrentTab,
+    //           fieldsOpts,
+    //           specificFieldsLoaded,
+    //           isV3ProjectEditable,
+    //           mode,
+    //         }}
+    //         nextStep={
+    //           !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
+    //         }
+    //         errors={crossCuttingErrors}
+    //       />
+    //     ),
+    //     errors: formatErrors(crossCuttingErrors),
+    //   },
+    //   {
+    //     id: 'project-specific-info-section',
+    //     label: (
+    //       <div className="relative flex items-center justify-between gap-x-2">
+    //         <div className="leading-tight">Specific Information</div>
+    //         {!specificFieldsLoaded
+    //           ? LoadingTab
+    //           : !hasNoSpecificInfoFields &&
+    //             (hasSectionErrors(overviewErrors) ||
+    //               hasSectionErrors(substanceDetailsErrors) ||
+    //               formattedOdsOdpErrors.length > 0 ||
+    //               (mode === 'edit' &&
+    //                 shouldValidateRequiredFields &&
+    //                 odsOdpFields.length > 0 &&
+    //                 odsOdpData.length === 0)) &&
+    //             (isSpecificInfoTabDisabled ? (
+    //               DisabledAlert
+    //             ) : (
+    //               <SectionErrorIndicator errors={[]} />
+    //             ))}
+    //       </div>
+    //     ),
+    //     disabled: isSpecificInfoTabDisabled,
+    //     component: (
+    //       <ProjectSpecificInfoSection
+    //         {...{
+    //           PCRData,
+    //           setPCRData,
+    //           overviewFields,
+    //           substanceDetailsFields,
+    //           overviewErrors,
+    //           substanceDetailsErrors,
+    //           odsOdpErrors,
+    //           setCurrentTab,
+    //           disableV3Edit,
+    //         }}
+    //         nextStep={!isImpactTabDisabled ? 4 : 5}
+    //       />
+    //     ),
+    //     errors: [
+    //       ...formatErrors({
+    //         ...overviewErrors,
+    //         ...substanceDetailsErrors,
+    //       }),
+    //       ...(mode === 'edit' &&
+    //       shouldValidateRequiredFields &&
+    //       odsOdpFields.length > 0 &&
+    //       odsOdpData.length === 0
+    //         ? [
+    //             {
+    //               message: `At least a substance must be provided${errorMessageExtension}.`,
+    //             },
+    //           ]
+    //         : []),
+    //       ...formattedOdsOdpErrors,
+    //     ],
+    //   },
+    //   {
+    //     id: 'project-impact-section',
+    //     label: (
+    //       <div className="relative flex items-center justify-between gap-x-2">
+    //         <div className="leading-tight">Impact</div>
+    //         {!specificFieldsLoaded
+    //           ? LoadingTab
+    //           : impactFields.length >= 1 &&
+    //             hasSectionErrors(impactErrors) &&
+    //             (isImpactTabDisabled ? (
+    //               DisabledAlert
+    //             ) : (
+    //               <SectionErrorIndicator errors={[]} />
+    //             ))}
+    //       </div>
+    //     ),
+    //     disabled: isImpactTabDisabled,
+    //     component: (
+    //       <ProjectImpact
+    //         sectionFields={impactFields}
+    //         errors={impactErrors}
+    //         nextStep={!isSpecificInfoTabDisabled ? 3 : 2}
+    //         {...{ PCRData, setPCRData, setCurrentTab }}
+    //       />
+    //     ),
+    //     errors: formatErrors(impactErrors),
+    //   },
+    //   {
+    //     id: 'project-documentation-section',
+    //     label: (
+    //       <div className="relative flex items-center justify-between gap-x-2">
+    //         <div className="leading-tight">Attachments</div>
+    //         {mode !== 'add' && !loadedFiles ? (
+    //           LoadingTab
+    //         ) : fileErrors || hasNoFiles || missingFileTypeErrors.length > 0 ? (
+    //           areNextSectionsDisabled ? (
+    //             DisabledAlert
+    //           ) : (
+    //             <SectionErrorIndicator errors={[]} />
+    //           )
+    //         ) : null}
+    //       </div>
+    //     ),
+    //     disabled: areNextSectionsDisabled,
+    //     component: (
+    //       <ProjectDocumentation
+    //         {...{
+    //           projectFiles,
+    //           files,
+    //           mode,
+    //           project,
+    //           loadedFiles,
+    //           setCurrentTab,
+    //           filesMetaData,
+    //           setFilesMetaData,
+    //           disableV3Edit,
+    //         }}
+    //         prevStep={
+    //           !isImpactTabDisabled ? 4 : !isSpecificInfoTabDisabled ? 3 : 2
+    //         }
+    //         isNextButtonDisabled={false}
+    //         errors={missingFileTypeErrors}
+    //         {...rest}
+    //       />
+    //     ),
+    //     errors: [
+    //       ...(fileErrors ? [{ message: fileErrors }] : []),
+    //       ...(hasNoFiles
+    //         ? [
+    //             {
+    //               message: `At least one file must be attached to this version${errorMessageExtension}.`,
+    //             },
+    //           ]
+    //         : []),
+    //       ...missingFileTypeErrors,
+    //     ],
+    //   },
+  ]
+
+  return (
+    <>
+      <Tabs
+        aria-label="create-pcr"
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        value={currentTab}
+        onChange={(_, newValue) => {
+          setCurrentTab(newValue)
+        }}
+      >
+        {steps.map(({ id, label }) => (
+          <Tab key={id} aria-controls={id} {...{ id, label }} />
+        ))}
+      </Tabs>
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {steps
+          .filter((_, index) => index === currentTab)
+          .map(({ id, component, errors }) => {
+            return (
+              <span key={id}>
+                {/* //   {!!inlineMessage &&
+              //     (!inlineMessage.tabId || inlineMessage.tabId === id) && (
+              //       <ProjectsInlineMessage />
+              //     )}
+              //   {mode === 'edit' &&
+              //     project?.submission_status === 'Draft' &&
+              //     warnings.id === parseInt(project_id) &&
+              //     warnings.warnings.length > 0 && (
+              //       <CustomAlert
+              //         type="info"
+              //         alertClassName="mb-3"
+              //         content={
+              //           <Typography className="text-lg leading-5">
+              //             {warnings.warnings[0]}
+              //           </Typography>
+              //         }
+              //       />
+              //     )}
+              //   {errors && errors.length > 0 && <ErrorsList {...{ errors }} />} */}
+                {component}
+              </span>
+            )
+          })}
+      </div>
+    </>
+  )
+}
+
+export default PCRCreate

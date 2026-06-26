@@ -55,12 +55,14 @@ type NavigationButtonProps = {
   title: string
   href: string
   className?: string
+  disabled?: boolean
 }
 
 export const CreateButton = ({
   title,
   href,
   className,
+  disabled = false,
 }: NavigationButtonProps) => (
   <CustomLink
     className={cx(
@@ -68,6 +70,7 @@ export const CreateButton = ({
       className,
     )}
     href={href}
+    disabled={disabled}
     color="secondary"
     variant="contained"
     button

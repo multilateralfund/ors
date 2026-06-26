@@ -70,7 +70,7 @@ const getFieldDefaultProps = (
   }
 }
 
-const changeNestedField: FieldHandler = (
+export const changeNestedField: FieldHandler = (
   value,
   field,
   setState,
@@ -130,16 +130,13 @@ export const changeField: FieldHandler = (value, field, setState, section) => {
   setState(
     (prevData) => ({
       ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value,
-      },
+      [section]: { ...prevData[section], [field]: value },
     }),
     field,
   )
 }
 
-const getValue = <T,>(
+export const getValue = <T,>(
   fields: T,
   sectionIdentifier: keyof T,
   fieldName: string,

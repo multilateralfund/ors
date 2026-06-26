@@ -39,11 +39,7 @@ const EnterprisesFilters = ({
     FieldProps: { className: 'mb-0 w-[8.5rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
-      popupIndicator: {
-        sx: {
-          transform: 'none !important',
-        },
-      },
+      popupIndicator: { sx: { transform: 'none !important' } },
     },
   }
 
