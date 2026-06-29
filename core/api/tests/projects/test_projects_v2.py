@@ -14,6 +14,8 @@ from core.api.tests.factories import (
     BusinessPlanFactory,
     BPActivityFactory,
     ProjectOdsOdpFactory,
+    ProjectFactory,
+    ProjectTypeFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
     SubstanceFactory,
@@ -21,6 +23,7 @@ from core.api.tests.factories import (
 from core.api.tests.factories import FundingWindowFactory
 from core.models import BPActivity
 from core.models.project import Project, ProjectFile
+from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
 
 pytestmark = pytest.mark.django_db
@@ -188,6 +191,33 @@ def setup_project_create(
 
 class TestProjectV2List(BaseTest):
     url = reverse("project-v2-list")
+
+    def test_pcr_required_query_param_filters_excluded_projects(self, admin_user):
+        excluded_type = ProjectTypeFactory.create(code="INS")
+        included_type = ProjectTypeFactory.create(code="INV")
+        excluded_project = ProjectFactory.create(project_type=excluded_type)
+        included_project = ProjectFactory.create(project_type=included_type)
+
+        rule = ProjectPCRRequiredExclusionRule.objects.create(
+            name="Types not PCR required"
+        )
+        rule.types.set([excluded_type])
+
+        client = APIClient()
+        client.force_authenticate(user=admin_user)
+
+        unfiltered_response = client.get(self.url, {"pcr_required": "false"})
+        assert unfiltered_response.status_code == 200
+        assert {project["id"] for project in unfiltered_response.data} == {
+            excluded_project.id,
+            included_project.id,
+        }
+
+        filtered_response = client.get(self.url, {"pcr_required": "true"})
+        assert filtered_response.status_code == 200
+        assert {project["id"] for project in filtered_response.data} == {
+            included_project.id,
+        }
 
     def test_project_list_permissions(
         self,
