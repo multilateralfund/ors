@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0304_alter_decision_options_alter_meeting_options"),
+        ("core", "0305_projectspecificfields_obsolete"),
     ]
 
     operations = [
