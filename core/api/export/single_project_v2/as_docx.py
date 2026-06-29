@@ -422,11 +422,15 @@ class ProjectsV2ProjectExportDocx:
         return result
 
     def build_specific_information(self, data):
-        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
-            cluster=self.project.cluster,
-            type=self.project.project_type,
-            sector=self.project.sector,
-        ).first()
+        project_specific_fields_obj = (
+            ProjectSpecificFields.objects.with_obsolete()
+            .filter(
+                cluster=self.project.cluster,
+                type=self.project.project_type,
+                sector=self.project.sector,
+            )
+            .first()
+        )
 
         if project_specific_fields_obj:
             self._write_project_specific_fields(
@@ -464,11 +468,15 @@ class ProjectsV2ProjectExportDocx:
                 submission_status__name="Approved",
             )
             for project in related_projects:
-                project_specific_fields_obj = ProjectSpecificFields.objects.filter(
-                    cluster=project.cluster,
-                    type=project.project_type,
-                    sector=project.sector,
-                ).first()
+                project_specific_fields_obj = (
+                    ProjectSpecificFields.objects.with_obsolete()
+                    .filter(
+                        cluster=project.cluster,
+                        type=project.project_type,
+                        sector=project.sector,
+                    )
+                    .first()
+                )
 
                 fields = self._get_fields_for_section(
                     "Impact",

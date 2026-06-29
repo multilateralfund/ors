@@ -1,9 +1,18 @@
+import importlib
+import json
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
+from django.apps import apps
+from core.import_data_v2.scripts.import_cluster_type_sector_links import (
+    import_cluster_type_sector_links,
+)
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
     ProjectClusterFactory,
+    ProjectOdsOdpFactory,
     ProjectSpecificFieldsFactory,
     MeetingFactory,
     ProjectFactory,
@@ -14,11 +23,40 @@ from core.api.tests.factories import (
     RbmMeasureFactory,
     SubstanceFactory,
 )
-from core.models.project_metadata import ProjectSector, ProjectSubSector
+from core.models.project_metadata import (
+    ProjectSector,
+    ProjectSpecificFields,
+    ProjectSubSector,
+)
 
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221
+
+project_specific_fields_obsolete = importlib.import_module(
+    "core.migrations.0305_projectspecificfields_obsolete"
+)
+
+
+def write_cluster_type_sector_import_file(tmp_path, cluster, project_type, sector):
+    file_path = tmp_path / "ClusterTypeSectorLinks.json"
+    file_path.write_text(
+        json.dumps(
+            [
+                {
+                    "cluster": cluster.name,
+                    "types": [
+                        {
+                            "type": project_type.name,
+                            "sectors": [sector.name],
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf8",
+    )
+    return file_path
 
 
 class TestProjectsStatus(BaseTest):
@@ -69,6 +107,33 @@ class TestProjectSectorList(BaseTest):
             "subsectors": [],
             "obsolete": sector.obsolete,
         }
+
+    def test_project_sector_list_excludes_obsolete_project_specific_fields_mapping(
+        self, viewer_user
+    ):
+        cluster = ProjectClusterFactory.create()
+        project_type = ProjectTypeFactory.create()
+        visible_sector = ProjectSectorFactory.create(sort_order=1)
+        obsolete_mapping_sector = ProjectSectorFactory.create(sort_order=2)
+        ProjectSpecificFieldsFactory.create(
+            cluster=cluster,
+            type=project_type,
+            sector=visible_sector,
+        )
+        ProjectSpecificFieldsFactory.create(
+            cluster=cluster,
+            type=project_type,
+            sector=obsolete_mapping_sector,
+            obsolete=True,
+        )
+
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(
+            self.url, {"cluster_id": cluster.id, "type_id": project_type.id}
+        )
+
+        assert response.status_code == 200
+        assert [sector["id"] for sector in response.data] == [visible_sector.id]
 
 
 @pytest.fixture(name="_setup_sector_create")
@@ -263,6 +328,33 @@ class TestProjectType(BaseTest):
             "obsolete": project_type.obsolete,
         }
 
+    def test_project_type_list_excludes_obsolete_project_specific_fields_mapping(
+        self, viewer_user
+    ):
+        cluster = ProjectClusterFactory.create()
+        visible_type = ProjectTypeFactory.create(sort_order=1)
+        obsolete_mapping_type = ProjectTypeFactory.create(sort_order=2)
+        sector = ProjectSectorFactory.create()
+        ProjectSpecificFieldsFactory.create(
+            cluster=cluster,
+            type=visible_type,
+            sector=sector,
+        )
+        ProjectSpecificFieldsFactory.create(
+            cluster=cluster,
+            type=obsolete_mapping_type,
+            sector=sector,
+            obsolete=True,
+        )
+
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(self.url, {"cluster_id": cluster.id})
+
+        assert response.status_code == 200
+        assert [project_type["id"] for project_type in response.data] == [
+            visible_type.id
+        ]
+
 
 @pytest.fixture(name="_setup_project_meeting")
 def setup_project_meeting(country_ro, agency, project_type, project_status, subsector):
@@ -318,6 +410,33 @@ class TestProjectCluster(BaseTest):
         assert response.data[0]["name"] == project_cluster_kpp.name
         assert response.data[1]["name"] == project_cluster_kip.name
         assert response.data[1]["code"] == project_cluster_kip.code
+
+    def test_project_cluster_list_excludes_obsolete_project_specific_fields_mapping(
+        self, viewer_user
+    ):
+        visible_cluster = ProjectClusterFactory.create(sort_order=1)
+        obsolete_mapping_cluster = ProjectClusterFactory.create(sort_order=2)
+        project_type = ProjectTypeFactory.create()
+        sector = ProjectSectorFactory.create()
+        ProjectSpecificFieldsFactory.create(
+            cluster=visible_cluster,
+            type=project_type,
+            sector=sector,
+        )
+        ProjectSpecificFieldsFactory.create(
+            cluster=obsolete_mapping_cluster,
+            type=project_type,
+            sector=sector,
+            obsolete=True,
+        )
+
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(
+            self.url, {"included_in_type_sector_combinations": "true"}
+        )
+
+        assert response.status_code == 200
+        assert [cluster["id"] for cluster in response.data] == [visible_cluster.id]
 
 
 @pytest.fixture(name="_setup_project_specific_fields")
@@ -400,6 +519,21 @@ class TestProjectFields(BaseTest):
 
 class TestProjectSpecificFields(BaseTest):
 
+    def test_project_specific_fields_obsolete_defaults_to_false(self):
+        project_specific_fields = ProjectSpecificFieldsFactory.create()
+
+        assert project_specific_fields.obsolete is False
+
+    def test_project_specific_fields_objects_excludes_obsolete_by_default(self):
+        visible_mapping = ProjectSpecificFieldsFactory.create()
+        obsolete_mapping = ProjectSpecificFieldsFactory.create(obsolete=True)
+
+        assert list(ProjectSpecificFields.objects.all()) == [visible_mapping]
+        assert set(ProjectSpecificFields.objects.with_obsolete()) == {
+            visible_mapping,
+            obsolete_mapping,
+        }
+
     def test_without_login(self, _setup_project_specific_fields):
         cluster1, project_type1, sector1, _, _, _ = _setup_project_specific_fields
         url = reverse(
@@ -452,6 +586,238 @@ class TestProjectSpecificFields(BaseTest):
         assert fields[1]["data_type"] == field2.data_type
         assert fields[1]["section"] == field2.section
         assert fields[1]["sort_order"] == field2.sort_order
+
+    def test_project_specific_fields_list_includes_obsolete_mapping_for_exact_render(
+        self, viewer_user
+    ):
+        cluster = ProjectClusterFactory.create()
+        project_type = ProjectTypeFactory.create()
+        sector = ProjectSectorFactory.create()
+        project = ProjectFactory.create(
+            cluster=cluster,
+            project_type=project_type,
+            sector=sector,
+        )
+        obsolete_mapping = ProjectSpecificFieldsFactory.create(
+            cluster=cluster,
+            type=project_type,
+            sector=sector,
+            obsolete=True,
+        )
+        ods_field = ProjectFieldFactory.create(
+            import_name="ods_display_name",
+            label="Substance - baseline technology",
+            read_field_name="ods_display_name",
+            write_field_name="ods_display_name",
+            table="ods_odp",
+            data_type="text",
+            section="Substance Details",
+            sort_order=1,
+        )
+        group_field = ProjectFieldFactory.create(
+            import_name="group",
+            label="Annex group of substances",
+            read_field_name="group",
+            write_field_name="group",
+            table="project",
+            data_type="drop_down",
+            section="Header",
+            sort_order=2,
+        )
+        obsolete_mapping.fields.add(ods_field)
+
+        self.client.force_authenticate(user=viewer_user)
+        url = reverse(
+            "project-specific-fields",
+            kwargs={
+                "cluster_id": cluster.id,
+                "type_id": project_type.id,
+                "sector_id": sector.id,
+            },
+        )
+        response = self.client.get(url, {"project_id": project.id})
+
+        assert response.status_code == 200
+        field_names = {field["write_field_name"] for field in response.data["fields"]}
+        assert field_names == {"ods_display_name"}
+        assert group_field.write_field_name not in field_names
+
+    def test_project_specific_fields_list_excludes_obsolete_mapping_without_project(
+        self, viewer_user
+    ):
+        obsolete_mapping = ProjectSpecificFieldsFactory.create(obsolete=True)
+
+        self.client.force_authenticate(user=viewer_user)
+        url = reverse(
+            "project-specific-fields",
+            kwargs={
+                "cluster_id": obsolete_mapping.cluster_id,
+                "type_id": obsolete_mapping.type_id,
+                "sector_id": obsolete_mapping.sector_id,
+            },
+        )
+        response = self.client.get(url)
+
+        assert response.status_code == 404
+
+    def test_project_cluster_type_sector_association_excludes_obsolete_mapping(
+        self, viewer_user
+    ):
+        visible_mapping = ProjectSpecificFieldsFactory.create()
+        obsolete_mapping = ProjectSpecificFieldsFactory.create(obsolete=True)
+
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(reverse("project-cluster-type-sector-association"))
+
+        assert response.status_code == 200
+        cluster_ids = {cluster["cluster_id"] for cluster in response.data}
+        assert visible_mapping.cluster_id in cluster_ids
+        assert obsolete_mapping.cluster_id not in cluster_ids
+
+    def test_import_cluster_type_sector_links_creates_active_mapping(self, tmp_path):
+        cluster = ProjectClusterFactory.create()
+        project_type = ProjectTypeFactory.create()
+        sector = ProjectSectorFactory.create()
+        import_file = write_cluster_type_sector_import_file(
+            tmp_path, cluster, project_type, sector
+        )
+
+        import_cluster_type_sector_links(import_file)
+
+        mapping = ProjectSpecificFields.objects.get(
+            cluster=cluster,
+            type=project_type,
+            sector=sector,
+        )
+        assert mapping.obsolete is False
+
+    def test_import_cluster_type_sector_links_keeps_existing_active_mapping(
+        self, tmp_path
+    ):
+        mapping = ProjectSpecificFieldsFactory.create()
+        import_file = write_cluster_type_sector_import_file(
+            tmp_path, mapping.cluster, mapping.type, mapping.sector
+        )
+
+        import_cluster_type_sector_links(import_file)
+
+        assert (
+            ProjectSpecificFields.objects.with_obsolete()
+            .filter(
+                cluster=mapping.cluster,
+                type=mapping.type,
+                sector=mapping.sector,
+            )
+            .count()
+            == 1
+        )
+        mapping.refresh_from_db()
+        assert mapping.obsolete is False
+
+    def test_import_cluster_type_sector_links_reactivates_obsolete_mapping(
+        self, tmp_path
+    ):
+        mapping = ProjectSpecificFieldsFactory.create(obsolete=True)
+        import_file = write_cluster_type_sector_import_file(
+            tmp_path, mapping.cluster, mapping.type, mapping.sector
+        )
+
+        with patch(
+            "core.import_data_v2.scripts.import_cluster_type_sector_links.logger.warning"
+        ) as warning:
+            import_cluster_type_sector_links(import_file)
+
+        mapping.refresh_from_db()
+        assert mapping.obsolete is False
+        assert ProjectSpecificFields.objects.get(
+            cluster=mapping.cluster,
+            type=mapping.type,
+            sector=mapping.sector,
+        )
+        assert warning.call_count == 1
+        assert (
+            "Reactivating obsolete project-specific fields mapping"
+            in warning.call_args.args[0]
+        )
+
+    def test_obsolete_project_specific_fields_migration_adds_only_ods_combinations(
+        self, project_approved_status
+    ):
+        generic_field_names = (
+            project_specific_fields_obsolete.GENERIC_SUBSTANCE_FIELD_NAMES
+        )
+        for field_name in generic_field_names:
+            ProjectFieldFactory.create(
+                import_name=field_name,
+                label=field_name,
+                read_field_name=field_name,
+                write_field_name=field_name,
+                table="ods_odp",
+                data_type="text",
+                section="Substance Details",
+            )
+        project_with_ods = ProjectFactory.create(
+            submission_status=project_approved_status,
+            cluster=ProjectClusterFactory.create(),
+            project_type=ProjectTypeFactory.create(),
+            sector=ProjectSectorFactory.create(),
+        )
+        ProjectOdsOdpFactory.create(project=project_with_ods)
+        project_without_ods = ProjectFactory.create(
+            submission_status=project_approved_status,
+            cluster=ProjectClusterFactory.create(),
+            project_type=ProjectTypeFactory.create(),
+            sector=ProjectSectorFactory.create(),
+        )
+        project_with_existing_obsolete_mapping = ProjectFactory.create(
+            submission_status=project_approved_status,
+            cluster=ProjectClusterFactory.create(),
+            project_type=ProjectTypeFactory.create(),
+            sector=ProjectSectorFactory.create(),
+        )
+        ProjectOdsOdpFactory.create(project=project_with_existing_obsolete_mapping)
+        existing_obsolete_mapping = ProjectSpecificFieldsFactory.create(
+            cluster=project_with_existing_obsolete_mapping.cluster,
+            type=project_with_existing_obsolete_mapping.project_type,
+            sector=project_with_existing_obsolete_mapping.sector,
+            obsolete=True,
+        )
+
+        project_specific_fields_obsolete.create_obsolete_project_specific_fields(
+            apps, None
+        )
+
+        obsolete_mapping = ProjectSpecificFields.objects.with_obsolete().get(
+            cluster=project_with_ods.cluster,
+            type=project_with_ods.project_type,
+            sector=project_with_ods.sector,
+        )
+        assert obsolete_mapping.obsolete is True
+        assert set(
+            obsolete_mapping.fields.values_list("write_field_name", flat=True)
+        ) == set(generic_field_names)
+        assert not ProjectSpecificFields.objects.filter(
+            cluster=project_without_ods.cluster,
+            type=project_without_ods.project_type,
+            sector=project_without_ods.sector,
+        ).exists()
+        assert not ProjectSpecificFields.objects.filter(
+            cluster=project_with_ods.cluster,
+            type=project_with_ods.project_type,
+            sector=project_with_ods.sector,
+        ).exists()
+        assert (
+            ProjectSpecificFields.objects.with_obsolete()
+            .filter(
+                cluster=project_with_existing_obsolete_mapping.cluster,
+                type=project_with_existing_obsolete_mapping.project_type,
+                sector=project_with_existing_obsolete_mapping.sector,
+            )
+            .count()
+            == 1
+        )
+        existing_obsolete_mapping.refresh_from_db()
+        assert not existing_obsolete_mapping.fields.exists()
 
 
 @pytest.fixture(name="_setup_rbm_measures")

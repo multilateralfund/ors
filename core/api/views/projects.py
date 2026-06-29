@@ -427,7 +427,13 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
             else:
                 include_actuals = True
 
-        queryset = ProjectSpecificFields.objects.select_related(
+        project_specific_fields_manager = ProjectSpecificFields.objects
+        if project_id:
+            project_specific_fields_manager = (
+                ProjectSpecificFields.objects.with_obsolete()
+            )
+
+        queryset = project_specific_fields_manager.select_related(
             "cluster", "type", "sector"
         ).prefetch_related(
             models.Prefetch(

@@ -53,8 +53,31 @@ def import_cluster_type_sector_links(file_path):
                         f"⚠️ {sector_name} sector not found => {cluster_json['cluster']} not imported"
                     )
                     continue
-                ProjectSpecificFields.objects.update_or_create(
-                    cluster=cluster,
-                    type=type_obj,
-                    sector=sector,
+                project_specific_fields = (
+                    ProjectSpecificFields.objects.with_obsolete()
+                    .filter(
+                        cluster=cluster,
+                        type=type_obj,
+                        sector=sector,
+                    )
+                    .first()
                 )
+                if project_specific_fields is None:
+                    ProjectSpecificFields.objects.create(
+                        cluster=cluster,
+                        type=type_obj,
+                        sector=sector,
+                    )
+                    continue
+
+                if project_specific_fields.obsolete:
+                    logger.warning(
+                        "Reactivating obsolete project-specific fields mapping "
+                        "from official cluster/type/sector import: "
+                        "%s / %s / %s",
+                        cluster.name,
+                        type_obj.name,
+                        sector.name,
+                    )
+                    project_specific_fields.obsolete = False
+                    project_specific_fields.save(update_fields=["obsolete"])
