@@ -203,16 +203,17 @@ class TestProjectV2List(BaseTest):
         )
         rule.types.set([excluded_type])
 
-        self.client.force_authenticate(user=admin_user)
+        client = APIClient()
+        client.force_authenticate(user=admin_user)
 
-        unfiltered_response = self.client.get(self.url, {"pcr_required": "false"})
+        unfiltered_response = client.get(self.url, {"pcr_required": "false"})
         assert unfiltered_response.status_code == 200
         assert {project["id"] for project in unfiltered_response.data} == {
             excluded_project.id,
             included_project.id,
         }
 
-        filtered_response = self.client.get(self.url, {"pcr_required": "true"})
+        filtered_response = client.get(self.url, {"pcr_required": "true"})
         assert filtered_response.status_code == 200
         assert {project["id"] for project in filtered_response.data} == {
             included_project.id,
