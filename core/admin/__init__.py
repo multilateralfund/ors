@@ -8,7 +8,7 @@ from .country_programme import *
 from .country_programme_archive import *
 from .enterprise import *
 from .group import *
-from .project_complition_report import *
+from .project_completion_report import *
 from .project import *
 from .project_pcr_exclusion import *
 from .project_metadata import *

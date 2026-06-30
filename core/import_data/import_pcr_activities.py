@@ -11,7 +11,7 @@ from core.import_data.utils import (
 )
 
 from core.models.project import MetaProject
-from core.models.project_complition_report import PCRActivity, PCRSector
+from core.models.project_completion_report import OLD_PCRActivity, OLD_PCRSector
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def import_activity_sectors(file_path):
             "name": sector_json["Typeofactivity"],
             "sector_type": sector_json["Type"],
         }
-        sector, _ = PCRSector.objects.get_or_create(**sector_data)
+        sector, _ = OLD_PCRSector.objects.get_or_create(**sector_data)
         sectors_dict[sector_json["Id"]] = sector
 
     return sectors_dict
@@ -109,9 +109,9 @@ def parse_file(file_path, sectors_dict):
             "source_file": file_path,
         }
 
-        activities.append(PCRActivity(**activity_data))
+        activities.append(OLD_PCRActivity(**activity_data))
 
-    PCRActivity.objects.bulk_create(activities, batch_size=1000)
+    OLD_PCRActivity.objects.bulk_create(activities, batch_size=1000)
 
 
 @transaction.atomic
@@ -124,6 +124,6 @@ def import_pcr_activities():
         sectors_dict = import_activity_sectors(file_path)
 
         file_path = db_dir_path / database_name / "PCRActivity.json"
-        delete_old_data(PCRActivity, file_path)
+        delete_old_data(OLD_PCRActivity, file_path)
         parse_file(file_path, sectors_dict)
         logger.info(f"✔ pcr activities from {database_name} imported")
