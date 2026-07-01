@@ -10,6 +10,7 @@ from .enterprise import *
 from .group import *
 from .project_complition_report import *
 from .project import *
+from .project_pcr_exclusion import *
 from .project_metadata import *
 from .replenishment import *
 from .substance import *

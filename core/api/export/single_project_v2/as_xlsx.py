@@ -138,11 +138,15 @@ class ProjectsV2ProjectExport:
         return result
 
     def build_specific_information(self, data):
-        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
-            cluster=self.project.cluster,
-            type=self.project.project_type,
-            sector=self.project.sector,
-        ).first()
+        project_specific_fields_obj = (
+            ProjectSpecificFields.objects.with_obsolete()
+            .filter(
+                cluster=self.project.cluster,
+                type=self.project.project_type,
+                sector=self.project.sector,
+            )
+            .first()
+        )
 
         if project_specific_fields_obj:
             self._write_project_specific_fields(

@@ -32,7 +32,7 @@ const makeInternalNavItem = (
   pathname: string,
   props: {
     label: string
-    menu?: { label: string; url: string }[]
+    menu?: { label: string; url: string; external?: boolean }[]
     url: string
   },
 ) => {
@@ -47,7 +47,7 @@ const makeInternalNavItem = (
   const processedMenu = props.menu?.map((menuItem) => ({
     ...menuItem,
     current: !!matchPath(`${menuItem.url}/*`, pathname || ''),
-    internal,
+    internal: !menuItem.external,
   }))
 
   return {
@@ -160,6 +160,7 @@ const useInternalNavSectionsIaBaPortal = () => {
           {
             label: 'CNTRB internal dashboard',
             url: 'https://app.powerbi.com/groups/4a9130ea-fe2e-4538-845a-65af312b9997/reports/8f88d02f-e3d0-4cc4-8deb-ceab660d22b3/b4d219601eca808cae7d?experience=power-bi',
+            external: true,
           },
         ],
         url: '/projects-listing/listing',
@@ -451,7 +452,7 @@ const DesktopHeaderNavigation = ({
                                       if (hasUnsavedChanges) {
                                         setIsCancelModalOpen(true)
                                         setCrtUrl(subMenuItem.url)
-                                      } else {
+                                      } else if (subMenuItem.internal) {
                                         setLocation(subMenuItem.url)
                                       }
                                     }}
@@ -677,7 +678,9 @@ const MobileHeaderNavigation = ({
                                                 if (hasUnsavedChanges) {
                                                   setIsCancelModalOpen(true)
                                                   setCrtUrl(subMenuItem.url)
-                                                } else {
+                                                } else if (
+                                                  subMenuItem.internal
+                                                ) {
                                                   setLocation(subMenuItem.url)
                                                 }
                                               }}

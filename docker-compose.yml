@@ -27,6 +27,7 @@ services:
       - postgres
       - clamav
     restart: always
+    mem_limit: 2g
 
   nextjs:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
@@ -69,12 +70,14 @@ services:
       - redis
       - rabbitmq
     restart: always
+    mem_limit: 1g
 
   clamav:
     image: clamav/clamav:1.5.2
     volumes:
       - clam_db:/var/lib/clamav
     restart: always
+    mem_limit: 2g
 
 volumes:
   pg-data:

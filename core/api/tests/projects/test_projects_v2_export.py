@@ -142,6 +142,33 @@ def ensure_substance_details_docx_fields(project: Project):
     project_specific_fields.fields.add(substance_field)
 
 
+def ensure_obsolete_substance_details_docx_fields(project: Project):
+    (
+        project_specific_fields,
+        _,
+    ) = ProjectSpecificFields.objects.with_obsolete().get_or_create(
+        cluster=project.cluster,
+        type=project.project_type,
+        sector=project.sector,
+        defaults={"obsolete": True},
+    )
+    for field_name, label, data_type in [
+        ("ods_display_name", "Substance", "text"),
+        ("ods_replacement_text", "Replacement technologies", "text"),
+        ("odp", "Phase-out (ODP tonnes)", "decimal"),
+    ]:
+        field = ProjectField.objects.create(
+            import_name=field_name,
+            label=label,
+            read_field_name=field_name,
+            write_field_name=field_name,
+            table="ods_odp",
+            data_type=data_type,
+            section="Substance Details",
+        )
+        project_specific_fields.fields.add(field)
+
+
 def validate_single_project_export(project: Project, response: FileResponse):
     assert response.filename == f"Project {project.id}.xlsx", response.filename
 
@@ -1013,6 +1040,31 @@ class TestProjectV2ExportDOCX(BaseTest):
             "FK baseline substance",
             "FK replacement substance",
         ] in substance_columns
+
+    def test_export_project_docx_uses_obsolete_specific_fields_for_ods_rows(
+        self, project_with_linked_bp, agency_inputter_user
+    ):
+        ensure_obsolete_substance_details_docx_fields(project_with_linked_bp)
+        project_ods_odp = project_with_linked_bp.ods_odp.first()
+        project_ods_odp.ods_display_name = "CFC-11"
+        project_ods_odp.ods_replacement_text = "Cyclopentane"
+        project_ods_odp.odp = 200
+        project_ods_odp.save()
+
+        self.client.force_authenticate(user=agency_inputter_user)
+        response: FileResponse = self.client.get(
+            self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
+        )
+
+        content = response.getvalue()
+        validate_docx_export(
+            project_with_linked_bp, agency_inputter_user, response, content
+        )
+        substance_rows = get_docx_table_rows(content, "Baseline substance")
+        assert any(
+            row[0] == "CFC-11" and row[1] == "Cyclopentane" and row[-1] == "200.00"
+            for row in substance_rows
+        )
 
     def test_export_project_mya_uses_computed_values_only_when_stored_value_missing(
         self,

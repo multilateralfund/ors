@@ -25,6 +25,7 @@ from core.models.project_metadata import (
 )
 from core.models.substance import Substance
 from core.models.utils import SubstancesType, get_protected_storage
+from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
 # pylint: disable=C0302
 
@@ -336,6 +337,9 @@ class MetaProject(models.Model):
 
 
 class ProjectQuerySet(models.QuerySet["Project"]):
+    def pcr_required(self):
+        return self.exclude(ProjectPCRRequiredExclusionRule.objects.active_project_q())
+
     def with_effective_date(self):
         """
         Annotates each project version with its "effective date" — the date that

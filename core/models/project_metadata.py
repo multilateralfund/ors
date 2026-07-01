@@ -104,6 +104,27 @@ class ProjectField(models.Model):
         )
 
 
+class ProjectSpecificFieldsQuerySet(models.QuerySet):
+    """
+    Queryset for project-specific field mappings.
+    """
+
+    def active(self):
+        return self.filter(obsolete=False)
+
+
+class ProjectSpecificFieldsManager(
+    models.Manager.from_queryset(ProjectSpecificFieldsQuerySet)
+):
+    use_in_migrations = True
+
+    def get_queryset(self):
+        return super().get_queryset().active()
+
+    def with_obsolete(self):
+        return super().get_queryset()
+
+
 class ProjectSpecificFields(models.Model):
     """
     Model that for a combination of cluster, type and sector
@@ -132,6 +153,12 @@ class ProjectSpecificFields(models.Model):
         help_text="List of fields that should be filled in the project for this"
         " combination of cluster, type and sector",
     )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, this mapping is only used for rendering legacy project data.",
+    )
+
+    objects = ProjectSpecificFieldsManager()
 
     class Meta:
         verbose_name_plural = "Project specific fields"
