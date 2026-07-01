@@ -478,7 +478,7 @@ if ADFS_ENABLED:
             "last_name": "family_name",
             "email": "upn",
         },
-        "GROUPS_CLAIM": "groups",
+        "GROUPS_CLAIM": None,
         "MIRROR_GROUPS": False,
         "USERNAME_CLAIM": "upn",
         "TENANT_ID": env.str("TENANT_ID", default=""),
