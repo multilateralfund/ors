@@ -12,9 +12,9 @@ from core.import_data.utils import (
 )
 
 from core.models.project import MetaProject
-from core.models.project_complition_report import (
-    LearnedLessonCategory,
-    PCRLearnedLessons,
+from core.models.project_completion_report import (
+    OLD_LearnedLessonCategory,
+    OLD_PCRLearnedLessons,
 )
 
 
@@ -59,9 +59,9 @@ def parse_file(file_path, category_dict, agency_dict):
             "source_file": file_path,
         }
 
-        lessons.append(PCRLearnedLessons(**lesson_data))
+        lessons.append(OLD_PCRLearnedLessons(**lesson_data))
 
-    PCRLearnedLessons.objects.bulk_create(lessons, batch_size=1000)
+    OLD_PCRLearnedLessons.objects.bulk_create(lessons, batch_size=1000)
 
 
 @transaction.atomic
@@ -71,13 +71,13 @@ def import_pcr_learned_lessons():
         logger.info(f"⏳ importing pcr learned lessons from {database_name}")
         logger.info(f"importing pcr learned lessons categories from {database_name}")
         file_path = db_dir_path / database_name / "PCRTitle6.json"
-        category_dict = import_pcr_categories(file_path, LearnedLessonCategory)
+        category_dict = import_pcr_categories(file_path, OLD_LearnedLessonCategory)
 
         logger.info(f"parsing agencies file from {database_name}")
         file_path = db_dir_path / database_name / "Agencies.json"
         agency_dict = get_agency_dict(file_path)
 
         file_path = db_dir_path / database_name / "PCR6.json"
-        delete_old_data(PCRLearnedLessons, file_path)
+        delete_old_data(OLD_PCRLearnedLessons, file_path)
         parse_file(file_path, category_dict, agency_dict)
         logger.info(f"✔ pcr learned lessons from {database_name} imported")

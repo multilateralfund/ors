@@ -30,6 +30,13 @@ from core.api.views.users import AuthDebugView
 
 # from api import urls as apis_urls
 
+from core.admin.base import TaggedAdminSite
+
+admin_site = TaggedAdminSite(name="admin")
+admin.site.__class__ = TaggedAdminSite
+
+# from api import urls as apis_urls
+
 urlpatterns = [
     path("admin/explorer/", include("explorer.urls")),
     path("admin/", admin.site.urls),

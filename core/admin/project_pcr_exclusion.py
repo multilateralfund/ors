@@ -48,6 +48,7 @@ class ProjectPCRRequiredExclusionRuleAdminForm(forms.ModelForm):
 
 @admin.register(ProjectPCRRequiredExclusionRule)
 class ProjectPCRRequiredExclusionRuleAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
     form = ProjectPCRRequiredExclusionRuleAdminForm
     filter_horizontal = ["types", "clusters", "sectors"]
     list_display = [
