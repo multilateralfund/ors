@@ -91,6 +91,7 @@ import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
 
 import PCRListingPage from '@ors/app/pcr/page'
+import PCRCreatePage from '@ors/app/pcr/create/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -465,6 +466,9 @@ export default function App() {
               <PCRListingPage />
             </PCRDataProvider>
           </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/create">
+          <PCRCreatePage />
         </Route>
         <Route>
           <NotFoundPage />

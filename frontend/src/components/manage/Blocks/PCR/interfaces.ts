@@ -3,6 +3,8 @@ import { ProjectAssociationType } from '@ors/types/api_projects'
 
 export type PCRTableProps = {
   pcrProjects: ReturnType<typeof useGetPCRProjects>
+  projectId: number | null
+  setProjectId: (id: number | null) => void
   filters: Record<string, any>
 }
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import {
@@ -10,12 +10,16 @@ import { PCRTableProps } from '../interfaces'
 
 import { sumBy } from 'lodash'
 
-const PCRTable = ({ pcrProjects, filters }: PCRTableProps) => {
+const PCRTable = ({
+  pcrProjects,
+  projectId,
+  setProjectId,
+  filters,
+}: PCRTableProps) => {
   const gridRef = useRef(null)
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
-  const [projectId, setProjectId] = useState<number | null>(null)
   const { defaultColDef, columnDefs } = getColumnDefs(projectId, setProjectId)
 
   const paginationPageSize = getPaginationPageSize(count, 50)

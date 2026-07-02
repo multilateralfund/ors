@@ -2,8 +2,11 @@ import { useMemo, useRef, useState, useContext } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import {
+  CreateButton,
+  RedirectBackButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
@@ -17,6 +20,7 @@ const PCRListingWrapper = () => {
   const { countries, agencies, project_types, clusters, sectors, subsectors } =
     useContext(ProjectsDataContext)
 
+  const [projectId, setProjectId] = useState<number | null>(null)
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
@@ -63,6 +67,14 @@ const PCRListingWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Project Completion Reports</PageHeading>
           </div>
+          <div className="ml-auto mt-auto">
+            <CreateButton
+              title="Raise a PCR"
+              href={`/pcr/${projectId}/create`}
+              isDisabled={!projectId}
+              className="!mb-0"
+            />
+          </div>
         </div>
       </HeaderTitle>
       <div className="flex flex-col gap-6" key={key}>
@@ -70,7 +82,7 @@ const PCRListingWrapper = () => {
           <PCRFilters {...filtersProps} />
           <PCRFiltersSelectedOpts {...filtersProps} />
         </div>
-        <PCRTable {...{ pcrProjects, filters }} />
+        <PCRTable {...{ pcrProjects, projectId, setProjectId, filters }} />
       </div>
     </>
   )
