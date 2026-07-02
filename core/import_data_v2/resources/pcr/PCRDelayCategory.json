@@ -1,0 +1,83 @@
+[
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 1,
+        "fields": {
+            "name": "Implementing/cooperating agency",
+            "sort_order": 10.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 11,
+        "fields": {
+            "name": "Other (describe)",
+            "sort_order": 110.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 12,
+        "fields": {
+            "name": "Due to governmental delays (NOU structure changes, ministry/institution structure changes)",
+            "sort_order": 20.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 13,
+        "fields": {
+            "name": "Project design, preparation and implementation process (timeframe, beneficiaries’ profile (e.g., gender participation, beneficiaries’ skills, etc.)",
+            "sort_order": 30.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 14,
+        "fields": {
+            "name": "Procurement delay (Enterprise and supplier delays)",
+            "sort_order": 40.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 15,
+        "fields": {
+            "name": "Policy and regulatory framework (e.g., relevant legislation, etc.)",
+            "sort_order": 50.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 16,
+        "fields": {
+            "name": "Exogenous factors (beyond the control of the implementers, such as natural disasters, political instability, pandemics, etc.)",
+            "sort_order": 60.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 17,
+        "fields": {
+            "name": "Availability of alternative technology",
+            "sort_order": 70.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrdelaycategory",
+        "pk": 18,
+        "fields": {
+            "name": "Funding process (delays in funding following tranches, low disbursement of funds)",
+            "sort_order": 80.0,
+            "obsolete": false
+        }
+    }
+]

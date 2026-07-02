@@ -43,6 +43,7 @@ class MetaProjectAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "project",
+            "pcr",
             "old_pcractivity",
             "old_pcrlearnedlessons",
             "old_pcrdelayexplanation",
@@ -219,7 +220,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "project_history",
             "annual_reports",
             "transferred_projects",
-            "pcrproject",
+            "pcr_projects",
         ]
         return get_final_display_list(Project, exclude)
 

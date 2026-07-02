@@ -1,0 +1,164 @@
+[
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 20,
+        "fields": {
+            "name": "Other issues",
+            "sort_order": 400.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 21,
+        "fields": {
+            "name": "Regional context",
+            "sort_order": 10.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 22,
+        "fields": {
+            "name": "National policy framework",
+            "sort_order": 20.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 23,
+        "fields": {
+            "name": "Engagement of national stakeholders (civil societies, private sector, etc.)",
+            "sort_order": 30.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 24,
+        "fields": {
+            "name": "Technical aspects - Technical / equipment issues - Availability of alternative technologies",
+            "sort_order": 40.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 25,
+        "fields": {
+            "name": "Sectoral lessons",
+            "sort_order": 50.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 26,
+        "fields": {
+            "name": "Customs and imports",
+            "sort_order": 60.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 27,
+        "fields": {
+            "name": "Capacity-building and training",
+            "sort_order": 70.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 28,
+        "fields": {
+            "name": "Project design and impact on implementation",
+            "sort_order": 80.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 29,
+        "fields": {
+            "name": "Energy efficiency",
+            "sort_order": 90.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 30,
+        "fields": {
+            "name": "Climate benefits",
+            "sort_order": 100.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 31,
+        "fields": {
+            "name": "Disposal",
+            "sort_order": 110.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 32,
+        "fields": {
+            "name": "Recovery, recycling and reclamation",
+            "sort_order": 120.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 33,
+        "fields": {
+            "name": "Data availability and accuracy",
+            "sort_order": 130.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 34,
+        "fields": {
+            "name": "Sustainability of achievements (factors to ensure it)",
+            "sort_order": 140.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 35,
+        "fields": {
+            "name": "Exogenous factors (beyond the control of the implementers, such as natural disasters, political instability, pandemics, etc.)",
+            "sort_order": 150.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 36,
+        "fields": {
+            "name": "Contribution to sustainable development goals (SDGs)",
+            "sort_order": 160.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrlearnedlessoncategory",
+        "pk": 37,
+        "fields": {
+            "name": "Gender (as per the Multilateral Fund’s operational policy)",
+            "sort_order": 170.0,
+            "obsolete": false
+        }
+    }
+]

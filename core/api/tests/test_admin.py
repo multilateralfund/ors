@@ -40,11 +40,8 @@ class TestAdminListingResponse:
         for model, _ in admin.site._registry.items():
             app_label = model._meta.app_label
             model_name = model._meta.model_name
-            try:
-                url = reverse(f"admin:{app_label}_{model_name}_changelist")
-                urls.append(url)
-            except:
-                pass 
+            url = reverse(f"admin:{app_label}_{model_name}_changelist")
+            urls.append(url)
 
         for url in urls:
             response = self.client.get(url)

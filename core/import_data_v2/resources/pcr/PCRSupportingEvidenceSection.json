@@ -1,0 +1,65 @@
+[
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 1,
+        "fields": {
+            "code": "SEC1",
+            "name": "Section 1: PROJECT OVERVIEW",
+            "sort_order": 10.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 2,
+        "fields": {
+            "code": "SEC2",
+            "name": "Section 2: PROJECT RESULTS: OVERALL ASSESSMENT HIGHLIGHTS",
+            "sort_order": 20.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 3,
+        "fields": {
+            "code": "SEC3",
+            "name": "Section 3: CAUSES OF DELAYS AND ACTION TAKEN",
+            "sort_order": 30.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 4,
+        "fields": {
+            "code": "SEC4",
+            "name": "Section 4: LESSONS LEARNED",
+            "sort_order": 40.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 5,
+        "fields": {
+            "code": "SEC5",
+            "name": "Section 5: GENDER MAINSTREAMING",
+            "sort_order": 50.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 6,
+        "fields": {
+            "code": "SEC6",
+            "name": "Section 6: CONTRIBUTION TO THE SUSTAINABLE DEVELOPMENT GOALS (SDGs) (Optional).",
+            "sort_order": 60.0
+        }
+    },
+    {
+        "model": "core.pcrsupportingevidencesection",
+        "pk": 7,
+        "fields": {
+            "code": "SEC8",
+            "name": "Section 8: OTHER SUPPORTING EVIDENCE",
+            "sort_order": 80.0
+        }
+    }
+]
