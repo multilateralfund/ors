@@ -435,8 +435,7 @@ ADFS_ENABLED = env.bool("ADFS_ENABLED", default=False)
 if ADFS_ENABLED:
     REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
         "rest_framework.authentication.SessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "django_auth_adfs.rest_framework.AdfsAccessTokenAuthentication",
+        "core.auth.SmartTokenAuthentication",
     )
 
 AUTHENTICATION_BACKENDS = ("django.contrib.auth.backends.ModelBackend",)
