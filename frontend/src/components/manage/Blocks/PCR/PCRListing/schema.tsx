@@ -1,13 +1,14 @@
 import Link from '@ors/components/ui/Link/Link'
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
-import { tableColumns } from '@ors/components/manage/Blocks/ProjectsListing/constants'
+import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
 import { PCRUpdatedMetaproject } from '../interfaces'
+import { pcrFieldsMapping } from '../constants'
 
 import { MdExpandMore, MdExpandLess } from 'react-icons/md'
 import { Checkbox } from '@mui/material'
 import { FiEdit } from 'react-icons/fi'
-import { isNil } from 'lodash'
+import { isNil, map } from 'lodash'
 import cx from 'classnames'
 import {
   CellClassParams,
@@ -59,7 +60,7 @@ const getColumnDefs = (
 ) => ({
   columnDefs: [
     {
-      headerName: tableColumns.title,
+      headerName: pcrFieldsMapping.title,
       field: 'title',
       tooltipField: 'title',
       minWidth: 300,
@@ -103,63 +104,80 @@ const getColumnDefs = (
       ),
     },
     {
-      headerName: tableColumns.project_status,
+      headerName: pcrFieldsMapping.project_status,
       field: 'status',
       tooltipField: 'status',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
       minWidth: 120,
     },
     {
-      headerName: tableColumns.country,
+      headerName: pcrFieldsMapping.country,
       field: 'country',
       tooltipField: 'country',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
       minWidth: 150,
     },
     {
-      headerName: tableColumns.metacode,
+      headerName: pcrFieldsMapping.metacode,
       field: 'metacode',
       tooltipField: 'metacode',
     },
     {
-      headerName: tableColumns.code,
+      headerName: pcrFieldsMapping.code,
       field: 'code',
       tooltipField: 'code',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
       minWidth: 120,
     },
     {
-      headerName: tableColumns.cluster,
+      headerName: pcrFieldsMapping.cluster,
       field: 'cluster.code',
       tooltipField: 'cluster.name',
     },
     {
-      headerName: tableColumns.tranche,
+      headerName: pcrFieldsMapping.tranche,
       field: 'tranche',
       tooltipField: 'tranche',
       minWidth: 70,
     },
     {
-      headerName: tableColumns.agency,
-      field: 'agency',
-      tooltipField: 'agency',
+      headerName: pcrFieldsMapping.agency,
+      valueGetter: (params: ValueGetterParams) =>
+        params.data.isMetaproject
+          ? params.data.lead_agency
+          : params.data.agency,
+      tooltipValueGetter: (params: ITooltipParams) =>
+        params.data.isMetaproject
+          ? params.data.lead_agency
+          : params.data.agency,
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
       minWidth: 110,
     },
     {
-      headerName: tableColumns.type,
+      headerName: pcrFieldsMapping.project_type,
       field: 'project_type.code',
       tooltipField: 'project_type.name',
     },
     {
-      headerName: tableColumns.sector,
+      headerName: pcrFieldsMapping.sector,
       field: 'sector.code',
       tooltipField: 'sector.name',
     },
     {
-      headerName: tableColumns.total_fund,
+      headerName: pcrFieldsMapping.subsector,
+      valueGetter: (params: ValueGetterParams) =>
+        map(
+          params.data.subsectors,
+          (subsector) => subsector.code ?? subsector.name,
+        ).join(', '),
+      tooltipValueGetter: (params: ITooltipParams) =>
+        map(params.data.subsectors, 'name').join(', '),
+      sortable: false,
+      minWidth: 200,
+    },
+    {
+      headerName: pcrFieldsMapping.total_fund,
       field: 'total_fund',
-      minWidth: 120,
       valueGetter: (params: ValueGetterParams) =>
         !isNil(params.data.total_fund)
           ? '$' + formatNumberColumns(params, 'total_fund')
@@ -169,12 +187,12 @@ const getColumnDefs = (
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
         }),
+      minWidth: 120,
     },
 
     {
-      headerName: tableColumns.support_cost_psc,
+      headerName: pcrFieldsMapping.support_cost_psc,
       field: 'support_cost_psc',
-      minWidth: 120,
       valueGetter: (params: ValueGetterParams) =>
         !isNil(params.data.support_cost_psc)
           ? '$' + formatNumberColumns(params, 'support_cost_psc')
@@ -184,6 +202,17 @@ const getColumnDefs = (
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
         }),
+      minWidth: 150,
+    },
+    {
+      headerName: pcrFieldsMapping.submission_date,
+      field: 'submission_date',
+      tooltipField: 'submission_date',
+      valueGetter: (params: ValueGetterParams) =>
+        formatDate(params.data.submission_date),
+      tooltipValueGetter: (params: ITooltipParams) =>
+        formatDate(params.data.submission_date),
+      minWidth: 150,
     },
   ],
   defaultColDef: {
