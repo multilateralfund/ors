@@ -16,6 +16,8 @@ import {
 export type YearRangeWidgetProps = {
   Button?: React.FC<TriggerButtonProps>
   className?: string
+  buttonClassName?: string
+  labelClassName?: string
   label?: JSX.Element | string
   max: number
   min: number
@@ -168,6 +170,8 @@ const PopoverWindow = ({
 }
 
 export type TriggerButtonProps = {
+  buttonClassName?: string
+  labelClassName?: string
   label?: JSX.Element | string
   onClick: MouseEventHandler
   open?: boolean
@@ -175,10 +179,14 @@ export type TriggerButtonProps = {
 }
 
 function TriggerButton(props: TriggerButtonProps) {
-  const { label, onClick, open, uniqueId } = props
+  const { label, onClick, open, uniqueId, buttonClassName, labelClassName } =
+    props
   return (
     <button
-      className="flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]"
+      className={cx(
+        'flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]',
+        buttonClassName,
+      )}
       aria-describedby={open ? `range-widget-${uniqueId}` : undefined}
       onClick={onClick}
     >
@@ -186,7 +194,10 @@ function TriggerButton(props: TriggerButtonProps) {
         <IoEllipseOutline className="text-typography-secondary" size={24} />
         {label && (
           <Typography
-            className={cx('text-lg uppercase leading-6 text-primary')}
+            className={cx(
+              'text-lg uppercase leading-6 text-primary',
+              labelClassName,
+            )}
           >
             {label}
           </Typography>
@@ -199,6 +210,8 @@ function TriggerButton(props: TriggerButtonProps) {
 export default function YearRangeWidget({
   Button,
   className,
+  buttonClassName,
+  labelClassName,
   label,
   max,
   min,
@@ -229,6 +242,8 @@ export default function YearRangeWidget({
         open={open}
         uniqueId={uniqueId}
         onClick={openDateRange}
+        buttonClassName={buttonClassName}
+        labelClassName={labelClassName}
       />
       <Popover
         id={open ? `range-widget-${uniqueId}` : undefined}

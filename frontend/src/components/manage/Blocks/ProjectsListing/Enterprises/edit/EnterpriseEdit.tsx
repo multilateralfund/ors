@@ -47,10 +47,10 @@ const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         stage: enterprise.stage,
         revision_number: enterprise.revision_number,
         date_of_revision: enterprise.date_of_revision,
-        date_of_approval: enterprise.date_of_approval,
         meeting: enterprise.meeting,
-        excom_provision: enterprise.excom_provision,
+        date_of_approval: enterprise.date_of_approval,
         date_of_report: enterprise.date_of_report,
+        excom_provision: enterprise.excom_provision,
       },
       substance_fields: {
         chemical_phased_out: getFormattedDecimalValue(

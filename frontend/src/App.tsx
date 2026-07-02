@@ -67,6 +67,7 @@ import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/p
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
 import FundingWindowPage from '@ors/app/projects_listing/funding-window/page'
+
 import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
 import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
@@ -86,6 +87,11 @@ import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspa
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
+
+import PCRListingPage from '@ors/app/pcr/page'
+import PCRCreatePage from '@ors/app/pcr/create/page'
+import PCRPage from '@ors/app/pcr/[pcr_id]/page'
+import PCREditPage from '@ors/app/pcr/[pcr_id]/edit/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -452,6 +458,27 @@ export default function App() {
               <APRMLFSWorkspace />
             </Route>
           </APRProvider>
+        </Route>
+        {/* PCR routes */}
+        <Route path="/pcr">
+          <ProjectsDataProvider>
+            <PCRListingPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/create">
+          <ProjectsDataProvider>
+            <PCRCreatePage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id">
+          <ProjectsDataProvider>
+            <PCRPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/edit">
+          <ProjectsDataProvider>
+            <PCREditPage />
+          </ProjectsDataProvider>
         </Route>
         <Route>
           <NotFoundPage />
