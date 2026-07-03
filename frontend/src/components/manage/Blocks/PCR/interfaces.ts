@@ -21,6 +21,14 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
+export type PCRHeaderType = {
+  mode: string
+}
+
+export type PCRActionButtons = {
+  setIsLoading: (isLoading: boolean) => void
+}
+
 export type PCRStatus = {
   id: number
   code: string
