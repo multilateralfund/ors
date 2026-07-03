@@ -49,11 +49,7 @@ export default function EnterprisesWrapper() {
         <div className="flex flex-wrap justify-between gap-3">
           <div>
             <RedirectBackButton />
-            <PageHeading>
-              <span className="font-medium text-[#4D4D4D]">
-                Manage enterprises
-              </span>
-            </PageHeading>
+            <PageHeading>Manage enterprises</PageHeading>
           </div>
           {canEditEnterprise && (
             <div className="ml-auto mt-auto flex items-center">

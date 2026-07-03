@@ -32,16 +32,12 @@ const ProjectsFilters = ({
     FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
-      popupIndicator: {
-        sx: {
-          transform: 'none !important',
-        },
-      },
+      popupIndicator: { sx: { transform: 'none !important' } },
     },
   }
 
   return (
-    <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
+    <div className="grid h-full grid-cols-2 flex-wrap items-center gap-2 border-0 border-solid md:flex">
       <SearchFilter
         placeholder="Search by keyword..."
         {...{ form, filters, handleFilterChange, handleParamsChange }}
