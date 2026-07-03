@@ -18,7 +18,7 @@ const toDayjs = (value: string) => (value ? dayjs(value) : null)
 const toApiDate = (value: Dayjs | null) =>
   value?.isValid() ? value.format('YYYY-MM-DD') : ''
 const toDisplayDate = (value: string) =>
-  value ? dayjs(value).format('MM/DD/YYYY') : ''
+  value ? dayjs(value).format('D MMM YYYY') : ''
 
 type RangeCalendarHeaderProps = {
   currentMonth: Dayjs
@@ -57,12 +57,14 @@ function RangeCalendarHeader({
 }
 
 type RangeDayProps = PickersDayProps<Dayjs> & {
+  onPreviewDateChange?: (day: Dayjs) => void
   rangeEnd?: Dayjs | null
   rangeStart?: Dayjs | null
 }
 
 function RangeDay({
   day,
+  onPreviewDateChange,
   outsideCurrentMonth,
   rangeEnd,
   rangeStart,
@@ -106,6 +108,12 @@ function RangeDay({
         disableMargin
         outsideCurrentMonth={outsideCurrentMonth}
         selected={isStart || isEnd}
+        onMouseEnter={(event) => {
+          props.onMouseEnter?.(event, day)
+          if (!outsideCurrentMonth) {
+            onPreviewDateChange?.(day)
+          }
+        }}
       />
     </span>
   )
@@ -121,12 +129,21 @@ export default function DateRangePicker({
   const [selectionStep, setSelectionStep] = useState<'start' | 'end'>('start')
   const [draftStart, setDraftStart] = useState(start)
   const [draftEnd, setDraftEnd] = useState(end)
+  const [hoveredEnd, setHoveredEnd] = useState<Dayjs | null>(null)
   const [visibleMonth, setVisibleMonth] = useState(
     () => toDayjs(start)?.startOf('month') || dayjs().startOf('month'),
   )
 
   const draftStartValue = toDayjs(draftStart)
   const draftEndValue = toDayjs(draftEnd)
+  const previewEndValue =
+    selectionStep === 'end' &&
+    !draftEnd &&
+    draftStartValue &&
+    hoveredEnd &&
+    !hoveredEnd.isBefore(draftStartValue, 'day')
+      ? hoveredEnd
+      : draftEndValue
   const rightMonth = visibleMonth.add(1, 'month')
   const open = Boolean(anchorEl)
   const displayedStart = open ? draftStart : start
@@ -143,12 +160,28 @@ export default function DateRangePicker({
     setAnchorEl(event.currentTarget)
     setDraftStart(start)
     setDraftEnd(end)
+    setHoveredEnd(null)
     setVisibleMonth(toDayjs(start)?.startOf('month') || dayjs().startOf('month'))
     setSelectionStep('start')
   }
 
   const closeCalendar = () => {
     setAnchorEl(null)
+    setHoveredEnd(null)
+  }
+
+  const handlePreviewDateChange = (day: Dayjs) => {
+    if (
+      selectionStep !== 'end' ||
+      draftEnd ||
+      !draftStartValue ||
+      day.isBefore(draftStartValue, 'day')
+    ) {
+      setHoveredEnd(null)
+      return
+    }
+
+    setHoveredEnd(day)
   }
 
   const handleSelectDate = (value: Dayjs | null) => {
@@ -161,6 +194,7 @@ export default function DateRangePicker({
     if (selectionStep === 'start' || !draftStart) {
       setDraftStart(nextValue)
       setDraftEnd('')
+      setHoveredEnd(null)
       setSelectionStep('end')
       return
     }
@@ -168,11 +202,13 @@ export default function DateRangePicker({
     if (draftStartValue && value.isBefore(draftStartValue, 'day')) {
       setDraftStart(nextValue)
       setDraftEnd('')
+      setHoveredEnd(null)
       setSelectionStep('end')
       return
     }
 
     setDraftEnd(nextValue)
+    setHoveredEnd(null)
     onChange(draftStart, nextValue)
     closeCalendar()
   }
@@ -199,7 +235,11 @@ export default function DateRangePicker({
         }}
         onClose={closeCalendar}
       >
-        <div className="flex bg-white" style={{ fontFamily: 'var(--font-roboto-condensed)' }}>
+        <div
+          className="flex bg-white"
+          style={{ fontFamily: 'var(--font-roboto-condensed)' }}
+          onMouseLeave={() => setHoveredEnd(null)}
+        >
           <div className="border-0 border-r border-solid border-gray-200">
             <DateCalendar
               key={visibleMonth.format('YYYY-MM')}
@@ -214,7 +254,8 @@ export default function DateRangePicker({
               slotProps={{
                 calendarHeader: { side: 'left' } as any,
                 day: {
-                  rangeEnd: draftEndValue,
+                  onPreviewDateChange: handlePreviewDateChange,
+                  rangeEnd: previewEndValue,
                   rangeStart: draftStartValue,
                 } as any,
               }}
@@ -252,7 +293,8 @@ export default function DateRangePicker({
               slotProps={{
                 calendarHeader: { side: 'right' } as any,
                 day: {
-                  rangeEnd: draftEndValue,
+                  onPreviewDateChange: handlePreviewDateChange,
+                  rangeEnd: previewEndValue,
                   rangeStart: draftStartValue,
                 } as any,
               }}
