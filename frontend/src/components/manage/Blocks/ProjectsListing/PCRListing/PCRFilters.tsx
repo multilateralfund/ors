@@ -3,6 +3,7 @@ import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { SearchFilter } from '../HelperComponents'
 import { pcrTableColumns } from './constants'
 import { PCRFilterOptions, PCROption } from './types'
+import DateRangePicker from '@ors/components/ui/DateRangePicker/DateRangePicker'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
@@ -64,28 +65,17 @@ const PCRFilters = ({
     />
   )
 
-  const renderDateFilter = (
-    label: string,
-    filterKey: 'submission_date_after' | 'submission_date_before',
-  ) => (
-    <label className="flex h-9 w-full items-center gap-1 rounded border-2 border-solid border-primary bg-white px-2 text-base md:w-[10.5rem]">
-      <span className="whitespace-nowrap text-gray-500">{label}</span>
-      <input
-        className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none"
-        type="date"
-        value={filters[filterKey] || ''}
-        onChange={(event) => {
-          const value = event.target.value
-
-          handleFilterChange({ [filterKey]: value })
-          handleParamsChange({
-            [filterKey]: value,
-            offset: 0,
-          })
-        }}
-      />
-    </label>
-  )
+  const handleDateRangeChange = (start: string, end: string) => {
+    handleFilterChange({
+      submission_date_after: start,
+      submission_date_before: end,
+    })
+    handleParamsChange({
+      submission_date_after: start,
+      submission_date_before: end,
+      offset: 0,
+    })
+  }
 
   return (
     <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
@@ -147,8 +137,12 @@ const PCRFilters = ({
         'pcr_due',
         'mb-0 w-full md:w-[8rem] BPList',
       )}
-      {renderDateFilter('From', 'submission_date_after')}
-      {renderDateFilter('To', 'submission_date_before')}
+      <DateRangePicker
+        end={filters.submission_date_before || ''}
+        label="Submission date"
+        start={filters.submission_date_after || ''}
+        onChange={handleDateRangeChange}
+      />
     </div>
   )
 }
