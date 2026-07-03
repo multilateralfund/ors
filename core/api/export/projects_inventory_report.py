@@ -295,12 +295,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
         headers.extend(
             [
                 {
-                    "id": "apr_date_completion_revised",
+                    "id": "project_end_date",
                     "headerName": "Date Completion Revised",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
                     "method": lambda project, _: getattr(
-                        self._get_latest_apr(project), "date_planned_completion", None
+                        project.final_version.project_end_date
                     ),
                 },
                 {
