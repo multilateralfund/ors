@@ -310,3 +310,24 @@
     }
   }
 }
+
+.projects-table.pcr-listing.ag-table .ag-row {
+  &:has(.pcr-metaproject) {
+    border-bottom: none;
+
+    .ag-cell {
+      border-top: 2px solid #000;
+    }
+
+    span {
+      font-size: 12px;
+    }
+  }
+
+  &:has(.pcr-expanded-metaproject) {
+    .ag-cell {
+      background-color: #e6f4fb;
+      border-bottom: 2px solid #000;
+    }
+  }
+}

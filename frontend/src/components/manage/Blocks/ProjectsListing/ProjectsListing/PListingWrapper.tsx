@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useState } from 'react'
 
 import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
@@ -162,11 +160,7 @@ export default function PListingWrapper() {
         {view === 'list' ? (
           <PListingProjects
             key={transferId}
-            {...{
-              projectId,
-              setProjectData,
-              tableToolbar,
-            }}
+            {...{ projectId, setProjectData, tableToolbar }}
           />
         ) : (
           <PListingAssociation {...{ tableToolbar }} />

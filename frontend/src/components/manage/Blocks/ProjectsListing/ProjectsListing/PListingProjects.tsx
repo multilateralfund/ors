@@ -1,5 +1,3 @@
-'use client'
-
 import { useMemo, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
