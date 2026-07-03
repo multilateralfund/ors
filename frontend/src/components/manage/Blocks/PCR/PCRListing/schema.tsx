@@ -71,7 +71,7 @@ const getColumnDefs = (
           {props.data.isMetaproject ? (
             <>
               <div
-                className="h-4 w-6 cursor-pointer"
+                className="h-4 w-3 cursor-pointer"
                 onClick={() => expandMetaproject(props)}
               >
                 {props.data.isExpanded ? (
@@ -80,9 +80,6 @@ const getColumnDefs = (
                   <MdExpandMore size={16} />
                 )}
               </div>
-              <Link className="h-4 w-4" href={`/pcr/${props.data.id}/edit`}>
-                <FiEdit size={16} />
-              </Link>
               <Checkbox
                 checked={projectId == props.data.id}
                 onChange={(event) => {
@@ -92,14 +89,11 @@ const getColumnDefs = (
               />
             </>
           ) : (
-            <div className="w-20" />
+            <div className="w-12" />
           )}
-          <Link
-            className="ml-2 overflow-hidden truncate whitespace-nowrap"
-            href={`/pcr/${props.data.id}`}
-          >
-            <span>{props.value}</span>
-          </Link>
+          <span className="ml-2 overflow-hidden truncate whitespace-nowrap">
+            {props.value}
+          </span>
         </div>
       ),
     },
