@@ -112,6 +112,31 @@ def get_country_region_dict():
     return country_region_dict
 
 
+def get_country_regions() -> dict[str, dict[str, str]]:
+    """
+    Get a dictionary of country regions
+
+    @return: dictionary of country regions
+    """
+    countries = Country.objects.all().select_related("parent__parent")
+    result = {}
+
+    for country in countries:
+        region = None
+
+        if country.parent_id and country.parent.parent_id:
+            region = country.parent.parent
+        elif country.parent_id:
+            region = country.parent
+        else:
+            region = country
+
+        if region:
+            result[country.id] = {"id": region.id, "name": region.name}
+
+    return result
+
+
 def get_cp_report_from_request(request, cp_report_class):
     """
     Get country programme report from request query params
