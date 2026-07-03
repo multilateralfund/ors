@@ -860,6 +860,14 @@ def sync_apr_from_projects(year, dry_run=False):
         if project_key not in latest_version_map:
             latest_version_map[project_key] = p
 
+    # Batch-load the latest version approved in or before the *previous* year,
+    # used by pcr_due to detect a status change during the reporting year.
+    previous_version_map = {}
+    for p in latest_version_base_qs(year - 1).filter(project_id_filter):
+        project_key = p.latest_project_id or p.id
+        if project_key not in previous_version_map:
+            previous_version_map[project_key] = p
+
     # Batch-load all versions approved during `year`
     all_versions_map: dict = {}
     for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
@@ -883,6 +891,11 @@ def sync_apr_from_projects(year, dry_run=False):
         project_report.project.cached_versions_for_year = (
             [latest_version_map[project_key]]
             if project_key in latest_version_map
+            else []
+        )
+        project_report.project.cached_previous_versions_for_year = (
+            [previous_version_map[project_key]]
+            if project_key in previous_version_map
             else []
         )
         project_report.project.cached_all_versions_for_year = all_versions_map.get(
