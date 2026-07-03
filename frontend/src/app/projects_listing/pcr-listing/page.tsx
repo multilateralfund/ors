@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import PCRListingWrapper from '@ors/components/manage/Blocks/ProjectsListing/PCR/PCRListingWrapper'
+import PCRListingWrapper from '@ors/components/manage/Blocks/ProjectsListing/PCRListing/PCRListingWrapper'
 import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'

@@ -54,7 +54,7 @@ import ProjectsExportPage from '@ors/app/projects_listing/export/[export_type]/p
 import ProjectsApprovalSummaryPage from '@ors/app/projects_listing/approval-summary/page'
 import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects/page'
 import BlanketApprovalDetailsPage from '@ors/app/projects_listing/blanket-approval-details/page'
-import ProjectCompletionReportsPage from '@ors/app/projects_listing/pcr/page'
+import ProjectCompletionReportsPage from '@ors/app/projects_listing/pcr-listing/page'
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
@@ -335,7 +335,7 @@ export default function App() {
             <BlanketApprovalDetailsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/pcr">
+        <Route path="/projects-listing/pcr-listing">
           <ProjectsDataProvider>
             <ProjectCompletionReportsPage />
           </ProjectsDataProvider>
