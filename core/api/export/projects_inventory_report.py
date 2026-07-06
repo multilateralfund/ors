@@ -3,6 +3,7 @@ from functools import partial
 from itertools import pairwise
 from operator import attrgetter
 from typing import Iterable
+import datetime
 
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
@@ -21,6 +22,7 @@ from django.db.models.fields import DateTimeField
 from django.db.models.fields.related import ForeignKey
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.fields.reverse_related import ForeignObjectRel
+from django.utils import timezone
 
 from core.api.export.base import BaseWriter
 from core.api.export.projects_v2_dump import get_choice_value
@@ -37,6 +39,18 @@ from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
 
 MIN_PROJECT_VERSION = 3
+
+
+def tz_naive(value: datetime.datetime | datetime.date | None):
+
+    # Convert date to datetime at midnight if it's not already a datetime
+    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
+        value = datetime.datetime.combine(value, datetime.time.min)
+
+    if isinstance(value, datetime.datetime) and timezone.is_aware(value):
+        return timezone.localtime(value).replace(tzinfo=None)
+
+    return value
 
 
 def trf_or_adj(project: Project | None):
@@ -56,10 +70,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
-    METAPROJECT_FIELD_TITLES = {
-        "end_date": "MYA Completion Date",
-        "extended_date_of_completion": "Extended Date",
-    }
 
     def __init__(
         self,
@@ -264,21 +274,19 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=["end_date"],
-                title_overrides=self.METAPROJECT_FIELD_TITLES,
-                header_overrides={
-                    "end_date": {
-                        "cell_format": "MMM-YYYY",
-                    },
-                },
-            )
-        )
-
-        headers.extend(
             [
+                {
+                    "id": "mya_end_date",
+                    "headerName": "MYA Completion Date",
+                    "type": "date",
+                    "cell_format": "MMM-YYYY",
+                    "method": lambda project, _: (
+                        tz_naive(project.meta_project.end_date)
+                        if project.meta_project
+                        and project.meta_project.type == MetaProject.MetaProjectType.MYA
+                        else None
+                    ),
+                },
                 {
                     "id": "extended_date",
                     "headerName": "Extended date",
@@ -517,10 +525,19 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def _get_extended_date(project):
         meta_project = project.meta_project
 
-        mp_date = meta_project.end_date if meta_project else None
-        p_date = project.final_version.project_end_date
+        mp_date = tz_naive(meta_project.end_date if meta_project else None)
+        p_date = tz_naive(project.final_version.project_end_date)
 
-        if mp_date and mp_date > p_date:
+        if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
+            return p_date
+
+        if not mp_date:
+            return p_date
+
+        if not p_date:
+            return mp_date
+
+        if mp_date > p_date:
             return mp_date
 
         return p_date
