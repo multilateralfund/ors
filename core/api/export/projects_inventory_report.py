@@ -36,7 +36,6 @@ from core.models import ProjectOdsOdp
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
 
-
 MIN_PROJECT_VERSION = 3
 
 
@@ -279,17 +278,15 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=["extended_date_of_completion"],
-                title_overrides=self.METAPROJECT_FIELD_TITLES,
-                header_overrides={
-                    "extended_date_of_completion": {
-                        "cell_format": "MMM-YYYY",
-                    },
+            [
+                {
+                    "id": "extended_date",
+                    "headerName": "Extended date",
+                    "type": "date",
+                    "cell_format": "MMM-YYYY",
+                    "method": lambda project, _: self._get_extended_date(project),
                 },
-            )
+            ]
         )
 
         headers.extend(
@@ -299,9 +296,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "Date Completion Revised",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: getattr(
-                        project.final_version.project_end_date
-                    ),
+                    "method": lambda project, _: project.final_version.project_end_date,
                 },
                 {
                     "id": "apr_date_completed",
@@ -519,6 +514,18 @@ class ProjectsInventoryReportWriter(BaseWriter):
         super().__init__(sheet, headers)
 
     @staticmethod
+    def _get_extended_date(project):
+        meta_project = project.meta_project
+
+        mp_date = meta_project.end_date if meta_project else None
+        p_date = project.final_version.project_end_date
+
+        if mp_date and mp_date > p_date:
+            return mp_date
+
+        return p_date
+
+    @staticmethod
     def _get_latest_apr(project):
         aprs = getattr(project, "prefetched_endorsed_aprs", None)
         return next(iter(aprs), None) if aprs else None
@@ -652,11 +659,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": "project_category",
                 "headerName": "Category",
-                "method": lambda project, _: (
-                    {"Individual": "IND", "Multi-year agreement": "MYA"}.get(
-                        project.category, project.category
-                    )
-                ),
+                "method": lambda project, _: {
+                    "Individual": "IND",
+                    "Multi-year agreement": "MYA",
+                }.get(project.category, project.category),
             },
             {
                 "id": "agency",
@@ -1104,9 +1110,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         candidate_values = [p.interest or 0 for p in prev_versions]
         return sum(candidate_values)
 
-    def get_extended_date_of_completion(self, project):
-        return project.meta
-
     def _p_meeting_approved(self, project):
         if project is None:
             return None
@@ -1183,10 +1186,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"funds_adjustment_v{idx}",
                 "headerName": f"Fund Adjustments {idx}",
-                "method": lambda project, _: (
-                    self._p_fund_transferred(
-                        self.get_trf_or_adj_version(project, v_idx)
-                    )
+                "method": lambda project, _: self._p_fund_transferred(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
                 "type": "number",
                 "align": "right",
@@ -1195,8 +1196,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"psc_adjustment_v{idx}",
                 "headerName": f"Support Cost Adjustments {idx}",
-                "method": lambda project, _: (
-                    self._p_psc_transferred(self.get_trf_or_adj_version(project, v_idx))
+                "method": lambda project, _: self._p_psc_transferred(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
                 "type": "number",
                 "align": "right",
@@ -1205,10 +1206,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
-                "method": lambda project, _: (
-                    self._p_adjustment_meeting(
-                        self.get_trf_or_adj_version(project, v_idx)
-                    )
+                "method": lambda project, _: self._p_adjustment_meeting(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
             {
