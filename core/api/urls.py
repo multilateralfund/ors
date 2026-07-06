@@ -131,6 +131,7 @@ from core.api.views.projects_v2 import (
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
+from core.api.views.project_completion_report import PCRProjectViewSet
 from core.api.views.project_v2_files import (
     FileTypeView,
     ProjectFileV2ViewSet,
@@ -188,6 +189,11 @@ router.register(
     basename="compare-versions",
 )
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
+router.register(
+    "project-completion-reports",
+    PCRProjectViewSet,
+    basename="project-completion-report",
+)
 router.register(
     r"projects/v2/(?P<project_id>\d+)/project-files",
     ProjectFileV2ViewSet,
