@@ -3,7 +3,7 @@ import { useState } from 'react'
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
-import { PCRActionButtons } from '../interfaces'
+import { PCRActionButtons } from './interfaces'
 import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'

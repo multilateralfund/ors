@@ -26,9 +26,20 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   agency: 'Agency',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support costs',
+  type_of_activity: 'Type of activity',
+  planned_output: 'Planned output(s)',
+  actual_activity_output: 'Actual activity output(s)',
+  additional_remarks: 'Additional remarks, if applicable',
 }
 
 export const categoryOpts = [
   { id: 'MYA', name: 'MYA' },
   { id: 'IND', name: 'IND' },
 ]
+
+export const initialResultsAssessmentEntry = {
+  type_of_activity: '',
+  planned_output: '',
+  actual_activity_output: '',
+  additional_remarks: '',
+}

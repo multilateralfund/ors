@@ -1,8 +1,11 @@
 import { createContext } from 'react'
 
-import { PCRStatus } from '@ors/components/manage/Blocks/PCR/interfaces'
+import {
+  PCRFormData,
+  PCRStatus,
+} from '@ors/components/manage/Blocks/PCR/interfaces'
 
-interface PCRDataContextProps {
+type PCRDataContextProps = PCRFormData & {
   statuses: PCRStatus[]
 }
 
