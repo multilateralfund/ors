@@ -1821,3 +1821,15 @@ def mock_auto_submit_empty_agency_reports():
         "core.api.views.annual_project_report.auto_submit_empty_agency_reports.delay"
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def mock_cp_mail_tasks():
+    """
+    Automatically patch CP mail task dispatch for tests that do not assert mail calls,
+    so the suite does not require a live Celery result backend.
+    """
+    with patch("core.tasks.send_mail_comment_submit.delay"), patch(
+        "core.tasks.send_mail_report_create.delay"
+    ), patch("core.tasks.send_mail_report_update.delay"):
+        yield

@@ -35,8 +35,11 @@ from core.api.export.projects_v2_dump import get_value_m2m
 from core.models import MetaProject
 from core.models import Project
 from core.models import ProjectOdsOdp
+from core.models import Substance
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
+from core.models.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY
+from core.models.utils import SubstancesType
 
 MIN_PROJECT_VERSION = 3
 
@@ -79,6 +82,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         metaproject_fields=None,
     ):
         self.version_map = self.build_version_map(projects)
+        self.mya_type_revised_completion_dates = (
+            self.build_mya_type_revised_completion_dates(projects)
+        )
         self.all_versions: dict[int, list[Project]] = {}
         self.project_fields = (
             project_fields if project_fields is not None else self.get_project_fields()
@@ -175,15 +181,13 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(
-                self.project_fields,
-                include_names=[
-                    "substance_type",
-                ],
-                title_overrides={
-                    "substance_type": "Substance",
+            [
+                {
+                    "id": "substance_type",
+                    "headerName": "Substance",
+                    "method": lambda project, _: self._get_substance(project),
                 },
-            )
+            ]
         )
 
         headers.extend(
@@ -528,8 +532,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         final_project = project.final_version
         return final_project.date_comp_revised or final_project.project_end_date
 
-    @staticmethod
-    def _get_extended_date(project):
+    def _get_extended_date(self, project):
         meta_project = project.meta_project
 
         mp_date = tz_naive(meta_project.end_date if meta_project else None)
@@ -537,6 +540,12 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
             return p_date
+
+        mya_type_revised_date = self.mya_type_revised_completion_dates.get(
+            (project.meta_project_id, project.project_type_id)
+        )
+        if mya_type_revised_date:
+            return mya_type_revised_date
 
         if not mp_date:
             return p_date
@@ -548,6 +557,51 @@ class ProjectsInventoryReportWriter(BaseWriter):
             return mp_date
 
         return p_date
+
+    def _get_substance(self, project):
+        for ods_odp in project.ods_odp.all():
+            substance_type = self._substance_type_from_ods_odp(ods_odp)
+            if substance_type:
+                return substance_type
+
+        legacy_sector = project.sector_legacy
+        if not legacy_sector and project.legacy_code:
+            parts = project.legacy_code.split("/")
+            legacy_sector = parts[1] if len(parts) > 1 else None
+
+        return (
+            self._substance_type_from_legacy_sector(legacy_sector)
+            or project.substance_type
+        )
+
+    def _substance_type_from_ods_odp(self, ods_odp):
+        if ods_odp.ods_substance:
+            return self._substance_type_from_substance(ods_odp.ods_substance)
+        if ods_odp.ods_display_name:
+            substance = Substance.objects.find_by_name(ods_odp.ods_display_name)
+            return self._substance_type_from_substance(substance)
+        return None
+
+    @staticmethod
+    def _substance_type_from_substance(substance):
+        if not substance or not substance.group:
+            return None
+        category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(substance.group.group_id)
+        return ProjectsInventoryReportWriter._substance_type_from_category(category)
+
+    @staticmethod
+    def _substance_type_from_legacy_sector(legacy_sector):
+        if legacy_sector == "FUM":
+            return SubstancesType.METBR.value
+        if legacy_sector == "HAL":
+            return SubstancesType.HALON.value
+        return None
+
+    @staticmethod
+    def _substance_type_from_category(category):
+        if category == "MBR":
+            return SubstancesType.METBR.value
+        return category
 
     @staticmethod
     def _get_latest_apr(project):
@@ -572,6 +626,25 @@ class ProjectsInventoryReportWriter(BaseWriter):
             for archived_project in project.archive_projects.all():
                 version_map[(project.id, archived_project.version)] = archived_project
         return version_map
+
+    @staticmethod
+    def build_mya_type_revised_completion_dates(projects):
+        result = {}
+        for project in projects:
+            if (
+                project.category != Project.Category.MYA
+                or not project.meta_project_id
+                or not project.project_type_id
+                or not project.date_comp_revised
+            ):
+                continue
+
+            key = (project.meta_project_id, project.project_type_id)
+            current = result.get(key)
+            if current is None or project.date_comp_revised > current:
+                result[key] = project.date_comp_revised
+
+        return result
 
     def write(self, data):
         self.set_dimensions()
