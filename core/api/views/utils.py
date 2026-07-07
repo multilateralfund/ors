@@ -48,21 +48,6 @@ BPACTIVITY_ORDERING_FIELDS = [
     "is_multi_year",
 ]
 
-SUBSTANCE_GROUP_ID_TO_CATEGORY = {
-    "AI": "CFC",
-    "AII": "Halon",
-    "BI": "CFC",
-    "BII": "CTC",
-    "BIII": "TCA",
-    "CI": "HCFC",
-    "CII": "HBFC",
-    "CIII": "Halon",
-    "EI": "MBR",
-    "F": "HFC",
-    "uncontrolled": "Other",
-    "legacy": "Legacy",
-}
-
 
 def get_available_values(
     queryset: QuerySet,

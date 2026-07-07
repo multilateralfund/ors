@@ -2,6 +2,22 @@ from django.core.files.storage import storages
 from django.db import models
 
 
+SUBSTANCE_GROUP_ID_TO_CATEGORY = {
+    "AI": "CFC",
+    "AII": "Halon",
+    "BI": "CFC",
+    "BII": "CTC",
+    "BIII": "TCA",
+    "CI": "HCFC",
+    "CII": "HBFC",
+    "CIII": "Halon",
+    "EI": "MBR",
+    "F": "HFC",
+    "uncontrolled": "Other",
+    "legacy": "Legacy",
+}
+
+
 class SubstancesType(models.TextChoices):
     CFC = "CFC", "CFC"
     CFC_CTC = "CFC, CTC", "CFC, CTC"

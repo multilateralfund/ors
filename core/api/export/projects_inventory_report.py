@@ -3,6 +3,7 @@ from functools import partial
 from itertools import pairwise
 from operator import attrgetter
 from typing import Iterable
+import datetime
 
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.comments import Comment
@@ -21,6 +22,7 @@ from django.db.models.fields import DateTimeField
 from django.db.models.fields.related import ForeignKey
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.fields.reverse_related import ForeignObjectRel
+from django.utils import timezone
 
 from core.api.export.base import BaseWriter
 from core.api.export.projects_v2_dump import get_choice_value
@@ -33,11 +35,25 @@ from core.api.export.projects_v2_dump import get_value_m2m
 from core.models import MetaProject
 from core.models import Project
 from core.models import ProjectOdsOdp
+from core.models import Substance
 from core.models.project import OLD_FIELD_HELP_TEXT
 from core.models.project_metadata import ProjectField
-
+from core.models.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY
+from core.models.utils import SubstancesType
 
 MIN_PROJECT_VERSION = 3
+
+
+def tz_naive(value: datetime.datetime | datetime.date | None):
+
+    # Convert date to datetime at midnight if it's not already a datetime
+    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
+        value = datetime.datetime.combine(value, datetime.time.min)
+
+    if isinstance(value, datetime.datetime) and timezone.is_aware(value):
+        return timezone.localtime(value).replace(tzinfo=None)
+
+    return value
 
 
 def trf_or_adj(project: Project | None):
@@ -57,10 +73,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
     COLUMN_WIDTH = 20
     header_row_start_idx = 1
-    METAPROJECT_FIELD_TITLES = {
-        "end_date": "MYA Completion Date",
-        "extended_date_of_completion": "Extended Date",
-    }
 
     def __init__(
         self,
@@ -70,6 +82,9 @@ class ProjectsInventoryReportWriter(BaseWriter):
         metaproject_fields=None,
     ):
         self.version_map = self.build_version_map(projects)
+        self.mya_type_revised_completion_dates = (
+            self.build_mya_type_revised_completion_dates(projects)
+        )
         self.all_versions: dict[int, list[Project]] = {}
         self.project_fields = (
             project_fields if project_fields is not None else self.get_project_fields()
@@ -166,15 +181,13 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(
-                self.project_fields,
-                include_names=[
-                    "substance_type",
-                ],
-                title_overrides={
-                    "substance_type": "Substance",
+            [
+                {
+                    "id": "substance_type",
+                    "headerName": "Substance",
+                    "method": lambda project, _: self._get_substance(project),
                 },
-            )
+            ]
         )
 
         headers.extend(
@@ -265,42 +278,38 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         headers.extend(
-            self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=["end_date"],
-                title_overrides=self.METAPROJECT_FIELD_TITLES,
-                header_overrides={
-                    "end_date": {
-                        "cell_format": "MMM-YYYY",
-                    },
+            [
+                {
+                    "id": "mya_end_date",
+                    "headerName": "MYA Completion Date",
+                    "type": "date",
+                    "cell_format": "MMM-YYYY",
+                    "method": lambda project, _: (
+                        tz_naive(project.meta_project.end_date)
+                        if project.meta_project
+                        and project.meta_project.type == MetaProject.MetaProjectType.MYA
+                        else None
+                    ),
                 },
-            )
-        )
-
-        headers.extend(
-            self.build_headers(
-                self.metaproject_fields,
-                source="meta_project",
-                include_names=["extended_date_of_completion"],
-                title_overrides=self.METAPROJECT_FIELD_TITLES,
-                header_overrides={
-                    "extended_date_of_completion": {
-                        "cell_format": "MMM-YYYY",
-                    },
+                {
+                    "id": "extended_date",
+                    "headerName": "Extended date",
+                    "type": "date",
+                    "cell_format": "MMM-YYYY",
+                    "method": lambda project, _: self._get_extended_date(project),
                 },
-            )
+            ]
         )
 
         headers.extend(
             [
                 {
-                    "id": "apr_date_completion_revised",
+                    "id": "project_end_date",
                     "headerName": "Date Completion Revised",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: getattr(
-                        self._get_latest_apr(project), "date_planned_completion", None
+                    "method": lambda project, _: self._get_date_completion_revised(
+                        project
                     ),
                 },
                 {
@@ -519,6 +528,82 @@ class ProjectsInventoryReportWriter(BaseWriter):
         super().__init__(sheet, headers)
 
     @staticmethod
+    def _get_date_completion_revised(project):
+        final_project = project.final_version
+        return final_project.date_comp_revised or final_project.project_end_date
+
+    def _get_extended_date(self, project):
+        meta_project = project.meta_project
+
+        mp_date = tz_naive(meta_project.end_date if meta_project else None)
+        p_date = tz_naive(project.final_version.project_end_date)
+
+        if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
+            return p_date
+
+        mya_type_revised_date = self.mya_type_revised_completion_dates.get(
+            (project.meta_project_id, project.project_type_id)
+        )
+        if mya_type_revised_date:
+            return mya_type_revised_date
+
+        if not mp_date:
+            return p_date
+
+        if not p_date:
+            return mp_date
+
+        if mp_date > p_date:
+            return mp_date
+
+        return p_date
+
+    def _get_substance(self, project):
+        for ods_odp in project.ods_odp.all():
+            substance_type = self._substance_type_from_ods_odp(ods_odp)
+            if substance_type:
+                return substance_type
+
+        legacy_sector = project.sector_legacy
+        if not legacy_sector and project.legacy_code:
+            parts = project.legacy_code.split("/")
+            legacy_sector = parts[1] if len(parts) > 1 else None
+
+        return (
+            self._substance_type_from_legacy_sector(legacy_sector)
+            or project.substance_type
+        )
+
+    def _substance_type_from_ods_odp(self, ods_odp):
+        if ods_odp.ods_substance:
+            return self._substance_type_from_substance(ods_odp.ods_substance)
+        if ods_odp.ods_display_name:
+            substance = Substance.objects.find_by_name(ods_odp.ods_display_name)
+            return self._substance_type_from_substance(substance)
+        return None
+
+    @staticmethod
+    def _substance_type_from_substance(substance):
+        if not substance or not substance.group:
+            return None
+        category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(substance.group.group_id)
+        return ProjectsInventoryReportWriter._substance_type_from_category(category)
+
+    @staticmethod
+    def _substance_type_from_legacy_sector(legacy_sector):
+        if legacy_sector == "FUM":
+            return SubstancesType.METBR.value
+        if legacy_sector == "HAL":
+            return SubstancesType.HALON.value
+        return None
+
+    @staticmethod
+    def _substance_type_from_category(category):
+        if category == "MBR":
+            return SubstancesType.METBR.value
+        return category
+
+    @staticmethod
     def _get_latest_apr(project):
         aprs = getattr(project, "prefetched_endorsed_aprs", None)
         return next(iter(aprs), None) if aprs else None
@@ -541,6 +626,25 @@ class ProjectsInventoryReportWriter(BaseWriter):
             for archived_project in project.archive_projects.all():
                 version_map[(project.id, archived_project.version)] = archived_project
         return version_map
+
+    @staticmethod
+    def build_mya_type_revised_completion_dates(projects):
+        result = {}
+        for project in projects:
+            if (
+                project.category != Project.Category.MYA
+                or not project.meta_project_id
+                or not project.project_type_id
+                or not project.date_comp_revised
+            ):
+                continue
+
+            key = (project.meta_project_id, project.project_type_id)
+            current = result.get(key)
+            if current is None or project.date_comp_revised > current:
+                result[key] = project.date_comp_revised
+
+        return result
 
     def write(self, data):
         self.set_dimensions()
@@ -652,11 +756,10 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": "project_category",
                 "headerName": "Category",
-                "method": lambda project, _: (
-                    {"Individual": "IND", "Multi-year agreement": "MYA"}.get(
-                        project.category, project.category
-                    )
-                ),
+                "method": lambda project, _: {
+                    "Individual": "IND",
+                    "Multi-year agreement": "MYA",
+                }.get(project.category, project.category),
             },
             {
                 "id": "agency",
@@ -1104,9 +1207,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         candidate_values = [p.interest or 0 for p in prev_versions]
         return sum(candidate_values)
 
-    def get_extended_date_of_completion(self, project):
-        return project.meta
-
     def _p_meeting_approved(self, project):
         if project is None:
             return None
@@ -1183,10 +1283,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"funds_adjustment_v{idx}",
                 "headerName": f"Fund Adjustments {idx}",
-                "method": lambda project, _: (
-                    self._p_fund_transferred(
-                        self.get_trf_or_adj_version(project, v_idx)
-                    )
+                "method": lambda project, _: self._p_fund_transferred(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
                 "type": "number",
                 "align": "right",
@@ -1195,8 +1293,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"psc_adjustment_v{idx}",
                 "headerName": f"Support Cost Adjustments {idx}",
-                "method": lambda project, _: (
-                    self._p_psc_transferred(self.get_trf_or_adj_version(project, v_idx))
+                "method": lambda project, _: self._p_psc_transferred(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
                 "type": "number",
                 "align": "right",
@@ -1205,10 +1303,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
-                "method": lambda project, _: (
-                    self._p_adjustment_meeting(
-                        self.get_trf_or_adj_version(project, v_idx)
-                    )
+                "method": lambda project, _: self._p_adjustment_meeting(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
             {
