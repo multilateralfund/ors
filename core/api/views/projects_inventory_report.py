@@ -73,6 +73,7 @@ class ProjectsInventoryReportExport:
                     queryset=ProjectOdsOdp.objects.select_related(
                         "ods_substance",
                         "ods_blend",
+                        "ods_replacement",
                     ),
                 ),
                 Prefetch(
