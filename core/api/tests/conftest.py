@@ -230,6 +230,11 @@ def _new_agency():
 
 
 @pytest.fixture
+def other_agency():
+    return AgencyFactory.create(name="Agency3", code="AG3")
+
+
+@pytest.fixture
 def agency_user(agency):
     group = Group.objects.get(name="Projects - Agency submitter")
     business_plan_viewer_group = Group.objects.get(name="BP - Viewer")
@@ -600,6 +605,11 @@ def project_ongoing_status():
 @pytest.fixture
 def project_completed_status():
     return ProjectStatusFactory.create(name="Completed", code="COM")
+
+
+@pytest.fixture
+def project_financially_completed_status():
+    return ProjectStatusFactory.create(name="Financially Completed", code="COM")
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from django.db.models import F, Q
+from django.db.models import Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 
@@ -12,13 +12,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-
-
-def project_has_cooperating_agency_q():
-    return Q(project__lead_agency_submitting_on_behalf=True) & (
-        Q(project__lead_agency_id__isnull=True)
-        | ~Q(project__lead_agency_id=F("project__agency_id"))
-    )
+from core.api.filters.project import project_has_cooperating_agency_q
 
 
 class PCRProjectFilter(filters.FilterSet):
@@ -100,7 +94,7 @@ class PCRProjectFilter(filters.FilterSet):
 
         agency_ids = [agency.id for agency in value]
         return queryset.filter(
-            project_has_cooperating_agency_q(),
+            project_has_cooperating_agency_q(prefix="project"),
             project__agency_id__in=agency_ids,
         )
 

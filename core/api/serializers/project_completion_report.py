@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from core.models.project_completion_report import PCRProject
+from core.models.project import MetaProject, Project
 
 
 class PCRProjectListSerializer(serializers.ModelSerializer):
@@ -122,3 +123,76 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
             "pcr_due",
             "pcr_submission_date",
         ]
+
+
+class ProjectListForPCRSerializer(serializers.ModelSerializer):
+
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    agency_id = serializers.IntegerField(read_only=True, source="agency.id")
+
+    cluster = serializers.SlugRelatedField("name", read_only=True)
+    cluster_id = serializers.IntegerField(read_only=True, source="cluster.id")
+
+    country = serializers.SlugRelatedField("name", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
+    project_type_id = serializers.IntegerField(read_only=True, source="project_type.id")
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    sector_id = serializers.IntegerField(read_only=True, source="sector.id")
+    subsectors = serializers.SerializerMethodField()
+    subsector_ids = serializers.SerializerMethodField()
+
+    status = serializers.SlugRelatedField("name", read_only=True)
+    status_id = serializers.IntegerField(read_only=True, source="status.id")
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "ad_hoc_pcr",
+            "agency",
+            "agency_id",
+            "cluster",
+            "cluster_id",
+            "code",
+            "country",
+            "country_id",
+            "metacode",
+            "project_type",
+            "project_type_id",
+            "sector",
+            "sector_id",
+            "subsectors",
+            "subsector_ids",
+            "support_cost_psc",
+            "status",
+            "status_id",
+            "title",
+            "tranche",
+        ]
+
+    def get_subsectors(self, obj):
+        return ", ".join(subsector.name for subsector in obj.subsectors.all())
+
+    def get_subsector_ids(self, obj):
+        return [subsector.id for subsector in obj.subsectors.all()]
+
+
+class PCRMetaProjectSerializer(serializers.ModelSerializer):
+    """
+    Serializer for MetaProject model.
+    """
+
+    projects = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MetaProject
+        fields = [
+            "id",
+            "umbrella_code",
+            "projects",
+        ]
+
+    def get_projects(self, obj):
+        # Use filtered_projects if available, otherwise fallback to all projects
+        projects = getattr(obj, "filtered_projects", obj.projects.all())
+        return ProjectListForPCRSerializer(projects, many=True).data

@@ -131,7 +131,10 @@ from core.api.views.projects_v2 import (
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
-from core.api.views.project_completion_report import PCRProjectViewSet
+from core.api.views.project_completion_report.pcr import PCRProjectViewSet
+from core.api.views.project_completion_report.pcr_metaprojects import (
+    PCRMetaprojectsViewSet,
+)
 from core.api.views.project_v2_files import (
     FileTypeView,
     ProjectFileV2ViewSet,
@@ -210,6 +213,7 @@ router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
 router.register("project-sector", ProjectSectorView)
 router.register("project-subsector", ProjectSubSectorView)
+router.register("pcr-metaprojects", PCRMetaprojectsViewSet, basename="pcr-metaprojects")
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
 router.register("business-plan-activity", BPActivityViewSet, basename="bpactivity")

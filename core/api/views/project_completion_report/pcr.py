@@ -150,7 +150,7 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     @staticmethod
     def _get_cooperating_agencies(queryset: QuerySet[PCRProject]):
         values = (
-            queryset.filter(project_has_cooperating_agency_q())
+            queryset.filter(project_has_cooperating_agency_q(prefix="project"))
             .order_by("project__agency__name")
             .values_list("project__agency_id", "project__agency__name")
             .distinct()

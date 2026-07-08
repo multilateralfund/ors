@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import F, Q
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,6 +21,14 @@ from core.models.project_metadata import (
 from core.models.utils import SubstancesType
 
 # pylint: disable=W0613
+
+
+def project_has_cooperating_agency_q(prefix=""):
+    pref = f"{prefix}__" if prefix else ""
+    return Q(**{f"{pref}lead_agency_submitting_on_behalf": True}) & (
+        Q(**{f"{pref}lead_agency_id__isnull": True})
+        | ~Q(**{f"{pref}lead_agency_id": F(f"{pref}agency_id")})
+    )
 
 
 class ProjectFilterBackend(DjangoFilterBackend):
@@ -46,6 +54,11 @@ class ProjectFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country",
         queryset=Country.objects.all(),
+        widget=CSVWidget,
+    )
+    region_id = filters.ModelMultipleChoiceFilter(
+        field_name="country__parent",
+        queryset=Country.objects.filter(location_type="Region"),
         widget=CSVWidget,
     )
     status_id = filters.ModelMultipleChoiceFilter(
@@ -82,6 +95,48 @@ class ProjectFilter(filters.FilterSet):
         queryset=Agency.objects.all(),
         widget=CSVWidget,
     )
+    cooperating_agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="cooperating_agencies",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
+    lead_agency_id = filters.ModelMultipleChoiceFilter(
+        field_name="lead_agency",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
+
+    pcr_submission_date = filters.DateFromToRangeFilter(
+        field_name="pcr_project__pcr__submission_date",
+        help_text="Filter by PCR submission date range. Format: YYYY-MM-DD",
+    )  ### pcr submission date
+    pcr_due = filters.MultipleChoiceFilter(
+        choices=[
+            ("Yes", True),
+            ("No", False),
+            ("N/A", None),
+        ],
+        widget=CSVWidget,
+        method="filter_pcr_due",
+    )
+    ad_hoc_pcr = filters.MultipleChoiceFilter(
+        choices=[
+            ("Yes", "Yes"),
+            ("No", "No"),
+            ("N/A", "N/A"),
+        ],
+        widget=CSVWidget,
+        method="filter_ad_hoc_pcr",
+    )
+    pcr_submitted = filters.MultipleChoiceFilter(
+        choices=[
+            ("Yes", True),
+            ("No", False),
+            ("N/A", None),
+        ],
+        widget=CSVWidget,
+        method="filter_pcr_submitted",
+    )
     meeting_id = filters.ModelMultipleChoiceFilter(
         field_name="meeting",
         queryset=Meeting.objects.all(),
@@ -91,6 +146,11 @@ class ProjectFilter(filters.FilterSet):
         field_name="cluster",
         queryset=ProjectCluster.objects.all(),
         widget=CSVWidget,
+    )
+    cooperating_agency_id = filters.ModelMultipleChoiceFilter(
+        widget=CSVWidget,
+        queryset=Agency.objects.all(),
+        method="filter_cooperating_agency_id",
     )
     blanket_or_individual_consideration = filters.MultipleChoiceFilter(
         field_name="blanket_or_individual_consideration",
@@ -146,6 +206,48 @@ class ProjectFilter(filters.FilterSet):
             queryset = queryset.exclude(meta_project__id__in=meta_project_ids)
         return queryset
 
+    def filter_pcr_submitted(self, queryset, name, value):
+        if not value:
+            return queryset
+        query_filters = Q()
+        for option in value:
+            if option == "Yes":
+                query_filters |= Q(pcr_project__isnull=False)
+            elif option in ["No", "N/A"]:
+                query_filters |= Q(pcr_project__isnull=True)
+        if not query_filters:
+            return queryset
+        return queryset.filter(query_filters)
+
+    def filter_pcr_due(self, queryset, name, value):
+        # TODO: Implement the logic for filtering based on PCR due status
+        return queryset
+
+    def filter_ad_hoc_pcr(self, queryset, name, value):
+        if not value:
+            return queryset
+        query_filters = Q()
+        for option in value:
+            if option == "Yes":
+                query_filters |= Q(ad_hoc_pcr=True)
+            elif option == "No":
+                query_filters |= Q(ad_hoc_pcr=False)
+            elif option == "N/A":
+                query_filters |= Q(ad_hoc_pcr__isnull=True)
+        if not query_filters:
+            return queryset
+        return queryset.filter(query_filters)
+
+    def filter_cooperating_agency_id(self, queryset, _name, value):
+        if not value:
+            return queryset
+
+        agency_ids = [agency.id for agency in value]
+        return queryset.filter(
+            project_has_cooperating_agency_q(),
+            agency_id__in=agency_ids,
+        )
+
     class Meta:
         model = Project
         fields = [
@@ -155,8 +257,10 @@ class ProjectFilter(filters.FilterSet):
             "sector_id",
             "subsectors",
             "project_type_id",
+            "pcr_submission_date",
             "substance_type",
             "agency_id",
+            "lead_agency_id",
             "cluster_id",
             "meeting_id",
             "date_received",
