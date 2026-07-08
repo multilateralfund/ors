@@ -30,7 +30,7 @@ class PCR(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-
+    submission_date = models.DateField(null=True, blank=True)
     objects = PCRManager()
 
     def __str__(self):
@@ -76,9 +76,11 @@ class PCRProject(models.Model):
         LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
         OTHER = "Other", "Other"
 
-    pcr = models.ForeignKey("PCR", on_delete=models.PROTECT, related_name="projects")
-    project = models.ForeignKey(
-        "Project", on_delete=models.PROTECT, related_name="pcr_projects"
+    pcr = models.ForeignKey(
+        "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
+    )
+    project = models.OneToOneField(
+        "Project", on_delete=models.PROTECT, related_name="pcr_project"
     )
 
     # TODO the following fields can either be calculated/retrieved from project or should be cached/denormalized.

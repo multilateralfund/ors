@@ -48,6 +48,7 @@ class MetaProjectAdmin(admin.ModelAdmin):
             "old_pcrlearnedlessons",
             "old_pcrdelayexplanation",
             "projects",
+            "pcr",
         ]
         return get_final_display_list(MetaProject, exclude)
 
