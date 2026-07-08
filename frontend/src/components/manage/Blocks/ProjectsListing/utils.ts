@@ -1055,7 +1055,11 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
-        { title: 'Raise a PCR', url: null, disabled: true },
+        {
+          title: 'Project Completion Reports',
+          url: '/projects-listing/pcr-listing',
+        },
+        { title: 'PCR view', url: '/pcr', disabled: false },
       ],
     },
   ]

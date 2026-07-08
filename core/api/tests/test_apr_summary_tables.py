@@ -640,8 +640,10 @@ class TestAPRSummaryTablesExport(BaseTest):
             consumption_phased_out_co2=1000,
             production_phased_out_co2=500,
         )
-        # post_generation overwrites pcr_due_denorm via populate_derived_fields();
-        # use update() to bypass model save and set the flag directly.
+        # pcr_due (the ONG->COM/FIN transition) is exercised by the dedicated
+        # tests in test_annual_project_report.py; here we only need the flag set
+        # so the completion sheet has a row to render. post_generation resets it
+        # via populate_derived_fields(), so set it directly with update().
         type(apr).objects.filter(pk=apr.pk).update(pcr_due_denorm=True)
 
         self.client.force_authenticate(user=apr_agency_viewer_user)

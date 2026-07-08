@@ -1,0 +1,138 @@
+[
+    {
+        "model": "core.pcrgoal",
+        "pk": 1,
+        "fields": {
+            "name": "Goal 1: No poverty",
+            "sort_order": 10.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 2,
+        "fields": {
+            "name": "Goal 2: Zero hunger",
+            "sort_order": 20.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 3,
+        "fields": {
+            "name": "Goal 3: Good health and well being",
+            "sort_order": 30.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 4,
+        "fields": {
+            "name": "Goal 4: Quality education",
+            "sort_order": 40.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 5,
+        "fields": {
+            "name": "Goal 5: Gender equality",
+            "sort_order": 50.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 6,
+        "fields": {
+            "name": "Goal 6: Clean water and sanitation",
+            "sort_order": 60.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 7,
+        "fields": {
+            "name": "Goal 7: Affordable and clean energy",
+            "sort_order": 70.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 8,
+        "fields": {
+            "name": "Goal 8: Decent work and economic growth",
+            "sort_order": 80.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 9,
+        "fields": {
+            "name": "Goal 9: Industry, Innovation and Infrastructure",
+            "sort_order": 90.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 10,
+        "fields": {
+            "name": "Goal 10: Reduced Inqualities",
+            "sort_order": 100.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 11,
+        "fields": {
+            "name": "Goal 11: Sustainable cities and communities",
+            "sort_order": 110.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 12,
+        "fields": {
+            "name": "Goal 12: Responsible consumption and production",
+            "sort_order": 120.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 13,
+        "fields": {
+            "name": "Goal 13: Climate action",
+            "sort_order": 130.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 14,
+        "fields": {
+            "name": "Goal 14: Life below water",
+            "sort_order": 140.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 15,
+        "fields": {
+            "name": "Goal 15: Life on land",
+            "sort_order": 150.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 16,
+        "fields": {
+            "name": "Goal 16: Peace, justice and strong institutions",
+            "sort_order": 160.0
+        }
+    },
+    {
+        "model": "core.pcrgoal",
+        "pk": 17,
+        "fields": {
+            "name": "Goal 17: Partnerships for the goals",
+            "sort_order": 170.0
+        }
+    }
+]

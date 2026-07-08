@@ -1,0 +1,65 @@
+[
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 1,
+        "fields": {
+            "name": "Project design and preparation",
+            "sort_order": 10.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 2,
+        "fields": {
+            "name": "Project implementation (including training and capacity building – data collection and availability)",
+            "sort_order": 20.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 3,
+        "fields": {
+            "name": "Funding and procurement",
+            "sort_order": 30.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 4,
+        "fields": {
+            "name": "Sustainability of Montreal Protocol achievements",
+            "sort_order": 40.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 5,
+        "fields": {
+            "name": "Institutional framework, policy & regulations",
+            "sort_order": 50.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 6,
+        "fields": {
+            "name": "Exogenous factors",
+            "sort_order": 60.0,
+            "obsolete": false
+        }
+    },
+    {
+        "model": "core.pcrprojectcomponentoption",
+        "pk": 7,
+        "fields": {
+            "name": "Technology, innovation and markets",
+            "sort_order": 70.0,
+            "obsolete": false
+        }
+    }
+]

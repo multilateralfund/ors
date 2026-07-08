@@ -54,6 +54,7 @@ import ProjectsExportPage from '@ors/app/projects_listing/export/[export_type]/p
 import ProjectsApprovalSummaryPage from '@ors/app/projects_listing/approval-summary/page'
 import SummaryOfProjectsPage from '@ors/app/projects_listing/summary-of-projects/page'
 import BlanketApprovalDetailsPage from '@ors/app/projects_listing/blanket-approval-details/page'
+import ProjectCompletionReportsPage from '@ors/app/projects_listing/pcr-listing/page'
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
@@ -67,6 +68,7 @@ import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/p
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
 import FundingWindowPage from '@ors/app/projects_listing/funding-window/page'
+
 import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
 import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
@@ -75,6 +77,8 @@ import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterpris
 import EnterprisesDataProvider from './contexts/Enterprises/EnterprisesDataProvider'
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
+import PCRDataProvider from './contexts/PCR/PCRDataProvider'
+
 import PermissionsContext from './contexts/PermissionsContext'
 import NotFoundPage from '@ors/app/not-found'
 import DownloadPage from '@ors/app/download/page'
@@ -86,6 +90,9 @@ import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspa
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
 import APRProvider from '@ors/contexts/AnnualProjectReport/APRProvider.tsx'
 import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprRedirect.tsx'
+
+import PCRListingPage from '@ors/app/pcr/page'
+import PCRCreatePage from '@ors/app/pcr/create/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -328,6 +335,11 @@ export default function App() {
             <BlanketApprovalDetailsPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/pcr-listing">
+          <ProjectsDataProvider>
+            <ProjectCompletionReportsPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/compare-versions">
           <ProjectsDataProvider>
             <ProjectsCompareVersionsPage />
@@ -452,6 +464,17 @@ export default function App() {
               <APRMLFSWorkspace />
             </Route>
           </APRProvider>
+        </Route>
+        {/* PCR routes */}
+        <Route path="/pcr">
+          <ProjectsDataProvider>
+            <PCRDataProvider>
+              <PCRListingPage />
+            </PCRDataProvider>
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/create">
+          <PCRCreatePage />
         </Route>
         <Route>
           <NotFoundPage />

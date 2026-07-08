@@ -13,6 +13,9 @@ class AgencyAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "annual_project_reports",
+            "pcragency",
+            "old_pcrdelayexplanation",
+            "old_pcrlearnedlessons",
             "bpactivity",
             "bpfile",
             "coop_projects",
@@ -21,6 +24,7 @@ class AgencyAdmin(admin.ModelAdmin):
             "metaproject",
             "pcrdelayexplanation",
             "pcrlearnedlessons",
+            "old_pcractivity",
             "project",
             "user",
         ]

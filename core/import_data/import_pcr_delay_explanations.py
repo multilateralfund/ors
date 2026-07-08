@@ -12,9 +12,9 @@ from core.import_data.utils import (
 )
 
 from core.models.project import MetaProject
-from core.models.project_complition_report import (
-    DelayCategory,
-    PCRDelayExplanation,
+from core.models.project_completion_report import (
+    OLD_DelayCategory,
+    OLD_PCRDelayExplanation,
 )
 
 
@@ -60,9 +60,9 @@ def parse_file(file_path, category_dict, agency_dict):
             "source_file": file_path,
         }
 
-        explanations.append(PCRDelayExplanation(**explanation_data))
+        explanations.append(OLD_PCRDelayExplanation(**explanation_data))
 
-    PCRDelayExplanation.objects.bulk_create(explanations, batch_size=1000)
+    OLD_PCRDelayExplanation.objects.bulk_create(explanations, batch_size=1000)
 
 
 @transaction.atomic
@@ -72,13 +72,13 @@ def import_pcr_delay_explanations():
         logger.info(f"⏳ importing pcr delay explanations from {database_name}")
         logger.info(f"importing pcr delay categories from {database_name}")
         file_path = db_dir_path / database_name / "PCRTitle53.json"
-        category_dict = import_pcr_categories(file_path, DelayCategory)
+        category_dict = import_pcr_categories(file_path, OLD_DelayCategory)
 
         logger.info(f"parsing agencies file from {database_name}")
         file_path = db_dir_path / database_name / "Agencies.json"
         agency_dict = get_agency_dict(file_path)
 
         file_path = db_dir_path / database_name / "PCR53.json"
-        delete_old_data(PCRDelayExplanation, file_path)
+        delete_old_data(OLD_PCRDelayExplanation, file_path)
         parse_file(file_path, category_dict, agency_dict)
         logger.info(f"✔ pcr delay explanations from {database_name} imported")

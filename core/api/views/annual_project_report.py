@@ -292,6 +292,12 @@ class APRWorkspaceView(RetrieveAPIView):
                     if key not in latest_version_map:
                         latest_version_map[key] = p
 
+                previous_version_map = {}
+                for p in latest_version_base_qs(year - 1).filter(project_id_filter):
+                    key = p.latest_project_id or p.id
+                    if key not in previous_version_map:
+                        previous_version_map[key] = p
+
                 all_versions_map: dict = {}
                 for p in all_versions_for_year_base_qs(year).filter(project_id_filter):
                     key = p.latest_project_id or p.id
@@ -309,6 +315,11 @@ class APRWorkspaceView(RetrieveAPIView):
                     project.cached_versions_for_year = (
                         [latest_version_map[project_key]]
                         if project_key in latest_version_map
+                        else []
+                    )
+                    project.cached_previous_versions_for_year = (
+                        [previous_version_map[project_key]]
+                        if project_key in previous_version_map
                         else []
                     )
                     project.cached_all_versions_for_year = all_versions_map.get(
