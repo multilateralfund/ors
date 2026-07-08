@@ -304,15 +304,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         headers.extend(
             [
                 {
-                    "id": "project_end_date",
-                    "headerName": "Date Completion Revised",
-                    "type": "date",
-                    "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: self._get_date_completion_revised(
-                        project
-                    ),
-                },
-                {
                     "id": "apr_date_completed",
                     "headerName": "Date Completed",
                     "type": "date",
@@ -526,11 +517,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         super().__init__(sheet, headers)
-
-    @staticmethod
-    def _get_date_completion_revised(project):
-        final_project = project.final_version
-        return final_project.date_comp_revised or final_project.project_end_date
 
     def _get_extended_date(self, project):
         meta_project = project.meta_project
