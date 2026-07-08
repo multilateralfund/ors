@@ -471,6 +471,39 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert sheet[f"{headers['Transfer Decision']}{row}"].value in (None, "")
         assert sheet[f"{headers['Agency Transferred From']}{row}"].value in (None, "")
 
+    def test_export_inventory_report_uses_ods_replacement_name(
+        self, admin_user, project_approved_status
+    ):
+        project = ProjectFactory.create(
+            version=3,
+            submission_status=project_approved_status,
+        )
+        substance = SubstanceFactory.create(name="HCFC-22")
+        replacement = AlternativeTechnologyFactory.create(name="Methyl formate")
+        ProjectOdsOdp.objects.create(
+            project=project,
+            ods_substance=substance,
+            ods_display_name="",
+            ods_replacement_text="",
+            ods_replacement=replacement,
+            odp=3.4,
+            sort_order=1,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        assert sheet[f"{headers['ODS Name 1']}{row}"].value == "HCFC-22"
+        assert sheet[f"{headers['ODS Replacement 1']}{row}"].value == "Methyl formate"
+
     def test_export_inventory_report_only_includes_approved_projects(
         self, admin_user, project_approved_status, project_recommended_status
     ):
@@ -549,6 +582,53 @@ class TestProjectV2ExportXLSX(BaseTest):
         )
         assert sheet[f"{headers['Extended date']}{tas_row}"].value.date() == date(
             2020, 12, 1
+        )
+
+    @pytest.mark.parametrize(
+        "stored_end_date, project_end_date, expected_end_date",
+        [
+            (None, date(2026, 12, 1), date(2026, 12, 1)),
+            (
+                datetime(2025, 6, 30, tzinfo=timezone.utc),
+                date(2030, 12, 1),
+                date(2025, 6, 30),
+            ),
+        ],
+    )
+    def test_export_inventory_report_derives_mya_completion_date(
+        self,
+        admin_user,
+        project_approved_status,
+        stored_end_date,
+        project_end_date,
+        expected_end_date,
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=stored_end_date,
+        )
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_end_date=project_end_date,
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        assert (
+            sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
+            == expected_end_date
         )
 
     def test_export_inventory_report_derives_substance_from_ods_and_legacy_sector(

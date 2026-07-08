@@ -85,6 +85,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         self.mya_type_revised_completion_dates = (
             self.build_mya_type_revised_completion_dates(projects)
         )
+        self.mya_completion_dates = self.build_mya_completion_dates(projects)
         self.all_versions: dict[int, list[Project]] = {}
         self.project_fields = (
             project_fields if project_fields is not None else self.get_project_fields()
@@ -284,12 +285,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "MYA Completion Date",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: (
-                        tz_naive(project.meta_project.end_date)
-                        if project.meta_project
-                        and project.meta_project.type == MetaProject.MetaProjectType.MYA
-                        else None
-                    ),
+                    "method": lambda project, _: self._get_mya_completion_date(project),
                 },
                 {
                     "id": "extended_date",
@@ -521,7 +517,6 @@ class ProjectsInventoryReportWriter(BaseWriter):
     def _get_extended_date(self, project):
         meta_project = project.meta_project
 
-        mp_date = tz_naive(meta_project.end_date if meta_project else None)
         p_date = tz_naive(project.final_version.project_end_date)
 
         if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
@@ -533,16 +528,29 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if mya_type_revised_date:
             return mya_type_revised_date
 
-        if not mp_date:
+        mya_completion_date = self._get_mya_completion_date(project)
+
+        if not mya_completion_date:
             return p_date
 
         if not p_date:
-            return mp_date
+            return mya_completion_date
 
-        if mp_date > p_date:
-            return mp_date
+        if mya_completion_date > p_date:
+            return mya_completion_date
 
         return p_date
+
+    def _get_mya_completion_date(self, project):
+        meta_project = project.meta_project
+        if not meta_project or meta_project.type != MetaProject.MetaProjectType.MYA:
+            return None
+
+        meta_end_date = tz_naive(meta_project.end_date)
+        if meta_end_date:
+            return meta_end_date
+
+        return self.mya_completion_dates.get(project.meta_project_id)
 
     def _get_substance(self, project):
         for ods_odp in project.ods_odp.all():
@@ -629,6 +637,24 @@ class ProjectsInventoryReportWriter(BaseWriter):
             current = result.get(key)
             if current is None or project.date_comp_revised > current:
                 result[key] = project.date_comp_revised
+
+        return result
+
+    @staticmethod
+    def build_mya_completion_dates(projects):
+        result = {}
+        for project in projects:
+            if (
+                project.category != Project.Category.MYA
+                or not project.meta_project_id
+                or not project.project_end_date
+            ):
+                continue
+
+            current = result.get(project.meta_project_id)
+            project_end_date = tz_naive(project.project_end_date)
+            if current is None or project_end_date > current:
+                result[project.meta_project_id] = project_end_date
 
         return result
 
@@ -1314,7 +1340,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "method": lambda project, _: self.ods_odp_at_idx(
                     project,
                     idx - 1,
-                    lambda ods_odp: ods_odp.ods_display_name,
+                    self.ods_name,
                 ),
             },
             {
@@ -1345,10 +1371,26 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "id": f"ods_odp__ods_replacement_text_{idx}",
                 "headerName": f"ODS Replacement {idx}",
                 "method": lambda project, _: self.ods_odp_at_idx(
-                    project, idx - 1, lambda ods_odp: ods_odp.ods_replacement_text
+                    project, idx - 1, self.ods_replacement_name
                 ),
             },
         ]
+
+    @staticmethod
+    def ods_name(ods_odp):
+        if ods_odp.ods_display_name:
+            return ods_odp.ods_display_name
+        if ods_odp.ods_substance:
+            return ods_odp.ods_substance.name
+        if ods_odp.ods_blend:
+            return ods_odp.ods_blend.name
+        return None
+
+    @staticmethod
+    def ods_replacement_name(ods_odp):
+        return ods_odp.ods_replacement_text or (
+            ods_odp.ods_replacement.name if ods_odp.ods_replacement else None
+        )
 
     def ods_odp_at_idx(self, project, idx, func):
         ods_odps: list[ProjectOdsOdp] = list(project.ods_odp.all())
