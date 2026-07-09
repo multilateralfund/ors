@@ -515,6 +515,38 @@ class AnnualProjectReport(models.Model):
         # Fallback to the project property if cached prefetch not available
         return self.project.get_version(3)
 
+    def _latest_version_upto_year(self, cached_versions, year):
+        """
+        Resolve the latest project version effective on or before the end of year,
+        from a prefetched list of archive versions (including the final version).
+
+        Uses the effective_date fallback so it stays consistent with other methods.
+        """
+        candidates = list(cached_versions) if cached_versions else []
+
+        # Add the final version itself if it matches the year__lte criteria.
+        # In case we can't compare by post_excom_decision, we use date_approved.
+        if (
+            self.project.post_excom_decision
+            and self.project.post_excom_decision.meeting.date.year <= year
+        ) or (
+            not self.project.post_excom_decision
+            and self.project.date_approved
+            and self.project.date_approved.year <= year
+        ):
+            candidates.append(self.project)
+
+        def _version_sort_key(p):
+            # Some projects can be sorted by the decision, some by date_approved
+            if p.post_excom_decision:
+                return (p.post_excom_decision.meeting.date, p.version)
+            return (p.date_approved or date_type.min, p.version)
+
+        if candidates:
+            candidates.sort(key=_version_sort_key, reverse=True)
+            return candidates[0]
+        return None
+
     @cached_property
     def latest_project_version_for_year(self):
         """
@@ -522,39 +554,31 @@ class AnnualProjectReport(models.Model):
         using cached prefetch if available.
         """
         if hasattr(self.project, "cached_versions_for_year"):
-            # Combine the final version (project) with its archives
-            candidates = []
-
-            if self.project.cached_versions_for_year:
-                candidates.extend(self.project.cached_versions_for_year)
-
-            # Add the final version itself if it matches the year__lte criteria
-            # In case we can't compare by post_excom_decision, we use date_approved
-            if (
-                self.project.post_excom_decision
-                and self.project.post_excom_decision.meeting.date.year
-                <= self.report_year
-            ) or (
-                not self.project.post_excom_decision
-                and self.project.date_approved
-                and self.project.date_approved.year <= self.report_year
-            ):
-                candidates.append(self.project)
-
-            def _version_sort_key(p):
-                # Some projects can be sorted by the decision, some by date_approved
-                if p.post_excom_decision:
-                    return (p.post_excom_decision.meeting.date, p.version)
-                return (p.date_approved or date_type.min, p.version)
-
-            # Sort and return the latest
-            if candidates:
-                candidates.sort(key=_version_sort_key, reverse=True)
-                return candidates[0]
-            return None
+            return self._latest_version_upto_year(
+                self.project.cached_versions_for_year, self.report_year
+            )
 
         # Fallback to the project property if the prefetch is not available
         return self.project.latest_version_for_year(self.report_year)
+
+    @cached_property
+    def previous_project_version_for_year(self):
+        """
+        Get the version in effect at the END of the previous report year
+        (report_year - 1), using cached prefetch if available.
+
+        This is the version immediately preceding any changes made during the
+        report year, so comparing its status against latest_project_version_for_year
+        reveals whether the project's status changed during the year.
+        """
+        previous_year = self.report_year - 1
+        if hasattr(self.project, "cached_previous_versions_for_year"):
+            return self._latest_version_upto_year(
+                self.project.cached_previous_versions_for_year, previous_year
+            )
+
+        # Fallback to the project property if the prefetch is not available
+        return self.project.latest_version_for_year(previous_year)
 
     @cached_property
     def all_project_versions_for_year(self):
@@ -575,38 +599,32 @@ class AnnualProjectReport(models.Model):
     @property
     def pcr_due(self):
         """
-        Returns True if project changed status from ONG to COM or FIN
-        during self.report_year.
+        Returns True if the project transitioned into completion (COM or FIN)
+        during self.report_year: the version in effect at the end of the year
+        is COM/FIN, while the version in effect at the end of the previous year
+        was not yet completed.
+
+        Version timing uses the effective_date fallback (post_excom_decision >
+        post_excom_meeting > transfer_* > date_approved). Both the cached
+        (sync/bulk) and the uncached (fallback) paths resolve the same versions,
+        so the denormalized pcr_due_denorm matches the live value.
         """
-        statuses_during_year = [
-            v.status.code for v in self.all_project_versions_for_year
-        ]
+        completed_codes = ("COM", "FIN")
 
-        # Find the latest version for previous year
-        previous_year_version = None
-        if hasattr(self.project, "cached_versions_for_year"):
-            # Use cached data to find previous year version
-            for v in self.project.cached_versions_for_year:
-                if (
-                    v.post_excom_decision
-                    and v.post_excom_decision.meeting.date.year <= self.report_year - 1
-                ):
-                    previous_year_version = v
-                    break
-        else:
-            previous_year_version = self.project.latest_version_for_year(
-                self.report_year - 1
-            )
+        current = self.latest_project_version_for_year
+        if (
+            current is None
+            or current.status is None
+            or current.status.code not in completed_codes
+        ):
+            return False
 
-        started_ong = (
-            previous_year_version and previous_year_version.status.code == "ONG"
-        ) or "ONG" in statuses_during_year
-
-        is_completed_this_year = any(
-            status in statuses_during_year for status in ("COM", "FIN")
+        previous = self.previous_project_version_for_year
+        return (
+            previous is not None
+            and previous.status is not None
+            and previous.status.code not in completed_codes
         )
-
-        return started_ong and is_completed_this_year
 
     @property
     def date_approved(self):

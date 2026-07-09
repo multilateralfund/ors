@@ -230,6 +230,11 @@ def _new_agency():
 
 
 @pytest.fixture
+def other_agency():
+    return AgencyFactory.create(name="Agency3", code="AG3")
+
+
+@pytest.fixture
 def agency_user(agency):
     group = Group.objects.get(name="Projects - Agency submitter")
     business_plan_viewer_group = Group.objects.get(name="BP - Viewer")
@@ -600,6 +605,11 @@ def project_ongoing_status():
 @pytest.fixture
 def project_completed_status():
     return ProjectStatusFactory.create(name="Completed", code="COM")
+
+
+@pytest.fixture
+def project_financially_completed_status():
+    return ProjectStatusFactory.create(name="Financially Completed", code="COM")
 
 
 @pytest.fixture
@@ -1820,4 +1830,16 @@ def mock_auto_submit_empty_agency_reports():
     with patch(
         "core.api.views.annual_project_report.auto_submit_empty_agency_reports.delay"
     ):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def mock_cp_mail_tasks():
+    """
+    Automatically patch CP mail task dispatch for tests that do not assert mail calls,
+    so the suite does not require a live Celery result backend.
+    """
+    with patch("core.tasks.send_mail_comment_submit.delay"), patch(
+        "core.tasks.send_mail_report_create.delay"
+    ), patch("core.tasks.send_mail_report_update.delay"):
         yield

@@ -33,7 +33,6 @@ from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListByReportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.utils import (
-    SUBSTANCE_GROUP_ID_TO_CATEGORY,
     get_archive_reports_final_for_years,
     get_final_records_for_years,
     get_year_params_from_request,
@@ -41,6 +40,7 @@ from core.api.views.utils import (
 from core.models import Blend
 from core.models import ExcludedUsage
 from core.models import Substance
+from core.models.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY
 from core.models.country_programme import (
     CPEmission,
     CPGeneration,

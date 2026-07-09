@@ -55,6 +55,7 @@ from core.models.enterprise import (
     EnterpriseOdsOdp,
     EnterpriseStatus,
 )
+from core.models.project_completion_report import PCR, PCRProject
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -877,3 +878,13 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
     date = factory.Faker("date")
     payment_for_years = ["deferred"]
+
+
+class PCRFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCR
+
+
+class PCRProjectFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRProject

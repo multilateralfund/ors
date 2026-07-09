@@ -23,11 +23,15 @@ from core.api.tests.factories import AgencyFactory
 from core.api.tests.factories import AlternativeTechnologyFactory
 from core.api.tests.factories import BPActivityFactory
 from core.api.tests.factories import FundingWindowFactory
+from core.api.tests.factories import GroupFactory
 from core.api.tests.factories import MetaProjectFactory
 from core.api.tests.factories import MeetingFactory
 from core.api.tests.factories import ProjectClusterFactory
 from core.api.tests.factories import ProjectFactory
 from core.api.tests.factories import ProjectSubSectorFactory
+from core.api.tests.factories import ProjectTypeFactory
+from core.api.tests.factories import SubstanceAltNameFactory
+from core.api.tests.factories import SubstanceFactory
 from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
 from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.api.views import mya_export
@@ -467,6 +471,39 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert sheet[f"{headers['Transfer Decision']}{row}"].value in (None, "")
         assert sheet[f"{headers['Agency Transferred From']}{row}"].value in (None, "")
 
+    def test_export_inventory_report_uses_ods_replacement_name(
+        self, admin_user, project_approved_status
+    ):
+        project = ProjectFactory.create(
+            version=3,
+            submission_status=project_approved_status,
+        )
+        substance = SubstanceFactory.create(name="HCFC-22")
+        replacement = AlternativeTechnologyFactory.create(name="Methyl formate")
+        ProjectOdsOdp.objects.create(
+            project=project,
+            ods_substance=substance,
+            ods_display_name="",
+            ods_replacement_text="",
+            ods_replacement=replacement,
+            odp=3.4,
+            sort_order=1,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        assert sheet[f"{headers['ODS Name 1']}{row}"].value == "HCFC-22"
+        assert sheet[f"{headers['ODS Replacement 1']}{row}"].value == "Methyl formate"
+
     def test_export_inventory_report_only_includes_approved_projects(
         self, admin_user, project_approved_status, project_recommended_status
     ):
@@ -491,6 +528,152 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         assert get_inventory_project_row(sheet, approved_project.id) is not None
         assert get_inventory_project_row(sheet, recommended_project.id) is None
+
+    def test_export_inventory_report_extended_date(
+        self, admin_user, project_approved_status
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=datetime(2025, 12, 1, tzinfo=timezone.utc),
+        )
+        inv_type = ProjectTypeFactory.create(code="INV")
+        inv_project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_type=inv_type,
+            project_end_date=date(2021, 12, 1),
+            submission_status=project_approved_status,
+        )
+
+        inv_project.increase_version(admin_user)
+        inv_project.project_end_date = date(2025, 12, 1)
+        inv_project.save()
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        inv_row = get_inventory_project_row(sheet, inv_project.id)
+
+        assert inv_row is not None
+        assert sheet[f"{headers['Extended date']}{inv_row}"].value.date() == date(
+            2025, 12, 1
+        )
+
+    @pytest.mark.parametrize(
+        "stored_end_date, project_end_date, expected_end_date",
+        [
+            (None, date(2026, 12, 1), date(2026, 12, 1)),
+            (
+                datetime(2025, 6, 30, tzinfo=timezone.utc),
+                date(2030, 12, 1),
+                date(2025, 6, 30),
+            ),
+        ],
+    )
+    def test_export_inventory_report_derives_mya_completion_date(
+        self,
+        admin_user,
+        project_approved_status,
+        stored_end_date,
+        project_end_date,
+        expected_end_date,
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=stored_end_date,
+        )
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_end_date=project_end_date,
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        assert (
+            sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
+            == expected_end_date
+        )
+
+    def test_export_inventory_report_derives_substance_from_ods_and_legacy_sector(
+        self, admin_user, project_approved_status
+    ):
+        hcfc_group = GroupFactory.create(group_id="CI")
+        hcfc_substance = SubstanceFactory.create(name="HCFC-22", group=hcfc_group)
+        hcfc_project = ProjectFactory.create(
+            version=3,
+            substance_type="CFC",
+            submission_status=project_approved_status,
+        )
+        ProjectOdsOdp.objects.create(
+            project=hcfc_project,
+            ods_substance=hcfc_substance,
+        )
+
+        ctc_group = GroupFactory.create(group_id="BII")
+        ctc_substance = SubstanceFactory.create(
+            name="Carbon Tetrachloride test", group=ctc_group
+        )
+        ctc_project = ProjectFactory.create(
+            version=3,
+            substance_type="CFC",
+            submission_status=project_approved_status,
+        )
+        ctc_display_name = f"CTC-{ctc_project.id}"
+        SubstanceAltNameFactory.create(name=ctc_display_name, substance=ctc_substance)
+        ProjectOdsOdp.objects.create(
+            project=ctc_project,
+            ods_display_name=ctc_display_name,
+        )
+        halon_project = ProjectFactory.create(
+            version=3,
+            substance_type="CFC",
+            sector_legacy="HAL",
+            submission_status=project_approved_status,
+        )
+        methyl_bromide_project = ProjectFactory.create(
+            version=3,
+            substance_type="CFC",
+            sector_legacy="FUM",
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+
+        expected = {
+            hcfc_project.id: "HCFC",
+            ctc_project.id: "CTC",
+            halon_project.id: "Halon",
+            methyl_bromide_project.id: "Methyl Bromide",
+        }
+        for project_id, substance in expected.items():
+            row = get_inventory_project_row(sheet, project_id)
+            assert row is not None
+            assert sheet[f"{headers['Substance']}{row}"].value == substance
 
     def test_export_inventory_report_populates_prior_meeting_columns(
         self, admin_user, project_approved_status

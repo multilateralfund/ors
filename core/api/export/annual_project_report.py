@@ -892,9 +892,9 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_COMPLETION_YEAR]
 
         # Filter and group by cluster in-memory, to avoid repeated DB hits.
-        # Use pcr_due_denorm (ONG→COM/FIN transition within the year) rather than
-        # current project status, so historically-completed projects don't inflate
-        # the count when their APRs are carried forward into subsequent years.
+        # Use pcr_due_denorm (the project transitioned into COM/FIN during the year),
+        # rather than current project status, so historically-completed projects
+        # don't inflate the count when their APRs are carried into subsequent years.
         if self.year:
             completed_records = [
                 apr

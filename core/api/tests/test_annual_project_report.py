@@ -2820,6 +2820,61 @@ class TestAnnualProjectReportDerivedProperties(BaseTest):
 
         assert annual_report.pcr_due is False
 
+    def test_pcr_due_denorm_synced_for_ong_previous_year_to_com(
+        self,
+        annual_agency_report,
+        agency,
+        country_ro,
+        sector,
+        project_ongoing_status,
+        project_completed_status,
+        decision_apr_previous_year,
+        decision_apr_same_year,
+    ):
+        """
+        Regression: the live pcr_due property returns True for an ONG (previous
+        year) -> COM (current year) transition, but the value that reaches the
+        export goes through sync_apr_from_projects, which builds the derived
+        fields via the *cached* code path. This asserts that the denorm field that
+        the export actually reads matches the live property.
+        """
+        version4 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_completed_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/SYNC/01",
+            version=4,
+            post_excom_decision=decision_apr_same_year,
+            total_fund=100000.0,
+        )
+        version3 = ProjectFactory(
+            agency=agency,
+            country=country_ro,
+            sector=sector,
+            status=project_ongoing_status,
+            date_approved=date(2021, 6, 1),
+            code="TEST/PCR/SYNC/01",
+            version=3,
+            post_excom_decision=decision_apr_previous_year,
+            latest_project=version4,
+            total_fund=100000.0,
+        )
+
+        annual_report = AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=version3,
+        )
+
+        # Live property (uncached fallback path) sees the transition.
+        assert annual_report.pcr_due is True
+
+        # The value the export reads comes from sync (cached path).
+        sync_apr_from_projects(annual_agency_report.progress_report.year)
+        annual_report.refresh_from_db()
+        assert annual_report.pcr_due_denorm is True
+
 
 @pytest.mark.django_db
 class TestAPRMLFSBulkUpdateView(BaseTest):
