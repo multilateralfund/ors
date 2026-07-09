@@ -529,7 +529,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert get_inventory_project_row(sheet, approved_project.id) is not None
         assert get_inventory_project_row(sheet, recommended_project.id) is None
 
-    def test_export_inventory_report_uses_mya_type_revised_date_for_extended_date(
+    def test_export_inventory_report_extended_date(
         self, admin_user, project_approved_status
     ):
         meta_project = MetaProjectFactory.create(
@@ -537,7 +537,6 @@ class TestProjectV2ExportXLSX(BaseTest):
             end_date=datetime(2025, 12, 1, tzinfo=timezone.utc),
         )
         inv_type = ProjectTypeFactory.create(code="INV")
-        tas_type = ProjectTypeFactory.create(code="TAS")
         inv_project = ProjectFactory.create(
             version=3,
             category=Project.Category.MYA,
@@ -546,23 +545,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             project_end_date=date(2021, 12, 1),
             submission_status=project_approved_status,
         )
-        tas_project = ProjectFactory.create(
-            version=3,
-            category=Project.Category.MYA,
-            meta_project=meta_project,
-            project_type=tas_type,
-            project_end_date=date(2018, 12, 1),
-            submission_status=project_approved_status,
-        )
-        ProjectFactory.create(
-            version=3,
-            category=Project.Category.MYA,
-            meta_project=meta_project,
-            project_type=tas_type,
-            date_comp_revised=date(2020, 12, 1),
-            project_end_date=date(2020, 12, 1),
-            submission_status=project_approved_status,
-        )
+
+        inv_project.increase_version(admin_user)
+        inv_project.project_end_date = date(2025, 12, 1)
+        inv_project.save()
 
         self.client.force_authenticate(user=admin_user)
         response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
@@ -573,15 +559,10 @@ class TestProjectV2ExportXLSX(BaseTest):
         sheet = wb["Projects"]
         headers = get_inventory_headers(sheet)
         inv_row = get_inventory_project_row(sheet, inv_project.id)
-        tas_row = get_inventory_project_row(sheet, tas_project.id)
 
         assert inv_row is not None
-        assert tas_row is not None
         assert sheet[f"{headers['Extended date']}{inv_row}"].value.date() == date(
             2025, 12, 1
-        )
-        assert sheet[f"{headers['Extended date']}{tas_row}"].value.date() == date(
-            2020, 12, 1
         )
 
     @pytest.mark.parametrize(

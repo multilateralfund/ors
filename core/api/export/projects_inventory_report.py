@@ -45,7 +45,6 @@ MIN_PROJECT_VERSION = 3
 
 
 def tz_naive(value: datetime.datetime | datetime.date | None):
-
     # Convert date to datetime at midnight if it's not already a datetime
     if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
         value = datetime.datetime.combine(value, datetime.time.min)
@@ -264,15 +263,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 self.project_fields,
                 include_names=[
                     "project_duration",
-                    "date_completion",
+                    "project_end_date",
                 ],
                 title_overrides={
                     "project_duration": "Duration (Months)",
-                    "date_completion": "Approved Date Completion",
+                    "project_end_date": "Approved Date Completion",
                 },
                 header_overrides={
-                    "date_completion": {
+                    "project_end_date": {
                         "cell_format": "MMM-YYYY",
+                        "method": self._get_approved_date_of_completion,
                     },
                 },
             )
@@ -292,7 +292,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "Extended date",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: self._get_extended_date(project),
+                    "method": lambda project, _: project.final_version.project_end_date,
                 },
             ]
         )
@@ -513,6 +513,13 @@ class ProjectsInventoryReportWriter(BaseWriter):
         )
 
         super().__init__(sheet, headers)
+
+    def _get_approved_date_of_completion(self, project, *_):
+        result = None
+        v3 = self.get_version(project, 3)
+        if v3:
+            result = v3.project_end_date
+        return result
 
     def _get_extended_date(self, project):
         meta_project = project.meta_project
