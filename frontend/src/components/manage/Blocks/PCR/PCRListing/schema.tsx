@@ -1,20 +1,15 @@
-import Link from '@ors/components/ui/Link/Link'
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
-import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
-import { MdExpandMore, MdExpandLess } from 'react-icons/md'
+import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox } from '@mui/material'
-import { FiEdit } from 'react-icons/fi'
-import { isNil, map } from 'lodash'
-import cx from 'classnames'
+import { isNil } from 'lodash'
 import {
-  CellClassParams,
+  ValueGetterParams,
   ICellRendererParams,
   ITooltipParams,
-  ValueGetterParams,
 } from 'ag-grid-community'
 
 const expandMetaproject = (params: ICellRendererParams) => {
@@ -27,14 +22,20 @@ const expandMetaproject = (params: ICellRendererParams) => {
   }))
 
   if (!metaproject.isExpanded) {
-    metaproject.isExpanded = true
+    params.node.setData({
+      ...metaproject,
+      isExpanded: true,
+    })
 
     params.api.applyTransaction({
       add: projects,
       addIndex: (params.node.rowIndex ?? 0) + 1,
     })
   } else {
-    metaproject.isExpanded = false
+    params.node.setData({
+      ...metaproject,
+      isExpanded: false,
+    })
 
     params.api.applyTransaction({
       remove: projects,
@@ -48,12 +49,6 @@ const expandMetaproject = (params: ICellRendererParams) => {
   })
 }
 
-const getCellClass = (data: PCRUpdatedMetaproject) =>
-  cx({
-    'pcr-metaproject': data.isMetaproject,
-    'pcr-expanded-metaproject': data.isExpanded,
-  })
-
 const getColumnDefs = (
   projectId: number | null,
   setProjectId: (id: number | null) => void,
@@ -64,26 +59,32 @@ const getColumnDefs = (
       field: 'title',
       tooltipField: 'title',
       minWidth: 300,
-      cellClass: (props: CellClassParams) =>
-        'ag-cell-ellipsed ag-text-center !pl-0 ' + getCellClass(props.data),
+      cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
         <div className="flex items-center gap-1 p-2">
           {props.data.isMetaproject ? (
             <>
-              <div
-                className="h-4 w-3 cursor-pointer"
-                onClick={() => expandMetaproject(props)}
-              >
-                {props.data.isExpanded ? (
-                  <MdExpandLess size={16} />
-                ) : (
-                  <MdExpandMore size={16} />
-                )}
-              </div>
+              {/* to update */}
+              {props.data.type !== 'multi-year' ? (
+                <div
+                  className="h-4 w-3 cursor-pointer"
+                  onClick={() => expandMetaproject(props)}
+                >
+                  {props.data.isExpanded ? (
+                    <MdExpandLess size={16} />
+                  ) : (
+                    <MdExpandMore size={16} />
+                  )}
+                </div>
+              ) : (
+                <div className="w-3" />
+              )}
               <Checkbox
-                checked={projectId == props.data.id}
+                checked={projectId == props.data.metaprojectId}
                 onChange={(event) => {
-                  setProjectId(event.target.checked ? props.data.id : null)
+                  setProjectId(
+                    event.target.checked ? props.data.metaprojectId : null,
+                  )
                 }}
                 sx={{ color: 'black' }}
               />
@@ -98,18 +99,18 @@ const getColumnDefs = (
       ),
     },
     {
-      headerName: pcrFieldsMapping.project_status,
+      headerName: pcrFieldsMapping.status,
       field: 'status',
       tooltipField: 'status',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 120,
+      minWidth: 150,
     },
     {
       headerName: pcrFieldsMapping.country,
       field: 'country',
       tooltipField: 'country',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 150,
+      minWidth: 180,
     },
     {
       headerName: pcrFieldsMapping.metacode,
@@ -121,12 +122,13 @@ const getColumnDefs = (
       field: 'code',
       tooltipField: 'code',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 120,
+      minWidth: 180,
     },
     {
       headerName: pcrFieldsMapping.cluster,
-      field: 'cluster.code',
-      tooltipField: 'cluster.name',
+      field: 'cluster',
+      tooltipField: 'cluster',
+      minWidth: 150,
     },
     {
       headerName: pcrFieldsMapping.tranche,
@@ -136,42 +138,28 @@ const getColumnDefs = (
     },
     {
       headerName: pcrFieldsMapping.agency,
-      valueGetter: (params: ValueGetterParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
-      tooltipValueGetter: (params: ITooltipParams) =>
-        params.data.isMetaproject
-          ? params.data.lead_agency
-          : params.data.agency,
+      field: 'agency',
+      tooltipField: 'agency',
       cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-      minWidth: 110,
     },
     {
       headerName: pcrFieldsMapping.project_type,
-      field: 'project_type.code',
-      tooltipField: 'project_type.name',
+      field: 'project_type',
+      tooltipField: 'project_type',
     },
     {
       headerName: pcrFieldsMapping.sector,
-      field: 'sector.code',
-      tooltipField: 'sector.name',
+      field: 'sector',
+      tooltipField: 'sector',
     },
     {
-      headerName: pcrFieldsMapping.subsector,
-      valueGetter: (params: ValueGetterParams) =>
-        map(
-          params.data.subsectors,
-          (subsector) => subsector.code ?? subsector.name,
-        ).join(', '),
-      tooltipValueGetter: (params: ITooltipParams) =>
-        map(params.data.subsectors, 'name').join(', '),
-      sortable: false,
+      headerName: pcrFieldsMapping.subsectors,
+      field: 'subsectors',
+      tooltipField: 'subsectors',
       minWidth: 200,
     },
     {
       headerName: pcrFieldsMapping.total_fund,
-      field: 'total_fund',
       valueGetter: (params: ValueGetterParams) =>
         !isNil(params.data.total_fund)
           ? '$' + formatNumberColumns(params, 'total_fund')
@@ -181,12 +169,9 @@ const getColumnDefs = (
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
         }),
-      minWidth: 120,
     },
-
     {
       headerName: pcrFieldsMapping.support_cost_psc,
-      field: 'support_cost_psc',
       valueGetter: (params: ValueGetterParams) =>
         !isNil(params.data.support_cost_psc)
           ? '$' + formatNumberColumns(params, 'support_cost_psc')
@@ -196,25 +181,21 @@ const getColumnDefs = (
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
         }),
-      minWidth: 150,
     },
     {
-      headerName: pcrFieldsMapping.submission_date,
-      field: 'submission_date',
-      tooltipField: 'submission_date',
+      headerName: pcrFieldsMapping.pcr_submission_date,
       valueGetter: (params: ValueGetterParams) =>
-        formatDate(params.data.submission_date),
+        formatDate(params.data.pcr_submission_date),
       tooltipValueGetter: (params: ITooltipParams) =>
-        formatDate(params.data.submission_date),
-      minWidth: 150,
+        formatDate(params.data.pcr_submission_date),
     },
   ],
   defaultColDef: {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed',
-    minWidth: 90,
+    minWidth: 120,
     resizable: true,
-    sortable: true,
+    sortable: false,
   },
 })
 

@@ -16,8 +16,6 @@ import {
 export type YearRangeWidgetProps = {
   Button?: React.FC<TriggerButtonProps>
   className?: string
-  buttonClassName?: string
-  labelClassName?: string
   label?: JSX.Element | string
   max: number
   min: number
@@ -174,19 +172,13 @@ export type TriggerButtonProps = {
   onClick: MouseEventHandler
   open?: boolean
   uniqueId?: string
-  buttonClassName?: string
-  labelClassName?: string
 }
 
 function TriggerButton(props: TriggerButtonProps) {
-  const { label, onClick, open, uniqueId, buttonClassName, labelClassName } =
-    props
+  const { label, onClick, open, uniqueId } = props
   return (
     <button
-      className={cx(
-        'flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]',
-        buttonClassName,
-      )}
+      className="flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]"
       aria-describedby={open ? `range-widget-${uniqueId}` : undefined}
       onClick={onClick}
     >
@@ -194,10 +186,7 @@ function TriggerButton(props: TriggerButtonProps) {
         <IoEllipseOutline className="text-typography-secondary" size={24} />
         {label && (
           <Typography
-            className={cx(
-              'text-lg uppercase leading-6 text-primary',
-              labelClassName,
-            )}
+            className={cx('text-lg uppercase leading-6 text-primary')}
           >
             {label}
           </Typography>
@@ -215,8 +204,6 @@ export default function YearRangeWidget({
   min,
   onChange,
   value,
-  buttonClassName,
-  labelClassName,
 }: YearRangeWidgetProps) {
   const uniqueId = useId()
   const [dateRangeEl, setDateRangeEl] = useState<HTMLButtonElement | null>(null)
@@ -242,8 +229,6 @@ export default function YearRangeWidget({
         open={open}
         uniqueId={uniqueId}
         onClick={openDateRange}
-        buttonClassName={buttonClassName}
-        labelClassName={labelClassName}
       />
       <Popover
         id={open ? `range-widget-${uniqueId}` : undefined}

@@ -4,21 +4,28 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import {
-  CreateButton,
   RedirectBackButton,
+  CreateButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
-import { categoryOpts, initialFilters } from '../constants'
 import { useGetPCRProjects } from '../hooks/useGetPCRProjects'
+import { initialFilters, categoryOpts, booleanFieldsOpts } from '../constants'
+import { useStore } from '@ors/store'
+
+import { filter } from 'lodash'
 
 const PCRListingWrapper = () => {
   const form = useRef<any>()
 
-  const { countries, agencies, project_types, clusters, sectors, subsectors } =
+  const { countries, agencies, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
+  const projectsSlice = useStore((state) => state.projects)
+  const statuses = filter(projectsSlice.statuses.data, (status) =>
+    ['Completed', 'Financially completed'].includes(status.name),
+  )
 
   const [projectId, setProjectId] = useState<number | null>(null)
   const [filters, setFilters] = useState(initialFilters)
@@ -28,19 +35,23 @@ const PCRListingWrapper = () => {
   const { loading, setParams } = pcrProjects
 
   const fieldToOptionsMapping: Record<string, any[]> = {
-    region: countries,
+    region: [],
     country: countries,
     lead_agency: agencies,
     cooperating_agency: agencies,
     cluster: clusters,
     project_type: project_types,
     sector: sectors,
-    subsector: subsectors,
+    subsectors: subsectors,
     category: categoryOpts,
+    status: statuses,
+    pcr_due: booleanFieldsOpts,
+    ad_hoc_pcr: booleanFieldsOpts,
+    pcr_submitted: booleanFieldsOpts,
   }
 
   const handleFilterChange = (newFilters: { [key: string]: any }) => {
-    setFilters((filters: any) => ({ ...filters, ...newFilters }))
+    setFilters((filters) => ({ ...filters, ...newFilters }))
   }
 
   const handleParamsChange = (params: { [key: string]: any }) => {
