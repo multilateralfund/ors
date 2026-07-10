@@ -23,6 +23,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const { addUpdatedField } = useUpdatedFields()
 
   const [PCRData, setPCRDataNoFieldTracking] = useState<PCRData>({
+    summary_of_key_data: [],
     results_assessment: [],
   })
 

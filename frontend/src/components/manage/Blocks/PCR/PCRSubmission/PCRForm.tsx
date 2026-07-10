@@ -6,6 +6,7 @@ import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRLessonsLearned from './PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRSDGs from './PCRSDGs'
+import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -27,7 +28,7 @@ const PCRForm = () => {
     {
       id: 'pcr-summary-of-key-data',
       label: <TabLabel title="Summary of key data (tranches)" />,
-      component: <>Summary of key data (tranches)</>,
+      component: <PCRSummaryOfKeyData />,
     },
     {
       id: 'pcr-results-assessment',

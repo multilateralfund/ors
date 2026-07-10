@@ -30,7 +30,26 @@ export interface PCRResultsAssessmentType {
   additional_remarks: string
 }
 
+export interface PCRAlternativeTechnologyType {
+  substance_from: number | null
+  substance_to: number | null
+}
+
+export interface PCREnterpriseType {
+  name: string
+  address: string
+}
+
+export interface PCRSummaryOfKeyDataType {
+  project_id: number
+  funds_disbursed: string
+  planned_date_of_completion: string
+  alternative_technologies: PCRAlternativeTechnologyType[]
+  enterprises: PCREnterpriseType[]
+}
+
 export interface PCRData {
+  summary_of_key_data: PCRSummaryOfKeyDataType[]
   results_assessment: PCRResultsAssessmentType[]
 }
 
