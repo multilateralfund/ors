@@ -1,7 +1,171 @@
+from collections import Counter
+
+from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from core.models.project_completion_report import PCRProject
 from core.models.project import MetaProject, Project
+from core.models.project_completion_report import PCR, PCRProject
+
+
+class PCRProjectSerializer(serializers.ModelSerializer):
+    project_id = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(), source="project"
+    )
+
+    class Meta:
+        model = PCRProject
+        fields = [
+            "id",
+            "project_id",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "addresses",
+            "project_goal_achieved",
+            "project_goal_achieved_explanation",
+            "rating",
+            "rating_explaination",
+            "completed_by",
+        ]
+        extra_kwargs = {
+            "financial_figures_status": {"required": False},
+            "project_goal_achieved": {"required": False},
+            "rating": {"required": False},
+            "completed_by": {"required": False},
+        }
+
+
+def validate_pcr_project_references(pcr_projects, allowed_project_ids):
+    project_ids = [pcr_project["project"].id for pcr_project in pcr_projects]
+    project_id_counts = Counter(project_ids)
+    duplicate_ids = sorted(
+        project_id for project_id, count in project_id_counts.items() if count > 1
+    )
+    if duplicate_ids:
+        duplicate_ids_display = ", ".join(map(str, duplicate_ids))
+        raise serializers.ValidationError(
+            {
+                "pcr_projects": [
+                    f"Duplicate Project IDs are not allowed: {duplicate_ids_display}."
+                ]
+            }
+        )
+
+    unrelated_ids = sorted(set(project_ids) - set(allowed_project_ids))
+    if unrelated_ids:
+        unrelated_ids_display = ", ".join(map(str, unrelated_ids))
+        raise serializers.ValidationError(
+            {
+                "pcr_projects": [
+                    "Projects do not belong to this PCR's MetaProject: "
+                    f"{unrelated_ids_display}."
+                ]
+            }
+        )
+
+
+class PCRResponseSerializer(serializers.ModelSerializer):
+    meta_project_id = serializers.IntegerField(read_only=True)
+    pcr_projects = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PCR
+        fields = ["id", "meta_project_id", "submission_date", "pcr_projects"]
+
+    def get_pcr_projects(self, instance):
+        return PCRProjectSerializer(
+            instance.pcr_projects.order_by("id"), many=True, context=self.context
+        ).data
+
+
+class PCRCreateSerializer(serializers.ModelSerializer):
+    meta_project_id = serializers.PrimaryKeyRelatedField(
+        queryset=MetaProject.objects.all(), source="meta_project"
+    )
+    pcr_projects = PCRProjectSerializer(many=True, required=False)
+
+    class Meta:
+        model = PCR
+        fields = ["meta_project_id", "submission_date", "pcr_projects"]
+
+    def validate_meta_project_id(self, meta_project):
+        project_ids = meta_project.projects.values_list("id", flat=True)
+        assigned_ids = list(
+            PCRProject.objects.filter(project_id__in=project_ids)
+            .order_by("project_id")
+            .values_list("project_id", flat=True)
+        )
+        if assigned_ids:
+            assigned_ids_display = ", ".join(map(str, assigned_ids))
+            raise serializers.ValidationError(
+                "MetaProject has Projects already assigned to a PCR: "
+                f"{assigned_ids_display}."
+            )
+        return meta_project
+
+    def validate(self, attrs):
+        pcr_projects = attrs.get("pcr_projects", [])
+        allowed_project_ids = attrs["meta_project"].projects.values_list(
+            "id", flat=True
+        )
+        validate_pcr_project_references(pcr_projects, allowed_project_ids)
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        pcr_projects_data = validated_data.pop("pcr_projects", [])
+        pcr_projects_by_project_id = {
+            pcr_project_data["project"].id: pcr_project_data
+            for pcr_project_data in pcr_projects_data
+        }
+        pcr = PCR.objects.create(**validated_data)
+        for project in pcr.meta_project.projects.order_by("id"):
+            pcr_project_data = pcr_projects_by_project_id.get(project.id, {}).copy()
+            pcr_project_data.pop("project", None)
+            PCRProject.objects.create(
+                pcr=pcr,
+                project=project,
+                **pcr_project_data,
+            )
+        return pcr
+
+    def to_representation(self, instance):
+        return PCRResponseSerializer(instance, context=self.context).data
+
+
+class PCRUpdateSerializer(serializers.ModelSerializer):
+    pcr_projects = PCRProjectSerializer(many=True, required=False)
+
+    class Meta:
+        model = PCR
+        fields = ["submission_date", "pcr_projects"]
+
+    def validate(self, attrs):
+        pcr_projects = attrs.get("pcr_projects", [])
+        allowed_project_ids = self.instance.pcr_projects.values_list(
+            "project_id", flat=True
+        )
+        validate_pcr_project_references(pcr_projects, allowed_project_ids)
+        return attrs
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        pcr_projects_data = validated_data.pop("pcr_projects", [])
+        instance = super().update(instance, validated_data)
+        pcr_projects_by_project_id = {
+            pcr_project.project_id: pcr_project
+            for pcr_project in instance.pcr_projects.all()
+        }
+        for pcr_project_data in pcr_projects_data:
+            project = pcr_project_data.pop("project")
+            pcr_project = pcr_projects_by_project_id[project.id]
+            for field_name, value in pcr_project_data.items():
+                setattr(pcr_project, field_name, value)
+            pcr_project.save()
+        return instance
+
+    def to_representation(self, instance):
+        return PCRResponseSerializer(instance, context=self.context).data
 
 
 class PCRProjectListSerializer(serializers.ModelSerializer):
@@ -192,6 +356,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "projects",
         ]
 
+    @extend_schema_field(ProjectListForPCRSerializer(many=True))
     def get_projects(self, obj):
         # Use filtered_projects if available, otherwise fallback to all projects
         projects = getattr(obj, "filtered_projects", obj.projects.all())

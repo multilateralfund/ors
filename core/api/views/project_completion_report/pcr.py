@@ -8,15 +8,28 @@ from core.api.filters.project_completion_report import (
     PCRProjectFilter,
     project_has_cooperating_agency_q,
 )
-from core.api.permissions import DenyAll, HasProjectV2ViewAccess
-from core.api.serializers.project_completion_report import PCRProjectListSerializer
+from core.api.permissions import (
+    DenyAll,
+    HasProjectV2EditAccess,
+    HasProjectV2ViewAccess,
+)
+from core.api.serializers.project_completion_report import (
+    PCRCreateSerializer,
+    PCRProjectListSerializer,
+    PCRUpdateSerializer,
+)
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
 from core.models.project import Project
-from core.models.project_completion_report import PCRProject
+from core.models.project_completion_report import PCR, PCRProject
 
 
-class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class PCRProjectViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+):
     serializer_class = PCRProjectListSerializer
     filterset_class = PCRProjectFilter
     filter_backends = [
@@ -46,7 +59,21 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def permission_classes(self):
         if self.action in ["list", "list_filters"]:
             return [HasProjectV2ViewAccess]
+        if self.action in ["create", "update", "partial_update"]:
+            return [HasProjectV2EditAccess]
         return [DenyAll]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return PCRCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            return PCRUpdateSerializer
+        return PCRProjectListSerializer
+
+    def filter_queryset(self, queryset):
+        if self.action in ["update", "partial_update"]:
+            return queryset
+        return super().filter_queryset(queryset)
 
     def _filter_project_permissions_queryset(self, queryset):
         user = self.request.user
@@ -73,6 +100,11 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return queryset.none()
 
     def get_queryset(self):
+        if self.action in ["update", "partial_update"]:
+            return PCR.objects.select_related("meta_project").prefetch_related(
+                "pcr_projects"
+            )
+
         pcr_required_project = Project.objects.filter(
             pk=OuterRef("project_id")
         ).pcr_required()

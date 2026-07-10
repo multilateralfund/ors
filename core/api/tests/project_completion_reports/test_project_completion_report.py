@@ -1,7 +1,9 @@
 from datetime import datetime, timezone as dt_timezone
+from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
+from rest_framework import serializers
 from rest_framework.test import APIClient
 
 from core.api.tests.factories import (
@@ -48,6 +50,18 @@ def _create_pcr_project(project, created_at):
     PCRProject.objects.filter(pk=pcr_project.pk).update(date_created=created_at)
     pcr_project.refresh_from_db()
     return pcr_project
+
+
+def _pcr_project_payload(project, **overrides):
+    payload = {
+        "project_id": project.id,
+        "financial_figures_status": PCRProject.FinancialFiguresStatus.FINAL,
+        "project_goal_achieved": PCRProject.ProjectGoalAchieved.YES,
+        "rating": PCRProject.Rating.SATISFACTORY_PLANNED,
+        "completed_by": PCRProject.CompletedBy.LEAD_AGENCY,
+    }
+    payload.update(overrides)
+    return payload
 
 
 @pytest.fixture(name="pcr_listing_data")
@@ -198,6 +212,341 @@ def test_pcr_project_list_permissions(client, url, user, admin_user, pcr_listing
 
     client.force_authenticate(user=admin_user)
     response = client.get(url)
+    assert response.status_code == 200
+
+
+def test_pcr_project_create(client, url, admin_user):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(meta_project=meta_project)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {
+            "meta_project_id": meta_project.id,
+            "submission_date": "2026-07-10",
+            "pcr_projects": [
+                _pcr_project_payload(project, addresses="Test project address")
+            ],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    pcr = PCR.objects.get(id=response.data["id"])
+    pcr_project = PCRProject.objects.get(pcr=pcr, project=project)
+    assert str(pcr.submission_date) == "2026-07-10"
+    assert pcr_project.addresses == "Test project address"
+    assert (
+        pcr_project.financial_figures_status == PCRProject.FinancialFiguresStatus.FINAL
+    )
+    assert response.data["id"] == pcr.id
+    assert response.data["meta_project_id"] == meta_project.id
+    assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["pcr_projects"][0]["id"] == pcr_project.id
+    assert response.data["pcr_projects"][0]["project_id"] == project.id
+    assert response.data["pcr_projects"][0]["addresses"] == "Test project address"
+
+
+def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
+    meta_project = MetaProjectFactory.create()
+    projects = ProjectFactory.create_batch(2, meta_project=meta_project)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {
+            "meta_project_id": meta_project.id,
+            "pcr_projects": [
+                _pcr_project_payload(projects[0], addresses="First project")
+            ],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert [item["project_id"] for item in response.data["pcr_projects"]] == [
+        project.id for project in projects
+    ]
+    assert PCRProject.objects.filter(pcr_id=response.data["id"]).count() == 2
+    assert PCRProject.objects.get(project=projects[0]).addresses == "First project"
+    assert PCRProject.objects.get(project=projects[1]).addresses is None
+
+
+def test_pcr_project_create_rejects_nonexistent_meta_project(client, url, admin_user):
+    nonexistent_meta_project_id = 999999
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {"meta_project_id": nonexistent_meta_project_id},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["meta_project_id"] == [
+        f'Invalid pk "{nonexistent_meta_project_id}" - object does not exist.'
+    ]
+    assert PCR.objects.count() == 0
+
+
+def test_pcr_project_create_rejects_nonexistent_nested_project(client, url, admin_user):
+    meta_project = MetaProjectFactory.create()
+    nonexistent_project_id = 999999
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {
+            "meta_project_id": meta_project.id,
+            "pcr_projects": [{"project_id": nonexistent_project_id}],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["pcr_projects"][0]["project_id"] == [
+        f'Invalid pk "{nonexistent_project_id}" - object does not exist.'
+    ]
+    assert PCR.objects.count() == 0
+
+
+def test_pcr_project_create_rejects_unrelated_nested_project(client, url, admin_user):
+    meta_project = MetaProjectFactory.create()
+    unrelated_project = ProjectFactory.create(meta_project=MetaProjectFactory.create())
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {
+            "meta_project_id": meta_project.id,
+            "pcr_projects": [{"project_id": unrelated_project.id}],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["pcr_projects"] == [
+        "Projects do not belong to this PCR's MetaProject: " f"{unrelated_project.id}."
+    ]
+    assert PCR.objects.count() == 0
+
+
+def test_pcr_project_create_rejects_duplicate_nested_projects(client, url, admin_user):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(meta_project=meta_project)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {
+            "meta_project_id": meta_project.id,
+            "pcr_projects": [
+                {"project_id": project.id},
+                {"project_id": project.id},
+            ],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["pcr_projects"] == [
+        f"Duplicate Project IDs are not allowed: {project.id}."
+    ]
+    assert PCR.objects.count() == 0
+
+
+def test_pcr_project_create_rejects_project_already_assigned_to_pcr(
+    client, url, admin_user
+):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(meta_project=meta_project)
+    existing_pcr = PCR.objects.create(meta_project=meta_project)
+    PCRProject.objects.create(pcr=existing_pcr, project=project)
+    client.force_authenticate(user=admin_user)
+
+    response = client.post(
+        url,
+        {"meta_project_id": meta_project.id},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["meta_project_id"] == [
+        f"MetaProject has Projects already assigned to a PCR: {project.id}."
+    ]
+    assert PCR.objects.count() == 1
+    assert PCRProject.objects.count() == 1
+
+
+def test_pcr_project_create_rolls_back_when_nested_creation_fails(
+    client, url, admin_user
+):
+    meta_project = MetaProjectFactory.create()
+    ProjectFactory.create_batch(2, meta_project=meta_project)
+    client.force_authenticate(user=admin_user)
+    actual_create = PCRProject.objects.create
+    call_count = 0
+
+    def create_then_fail(**kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 2:
+            raise serializers.ValidationError("Nested creation failed.")
+        return actual_create(**kwargs)
+
+    with patch.object(PCRProject.objects, "create", side_effect=create_then_fail):
+        response = client.post(
+            url,
+            {"meta_project_id": meta_project.id},
+            format="json",
+        )
+
+    assert response.status_code == 400
+    assert PCR.objects.count() == 0
+    assert PCRProject.objects.count() == 0
+
+
+def test_pcr_project_create_permissions(client, url, user, admin_user):
+    meta_project = MetaProjectFactory.create()
+    ProjectFactory.create(meta_project=meta_project)
+    payload = {"meta_project_id": meta_project.id}
+
+    response = client.post(url, payload, format="json")
+    assert response.status_code == 403
+
+    client.force_authenticate(user=user)
+    response = client.post(url, payload, format="json")
+    assert response.status_code == 403
+
+    client.force_authenticate(user=admin_user)
+    response = client.post(url, payload, format="json")
+    assert response.status_code == 201
+
+
+@pytest.mark.parametrize("method", ["patch", "put"])
+def test_pcr_update_submission_date_and_nested_project(client, admin_user, method):
+    meta_project = MetaProjectFactory.create()
+    projects = ProjectFactory.create_batch(2, meta_project=meta_project)
+    pcr = PCR.objects.create(meta_project=meta_project)
+    pcr_projects = [
+        PCRProject.objects.create(pcr=pcr, project=project) for project in projects
+    ]
+    detail_url = reverse("project-completion-report-detail", args=[pcr.id])
+    client.force_authenticate(user=admin_user)
+
+    response = getattr(client, method)(
+        detail_url,
+        {
+            "submission_date": "2026-07-10",
+            "pcr_projects": [
+                _pcr_project_payload(projects[0], addresses="Updated address")
+            ],
+        },
+        format="json",
+    )
+
+    assert response.status_code == 200
+    pcr.refresh_from_db()
+    for pcr_project in pcr_projects:
+        pcr_project.refresh_from_db()
+    assert str(pcr.submission_date) == "2026-07-10"
+    assert pcr_projects[0].addresses == "Updated address"
+    assert pcr_projects[1].addresses is None
+    assert response.data["id"] == pcr.id
+    assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["pcr_projects"][0]["addresses"] == "Updated address"
+
+
+def test_pcr_update_rejects_unrelated_nested_project(client, admin_user):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(meta_project=meta_project)
+    unrelated_project = ProjectFactory.create(meta_project=MetaProjectFactory.create())
+    pcr = PCR.objects.create(meta_project=meta_project)
+    PCRProject.objects.create(pcr=pcr, project=project)
+    detail_url = reverse("project-completion-report-detail", args=[pcr.id])
+    client.force_authenticate(user=admin_user)
+
+    response = client.patch(
+        detail_url,
+        {"pcr_projects": [{"project_id": unrelated_project.id}]},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.data["pcr_projects"] == [
+        "Projects do not belong to this PCR's MetaProject: " f"{unrelated_project.id}."
+    ]
+
+
+def test_pcr_update_rolls_back_parent_and_nested_projects(client, admin_user):
+    meta_project = MetaProjectFactory.create()
+    projects = ProjectFactory.create_batch(2, meta_project=meta_project)
+    pcr = PCR.objects.create(meta_project=meta_project)
+    pcr_projects = [
+        PCRProject.objects.create(pcr=pcr, project=project) for project in projects
+    ]
+    detail_url = reverse("project-completion-report-detail", args=[pcr.id])
+    client.force_authenticate(user=admin_user)
+    actual_save = PCRProject.save
+    call_count = 0
+
+    def save_then_fail(instance, *args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 2:
+            raise serializers.ValidationError("Nested update failed.")
+        return actual_save(instance, *args, **kwargs)
+
+    with patch.object(PCRProject, "save", new=save_then_fail):
+        response = client.patch(
+            detail_url,
+            {
+                "submission_date": "2026-07-10",
+                "pcr_projects": [
+                    {"project_id": project.id, "addresses": f"Address {project.id}"}
+                    for project in projects
+                ],
+            },
+            format="json",
+        )
+
+    assert response.status_code == 400
+    pcr.refresh_from_db()
+    for pcr_project in pcr_projects:
+        pcr_project.refresh_from_db()
+    assert pcr.submission_date is None
+    assert [pcr_project.addresses for pcr_project in pcr_projects] == [None, None]
+
+
+def test_pcr_update_nonexistent_pcr(client, admin_user):
+    client.force_authenticate(user=admin_user)
+    detail_url = reverse("project-completion-report-detail", args=[999999])
+
+    response = client.patch(
+        detail_url,
+        {"submission_date": "2026-07-10"},
+        format="json",
+    )
+
+    assert response.status_code == 404
+
+
+def test_pcr_update_permissions(client, user, admin_user):
+    meta_project = MetaProjectFactory.create()
+    pcr = PCR.objects.create(meta_project=meta_project)
+    detail_url = reverse("project-completion-report-detail", args=[pcr.id])
+    payload = {"submission_date": "2026-07-10"}
+
+    response = client.patch(detail_url, payload, format="json")
+    assert response.status_code == 403
+
+    client.force_authenticate(user=user)
+    response = client.patch(detail_url, payload, format="json")
+    assert response.status_code == 403
+
+    client.force_authenticate(user=admin_user)
+    response = client.patch(detail_url, payload, format="json")
     assert response.status_code == 200
 
 
