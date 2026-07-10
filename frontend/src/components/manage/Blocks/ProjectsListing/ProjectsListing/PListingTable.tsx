@@ -1,5 +1,3 @@
-'use client'
-
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'

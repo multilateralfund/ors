@@ -983,6 +983,7 @@ export const getMenus = (
     canUpdatePostExcom,
     canTransferProjects,
     canViewMetaProjects,
+    canViewProjects,
   } = permissions
   const {
     projectId,
@@ -1059,7 +1060,7 @@ export const getMenus = (
           title: 'Project Completion Reports',
           url: '/projects-listing/pcr-listing',
         },
-        { title: 'PCR view', url: '/pcr', disabled: false },
+        { title: 'PCR view', url: '/pcr', disabled: !canViewProjects },
       ],
     },
   ]
