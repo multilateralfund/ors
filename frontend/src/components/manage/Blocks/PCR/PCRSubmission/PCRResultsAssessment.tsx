@@ -1,20 +1,17 @@
 import { Fragment, useContext } from 'react'
 
-import {
-  SubmitButton,
-  NavigationButton,
-} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextAreaWidget } from './PCRWidgets'
-import { PCRSectionProps, PCRResultsAssessmentType } from '../interfaces'
 import { initialResultsAssessmentEntry } from '../constants'
+import { PCRResultsAssessmentType } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import { keys, map } from 'lodash'
 import cx from 'classnames'
 
-const PCRResultsAssessment = ({ setCurrentTab }: PCRSectionProps) => {
+const PCRResultsAssessment = () => {
   const { PCRData, setPCRData } = useContext(PCRDataContext)
 
   const sectionIdentifier = 'results_assessment'
@@ -45,8 +42,6 @@ const PCRResultsAssessment = ({ setCurrentTab }: PCRSectionProps) => {
     }, sectionIdentifier)
   }
 
-  console.log(sectionData)
-
   return (
     <>
       <div className="flex flex-col">
@@ -66,7 +61,7 @@ const PCRResultsAssessment = ({ setCurrentTab }: PCRSectionProps) => {
                 </Fragment>
               ))}
               <IoTrash
-                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                className="mt-10 min-h-6 min-w-6 cursor-pointer fill-gray-400"
                 size={16}
                 onClick={() => {
                   onRemoveActivity(index)
@@ -82,10 +77,6 @@ const PCRResultsAssessment = ({ setCurrentTab }: PCRSectionProps) => {
         onSubmit={onAddActivity}
         className="mr-auto h-8"
       />
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NavigationButton type="previous" setCurrentTab={setCurrentTab} />
-        <NavigationButton setCurrentTab={setCurrentTab} />
-      </div>
     </>
   )
 }

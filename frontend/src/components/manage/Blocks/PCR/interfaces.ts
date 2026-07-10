@@ -41,10 +41,6 @@ export type SetPCRData = (
 
 export type PCRFormData = { PCRData: PCRData; setPCRData: SetPCRData }
 
-export type PCRSectionProps = {
-  setCurrentTab: Dispatch<SetStateAction<number>>
-}
-
 export type WidgetPprops = {
   PCRData: PCRData
   setPCRData: Dispatch<SetStateAction<PCRData>>

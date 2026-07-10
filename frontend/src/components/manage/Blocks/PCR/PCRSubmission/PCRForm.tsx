@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRResultsAssessment from './PCRResultsAssessment'
 
 import { Tabs, Tab } from '@mui/material'
@@ -27,7 +28,7 @@ const PCRForm = () => {
     {
       id: 'pcr-results-assessment',
       label: <TabLabel title="Project results overall assessment" />,
-      component: <PCRResultsAssessment {...{ setCurrentTab }} />,
+      component: <PCRResultsAssessment />,
     },
     {
       id: 'pcr-causes-of-delay',
@@ -60,7 +61,7 @@ const PCRForm = () => {
     <>
       <Tabs
         aria-label="pcr-form"
-        className="sectionsTabs"
+        className="sectionsTabs pcrTabs"
         variant="scrollable"
         scrollButtons="auto"
         allowScrollButtonsMobile
@@ -81,7 +82,20 @@ const PCRForm = () => {
         {tabs
           .filter((_, index) => index === currentTab)
           .map(({ id, component }) => (
-            <span key={id}>{component}</span>
+            <span key={id}>
+              {component}
+              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                {currentTab !== 0 && (
+                  <NavigationButton
+                    type="previous"
+                    setCurrentTab={setCurrentTab}
+                  />
+                )}
+                {currentTab !== tabs.length - 1 && (
+                  <NavigationButton setCurrentTab={setCurrentTab} />
+                )}
+              </div>
+            </span>
           ))}
       </div>
     </>

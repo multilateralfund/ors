@@ -94,7 +94,7 @@ export const PCRTextAreaWidget = <T,>({
           }
           className={cx(
             textAreaClassname,
-            '!min-w-56 !pb-[5px] md:!min-w-[500px]',
+            '!min-w-56 !pb-[5px] md:!min-w-[600px]',
           )}
           style={STYLE}
           minRows={7}
