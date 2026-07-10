@@ -70,9 +70,3 @@ export type PCRHeaderType = {
 export type PCRActionButtons = {
   setIsLoading: (isLoading: boolean) => void
 }
-
-export type PCRStatus = {
-  id: number
-  code: string
-  name: string
-}

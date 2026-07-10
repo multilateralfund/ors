@@ -31,7 +31,7 @@ const PCRListingWrapper = () => {
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const pcrProjects = useGetPCRProjects({ filters: initialFilters })
+  const pcrProjects = useGetPCRProjects(initialFilters)
   const { loading, setParams } = pcrProjects
 
   const fieldToOptionsMapping: Record<string, any[]> = {

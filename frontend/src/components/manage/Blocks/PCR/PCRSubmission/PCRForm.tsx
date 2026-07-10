@@ -1,7 +1,11 @@
 import { useState } from 'react'
 
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRResultsAssessment'
+import PCRLessonsLearned from './PCRLessonsLearned'
+import PCRCausesOfDelay from './PCRCausesOfDelay'
+import PCRSDGs from './PCRSDGs'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -33,22 +37,22 @@ const PCRForm = () => {
     {
       id: 'pcr-causes-of-delay',
       label: <TabLabel title="Causes of delay" />,
-      component: <>Causes of delay</>,
+      component: <PCRCausesOfDelay />,
     },
     {
       id: 'pcr-lessons-learned',
       label: <TabLabel title="Lessons learned" />,
-      component: <>Lessons learned</>,
+      component: <PCRLessonsLearned />,
     },
     {
       id: 'pcr-gender-mainstreaming',
       label: <TabLabel title="Gender mainstreaming" />,
-      component: <>Gender mainstreaming</>,
+      component: <PCRGenderMainstreaming />,
     },
     {
       id: 'pcr-sdgs',
       label: <TabLabel title="SDGs (optional)" />,
-      component: <>SDGs (optional)</>,
+      component: <PCRSDGs />,
     },
     {
       id: 'pcr-supporting-evidence',

@@ -1,12 +1,11 @@
 import { createContext } from 'react'
 
-import {
-  PCRFormData,
-  PCRStatus,
-} from '@ors/components/manage/Blocks/PCR/interfaces'
+import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
+import { PCRFormData } from '@ors/components/manage/Blocks/PCR/interfaces'
 
 type PCRDataContextProps = PCRFormData & {
-  statuses: PCRStatus[]
+  pcrMetaproject: ReturnType<typeof useGetPCRProject>
+  pcrAgencies: number[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(

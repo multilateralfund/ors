@@ -2,16 +2,10 @@ import useApi from '@ors/hooks/useApi'
 import { getResults } from '@ors/helpers'
 import { PCRMetaProjectType } from '@ors/types/api_projects'
 
-export function useGetPCRProjects({
-  project_id,
-  filters,
-}: {
-  project_id?: string
-  filters?: Record<string, any>
-}) {
+export function useGetPCRProjects(filters: Record<string, any>) {
   const { data, ...rest } = useApi<PCRMetaProjectType[]>({
     options: {
-      params: { ...filters, project_id },
+      params: filters,
       withStoreCache: false,
     },
     path: '/api/pcr-metaprojects/',
