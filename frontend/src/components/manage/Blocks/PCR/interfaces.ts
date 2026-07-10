@@ -1,5 +1,6 @@
 import { RefObject } from 'react'
 
+import { useGetPCRProjects } from './hooks/useGetPCRProjects'
 import { PCRMetaProjectType } from '@ors/types/api_projects'
 
 export type PCRUpdatedMetaproject = PCRMetaProjectType & {
@@ -8,7 +9,7 @@ export type PCRUpdatedMetaproject = PCRMetaProjectType & {
 }
 
 export type PCRTableProps = {
-  pcrProjects: PCRUpdatedMetaproject
+  pcrProjects: ReturnType<typeof useGetPCRProjects>
   projectId: number | null
   setProjectId: (id: number | null) => void
   filters: Record<string, any>

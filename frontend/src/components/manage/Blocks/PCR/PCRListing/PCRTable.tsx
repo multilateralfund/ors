@@ -28,23 +28,23 @@ const PCRTable = ({
   // to update
   const pcrProjectsData = useMemo(
     () =>
-      results.map((metaproject, index) => ({
-        ...(index !== 1
+      results.map((metaproject) => ({
+        ...(metaproject.type !== 'multi-year'
           ? {
               ...metaproject,
               isMetaproject: true,
               isExpanded: false,
+              metaprojectId: metaproject.id,
               title: metaproject.umbrella_code ?? 'N/A',
               total_fund:
                 sumBy(metaproject.projects, 'total_fund') || undefined,
               support_cost_psc:
                 sumBy(metaproject.projects, 'support_cost_psc') || undefined,
-              type: 'multi-year',
             }
           : {
               ...metaproject.projects[0],
               isMetaproject: true,
-              id: metaproject.id,
+              metaprojectId: metaproject.id,
             }),
       })),
     [results],
@@ -58,6 +58,10 @@ const PCRTable = ({
         getRowId={(params) =>
           `${params.data.isMetaproject ? 'metaproject' : 'project'}-${params.data.id}`
         }
+        rowClassRules={{
+          'pcr-metaproject': (params) => params.data.isMetaproject,
+          'pcr-expanded-metaproject': (params) => params.data.isExpanded,
+        }}
         domLayout="normal"
         className="projects-table pcr-listing"
         rowData={pcrProjectsData}

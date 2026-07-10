@@ -1,15 +1,12 @@
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
-import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
 import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox } from '@mui/material'
 import { isNil } from 'lodash'
-import cx from 'classnames'
 import {
-  CellClassParams,
   ValueGetterParams,
   ICellRendererParams,
   ITooltipParams,
@@ -25,14 +22,20 @@ const expandMetaproject = (params: ICellRendererParams) => {
   }))
 
   if (!metaproject.isExpanded) {
-    metaproject.isExpanded = true
+    params.node.setData({
+      ...metaproject,
+      isExpanded: true,
+    })
 
     params.api.applyTransaction({
       add: projects,
       addIndex: (params.node.rowIndex ?? 0) + 1,
     })
   } else {
-    metaproject.isExpanded = false
+    params.node.setData({
+      ...metaproject,
+      isExpanded: false,
+    })
 
     params.api.applyTransaction({
       remove: projects,
@@ -46,12 +49,6 @@ const expandMetaproject = (params: ICellRendererParams) => {
   })
 }
 
-const getCellClass = (data: PCRUpdatedMetaproject) =>
-  cx({
-    'pcr-metaproject': data.isMetaproject,
-    'pcr-expanded-metaproject': data.isExpanded,
-  })
-
 const getColumnDefs = (
   projectId: number | null,
   setProjectId: (id: number | null) => void,
@@ -62,14 +59,13 @@ const getColumnDefs = (
       field: 'title',
       tooltipField: 'title',
       minWidth: 300,
-      cellClass: (props: CellClassParams) =>
-        `ag-cell-ellipsed ag-text-center !pl-0 ${getCellClass(props.data)}`,
+      cellClass: 'ag-cell-ellipsed ag-text-center !pl-0',
       cellRenderer: (props: ICellRendererParams) => (
         <div className="flex items-center gap-1 p-2">
           {props.data.isMetaproject ? (
             <>
               {/* to update */}
-              {props.data.type === 'multi-year' ? (
+              {props.data.type !== 'multi-year' ? (
                 <div
                   className="h-4 w-3 cursor-pointer"
                   onClick={() => expandMetaproject(props)}
@@ -84,9 +80,11 @@ const getColumnDefs = (
                 <div className="w-3" />
               )}
               <Checkbox
-                checked={projectId == props.data.id}
+                checked={projectId == props.data.metaprojectId}
                 onChange={(event) => {
-                  setProjectId(event.target.checked ? props.data.id : null)
+                  setProjectId(
+                    event.target.checked ? props.data.metaprojectId : null,
+                  )
                 }}
                 sx={{ color: 'black' }}
               />
