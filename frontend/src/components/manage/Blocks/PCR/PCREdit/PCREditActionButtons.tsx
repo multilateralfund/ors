@@ -3,7 +3,7 @@ import { useState } from 'react'
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
-import { PCRActionButtons } from '../interfaces'
+import { PCRActionButtons } from './interfaces'
 import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
@@ -24,20 +24,17 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     try {
       setInlineMessage({
         type: 'success',
-        message: 'Updated PCR successfully.',
+        message: 'PCR updated successfully.',
         redirectMessage: 'View PCR.',
       })
-
-      enqueueSnackbar(<>Updated project successfully.</>, {
+      enqueueSnackbar(<>PCR updated successfully.</>, {
         variant: 'success',
       })
-
       clearUpdatedFields()
-
-      return true
     } catch (error) {
-      await handleErrors(error)
-      return false
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -52,19 +49,19 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   }
 
   return (
-    <div className="container flex w-full flex-wrap justify-end gap-x-3 gap-y-2 px-0">
+    <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
       <Button
         className="px-4 py-2 shadow-none"
-        size="large"
         variant="contained"
+        size="large"
         onClick={editPCR}
       >
         Update PCR
       </Button>
       {isCancelModalOpen && setIsCancelModalOpen && (
         <CancelWarningModal
-          mode="project editing"
+          mode="PCR updating"
           isModalOpen={isCancelModalOpen}
           setIsModalOpen={setIsCancelModalOpen}
         />
