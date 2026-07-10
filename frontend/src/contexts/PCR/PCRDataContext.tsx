@@ -5,7 +5,6 @@ import { PCRFormData } from '@ors/components/manage/Blocks/PCR/interfaces'
 
 type PCRDataContextProps = PCRFormData & {
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
-  pcrAgencies: number[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(

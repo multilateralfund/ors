@@ -1,11 +1,10 @@
-import { PropsWithChildren, useMemo, useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 
-import { map, uniq } from 'lodash'
 import { useParams } from 'wouter'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
@@ -13,18 +12,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const { project_id } = useParams<Record<string, string>>()
   const pcrMetaproject = useGetPCRProject(project_id)
-  const { data } = pcrMetaproject
-
-  const pcrAgencies = useMemo(
-    () => uniq(map(data?.projects, 'agency_id')),
-    [data],
-  )
 
   const { addUpdatedField } = useUpdatedFields()
 
   const [PCRData, setPCRDataNoFieldTracking] = useState<PCRData>({
     summary_of_key_data: [],
     results_assessment: [],
+    causes_of_delay: [],
+    lessons_learned: [],
+    gender_mainstreaming: [],
+    sdg_contribution: [],
   })
 
   const setPCRData = (
@@ -43,9 +40,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   }
 
   return (
-    <PCRDataContext.Provider
-      value={{ pcrMetaproject, pcrAgencies, PCRData, setPCRData }}
-    >
+    <PCRDataContext.Provider value={{ pcrMetaproject, PCRData, setPCRData }}>
       {children}
     </PCRDataContext.Provider>
   )

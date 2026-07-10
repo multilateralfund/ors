@@ -4,7 +4,7 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextAreaWidget } from './PCRWidgets'
 import { initialResultsAssessmentEntry } from '../constants'
-import { PCRResultsAssessmentType } from '../interfaces'
+import { PCRResultsAssessmentData } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
@@ -53,7 +53,7 @@ const PCRResultsAssessment = () => {
             <div className="align-center flex flex-row flex-wrap gap-x-7">
               {map(keys(initialResultsAssessmentEntry), (field, fieldIndex) => (
                 <Fragment key={fieldIndex}>
-                  <PCRTextAreaWidget<PCRResultsAssessmentType>
+                  <PCRTextAreaWidget<PCRResultsAssessmentData>
                     {...{ PCRData, setPCRData, sectionIdentifier, field }}
                     errors={{}}
                     indexes={[index]}

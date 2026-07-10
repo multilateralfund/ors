@@ -23,7 +23,7 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
-export interface PCRResultsAssessmentType {
+export interface PCRResultsAssessmentData {
   type_of_activity: string
   planned_output: string
   actual_activity_output: string
@@ -48,9 +48,41 @@ export interface PCRSummaryOfKeyDataType {
   enterprises: PCREnterpriseType[]
 }
 
+export interface PCRProjectComponentData {
+  agency_id: number
+  pcr_project_component: {
+    id: number | null
+    data: {
+      id: number | null
+      description: string
+    }[]
+  }[]
+}
+
+export interface PCRGenderMainstreamingData {
+  agency_id: number
+  project_phase: {
+    id: number | null
+    meets_criteria: boolean
+    description: string
+  }[]
+}
+
+export interface PCRSdgContributionData {
+  agency_id: number
+  sdgs: {
+    id: number | null
+    description: string
+  }[]
+}
+
 export interface PCRData {
   summary_of_key_data: PCRSummaryOfKeyDataType[]
-  results_assessment: PCRResultsAssessmentType[]
+  results_assessment: PCRResultsAssessmentData[]
+  causes_of_delay: PCRProjectComponentData[]
+  lessons_learned: PCRProjectComponentData[]
+  gender_mainstreaming: PCRGenderMainstreamingData[]
+  sdg_contribution: PCRSdgContributionData[]
 }
 
 export type SetPCRData = (
