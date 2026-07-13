@@ -10,6 +10,7 @@ import {
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
+import ViewTable from '@ors/components/manage/Form/ViewTable'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import useApi from '@ors/hooks/useApi'
 import { ApiSubstance } from '@ors/types/api_substances'
@@ -21,31 +22,26 @@ import {
   PCRSummaryOfKeyDataType,
 } from '../interfaces'
 
-import { Divider, IconButton, TextareaAutosize } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  TextareaAutosize,
+} from '@mui/material'
+import {
+  ColDef,
+  ICellRendererParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
+import { FiEdit } from 'react-icons/fi'
 import { IoTrash } from 'react-icons/io5'
 
-type SummaryTableColumn = {
-  label: string
-  field?: keyof ProjectType
-}
-
 type SubstanceOption = ApiSubstance & { label: string }
-type DisposalTypeOption = { id: number, name: string, label: string }
-
-const summaryTableColumns: SummaryTableColumn[] = [
-  {label: 'Project code', field: 'code'},
-  {label: 'Type', field: 'project_type'},
-  {label: 'Sector', field: 'sector'},
-  {label: 'Agency', field: 'agency'},
-  {label: 'Tranche(s)', field: 'tranche'},
-  {label: 'Date approved'},
-  {label: 'Actual date of completion'},
-  {label: 'Funds approved'},
-  {label: 'ODP phase-out (Approved)'},
-  {label: 'ODP phase out (Actual)'},
-  {label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)'},
-  {label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)'},
-]
+type DisposalTypeOption = { id: number; name: string; label: string }
 
 const createAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
   substance_from: null,
@@ -73,13 +69,13 @@ const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
   equipments: [createEquipment()],
 })
 
-const formatProjectValue = (value: unknown): ReactNode => {
+const formatProjectValue = (value: unknown): string => {
   if (value === null || value === undefined) {
     return ''
   }
 
   if (typeof value === 'string' || typeof value === 'number') {
-    return value
+    return String(value)
   }
 
   if (Array.isArray(value)) {
@@ -117,20 +113,19 @@ const EmptyField = ({label}: { label: string }) => (
   </div>
 )
 
-const SubstanceSelect = (
-  {
-    id,
-    label,
-    onChange,
-    options,
-    value,
-  }: {
-    id: string
-    label: string
-    onChange: (value: number | null) => void
-    options: SubstanceOption[]
-    value: number | null
-  }) => (
+const SubstanceSelect = ({
+  id,
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  id: string
+  label: string
+  onChange: (value: number | null) => void
+  options: SubstanceOption[]
+  value: number | null
+}) => (
   <div className="min-w-56 sm:min-w-64">
     <Label htmlFor={id}>{label}</Label>
     <Field
@@ -148,20 +143,19 @@ const SubstanceSelect = (
   </div>
 )
 
-const DisposalTypeSelect = (
-  {
-    id,
-    label,
-    onChange,
-    options,
-    value,
-  }: {
-    id: string
-    label: string
-    onChange: (value: number | null) => void
-    options: DisposalTypeOption[]
-    value: number | null
-  }) => (
+const DisposalTypeSelect = ({
+  id,
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  id: string
+  label: string
+  onChange: (value: number | null) => void
+  options: DisposalTypeOption[]
+  value: number | null
+}) => (
   <div className="min-w-56 sm:min-w-64">
     <Label htmlFor={id}>{label}</Label>
     <Field
@@ -200,9 +194,9 @@ const PCRSummaryOfKeyData = () => {
   )
 
   const disposalTypeOptions = [
-    {id: 1, name: "Disposal type 1", label: "Disposal type 1"},
-    {id: 2, name: "Disposal type 2", label: "Disposal type 2"},
-    {id: 3, name: "Disposal type 3", label: "Disposal type 3"},
+    {id: 1, name: 'Disposal type 1', label: 'Disposal type 1'},
+    {id: 2, name: 'Disposal type 2', label: 'Disposal type 2'},
+    {id: 3, name: 'Disposal type 3', label: 'Disposal type 3'},
   ]
 
   const editingProject = projects.find(
@@ -213,6 +207,84 @@ const PCRSummaryOfKeyData = () => {
       (entry) => entry.project_id === editingProjectId,
     ) ?? createSummaryData(editingProjectId))
     : null
+
+  const summaryTableColumnDefs = useMemo<ColDef<ProjectType>[]>(
+    () => [
+      {
+        headerName: 'Project code',
+        field: 'code',
+        minWidth: 210,
+        cellRenderer: (params: ICellRendererParams<ProjectType>) => (
+          <div className="flex h-full items-center gap-x-2">
+            <IconButton
+              aria-label={`Edit project ${params.data?.code ?? ''}`}
+              className="h-7 w-7"
+              onClick={() => setEditingProjectId(params.data?.id ?? null)}
+              size="small"
+            >
+              <FiEdit size={16}/>
+            </IconButton>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {params.value}
+            </span>
+          </div>
+        ),
+      },
+      {
+        headerName: 'Type',
+        minWidth: 160,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.project_type),
+      },
+      {
+        headerName: 'Sector',
+        minWidth: 160,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.sector),
+      },
+      {
+        headerName: 'Agency',
+        minWidth: 130,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.agency),
+      },
+      {
+        headerName: 'Tranche(s)',
+        minWidth: 110,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.tranche),
+      },
+      {
+        headerName: 'Date approved',
+        minWidth: 135,
+      },
+      {
+        headerName: 'Actual date of completion',
+        minWidth: 165,
+      },
+      {
+        headerName: 'Funds approved',
+        minWidth: 140,
+      },
+      {
+        headerName: 'ODP phase-out (Approved)',
+        minWidth: 170,
+      },
+      {
+        headerName: 'ODP phase out (Actual)',
+        minWidth: 160,
+      },
+      {
+        headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
+        minWidth: 230,
+      },
+      {
+        headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
+        minWidth: 220,
+      },
+    ],
+    [],
+  )
 
   const updateSummaryData = (
     updater: (data: PCRSummaryOfKeyDataType) => PCRSummaryOfKeyDataType,
@@ -293,362 +365,363 @@ const PCRSummaryOfKeyData = () => {
 
   return (
     <div className="flex flex-col gap-y-6">
-      <div className="w-full overflow-x-auto">
-        <table className="border-collapse text-left">
-          <thead>
-          <tr>
-            {summaryTableColumns.map(({label}) => (
-              <th
-                key={label}
-                className="min-w-36 border border-solid border-primary bg-primary p-2 align-top font-medium text-white"
-              >
-                {label}
-              </th>
-            ))}
-            <th className="w-24 border border-solid border-primary bg-primary p-2 align-top font-medium text-white">
-              Actions
-            </th>
-          </tr>
-          </thead>
-          <tbody>
-          {projects.length === 0 ? (
-            <tr>
-              <td
-                className="border border-solid border-primary p-3 text-center"
-                colSpan={summaryTableColumns.length + 1}
-              >
-                No projects available.
-              </td>
-            </tr>
-          ) : (
-            projects.map((project) => (
-              <tr key={project.id}>
-                {summaryTableColumns.map(({label, field}) => (
-                  <td
-                    key={label}
-                    className="border border-solid border-primary p-2 align-top"
-                  >
-                    {field ? formatProjectValue(project[field]) : ''}
-                  </td>
-                ))}
-                <td className="border border-solid border-primary p-2 align-top">
-                  <SubmitButton
-                    title="Edit"
-                    onSubmit={() => setEditingProjectId(project.id)}
-                    className="h-8 !text-sm"
-                  />
-                </td>
-              </tr>
-            ))
-          )}
-          </tbody>
-        </table>
-      </div>
+      <ViewTable<ProjectType>
+        columnDefs={summaryTableColumnDefs}
+        defaultColDef={{
+          autoHeaderHeight: true,
+          cellClass: 'ag-cell-ellipsed ag-cell-centered',
+          headerClass: 'ag-text-center',
+          resizable: true,
+        }}
+        enablePagination={false}
+        rowData={projects}
+        rowHeight={48}
+        suppressCellFocus={true}
+        withSeparators={true}
+      />
 
       {editingProject && summaryData && (
-        <div className="flex flex-col gap-y-6">
-          <h2 className="text-2xl font-medium">
+        <Dialog
+          aria-labelledby="pcr-summary-edit-dialog-title"
+          fullWidth={true}
+          maxWidth="xl"
+          onClose={() => setEditingProjectId(null)}
+          open={true}
+          scroll="paper"
+        >
+          <DialogTitle id="pcr-summary-edit-dialog-title">
             Project {editingProject.code}
-          </h2>
-
-          <FieldGroup>
-            <div className="flex flex-wrap gap-x-7 gap-y-4">
-              <div>
-                <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
-                  Funds disbursed
-                </Label>
-                <FormattedNumberInput
-                  id={`funds-disbursed-${editingProject.id}`}
-                  className="w-40"
-                  value={summaryData.funds_disbursed}
-                  withoutDefaultValue={true}
-                  onChange={(event) =>
-                    updateSummaryData(
-                      (projectData) => ({
-                        ...projectData,
-                        funds_disbursed: event.target.value,
-                      }),
-                      'funds_disbursed',
-                    )
-                  }
-                />
-              </div>
-              <div>
-                <Label
-                  htmlFor={`planned-date-of-completion-${editingProject.id}`}
-                >
-                  Planned date of completion
-                </Label>
-                <DateInput
-                  id={`planned-date-of-completion-${editingProject.id}`}
-                  className="w-48"
-                  value={summaryData.planned_date_of_completion}
-                  onChange={(event) =>
-                    updateSummaryData(
-                      (projectData) => ({
-                        ...projectData,
-                        planned_date_of_completion: event.target.value,
-                      }),
-                      'planned_date_of_completion',
-                    )
-                  }
-                />
-              </div>
-              <EmptyField label="Planned duration (months)"/>
-              <EmptyField label="Actual duration (months)"/>
-              <EmptyField label="Delay (months)"/>
-            </div>
-          </FieldGroup>
-
-          <Divider/>
-
-          <FieldGroup title="Alternative technology">
-            <div className="flex flex-col gap-y-4">
-              {summaryData.alternative_technologies.map((entry, index) => (
-                <div
-                  key={index}
-                  className="flex flex-wrap items-end gap-x-7 gap-y-4"
-                >
-                  <SubstanceSelect
-                    id={`substance-from-${editingProject.id}-${index}`}
-                    label="Substance converted from"
-                    options={substanceOptions}
-                    value={entry.substance_from}
-                    onChange={(value) =>
-                      updateAlternativeTechnology(
-                        index,
-                        'substance_from',
-                        value,
-                      )
-                    }
-                  />
-                  <SubstanceSelect
-                    id={`substance-to-${editingProject.id}-${index}`}
-                    label="Substance converted to"
-                    options={substanceOptions}
-                    value={entry.substance_to}
-                    onChange={(value) =>
-                      updateAlternativeTechnology(index, 'substance_to', value)
-                    }
-                  />
-                  <IconButton
-                    aria-label="Remove alternative technology"
-                    onClick={() =>
-                      updateSummaryData(
-                        (projectData) => ({
-                          ...projectData,
-                          alternative_technologies:
-                            projectData.alternative_technologies.filter(
-                              (_, entryIndex) => entryIndex !== index,
-                            ),
-                        }),
-                        'alternative_technologies',
-                      )
-                    }
-                  >
-                    <IoTrash className="fill-gray-400" size={18}/>
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-            <SubmitButton
-              title="Add alternative technology"
-              onSubmit={() =>
-                updateSummaryData(
-                  (projectData) => ({
-                    ...projectData,
-                    alternative_technologies: [
-                      ...projectData.alternative_technologies,
-                      createAlternativeTechnology(),
-                    ],
-                  }),
-                  'alternative_technologies',
-                )
-              }
-              className="mr-auto h-8"
-            />
-          </FieldGroup>
-
-          <Divider/>
-
-          <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
-            <div className="flex flex-col gap-y-4">
-              {summaryData.enterprises.map((entry, index) => (
-                <div
-                  key={index}
-                  className="flex flex-wrap items-end gap-x-7 gap-y-4"
-                >
-                  <div className="min-w-56 sm:min-w-64">
-                    <Label
-                      htmlFor={`enterprise-name-${editingProject.id}-${index}`}
-                    >
-                      Name of Enterprise
+          </DialogTitle>
+          <DialogContent dividers={true}>
+            <div className="flex flex-col gap-y-6 py-2">
+              <FieldGroup>
+                <div className="flex flex-wrap gap-x-7 gap-y-4">
+                  <div>
+                    <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
+                      Funds disbursed
                     </Label>
-                    <SimpleInput
-                      id={`enterprise-name-${editingProject.id}-${index}`}
-                      label=""
-                      type="text"
-                      value={entry.name}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        updateEnterprise(index, 'name', event.target.value)
+                    <FormattedNumberInput
+                      id={`funds-disbursed-${editingProject.id}`}
+                      className="w-40 !m-0"
+                      value={summaryData.funds_disbursed}
+                      withoutDefaultValue={true}
+                      onChange={(event) =>
+                        updateSummaryData(
+                          (projectData) => ({
+                            ...projectData,
+                            funds_disbursed: event.target.value,
+                          }),
+                          'funds_disbursed',
+                        )
                       }
                     />
                   </div>
-                  <div className="min-w-72 flex-1">
+                  <div>
                     <Label
-                      htmlFor={`enterprise-address-${editingProject.id}-${index}`}
+                      htmlFor={`planned-date-of-completion-${editingProject.id}`}
                     >
-                      Address of enterprises
-                    </Label>
-                    <TextareaAutosize
-                      id={`enterprise-address-${editingProject.id}-${index}`}
-                      className={`${textAreaClassname} min-h-10 w-full pb-2`}
-                      minRows={1}
-                      style={STYLE}
-                      value={entry.address}
-                      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                        updateEnterprise(index, 'address', event.target.value)
-                      }
-                    />
-                  </div>
-                  <IconButton
-                    aria-label="Remove enterprise"
-                    onClick={() =>
-                      updateSummaryData(
-                        (projectData) => ({
-                          ...projectData,
-                          enterprises: projectData.enterprises.filter(
-                            (_, entryIndex) => entryIndex !== index,
-                          ),
-                        }),
-                        'enterprises',
-                      )
-                    }
-                  >
-                    <IoTrash className="fill-gray-400" size={18}/>
-                  </IconButton>
-                </div>
-              ))}
-            </div>
-            <SubmitButton
-              title="Add enterprise"
-              onSubmit={() =>
-                updateSummaryData(
-                  (projectData) => ({
-                    ...projectData,
-                    enterprises: [
-                      ...projectData.enterprises,
-                      createEnterprise(),
-                    ],
-                  }),
-                  'enterprises',
-                )
-              }
-              className="mr-auto h-8"
-            />
-          </FieldGroup>
-
-          <Divider/>
-
-          <FieldGroup>
-            <div className="flex flex-col gap-y-4">
-              {summaryData.equipments.map((entry, index) => (
-                <div key={index} className="flex flex-wrap items-end gap-x-7 gap-y-4">
-                  <div className="min-w-56 sm:min-w-64">
-                    <Label
-                      htmlFor={`equipment-name-${editingProject.id}-${index}`}
-                    >
-                      Name of equipment
-                    </Label>
-                    <SimpleInput
-                      id={`equipment-name-${editingProject.id}-${index}`}
-                      label=""
-                      type="text"
-                      value={entry.name}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        updateEquipment(index, 'name', event.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="min-w-72 flex-1">
-                    <Label
-                      htmlFor={`equipment-description-${editingProject.id}-${index}`}
-                    >
-                      Description
-                    </Label>
-                    <TextareaAutosize
-                      id={`equipment-description-${editingProject.id}-${index}`}
-                      className={`${textAreaClassname} min-h-10 w-full pb-2`}
-                      minRows={1}
-                      style={STYLE}
-                      value={entry.description}
-                      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                        updateEquipment(index, 'description', event.target.value)
-                      }
-                    />
-                  </div>
-                  <DisposalTypeSelect
-                    id={`equipment-disposal_type-${editingProject.id}-${index}`}
-                    label="Disposal type"
-                    options={disposalTypeOptions}
-                    value={entry.disposal_type}
-                    onChange={(value) =>
-                      updateEquipment(
-                        index,
-                        'disposal_type',
-                        value,
-                      )
-                    }
-                  />
-                  <div className="min-w-72 flex-1">
-                    <Label
-                      htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
-                    >
-                      Date of disposal
+                      Planned date of completion
                     </Label>
                     <DateInput
-                      id={`equipment-disposal_date-${editingProject.id}-${index}`}
-                      className="w-8"
-                      value={entry.disposal_date}
+                      id={`planned-date-of-completion-${editingProject.id}`}
+                      className="w-48 !m-0"
+                      value={summaryData.planned_date_of_completion}
                       onChange={(event) =>
-                        updateEquipment(index, 'disposal_date', event.target.value)
+                        updateSummaryData(
+                          (projectData) => ({
+                            ...projectData,
+                            planned_date_of_completion: event.target.value,
+                          }),
+                          'planned_date_of_completion',
+                        )
                       }
                     />
                   </div>
-                  <IconButton
-                    aria-label="Remove equipment"
-                    onClick={() =>
-                      updateSummaryData(
-                        (projectData) => ({
-                          ...projectData,
-                          equipments: projectData.equipments.filter(
-                            (_, entryIndex) => entryIndex !== index,
-                          ),
-                        }),
-                        'equipments',
-                      )
-                    }
-                  >
-                    <IoTrash className="fill-gray-400" size={18}/>
-                  </IconButton>
+                  <EmptyField label="Planned duration (months)"/>
+                  <EmptyField label="Actual duration (months)"/>
+                  <EmptyField label="Delay (months)"/>
                 </div>
-              ))}
+              </FieldGroup>
+
+              <Divider/>
+
+              <FieldGroup title="Alternative technology">
+                <div className="flex flex-col gap-y-4">
+                  {summaryData.alternative_technologies.map((entry, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-wrap items-end gap-x-7 gap-y-4"
+                    >
+                      <SubstanceSelect
+                        id={`substance-from-${editingProject.id}-${index}`}
+                        label="Substance converted from"
+                        options={substanceOptions}
+                        value={entry.substance_from}
+                        onChange={(value) =>
+                          updateAlternativeTechnology(
+                            index,
+                            'substance_from',
+                            value,
+                          )
+                        }
+                      />
+                      <SubstanceSelect
+                        id={`substance-to-${editingProject.id}-${index}`}
+                        label="Substance converted to"
+                        options={substanceOptions}
+                        value={entry.substance_to}
+                        onChange={(value) =>
+                          updateAlternativeTechnology(
+                            index,
+                            'substance_to',
+                            value,
+                          )
+                        }
+                      />
+                      <IconButton
+                        aria-label="Remove alternative technology"
+                        onClick={() =>
+                          updateSummaryData(
+                            (projectData) => ({
+                              ...projectData,
+                              alternative_technologies:
+                                projectData.alternative_technologies.filter(
+                                  (_, entryIndex) => entryIndex !== index,
+                                ),
+                            }),
+                            'alternative_technologies',
+                          )
+                        }
+                      >
+                        <IoTrash className="fill-gray-400" size={18}/>
+                      </IconButton>
+                    </div>
+                  ))}
+                </div>
+                <SubmitButton
+                  title="Add alternative technology"
+                  onSubmit={() =>
+                    updateSummaryData(
+                      (projectData) => ({
+                        ...projectData,
+                        alternative_technologies: [
+                          ...projectData.alternative_technologies,
+                          createAlternativeTechnology(),
+                        ],
+                      }),
+                      'alternative_technologies',
+                    )
+                  }
+                  className="mr-auto h-8"
+                />
+              </FieldGroup>
+
+              <Divider/>
+
+              <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+                <div className="flex flex-col gap-y-4">
+                  {summaryData.enterprises.map((entry, index) => (
+                    <div
+                      key={index}
+                      className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
+                    >
+                      <div className="w-full">
+                        <Label
+                          htmlFor={`enterprise-name-${editingProject.id}-${index}`}
+                        >
+                          Name of Enterprise
+                        </Label>
+                        <SimpleInput
+                          id={`enterprise-name-${editingProject.id}-${index}`}
+                          label=""
+                          type="text"
+                          value={entry.name}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            updateEnterprise(index, 'name', event.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="w-full">
+                        <Label
+                          htmlFor={`enterprise-address-${editingProject.id}-${index}`}
+                        >
+                          Address of enterprises
+                        </Label>
+                        <TextareaAutosize
+                          id={`enterprise-address-${editingProject.id}-${index}`}
+                          className={`${textAreaClassname} min-h-24 w-full pb-2`}
+                          minRows={3}
+                          style={STYLE}
+                          value={entry.address}
+                          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                            updateEnterprise(
+                              index,
+                              'address',
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <IconButton
+                        aria-label="Remove enterprise"
+                        className="mt-7 justify-self-start"
+                        onClick={() =>
+                          updateSummaryData(
+                            (projectData) => ({
+                              ...projectData,
+                              enterprises: projectData.enterprises.filter(
+                                (_, entryIndex) => entryIndex !== index,
+                              ),
+                            }),
+                            'enterprises',
+                          )
+                        }
+                      >
+                        <IoTrash className="fill-gray-400" size={18}/>
+                      </IconButton>
+                    </div>
+                  ))}
+                </div>
+                <SubmitButton
+                  title="Add enterprise"
+                  onSubmit={() =>
+                    updateSummaryData(
+                      (projectData) => ({
+                        ...projectData,
+                        enterprises: [
+                          ...projectData.enterprises,
+                          createEnterprise(),
+                        ],
+                      }),
+                      'enterprises',
+                    )
+                  }
+                  className="mr-auto h-8"
+                />
+              </FieldGroup>
+
+              <Divider/>
+
+              <FieldGroup>
+                <div className="flex flex-col gap-y-4">
+                  {summaryData.equipments.map((entry, index) => (
+                    <div
+                      key={index}
+                      className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto]"
+                    >
+                      <div className="w-full">
+                        <Label
+                          htmlFor={`equipment-name-${editingProject.id}-${index}`}
+                        >
+                          Name of equipment
+                        </Label>
+                        <SimpleInput
+                          id={`equipment-name-${editingProject.id}-${index}`}
+                          label=""
+                          type="text"
+                          value={entry.name}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            updateEquipment(index, 'name', event.target.value)
+                          }
+                        />
+                      </div>
+                      <div className="w-full md:col-span-2 xl:col-span-1">
+                        <Label
+                          htmlFor={`equipment-description-${editingProject.id}-${index}`}
+                        >
+                          Description
+                        </Label>
+                        <TextareaAutosize
+                          id={`equipment-description-${editingProject.id}-${index}`}
+                          className={`${textAreaClassname} min-h-24 w-full pb-2`}
+                          minRows={3}
+                          style={STYLE}
+                          value={entry.description}
+                          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                            updateEquipment(
+                              index,
+                              'description',
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <DisposalTypeSelect
+                        id={`equipment-disposal_type-${editingProject.id}-${index}`}
+                        label="Disposal type"
+                        options={disposalTypeOptions}
+                        value={entry.disposal_type}
+                        onChange={(value) =>
+                          updateEquipment(index, 'disposal_type', value)
+                        }
+                      />
+                      <div className="w-full">
+                        <Label
+                          htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
+                        >
+                          Date of disposal
+                        </Label>
+                        <DateInput
+                          id={`equipment-disposal_date-${editingProject.id}-${index}`}
+                          className="w-full !m-0"
+                          value={entry.disposal_date}
+                          onChange={(event) =>
+                            updateEquipment(
+                              index,
+                              'disposal_date',
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <IconButton
+                        aria-label="Remove equipment"
+                        className="mt-7 justify-self-start"
+                        onClick={() =>
+                          updateSummaryData(
+                            (projectData) => ({
+                              ...projectData,
+                              equipments: projectData.equipments.filter(
+                                (_, entryIndex) => entryIndex !== index,
+                              ),
+                            }),
+                            'equipments',
+                          )
+                        }
+                      >
+                        <IoTrash className="fill-gray-400" size={18}/>
+                      </IconButton>
+                    </div>
+                  ))}
+                </div>
+                <SubmitButton
+                  title="Add equipment"
+                  onSubmit={() =>
+                    updateSummaryData(
+                      (projectData) => ({
+                        ...projectData,
+                        equipments: [
+                          ...projectData.equipments,
+                          createEquipment(),
+                        ],
+                      }),
+                      'equipments',
+                    )
+                  }
+                  className="mr-auto h-8"
+                />
+              </FieldGroup>
             </div>
-            <SubmitButton
-              title="Add equipment"
-              onSubmit={() => updateSummaryData(
-                (projectData) => ({
-                  ...projectData,
-                  equipments: [
-                    ...projectData.equipments,
-                    createEquipment(),
-                  ],
-                }), 'equipments',
-              )
-              }
-            />
-          </FieldGroup>
-        </div>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              className="bg-primary text-white hover:text-mlfs-hlYellow"
+              onClick={() => setEditingProjectId(null)}
+            >
+              Done
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   )
