@@ -25,11 +25,10 @@ const PCRTable = ({
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
 
-  // to update
   const pcrProjectsData = useMemo(
     () =>
       results.map((metaproject) => ({
-        ...(metaproject.type !== 'multi-year'
+        ...(metaproject.type === 'Multi-year agreement'
           ? {
               ...metaproject,
               isMetaproject: true,
