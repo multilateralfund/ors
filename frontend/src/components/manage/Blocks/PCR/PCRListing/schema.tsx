@@ -63,11 +63,10 @@ const getColumnDefs = (
       cellRenderer: (props: ICellRendererParams) => (
         <div className="flex items-center gap-1 p-2">
           {props.data.isMetaproject ? (
-            <>
-              {/* to update */}
-              {props.data.type !== 'multi-year' ? (
+            <div className="flex shrink-0 items-center">
+              {props.data.type === 'Multi-year agreement' ? (
                 <div
-                  className="h-4 w-3 cursor-pointer"
+                  className="h-4 w-4 cursor-pointer"
                   onClick={() => expandMetaproject(props)}
                 >
                   {props.data.isExpanded ? (
@@ -77,7 +76,7 @@ const getColumnDefs = (
                   )}
                 </div>
               ) : (
-                <div className="w-3" />
+                <div className="w-4" />
               )}
               <Checkbox
                 checked={projectId == props.data.metaprojectId}
@@ -86,9 +85,9 @@ const getColumnDefs = (
                     event.target.checked ? props.data.metaprojectId : null,
                   )
                 }}
-                sx={{ color: 'black' }}
+                sx={{ color: 'black', marginBottom: '2px' }}
               />
-            </>
+            </div>
           ) : (
             <div className="w-12" />
           )}

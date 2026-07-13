@@ -48,11 +48,22 @@ export interface PCRSummaryOfKeyDataType {
   enterprises: PCREnterpriseType[]
 }
 
-export interface PCRProjectComponentData {
+export interface PCRCausesOfDelayData {
   agency_id: number
   pcr_project_component: {
     id: number | null
-    data: {
+    delay: {
+      id: number | null
+      description: string
+    }[]
+  }[]
+}
+
+export interface PCRLessonsLearnedData {
+  agency_id: number
+  pcr_project_component: {
+    id: number | null
+    lesson: {
       id: number | null
       description: string
     }[]
@@ -79,8 +90,8 @@ export interface PCRSdgContributionData {
 export interface PCRData {
   summary_of_key_data: PCRSummaryOfKeyDataType[]
   results_assessment: PCRResultsAssessmentData[]
-  causes_of_delay: PCRProjectComponentData[]
-  lessons_learned: PCRProjectComponentData[]
+  causes_of_delay: PCRCausesOfDelayData[]
+  lessons_learned: PCRLessonsLearnedData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
   sdg_contribution: PCRSdgContributionData[]
 }

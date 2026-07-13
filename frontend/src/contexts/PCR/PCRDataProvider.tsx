@@ -4,6 +4,7 @@ import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGet
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
+import useApi from '@ors/hooks/useApi'
 
 import { useParams } from 'wouter'
 
@@ -39,8 +40,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     })
   }
 
+  const { data: regions } = useApi({
+    options: {
+      withStoreCache: true,
+      params: { location_type: 'Region' },
+    },
+    path: 'api/countries/',
+  })
+
   return (
-    <PCRDataContext.Provider value={{ pcrMetaproject, PCRData, setPCRData }}>
+    <PCRDataContext.Provider
+      value={{ pcrMetaproject, PCRData, setPCRData, regions }}
+    >
       {children}
     </PCRDataContext.Provider>
   )
