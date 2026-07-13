@@ -468,7 +468,9 @@ export default function App() {
         {/* PCR routes */}
         <Route path="/pcr">
           <ProjectsDataProvider>
-            <PCRListingPage />
+            <PCRDataProvider>
+              <PCRListingPage />
+            </PCRDataProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/pcr/:project_id/create">
