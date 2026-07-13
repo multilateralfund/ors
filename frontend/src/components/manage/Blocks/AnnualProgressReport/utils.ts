@@ -3,6 +3,8 @@ import { isNil } from 'lodash'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 
+import { getMsalAuthHeaders } from '@ors/helpers/Api/utils'
+
 dayjs.extend(customParseFormat)
 
 export function formatDate(value: any, format = 'DD/MM/YYYY') {
@@ -96,6 +98,7 @@ export const handleExport = async (
 
     const response = await fetch(url, {
       credentials: 'include',
+      headers: await getMsalAuthHeaders(),
     })
 
     if (!response.ok) {
