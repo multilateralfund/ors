@@ -11,8 +11,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     path: 'api/project-statuses/',
   })
 
+  const { data: regions } = useApi({
+    options: {
+      withStoreCache: true,
+      params: { location_type: 'Region' },
+    },
+    path: 'api/countries/',
+  })
+
   return (
-    <PCRDataContext.Provider value={{ statuses }}>
+    <PCRDataContext.Provider value={{ statuses, regions }}>
       {children}
     </PCRDataContext.Provider>
   )
