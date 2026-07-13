@@ -40,12 +40,20 @@ export interface PCREnterpriseType {
   address: string
 }
 
+export interface PCREquipmentType {
+  name: string
+  description: string
+  disposal_type: number | null
+  disposal_date: string
+}
+
 export interface PCRSummaryOfKeyDataType {
   project_id: number
   funds_disbursed: string
   planned_date_of_completion: string
   alternative_technologies: PCRAlternativeTechnologyType[]
   enterprises: PCREnterpriseType[]
+  equipments: PCREquipmentType[]
 }
 
 export interface PCRCausesOfDelayData {

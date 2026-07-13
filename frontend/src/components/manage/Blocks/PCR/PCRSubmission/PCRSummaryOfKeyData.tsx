@@ -17,6 +17,7 @@ import { ProjectType } from '@ors/types/api_projects'
 import {
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
+  PCREquipmentType,
   PCRSummaryOfKeyDataType,
 } from '../interfaces'
 
@@ -29,20 +30,21 @@ type SummaryTableColumn = {
 }
 
 type SubstanceOption = ApiSubstance & { label: string }
+type DisposalTypeOption = { id: number, name: string, label: string }
 
 const summaryTableColumns: SummaryTableColumn[] = [
-  { label: 'Project code', field: 'code' },
-  { label: 'Type', field: 'project_type' },
-  { label: 'Sector', field: 'sector' },
-  { label: 'Agency', field: 'agency' },
-  { label: 'Tranche(s)', field: 'tranche' },
-  { label: 'Date approved' },
-  { label: 'Actual date of completion' },
-  { label: 'Funds approved' },
-  { label: 'ODP phase-out (Approved)' },
-  { label: 'ODP phase out (Actual)' },
-  { label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)' },
-  { label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)' },
+  {label: 'Project code', field: 'code'},
+  {label: 'Type', field: 'project_type'},
+  {label: 'Sector', field: 'sector'},
+  {label: 'Agency', field: 'agency'},
+  {label: 'Tranche(s)', field: 'tranche'},
+  {label: 'Date approved'},
+  {label: 'Actual date of completion'},
+  {label: 'Funds approved'},
+  {label: 'ODP phase-out (Approved)'},
+  {label: 'ODP phase out (Actual)'},
+  {label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)'},
+  {label: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)'},
 ]
 
 const createAlternativeTechnology = (): PCRAlternativeTechnologyType => ({
@@ -55,12 +57,20 @@ const createEnterprise = (): PCREnterpriseType => ({
   address: '',
 })
 
+const createEquipment = (): PCREquipmentType => ({
+  name: '',
+  description: '',
+  disposal_date: '',
+  disposal_type: null,
+})
+
 const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
   project_id: projectId,
   funds_disbursed: '',
   planned_date_of_completion: '',
   alternative_technologies: [createAlternativeTechnology()],
   enterprises: [createEnterprise()],
+  equipments: [createEquipment()],
 })
 
 const formatProjectValue = (value: unknown): ReactNode => {
@@ -100,26 +110,27 @@ const FieldGroup = ({
   </div>
 )
 
-const EmptyField = ({ label }: { label: string }) => (
+const EmptyField = ({label}: { label: string }) => (
   <div>
     <Label>{label}</Label>
-    <div className="h-10 w-40 rounded-lg border border-solid border-gray-300 bg-gray-50" />
+    <div className="h-10 w-40 rounded-lg border border-solid border-gray-300 bg-gray-50"/>
   </div>
 )
 
-const SubstanceSelect = ({
-  id,
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  id: string
-  label: string
-  onChange: (value: number | null) => void
-  options: SubstanceOption[]
-  value: number | null
-}) => (
+const SubstanceSelect = (
+  {
+    id,
+    label,
+    onChange,
+    options,
+    value,
+  }: {
+    id: string
+    label: string
+    onChange: (value: number | null) => void
+    options: SubstanceOption[]
+    value: number | null
+  }) => (
   <div className="min-w-56 sm:min-w-64">
     <Label htmlFor={id}>{label}</Label>
     <Field
@@ -132,17 +143,48 @@ const SubstanceSelect = ({
       isOptionEqualToValue={(option: any, selected: any) =>
         option.id === selected.id
       }
-      FieldProps={{ className: 'mb-0 w-full' }}
+      FieldProps={{className: 'mb-0 w-full'}}
+    />
+  </div>
+)
+
+const DisposalTypeSelect = (
+  {
+    id,
+    label,
+    onChange,
+    options,
+    value,
+  }: {
+    id: string
+    label: string
+    onChange: (value: number | null) => void
+    options: DisposalTypeOption[]
+    value: number | null
+  }) => (
+  <div className="min-w-56 sm:min-w-64">
+    <Label htmlFor={id}>{label}</Label>
+    <Field
+      id={id}
+      widget="autocomplete"
+      options={options}
+      value={options.find((option) => option.id === value) ?? null}
+      onChange={(_, option: any) => onChange(option?.id ?? null)}
+      getOptionLabel={(option: any) => option?.name ?? ''}
+      isOptionEqualToValue={(option: any, selected: any) =>
+        option.id === selected.id
+      }
+      FieldProps={{className: 'mb-0 w-full'}}
     />
   </div>
 )
 
 const PCRSummaryOfKeyData = () => {
-  const { PCRData, pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const {PCRData, pcrMetaproject, setPCRData} = useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const projects = pcrMetaproject.data?.projects ?? []
 
-  const { data: substances = [] } = useApi<ApiSubstance[]>({
+  const {data: substances = []} = useApi<ApiSubstance[]>({
     options: {
       withStoreCache: true,
     },
@@ -153,17 +195,23 @@ const PCRSummaryOfKeyData = () => {
     () =>
       [...(substances ?? [])]
         .sort((first, second) => first.name.localeCompare(second.name))
-        .map((substance) => ({ ...substance, label: substance.name })),
+        .map((substance) => ({...substance, label: substance.name})),
     [substances],
   )
+
+  const disposalTypeOptions = [
+    {id: 1, name: "Disposal type 1", label: "Disposal type 1"},
+    {id: 2, name: "Disposal type 2", label: "Disposal type 2"},
+    {id: 3, name: "Disposal type 3", label: "Disposal type 3"},
+  ]
 
   const editingProject = projects.find(
     (project) => project.id === editingProjectId,
   )
   const summaryData = editingProjectId
     ? (PCRData.summary_of_key_data.find(
-        (entry) => entry.project_id === editingProjectId,
-      ) ?? createSummaryData(editingProjectId))
+      (entry) => entry.project_id === editingProjectId,
+    ) ?? createSummaryData(editingProjectId))
     : null
 
   const updateSummaryData = (
@@ -189,8 +237,8 @@ const PCRSummaryOfKeyData = () => {
           projectDataIndex === -1
             ? [...sectionData, updatedProjectData]
             : sectionData.map((entry, index) =>
-                index === projectDataIndex ? updatedProjectData : entry,
-              ),
+              index === projectDataIndex ? updatedProjectData : entry,
+            ),
       }
     }, fieldName)
   }
@@ -205,7 +253,7 @@ const PCRSummaryOfKeyData = () => {
         ...projectData,
         alternative_technologies: projectData.alternative_technologies.map(
           (entry, entryIndex) =>
-            entryIndex === index ? { ...entry, [field]: value } : entry,
+            entryIndex === index ? {...entry, [field]: value} : entry,
         ),
       }),
       field,
@@ -221,7 +269,22 @@ const PCRSummaryOfKeyData = () => {
       (projectData) => ({
         ...projectData,
         enterprises: projectData.enterprises.map((entry, entryIndex) =>
-          entryIndex === index ? { ...entry, [field]: value } : entry,
+          entryIndex === index ? {...entry, [field]: value} : entry,
+        ),
+      }),
+      field,
+    )
+  }
+  const updateEquipment = (
+    index: number,
+    field: keyof PCREquipmentType,
+    value: PCREquipmentType[typeof field],
+  ) => {
+    updateSummaryData(
+      (projectData) => ({
+        ...projectData,
+        equipments: projectData.equipments.map((entry, entryIndex) =>
+          entryIndex === index ? {...entry, [field]: value} : entry,
         ),
       }),
       field,
@@ -231,53 +294,53 @@ const PCRSummaryOfKeyData = () => {
   return (
     <div className="flex flex-col gap-y-6">
       <div className="w-full overflow-x-auto">
-        <table className="min-w-[2300px] border-collapse text-left">
+        <table className="border-collapse text-left">
           <thead>
-            <tr>
-              {summaryTableColumns.map(({ label }) => (
-                <th
-                  key={label}
-                  className="min-w-36 border border-solid border-primary bg-primary p-2 align-top font-medium text-white"
-                >
-                  {label}
-                </th>
-              ))}
-              <th className="w-24 border border-solid border-primary bg-primary p-2 align-top font-medium text-white">
-                Actions
+          <tr>
+            {summaryTableColumns.map(({label}) => (
+              <th
+                key={label}
+                className="min-w-36 border border-solid border-primary bg-primary p-2 align-top font-medium text-white"
+              >
+                {label}
               </th>
-            </tr>
+            ))}
+            <th className="w-24 border border-solid border-primary bg-primary p-2 align-top font-medium text-white">
+              Actions
+            </th>
+          </tr>
           </thead>
           <tbody>
-            {projects.length === 0 ? (
-              <tr>
-                <td
-                  className="border border-solid border-primary p-3 text-center"
-                  colSpan={summaryTableColumns.length + 1}
-                >
-                  No projects available.
+          {projects.length === 0 ? (
+            <tr>
+              <td
+                className="border border-solid border-primary p-3 text-center"
+                colSpan={summaryTableColumns.length + 1}
+              >
+                No projects available.
+              </td>
+            </tr>
+          ) : (
+            projects.map((project) => (
+              <tr key={project.id}>
+                {summaryTableColumns.map(({label, field}) => (
+                  <td
+                    key={label}
+                    className="border border-solid border-primary p-2 align-top"
+                  >
+                    {field ? formatProjectValue(project[field]) : ''}
+                  </td>
+                ))}
+                <td className="border border-solid border-primary p-2 align-top">
+                  <SubmitButton
+                    title="Edit"
+                    onSubmit={() => setEditingProjectId(project.id)}
+                    className="h-8 !text-sm"
+                  />
                 </td>
               </tr>
-            ) : (
-              projects.map((project) => (
-                <tr key={project.id}>
-                  {summaryTableColumns.map(({ label, field }) => (
-                    <td
-                      key={label}
-                      className="border border-solid border-primary p-2 align-top"
-                    >
-                      {field ? formatProjectValue(project[field]) : ''}
-                    </td>
-                  ))}
-                  <td className="border border-solid border-primary p-2 align-top">
-                    <SubmitButton
-                      title="Edit"
-                      onSubmit={() => setEditingProjectId(project.id)}
-                      className="h-8 !text-sm"
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
+            ))
+          )}
           </tbody>
         </table>
       </div>
@@ -331,13 +394,13 @@ const PCRSummaryOfKeyData = () => {
                   }
                 />
               </div>
-              <EmptyField label="Planned duration (months)" />
-              <EmptyField label="Actual duration (months)" />
-              <EmptyField label="Delay (months)" />
+              <EmptyField label="Planned duration (months)"/>
+              <EmptyField label="Actual duration (months)"/>
+              <EmptyField label="Delay (months)"/>
             </div>
           </FieldGroup>
 
-          <Divider />
+          <Divider/>
 
           <FieldGroup title="Alternative technology">
             <div className="flex flex-col gap-y-4">
@@ -383,7 +446,7 @@ const PCRSummaryOfKeyData = () => {
                       )
                     }
                   >
-                    <IoTrash className="fill-gray-400" size={18} />
+                    <IoTrash className="fill-gray-400" size={18}/>
                   </IconButton>
                 </div>
               ))}
@@ -406,9 +469,9 @@ const PCRSummaryOfKeyData = () => {
             />
           </FieldGroup>
 
-          <Divider />
+          <Divider/>
 
-          <FieldGroup>
+          <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
             <div className="flex flex-col gap-y-4">
               {summaryData.enterprises.map((entry, index) => (
                 <div
@@ -462,7 +525,7 @@ const PCRSummaryOfKeyData = () => {
                       )
                     }
                   >
-                    <IoTrash className="fill-gray-400" size={18} />
+                    <IoTrash className="fill-gray-400" size={18}/>
                   </IconButton>
                 </div>
               ))}
@@ -482,6 +545,107 @@ const PCRSummaryOfKeyData = () => {
                 )
               }
               className="mr-auto h-8"
+            />
+          </FieldGroup>
+
+          <Divider/>
+
+          <FieldGroup>
+            <div className="flex flex-col gap-y-4">
+              {summaryData.equipments.map((entry, index) => (
+                <div key={index} className="flex flex-wrap items-end gap-x-7 gap-y-4">
+                  <div className="min-w-56 sm:min-w-64">
+                    <Label
+                      htmlFor={`equipment-name-${editingProject.id}-${index}`}
+                    >
+                      Name of equipment
+                    </Label>
+                    <SimpleInput
+                      id={`equipment-name-${editingProject.id}-${index}`}
+                      label=""
+                      type="text"
+                      value={entry.name}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                        updateEquipment(index, 'name', event.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="min-w-72 flex-1">
+                    <Label
+                      htmlFor={`equipment-description-${editingProject.id}-${index}`}
+                    >
+                      Description
+                    </Label>
+                    <TextareaAutosize
+                      id={`equipment-description-${editingProject.id}-${index}`}
+                      className={`${textAreaClassname} min-h-10 w-full pb-2`}
+                      minRows={1}
+                      style={STYLE}
+                      value={entry.description}
+                      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                        updateEquipment(index, 'description', event.target.value)
+                      }
+                    />
+                  </div>
+                  <DisposalTypeSelect
+                    id={`equipment-disposal_type-${editingProject.id}-${index}`}
+                    label="Disposal type"
+                    options={disposalTypeOptions}
+                    value={entry.disposal_type}
+                    onChange={(value) =>
+                      updateEquipment(
+                        index,
+                        'disposal_type',
+                        value,
+                      )
+                    }
+                  />
+                  <div className="min-w-72 flex-1">
+                    <Label
+                      htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
+                    >
+                      Date of disposal
+                    </Label>
+                    <DateInput
+                      id={`equipment-disposal_date-${editingProject.id}-${index}`}
+                      className="w-8"
+                      value={entry.disposal_date}
+                      onChange={(event) =>
+                        updateEquipment(index, 'disposal_date', event.target.value)
+                      }
+                    />
+                  </div>
+                  <IconButton
+                    aria-label="Remove equipment"
+                    onClick={() =>
+                      updateSummaryData(
+                        (projectData) => ({
+                          ...projectData,
+                          equipments: projectData.equipments.filter(
+                            (_, entryIndex) => entryIndex !== index,
+                          ),
+                        }),
+                        'equipments',
+                      )
+                    }
+                  >
+                    <IoTrash className="fill-gray-400" size={18}/>
+                  </IconButton>
+                </div>
+              ))}
+            </div>
+            <SubmitButton
+              title="Add equipment"
+              onSubmit={() => updateSummaryData(
+                (projectData) => ({
+                  ...projectData,
+                  equipments: [
+                    ...projectData.equipments,
+                    createEquipment(),
+                  ],
+                }), 'equipments',
+              )
+              }
             />
           </FieldGroup>
         </div>
