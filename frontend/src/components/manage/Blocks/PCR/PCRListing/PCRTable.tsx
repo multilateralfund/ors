@@ -46,7 +46,7 @@ const PCRTable = ({
               metaprojectId: metaproject.id,
             }),
       })),
-    [results],
+    [results, filters],
   )
 
   return (

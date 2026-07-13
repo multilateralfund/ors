@@ -89,7 +89,7 @@ const getColumnDefs = (
               />
             </div>
           ) : (
-            <div className="w-12" />
+            <div className="flex w-12 shrink-0" />
           )}
           <span className="ml-2 overflow-hidden truncate whitespace-nowrap">
             {props.value}
