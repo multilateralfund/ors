@@ -13,4 +13,4 @@ class CountryFilter(filters.FilterSet):
 
     class Meta:
         model = Country
-        fields = ["with_cp_report"]
+        fields = ["with_cp_report", "location_type"]
