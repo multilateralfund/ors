@@ -1,8 +1,16 @@
+#pylint: disable=ungrouped-imports
+
 from datetime import datetime, timedelta, timezone
 
 from dj_rest_auth.views import LoginView
 from django.conf import settings
+
+from django_auth_adfs.rest_framework import AdfsAccessTokenAuthentication
+from rest_framework import permissions, status
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+
 
 
 class CustomLoginView(LoginView):
@@ -44,5 +52,54 @@ class CustomLoginView(LoginView):
                     httponly=True,
                     samesite="Lax",
                 )
+
+        return response
+
+
+class ADFSLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"detail": "Bearer token required for ADFS login."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = AdfsAccessTokenAuthentication().authenticate(request)
+        if result is None:
+            return Response(
+                {"detail": "Invalid ADFS access token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user, _ = result
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+
+        response = Response(
+            {"access": access, "refresh": str(refresh)},
+            status=status.HTTP_200_OK,
+        )
+
+        cookie_opts = {
+            "httponly": False,
+            "secure": settings.SESSION_COOKIE_SECURE,
+            "samesite": "Lax",
+            "path": "/",
+        }
+
+        response.set_cookie(
+            settings.REST_AUTH["JWT_AUTH_COOKIE"],
+            access,
+            **cookie_opts,
+        )
+        response.set_cookie(
+            settings.REST_AUTH["JWT_AUTH_REFRESH_COOKIE"],
+            str(refresh),
+            **cookie_opts,
+        )
 
         return response
