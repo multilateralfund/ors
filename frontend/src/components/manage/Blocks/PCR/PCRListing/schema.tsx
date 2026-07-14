@@ -27,7 +27,7 @@ const expandMetaproject = (
       isMetaproject: false,
     }))
 
-    if (!metaproject.isExpanded) {
+    if (!params.data.isExpanded) {
       params.node.setData({
         ...metaproject,
         isExpanded: true,
