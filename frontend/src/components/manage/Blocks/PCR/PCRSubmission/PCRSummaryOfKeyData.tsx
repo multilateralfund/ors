@@ -1,4 +1,11 @@
-import { ChangeEvent, ReactNode, useContext, useMemo, useState } from 'react'
+import {
+  ChangeEvent,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
@@ -68,6 +75,17 @@ const createSummaryData = (projectId: number): PCRSummaryOfKeyDataType => ({
   alternative_technologies: [createAlternativeTechnology()],
   enterprises: [createEnterprise()],
   equipments: [createEquipment()],
+})
+
+const cloneSummaryData = (
+  data: PCRSummaryOfKeyDataType,
+): PCRSummaryOfKeyDataType => ({
+  ...data,
+  alternative_technologies: data.alternative_technologies.map((entry) => ({
+    ...entry,
+  })),
+  enterprises: data.enterprises.map((entry) => ({...entry})),
+  equipments: data.equipments.map((entry) => ({...entry})),
 })
 
 const formatProjectValue = (value: unknown): string => {
@@ -183,6 +201,8 @@ const DisposalTypeSelect = ({
 const PCRSummaryOfKeyData = () => {
   const {PCRData, pcrMetaproject, setPCRData} = useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
+  const [draftSummaryData, setDraftSummaryData] =
+    useState<PCRSummaryOfKeyDataType | null>(null)
   const {data: metaproject, loaded: metaprojectLoaded, loading} = pcrMetaproject
   const projects = metaproject?.projects ?? []
 
@@ -210,11 +230,52 @@ const PCRSummaryOfKeyData = () => {
   const editingProject = projects.find(
     (project) => project.id === editingProjectId,
   )
-  const summaryData = editingProjectId
-    ? (PCRData.summary_of_key_data.find(
-      (entry) => entry.project_id === editingProjectId,
-    ) ?? createSummaryData(editingProjectId))
-    : null
+  const getSummaryData = useCallback(
+    (projectId: number) =>
+      PCRData.summary_of_key_data.find(
+        (entry) => entry.project_id === projectId,
+      ) ?? createSummaryData(projectId),
+    [PCRData.summary_of_key_data],
+  )
+  const summaryData = draftSummaryData
+
+  const closeDialog = () => {
+    setEditingProjectId(null)
+    setDraftSummaryData(null)
+  }
+
+  const openDialog = useCallback((projectId: number | null | undefined) => {
+    if (!projectId) {
+      return
+    }
+    setEditingProjectId(projectId)
+    setDraftSummaryData(cloneSummaryData(getSummaryData(projectId)))
+  }, [getSummaryData])
+
+  const saveSummaryData = () => {
+    if (!editingProjectId || !draftSummaryData) {
+      closeDialog()
+      return
+    }
+
+    setPCRData((previousData) => {
+      const sectionData = previousData.summary_of_key_data ?? []
+      const projectDataIndex = sectionData.findIndex(
+        (entry) => entry.project_id === editingProjectId,
+      )
+
+      return {
+        ...previousData,
+        summary_of_key_data:
+          projectDataIndex === -1
+            ? [...sectionData, draftSummaryData]
+            : sectionData.map((entry, index) =>
+              index === projectDataIndex ? draftSummaryData : entry,
+            ),
+      }
+    }, 'summary_of_key_data')
+    closeDialog()
+  }
 
   const summaryTableColumnDefs = useMemo<ColDef<ProjectType>[]>(
     () => [
@@ -224,12 +285,12 @@ const PCRSummaryOfKeyData = () => {
         minWidth: 210,
         cellRenderer: (params: ICellRendererParams<ProjectType>) => (
           <div className="flex h-full items-center gap-x-2">
-            <IconButton
-              aria-label={`Edit project ${params.data?.code ?? ''}`}
-              className="h-7 w-7"
-              onClick={() => setEditingProjectId(params.data?.id ?? null)}
-              size="small"
-            >
+              <IconButton
+                aria-label={`Edit project ${params.data?.code ?? ''}`}
+                className="h-7 w-7"
+                onClick={() => openDialog(params.data?.id)}
+                size="small"
+              >
               <FiEdit size={16}/>
             </IconButton>
             <span className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -313,36 +374,15 @@ const PCRSummaryOfKeyData = () => {
           ),
       },
     ],
-    [],
+    [openDialog],
   )
 
   const updateSummaryData = (
     updater: (data: PCRSummaryOfKeyDataType) => PCRSummaryOfKeyDataType,
-    fieldName: string,
   ) => {
-    if (!editingProjectId) {
-      return
-    }
-
-    setPCRData((previousData) => {
-      const sectionData = previousData.summary_of_key_data ?? []
-      const projectDataIndex = sectionData.findIndex(
-        (entry) => entry.project_id === editingProjectId,
-      )
-      const currentProjectData =
-        sectionData[projectDataIndex] ?? createSummaryData(editingProjectId)
-      const updatedProjectData = updater(currentProjectData)
-
-      return {
-        ...previousData,
-        summary_of_key_data:
-          projectDataIndex === -1
-            ? [...sectionData, updatedProjectData]
-            : sectionData.map((entry, index) =>
-              index === projectDataIndex ? updatedProjectData : entry,
-            ),
-      }
-    }, fieldName)
+    setDraftSummaryData((currentData) =>
+      currentData ? updater(currentData) : currentData,
+    )
   }
 
   const updateAlternativeTechnology = (
@@ -358,7 +398,6 @@ const PCRSummaryOfKeyData = () => {
             entryIndex === index ? {...entry, [field]: value} : entry,
         ),
       }),
-      field,
     )
   }
 
@@ -374,7 +413,6 @@ const PCRSummaryOfKeyData = () => {
           entryIndex === index ? {...entry, [field]: value} : entry,
         ),
       }),
-      field,
     )
   }
   const updateEquipment = (
@@ -389,7 +427,6 @@ const PCRSummaryOfKeyData = () => {
           entryIndex === index ? {...entry, [field]: value} : entry,
         ),
       }),
-      field,
     )
   }
 
@@ -416,7 +453,7 @@ const PCRSummaryOfKeyData = () => {
           aria-labelledby="pcr-summary-edit-dialog-title"
           fullWidth={true}
           maxWidth="xl"
-          onClose={() => setEditingProjectId(null)}
+          onClose={closeDialog}
           open={true}
           scroll="paper"
         >
@@ -442,7 +479,6 @@ const PCRSummaryOfKeyData = () => {
                             ...projectData,
                             funds_disbursed: event.target.value,
                           }),
-                          'funds_disbursed',
                         )
                       }
                     />
@@ -463,7 +499,6 @@ const PCRSummaryOfKeyData = () => {
                             ...projectData,
                             planned_date_of_completion: event.target.value,
                           }),
-                          'planned_date_of_completion',
                         )
                       }
                     />
@@ -520,7 +555,6 @@ const PCRSummaryOfKeyData = () => {
                                   (_, entryIndex) => entryIndex !== index,
                                 ),
                             }),
-                            'alternative_technologies',
                           )
                         }
                       >
@@ -540,7 +574,6 @@ const PCRSummaryOfKeyData = () => {
                           createAlternativeTechnology(),
                         ],
                       }),
-                      'alternative_technologies',
                     )
                   }
                   className="mr-auto h-8"
@@ -604,7 +637,6 @@ const PCRSummaryOfKeyData = () => {
                                 (_, entryIndex) => entryIndex !== index,
                               ),
                             }),
-                            'enterprises',
                           )
                         }
                       >
@@ -624,7 +656,6 @@ const PCRSummaryOfKeyData = () => {
                           createEnterprise(),
                         ],
                       }),
-                      'enterprises',
                     )
                   }
                   className="mr-auto h-8"
@@ -716,7 +747,6 @@ const PCRSummaryOfKeyData = () => {
                                 (_, entryIndex) => entryIndex !== index,
                               ),
                             }),
-                            'equipments',
                           )
                         }
                       >
@@ -736,7 +766,6 @@ const PCRSummaryOfKeyData = () => {
                           createEquipment(),
                         ],
                       }),
-                      'equipments',
                     )
                   }
                   className="mr-auto h-8"
@@ -746,8 +775,14 @@ const PCRSummaryOfKeyData = () => {
           </DialogContent>
           <DialogActions>
             <Button
+              className="border border-solid border-primary text-primary"
+              onClick={closeDialog}
+            >
+              Cancel
+            </Button>
+            <Button
               className="bg-primary text-white hover:text-mlfs-hlYellow"
-              onClick={() => setEditingProjectId(null)}
+              onClick={saveSummaryData}
             >
               Done
             </Button>

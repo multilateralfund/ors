@@ -496,6 +496,63 @@ def test_pcr_project_create_permissions(client, url, user, admin_user):
     assert response.status_code == 201
 
 
+def test_pcr_retrieve(client, admin_user):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(meta_project=meta_project)
+    pcr = PCR.objects.create(meta_project=meta_project, submission_date="2026-07-10")
+    pcr_project = PCRProject.objects.create(
+        pcr=pcr,
+        project=project,
+        funds_disbursed="123.45",
+        planned_date_of_completion="2026-06-30",
+    )
+    substance_from = SubstanceFactory.create()
+    substance_to = SubstanceFactory.create()
+    pcr_project.alternative_technologies.create(
+        substance_from=substance_from,
+        substance_to=substance_to,
+    )
+    pcr_project.enterprises.create(
+        name="Retrieve enterprise",
+        address="Retrieve address",
+    )
+    pcr_project.equipments.create(
+        name="Retrieve equipment",
+        description="Retrieve description",
+        disposal_type=1,
+        disposal_date="2026-05-31",
+    )
+    client.force_authenticate(user=admin_user)
+
+    response = client.get(reverse("project-completion-report-detail", args=[pcr.id]))
+
+    assert response.status_code == 200
+    assert response.data["id"] == pcr.id
+    assert response.data["meta_project_id"] == meta_project.id
+    assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["pcr_projects"][0]["project_id"] == project.id
+    assert response.data["pcr_projects"][0]["funds_disbursed"] == (
+        "123.450000000000000"
+    )
+    assert response.data["pcr_projects"][0]["planned_date_of_completion"] == (
+        "2026-06-30"
+    )
+    assert response.data["pcr_projects"][0]["alternative_technologies"] == [
+        {"substance_from": substance_from.id, "substance_to": substance_to.id}
+    ]
+    assert response.data["pcr_projects"][0]["enterprises"] == [
+        {"name": "Retrieve enterprise", "address": "Retrieve address"}
+    ]
+    assert response.data["pcr_projects"][0]["equipments"] == [
+        {
+            "name": "Retrieve equipment",
+            "description": "Retrieve description",
+            "disposal_type": 1,
+            "disposal_date": "2026-05-31",
+        }
+    ]
+
+
 @pytest.mark.parametrize("method", ["patch", "put"])
 def test_pcr_update_submission_date_and_nested_project(client, admin_user, method):
     meta_project = MetaProjectFactory.create()

@@ -379,6 +379,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     cluster_id = serializers.IntegerField(read_only=True, source="cluster.id")
 
     country = serializers.SlugRelatedField("name", read_only=True)
+    pcr_id = serializers.IntegerField(source="pcr_project.pcr_id", read_only=True)
     pcr_submission_date = serializers.DateField(
         read_only=True, source="pcr_project.pcr.submission_date"
     )
@@ -426,6 +427,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "metacode",
             "odp_phase_out_actual",
             "odp_phase_out_approved",
+            "pcr_id",
             "project_type",
             "project_type_id",
             "pcr_submission_date",

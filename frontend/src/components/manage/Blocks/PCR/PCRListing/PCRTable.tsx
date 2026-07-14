@@ -14,13 +14,18 @@ const PCRTable = ({
   pcrProjects,
   projectId,
   setProjectId,
+  setPcrId,
   filters,
 }: PCRTableProps) => {
   const gridRef = useRef(null)
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
-  const { defaultColDef, columnDefs } = getColumnDefs(projectId, setProjectId)
+  const { defaultColDef, columnDefs } = getColumnDefs(
+    projectId,
+    setProjectId,
+    setPcrId,
+  )
 
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
@@ -34,6 +39,9 @@ const PCRTable = ({
               isMetaproject: true,
               isExpanded: false,
               metaprojectId: metaproject.id,
+              pcrId:
+                metaproject.projects.find((project) => project.pcr_id)
+                  ?.pcr_id ?? null,
               title: metaproject.umbrella_code ?? 'N/A',
               total_fund:
                 sumBy(metaproject.projects, 'total_fund') || undefined,
@@ -44,6 +52,7 @@ const PCRTable = ({
               ...metaproject.projects[0],
               isMetaproject: true,
               metaprojectId: metaproject.id,
+              pcrId: metaproject.projects[0]?.pcr_id ?? null,
             }),
       })),
     [results],

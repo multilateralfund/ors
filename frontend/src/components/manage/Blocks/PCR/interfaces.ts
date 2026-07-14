@@ -12,6 +12,7 @@ export type PCRTableProps = {
   pcrProjects: ReturnType<typeof useGetPCRProjects>
   projectId: number | null
   setProjectId: (id: number | null) => void
+  setPcrId: (id: number | null) => void
   filters: Record<string, any>
 }
 

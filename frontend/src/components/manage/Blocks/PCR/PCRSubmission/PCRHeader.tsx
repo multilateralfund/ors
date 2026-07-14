@@ -24,7 +24,7 @@ const PCRHeader = ({ mode }: PCRHeaderType) => {
     if (updatedFields.size > 0) {
       setIsCancelModalOpen(true)
     } else {
-      setLocation('/projects-listing/listing')
+      setLocation('/pcr')
     }
   }
 

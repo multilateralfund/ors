@@ -1,19 +1,22 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import CancelWarningModal from '@ors/components/manage/Blocks/ProjectsListing/ProjectSubmission/CancelWarningModal'
+import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import { api } from '@ors/helpers'
 import { PCRActionButtons } from '../interfaces'
-import { useStore } from '@ors/store'
+import { buildPCRProjectPayload } from '../utils'
 
 import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
-import { useLocation } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 
 const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
+  const { pcr_id } = useParams<Record<string, string>>()
+  const { PCRData } = useContext(PCRDataContext)
 
-  const { setInlineMessage } = useStore((state) => state.inlineMessage)
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
@@ -22,15 +25,21 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     setIsLoading(true)
 
     try {
-      setInlineMessage({
-        type: 'success',
-        message: 'PCR updated successfully.',
-        redirectMessage: 'View PCR.',
+      if (!pcr_id) {
+        throw new Error('PCR id is not available.')
+      }
+
+      await api(`api/project-completion-reports/${pcr_id}/`, {
+        data: {
+          pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
+        },
+        method: 'PATCH',
       })
       enqueueSnackbar(<>PCR updated successfully.</>, {
         variant: 'success',
       })
       clearUpdatedFields()
+      setLocation('/pcr')
     } catch (error) {
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
@@ -51,14 +60,7 @@ const PCREditActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
-      <Button
-        className="px-4 py-2 shadow-none"
-        variant="contained"
-        size="large"
-        onClick={editPCR}
-      >
-        Update PCR
-      </Button>
+      <SubmitButton title="Update PCR" onSubmit={editPCR} className="!py-2" />
       {isCancelModalOpen && setIsCancelModalOpen && (
         <CancelWarningModal
           mode="PCR updating"

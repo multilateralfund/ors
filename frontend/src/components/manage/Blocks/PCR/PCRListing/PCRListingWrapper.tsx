@@ -30,6 +30,7 @@ const PCRListingWrapper = () => {
   )
 
   const [projectId, setProjectId] = useState<number | null>(null)
+  const [pcrId, setPcrId] = useState<number | null>(null)
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
@@ -80,11 +81,17 @@ const PCRListingWrapper = () => {
             <RedirectBackButton />
             <PageHeading>Project Completion Reports</PageHeading>
           </div>
-          <div className="ml-auto mt-auto">
+          <div className="ml-auto mt-auto flex flex-wrap justify-end gap-2.5">
             <CreateButton
               title="Raise a PCR"
               href={`/pcr/${projectId}/create`}
-              isDisabled={!projectId}
+              isDisabled={!projectId || !!pcrId}
+              className="!mb-0"
+            />
+            <CreateButton
+              title="Edit PCR"
+              href={`/pcr/${projectId}/${pcrId}/edit`}
+              isDisabled={!projectId || !pcrId}
               className="!mb-0"
             />
           </div>
@@ -95,7 +102,9 @@ const PCRListingWrapper = () => {
           <PCRFilters {...filtersProps} />
           <PCRFiltersSelectedOpts {...filtersProps} />
         </div>
-        <PCRTable {...{ pcrProjects, projectId, setProjectId, filters }} />
+        <PCRTable
+          {...{ pcrProjects, projectId, setProjectId, setPcrId, filters }}
+        />
       </div>
     </>
   )

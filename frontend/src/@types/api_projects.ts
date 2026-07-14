@@ -131,6 +131,7 @@ export type ProjectType = {
   }[]
   ods_phasedout_co2mt: any
   operating_cost: number
+  pcr_id?: number | null
   pcr_waived: boolean
   plan: any
   plus: boolean
