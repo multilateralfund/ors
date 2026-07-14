@@ -79,16 +79,16 @@ const getColumnDefs = (
       cellRenderer: (props: ICellRendererParams) => (
         <div className="flex items-center gap-1 p-2">
           {props.data.isMetaproject ? (
-            <div className="flex shrink-0 items-center">
+            <div className="flex w-14 shrink-0 items-center">
               {props.data.type === 'Multi-year agreement' ? (
                 <div
                   className="h-4 w-4 cursor-pointer"
                   onClick={() => expandMetaproject(props, pcrProjectsData)}
                 >
                   {props.data.isExpanded ? (
-                    <MdExpandLess size={16} />
+                    <MdExpandLess size={20} />
                   ) : (
-                    <MdExpandMore size={16} />
+                    <MdExpandMore size={20} />
                   )}
                 </div>
               ) : (
@@ -101,13 +101,13 @@ const getColumnDefs = (
                     event.target.checked ? props.data.metaprojectId : null,
                   )
                 }}
-                sx={{ color: 'black', marginBottom: '2px' }}
+                sx={{ color: 'black' }}
               />
             </div>
           ) : (
-            <div className="flex w-12 shrink-0" />
+            <div className="flex w-14 shrink-0" />
           )}
-          <span className="ml-2 overflow-hidden truncate whitespace-nowrap">
+          <span className="overflow-hidden truncate whitespace-nowrap">
             {props.value}
           </span>
         </div>
