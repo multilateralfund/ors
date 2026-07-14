@@ -1,4 +1,4 @@
-#pylint: disable=ungrouped-imports
+# pylint: disable=ungrouped-imports
 
 from datetime import datetime, timedelta, timezone
 
@@ -10,7 +10,6 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
-
 
 
 class CustomLoginView(LoginView):
