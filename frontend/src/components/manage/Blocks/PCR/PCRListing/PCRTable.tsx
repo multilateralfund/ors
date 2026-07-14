@@ -52,7 +52,7 @@ const PCRTable = ({
   return (
     loaded && (
       <ViewTable
-        ref={gridRef}
+        gridRef={gridRef}
         key={JSON.stringify(filters)}
         getRowId={(params) =>
           `${params.data.isMetaproject ? 'metaproject' : 'project'}-${params.data.id}`
