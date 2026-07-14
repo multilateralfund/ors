@@ -2,6 +2,7 @@ from django.db import models
 from core.models.agency import Agency
 
 from core.models.project import MetaProject
+from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
 
@@ -121,6 +122,14 @@ class PCRProject(models.Model):
         blank=True,
         help_text="Address(es) of enterprise(s) and project site(s), if applicable.",
     )
+    funds_disbursed = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Funds disbursed entered in the PCR summary of key data.",
+    )
+    planned_date_of_completion = models.DateField(null=True, blank=True)
     project_goal_achieved = models.CharField(
         max_length=16,
         choices=ProjectGoalAchieved.choices,
@@ -153,6 +162,62 @@ class PCRProject(models.Model):
 
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code}"
+
+
+class PCRProjectAlternativeTechnology(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="alternative_technologies"
+    )
+    substance_from = models.ForeignKey(
+        Substance,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    substance_to = models.ForeignKey(
+        Substance,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+
+    class Meta:
+        verbose_name_plural = "PCR project alternative technologies"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.substance_from} to {self.substance_to}"
+
+
+class PCRProjectEnterprise(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="enterprises"
+    )
+    name = models.CharField(max_length=255, blank=True)
+    address = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "PCR project enterprises"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.name}"
+
+
+class PCRProjectEquipment(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="equipments"
+    )
+    name = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    disposal_type = models.PositiveSmallIntegerField(null=True, blank=True)
+    disposal_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "PCR project equipment"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.name}"
 
 
 class PCRAdditionalComment(models.Model):

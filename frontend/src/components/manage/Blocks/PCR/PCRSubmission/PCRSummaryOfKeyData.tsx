@@ -183,7 +183,8 @@ const DisposalTypeSelect = ({
 const PCRSummaryOfKeyData = () => {
   const {PCRData, pcrMetaproject, setPCRData} = useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
-  const projects = pcrMetaproject.data?.projects ?? []
+  const {data: metaproject, loaded: metaprojectLoaded, loading} = pcrMetaproject
+  const projects = metaproject?.projects ?? []
 
   const {data: substances = []} = useApi<ApiSubstance[]>({
     options: {
@@ -403,6 +404,7 @@ const PCRSummaryOfKeyData = () => {
           resizable: true,
         }}
         enablePagination={false}
+        loading={loading || !metaprojectLoaded}
         rowData={projects}
         rowHeight={48}
         suppressCellFocus={true}
@@ -547,7 +549,7 @@ const PCRSummaryOfKeyData = () => {
 
               <Divider/>
 
-              <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
+              <FieldGroup>
                 <div className="flex flex-col gap-y-4">
                   {summaryData.enterprises.map((entry, index) => (
                     <div
@@ -631,7 +633,7 @@ const PCRSummaryOfKeyData = () => {
 
               <Divider/>
 
-              <FieldGroup>
+              <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
                 <div className="flex flex-col gap-y-4">
                   {summaryData.equipments.map((entry, index) => (
                     <div
