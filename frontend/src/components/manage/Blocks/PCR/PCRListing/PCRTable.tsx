@@ -20,20 +20,18 @@ const PCRTable = ({
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
-  const { defaultColDef, columnDefs } = getColumnDefs(projectId, setProjectId)
-
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
 
   const pcrProjectsData = useMemo(
     () =>
       results.map((metaproject) => ({
+        ...metaproject,
+        isMetaproject: true,
+        isExpanded: false,
+        metaprojectId: metaproject.id,
         ...(metaproject.type === 'Multi-year agreement'
           ? {
-              ...metaproject,
-              isMetaproject: true,
-              isExpanded: false,
-              metaprojectId: metaproject.id,
               title: metaproject.umbrella_code ?? 'N/A',
               total_fund:
                 sumBy(metaproject.projects, 'total_fund') || undefined,
@@ -42,11 +40,15 @@ const PCRTable = ({
             }
           : {
               ...metaproject.projects[0],
-              isMetaproject: true,
-              metaprojectId: metaproject.id,
             }),
       })),
     [results],
+  )
+
+  const { defaultColDef, columnDefs } = getColumnDefs(
+    pcrProjectsData,
+    projectId,
+    setProjectId,
   )
 
   return (
