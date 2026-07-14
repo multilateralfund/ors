@@ -1,11 +1,17 @@
+from datetime import date
+
 from django.urls import reverse
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
+    AnnualAgencyProjectReportFactory,
+    AnnualProgressReportFactory,
+    AnnualProjectReportFactory,
     ProjectFactory,
     MetaProjectFactory,
     PCRFactory,
     PCRProjectFactory,
+    ProjectStatusFactory,
 )
 import pytest
 
@@ -121,6 +127,82 @@ class TestPCRMetaprojectsViewSet(BaseTest):
         assert len(response.data) == 2
         assert response.data[0]["id"] == projects[0].id
         assert response.data[1]["id"] == projects[1].id
+
+    def test_retrieve_includes_inventory_calculated_project_values(
+        self,
+        admin_user,
+        project_approved_status,
+    ):
+        transferred_status = ProjectStatusFactory(name="Transferred", code="TRA")
+        meta_project = MetaProjectFactory(umbrella_code="PCR-CALC")
+        project = ProjectFactory.create(
+            meta_project=meta_project,
+            metacode=meta_project.umbrella_code,
+            submission_status=project_approved_status,
+            status=transferred_status,
+            total_fund=1000.0,
+            fund_transferred=250.0,
+            total_phase_out_odp_tonnes=12.5,
+            total_phase_out_co2_tonnes=3456.0,
+            date_approved=date(2024, 1, 31),
+        )
+
+        older_progress = AnnualProgressReportFactory(year=2024, endorsed=True)
+        older_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=older_progress
+        )
+        AnnualProjectReportFactory(
+            project=project,
+            report=older_agency_report,
+            date_actual_completion=date(2024, 5, 31),
+            consumption_phased_out_odp=1.0,
+            production_phased_out_odp=2.0,
+            consumption_phased_out_co2=100.0,
+            production_phased_out_co2=200.0,
+        )
+
+        newer_progress = AnnualProgressReportFactory(year=2025, endorsed=True)
+        newer_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=newer_progress
+        )
+        AnnualProjectReportFactory(
+            project=project,
+            report=newer_agency_report,
+            date_actual_completion=date(2025, 6, 30),
+            consumption_phased_out_odp=3.5,
+            production_phased_out_odp=4.5,
+            consumption_phased_out_co2=1000.0,
+            production_phased_out_co2=2500.0,
+        )
+
+        draft_progress = AnnualProgressReportFactory(year=2026, endorsed=False)
+        draft_agency_report = AnnualAgencyProjectReportFactory(
+            progress_report=draft_progress
+        )
+        AnnualProjectReportFactory(
+            project=project,
+            report=draft_agency_report,
+            date_actual_completion=date(2026, 7, 31),
+            consumption_phased_out_odp=99.0,
+            production_phased_out_odp=99.0,
+            consumption_phased_out_co2=9999.0,
+            production_phased_out_co2=9999.0,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.get(
+            reverse("pcr-metaprojects-detail", args=[meta_project.id])
+        )
+
+        assert response.status_code == 200
+        project_data = response.data["projects"][0]
+        assert project_data["date_approved"] == "2024-01-31"
+        assert project_data["actual_date_of_completion"] == "2025-06-30"
+        assert project_data["funds_approved"] == 1250.0
+        assert project_data["odp_phase_out_approved"] == "12.500000000000000"
+        assert project_data["odp_phase_out_actual"] == 8.0
+        assert project_data["hfc_phase_down_co2_approved"] == "3456.000000000000000"
+        assert project_data["hfc_phase_down_co2_actual"] == 3500.0
 
     def test_filters(
         self,

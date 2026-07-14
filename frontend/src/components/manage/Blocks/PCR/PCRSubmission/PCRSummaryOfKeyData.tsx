@@ -8,6 +8,7 @@ import {
   FormattedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
@@ -92,6 +93,12 @@ const formatProjectValue = (value: unknown): string => {
 
   return ''
 }
+
+const formatNumberProjectValue = (
+  value: null | number | string | undefined,
+  minDigits?: number,
+  maxDigits?: number,
+) => formatNumberValue(value ?? null, minDigits, maxDigits) ?? ''
 
 const FieldGroup = ({
   children,
@@ -257,30 +264,52 @@ const PCRSummaryOfKeyData = () => {
       {
         headerName: 'Date approved',
         minWidth: 135,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.date_approved),
       },
       {
         headerName: 'Actual date of completion',
         minWidth: 165,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatProjectValue(params.data?.actual_date_of_completion),
       },
       {
         headerName: 'Funds approved',
         minWidth: 140,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatNumberProjectValue(params.data?.funds_approved, 0, 0),
       },
       {
         headerName: 'ODP phase-out (Approved)',
         minWidth: 170,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatNumberProjectValue(params.data?.odp_phase_out_approved, 1, 1),
       },
       {
         headerName: 'ODP phase out (Actual)',
         minWidth: 160,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatNumberProjectValue(params.data?.odp_phase_out_actual, 1, 1),
       },
       {
         headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)',
         minWidth: 230,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatNumberProjectValue(
+            params.data?.hfc_phase_down_co2_approved,
+            0,
+            0,
+          ),
       },
       {
         headerName: 'HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)',
         minWidth: 220,
+        valueGetter: (params: ValueGetterParams<ProjectType>) =>
+          formatNumberProjectValue(
+            params.data?.hfc_phase_down_co2_actual,
+            0,
+            0,
+          ),
       },
     ],
     [],

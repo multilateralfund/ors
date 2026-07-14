@@ -4,6 +4,10 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.api.export.projects_inventory_report import project_actual_fund
+from core.api.export.projects_inventory_report import project_apr_co2_actual
+from core.api.export.projects_inventory_report import project_apr_date_completed
+from core.api.export.projects_inventory_report import project_apr_odp_actual
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import PCR, PCRProject
 
@@ -291,6 +295,7 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectListForPCRSerializer(serializers.ModelSerializer):
 
+    actual_date_of_completion = serializers.SerializerMethodField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     agency_id = serializers.IntegerField(read_only=True, source="agency.id")
 
@@ -309,11 +314,27 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     subsector_ids = serializers.SerializerMethodField()
     status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.IntegerField(read_only=True, source="status.id")
+    funds_approved = serializers.SerializerMethodField()
+    hfc_phase_down_co2_actual = serializers.SerializerMethodField()
+    hfc_phase_down_co2_approved = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        read_only=True,
+        source="total_phase_out_co2_tonnes",
+    )
+    odp_phase_out_actual = serializers.SerializerMethodField()
+    odp_phase_out_approved = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        read_only=True,
+        source="total_phase_out_odp_tonnes",
+    )
 
     class Meta:
         model = Project
         fields = [
             "id",
+            "actual_date_of_completion",
             "ad_hoc_pcr",
             "agency",
             "agency_id",
@@ -322,7 +343,13 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "code",
             "country",
             "country_id",
+            "date_approved",
+            "funds_approved",
+            "hfc_phase_down_co2_actual",
+            "hfc_phase_down_co2_approved",
             "metacode",
+            "odp_phase_out_actual",
+            "odp_phase_out_approved",
             "project_type",
             "project_type_id",
             "pcr_submission_date",
@@ -343,6 +370,23 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
 
     def get_subsector_ids(self, obj):
         return [subsector.id for subsector in obj.subsectors.all()]
+
+    @extend_schema_field(serializers.DateField(allow_null=True))
+    def get_actual_date_of_completion(self, obj):
+        completion_date = project_apr_date_completed(obj)
+        return completion_date.isoformat() if completion_date else None
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_funds_approved(self, obj):
+        return project_actual_fund(obj)
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_hfc_phase_down_co2_actual(self, obj):
+        return project_apr_co2_actual(obj)
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_odp_phase_out_actual(self, obj):
+        return project_apr_odp_actual(obj)
 
 
 class PCRMetaProjectSerializer(serializers.ModelSerializer):
