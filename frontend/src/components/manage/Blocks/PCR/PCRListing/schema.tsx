@@ -1,21 +1,27 @@
 import { formatNumberColumns } from '@ors/components/manage/Blocks/ProjectsListing/utils'
-import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/utils'
+import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
 import { MdExpandLess, MdExpandMore } from 'react-icons/md'
 import { Checkbox } from '@mui/material'
-import { isNil } from 'lodash'
+import { isNil, map } from 'lodash'
 import {
   ValueGetterParams,
   ICellRendererParams,
   ITooltipParams,
 } from 'ag-grid-community'
 
-const expandMetaproject = (params: ICellRendererParams) => {
+const expandMetaproject = (
+  params: ICellRendererParams,
+  pcrProjectsData: PCRUpdatedMetaproject[],
+) => {
   const metaproject = params.data
+  const selectedMetaproject = pcrProjectsData.find(
+    (metaproject) => metaproject.id === params.data.metaprojectId,
+  )
 
-  const projects = metaproject.projects.map((project: ProjectTypeApi) => ({
+  const projects = map(selectedMetaproject?.projects, (project) => ({
     ...project,
     parentId: metaproject.id,
     isMetaproject: false,
@@ -50,6 +56,7 @@ const expandMetaproject = (params: ICellRendererParams) => {
 }
 
 const getColumnDefs = (
+  pcrProjectsData: PCRUpdatedMetaproject[],
   projectId: number | null,
   setProjectId: (id: number | null) => void,
 ) => ({
@@ -67,7 +74,7 @@ const getColumnDefs = (
               {props.data.type === 'Multi-year agreement' ? (
                 <div
                   className="h-4 w-4 cursor-pointer"
-                  onClick={() => expandMetaproject(props)}
+                  onClick={() => expandMetaproject(props, pcrProjectsData)}
                 >
                   {props.data.isExpanded ? (
                     <MdExpandLess size={16} />
