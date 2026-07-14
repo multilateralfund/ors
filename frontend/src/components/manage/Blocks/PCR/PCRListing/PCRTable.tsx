@@ -25,23 +25,25 @@ const PCRTable = ({
 
   const pcrProjectsData = useMemo(
     () =>
-      results.map((metaproject) => ({
-        ...metaproject,
-        isMetaproject: true,
-        isExpanded: false,
-        metaprojectId: metaproject.id,
-        ...(metaproject.type === 'Multi-year agreement'
-          ? {
-              title: metaproject.umbrella_code ?? 'N/A',
-              total_fund:
-                sumBy(metaproject.projects, 'total_fund') || undefined,
-              support_cost_psc:
-                sumBy(metaproject.projects, 'support_cost_psc') || undefined,
-            }
-          : {
-              ...metaproject.projects[0],
-            }),
-      })),
+      results.map((metaproject) => {
+        const projects = [...metaproject.projects]
+
+        return {
+          ...metaproject,
+          projects,
+          isMetaproject: true,
+          isExpanded: false,
+          metaprojectId: metaproject.id,
+          ...(metaproject.type === 'Multi-year agreement'
+            ? {
+                title: metaproject.umbrella_code ?? 'N/A',
+                total_fund: sumBy(projects, 'total_fund') || undefined,
+                support_cost_psc:
+                  sumBy(projects, 'support_cost_psc') || undefined,
+              }
+            : { ...projects[0] }),
+        }
+      }),
     [results],
   )
 
