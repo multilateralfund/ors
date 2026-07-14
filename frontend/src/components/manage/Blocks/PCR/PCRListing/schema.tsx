@@ -4,8 +4,8 @@ import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
 import { MdExpandLess, MdExpandMore } from 'react-icons/md'
+import { isNil, map, sumBy } from 'lodash'
 import { Checkbox } from '@mui/material'
-import { isNil, map } from 'lodash'
 import {
   ValueGetterParams,
   ICellRendererParams,
@@ -54,6 +54,14 @@ const expandMetaproject = (
     force: true,
   })
 }
+
+const getNumberColsValue = (
+  params: ValueGetterParams | ITooltipParams,
+  field: string,
+) =>
+  params.data.type === 'Multi-year agreement'
+    ? sumBy(params.data.projects, field)
+    : params.data[field]
 
 const getColumnDefs = (
   pcrProjectsData: PCRUpdatedMetaproject[],
@@ -166,27 +174,55 @@ const getColumnDefs = (
     },
     {
       headerName: pcrFieldsMapping.total_fund,
-      valueGetter: (params: ValueGetterParams) =>
-        !isNil(params.data.total_fund)
-          ? '$' + formatNumberColumns(params, 'total_fund')
-          : '',
-      tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'total_fund', {
+      valueGetter: (params: ValueGetterParams) => {
+        const totalFund = getNumberColsValue(params, 'total_fund')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, total_fund: totalFund },
+        }
+
+        return !isNil(totalFund)
+          ? '$' + formatNumberColumns(updatedParams, 'total_fund')
+          : ''
+      },
+      tooltipValueGetter: (params: ITooltipParams) => {
+        const totalFund = getNumberColsValue(params, 'total_fund')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, total_fund: totalFund },
+        }
+
+        return formatNumberColumns(updatedParams, 'total_fund', {
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
-        }),
+        })
+      },
     },
     {
       headerName: pcrFieldsMapping.support_cost_psc,
-      valueGetter: (params: ValueGetterParams) =>
-        !isNil(params.data.support_cost_psc)
-          ? '$' + formatNumberColumns(params, 'support_cost_psc')
-          : '',
-      tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'support_cost_psc', {
+      valueGetter: (params: ValueGetterParams) => {
+        const supportCost = getNumberColsValue(params, 'support_cost_psc')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, support_cost_psc: supportCost },
+        }
+
+        return !isNil(supportCost)
+          ? '$' + formatNumberColumns(updatedParams, 'support_cost_psc')
+          : ''
+      },
+      tooltipValueGetter: (params: ITooltipParams) => {
+        const supportCost = getNumberColsValue(params, 'support_cost_psc')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, support_cost_psc: supportCost },
+        }
+
+        return formatNumberColumns(updatedParams, 'support_cost_psc', {
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
-        }),
+        })
+      },
     },
     {
       headerName: pcrFieldsMapping.pcr_submission_date,

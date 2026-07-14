@@ -8,8 +8,6 @@ import {
 import getColumnDefs from './schema'
 import { PCRTableProps } from '../interfaces'
 
-import { sumBy } from 'lodash'
-
 const PCRTable = ({
   pcrProjects,
   projectId,
@@ -35,12 +33,7 @@ const PCRTable = ({
           isExpanded: false,
           metaprojectId: metaproject.id,
           ...(metaproject.type === 'Multi-year agreement'
-            ? {
-                title: metaproject.umbrella_code ?? 'N/A',
-                total_fund: sumBy(projects, 'total_fund') || undefined,
-                support_cost_psc:
-                  sumBy(projects, 'support_cost_psc') || undefined,
-              }
+            ? { title: metaproject.umbrella_code ?? 'N/A' }
             : { ...projects[0] }),
         }
       }),
