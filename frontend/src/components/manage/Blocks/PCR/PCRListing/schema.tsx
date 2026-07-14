@@ -16,43 +16,44 @@ const expandMetaproject = (
   params: ICellRendererParams,
   pcrProjectsData: PCRUpdatedMetaproject[],
 ) => {
-  const metaproject = params.data
-  const selectedMetaproject = pcrProjectsData.find(
-    (metaproject) => metaproject.id === params.data.metaprojectId,
+  const metaproject = pcrProjectsData.find(
+    (crtMetaproject) => crtMetaproject.id === params.data.metaprojectId,
   )
 
-  const projects = map(selectedMetaproject?.projects, (project) => ({
-    ...project,
-    parentId: metaproject.id,
-    isMetaproject: false,
-  }))
+  if (!!metaproject) {
+    const projects = map(metaproject.projects, (project) => ({
+      ...project,
+      parentId: metaproject.id,
+      isMetaproject: false,
+    }))
 
-  if (!metaproject.isExpanded) {
-    params.node.setData({
-      ...metaproject,
-      isExpanded: true,
-    })
+    if (!metaproject.isExpanded) {
+      params.node.setData({
+        ...metaproject,
+        isExpanded: true,
+      })
 
-    params.api.applyTransaction({
-      add: projects,
-      addIndex: (params.node.rowIndex ?? 0) + 1,
-    })
-  } else {
-    params.node.setData({
-      ...metaproject,
-      isExpanded: false,
-    })
+      params.api.applyTransaction({
+        add: projects,
+        addIndex: (params.node.rowIndex ?? 0) + 1,
+      })
+    } else {
+      params.node.setData({
+        ...metaproject,
+        isExpanded: false,
+      })
 
-    params.api.applyTransaction({
-      remove: projects,
+      params.api.applyTransaction({
+        remove: projects,
+      })
+    }
+
+    params.api.refreshCells({
+      rowNodes: [params.node],
+      suppressFlash: true,
+      force: true,
     })
   }
-
-  params.api.refreshCells({
-    rowNodes: [params.node],
-    suppressFlash: true,
-    force: true,
-  })
 }
 
 const getNumberColsValue = (
