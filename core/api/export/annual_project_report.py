@@ -1454,24 +1454,23 @@ class APRSummaryTablesExportWriter:
                 apr.production_phased_out_co2 or 0 for apr in records
             )
 
-            total_odp = total_consumption_odp + total_production_odp
+            # Cost effectiveness uses derived (proposal/denorm) phase-out data rather
+            # than agency-reported actuals, since actuals are often not yet reported
+            # and would otherwise make the ratio artificially large.
+            total_phaseout_combined = sum(
+                (apr.consumption_phased_out_odp_proposal_denorm or 0)
+                + (apr.production_phased_out_odp_proposal_denorm or 0)
+                for apr in records
+            )
+            total_phaseout_combined_kg = total_phaseout_combined * 1000
             data["cost_effectiveness"] = (
-                data["total_approved_funding"] / (total_odp * 1000) if total_odp else 0
+                data["total_approved_funding"] / total_phaseout_combined_kg
+                if total_phaseout_combined_kg
+                else 0
             )
 
             if sheet_type == "ongoing_investment":
-                # Sum of phaseout combined (proposal values) in kg
-                total_phaseout_combined = sum(
-                    (apr.consumption_phased_out_odp_proposal_denorm or 0)
-                    + (apr.production_phased_out_odp_proposal_denorm or 0)
-                    for apr in records
-                )
-                data["total_phaseout_combined_kg"] = total_phaseout_combined * 1000
-                data["cost_effectiveness"] = (
-                    data["total_approved_funding"] / data["total_phaseout_combined_kg"]
-                    if data["total_phaseout_combined_kg"]
-                    else 0
-                )
+                data["total_phaseout_combined_kg"] = total_phaseout_combined_kg
 
         return data
 

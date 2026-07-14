@@ -6,6 +6,8 @@ import { PCRMetaProjectType } from '@ors/types/api_projects'
 export type PCRUpdatedMetaproject = PCRMetaProjectType & {
   isMetaproject: boolean
   isExpanded: boolean
+  metaprojectId: number
+  pcrId: number | null
 }
 
 export type PCRTableProps = {

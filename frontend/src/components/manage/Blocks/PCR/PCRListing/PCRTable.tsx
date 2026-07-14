@@ -8,8 +8,6 @@ import {
 import getColumnDefs from './schema'
 import { PCRTableProps } from '../interfaces'
 
-import { sumBy } from 'lodash'
-
 const PCRTable = ({
   pcrProjects,
   projectId,
@@ -21,41 +19,36 @@ const PCRTable = ({
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
-  const { defaultColDef, columnDefs } = getColumnDefs(
-    projectId,
-    setProjectId,
-    setPcrId,
-  )
-
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
 
   const pcrProjectsData = useMemo(
     () =>
-      results.map((metaproject) => ({
-        ...(metaproject.type === 'Multi-year agreement'
-          ? {
-              ...metaproject,
-              isMetaproject: true,
-              isExpanded: false,
-              metaprojectId: metaproject.id,
-              pcrId:
-                metaproject.projects.find((project) => project.pcr_id)
-                  ?.pcr_id ?? null,
-              title: metaproject.umbrella_code ?? 'N/A',
-              total_fund:
-                sumBy(metaproject.projects, 'total_fund') || undefined,
-              support_cost_psc:
-                sumBy(metaproject.projects, 'support_cost_psc') || undefined,
-            }
-          : {
-              ...metaproject.projects[0],
-              isMetaproject: true,
-              metaprojectId: metaproject.id,
-              pcrId: metaproject.projects[0]?.pcr_id ?? null,
-            }),
-      })),
+      results.map((metaproject) => {
+        const projects = [...metaproject.projects]
+        const pcrId =
+          projects.find((project) => project.pcr_id)?.pcr_id ?? null
+
+        return {
+          ...metaproject,
+          projects,
+          isMetaproject: true,
+          isExpanded: false,
+          metaprojectId: metaproject.id,
+          pcrId,
+          ...(metaproject.type === 'Multi-year agreement'
+            ? { title: metaproject.umbrella_code ?? 'N/A' }
+            : { ...projects[0] }),
+        }
+      }),
     [results],
+  )
+
+  const { defaultColDef, columnDefs } = getColumnDefs(
+    pcrProjectsData,
+    projectId,
+    setProjectId,
+    setPcrId,
   )
 
   return (
