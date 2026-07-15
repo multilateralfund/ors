@@ -519,6 +519,7 @@ export const displaySelectedOption = (
   handleFilterChange: any,
   handleParamsChange: any,
   field: string = 'id',
+  extraLabel?: string,
 ) =>
   filters?.[entityIdentifier]?.map((entity: any) => {
     const entityId = entity[field]
@@ -531,6 +532,7 @@ export const displaySelectedOption = (
         component="p"
         variant="h6"
       >
+        {extraLabel ? `${extraLabel}: ` : ''}
         {entityData?.name ||
           entityData?.label ||
           entityData?.code ||

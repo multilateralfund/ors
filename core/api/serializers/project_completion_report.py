@@ -134,13 +134,15 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     cluster_id = serializers.IntegerField(read_only=True, source="cluster.id")
 
     country = serializers.SlugRelatedField("name", read_only=True)
+    pcr_submission_date = serializers.DateField(
+        read_only=True, source="pcr_project.pcr.submission_date"
+    )
     project_type = serializers.SlugRelatedField("name", read_only=True)
     project_type_id = serializers.IntegerField(read_only=True, source="project_type.id")
     sector = serializers.SlugRelatedField("name", read_only=True)
     sector_id = serializers.IntegerField(read_only=True, source="sector.id")
     subsectors = serializers.SerializerMethodField()
     subsector_ids = serializers.SerializerMethodField()
-
     status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.IntegerField(read_only=True, source="status.id")
 
@@ -159,6 +161,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "metacode",
             "project_type",
             "project_type_id",
+            "pcr_submission_date",
             "sector",
             "sector_id",
             "subsectors",
@@ -167,6 +170,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "status",
             "status_id",
             "title",
+            "total_fund",
             "tranche",
         ]
 
@@ -189,6 +193,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "umbrella_code",
+            "type",
             "projects",
         ]
 

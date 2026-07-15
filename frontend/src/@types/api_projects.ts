@@ -209,3 +209,10 @@ export type MetaProjectType = {
   sectors: ProjectSectorType[]
   type: string
 }
+
+export type PCRMetaProjectType = {
+  id: number
+  type: string
+  umbrella_code: string
+  projects: ProjectType[]
+}

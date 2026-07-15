@@ -8,8 +8,6 @@ import {
 import getColumnDefs from './schema'
 import { PCRTableProps } from '../interfaces'
 
-import { sumBy } from 'lodash'
-
 const PCRTable = ({
   pcrProjects,
   projectId,
@@ -20,23 +18,32 @@ const PCRTable = ({
 
   const { results = [], loading, loaded, count, setParams } = pcrProjects
 
-  const { defaultColDef, columnDefs } = getColumnDefs(projectId, setProjectId)
-
   const paginationPageSize = getPaginationPageSize(count, 50)
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 200)
 
   const pcrProjectsData = useMemo(
     () =>
-      results.map((metaproject) => ({
-        ...metaproject,
-        isMetaproject: true,
-        isExpanded: false,
-        title: metaproject.umbrella_code ?? 'N/A',
-        total_fund: sumBy(metaproject.projects, 'total_fund') || undefined,
-        support_cost_psc:
-          sumBy(metaproject.projects, 'support_cost_psc') || undefined,
-      })),
+      results.map((metaproject) => {
+        const projects = [...metaproject.projects]
+
+        return {
+          ...metaproject,
+          projects,
+          isMetaproject: true,
+          isExpanded: false,
+          metaprojectId: metaproject.id,
+          ...(metaproject.type === 'Multi-year agreement'
+            ? { title: metaproject.umbrella_code ?? 'N/A' }
+            : { ...projects[0] }),
+        }
+      }),
     [results],
+  )
+
+  const { defaultColDef, columnDefs } = getColumnDefs(
+    pcrProjectsData,
+    projectId,
+    setProjectId,
   )
 
   return (
@@ -44,15 +51,15 @@ const PCRTable = ({
       <ViewTable
         ref={gridRef}
         key={JSON.stringify(filters)}
-        className="projects-table pcr-listing"
         getRowId={(params) =>
           `${params.data.isMetaproject ? 'metaproject' : 'project'}-${params.data.id}`
         }
+        rowClassRules={{
+          'pcr-metaproject': (params) => params.data.isMetaproject,
+          'pcr-expanded-metaproject': (params) => params.data.isExpanded,
+        }}
         domLayout="normal"
-        suppressScrollOnNewData={true}
-        enablePagination={true}
-        paginationPageSizeSelector={paginationPageSizeSelectorOpts}
-        resizeGridOnRowUpdate={true}
+        className="projects-table pcr-listing"
         rowData={pcrProjectsData}
         rowCount={count}
         rowBuffer={100}
@@ -62,36 +69,15 @@ const PCRTable = ({
           agColumnHeader: undefined,
           agTextCellRenderer: undefined,
         }}
+        suppressScrollOnNewData={true}
+        resizeGridOnRowUpdate={true}
+        enablePagination={true}
+        paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         onPaginationChanged={({ page, rowsPerPage }) => {
           setParams({
             limit: rowsPerPage,
             offset: page * rowsPerPage,
           })
-        }}
-        onSortChanged={({ api }) => {
-          const ordering = api
-            .getColumnState()
-            .filter((column) => !!column.sort)
-            .map(({ sort, colId }) => {
-              const field = [
-                'code',
-                'tranche',
-                'title',
-                'total_fund',
-                'metacode',
-              ].includes(colId)
-                ? colId
-                : colId === 'cluster.code'
-                  ? colId.split('.')[0] + '__code'
-                  : colId.split('.')[0] + '__name'
-
-              if (colId === 'code') {
-                return (sort === 'asc' ? '' : '-') + 'filtered_code'
-              }
-              return (sort === 'asc' ? '' : '-') + field
-            })
-            .join(',')
-          setParams({ offset: 0, ordering: ordering + ',-date_created' })
         }}
         {...{ defaultColDef, columnDefs, loaded, loading, paginationPageSize }}
       />

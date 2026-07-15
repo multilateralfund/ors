@@ -1,12 +1,10 @@
-import { Fragment } from 'react'
-
+import DateRangePicker from '@ors/components/ui/DateRangePicker/DateRangePicker'
 import Field from '@ors/components/manage/Form/Field'
 import { SearchFilter } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import { pcrFieldsMapping, pcrFiltersMapping, categoryOpts } from '../constants'
+import { pcrFieldsMapping } from '../constants'
 import { PCRFiltersProps } from '../interfaces'
 
-import { Paper, FormControlLabel, Checkbox, Divider } from '@mui/material'
 import { IoChevronDown } from 'react-icons/io5'
 import { union } from 'lodash'
 
@@ -17,24 +15,16 @@ const PCRFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: PCRFiltersProps) => {
-  const booleanFieldsFilters = [
-    'is_completed',
-    'pcr_due',
-    'ad_hoc_pcr',
-    'pcr_submitted',
-  ]
-
   const getDefaultProps = (field: string) => {
-    const filterWidth = ['cooperating_agency'].includes(field)
-      ? 'w-[11rem]'
-      : 'w-[8.5rem]'
+    const filterWidth =
+      field === 'cooperating_agency' ? 'w-[11rem]' : 'w-[8.5rem]'
 
     return {
       multiple: true,
       value: [],
       getOptionLabel: (option: any) => option?.name,
-      FieldProps: { className: `mb-0 ${filterWidth} BPList` },
       popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
+      FieldProps: { className: `mb-0 ${filterWidth} BPList` },
       componentsProps: {
         popupIndicator: { sx: { transform: 'none !important' } },
       },
@@ -42,7 +32,15 @@ const PCRFilters = ({
   }
 
   const FieldFilter = ({ field }: { field: string }) => {
-    const filterField = field + '_id'
+    const simpleFields = [
+      'subsectors',
+      'category',
+      'pcr_due',
+      'ad_hoc_pcr',
+      'pcr_submitted',
+    ]
+
+    const filterField = simpleFields.includes(field) ? field : field + '_id'
 
     return (
       <Field
@@ -68,30 +66,17 @@ const PCRFilters = ({
     )
   }
 
-  const booleanFilters = (
-    <Paper component="ul" className="m-0 flex list-none gap-x-2 px-2">
-      {booleanFieldsFilters.map((field: string, index: number) => (
-        <Fragment key={field}>
-          <li>
-            <FormControlLabel
-              className="m-0"
-              control={<Checkbox size="small" checked={filters[field]} />}
-              label={pcrFiltersMapping[field]}
-              onChange={(_, checked) => {
-                handleFilterChange({ [field]: checked })
-                handleParamsChange({ [field]: checked, offset: 0 })
-              }}
-            />
-          </li>
-          {index !== booleanFieldsFilters.length - 1 && (
-            <li>
-              <Divider orientation="vertical" />
-            </li>
-          )}
-        </Fragment>
-      ))}
-    </Paper>
-  )
+  const handleDateRangeChange = (start: string, end: string) => {
+    handleFilterChange({
+      pcr_submission_date_after: start,
+      pcr_submission_date_before: end,
+    })
+    handleParamsChange({
+      pcr_submission_date_after: start,
+      pcr_submission_date_before: end,
+      offset: 0,
+    })
+  }
 
   return (
     <div className="flex h-full flex-wrap items-center gap-2">
@@ -108,23 +93,18 @@ const PCRFilters = ({
       <FieldFilter field="cluster" />
       <FieldFilter field="project_type" />
       <FieldFilter field="sector" />
-      <FieldFilter field="subsector" />
+      <FieldFilter field="subsectors" />
       <FieldFilter field="category" />
-      <Field
-        widget="yearRange"
-        label={pcrFieldsMapping.submission_date}
-        min={1990}
-        max={new Date().getFullYear()}
-        value={filters.submission_date}
-        onChange={(value) => {
-          handleFilterChange({ submission_date: value })
-          handleParamsChange({ submission_date: value, offset: 0 })
-        }}
-        FieldProps={{ className: 'mb-0 BPList' }}
-        labelClassName="normal-case mt-0.5 text-[#111827]"
-        buttonClassName="h-9 !pr-3.5 [font-family:var(--font-roboto-condensed)]"
+      <FieldFilter field="status" />
+      <FieldFilter field="pcr_due" />
+      <FieldFilter field="ad_hoc_pcr" />
+      <FieldFilter field="pcr_submitted" />
+      <DateRangePicker
+        label="PCR submission date"
+        start={filters.pcr_submission_date_after || ''}
+        end={filters.pcr_submission_date_before || ''}
+        onChange={handleDateRangeChange}
       />
-      {booleanFilters}
     </div>
   )
 }

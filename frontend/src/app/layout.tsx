@@ -29,6 +29,10 @@ import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 
+import { scopes } from '@ors/config/msalConfig'
+import { useMsal } from '@azure/msal-react'
+import Cookies from 'js-cookie'
+
 async function fetchAppBootstrapData() {
   const [
     // Common data
@@ -201,6 +205,7 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
   const user = useStore((state) => state.user)
   const getUser = useStore((state) => state.user.getUser)
   const appBootstrapped = useAppBootstrap(user.data?.pk)
+  const { instance } = useMsal()
 
   const currentView = getCurrentView(pathname || '')
   const isLoginPath = pathname === '/login'
@@ -254,6 +259,28 @@ function ClientAppGate({ children }: { children: React.ReactNode }) {
     },
     [appBootstrapped, isLoginPath, isProtectedPath, user.data, user.loaded],
   )
+
+  useEffect(() => {
+    const initializeUser = async () => {
+      const authToken = Cookies.get('orsauth')
+
+      if (!authToken) {
+        const account =
+          instance.getActiveAccount() || instance.getAllAccounts()[0]
+
+        if (account) {
+          const token = await instance.acquireTokenSilent({ account, scopes })
+
+          await api('/api/auth/adfs-login/', {
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+            method: 'POST',
+          })
+        }
+      }
+    }
+
+    initializeUser().catch(console.error)
+  }, [instance])
 
   return <View>{shouldRenderView ? children : null}</View>
 }

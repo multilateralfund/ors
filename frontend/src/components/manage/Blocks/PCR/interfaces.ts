@@ -1,5 +1,13 @@
+import { RefObject } from 'react'
+
 import { useGetPCRProjects } from './hooks/useGetPCRProjects'
-import { ProjectAssociationType } from '@ors/types/api_projects'
+import { PCRMetaProjectType } from '@ors/types/api_projects'
+
+export type PCRUpdatedMetaproject = PCRMetaProjectType & {
+  isMetaproject: boolean
+  isExpanded: boolean
+  metaprojectId: number
+}
 
 export type PCRTableProps = {
   pcrProjects: ReturnType<typeof useGetPCRProjects>
@@ -8,13 +16,8 @@ export type PCRTableProps = {
   filters: Record<string, any>
 }
 
-export type PCRUpdatedMetaproject = ProjectAssociationType & {
-  isMetaproject: boolean
-  isExpanded: boolean
-}
-
 export type PCRFiltersProps = {
-  form: any
+  form: RefObject<HTMLFormElement>
   filters: Record<string, any>
   fieldToOptionsMapping: Record<string, any>
   handleFilterChange: (newFilters: { [key: string]: any }) => void
