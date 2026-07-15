@@ -1,6 +1,6 @@
 from django.db.models import Exists, OuterRef, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, viewsets
+from rest_framework import filters, generics, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -15,14 +15,41 @@ from core.api.permissions import (
 )
 from core.api.serializers.project_completion_report import (
     PCRCreateSerializer,
+    PCRDelayCategorySerializer,
+    PCRLearnedLessonCategorySerializer,
     PCRProjectListSerializer,
+    PCRProjectComponentOptionSerializer,
     PCRResponseSerializer,
     PCRUpdateSerializer,
 )
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
 from core.models.project import Project
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import (
+    PCR,
+    PCRDelayCategory,
+    PCRLearnedLessonCategory,
+    PCRProject,
+    PCRProjectComponentOption,
+)
+
+
+class PCRProjectComponentOptionListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRProjectComponentOption.objects.order_by("sort_order", "name")
+    serializer_class = PCRProjectComponentOptionSerializer
+
+
+class PCRDelayCategoryListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRDelayCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRDelayCategorySerializer
+
+
+class PCRLearnedLessonCategoryListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRLearnedLessonCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRLearnedLessonCategorySerializer
 
 
 class PCRProjectViewSet(
