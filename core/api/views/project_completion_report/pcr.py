@@ -16,6 +16,7 @@ from core.api.permissions import (
 from core.api.serializers.project_completion_report import (
     PCRCreateSerializer,
     PCRProjectListSerializer,
+    PCRResponseSerializer,
     PCRUpdateSerializer,
 )
 from core.api.views.utils import get_country_regions
@@ -27,6 +28,7 @@ from core.models.project_completion_report import PCR, PCRProject
 class PCRProjectViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
 ):
@@ -57,7 +59,7 @@ class PCRProjectViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters"]:
+        if self.action in ["list", "list_filters", "retrieve"]:
             return [HasProjectV2ViewAccess]
         if self.action in ["create", "update", "partial_update"]:
             return [HasProjectV2EditAccess]
@@ -66,12 +68,14 @@ class PCRProjectViewSet(
     def get_serializer_class(self):
         if self.action == "create":
             return PCRCreateSerializer
+        if self.action == "retrieve":
+            return PCRResponseSerializer
         if self.action in ["update", "partial_update"]:
             return PCRUpdateSerializer
         return PCRProjectListSerializer
 
     def filter_queryset(self, queryset):
-        if self.action in ["update", "partial_update"]:
+        if self.action in ["retrieve", "update", "partial_update"]:
             return queryset
         return super().filter_queryset(queryset)
 
@@ -100,9 +104,12 @@ class PCRProjectViewSet(
         return queryset.none()
 
     def get_queryset(self):
-        if self.action in ["update", "partial_update"]:
+        if self.action in ["retrieve", "update", "partial_update"]:
             return PCR.objects.select_related("meta_project").prefetch_related(
-                "pcr_projects"
+                "pcr_projects",
+                "pcr_projects__alternative_technologies",
+                "pcr_projects__enterprises",
+                "pcr_projects__equipments",
             )
 
         pcr_required_project = Project.objects.filter(

@@ -4,14 +4,85 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.api.export.projects_inventory_report import project_actual_fund
+from core.api.export.projects_inventory_report import project_apr_co2_actual
+from core.api.export.projects_inventory_report import project_apr_date_completed
+from core.api.export.projects_inventory_report import project_apr_odp_actual
 from core.models.project import MetaProject, Project
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import (
+    PCR,
+    PCRProject,
+    PCRProjectAlternativeTechnology,
+    PCRProjectEnterprise,
+    PCRProjectEquipment,
+)
+from core.models.substance import Substance
+
+
+class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
+    substance_from = serializers.PrimaryKeyRelatedField(
+        queryset=Substance.objects.all(), allow_null=True, required=False
+    )
+    substance_to = serializers.PrimaryKeyRelatedField(
+        queryset=Substance.objects.all(), allow_null=True, required=False
+    )
+
+    class Meta:
+        model = PCRProjectAlternativeTechnology
+        fields = ["substance_from", "substance_to"]
+
+
+class PCRProjectEnterpriseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PCRProjectEnterprise
+        fields = ["name", "address"]
+
+
+class PCRProjectEquipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PCRProjectEquipment
+        fields = ["name", "description", "disposal_type", "disposal_date"]
+
+
+PCR_PROJECT_NESTED_MODELS = {
+    "alternative_technologies": PCRProjectAlternativeTechnology,
+    "enterprises": PCRProjectEnterprise,
+    "equipments": PCRProjectEquipment,
+}
+
+
+def pop_pcr_project_nested_data(pcr_project_data):
+    return {
+        field_name: pcr_project_data.pop(field_name, None)
+        for field_name in PCR_PROJECT_NESTED_MODELS
+    }
+
+
+def replace_pcr_project_nested_data(pcr_project, nested_data):
+    for field_name, rows in nested_data.items():
+        if rows is None:
+            continue
+        getattr(pcr_project, field_name).all().delete()
+        PCR_PROJECT_NESTED_MODELS[field_name].objects.bulk_create(
+            [
+                PCR_PROJECT_NESTED_MODELS[field_name](
+                    pcr_project=pcr_project,
+                    **row,
+                )
+                for row in rows
+            ]
+        )
 
 
 class PCRProjectSerializer(serializers.ModelSerializer):
     project_id = serializers.PrimaryKeyRelatedField(
         queryset=Project.objects.all(), source="project"
     )
+    alternative_technologies = PCRProjectAlternativeTechnologySerializer(
+        many=True, required=False
+    )
+    enterprises = PCRProjectEnterpriseSerializer(many=True, required=False)
+    equipments = PCRProjectEquipmentSerializer(many=True, required=False)
 
     class Meta:
         model = PCRProject
@@ -21,6 +92,11 @@ class PCRProjectSerializer(serializers.ModelSerializer):
             "financial_figures_status",
             "financial_figures_status_explanation",
             "addresses",
+            "funds_disbursed",
+            "planned_date_of_completion",
+            "alternative_technologies",
+            "enterprises",
+            "equipments",
             "project_goal_achieved",
             "project_goal_achieved_explanation",
             "rating",
@@ -122,11 +198,13 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         for project in pcr.meta_project.projects.order_by("id"):
             pcr_project_data = pcr_projects_by_project_id.get(project.id, {}).copy()
             pcr_project_data.pop("project", None)
-            PCRProject.objects.create(
+            nested_data = pop_pcr_project_nested_data(pcr_project_data)
+            pcr_project = PCRProject.objects.create(
                 pcr=pcr,
                 project=project,
                 **pcr_project_data,
             )
+            replace_pcr_project_nested_data(pcr_project, nested_data)
         return pcr
 
     def to_representation(self, instance):
@@ -159,9 +237,11 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         for pcr_project_data in pcr_projects_data:
             project = pcr_project_data.pop("project")
             pcr_project = pcr_projects_by_project_id[project.id]
+            nested_data = pop_pcr_project_nested_data(pcr_project_data)
             for field_name, value in pcr_project_data.items():
                 setattr(pcr_project, field_name, value)
             pcr_project.save()
+            replace_pcr_project_nested_data(pcr_project, nested_data)
         return instance
 
     def to_representation(self, instance):
@@ -291,6 +371,7 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectListForPCRSerializer(serializers.ModelSerializer):
 
+    actual_date_of_completion = serializers.SerializerMethodField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     agency_id = serializers.IntegerField(read_only=True, source="agency.id")
 
@@ -298,6 +379,7 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     cluster_id = serializers.IntegerField(read_only=True, source="cluster.id")
 
     country = serializers.SlugRelatedField("name", read_only=True)
+    pcr_id = serializers.IntegerField(source="pcr_project.pcr_id", read_only=True)
     pcr_submission_date = serializers.DateField(
         read_only=True, source="pcr_project.pcr.submission_date"
     )
@@ -309,11 +391,27 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
     subsector_ids = serializers.SerializerMethodField()
     status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.IntegerField(read_only=True, source="status.id")
+    funds_approved = serializers.SerializerMethodField()
+    hfc_phase_down_co2_actual = serializers.SerializerMethodField()
+    hfc_phase_down_co2_approved = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        read_only=True,
+        source="total_phase_out_co2_tonnes",
+    )
+    odp_phase_out_actual = serializers.SerializerMethodField()
+    odp_phase_out_approved = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        read_only=True,
+        source="total_phase_out_odp_tonnes",
+    )
 
     class Meta:
         model = Project
         fields = [
             "id",
+            "actual_date_of_completion",
             "ad_hoc_pcr",
             "agency",
             "agency_id",
@@ -322,7 +420,14 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
             "code",
             "country",
             "country_id",
+            "date_approved",
+            "funds_approved",
+            "hfc_phase_down_co2_actual",
+            "hfc_phase_down_co2_approved",
             "metacode",
+            "odp_phase_out_actual",
+            "odp_phase_out_approved",
+            "pcr_id",
             "project_type",
             "project_type_id",
             "pcr_submission_date",
@@ -343,6 +448,23 @@ class ProjectListForPCRSerializer(serializers.ModelSerializer):
 
     def get_subsector_ids(self, obj):
         return [subsector.id for subsector in obj.subsectors.all()]
+
+    @extend_schema_field(serializers.DateField(allow_null=True))
+    def get_actual_date_of_completion(self, obj):
+        completion_date = project_apr_date_completed(obj)
+        return completion_date.isoformat() if completion_date else None
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_funds_approved(self, obj):
+        return project_actual_fund(obj)
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_hfc_phase_down_co2_actual(self, obj):
+        return project_apr_co2_actual(obj)
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_odp_phase_out_actual(self, obj):
+        return project_apr_odp_actual(obj)
 
 
 class PCRMetaProjectSerializer(serializers.ModelSerializer):

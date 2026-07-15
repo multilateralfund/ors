@@ -25,6 +25,7 @@ export type ProjectHistoryItem = {
 }
 
 export type ProjectType = {
+  actual_date_of_completion?: string | null
   ad_hoc_pcr: boolean
   agency: string
   agency_id: number
@@ -69,6 +70,9 @@ export type ProjectType = {
   fund_disbursed: any
   fund_disbursed_psc: number
   funding_window: string
+  funds_approved?: number | string | null
+  hfc_phase_down_co2_actual?: number | string | null
+  hfc_phase_down_co2_approved?: number | string | null
   funds: {
     amount: number
     date: string
@@ -107,6 +111,8 @@ export type ProjectType = {
   metacode: string
   mya_code: string
   mya_subsector: string
+  odp_phase_out_actual?: number | string | null
+  odp_phase_out_approved?: number | string | null
   umbrella_code: string
   national_agency: any
   ods_odp: {
@@ -125,6 +131,7 @@ export type ProjectType = {
   }[]
   ods_phasedout_co2mt: any
   operating_cost: number
+  pcr_id?: number | null
   pcr_waived: boolean
   plan: any
   plus: boolean

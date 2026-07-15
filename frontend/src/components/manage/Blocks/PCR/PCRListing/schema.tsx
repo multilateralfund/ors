@@ -68,6 +68,7 @@ const getColumnDefs = (
   pcrProjectsData: PCRUpdatedMetaproject[],
   projectId: number | null,
   setProjectId: (id: number | null) => void,
+  setPcrId: (id: number | null) => void,
 ) => ({
   columnDefs: [
     {
@@ -97,9 +98,9 @@ const getColumnDefs = (
               <Checkbox
                 checked={projectId == props.data.metaprojectId}
                 onChange={(event) => {
-                  setProjectId(
-                    event.target.checked ? props.data.metaprojectId : null,
-                  )
+                  const isChecked = event.target.checked
+                  setProjectId(isChecked ? props.data.metaprojectId : null)
+                  setPcrId(isChecked ? (props.data.pcrId ?? null) : null)
                 }}
                 sx={{ color: 'black' }}
               />

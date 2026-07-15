@@ -1,4 +1,10 @@
-import { PropsWithChildren, useState } from 'react'
+import {
+  PropsWithChildren,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react'
 
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
@@ -25,20 +31,20 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     sdg_contribution: [],
   })
 
-  const setPCRData = (
-    updater: React.SetStateAction<PCRData>,
-    fieldName?: string,
-  ) => {
-    setPCRDataNoFieldTracking((prevData) => {
+  const setPCRData = useCallback(
+    (updater: SetStateAction<PCRData>, fieldName?: string) => {
       if (fieldName) {
         addUpdatedField(fieldName)
       }
 
-      return typeof updater === 'function'
-        ? (updater as (prev: PCRData) => PCRData)(prevData)
-        : updater
-    })
-  }
+      setPCRDataNoFieldTracking((prevData) =>
+        typeof updater === 'function'
+          ? (updater as (prev: PCRData) => PCRData)(prevData)
+          : updater,
+      )
+    },
+    [addUpdatedField],
+  )
 
   const { data: regions } = useApi({
     options: {
@@ -48,9 +54,14 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     path: 'api/countries/',
   })
 
+  const value = useMemo(
+    () => ({ pcrMetaproject, PCRData, setPCRData, regions }),
+    [pcrMetaproject, PCRData, setPCRData, regions],
+  )
+
   return (
     <PCRDataContext.Provider
-      value={{ pcrMetaproject, PCRData, setPCRData, regions }}
+      value={value}
     >
       {children}
     </PCRDataContext.Provider>

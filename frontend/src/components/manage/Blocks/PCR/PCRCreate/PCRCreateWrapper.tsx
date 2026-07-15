@@ -18,18 +18,30 @@ const PCRCreateWrapper = () => {
     () => uniq(map(data?.projects, 'agency_id')),
     [data],
   )
-  const initialProjectComponentData = map(agencyIds, (agency_id) => ({
-    agency_id,
-    pcr_project_component: [],
-  }))
-  const initialGenderMainstreamingData = map(agencyIds, (agency_id) => ({
-    agency_id,
-    project_phase: [],
-  }))
-  const initialSDGsData = map(agencyIds, (agency_id) => ({
-    agency_id,
-    sdgs: [],
-  }))
+  const initialProjectComponentData = useMemo(
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        pcr_project_component: [],
+      })),
+    [agencyIds],
+  )
+  const initialGenderMainstreamingData = useMemo(
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        project_phase: [],
+      })),
+    [agencyIds],
+  )
+  const initialSDGsData = useMemo(
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        sdgs: [],
+      })),
+    [agencyIds],
+  )
 
   useEffect(() => {
     setPCRData((prevData) => ({
@@ -39,13 +51,18 @@ const PCRCreateWrapper = () => {
       gender_mainstreaming: initialGenderMainstreamingData,
       sdg_contribution: initialSDGsData,
     }))
-  }, [agencyIds])
+  }, [
+    initialGenderMainstreamingData,
+    initialProjectComponentData,
+    initialSDGsData,
+    setPCRData,
+  ])
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   useEffect(() => {
     clearUpdatedFields()
-  }, [])
+  }, [clearUpdatedFields])
 
   useVisibilityChange(updatedFields.size > 0)
 
