@@ -11,8 +11,11 @@ from core.api.export.projects_inventory_report import project_apr_odp_actual
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import (
     PCR,
+    PCRDelayCategory,
+    PCRLearnedLessonCategory,
     PCRProject,
     PCRProjectAlternativeTechnology,
+    PCRProjectComponentOption,
     PCRProjectEnterprise,
     PCRProjectEquipment,
 )
@@ -42,6 +45,26 @@ class PCRProjectEquipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PCRProjectEquipment
         fields = ["name", "description", "disposal_type", "disposal_date"]
+
+
+class PCRLookupSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ["id", "name", "sort_order"]
+
+
+class PCRProjectComponentOptionSerializer(PCRLookupSerializer):
+    class Meta(PCRLookupSerializer.Meta):
+        model = PCRProjectComponentOption
+
+
+class PCRDelayCategorySerializer(PCRLookupSerializer):
+    class Meta(PCRLookupSerializer.Meta):
+        model = PCRDelayCategory
+
+
+class PCRLearnedLessonCategorySerializer(PCRLookupSerializer):
+    class Meta(PCRLookupSerializer.Meta):
+        model = PCRLearnedLessonCategory
 
 
 PCR_PROJECT_NESTED_MODELS = {

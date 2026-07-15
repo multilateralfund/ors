@@ -132,6 +132,11 @@ from core.api.views.projects_v2 import (
     ProjectV2ViewSet,
 )
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
+from core.api.views.project_completion_report.pcr import (
+    PCRDelayCategoryListView,
+    PCRLearnedLessonCategoryListView,
+    PCRProjectComponentOptionListView,
+)
 from core.api.views.project_completion_report.pcr_metaprojects import (
     PCRMetaprojectsViewSet,
 )
@@ -304,6 +309,21 @@ urlpatterns = [
         "project-settings/",
         ProjectSettingsView.as_view(),
         name="project-settings",
+    ),
+    path(
+        "project-completion-reports/project-component-options/",
+        PCRProjectComponentOptionListView.as_view(),
+        name="pcr-project-component-option-list",
+    ),
+    path(
+        "project-completion-reports/delay-categories/",
+        PCRDelayCategoryListView.as_view(),
+        name="pcr-delay-category-list",
+    ),
+    path(
+        "project-completion-reports/learned-lesson-categories/",
+        PCRLearnedLessonCategoryListView.as_view(),
+        name="pcr-learned-lesson-category-list",
     ),
     path(
         "agencies/",
