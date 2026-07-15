@@ -60,6 +60,7 @@ class ProjectFilter(filters.FilterSet):
         field_name="country__parent",
         queryset=Country.objects.filter(location_type="Region"),
         widget=CSVWidget,
+        method="filter_region",
     )
     status_id = filters.ModelMultipleChoiceFilter(
         field_name="status",
@@ -205,6 +206,15 @@ class ProjectFilter(filters.FilterSet):
         if meta_project_ids:
             queryset = queryset.exclude(meta_project__id__in=meta_project_ids)
         return queryset
+
+    def filter_region(self, queryset, name, value):
+        if not value:
+            return queryset
+        region_ids = [r.id for r in value]
+        return queryset.filter(
+            Q(country__parent__in=region_ids)
+            | Q(country__parent__parent__in=region_ids)
+        )
 
     def filter_pcr_submitted(self, queryset, name, value):
         if not value:
