@@ -25,7 +25,7 @@ from dj_rest_auth.views import (
     PasswordResetView,
     PasswordResetConfirmView,
 )
-from core.api.views import CustomLoginView
+from core.api.views import ADFSLoginView, CustomLoginView
 from core.api.views.users import AuthDebugView
 
 # from api import urls as apis_urls
@@ -42,6 +42,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Overriding the dj_rest_auth token view to return long-lived tokens if needed
     path("api/auth/login/", CustomLoginView.as_view(), name="rest_login"),
+    path("api/auth/adfs-login/", ADFSLoginView.as_view(), name="adfs_login"),
     path("api/auth/", include("dj_rest_auth.urls")),
     path(
         "api/auth/password_reset/", PasswordResetView.as_view(), name="password_reset"

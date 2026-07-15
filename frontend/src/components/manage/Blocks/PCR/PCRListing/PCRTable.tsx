@@ -8,8 +8,6 @@ import {
 import getColumnDefs from './schema'
 import { PCRTableProps } from '../interfaces'
 
-import { sumBy } from 'lodash'
-
 const PCRTable = ({
   pcrProjects,
   projectId,
@@ -25,23 +23,20 @@ const PCRTable = ({
 
   const pcrProjectsData = useMemo(
     () =>
-      results.map((metaproject) => ({
-        ...metaproject,
-        isMetaproject: true,
-        isExpanded: false,
-        metaprojectId: metaproject.id,
-        ...(metaproject.type === 'Multi-year agreement'
-          ? {
-              title: metaproject.umbrella_code ?? 'N/A',
-              total_fund:
-                sumBy(metaproject.projects, 'total_fund') || undefined,
-              support_cost_psc:
-                sumBy(metaproject.projects, 'support_cost_psc') || undefined,
-            }
-          : {
-              ...metaproject.projects[0],
-            }),
-      })),
+      results.map((metaproject) => {
+        const projects = [...metaproject.projects]
+
+        return {
+          ...metaproject,
+          projects,
+          isMetaproject: true,
+          isExpanded: false,
+          metaprojectId: metaproject.id,
+          ...(metaproject.type === 'Multi-year agreement'
+            ? { title: metaproject.umbrella_code ?? 'N/A' }
+            : { ...projects[0] }),
+        }
+      }),
     [results],
   )
 

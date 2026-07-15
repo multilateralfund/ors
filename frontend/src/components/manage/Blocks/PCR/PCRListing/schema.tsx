@@ -4,8 +4,8 @@ import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
 import { MdExpandLess, MdExpandMore } from 'react-icons/md'
+import { isNil, map, sumBy } from 'lodash'
 import { Checkbox } from '@mui/material'
-import { isNil, map } from 'lodash'
 import {
   ValueGetterParams,
   ICellRendererParams,
@@ -16,44 +16,53 @@ const expandMetaproject = (
   params: ICellRendererParams,
   pcrProjectsData: PCRUpdatedMetaproject[],
 ) => {
-  const metaproject = params.data
-  const selectedMetaproject = pcrProjectsData.find(
-    (metaproject) => metaproject.id === params.data.metaprojectId,
+  const metaproject = pcrProjectsData.find(
+    (crtMetaproject) => crtMetaproject.id === params.data.metaprojectId,
   )
 
-  const projects = map(selectedMetaproject?.projects, (project) => ({
-    ...project,
-    parentId: metaproject.id,
-    isMetaproject: false,
-  }))
+  if (!!metaproject) {
+    const projects = map(metaproject.projects, (project) => ({
+      ...project,
+      parentId: metaproject.id,
+      isMetaproject: false,
+    }))
 
-  if (!metaproject.isExpanded) {
-    params.node.setData({
-      ...metaproject,
-      isExpanded: true,
-    })
+    if (!params.data.isExpanded) {
+      params.node.setData({
+        ...metaproject,
+        isExpanded: true,
+      })
 
-    params.api.applyTransaction({
-      add: projects,
-      addIndex: (params.node.rowIndex ?? 0) + 1,
-    })
-  } else {
-    params.node.setData({
-      ...metaproject,
-      isExpanded: false,
-    })
+      params.api.applyTransaction({
+        add: projects,
+        addIndex: (params.node.rowIndex ?? 0) + 1,
+      })
+    } else {
+      params.node.setData({
+        ...metaproject,
+        isExpanded: false,
+      })
 
-    params.api.applyTransaction({
-      remove: projects,
+      params.api.applyTransaction({
+        remove: projects,
+      })
+    }
+
+    params.api.refreshCells({
+      rowNodes: [params.node],
+      suppressFlash: true,
+      force: true,
     })
   }
-
-  params.api.refreshCells({
-    rowNodes: [params.node],
-    suppressFlash: true,
-    force: true,
-  })
 }
+
+const getNumberColsValue = (
+  params: ValueGetterParams | ITooltipParams,
+  field: string,
+) =>
+  params.data.type === 'Multi-year agreement'
+    ? sumBy(params.data.projects, field)
+    : params.data[field]
 
 const getColumnDefs = (
   pcrProjectsData: PCRUpdatedMetaproject[],
@@ -70,16 +79,16 @@ const getColumnDefs = (
       cellRenderer: (props: ICellRendererParams) => (
         <div className="flex items-center gap-1 p-2">
           {props.data.isMetaproject ? (
-            <div className="flex shrink-0 items-center">
+            <div className="flex w-14 shrink-0 items-center">
               {props.data.type === 'Multi-year agreement' ? (
                 <div
                   className="h-4 w-4 cursor-pointer"
                   onClick={() => expandMetaproject(props, pcrProjectsData)}
                 >
                   {props.data.isExpanded ? (
-                    <MdExpandLess size={16} />
+                    <MdExpandLess size={20} />
                   ) : (
-                    <MdExpandMore size={16} />
+                    <MdExpandMore size={20} />
                   )}
                 </div>
               ) : (
@@ -92,13 +101,13 @@ const getColumnDefs = (
                     event.target.checked ? props.data.metaprojectId : null,
                   )
                 }}
-                sx={{ color: 'black', marginBottom: '2px' }}
+                sx={{ color: 'black' }}
               />
             </div>
           ) : (
-            <div className="flex w-12 shrink-0" />
+            <div className="flex w-14 shrink-0" />
           )}
-          <span className="ml-2 overflow-hidden truncate whitespace-nowrap">
+          <span className="overflow-hidden truncate whitespace-nowrap">
             {props.value}
           </span>
         </div>
@@ -166,27 +175,55 @@ const getColumnDefs = (
     },
     {
       headerName: pcrFieldsMapping.total_fund,
-      valueGetter: (params: ValueGetterParams) =>
-        !isNil(params.data.total_fund)
-          ? '$' + formatNumberColumns(params, 'total_fund')
-          : '',
-      tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'total_fund', {
+      valueGetter: (params: ValueGetterParams) => {
+        const totalFund = getNumberColsValue(params, 'total_fund')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, total_fund: totalFund },
+        }
+
+        return !isNil(totalFund)
+          ? '$' + formatNumberColumns(updatedParams, 'total_fund')
+          : ''
+      },
+      tooltipValueGetter: (params: ITooltipParams) => {
+        const totalFund = getNumberColsValue(params, 'total_fund')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, total_fund: totalFund },
+        }
+
+        return formatNumberColumns(updatedParams, 'total_fund', {
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
-        }),
+        })
+      },
     },
     {
       headerName: pcrFieldsMapping.support_cost_psc,
-      valueGetter: (params: ValueGetterParams) =>
-        !isNil(params.data.support_cost_psc)
-          ? '$' + formatNumberColumns(params, 'support_cost_psc')
-          : '',
-      tooltipValueGetter: (params: ITooltipParams) =>
-        formatNumberColumns(params, 'support_cost_psc', {
+      valueGetter: (params: ValueGetterParams) => {
+        const supportCost = getNumberColsValue(params, 'support_cost_psc')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, support_cost_psc: supportCost },
+        }
+
+        return !isNil(supportCost)
+          ? '$' + formatNumberColumns(updatedParams, 'support_cost_psc')
+          : ''
+      },
+      tooltipValueGetter: (params: ITooltipParams) => {
+        const supportCost = getNumberColsValue(params, 'support_cost_psc')
+        const updatedParams = {
+          ...params,
+          data: { ...params.data, support_cost_psc: supportCost },
+        }
+
+        return formatNumberColumns(updatedParams, 'support_cost_psc', {
           maximumFractionDigits: 10,
           minimumFractionDigits: 2,
-        }),
+        })
+      },
     },
     {
       headerName: pcrFieldsMapping.pcr_submission_date,

@@ -73,7 +73,6 @@ export const createUserSlice = ({
       await api('api/auth/logout/', {
         method: 'post',
       })
-      removeCookies()
 
       const hasMsalSession = msalInstance.getAllAccounts().length > 0
 
@@ -82,6 +81,8 @@ export const createUserSlice = ({
           postLogoutRedirectUri: window.location.origin,
         })
       }
+
+      removeCookies()
 
       setSlice('user', {
         data: null,
