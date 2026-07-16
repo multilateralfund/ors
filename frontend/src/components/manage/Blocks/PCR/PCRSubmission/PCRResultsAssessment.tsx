@@ -3,7 +3,6 @@ import { Fragment, useContext } from 'react'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextAreaWidget } from './PCRWidgets'
-import { initialResultsAssessmentEntry } from '../constants'
 import { PCRResultsAssessmentData } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
@@ -16,6 +15,12 @@ const PCRResultsAssessment = () => {
 
   const sectionIdentifier = 'results_assessment'
   const sectionData = PCRData[sectionIdentifier] || []
+  const initialResultsAssessmentData = {
+    type_of_activity: '',
+    planned_output: '',
+    actual_activity_output: '',
+    additional_remarks: '',
+  }
 
   const onAddActivity = () => {
     setPCRData((prevData) => {
@@ -23,10 +28,7 @@ const PCRResultsAssessment = () => {
 
       return {
         ...prevData,
-        [sectionIdentifier]: [
-          ...prevSectionData,
-          initialResultsAssessmentEntry,
-        ],
+        [sectionIdentifier]: [...prevSectionData, initialResultsAssessmentData],
       }
     }, sectionIdentifier)
   }
@@ -50,8 +52,8 @@ const PCRResultsAssessment = () => {
             key={index}
             className={cx({ 'mb-5': index === sectionData.length - 1 })}
           >
-            <div className="align-center flex flex-row flex-wrap gap-x-7">
-              {map(keys(initialResultsAssessmentEntry), (field, fieldIndex) => (
+            <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
+              {map(keys(initialResultsAssessmentData), (field, fieldIndex) => (
                 <Fragment key={fieldIndex}>
                   <PCRTextAreaWidget<PCRResultsAssessmentData>
                     {...{ PCRData, setPCRData, sectionIdentifier, field }}

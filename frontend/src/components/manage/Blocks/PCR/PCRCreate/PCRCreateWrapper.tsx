@@ -10,8 +10,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { map, uniq } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { setPCRData } = useContext(PCRDataContext)
-  const { pcrMetaproject } = useContext(PCRDataContext)
+  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
   const agencyIds = useMemo(

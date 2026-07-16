@@ -77,6 +77,7 @@ import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterpris
 import EnterprisesDataProvider from './contexts/Enterprises/EnterprisesDataProvider'
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
+import PCRListingProvider from './contexts/PCR/PCRListingProvider'
 import PCRDataProvider from './contexts/PCR/PCRDataProvider'
 
 import PermissionsContext from './contexts/PermissionsContext'
@@ -469,9 +470,9 @@ export default function App() {
         {/* PCR routes */}
         <Route path="/pcr">
           <ProjectsDataProvider>
-            <PCRDataProvider>
+            <PCRListingProvider>
               <PCRListingPage />
-            </PCRDataProvider>
+            </PCRListingProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/pcr/:project_id/create">

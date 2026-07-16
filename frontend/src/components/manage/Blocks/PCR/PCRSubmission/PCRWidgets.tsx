@@ -1,16 +1,39 @@
 import { ChangeEvent } from 'react'
 
+import Field from '@ors/components/manage/Form/Field'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
-import { textAreaClassname } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import { onTextareaFocus } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
-import { PCRData, WidgetPprops, FieldType, FieldHandler } from '../interfaces'
+import {
+  defaultProps,
+  formatClassName,
+  textAreaClassname,
+} from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import { pcrFieldsMapping } from '../constants'
+import {
+  PCRData,
+  WidgetPprops,
+  FieldType,
+  FieldHandler,
+  OptionsType,
+} from '../interfaces'
 
 import { TextareaAutosize } from '@mui/material'
-import { isNil } from 'lodash'
+import { find, isNil } from 'lodash'
 import cx from 'classnames'
+
+const agencyDataClassName = 'min-w-56 md:min-w-[370px]'
+
+// to update
+const additionalProperties: Record<string, Record<string, unknown>> = {
+  rating: formatClassName('w-full min-w-56 md:min-w-64'),
+  completion_report_done_by: formatClassName('w-full min-w-56 md:min-w-72'),
+  pcr_project_component_id: formatClassName(agencyDataClassName),
+  lesson_learned_id: formatClassName(agencyDataClassName),
+  cause_of_delay_id: formatClassName(agencyDataClassName),
+}
 
 const getValue = (
   PCRData: PCRData,
@@ -19,10 +42,30 @@ const getValue = (
   indexes?: number[],
   subFields?: string[],
 ) => {
-  const [index1] = indexes ?? []
+  const [dataIndex, nestedDataIndex, deepNestedDataIndex] = indexes ?? []
+  const [_, nestedField, deepNestedField] = subFields ?? []
+
+  const indexesLength = indexes?.length
+  const subfieldsLength = subFields?.length
+
   const sectionData = PCRData[sectionIdentifier] as Record<string, any>
 
-  return sectionData[index1][field]
+  if (indexesLength === 3 && subfieldsLength === 3) {
+    const agencyData = sectionData[dataIndex]
+    const nestedData = agencyData[nestedField][nestedDataIndex]
+    const deepNestedData = nestedData[deepNestedField][deepNestedDataIndex]
+
+    return deepNestedData[field]
+  }
+
+  if (indexesLength === 2 && subfieldsLength === 2) {
+    const agencyData = sectionData[dataIndex]
+    const nestedData = agencyData[nestedField][nestedDataIndex]
+
+    return nestedData[field]
+  }
+
+  return sectionData[dataIndex][field]
 }
 
 export const changeArrayField: FieldHandler = (
@@ -32,17 +75,91 @@ export const changeArrayField: FieldHandler = (
   setState,
   indexes,
 ) => {
-  const [index1] = indexes ?? []
+  const [dataIndex] = indexes ?? []
 
-  if (!isNil(index1)) {
+  if (!isNil(dataIndex)) {
     setState((prevData) => {
       const sectionData = prevData[section] || []
 
-      sectionData[index1] = { ...sectionData[index1], [field]: value }
+      sectionData[dataIndex] = { ...sectionData[dataIndex], [field]: value }
 
-      return { ...prevData, [field]: sectionData }
+      return { ...prevData, [section]: sectionData }
     }, field)
   }
+}
+
+export const changeNestedField: FieldHandler = (
+  value,
+  section,
+  field,
+  setState,
+  indexes,
+  subFields,
+) => {
+  const [dataIndex, nestedDataIndex] = indexes ?? []
+  const [_, nestedField] = subFields ?? []
+
+  setState((prevData) => {
+    const sectionData = prevData[section] || []
+
+    return {
+      ...prevData,
+      [section]: sectionData.map((entry: any, entryIdx) =>
+        entryIdx === dataIndex
+          ? {
+              ...entry,
+              [nestedField]: entry[nestedField]?.map(
+                (nestedEntry: any, nestedEntryIdx: number) =>
+                  nestedEntryIdx === nestedDataIndex
+                    ? { ...nestedEntry, [field]: value }
+                    : nestedEntry,
+              ),
+            }
+          : entry,
+      ),
+    }
+  }, field)
+}
+
+export const changeDeepNestedField: FieldHandler = (
+  value,
+  section,
+  field,
+  setState,
+  indexes,
+  subFields,
+) => {
+  const [dataIndex, nestedDataIndex, deepNestedDataIndex] = indexes ?? []
+  const [_, nestedField, deepNestedField] = subFields ?? []
+
+  setState((prevData) => {
+    const sectionData = prevData[section] || []
+
+    return {
+      ...prevData,
+      [section]: sectionData.map((entry: any, entryIdx) =>
+        entryIdx === dataIndex
+          ? {
+              ...entry,
+              [nestedField]: entry[nestedField]?.map(
+                (nestedEntry: any, nestedEntryIdx: number) =>
+                  nestedEntryIdx === nestedDataIndex
+                    ? {
+                        ...nestedEntry,
+                        [deepNestedField]: nestedEntry[deepNestedField]?.map(
+                          (deepNestedEntry: any, deepNestedEntryIdx: number) =>
+                            deepNestedEntryIdx === deepNestedDataIndex
+                              ? { ...deepNestedEntry, [field]: value }
+                              : deepNestedEntry,
+                        ),
+                      }
+                    : nestedEntry,
+              ),
+            }
+          : entry,
+      ),
+    }
+  }, field)
 }
 
 export const onFieldChange: FieldHandler = (
@@ -53,6 +170,19 @@ export const onFieldChange: FieldHandler = (
   indexes,
   subFields,
 ) => {
+  const indexesLength = indexes?.length
+  const subfieldsLength = subFields?.length
+
+  if (indexesLength === 3 && subfieldsLength === 3) {
+    changeDeepNestedField(value, section, field, setState, indexes, subFields)
+    return
+  }
+
+  if (indexesLength === 2 && subfieldsLength === 2) {
+    changeNestedField(value, section, field, setState, indexes, subFields)
+    return
+  }
+
   changeArrayField(value, section, field, setState, indexes)
   return
 }
@@ -62,6 +192,58 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
     const formattedVal = event.target.value
     onFieldChange(formattedVal, section, field, setState, indexes, subFields)
   },
+  drop_down: (value, section, field, setState, indexes, subFields) => {
+    const formattedVal = value?.id ?? null
+    onFieldChange(formattedVal, section, field, setState, indexes, subFields)
+  },
+}
+
+export const PCRSelectWidget = <T,>({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  options,
+  errors,
+  indexes,
+  subFields,
+}: WidgetPprops & { options: OptionsType[] }) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedValue = find(options, { id: value }) || null
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <Field
+          widget="autocomplete"
+          options={options}
+          value={formattedValue}
+          onChange={(_, value) =>
+            changeHandler['drop_down'](
+              value,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          getOptionLabel={(option) => getOptionLabel(options, option)}
+          {...defaultProps}
+          {...(additionalProperties[field] ?? {})}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
 }
 
 export const PCRTextAreaWidget = <T,>({
@@ -83,7 +265,7 @@ export const PCRTextAreaWidget = <T,>({
           value={value as string}
           onFocus={onTextareaFocus}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-            changeHandler['text']<T>(
+            changeHandler['text'](
               event,
               sectionIdentifier,
               field,

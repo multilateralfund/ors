@@ -59,26 +59,34 @@ export interface PCRSummaryOfKeyDataType {
   equipments: PCREquipmentType[]
 }
 
+type CauseOfDelay = {
+  cause_of_delay_id: number | null
+  description: string
+}
+
+type CauseOfDelayProjectComponent = {
+  pcr_project_component_id: number | null
+  delay: CauseOfDelay[]
+}
+
 export interface PCRCausesOfDelayData {
   agency_id: number
-  pcr_project_component: {
-    id: number | null
-    delay: {
-      id: number | null
-      description: string
-    }[]
-  }[]
+  pcr_project_component: CauseOfDelayProjectComponent[]
+}
+
+type LessonLearned = {
+  lesson_learned_id: number | null
+  description: string
+}
+
+type LessonLearnedProjectComponent = {
+  pcr_project_component_id: number | null
+  lesson: LessonLearned[]
 }
 
 export interface PCRLessonsLearnedData {
   agency_id: number
-  pcr_project_component: {
-    id: number | null
-    lesson: {
-      id: number | null
-      description: string
-    }[]
-  }[]
+  pcr_project_component: LessonLearnedProjectComponent[]
 }
 
 export interface PCRGenderMainstreamingData {
@@ -124,10 +132,9 @@ export type WidgetPprops = {
   subFields?: string[]
 }
 
-// can take from projects interfaces
-export type FieldType = 'text'
+export type FieldType = 'text' | 'drop_down'
 
-export type FieldHandler = <T>(
+export type FieldHandler = (
   value: any,
   section: keyof PCRData,
   field: string,
@@ -142,4 +149,9 @@ export type PCRHeaderType = {
 
 export type PCRActionButtons = {
   setIsLoading: (isLoading: boolean) => void
+}
+
+export type OptionsType = {
+  id: number
+  name: string
 }

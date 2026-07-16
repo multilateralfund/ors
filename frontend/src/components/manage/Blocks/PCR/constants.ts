@@ -44,6 +44,10 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
+  pcr_project_component_id: 'Project component',
+  cause_of_delay_id: 'Cause of delay',
+  description: 'Description',
+  lesson_learned_id: 'Lesson learned',
 }
 
 export const categoryOpts = [
@@ -56,10 +60,3 @@ export const booleanFieldsOpts = [
   { id: 'No', name: 'No' },
   { id: 'N/A', name: 'N/A' },
 ]
-
-export const initialResultsAssessmentEntry = {
-  type_of_activity: '',
-  planned_output: '',
-  actual_activity_output: '',
-  additional_remarks: '',
-}

@@ -8,7 +8,7 @@ import {
   CreateButton,
 } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
-import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import PCRListingContext from '@ors/contexts/PCR/PCRListingContext'
 import PCRFiltersSelectedOpts from './PCRFiltersSelectedOpts'
 import PCRFilters from './PCRFilters'
 import PCRTable from './PCRTable'
@@ -21,7 +21,7 @@ import { filter } from 'lodash'
 const PCRListingWrapper = () => {
   const form = useRef<any>()
 
-  const { regions } = useContext(PCRDataContext)
+  const { regions } = useContext(PCRListingContext)
   const { countries, agencies, clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
   const projectsSlice = useStore((state) => state.projects)

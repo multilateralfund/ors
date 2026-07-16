@@ -46,25 +46,42 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     [addUpdatedField],
   )
 
-  const { data: regions } = useApi({
-    options: {
-      withStoreCache: true,
-      params: { location_type: 'Region' },
-    },
-    path: 'api/countries/',
+  const { data: projectComponentOptions } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-reports/project-component-options/',
+  })
+
+  const { data: causeOfDelayOptions } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-reports/delay-categories/',
+  })
+
+  const { data: lessonLearnedOptions } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-reports/learned-lesson-categories/',
   })
 
   const value = useMemo(
-    () => ({ pcrMetaproject, PCRData, setPCRData, regions }),
-    [pcrMetaproject, PCRData, setPCRData, regions],
+    () => ({
+      pcrMetaproject,
+      PCRData,
+      setPCRData,
+      projectComponentOptions,
+      causeOfDelayOptions,
+      lessonLearnedOptions,
+    }),
+    [
+      pcrMetaproject,
+      PCRData,
+      setPCRData,
+      projectComponentOptions,
+      causeOfDelayOptions,
+      lessonLearnedOptions,
+    ],
   )
 
   return (
-    <PCRDataContext.Provider
-      value={value}
-    >
-      {children}
-    </PCRDataContext.Provider>
+    <PCRDataContext.Provider value={value}>{children}</PCRDataContext.Provider>
   )
 }
 
