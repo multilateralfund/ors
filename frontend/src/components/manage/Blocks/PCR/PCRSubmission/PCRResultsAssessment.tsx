@@ -63,7 +63,7 @@ const PCRResultsAssessment = () => {
                 </Fragment>
               ))}
               <IoTrash
-                className="mt-10 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
                 size={16}
                 onClick={() => {
                   onRemoveActivity(index)

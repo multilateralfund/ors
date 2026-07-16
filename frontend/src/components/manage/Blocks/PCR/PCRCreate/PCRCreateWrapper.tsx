@@ -33,7 +33,7 @@ const PCRCreateWrapper = () => {
       })),
     [agencyIds],
   )
-  const initialSDGsData = useMemo(
+  const initialSdgsData = useMemo(
     () =>
       map(agencyIds, (agency_id) => ({
         agency_id,
@@ -48,12 +48,12 @@ const PCRCreateWrapper = () => {
       causes_of_delay: initialProjectComponentData,
       lessons_learned: initialProjectComponentData,
       gender_mainstreaming: initialGenderMainstreamingData,
-      sdg_contribution: initialSDGsData,
+      sdgs_contribution: initialSdgsData,
     }))
   }, [
     initialGenderMainstreamingData,
     initialProjectComponentData,
-    initialSDGsData,
+    initialSdgsData,
     setPCRData,
   ])
 

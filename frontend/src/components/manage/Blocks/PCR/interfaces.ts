@@ -98,12 +98,13 @@ export interface PCRGenderMainstreamingData {
   }[]
 }
 
-export interface PCRSdgContributionData {
+type Sdgs = {
+  sdg_id: number | null
+  description: string
+}
+export interface PCRSdgsData {
   agency_id: number
-  sdgs: {
-    id: number | null
-    description: string
-  }[]
+  sdgs: Sdgs[]
 }
 
 export interface PCRData {
@@ -112,7 +113,7 @@ export interface PCRData {
   causes_of_delay: PCRCausesOfDelayData[]
   lessons_learned: PCRLessonsLearnedData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
-  sdg_contribution: PCRSdgContributionData[]
+  sdgs_contribution: PCRSdgsData[]
 }
 
 export type SetPCRData = (

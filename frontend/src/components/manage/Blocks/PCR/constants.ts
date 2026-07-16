@@ -48,6 +48,7 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   cause_of_delay_id: 'Cause of delay',
   description: 'Description',
   lesson_learned_id: 'Lesson learned',
+  sdg_id: 'SDG',
 }
 
 export const categoryOpts = [

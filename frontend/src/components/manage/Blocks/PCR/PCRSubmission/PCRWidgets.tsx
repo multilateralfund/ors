@@ -24,15 +24,10 @@ import { TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
 import cx from 'classnames'
 
-const agencyDataClassName = 'min-w-56 md:min-w-[370px]'
-
 // to update
 const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: formatClassName('w-full min-w-56 md:min-w-64'),
   completion_report_done_by: formatClassName('w-full min-w-56 md:min-w-72'),
-  pcr_project_component_id: formatClassName(agencyDataClassName),
-  lesson_learned_id: formatClassName(agencyDataClassName),
-  cause_of_delay_id: formatClassName(agencyDataClassName),
 }
 
 const getValue = (
@@ -231,6 +226,7 @@ export const PCRSelectWidget = <T,>({
           }
           getOptionLabel={(option) => getOptionLabel(options, option)}
           {...defaultProps}
+          {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
         />
         <FieldErrorIndicator

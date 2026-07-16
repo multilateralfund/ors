@@ -11,6 +11,7 @@ type PCRDataContextProps = PCRFormData & {
   projectComponentOptions: OptionsType[]
   causeOfDelayOptions: OptionsType[]
   lessonLearnedOptions: OptionsType[]
+  sdgsOptions: OptionsType[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(

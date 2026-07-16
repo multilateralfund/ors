@@ -28,7 +28,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     causes_of_delay: [],
     lessons_learned: [],
     gender_mainstreaming: [],
-    sdg_contribution: [],
+    sdgs_contribution: [],
   })
 
   const setPCRData = useCallback(
@@ -61,6 +61,27 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     path: 'api/project-completion-reports/learned-lesson-categories/',
   })
 
+  //to update
+  const sdgsOptions = [
+    { id: 1, name: 'Goal 1: No poverty' },
+    { id: 2, name: 'Goal 2: Zero hunger' },
+    { id: 3, name: 'Goal 3: Good health and well being' },
+    { id: 4, name: 'Goal 4: Quality education' },
+    { id: 5, name: 'Goal 5: Gender equality' },
+    { id: 6, name: 'Goal 6: Clean water and sanitation' },
+    { id: 7, name: 'Goal 7: Affordable and clean energy' },
+    { id: 8, name: 'Goal 8: Decent work and economic growth' },
+    { id: 9, name: 'Goal 9: Industry, innovation and infrastucture' },
+    { id: 10, name: 'Goal 10: Reduced inequalities' },
+    { id: 11, name: 'Goal 11: Sustainable cities and communities' },
+    { id: 12, name: 'Goal 12: Responsible consumption and production' },
+    { id: 13, name: 'Goal 13: Climate action' },
+    { id: 14, name: 'Goal 14: Life below water' },
+    { id: 15, name: 'Goal 15: Life on land' },
+    { id: 16, name: 'Goal 16: Peace, justice and strong institutions' },
+    { id: 17, name: 'Goal 17: Partnerships for the goals' },
+  ]
+
   const value = useMemo(
     () => ({
       pcrMetaproject,
@@ -69,6 +90,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
+      sdgsOptions,
     }),
     [
       pcrMetaproject,
@@ -77,6 +99,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
+      sdgsOptions,
     ],
   )
 

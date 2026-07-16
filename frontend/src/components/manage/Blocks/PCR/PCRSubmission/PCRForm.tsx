@@ -5,7 +5,7 @@ import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRLessonsLearned from './PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRCausesOfDelay'
-import PCRSDGs from './PCRSDGs'
+import PCRSdgs from './PCRSdgs'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 
 import { Tabs, Tab } from '@mui/material'
@@ -53,7 +53,7 @@ const PCRForm = () => {
     {
       id: 'pcr-sdgs',
       label: <TabLabel title="SDGs (optional)" />,
-      component: <PCRSDGs />,
+      component: <PCRSdgs />,
     },
     {
       id: 'pcr-supporting-evidence',
