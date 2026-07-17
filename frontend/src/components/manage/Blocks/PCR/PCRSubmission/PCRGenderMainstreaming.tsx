@@ -1,5 +1,6 @@
 import { Fragment, useContext, useState } from 'react'
 
+import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import {
@@ -9,11 +10,13 @@ import {
 } from './PCRWidgets'
 
 import { Tabs, Tab, Divider } from '@mui/material'
+import { IoTrash } from 'react-icons/io5'
 import { find, map } from 'lodash'
+import cx from 'classnames'
 
 const PCRGenderMainstreaming = () => {
   const sectionIdentifier = 'gender_mainstreaming'
-  const ppField = 'project_phase'
+  const ppField = 'project_phases'
 
   const { agencies } = useContext(ProjectsDataContext)
   const { PCRData, setPCRData, projectPhaseOptions } =
@@ -29,7 +32,48 @@ const PCRGenderMainstreaming = () => {
     (entry) => find(agencies, (agency) => agency.id === entry.agency_id)?.name,
   )
 
-  console.log(PCRData)
+  const onAddProjectPhase = (agencyIndex: number) => {
+    setPCRData((prevData) => {
+      const sectionData = prevData[sectionIdentifier] || []
+      const initialProjectPhaseData = {
+        project_phase_id: null,
+        gender_policy: null,
+        description: '',
+      }
+
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === agencyIndex
+            ? {
+                ...data,
+                [ppField]: [...data[ppField], initialProjectPhaseData],
+              }
+            : data,
+        ),
+      }
+    }, ppField)
+  }
+
+  const onRemoveProjectPhase = (ppIndex: number, agencyIndex: number) => {
+    setPCRData((prevData) => {
+      const sectionData = prevData[sectionIdentifier] || []
+
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === agencyIndex
+            ? {
+                ...data,
+                [ppField]: data[ppField].filter(
+                  (_, crtPpIndex) => crtPpIndex !== ppIndex,
+                ),
+              }
+            : data,
+        ),
+      }
+    }, ppField)
+  }
 
   return (
     <>
@@ -64,15 +108,13 @@ const PCRGenderMainstreaming = () => {
                   errors={{}}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
-                  disabled={true}
                 />
                 <PCRBooleanWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="meets_criteria"
+                  field="gender_policy"
                   errors={{}}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
-                  disabled={true}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
@@ -81,11 +123,23 @@ const PCRGenderMainstreaming = () => {
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
                 />
+                <IoTrash
+                  className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
+                  size={16}
+                  onClick={() => {
+                    onRemoveProjectPhase(ppIndex, crtTab)
+                  }}
+                />
               </div>
               {ppIndex !== ppData.length - 1 && <Divider className="my-5" />}
             </Fragment>
           ))}
         </div>
+        <SubmitButton
+          title="Add project cycle phase"
+          onSubmit={() => onAddProjectPhase(crtTab)}
+          className={cx('mr-auto h-8', { 'mt-4': ppData.length > 0 })}
+        />
       </div>
     </>
   )

@@ -40,7 +40,16 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   agency: 'Agency',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support costs',
+  financial_figures_type: 'Financial figures type',
+  financial_figures_type_explanation: 'Explanations if needed',
+  project_goals_achieved: 'All project goals achieved',
+  project_goals_achieved_explanation: 'Please provide a brief explanation',
+  rating: 'Rating',
+  rating_explanation: 'Please explain your rating',
+  completion_report_done_by: 'Completion report done by',
+  activity_title: 'Activity title',
   type_of_activity: 'Type of activity',
+  type_of_sector: 'Type of sector',
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
@@ -49,8 +58,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   description: 'Description',
   lesson_learned_id: 'Lesson learned',
   sdg_id: 'SDG',
-  project_phase_id: 'Project phase',
-  meets_criteria: 'Meets criteria',
+  project_phase_id: 'Project cycle phase',
+  gender_policy: 'Gender policy for all projects approved from 85th meeting',
 }
 
 export const categoryOpts = [
@@ -63,3 +72,13 @@ export const booleanFieldsOpts = [
   { id: 'No', name: 'No' },
   { id: 'N/A', name: 'N/A' },
 ]
+
+export const initialOverviewData = {
+  financial_figures_type: null,
+  financial_figures_type_explanation: '',
+  project_goals_achieved: null,
+  project_goals_achieved_explanation: '',
+  rating: null,
+  rating_explanation: '',
+  completion_report_done_by: null,
+}

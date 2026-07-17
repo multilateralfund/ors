@@ -26,8 +26,20 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
+export interface PCROverviewData {
+  financial_figures_type: number | null
+  financial_figures_type_explanation: string
+  project_goals_achieved: number | null
+  project_goals_achieved_explanation: string
+  rating: number | null
+  rating_explanation: string
+  completion_report_done_by: number | null
+}
+
 export interface PCRResultsAssessmentData {
+  activity_title: string
   type_of_activity: string
+  type_of_sector: string
   planned_output: string
   actual_activity_output: string
   additional_remarks: string
@@ -91,13 +103,13 @@ export interface PCRLessonsLearnedData {
 
 type ProjectPhase = {
   project_phase_id: number | null
-  meets_criteria: boolean
+  gender_policy: boolean | null
   description: string
 }
 
 export interface PCRGenderMainstreamingData {
   agency_id: number
-  project_phase: ProjectPhase[]
+  project_phases: ProjectPhase[]
 }
 
 type Sdgs = {
@@ -111,6 +123,7 @@ export interface PCRSdgsData {
 }
 
 export interface PCRData {
+  overview: PCROverviewData
   summary_of_key_data: PCRSummaryOfKeyDataType[]
   results_assessment: PCRResultsAssessmentData[]
   causes_of_delay: PCRCausesOfDelayData[]

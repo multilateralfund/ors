@@ -13,6 +13,10 @@ type PCRDataContextProps = PCRFormData & {
   lessonLearnedOptions: OptionsType[]
   sdgsOptions: OptionsType[]
   projectPhaseOptions: OptionsType[]
+  financialFiguresTypeOptions: OptionsType[]
+  completionReportDoneByOptions: OptionsType[]
+  projectGoalsAchievedOptions: OptionsType[]
+  ratingOptions: OptionsType[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(

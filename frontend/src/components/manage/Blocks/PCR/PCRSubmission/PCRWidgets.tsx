@@ -1,5 +1,6 @@
 import { ChangeEvent } from 'react'
 
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { FieldErrorIndicator } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
@@ -8,6 +9,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { STYLE } from '@ors/components/manage/Blocks/Replenishment/Inputs/constants'
 import {
   defaultProps,
+  defaultPropsSimpleField,
   formatClassName,
   textAreaClassname,
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
@@ -24,10 +26,14 @@ import { Checkbox, TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
 import cx from 'classnames'
 
+const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
+
 // to update
 const additionalProperties: Record<string, Record<string, unknown>> = {
-  rating: formatClassName('w-full min-w-56 md:min-w-64'),
-  completion_report_done_by: formatClassName('w-full min-w-56 md:min-w-72'),
+  financial_figures_type: overviewFieldsClassName,
+  project_goals_achieved: overviewFieldsClassName,
+  rating: overviewFieldsClassName,
+  completion_report_done_by: overviewFieldsClassName,
   project_phase_id: formatClassName('min-w-56 md:min-w-60'),
 }
 
@@ -61,7 +67,21 @@ const getValue = (
     return nestedData[field]
   }
 
-  return sectionData[dataIndex][field]
+  if (indexesLength === 1) {
+    return sectionData[dataIndex][field]
+  }
+
+  return sectionData[field]
+}
+
+export const changeField: FieldHandler = (value, section, field, setState) => {
+  setState(
+    (prevData) => ({
+      ...prevData,
+      [section]: { ...prevData[section], [field]: value },
+    }),
+    field,
+  )
 }
 
 export const changeArrayField: FieldHandler = (
@@ -76,6 +96,10 @@ export const changeArrayField: FieldHandler = (
   if (!isNil(dataIndex)) {
     setState((prevData) => {
       const sectionData = prevData[section] || []
+
+      if (!Array.isArray(sectionData)) {
+        return prevData
+      }
 
       sectionData[dataIndex] = { ...sectionData[dataIndex], [field]: value }
 
@@ -97,6 +121,10 @@ export const changeNestedField: FieldHandler = (
 
   setState((prevData) => {
     const sectionData = prevData[section] || []
+
+    if (!Array.isArray(sectionData)) {
+      return prevData
+    }
 
     return {
       ...prevData,
@@ -130,6 +158,10 @@ export const changeDeepNestedField: FieldHandler = (
 
   setState((prevData) => {
     const sectionData = prevData[section] || []
+
+    if (!Array.isArray(sectionData)) {
+      return prevData
+    }
 
     return {
       ...prevData,
@@ -179,7 +211,12 @@ export const onFieldChange: FieldHandler = (
     return
   }
 
-  changeArrayField(value, section, field, setState, indexes)
+  if (indexesLength === 1) {
+    changeArrayField(value, section, field, setState, indexes)
+    return
+  }
+
+  changeField(value, section, field, setState)
   return
 }
 
@@ -206,8 +243,7 @@ export const PCRSelectWidget = ({
   errors,
   indexes,
   subFields,
-  disabled,
-}: WidgetPprops & { options: OptionsType[]; disabled?: boolean }) => {
+}: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
 
@@ -219,7 +255,6 @@ export const PCRSelectWidget = ({
           widget="autocomplete"
           options={options}
           value={formattedValue}
-          disabled={disabled}
           onChange={(_, value) =>
             changeHandler['drop_down'](
               value,
@@ -234,6 +269,55 @@ export const PCRSelectWidget = ({
           {...defaultProps}
           {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
+}
+
+export const PCRTextWidget = ({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  errors,
+  indexes,
+  subFields,
+}: WidgetPprops) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <SimpleInput
+          id={field}
+          value={value}
+          type="text"
+          onFocus={onTextareaFocus}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            changeHandler['text'](
+              event,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          {...defaultPropsSimpleField}
+          containerClassName={
+            defaultPropsSimpleField.containerClassName +
+            ' !min-w-56 md:!min-w-[600px]'
+          }
         />
         <FieldErrorIndicator
           errors={
@@ -304,8 +388,7 @@ export const PCRBooleanWidget = ({
   errors,
   indexes,
   subFields,
-  disabled,
-}: WidgetPprops & { disabled?: boolean }) => {
+}: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
 
   return (
@@ -325,7 +408,6 @@ export const PCRBooleanWidget = ({
               subFields,
             )
           }
-          disabled={disabled}
           inputProps={{ tabIndex: 0 }}
           sx={{
             '&.Mui-focusVisible': {

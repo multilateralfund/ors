@@ -7,6 +7,7 @@ import {
 } from 'react'
 
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
+import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
@@ -23,6 +24,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const { addUpdatedField } = useUpdatedFields()
 
   const [PCRData, setPCRDataNoFieldTracking] = useState<PCRData>({
+    overview: initialOverviewData,
     summary_of_key_data: [],
     results_assessment: [],
     causes_of_delay: [],
@@ -62,6 +64,33 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   })
 
   //to update
+  const financialFiguresTypeOptions = [
+    { id: 1, name: 'Provisional' },
+    { id: 2, name: 'Final' },
+  ]
+
+  const projectGoalsAchievedOptions = [
+    { id: 1, name: 'Yes' },
+    { id: 2, name: 'No' },
+    { id: 3, name: 'N/A' },
+  ]
+
+  const ratingOptions = [
+    { id: 1, name: 'Highly satisfactory' },
+    { id: 2, name: 'Satisfactory as planned' },
+    { id: 3, name: 'Satisfactory but not as planned' },
+    { id: 4, name: 'Unsatisfactory' },
+    { id: 5, name: 'Other, please specify' },
+  ]
+
+  const completionReportDoneByOptions = [
+    { id: 1, name: 'Lead agency' },
+    { id: 2, name: 'Cooperating agency' },
+    { id: 3, name: 'National coordinating agency/NOU' },
+    { id: 4, name: 'Local executing agency' },
+    { id: 5, name: 'Other' },
+  ]
+
   const sdgsOptions = [
     { id: 1, name: 'Goal 1: No poverty' },
     { id: 2, name: 'Goal 2: Zero hunger' },
@@ -94,21 +123,29 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pcrMetaproject,
       PCRData,
       setPCRData,
+      financialFiguresTypeOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
+      completionReportDoneByOptions,
+      projectGoalsAchievedOptions,
+      ratingOptions,
     }),
     [
       pcrMetaproject,
       PCRData,
       setPCRData,
+      financialFiguresTypeOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
+      completionReportDoneByOptions,
+      projectGoalsAchievedOptions,
+      ratingOptions,
     ],
   )
 

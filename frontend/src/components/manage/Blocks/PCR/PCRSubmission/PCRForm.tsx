@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRResultsAssessment'
+import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 import PCRLessonsLearned from './PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRCausesOfDelay'
+import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
-import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -23,7 +24,7 @@ const PCRForm = () => {
     {
       id: 'pcr-overview',
       label: <TabLabel title="Overview" />,
-      component: <>Overview</>,
+      component: <PCROverview />,
     },
     {
       id: 'pcr-summary-of-key-data',
