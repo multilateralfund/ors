@@ -20,7 +20,7 @@ import {
   OptionsType,
 } from '../interfaces'
 
-import { TextareaAutosize } from '@mui/material'
+import { Checkbox, TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
 import cx from 'classnames'
 
@@ -28,6 +28,7 @@ import cx from 'classnames'
 const additionalProperties: Record<string, Record<string, unknown>> = {
   rating: formatClassName('w-full min-w-56 md:min-w-64'),
   completion_report_done_by: formatClassName('w-full min-w-56 md:min-w-72'),
+  project_phase_id: formatClassName('min-w-56 md:min-w-60'),
 }
 
 const getValue = (
@@ -183,17 +184,20 @@ export const onFieldChange: FieldHandler = (
 }
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
-  text: (event, section, field, setState, indexes, subFields) => {
-    const formattedVal = event.target.value
-    onFieldChange(formattedVal, section, field, setState, indexes, subFields)
-  },
   drop_down: (value, section, field, setState, indexes, subFields) => {
     const formattedVal = value?.id ?? null
     onFieldChange(formattedVal, section, field, setState, indexes, subFields)
   },
+  text: (event, section, field, setState, indexes, subFields) => {
+    const formattedVal = event.target.value
+    onFieldChange(formattedVal, section, field, setState, indexes, subFields)
+  },
+  boolean: (value, section, field, setState, indexes, subFields) => {
+    onFieldChange(value, section, field, setState, indexes, subFields)
+  },
 }
 
-export const PCRSelectWidget = <T,>({
+export const PCRSelectWidget = ({
   PCRData,
   setPCRData,
   sectionIdentifier,
@@ -202,7 +206,8 @@ export const PCRSelectWidget = <T,>({
   errors,
   indexes,
   subFields,
-}: WidgetPprops & { options: OptionsType[] }) => {
+  disabled,
+}: WidgetPprops & { options: OptionsType[]; disabled?: boolean }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
 
@@ -214,6 +219,7 @@ export const PCRSelectWidget = <T,>({
           widget="autocomplete"
           options={options}
           value={formattedValue}
+          disabled={disabled}
           onChange={(_, value) =>
             changeHandler['drop_down'](
               value,
@@ -242,7 +248,7 @@ export const PCRSelectWidget = <T,>({
   )
 }
 
-export const PCRTextAreaWidget = <T,>({
+export const PCRTextAreaWidget = ({
   PCRData,
   setPCRData,
   sectionIdentifier,
@@ -276,6 +282,57 @@ export const PCRTextAreaWidget = <T,>({
           )}
           style={STYLE}
           minRows={7}
+        />
+        <FieldErrorIndicator
+          errors={
+            !isNil(indexes?.[0])
+              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
+              : errors
+          }
+          field={field}
+        />
+      </div>
+    </div>
+  )
+}
+
+export const PCRBooleanWidget = ({
+  PCRData,
+  setPCRData,
+  sectionIdentifier,
+  field,
+  errors,
+  indexes,
+  subFields,
+  disabled,
+}: WidgetPprops & { disabled?: boolean }) => {
+  const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+
+  return (
+    <div>
+      <Label>{pcrFieldsMapping[field]}</Label>
+      <div className="flex items-center">
+        <Checkbox
+          className="pb-1 pl-2 pt-0"
+          checked={Boolean(value)}
+          onChange={(_, value) =>
+            changeHandler['boolean'](
+              value,
+              sectionIdentifier,
+              field,
+              setPCRData,
+              indexes,
+              subFields,
+            )
+          }
+          disabled={disabled}
+          inputProps={{ tabIndex: 0 }}
+          sx={{
+            '&.Mui-focusVisible': {
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            },
+            color: 'black',
+          }}
         />
         <FieldErrorIndicator
           errors={

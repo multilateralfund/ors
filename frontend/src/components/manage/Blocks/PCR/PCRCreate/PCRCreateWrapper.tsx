@@ -25,11 +25,17 @@ const PCRCreateWrapper = () => {
       })),
     [agencyIds],
   )
+  // to update
   const initialGenderMainstreamingData = useMemo(
     () =>
       map(agencyIds, (agency_id) => ({
         agency_id,
-        project_phase: [],
+        project_phase: [
+          { project_phase_id: 1, meets_criteria: true, description: '' },
+          { project_phase_id: 2, meets_criteria: false, description: '' },
+          { project_phase_id: 3, meets_criteria: true, description: '' },
+          { project_phase_id: 4, meets_criteria: false, description: '' },
+        ],
       })),
     [agencyIds],
   )

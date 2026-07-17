@@ -89,19 +89,22 @@ export interface PCRLessonsLearnedData {
   pcr_project_component: LessonLearnedProjectComponent[]
 }
 
+type ProjectPhase = {
+  project_phase_id: number | null
+  meets_criteria: boolean
+  description: string
+}
+
 export interface PCRGenderMainstreamingData {
   agency_id: number
-  project_phase: {
-    id: number | null
-    meets_criteria: boolean
-    description: string
-  }[]
+  project_phase: ProjectPhase[]
 }
 
 type Sdgs = {
   sdg_id: number | null
   description: string
 }
+
 export interface PCRSdgsData {
   agency_id: number
   sdgs: Sdgs[]
@@ -133,7 +136,7 @@ export type WidgetPprops = {
   subFields?: string[]
 }
 
-export type FieldType = 'text' | 'drop_down'
+export type FieldType = 'drop_down' | 'text' | 'boolean'
 
 export type FieldHandler = (
   value: any,

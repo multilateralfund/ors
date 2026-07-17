@@ -4,7 +4,6 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { PCRSdgsData } from '../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -93,20 +92,20 @@ const PCRSdgs = () => {
           {map(sdgsData, (_, sdgIndex) => (
             <Fragment key={sdgIndex}>
               <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                <PCRSelectWidget<PCRSdgsData>
+                <PCRSelectWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="sdg_id"
                   options={sdgsOptions}
                   errors={{}}
                   indexes={[crtTab, sdgIndex]}
-                  subFields={['', 'sdgs']}
+                  subFields={['', sdgsField]}
                 />
-                <PCRTextAreaWidget<PCRSdgsData>
+                <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="description"
                   errors={{}}
                   indexes={[crtTab, sdgIndex]}
-                  subFields={['', 'sdgs']}
+                  subFields={['', sdgsField]}
                 />
                 <IoTrash
                   className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"

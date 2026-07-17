@@ -4,7 +4,6 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { PCRCausesOfDelayData } from '../interfaces'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -158,33 +157,33 @@ const PCRCausesOfDelay = () => {
             return (
               <div key={pcIndex} className="flex items-center gap-2">
                 <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-                  <PCRSelectWidget<PCRCausesOfDelayData>
+                  <PCRSelectWidget
                     {...{ PCRData, setPCRData, sectionIdentifier }}
                     field="pcr_project_component_id"
                     options={projectComponentOptions}
                     errors={{}}
                     indexes={[crtTab, pcIndex]}
-                    subFields={['', 'pcr_project_component']}
+                    subFields={['', pcField]}
                   />
                   {cdData.length > 0 && <Divider className="my-5" />}
                   <div className="flex flex-col gap-y-4">
                     {map(cdData, (_, cdIndex) => (
                       <Fragment key={cdIndex}>
                         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
-                          <PCRSelectWidget<PCRCausesOfDelayData>
+                          <PCRSelectWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
                             field="cause_of_delay_id"
                             options={causeOfDelayOptions}
                             errors={{}}
                             indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', 'pcr_project_component', 'delay']}
+                            subFields={['', pcField, cdField]}
                           />
-                          <PCRTextAreaWidget<PCRCausesOfDelayData>
+                          <PCRTextAreaWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
                             field="description"
                             errors={{}}
                             indexes={[crtTab, pcIndex, cdIndex]}
-                            subFields={['', 'pcr_project_component', 'delay']}
+                            subFields={['', pcField, cdField]}
                           />
                           <IoTrash
                             className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"

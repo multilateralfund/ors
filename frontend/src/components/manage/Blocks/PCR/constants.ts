@@ -49,6 +49,8 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   description: 'Description',
   lesson_learned_id: 'Lesson learned',
   sdg_id: 'SDG',
+  project_phase_id: 'Project phase',
+  meets_criteria: 'Meets criteria',
 }
 
 export const categoryOpts = [

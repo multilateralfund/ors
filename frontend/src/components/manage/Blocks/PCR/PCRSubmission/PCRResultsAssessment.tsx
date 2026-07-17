@@ -3,7 +3,6 @@ import { Fragment, useContext } from 'react'
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextAreaWidget } from './PCRWidgets'
-import { PCRResultsAssessmentData } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
@@ -55,7 +54,7 @@ const PCRResultsAssessment = () => {
             <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
               {map(keys(initialResultsAssessmentData), (field, fieldIndex) => (
                 <Fragment key={fieldIndex}>
-                  <PCRTextAreaWidget<PCRResultsAssessmentData>
+                  <PCRTextAreaWidget
                     {...{ PCRData, setPCRData, sectionIdentifier, field }}
                     errors={{}}
                     indexes={[index]}

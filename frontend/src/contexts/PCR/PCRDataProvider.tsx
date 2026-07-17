@@ -82,6 +82,13 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     { id: 17, name: 'Goal 17: Partnerships for the goals' },
   ]
 
+  const projectPhaseOptions = [
+    { id: 1, name: 'Project preparation' },
+    { id: 2, name: 'Planning/Formulation' },
+    { id: 3, name: 'Implementation' },
+    { id: 4, name: 'Monitoring and Reporting' },
+  ]
+
   const value = useMemo(
     () => ({
       pcrMetaproject,
@@ -91,6 +98,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
+      projectPhaseOptions,
     }),
     [
       pcrMetaproject,
@@ -100,6 +108,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
+      projectPhaseOptions,
     ],
   )
 
