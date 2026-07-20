@@ -535,11 +535,11 @@ def test_pcr_create_dafaults(client, admin_user, decision):
     assert response.data["project_date_approved"] == project.date_approved
     assert response.data["project_date_completion"] == project.date_completion
     assert response.data["phase_out_ods_approved"] == meta_project.phase_out_odp
-    assert response.data["phase_out_ods_actual"] == None
+    assert response.data["phase_out_ods_actual"] is None
     assert (
         response.data["phase_out_co2_eq_t_approved"] == meta_project.phase_out_co2_eq_t
     )
-    assert response.data["phase_out_co2_eq_t_actual"] == None
+    assert response.data["phase_out_co2_eq_t_actual"] is None
     assert response.data["total_number_of_enterprises"] == 0
     assert response.data["total_number_of_trainnes"] == 10
 

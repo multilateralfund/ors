@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.functional import cached_property
 
 from core.models.agency import Agency
-from core.models.country import Country
 from core.models.project import MetaProject
 from core.models.meeting import Decision
 from core.models.substance import Substance
