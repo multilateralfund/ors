@@ -12,6 +12,7 @@ from core.models.business_plan import (
 
 @admin.register(BusinessPlan)
 class BusinessPlanAdmin(admin.ModelAdmin):
+    admin_group = "Business Plan"
     autocomplete_fields = [
         "meeting",
         "decision",
@@ -30,6 +31,7 @@ class BusinessPlanAdmin(admin.ModelAdmin):
 
 @admin.register(BPActivity)
 class BPActivityAdmin(admin.ModelAdmin):
+    admin_group = "Business Plan"
     search_fields = ["title", "business_plan__name"]
     list_filter = [
         AutocompleteFilterFactory("project_cluster", "project_cluster"),
@@ -45,6 +47,7 @@ class BPActivityAdmin(admin.ModelAdmin):
 
 @admin.register(BPActivityValue)
 class BPValueAdmin(admin.ModelAdmin):
+    admin_group = "Business Plan"
     search_fields = [
         "value",
     ]
@@ -56,6 +59,7 @@ class BPValueAdmin(admin.ModelAdmin):
 
 @admin.register(BPChemicalType)
 class BPChemicalTypeAdmin(admin.ModelAdmin):
+    admin_group = "Business Plan"
     search_fields = [
         "name",
     ]

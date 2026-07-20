@@ -6,6 +6,7 @@ from core.models.agency import Agency
 
 @admin.register(Agency)
 class AgencyAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
     ]

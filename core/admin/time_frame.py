@@ -6,6 +6,8 @@ from core.models.time_frame import TimeFrame
 
 @admin.register(TimeFrame)
 class TimeFrameAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
+
     def get_list_display(self, request):
         exclude = [
             "admrow",

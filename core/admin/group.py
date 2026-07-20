@@ -5,7 +5,8 @@ from core.models.group import Group
 
 
 @admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
+class SubstanceGroupAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
         "name_alt",

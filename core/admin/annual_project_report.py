@@ -12,6 +12,7 @@ from core.models import (
 
 @admin.register(AnnualProgressReport)
 class AnnualProgressReportAdmin(admin.ModelAdmin):
+    admin_group = "APR"
     list_filter = ["year", "endorsed"]
 
     def get_list_display(self, request):
@@ -26,6 +27,7 @@ class AnnualProjectReportFileInline(admin.TabularInline):
 
 @admin.register(AnnualAgencyProjectReport)
 class AnnualAgencyProjectReportAdmin(admin.ModelAdmin):
+    admin_group = "APR"
     inlines = [AnnualProjectReportFileInline]
     list_filter = [
         AutocompleteFilterFactory("Agency", "agency"),
@@ -42,6 +44,7 @@ class AnnualAgencyProjectReportAdmin(admin.ModelAdmin):
 
 @admin.register(AnnualProjectReportFile)
 class AnnualProjectReportFileAdmin(admin.ModelAdmin):
+    admin_group = "APR"
     list_filter = [AutocompleteFilterFactory("Report", "report")]
 
     def get_list_display(self, request):
@@ -50,6 +53,7 @@ class AnnualProjectReportFileAdmin(admin.ModelAdmin):
 
 @admin.register(AnnualProjectReport)
 class AnnualProjectReportAdmin(admin.ModelAdmin):
+    admin_group = "APR"
     list_filter = [AutocompleteFilterFactory("Project", "project")]
     search_fields = ["project__title"]
     list_per_page = 20
