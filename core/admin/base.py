@@ -1,8 +1,7 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
+
 from core.models.base import Module
-
-from django.contrib.auth.models import User, Group
-
 
 class TaggedAdminSite(admin.AdminSite):
     """
@@ -71,19 +70,6 @@ try:
     admin.site.unregister(Group)
 except admin.sites.NotRegistered:
     pass
-
-try:
-    admin.site.unregister(User)
-except admin.sites.NotRegistered:
-    pass
-
-
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    admin_group = "Auth"
-    search_fields = ["username", "email"]
-    list_display = ["username", "email", "is_staff", "is_active"]
-
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
