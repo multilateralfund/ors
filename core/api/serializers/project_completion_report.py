@@ -4,10 +4,12 @@ from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.api.serializers.meeting import DecisionSerializer
 from core.api.export.projects_inventory_report import project_actual_fund
 from core.api.export.projects_inventory_report import project_apr_co2_actual
 from core.api.export.projects_inventory_report import project_apr_date_completed
 from core.api.export.projects_inventory_report import project_apr_odp_actual
+from core.models.meeting import Decision
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import (
     PCR,
@@ -163,13 +165,33 @@ def validate_pcr_project_references(pcr_projects, allowed_project_ids):
         )
 
 
-class PCRResponseSerializer(serializers.ModelSerializer):
+class PCRDetailSerializer(serializers.ModelSerializer):
+    country = serializers.CharField(source="meta_project.name", read_only=True)
+    country_id = serializers.IntegerField(
+        source="meta_project.country.id", read_only=True
+    )
+    decisions = DecisionSerializer(many=True, read_only=True)
     meta_project_id = serializers.IntegerField(read_only=True)
     pcr_projects = serializers.SerializerMethodField()
 
     class Meta:
         model = PCR
-        fields = ["id", "meta_project_id", "submission_date", "pcr_projects"]
+        fields = [
+            "id",
+            "country",
+            "country_id",
+            "decisions",
+            "meta_project_id",
+            "project_date_approved",
+            "project_date_completion",
+            "phase_out_ods_approved",
+            "phase_out_ods_actual",
+            "phase_out_co2_eq_t_approved",
+            "phase_out_co2_eq_t_actual",
+            "total_number_of_enterprises",
+            "submission_date",
+            "pcr_projects",
+        ]
 
     def get_pcr_projects(self, instance):
         return PCRProjectSerializer(
@@ -182,10 +204,28 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         queryset=MetaProject.objects.all(), source="meta_project"
     )
     pcr_projects = PCRProjectSerializer(many=True, required=False)
+    decision_ids = serializers.PrimaryKeyRelatedField(
+        allow_empty=True,
+        many=True,
+        write_only=True,
+        required=False,
+        queryset=Decision.objects.all(),
+    )
 
     class Meta:
         model = PCR
-        fields = ["meta_project_id", "submission_date", "pcr_projects"]
+        fields = [
+            "meta_project_id",
+            "phase_out_ods_actual",
+            "project_date_approved",
+            "project_date_completion",
+            "phase_out_ods_approved",
+            "phase_out_co2_eq_t_approved",
+            "phase_out_co2_eq_t_actual",
+            "submission_date",
+            "pcr_projects",
+            "decision_ids",
+        ]
 
     def validate_meta_project_id(self, meta_project):
         project_ids = meta_project.projects.values_list("id", flat=True)
@@ -210,14 +250,57 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
         return attrs
 
+    def build_initial_data(self, meta_project, pcr):
+        if pcr:
+            return {
+                "meta_project_id": meta_project.id,
+                "country": meta_project.country.id,
+                "decisions": [decision.id for decision in pcr.decisions.all()],
+                "project_date_approved": pcr.project_date_approved,
+                "project_date_completion": pcr.project_date_completion,
+                "phase_out_ods_approved": pcr.phase_out_ods_approved,
+                "phase_out_ods_actual": pcr.phase_out_ods_actual,
+                "phase_out_co2_eq_t_approved": pcr.phase_out_co2_eq_t_approved,
+                "phase_out_co2_eq_t_actual": pcr.phase_out_co2_eq_t_actual,
+                "total_number_of_enterprises": pcr.total_number_of_enterprises,
+                "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+            }
+
+        first_project = meta_project.projects.order_by("date_created").first()
+        first_project_version_3_date_approved = getattr(
+            first_project.get_version(3), "date_approved", None
+        )
+        return {
+            "meta_project_id": meta_project.id,
+            "country": meta_project.country.id,
+            "decisions": [
+                project.post_excom_decision.id
+                for project in meta_project.projects.filter(
+                    post_excom_decision__isnull=False
+                )
+            ],
+            "project_date_approved": first_project_version_3_date_approved,
+            "project_date_completion": first_project.date_completion,
+            "phase_out_ods_approved": meta_project.phase_out_odp,
+            "phase_out_ods_actual": None,  # no field on meta_project
+            "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
+            "phase_out_co2_eq_t_actual": None,  # no field on meta_project
+            "total_number_of_enterprises": 0,
+            "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+        }
+
     @transaction.atomic
     def create(self, validated_data):
         pcr_projects_data = validated_data.pop("pcr_projects", [])
+        decisions_data = validated_data.pop("decision_ids", [])
+
         pcr_projects_by_project_id = {
             pcr_project_data["project"].id: pcr_project_data
             for pcr_project_data in pcr_projects_data
         }
         pcr = PCR.objects.create(**validated_data)
+        pcr.decisions.set(decisions_data)
+
         for project in pcr.meta_project.projects.order_by("id"):
             pcr_project_data = pcr_projects_by_project_id.get(project.id, {}).copy()
             pcr_project_data.pop("project", None)
@@ -231,7 +314,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         return pcr
 
     def to_representation(self, instance):
-        return PCRResponseSerializer(instance, context=self.context).data
+        return PCRDetailSerializer(instance, context=self.context).data
 
 
 class PCRUpdateSerializer(serializers.ModelSerializer):
@@ -268,7 +351,7 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        return PCRResponseSerializer(instance, context=self.context).data
+        return PCRDetailSerializer(instance, context=self.context).data
 
 
 class PCRProjectListSerializer(serializers.ModelSerializer):

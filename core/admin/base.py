@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 
 from core.models.base import Module
 
+
 class TaggedAdminSite(admin.AdminSite):
     """
     Allows an admin_group set on the Admin class to override de app_label in order
@@ -70,6 +71,7 @@ try:
     admin.site.unregister(Group)
 except admin.sites.NotRegistered:
     pass
+
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime, timezone as dt_timezone, date
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -11,6 +11,9 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MetaProjectFactory,
+    PCRFactory,
+    PCRProjectFactory,
+    PCRProjectEnterpriseFactory,
     ProjectClusterFactory,
     ProjectFactory,
     ProjectSectorFactory,
@@ -221,7 +224,7 @@ def test_pcr_project_list_permissions(client, url, user, admin_user, pcr_listing
     assert response.status_code == 200
 
 
-def test_pcr_project_create(client, url, admin_user):
+def test_pcr_project_create(client, url, admin_user, decision):
     meta_project = MetaProjectFactory.create()
     project = ProjectFactory.create(meta_project=meta_project)
     substance_from = SubstanceFactory.create()
@@ -233,6 +236,13 @@ def test_pcr_project_create(client, url, admin_user):
         {
             "meta_project_id": meta_project.id,
             "submission_date": "2026-07-10",
+            "project_date_approved": "2026-07-20",
+            "project_date_completion": "2026-07-21",
+            "phase_out_ods_approved": Decimal(10),
+            "phase_out_ods_actual": Decimal(2),
+            "phase_out_co2_eq_t_approved": Decimal(5),
+            "phase_out_co2_eq_t_actual": Decimal(14),
+            "decision_ids": [decision.id],
             "pcr_projects": [
                 _pcr_project_payload(
                     project,
@@ -295,6 +305,13 @@ def test_pcr_project_create(client, url, admin_user):
     assert response.data["id"] == pcr.id
     assert response.data["meta_project_id"] == meta_project.id
     assert response.data["submission_date"] == "2026-07-10"
+    assert response.data["project_date_approved"] == "2026-07-20"
+    assert response.data["project_date_completion"] == "2026-07-21"
+    assert Decimal(response.data["phase_out_ods_approved"]) == Decimal(10)
+    assert Decimal(response.data["phase_out_ods_actual"]) == Decimal(2)
+    assert Decimal(response.data["phase_out_co2_eq_t_approved"]) == Decimal(5)
+    assert Decimal(response.data["phase_out_co2_eq_t_actual"]) == Decimal(14)
+    assert response.data["decisions"][0]["id"] == decision.id
     assert response.data["pcr_projects"][0]["id"] == pcr_project.id
     assert response.data["pcr_projects"][0]["project_id"] == project.id
     assert response.data["pcr_projects"][0]["addresses"] == "Test project address"
@@ -335,7 +352,6 @@ def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
         },
         format="json",
     )
-
     assert response.status_code == 201
     assert [item["project_id"] for item in response.data["pcr_projects"]] == [
         project.id for project in projects
@@ -494,6 +510,88 @@ def test_pcr_project_create_permissions(client, url, user, admin_user):
     client.force_authenticate(user=admin_user)
     response = client.post(url, payload, format="json")
     assert response.status_code == 201
+
+
+def test_pcr_create_dafaults(client, admin_user, decision):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(
+        meta_project=meta_project,
+        post_excom_decision=decision,
+        total_number_of_customs_officers_trained=3,
+        total_number_of_technicians_trained_actual=4,
+        total_number_of_trainers_trained_actual=3,
+        version=3.0,
+        date_approved=date(2026, 7, 20),
+        date_completion=date(2026, 7, 20),
+    )
+    client.force_authenticate(user=admin_user)
+    url = reverse("project-completion-report-create-defaults")
+    response = client.get(url, {"meta_project_id": meta_project.id})
+
+    assert response.status_code == 200
+    assert response.data["meta_project_id"] == meta_project.id
+    assert response.data["country"] == meta_project.country.id
+    assert response.data["decisions"] == [decision.id]
+    assert response.data["project_date_approved"] == project.date_approved
+    assert response.data["project_date_completion"] == project.date_completion
+    assert response.data["phase_out_ods_approved"] == meta_project.phase_out_odp
+    assert response.data["phase_out_ods_actual"] == None
+    assert (
+        response.data["phase_out_co2_eq_t_approved"] == meta_project.phase_out_co2_eq_t
+    )
+    assert response.data["phase_out_co2_eq_t_actual"] == None
+    assert response.data["total_number_of_enterprises"] == 0
+    assert response.data["total_number_of_trainnes"] == 10
+
+
+def test_pcr_create_defaults_receive_pcr(client, admin_user, decision):
+    meta_project = MetaProjectFactory.create()
+    project = ProjectFactory.create(
+        meta_project=meta_project,
+        version=3.0,
+        total_number_of_customs_officers_trained=5,
+        total_number_of_technicians_trained_actual=4,
+        total_number_of_trainers_trained_actual=3,
+    )
+    pcr = PCRFactory(
+        meta_project=meta_project,
+        project_date_approved=date(2026, 7, 20),
+        project_date_completion=date(2026, 7, 20),
+        phase_out_ods_approved=Decimal(23),
+        phase_out_ods_actual=Decimal(42),
+        phase_out_co2_eq_t_approved=Decimal(21),
+        phase_out_co2_eq_t_actual=Decimal(12),
+    )
+    pcr_project = PCRProjectFactory(pcr=pcr, project=project)
+    PCRProjectEnterpriseFactory(pcr_project=pcr_project)
+    PCRProjectEnterpriseFactory(pcr_project=pcr_project)
+
+    pcr.decisions.add(decision)
+
+    client.force_authenticate(user=admin_user)
+    url = reverse("project-completion-report-create-defaults")
+    response = client.get(url, {"meta_project_id": meta_project.id, "pcr_id": pcr.id})
+
+    assert response.status_code == 200
+    assert response.data["meta_project_id"] == meta_project.id
+    assert response.data["country"] == meta_project.country.id
+    assert response.data["decisions"] == [
+        decision.id for decision in pcr.decisions.all()
+    ]
+    assert response.data["project_date_approved"] == pcr.project_date_approved
+    assert response.data["project_date_completion"] == pcr.project_date_completion
+    assert response.data["phase_out_ods_approved"] == pcr.phase_out_ods_approved
+    assert response.data["phase_out_ods_actual"] == pcr.phase_out_ods_actual
+    assert (
+        response.data["phase_out_co2_eq_t_approved"] == pcr.phase_out_co2_eq_t_approved
+    )
+    assert response.data["phase_out_co2_eq_t_actual"] == pcr.phase_out_co2_eq_t_actual
+    assert (
+        response.data["phase_out_co2_eq_t_approved"] == pcr.phase_out_co2_eq_t_approved
+    )
+    assert response.data["phase_out_co2_eq_t_actual"] == pcr.phase_out_co2_eq_t_actual
+    assert response.data["total_number_of_enterprises"] == 2
+    assert response.data["total_number_of_trainnes"] == 12
 
 
 def test_pcr_retrieve(client, admin_user):

@@ -1,7 +1,10 @@
 from django.db import models
-from core.models.agency import Agency
+from django.utils.functional import cached_property
 
+from core.models.agency import Agency
+from core.models.country import Country
 from core.models.project import MetaProject
+from core.models.meeting import Decision
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
@@ -29,6 +32,43 @@ class PCR(models.Model):
         blank=True,
         related_name="previous_versions",
     )
+    decisions = models.ManyToManyField(
+        Decision, related_name="pcrs", help_text="Executive Commitee meeting"
+    )
+    project_date_approved = models.DateField(
+        null=True, blank=True, help_text="Date of approval of the project"
+    )
+    project_date_completion = models.DateField(
+        null=True, blank=True, help_text="Date of completion of the project"
+    )
+    phase_out_ods_approved = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="ODP phase-out (Approved)",
+    )
+    phase_out_ods_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="ODP phase out (Actual)",
+    )
+    phase_out_co2_eq_t_approved = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)",
+    )
+    phase_out_co2_eq_t_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)",
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     submission_date = models.DateField(null=True, blank=True)
@@ -36,6 +76,12 @@ class PCR(models.Model):
 
     def __str__(self):
         return self.meta_project.umbrella_code
+
+    @cached_property
+    def total_number_of_enterprises(self):
+        return sum(
+            (pcr_project.enterprises.count() for pcr_project in self.pcr_projects.all())
+        )
 
     class Meta:
         verbose_name_plural = "PCR"
@@ -84,22 +130,6 @@ class PCRProject(models.Model):
         "Project", on_delete=models.PROTECT, related_name="pcr_project"
     )
 
-    # TODO the following fields can either be calculated/retrieved from project or should be cached/denormalized.
-
-    # country - from project
-    # metacode - from project
-    # executive_committee_meeting - Relevant Decision(s) from project
-    # project_date_approved - Date of approval of the project
-    # project_date_completion - Approved
-    # Date of completion of the project:
-    # ODP phase-out (Approved)
-    # ODP phase out (Actual)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Approved)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Actual)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Approved)
-    # Conversion/alternative technology used:
-    # Number of enterprises
-    # Total number of trainees (e.g technicians)*
     # MLF funding approved
     # MLF funding disbursed
     # MLF funding retunrned
@@ -182,6 +212,8 @@ class PCRProjectAlternativeTechnology(models.Model):
         blank=True,
         related_name="+",
     )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "PCR project alternative technologies"
@@ -196,6 +228,8 @@ class PCRProjectEnterprise(models.Model):
     )
     name = models.CharField(max_length=255, blank=True)
     address = models.TextField(blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "PCR project enterprises"
@@ -212,6 +246,8 @@ class PCRProjectEquipment(models.Model):
     description = models.TextField(blank=True)
     disposal_type = models.PositiveSmallIntegerField(null=True, blank=True)
     disposal_date = models.DateField(null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "PCR project equipment"
