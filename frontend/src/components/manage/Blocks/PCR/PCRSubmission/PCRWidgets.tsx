@@ -28,7 +28,6 @@ import cx from 'classnames'
 
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
 
-// to update
 const additionalProperties: Record<string, Record<string, unknown>> = {
   financial_figures_type: overviewFieldsClassName,
   project_goals_achieved: overviewFieldsClassName,
@@ -45,12 +44,13 @@ const getValue = (
   subFields?: string[],
 ) => {
   const [dataIndex, nestedDataIndex, deepNestedDataIndex] = indexes ?? []
-  const [_, nestedField, deepNestedField] = subFields ?? []
+  const [subField, nestedField, deepNestedField] = subFields ?? []
 
   const indexesLength = indexes?.length
   const subfieldsLength = subFields?.length
 
   const sectionData = PCRData[sectionIdentifier] as Record<string, any>
+  const subSectionData = sectionData[subField as string] || []
 
   if (indexesLength === 3 && subfieldsLength === 3) {
     const agencyData = sectionData[dataIndex]
@@ -65,6 +65,10 @@ const getValue = (
     const nestedData = agencyData[nestedField][nestedDataIndex]
 
     return nestedData[field]
+  }
+
+  if (indexesLength === 1 && subfieldsLength === 1) {
+    return subSectionData[dataIndex][field]
   }
 
   if (indexesLength === 1) {
@@ -82,6 +86,36 @@ export const changeField: FieldHandler = (value, section, field, setState) => {
     }),
     field,
   )
+}
+
+const changeSubsectionField: FieldHandler = (
+  value,
+  section,
+  field,
+  setState,
+  indexes,
+  subFields,
+) => {
+  const [dataIndex] = indexes ?? []
+  const [subField] = subFields ?? []
+
+  setState((prevData) => {
+    const sectionData = prevData[section] as Record<string, any>
+    const subSectionData = sectionData[subField] || []
+
+    subSectionData[dataIndex] = {
+      ...subSectionData[dataIndex],
+      [field]: value,
+    }
+
+    return {
+      ...prevData,
+      [section]: {
+        ...sectionData,
+        [subField]: subSectionData,
+      },
+    }
+  }, field)
 }
 
 export const changeArrayField: FieldHandler = (
@@ -208,6 +242,11 @@ export const onFieldChange: FieldHandler = (
 
   if (indexesLength === 2 && subfieldsLength === 2) {
     changeNestedField(value, section, field, setState, indexes, subFields)
+    return
+  }
+
+  if (indexesLength === 1 && subfieldsLength === 1) {
+    changeSubsectionField(value, section, field, setState, indexes, subFields)
     return
   }
 

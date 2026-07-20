@@ -42,10 +42,15 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   support_cost_psc: 'Project support costs',
   financial_figures_type: 'Financial figures type',
   financial_figures_type_explanation: 'Explanations if needed',
+  enterprises_addresses:
+    'Address(es) of enterprise(s) and project site(s), if applicable',
   project_goals_achieved: 'All project goals achieved',
   project_goals_achieved_explanation: 'Please provide a brief explanation',
   rating: 'Rating',
+  other_rating_explanation: 'Add comment',
   rating_explanation: 'Please explain your rating',
+  user_type: 'Entity user inputting the comment on behalf',
+  user_comment: 'Add comment',
   completion_report_done_by: 'Completion report done by',
   activity_title: 'Activity title',
   type_of_activity: 'Type of activity',
@@ -76,9 +81,12 @@ export const booleanFieldsOpts = [
 export const initialOverviewData = {
   financial_figures_type: null,
   financial_figures_type_explanation: '',
+  enterprises_addresses: '',
   project_goals_achieved: null,
   project_goals_achieved_explanation: '',
   rating: null,
+  other_rating_explanation: '',
   rating_explanation: '',
+  additional_comments: [],
   completion_report_done_by: null,
 }

@@ -26,13 +26,21 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
+type AdditionalCommentType = {
+  user_type: number | null
+  user_comment: string
+}
+
 export interface PCROverviewData {
   financial_figures_type: number | null
   financial_figures_type_explanation: string
+  enterprises_addresses: string
   project_goals_achieved: number | null
   project_goals_achieved_explanation: string
   rating: number | null
+  other_rating_explanation: string
   rating_explanation: string
+  additional_comments: AdditionalCommentType[]
   completion_report_done_by: number | null
 }
 

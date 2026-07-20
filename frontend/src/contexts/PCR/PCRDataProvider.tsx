@@ -83,6 +83,18 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     { id: 5, name: 'Other, please specify' },
   ]
 
+  const userTypeOptions = [
+    { id: 1, name: 'Cooperating agency' },
+    { id: 2, name: 'Government/NOU' },
+    { id: 3, name: 'Enterprises' },
+    { id: 4, name: 'Consultants' },
+    {
+      id: 5,
+      name: 'Project management officers in the Multilateral Fund Secretariat',
+    },
+    { id: 6, name: 'Other, please specify' },
+  ]
+
   const completionReportDoneByOptions = [
     { id: 1, name: 'Lead agency' },
     { id: 2, name: 'Cooperating agency' },
@@ -124,28 +136,30 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       PCRData,
       setPCRData,
       financialFiguresTypeOptions,
+      projectGoalsAchievedOptions,
+      ratingOptions,
+      userTypeOptions,
+      completionReportDoneByOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
-      completionReportDoneByOptions,
-      projectGoalsAchievedOptions,
-      ratingOptions,
     }),
     [
       pcrMetaproject,
       PCRData,
       setPCRData,
       financialFiguresTypeOptions,
+      projectGoalsAchievedOptions,
+      ratingOptions,
+      userTypeOptions,
+      completionReportDoneByOptions,
       projectComponentOptions,
       causeOfDelayOptions,
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
-      completionReportDoneByOptions,
-      projectGoalsAchievedOptions,
-      ratingOptions,
     ],
   )
 

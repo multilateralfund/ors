@@ -8,15 +8,16 @@ import {
 
 type PCRDataContextProps = PCRFormData & {
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
+  financialFiguresTypeOptions: OptionsType[]
+  projectGoalsAchievedOptions: OptionsType[]
+  ratingOptions: OptionsType[]
+  userTypeOptions: OptionsType[]
+  completionReportDoneByOptions: OptionsType[]
   projectComponentOptions: OptionsType[]
   causeOfDelayOptions: OptionsType[]
   lessonLearnedOptions: OptionsType[]
   sdgsOptions: OptionsType[]
   projectPhaseOptions: OptionsType[]
-  financialFiguresTypeOptions: OptionsType[]
-  completionReportDoneByOptions: OptionsType[]
-  projectGoalsAchievedOptions: OptionsType[]
-  ratingOptions: OptionsType[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(
