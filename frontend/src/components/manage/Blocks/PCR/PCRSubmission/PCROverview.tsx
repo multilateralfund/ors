@@ -2,13 +2,15 @@ import { Fragment, useContext } from 'react'
 
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
+import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { PCROverviewProps } from '../interfaces'
 
 import { find, lowerCase, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 
-const PCROverview = () => {
+const PCROverview = (props: PCROverviewProps) => {
   const sectionIdentifier = 'overview'
   const additionalCommentsField = 'additional_comments'
 
@@ -73,7 +75,7 @@ const PCROverview = () => {
 
   return (
     <>
-      PCR prefilled
+      <PCROverviewPrefilledData {...props} />
       <Divider className="my-6" />
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">

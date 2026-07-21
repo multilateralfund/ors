@@ -31,6 +31,17 @@ type AdditionalCommentType = {
   user_comment: string
 }
 
+export interface PCROverviewProps {
+  fundsByAgency: {
+    mlf_funding_approved: Record<number, number>
+    mlf_funding_disbursed: Record<number, number>
+    mlf_funding_returned: Record<number, number>
+    total_mlf_funding_approved: number
+    total_mlf_funding_disbursed: number
+    total_mlf_funding_returned: number
+  }
+}
+
 export interface PCROverviewData {
   financial_figures_type: number | null
   financial_figures_type_explanation: string

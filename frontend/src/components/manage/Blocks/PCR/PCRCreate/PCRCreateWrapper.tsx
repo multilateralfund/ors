@@ -51,8 +51,8 @@ const PCRCreateWrapper = () => {
       sdgs_contribution: initialSdgsData,
     }))
   }, [
-    initialGenderMainstreamingData,
     initialProjectComponentData,
+    initialGenderMainstreamingData,
     initialSdgsData,
     setPCRData,
   ])

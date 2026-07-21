@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
@@ -10,9 +11,91 @@ import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
 
 import { Tabs, Tab } from '@mui/material'
+import { reduce } from 'lodash'
 
 const PCRForm = () => {
+  const { pcrMetaproject, PCRData } = useContext(PCRDataContext)
+  const { data: metaproject } = pcrMetaproject
+  const projects = metaproject?.projects ?? []
+
   const [currentTab, setCurrentTab] = useState<number>(0)
+
+  const fundsByAgency = useMemo(() => {
+    const projectAgencyMap = reduce(
+      projects,
+      (acc, project) => {
+        acc[project.id] = project.agency_id
+        return acc
+      },
+      {} as Record<number, number>,
+    )
+
+    const mlf_funding_approved = reduce(
+      projects,
+      (acc, project) => {
+        const agencyId = project.agency_id
+
+        acc[agencyId] =
+          (acc[agencyId] || 0) + Number(project.funds_approved || 0)
+
+        return acc
+      },
+      {} as Record<number, number>,
+    )
+
+    const total_mlf_funding_approved = reduce(
+      mlf_funding_approved,
+      (acc, fundApproved) => acc + fundApproved,
+      0,
+    )
+
+    const mlf_funding_disbursed = reduce(
+      PCRData.summary_of_key_data,
+      (acc, entry) => {
+        const agencyId = projectAgencyMap[entry.project_id]
+
+        if (agencyId) {
+          acc[agencyId] =
+            (acc[agencyId] || 0) + Number(entry.funds_disbursed || 0)
+        }
+
+        return acc
+      },
+      {} as Record<number, number>,
+    )
+
+    const total_mlf_funding_disbursed = reduce(
+      mlf_funding_disbursed,
+      (acc, fundDisbursed) => acc + fundDisbursed,
+      0,
+    )
+
+    const mlf_funding_returned = reduce(
+      mlf_funding_approved,
+      (acc, fundApproved, agencyId) => {
+        acc[Number(agencyId)] =
+          fundApproved - (mlf_funding_disbursed[Number(agencyId)] || 0)
+
+        return acc
+      },
+      {} as Record<number, number>,
+    )
+
+    const total_mlf_funding_returned = reduce(
+      mlf_funding_returned,
+      (acc, fundReturned) => acc + fundReturned,
+      0,
+    )
+
+    return {
+      mlf_funding_approved,
+      mlf_funding_disbursed,
+      mlf_funding_returned,
+      total_mlf_funding_approved,
+      total_mlf_funding_disbursed,
+      total_mlf_funding_returned,
+    }
+  }, [projects, PCRData.summary_of_key_data])
 
   const TabLabel = ({ title }: { title: string }) => (
     <div className="relative flex items-center justify-between gap-x-2">
@@ -24,7 +107,7 @@ const PCRForm = () => {
     {
       id: 'pcr-overview',
       label: <TabLabel title="Overview" />,
-      component: <PCROverview />,
+      component: <PCROverview {...{ fundsByAgency }} />,
     },
     {
       id: 'pcr-summary-of-key-data',

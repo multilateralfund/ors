@@ -40,6 +40,12 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   agency: 'Agency',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support costs',
+  mlf_funding_approved: 'MLF funding approved',
+  mlf_funding_disbursed: 'MLF funding disbursed',
+  mlf_funding_returned: 'MLF funding returned',
+  total_mlf_funding_approved: 'Total MLF funding approved',
+  total_mlf_funding_disbursed: 'Total MLF funding disbursed',
+  total_mlf_funding_returned: 'Total MLF funding returned',
   financial_figures_type: 'Financial figures type',
   financial_figures_type_explanation: 'Explanations if needed',
   enterprises_addresses:
