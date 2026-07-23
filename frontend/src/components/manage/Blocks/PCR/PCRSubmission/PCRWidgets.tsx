@@ -29,10 +29,10 @@ import cx from 'classnames'
 const overviewFieldsClassName = formatClassName('min-w-56 md:min-w-72')
 
 const additionalProperties: Record<string, Record<string, unknown>> = {
-  financial_figures_type: overviewFieldsClassName,
-  project_goals_achieved: overviewFieldsClassName,
+  financial_figures_status: overviewFieldsClassName,
+  project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
-  completion_report_done_by: overviewFieldsClassName,
+  completed_by: overviewFieldsClassName,
   project_phase_id: formatClassName('min-w-56 md:min-w-60'),
 }
 

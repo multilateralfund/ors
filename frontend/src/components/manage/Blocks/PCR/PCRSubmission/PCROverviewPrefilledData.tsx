@@ -20,8 +20,8 @@ import {
 } from '@ors/components/manage/Blocks/ProjectsListing/constants'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRDefaultData, PCROverviewProps } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
+import { PCRDefaultData } from '../interfaces'
 import { useStore } from '@ors/store'
 
 import { find, keys, map, omit, uniq } from 'lodash'
@@ -29,9 +29,10 @@ import { Tabs, Tab, Divider } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-const PCROverviewPrefilledData = ({ fundsByAgency }: PCROverviewProps) => {
+const PCROverviewPrefilledData = () => {
   const { countries, agencies } = useContext(ProjectsDataContext)
-  const { pcrMetaproject, pcrDefaultData } = useContext(PCRDataContext)
+  const { pcrMetaproject, pcrDefaultData, fundsByAgency } =
+    useContext(PCRDataContext)
 
   const { data: defaultData } = pcrDefaultData
   const { country, decisions } = defaultData || {}

@@ -6,15 +6,24 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { api } from '@ors/helpers'
+import { buildPCRProjectPayload, getOtherOptionId } from '../utils'
 import { PCRActionButtons } from '../interfaces'
-import { buildPCRProjectPayload } from '../utils'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
+import { omit } from 'lodash'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
-  const { PCRData, pcrMetaproject } = useContext(PCRDataContext)
+  const {
+    PCRData,
+    pcrMetaproject,
+    pcrDefaultData,
+    fundsByAgency,
+    ratingOptions,
+  } = useContext(PCRDataContext)
+  const metaProjectId = pcrMetaproject.data?.id
+  const { overview } = PCRData
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
@@ -24,9 +33,29 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
     setIsLoading(true)
 
     try {
-      const metaProjectId = pcrMetaproject.data?.id
       if (!metaProjectId) {
         throw new Error('PCR metaproject data is not loaded.')
+      }
+
+      const overviewPrefilledData = {
+        ...omit(pcrDefaultData.data, ['meta_project_id', 'decisions']),
+        decision_ids: pcrDefaultData.data?.decisions,
+      }
+
+      const overviewData = {
+        ...overview,
+        other_rating_explanation:
+          overview.rating === getOtherOptionId(ratingOptions)
+            ? overview.other_rating_explanation
+            : null,
+      }
+
+      const payload = {
+        meta_project_id: metaProjectId,
+        ...overviewPrefilledData,
+        ...fundsByAgency,
+        ...overviewData,
+        pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }
 
       await api('api/project-completion-reports/', {
@@ -61,7 +90,12 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   return (
     <div className="flex flex-wrap items-center justify-end gap-2.5">
       <CancelLinkButton title="Cancel" href={null} onClick={onCancel} />
-      <SubmitButton title="Create PCR" onSubmit={createPCR} className="!py-2" />
+      <SubmitButton
+        title="Create PCR"
+        onSubmit={createPCR}
+        isDisabled={!metaProjectId}
+        className="!py-2"
+      />
       {isCancelModalOpen && (
         <CancelWarningModal
           mode="PCR creation"

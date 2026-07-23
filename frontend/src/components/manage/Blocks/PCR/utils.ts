@@ -1,9 +1,11 @@
 import {
+  OptionsType,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
 } from './interfaces'
+import { find, lowerCase } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -86,3 +88,6 @@ export const buildPCRProjectPayload = (
 
   return payload
 }
+
+export const getOtherOptionId = (options: OptionsType[]) =>
+  find(options, (option) => lowerCase(option.name).includes('other'))?.id

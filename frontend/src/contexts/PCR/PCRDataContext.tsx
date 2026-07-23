@@ -4,12 +4,14 @@ import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGe
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import {
   PCRFormData,
+  PCROverviewProps,
   OptionsType,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 
 type PCRDataContextProps = PCRFormData & {
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
+  fundsByAgency: PCROverviewProps
   financialFiguresTypeOptions: OptionsType[]
   projectGoalsAchievedOptions: OptionsType[]
   ratingOptions: OptionsType[]

@@ -46,28 +46,26 @@ type AdditionalCommentType = {
 }
 
 export interface PCROverviewProps {
-  fundsByAgency: {
-    mlf_funding_approved: Record<number, number>
-    mlf_funding_disbursed: Record<number, number>
-    mlf_funding_returned: Record<number, number>
-    total_mlf_funding_approved: number
-    total_mlf_funding_disbursed: number
-    total_mlf_funding_returned: number
-    total_number_of_enterprises: number
-  }
+  mlf_funding_approved: Record<number, number>
+  mlf_funding_disbursed: Record<number, number>
+  mlf_funding_returned: Record<number, number>
+  total_mlf_funding_approved: number
+  total_mlf_funding_disbursed: number
+  total_mlf_funding_returned: number
+  total_number_of_enterprises: number
 }
 
 export interface PCROverviewData {
-  financial_figures_type: number | null
-  financial_figures_type_explanation: string
-  enterprises_addresses: string
-  project_goals_achieved: number | null
-  project_goals_achieved_explanation: string
+  financial_figures_status: number | null
+  financial_figures_status_explanation: string
+  addresses: string
+  project_goal_achieved: number | null
+  project_goal_achieved_explanation: string
   rating: number | null
   other_rating_explanation: string
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
-  completion_report_done_by: number | null
+  completed_by: number | null
 }
 
 export interface PCRResultsAssessmentData {

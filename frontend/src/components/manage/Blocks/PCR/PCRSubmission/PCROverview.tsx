@@ -4,13 +4,13 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { PCROverviewProps } from '../interfaces'
+import { getOtherOptionId } from '../utils'
 
-import { find, lowerCase, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
+import { map } from 'lodash'
 
-const PCROverview = (props: PCROverviewProps) => {
+const PCROverview = () => {
   const sectionIdentifier = 'overview'
   const additionalCommentsField = 'additional_comments'
 
@@ -25,17 +25,8 @@ const PCROverview = (props: PCROverviewProps) => {
   } = useContext(PCRDataContext)
 
   const sectionData = PCRData[sectionIdentifier] || []
-  const { project_goals_achieved, rating } = sectionData
+  const { rating } = sectionData
   const additionalCommentsData = sectionData[additionalCommentsField] || []
-
-  const goalsNotAchievedId = find(
-    projectGoalsAchievedOptions,
-    (option) => lowerCase(option.name) === 'no',
-  )?.id
-
-  const otherOptionId = find(ratingOptions, (option) =>
-    lowerCase(option.name).includes('other'),
-  )?.id
 
   const onAddAdditionalComment = () => {
     setPCRData((prevData) => {
@@ -75,43 +66,41 @@ const PCROverview = (props: PCROverviewProps) => {
 
   return (
     <>
-      <PCROverviewPrefilledData {...props} />
+      <PCROverviewPrefilledData />
       <Divider className="my-6" />
       <div className="flex flex-col gap-y-4">
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
           <PCRSelectWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="financial_figures_type"
+            field="financial_figures_status"
             options={financialFiguresTypeOptions}
             errors={{}}
           />
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="financial_figures_type_explanation"
+            field="financial_figures_status_explanation"
             errors={{}}
           />
         </div>
         <div className="flex">
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="enterprises_addresses"
+            field="addresses"
             errors={{}}
           />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
           <PCRSelectWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
-            field="project_goals_achieved"
+            field="project_goal_achieved"
             options={projectGoalsAchievedOptions}
             errors={{}}
           />
-          {project_goals_achieved === goalsNotAchievedId && (
-            <PCRTextAreaWidget
-              {...{ PCRData, setPCRData, sectionIdentifier }}
-              field="project_goals_achieved_explanation"
-              errors={{}}
-            />
-          )}
+          <PCRTextAreaWidget
+            {...{ PCRData, setPCRData, sectionIdentifier }}
+            field="project_goal_achieved_explanation"
+            errors={{}}
+          />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
           <PCRSelectWidget
@@ -120,7 +109,7 @@ const PCROverview = (props: PCROverviewProps) => {
             options={ratingOptions}
             errors={{}}
           />
-          {rating === otherOptionId && (
+          {rating === getOtherOptionId(ratingOptions) && (
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="other_rating_explanation"
@@ -175,7 +164,7 @@ const PCROverview = (props: PCROverviewProps) => {
         />
         <PCRSelectWidget
           {...{ PCRData, setPCRData, sectionIdentifier }}
-          field="completion_report_done_by"
+          field="completed_by"
           options={completionReportDoneByOptions}
           errors={{}}
         />
