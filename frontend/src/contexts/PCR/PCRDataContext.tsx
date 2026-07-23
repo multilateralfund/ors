@@ -1,5 +1,6 @@
 import { createContext } from 'react'
 
+import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import {
   PCRFormData,
@@ -8,6 +9,7 @@ import {
 
 type PCRDataContextProps = PCRFormData & {
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
+  pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
   financialFiguresTypeOptions: OptionsType[]
   projectGoalsAchievedOptions: OptionsType[]
   ratingOptions: OptionsType[]

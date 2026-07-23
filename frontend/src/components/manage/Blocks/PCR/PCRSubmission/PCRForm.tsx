@@ -49,19 +49,25 @@ const PCRForm = () => {
       0,
     )
 
-    const mlf_funding_disbursed = reduce(
+    const { mlf_funding_disbursed, total_number_of_enterprises } = reduce(
       PCRData.summary_of_key_data,
       (acc, entry) => {
         const agencyId = projectAgencyMap[entry.project_id]
 
         if (agencyId) {
-          acc[agencyId] =
-            (acc[agencyId] || 0) + Number(entry.funds_disbursed || 0)
+          acc.mlf_funding_disbursed[agencyId] =
+            (acc.mlf_funding_disbursed[agencyId] || 0) +
+            Number(entry.funds_disbursed || 0)
         }
+
+        acc.total_number_of_enterprises += entry.enterprises.length
 
         return acc
       },
-      {} as Record<number, number>,
+      {
+        mlf_funding_disbursed: {} as Record<number, number>,
+        total_number_of_enterprises: 0,
+      },
     )
 
     const total_mlf_funding_disbursed = reduce(
@@ -94,6 +100,7 @@ const PCRForm = () => {
       total_mlf_funding_approved,
       total_mlf_funding_disbursed,
       total_mlf_funding_returned,
+      total_number_of_enterprises,
     }
   }, [projects, PCRData.summary_of_key_data])
 

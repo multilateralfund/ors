@@ -26,6 +26,20 @@ export type PCRFiltersProps = {
   handleParamsChange: (params: { [key: string]: any }) => void
 }
 
+export interface PCRDefaultData {
+  country: number
+  decisions: number[]
+  meta_project_id: number
+  project_date_approved: string | null
+  project_date_completion: string | null
+  phase_out_ods_actual: string | null
+  phase_out_ods_approved: string | null
+  phase_out_co2_eq_t_actual: string | null
+  phase_out_co2_eq_t_approved: string | null
+  total_number_of_enterprises: string | null
+  total_number_of_trainnes: string | null
+}
+
 type AdditionalCommentType = {
   user_type: number | null
   user_comment: string
@@ -39,6 +53,7 @@ export interface PCROverviewProps {
     total_mlf_funding_approved: number
     total_mlf_funding_disbursed: number
     total_mlf_funding_returned: number
+    total_number_of_enterprises: number
   }
 }
 

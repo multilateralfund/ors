@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react'
 
+import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
@@ -20,6 +21,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
 
   const { project_id } = useParams<Record<string, string>>()
   const pcrMetaproject = useGetPCRProject(project_id)
+  const pcrDefaultData = useGetPCRDefaults(project_id)
 
   const { addUpdatedField } = useUpdatedFields()
 
@@ -133,6 +135,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   const value = useMemo(
     () => ({
       pcrMetaproject,
+      pcrDefaultData,
       PCRData,
       setPCRData,
       financialFiguresTypeOptions,
@@ -148,6 +151,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }),
     [
       pcrMetaproject,
+      pcrDefaultData,
       PCRData,
       setPCRData,
       financialFiguresTypeOptions,
