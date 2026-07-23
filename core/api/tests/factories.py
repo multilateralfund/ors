@@ -55,7 +55,7 @@ from core.models.enterprise import (
     EnterpriseOdsOdp,
     EnterpriseStatus,
 )
-from core.models.project_completion_report import PCR, PCRProject
+from core.models.project_completion_report import PCR, PCRProject, PCRProjectEnterprise
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -473,6 +473,7 @@ class MetaProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetaProject
 
+    country = factory.SubFactory(CountryFactory)
     type = MetaProject.MetaProjectType.IND
 
 
@@ -884,7 +885,35 @@ class PCRFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PCR
 
+    meta_project = factory.SubFactory(MetaProjectFactory)
+    project_date_approved = factory.Faker("date")
+    project_date_completion = factory.Faker("date")
+    phase_out_ods_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    phase_out_ods_actual = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    phase_out_co2_eq_t_approved = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    phase_out_co2_eq_t_actual = factory.Faker(
+        "pydecimal", left_digits=10, right_digits=2
+    )
+    submission_date = factory.Faker("date")
+
+    # pylint: disable=E1101
+    @factory.post_generation
+    def decisions(obj, _, extracted, **kwargs):
+        if extracted:
+            obj.decisions.set(extracted)
+
 
 class PCRProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PCRProject
+
+
+class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRProjectEnterprise
+
+    pcr_project = factory.SubFactory(PCRProjectFactory)
+    name = factory.Faker("pystr", max_chars=20)
+    address = factory.Faker("pystr", max_chars=100)

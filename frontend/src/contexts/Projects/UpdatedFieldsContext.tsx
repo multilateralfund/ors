@@ -1,4 +1,11 @@
-import { createContext, ReactNode, useContext, useState } from 'react'
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 
 type UpdatedFieldsContextType = {
   updatedFields: Set<string>
@@ -25,15 +32,28 @@ export const UpdatedFieldsProvider = ({
 }) => {
   const [updatedFields, setUpdatedFields] = useState<Set<string>>(new Set())
 
-  const addUpdatedField = (field: string) => {
-    setUpdatedFields((prev) => new Set(prev).add(field))
-  }
+  const addUpdatedField = useCallback((field: string) => {
+    setUpdatedFields((prev) => {
+      if (prev.has(field)) {
+        return prev
+      }
 
-  const clearUpdatedFields = () => setUpdatedFields(new Set())
+      return new Set(prev).add(field)
+    })
+  }, [])
+
+  const clearUpdatedFields = useCallback(() => {
+    setUpdatedFields((prev) => (prev.size === 0 ? prev : new Set()))
+  }, [])
+
+  const value = useMemo(
+    () => ({ updatedFields, addUpdatedField, clearUpdatedFields }),
+    [updatedFields, addUpdatedField, clearUpdatedFields],
+  )
 
   return (
     <UpdatedFieldsContext.Provider
-      value={{ updatedFields, addUpdatedField, clearUpdatedFields }}
+      value={value}
     >
       {children}
     </UpdatedFieldsContext.Provider>

@@ -1,6 +1,13 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import extend_schema
+
 from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, viewsets
+
+from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -8,15 +15,57 @@ from core.api.filters.project_completion_report import (
     PCRProjectFilter,
     project_has_cooperating_agency_q,
 )
-from core.api.permissions import DenyAll, HasProjectV2ViewAccess
-from core.api.serializers.project_completion_report import PCRProjectListSerializer
+from core.api.permissions import (
+    DenyAll,
+    HasProjectV2EditAccess,
+    HasProjectV2ViewAccess,
+)
+from core.api.serializers.project_completion_report import (
+    PCRCreateSerializer,
+    PCRDelayCategorySerializer,
+    PCRLearnedLessonCategorySerializer,
+    PCRProjectListSerializer,
+    PCRProjectComponentOptionSerializer,
+    PCRDetailSerializer,
+    PCRUpdateSerializer,
+)
 from core.api.views.utils import get_country_regions
 from core.models.country import Country
-from core.models.project import Project
-from core.models.project_completion_report import PCRProject
+from core.models.project import MetaProject, Project
+from core.models.project_completion_report import (
+    PCR,
+    PCRDelayCategory,
+    PCRLearnedLessonCategory,
+    PCRProject,
+    PCRProjectComponentOption,
+)
 
 
-class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class PCRProjectComponentOptionListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRProjectComponentOption.objects.order_by("sort_order", "name")
+    serializer_class = PCRProjectComponentOptionSerializer
+
+
+class PCRDelayCategoryListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRDelayCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRDelayCategorySerializer
+
+
+class PCRLearnedLessonCategoryListView(generics.ListAPIView):
+    permission_classes = [HasProjectV2ViewAccess]
+    queryset = PCRLearnedLessonCategory.objects.order_by("sort_order", "name")
+    serializer_class = PCRLearnedLessonCategorySerializer
+
+
+class PCRProjectViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+):
     serializer_class = PCRProjectListSerializer
     filterset_class = PCRProjectFilter
     filter_backends = [
@@ -44,9 +93,25 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "list_filters"]:
+        if self.action in ["list", "list_filters", "retrieve"]:
             return [HasProjectV2ViewAccess]
+        if self.action in ["create", "create_defaults", "update", "partial_update"]:
+            return [HasProjectV2EditAccess]
         return [DenyAll]
+
+    def get_serializer_class(self):
+        if self.action in ["create", "create_defaults"]:
+            return PCRCreateSerializer
+        if self.action == "retrieve":
+            return PCRDetailSerializer
+        if self.action in ["update", "partial_update"]:
+            return PCRUpdateSerializer
+        return PCRProjectListSerializer
+
+    def filter_queryset(self, queryset):
+        if self.action in ["retrieve", "update", "partial_update"]:
+            return queryset
+        return super().filter_queryset(queryset)
 
     def _filter_project_permissions_queryset(self, queryset):
         user = self.request.user
@@ -73,6 +138,14 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return queryset.none()
 
     def get_queryset(self):
+        if self.action in ["retrieve", "update", "partial_update"]:
+            return PCR.objects.select_related("meta_project").prefetch_related(
+                "pcr_projects",
+                "pcr_projects__alternative_technologies",
+                "pcr_projects__enterprises",
+                "pcr_projects__equipments",
+            )
+
         pcr_required_project = Project.objects.filter(
             pk=OuterRef("project_id")
         ).pcr_required()
@@ -173,3 +246,37 @@ class PCRProjectViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             "pcr_due": self._get_pcr_due_values(queryset),
         }
         return Response(result)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="meta_project_id",
+                location=OpenApiParameter.QUERY,
+                description="""Returns the initial information for the PCR
+                            Overview section using meta project information""",
+                type=OpenApiTypes.INT,
+                required=True,
+            ),
+            OpenApiParameter(
+                name="pcr_id",
+                location=OpenApiParameter.QUERY,
+                description="""If the PCR already exists, it will first attempt
+                                to get the information from the PCR fields""",
+                type=OpenApiTypes.INT,
+                required=False,
+            ),
+        ],
+    )
+    @action(methods=["GET"], detail=False, url_path="create")
+    def create_defaults(self, request, *args, **kwargs):
+        meta_project_id = request.query_params.get("meta_project_id")
+        if not meta_project_id:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        meta_project = get_object_or_404(MetaProject, pk=meta_project_id)
+
+        pcr_id = request.query_params.get("pcr_id")
+        pcr = None
+        if pcr_id:
+            pcr = get_object_or_404(PCR, pk=pcr_id)
+        serializer = self.get_serializer()
+        return Response(serializer.build_initial_data(meta_project, pcr))

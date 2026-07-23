@@ -10,6 +10,7 @@ from core.models.enterprise import (
 
 @admin.register(EnterpriseStatus)
 class EnterpriseStatusAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "name",
     ]
@@ -20,6 +21,7 @@ class EnterpriseStatusAdmin(admin.ModelAdmin):
 
 @admin.register(Enterprise)
 class EnterpriseAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "legacy_code",
         "code",
@@ -59,6 +61,7 @@ class EnterpriseAdmin(admin.ModelAdmin):
 
 @admin.register(EnterpriseOdsOdp)
 class EnterpriseOdsOdpAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "enterprise__name",
         "ods_substance__name",

@@ -13,6 +13,7 @@ from core.models.adm import (
 
 @admin.register(AdmColumn)
 class AdmColumnAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "name",
     ]
@@ -31,6 +32,7 @@ class AdmColumnAdmin(admin.ModelAdmin):
 
 @admin.register(AdmRecord)
 class AdmRecordAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "country_programme_report__name",
         "row__text",
@@ -62,6 +64,7 @@ class AdmRecordAdmin(admin.ModelAdmin):
 
 @admin.register(AdmRow)
 class AdmRowAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "text",
         "index",
@@ -91,6 +94,7 @@ class AdmRowAdmin(admin.ModelAdmin):
 
 @admin.register(AdmChoice)
 class AdmChoiceAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "value",
     ]
@@ -102,6 +106,7 @@ class AdmChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(AdmEmptyImmutableCell)
 class AdmEmptyImmutableCellsAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "row__text",
         "column__name",

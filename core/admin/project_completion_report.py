@@ -15,8 +15,11 @@ from core.models.project_completion_report import (
     PCRActivity,
     PCRProject,
     PCRAdditionalComment,
+    PCRProjectAlternativeTechnology,
     PCRProjectComponentOption,
     PCRProjectComponent,
+    PCRProjectEnterprise,
+    PCRProjectEquipment,
     PCRSustainableDevelopmentGoalDescription,
     PCRSustainableDevelopmentGoal,
     PCRSupportingEvidenceSection,
@@ -41,9 +44,13 @@ class PCRAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         AutocompleteFilterFactory("meta_project", "meta_project"),
+        AutocompleteFilterFactory("country", "meta_project__country"),
     ]
     raw_id_fields = [
         "meta_project",
+    ]
+    filter_horizontal = [
+        "decisions",
     ]
 
 
@@ -311,6 +318,56 @@ class PCRSupportingEvidenceAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "section",
     ]
+
+
+@admin.register(PCRProjectAlternativeTechnology)
+class PCRProjectAlternativeTechnologyAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+    search_fields = [
+        "pcr_project__project__code",
+        "pcr_project__project__legacy_code",
+        "pcr_project__pcr__metaproject__umbrella_code",
+    ]
+    list_filter = [
+        AutocompleteFilterFactory("pcr_project", "pcr_project"),
+        AutocompleteFilterFactory("substance_from", "substance_from"),
+        AutocompleteFilterFactory("substance_to", "substance_to"),
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(PCRProjectAlternativeTechnology, [])
+
+
+@admin.register(PCRProjectEnterprise)
+class PCRProjectEnterpriseAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+    search_fields = [
+        "pcr_project__project__code",
+        "pcr_project__project__legacy_code",
+        "pcr_project__pcr__metaproject__umbrella_code",
+    ]
+    list_filter = [
+        AutocompleteFilterFactory("pcr_project", "pcr_project"),
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(PCRProjectEnterprise, [])
+
+
+@admin.register(PCRProjectEquipment)
+class PCRProjectEquipmentAdmin(admin.ModelAdmin):
+    admin_group = "PCR"
+    search_fields = [
+        "pcr_project__project__code",
+        "pcr_project__project__legacy_code",
+        "pcr_project__pcr__metaproject__umbrella_code",
+    ]
+    list_filter = [
+        AutocompleteFilterFactory("pcr_project", "pcr_project"),
+    ]
+
+    def get_list_display(self, request):
+        return get_final_display_list(PCRProjectEquipment, [])
 
 
 @admin.register(OLD_PCRSector)

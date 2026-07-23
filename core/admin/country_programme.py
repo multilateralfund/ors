@@ -17,6 +17,7 @@ from core.models.country_programme import (
 
 @admin.register(CPReport)
 class CPReportAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["name", "year", "country__name", "reporting_email"]
     list_filter = [
         "status",
@@ -51,6 +52,7 @@ class CPReportAdmin(admin.ModelAdmin):
 
 @admin.register(CPRecord)
 class CPRecordAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
         AutocompleteFilterFactory("blend", "blend"),
@@ -89,6 +91,7 @@ class CPRecordAdmin(admin.ModelAdmin):
 
 @admin.register(CPUsage)
 class CPUsageAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     list_filter = [
         AutocompleteFilterFactory(
             "country", "country_programme_record__country_programme_report__country"
@@ -117,6 +120,7 @@ class CPUsageAdmin(admin.ModelAdmin):
 
 @admin.register(CPPrices)
 class CPPricesAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["country_programme_report__name", "substance__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
@@ -140,6 +144,7 @@ class CPPricesAdmin(admin.ModelAdmin):
 
 @admin.register(CPGeneration)
 class CPGenerationAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["country_programme_report__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
@@ -158,6 +163,7 @@ class CPGenerationAdmin(admin.ModelAdmin):
 
 @admin.register(CPEmission)
 class CPEmissionAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["country_programme_report__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),
@@ -176,6 +182,7 @@ class CPEmissionAdmin(admin.ModelAdmin):
 
 @admin.register(CPReportFormatColumn)
 class CPReportFormatColumnAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["usage__name"]
     list_filter = [
         "section",
@@ -193,6 +200,7 @@ class CPReportFormatColumnAdmin(admin.ModelAdmin):
 
 @admin.register(CPReportFormatRow)
 class CPReportFormatRowAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["substance__name", "blend__name"]
     list_filter = [
         "section",
@@ -210,6 +218,7 @@ class CPReportFormatRowAdmin(admin.ModelAdmin):
 
 @admin.register(CPHistory)
 class CPHistoryAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["country_programme_report__name"]
     list_filter = [
         AutocompleteFilterFactory("country", "country_programme_report__country"),

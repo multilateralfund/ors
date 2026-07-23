@@ -21,6 +21,7 @@ from core.models import (
 
 @admin.register(Replenishment)
 class ReplenishmentAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "start_year",
         "end_year",
@@ -31,6 +32,7 @@ class ReplenishmentAdmin(admin.ModelAdmin):
 
 @admin.register(ScaleOfAssessment)
 class ScaleOfAssessmentAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "country__name",
         "version__replenishment__start_year",
@@ -49,6 +51,7 @@ class ScaleOfAssessmentAdmin(admin.ModelAdmin):
 
 @admin.register(ScaleOfAssessmentVersion)
 class ScaleOfAssessmentVersionAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "replenishment__start_year",
         "replenishment__end_year",
@@ -79,6 +82,7 @@ class ScaleOfAssessmentVersionAdmin(admin.ModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "country__name",
         "date_of_issuance",
@@ -96,6 +100,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "country__name",
         "date",
@@ -113,6 +118,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(ExternalAllocation)
 class ExternalAllocationAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "year",
         "meeting",
@@ -137,6 +143,7 @@ class ExternalAllocationAdmin(admin.ModelAdmin):
 
 @admin.register(ExternalIncomeAnnual)
 class ExternalIncomeAnnualAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     search_fields = [
         "agency_name",
         "year",
@@ -155,6 +162,8 @@ class ExternalIncomeAnnualAdmin(admin.ModelAdmin):
 
 @admin.register(DisputedContribution)
 class DisputedContributionAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
+
     def get_list_display(self, request):
         return [
             "__str__",
@@ -170,6 +179,8 @@ class DisputedContributionAdmin(admin.ModelAdmin):
 
 @admin.register(AnnualContributionStatus)
 class AnnualContributionStatusAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
+
     def get_list_display(self, request):
         return [
             "id",
@@ -187,6 +198,8 @@ class AnnualContributionStatusAdmin(admin.ModelAdmin):
 
 @admin.register(TriennialContributionStatus)
 class TriennialContributionStatusAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
+
     def get_list_display(self, request):
         return [
             "id",
@@ -203,6 +216,8 @@ class TriennialContributionStatusAdmin(admin.ModelAdmin):
 
 @admin.register(BilateralAssistance)
 class BilateralAssistanceAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
+
     def get_list_display(self, request):
         return [
             "id",
@@ -217,18 +232,21 @@ class BilateralAssistanceAdmin(admin.ModelAdmin):
 
 @admin.register(InvoiceFile)
 class InvoiceFileAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     list_display = ["invoice", "filename", "uploaded_at", "file_link"]
     readonly_fields = ["invoice", "filename", "uploaded_at", "file_link"]
 
 
 @admin.register(PaymentFile)
 class PaymentFileAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     list_display = ["payment", "filename", "uploaded_at", "file_link"]
     readonly_fields = ["payment", "filename", "uploaded_at", "file_link"]
 
 
 @admin.register(StatusOfTheFundFile)
 class StatusOfTheFundFileAdmin(admin.ModelAdmin):
+    admin_group = "Replenishment"
     list_display = ["filename", "year", "meeting", "uploaded_at", "file_link"]
     readonly_fields = [
         "filename",

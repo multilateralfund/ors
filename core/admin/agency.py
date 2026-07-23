@@ -6,6 +6,7 @@ from core.models.agency import Agency
 
 @admin.register(Agency)
 class AgencyAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "name",
     ]
@@ -14,6 +15,7 @@ class AgencyAdmin(admin.ModelAdmin):
         exclude = [
             "annual_project_reports",
             "pcragency",
+            "pcractivity",
             "old_pcrdelayexplanation",
             "old_pcrlearnedlessons",
             "bpactivity",

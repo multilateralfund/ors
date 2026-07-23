@@ -1,11 +1,27 @@
 import { createContext } from 'react'
 
-import { PCRStatus } from '@ors/components/manage/Blocks/PCR/interfaces'
-import { Country } from '@ors/types/store'
+import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
+import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
+import {
+  PCRFormData,
+  PCROverviewProps,
+  OptionsType,
+} from '@ors/components/manage/Blocks/PCR/interfaces'
 
-interface PCRDataContextProps {
-  statuses: PCRStatus[]
-  regions: Country[]
+type PCRDataContextProps = PCRFormData & {
+  pcrMetaproject: ReturnType<typeof useGetPCRProject>
+  pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
+  fundsByAgency: PCROverviewProps
+  financialFiguresTypeOptions: OptionsType[]
+  projectGoalsAchievedOptions: OptionsType[]
+  ratingOptions: OptionsType[]
+  userTypeOptions: OptionsType[]
+  completionReportDoneByOptions: OptionsType[]
+  projectComponentOptions: OptionsType[]
+  causeOfDelayOptions: OptionsType[]
+  lessonLearnedOptions: OptionsType[]
+  sdgsOptions: OptionsType[]
+  projectPhaseOptions: OptionsType[]
 }
 
 const PCRDataContext = createContext<PCRDataContextProps>(
