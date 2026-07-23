@@ -15,6 +15,7 @@ class AgencyAdmin(admin.ModelAdmin):
         exclude = [
             "annual_project_reports",
             "pcragency",
+            "pcractivity",
             "old_pcrdelayexplanation",
             "old_pcrlearnedlessons",
             "bpactivity",

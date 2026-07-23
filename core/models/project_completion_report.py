@@ -7,6 +7,8 @@ from core.models.meeting import Decision
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
+# pylint: disable=no-member
+
 
 class PCRManager(models.Manager):
     def get_queryset(self):
@@ -82,6 +84,40 @@ class PCR(models.Model):
             (pcr_project.enterprises.count() for pcr_project in self.pcr_projects.all())
         )
 
+    @cached_property
+    def total_funds_approved(self):
+        """Total MLF funding approved"""
+        return sum(
+            (
+                pcr_project.funds_approved or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            9,
+        )
+
+    @cached_property
+    def total_funds_disbursed(self):
+        """Total MLF funding disbursed"""
+        return sum(
+            (
+                pcr_project.funds_disbursed or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            0,
+        )
+
+    @cached_property
+    def total_funds_returned(self):
+        """Total project (metacode) MLF funding returned"""
+        result = sum(
+            (
+                pcr_project.funds_returned or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            0,
+        )
+        return result
+
     class Meta:
         verbose_name_plural = "PCR"
 
@@ -128,13 +164,6 @@ class PCRProject(models.Model):
     project = models.OneToOneField(
         "Project", on_delete=models.PROTECT, related_name="pcr_project"
     )
-
-    # MLF funding approved
-    # MLF funding disbursed
-    # MLF funding retunrned
-    # Total MLF funding approved
-    # Total MLF funding disbursed
-    # Total project (metacode) MLF funding retunrned
 
     financial_figures_status = models.CharField(
         max_length=32,
@@ -191,6 +220,20 @@ class PCRProject(models.Model):
 
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code}"
+
+    @cached_property
+    def funds_approved(self):
+        """
+        MLF funding approved
+        """
+        return self.project.total_fund or 0
+
+    @cached_property
+    def funds_returned(self):
+        """
+        MLF funding returned
+        """
+        return self.funds_approved - (self.funds_disbursed or 0)
 
 
 class PCRProjectAlternativeTechnology(models.Model):
@@ -293,9 +336,14 @@ class PCRAdditionalComment(models.Model):
 
 class PCRActivity(models.Model):
     pcr = models.ForeignKey("PCR", on_delete=models.PROTECT, related_name="activities")
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
     type_of_activity = models.TextField(
         blank=True, null=True, help_text="Type of activity"
     )
+    activity_title = models.TextField(
+        blank=True, null=True, help_text="Type of activity"
+    )
+    type_of_sector = models.TextField(blank=True, null=True, help_text="Type of sector")
     planned_output = models.TextField(
         blank=True, null=True, help_text="Planned output(s)"
     )
