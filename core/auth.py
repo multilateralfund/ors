@@ -56,6 +56,11 @@ class SmartTokenAuthentication(BaseAuthentication):
         return False
 
     def authenticate(self, request):
+        if (
+            request.path == "/api/auth/password/reset/confirm/"
+            and request.method == "POST"
+        ):
+            return None
         token = self._get_token(request)
         if not token:
             return None
