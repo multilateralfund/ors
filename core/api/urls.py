@@ -131,6 +131,10 @@ from core.api.views.projects_v2 import (
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
 )
+from core.api.views.project_completion_report.metadata import (
+    PCRRatingView,
+    PCRCompletedByView,
+)
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
 from core.api.views.project_completion_report.pcr import (
     PCRDelayCategoryListView,
@@ -324,6 +328,16 @@ urlpatterns = [
         "project-completion-reports/learned-lesson-categories/",
         PCRLearnedLessonCategoryListView.as_view(),
         name="pcr-learned-lesson-category-list",
+    ),
+    path(
+        "project-completion-report/rating/",
+        PCRRatingView.as_view(),
+        name="project-completion-report-rating",
+    ),
+    path(
+        "project-completion-report/completed-by/",
+        PCRCompletedByView.as_view(),
+        name="project-completed-by-rating",
     ),
     path(
         "agencies/",
