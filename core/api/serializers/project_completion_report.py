@@ -13,6 +13,7 @@ from core.models.meeting import Decision
 from core.models.project import MetaProject, Project
 from core.models.project_completion_report import (
     PCR,
+    PCRActivity,
     PCRDelayCategory,
     PCRLearnedLessonCategory,
     PCRProject,
@@ -75,23 +76,29 @@ PCR_PROJECT_NESTED_MODELS = {
     "equipments": PCRProjectEquipment,
 }
 
+PCR_NESTED_MODELS = {
+    "activities": PCRActivity,
+}
 
-def pop_pcr_project_nested_data(pcr_project_data):
+
+def pop_nested_data(pcr_project_data, PARENT_MODEL_DICT):
     return {
         field_name: pcr_project_data.pop(field_name, None)
-        for field_name in PCR_PROJECT_NESTED_MODELS
+        for field_name in PARENT_MODEL_DICT
     }
 
 
-def replace_pcr_project_nested_data(pcr_project, nested_data):
+def replace_nested_data(
+    parent_object, parent_field_name, nested_data, PARENT_MODEL_DICT
+):
     for field_name, rows in nested_data.items():
         if rows is None:
             continue
-        getattr(pcr_project, field_name).all().delete()
-        PCR_PROJECT_NESTED_MODELS[field_name].objects.bulk_create(
+        getattr(parent_object, field_name).all().delete()
+        PARENT_MODEL_DICT[field_name].objects.bulk_create(
             [
-                PCR_PROJECT_NESTED_MODELS[field_name](
-                    pcr_project=pcr_project,
+                PARENT_MODEL_DICT[field_name](
+                    **{parent_field_name: parent_object},
                     **row,
                 )
                 for row in rows
@@ -114,9 +121,6 @@ class PCRProjectSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "project_id",
-            "financial_figures_status",
-            "financial_figures_status_explanation",
-            "addresses",
             "funds_approved",
             "funds_disbursed",
             "funds_returned",
@@ -124,18 +128,7 @@ class PCRProjectSerializer(serializers.ModelSerializer):
             "alternative_technologies",
             "enterprises",
             "equipments",
-            "project_goal_achieved",
-            "project_goal_achieved_explanation",
-            "rating",
-            "rating_explaination",
-            "completed_by",
         ]
-        extra_kwargs = {
-            "financial_figures_status": {"required": False},
-            "project_goal_achieved": {"required": False},
-            "rating": {"required": False},
-            "completed_by": {"required": False},
-        }
 
 
 def validate_pcr_project_references(pcr_projects, allowed_project_ids):
@@ -167,6 +160,27 @@ def validate_pcr_project_references(pcr_projects, allowed_project_ids):
         )
 
 
+class PCRActivitySerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = PCRActivity
+        fields = [
+            "id",
+            "agency_id",
+            "agency",
+            "additional_remarks",
+            "actual_activity_output",
+            "activity_title",
+            "type_of_activity",
+            "type_of_sector",
+            "planned_output",
+            "pcr_id",
+        ]
+
+
 class PCRDetailSerializer(serializers.ModelSerializer):
     country = serializers.CharField(source="meta_project.name", read_only=True)
     country_id = serializers.IntegerField(
@@ -175,11 +189,13 @@ class PCRDetailSerializer(serializers.ModelSerializer):
     decisions = DecisionSerializer(many=True, read_only=True)
     meta_project_id = serializers.IntegerField(read_only=True)
     pcr_projects = serializers.SerializerMethodField()
+    activities = PCRActivitySerializer(many=True)
 
     class Meta:
         model = PCR
         fields = [
             "id",
+            "activities",
             "country",
             "country_id",
             "decisions",
@@ -194,6 +210,15 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "total_funds_approved",
             "total_funds_disbursed",
             "total_funds_returned",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "addresses",
+            "project_goal_achieved",
+            "project_goal_achieved_explanation",
+            "rating",
+            "rating_explanation",
+            "rating_explanation_other",
+            "completed_by",
             "submission_date",
             "pcr_projects",
         ]
@@ -209,6 +234,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         queryset=MetaProject.objects.all(), source="meta_project"
     )
     pcr_projects = PCRProjectSerializer(many=True, required=False)
+    activities = PCRActivitySerializer(many=True, required=False)
     decision_ids = serializers.PrimaryKeyRelatedField(
         allow_empty=True,
         many=True,
@@ -227,8 +253,18 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "phase_out_ods_approved",
             "phase_out_co2_eq_t_approved",
             "phase_out_co2_eq_t_actual",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "addresses",
+            "project_goal_achieved",
+            "project_goal_achieved_explanation",
+            "rating",
+            "rating_explanation",
+            "rating_explanation_other",
+            "completed_by",
             "submission_date",
             "pcr_projects",
+            "activities",
             "decision_ids",
         ]
 
@@ -303,19 +339,30 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             pcr_project_data["project"].id: pcr_project_data
             for pcr_project_data in pcr_projects_data
         }
+
+        nested_data_pcr = pop_nested_data(validated_data, PCR_NESTED_MODELS)
         pcr = PCR.objects.create(**validated_data)
+
+        replace_nested_data(pcr, "pcr", nested_data_pcr, PCR_NESTED_MODELS)
         pcr.decisions.set(decisions_data)
 
         for project in pcr.meta_project.projects.order_by("id"):
             pcr_project_data = pcr_projects_by_project_id.get(project.id, {}).copy()
             pcr_project_data.pop("project", None)
-            nested_data = pop_pcr_project_nested_data(pcr_project_data)
+            nested_data_pcr_project = pop_nested_data(
+                pcr_project_data, PCR_PROJECT_NESTED_MODELS
+            )
             pcr_project = PCRProject.objects.create(
                 pcr=pcr,
                 project=project,
                 **pcr_project_data,
             )
-            replace_pcr_project_nested_data(pcr_project, nested_data)
+            replace_nested_data(
+                pcr_project,
+                "pcr_project",
+                nested_data_pcr_project,
+                PCR_PROJECT_NESTED_MODELS,
+            )
         return pcr
 
     def to_representation(self, instance):
@@ -327,7 +374,19 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PCR
-        fields = ["submission_date", "pcr_projects"]
+        fields = [
+            "submission_date",
+            "pcr_projects",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "addresses",
+            "project_goal_achieved",
+            "project_goal_achieved_explanation",
+            "rating",
+            "rating_explanation",
+            "rating_explanation_other",
+            "completed_by",
+        ]
 
     def validate(self, attrs):
         pcr_projects = attrs.get("pcr_projects", [])
@@ -348,11 +407,18 @@ class PCRUpdateSerializer(serializers.ModelSerializer):
         for pcr_project_data in pcr_projects_data:
             project = pcr_project_data.pop("project")
             pcr_project = pcr_projects_by_project_id[project.id]
-            nested_data = pop_pcr_project_nested_data(pcr_project_data)
+            nested_data_pcr_project = pop_nested_data(
+                pcr_project_data, PCR_PROJECT_NESTED_MODELS
+            )
             for field_name, value in pcr_project_data.items():
                 setattr(pcr_project, field_name, value)
             pcr_project.save()
-            replace_pcr_project_nested_data(pcr_project, nested_data)
+            replace_nested_data(
+                pcr_project,
+                "pcr_project",
+                nested_data_pcr_project,
+                PCR_PROJECT_NESTED_MODELS,
+            )
         return instance
 
     def to_representation(self, instance):

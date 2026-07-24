@@ -24,6 +24,35 @@ class PCR(models.Model):
     information specific to one project of that metacode.
     """
 
+    class FinancialFiguresStatus(models.TextChoices):
+        PROVISIONAL = "Provisional", "Provisional"
+        FINAL = "Final", "Final"
+
+    class ProjectGoalAchieved(models.TextChoices):
+        YES = "Yes", "Yes"
+        NO = "No", "No"
+        NA = "N/A", "N/A"
+
+    class Rating(models.TextChoices):
+        HIGHLY_SATISFACTORY = "Highly satisfactory", "Highly satisfactory"
+        SATISFACTORY_PLANNED = "Satisfactory as planned", "Satisfactory as planned"
+        SATISFACTORY_NOT_PLANNED = (
+            "Satisfactory but not as planned",
+            "Satisfactory but not as planned",
+        )
+        UNSATISFACTORY = "Unsatisfactory", "Unsatisfactory"
+        OTHER = "Other, please specify", "Other, please specify"
+
+    class CompletedBy(models.TextChoices):
+        LEAD_AGENCY = "Lead Agency", "Lead Agency"
+        COOPERATING_AGENCY = "Cooperating Agency", "Cooperating Agency"
+        NATIONAL_COORDINATING_AGENCY = (
+            "National coordinating agency/NOU",
+            "National coordinating agency/NOU",
+        )
+        LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
+        OTHER = "Other", "Other"
+
     meta_project = models.ForeignKey("MetaProject", on_delete=models.PROTECT)
     version = models.IntegerField(default=1)
     latest_pcr = models.ForeignKey(
@@ -69,6 +98,58 @@ class PCR(models.Model):
         null=True,
         blank=True,
         help_text="HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)",
+    )
+    financial_figures_status = models.CharField(
+        max_length=32,
+        choices=FinancialFiguresStatus.choices,
+        blank=True,
+        null=True,
+        help_text="Indicate whether the financial figures are provisional or final",
+    )
+    financial_figures_status_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Explanations if needed ( sub-section of row above)",
+    )
+    addresses = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Address(es) of enterprise(s) and project site(s), if applicable.",
+    )
+    project_goal_achieved = models.CharField(
+        max_length=16,
+        blank=True,
+        null=True,
+        choices=ProjectGoalAchieved.choices,
+        help_text="Indicate whether the financial figures are provisional or final",
+    )
+    project_goal_achieved_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="If project goal achieved is No, this field provides a brief explanation",
+    )
+    rating = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        choices=Rating.choices,
+    )
+    rating_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Please explain your rating ( sub-section of row above) ",
+    )
+    rating_explanation_other = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Should be filled if rating has the value 'Other, please specify' ",
+    )
+    completed_by = models.CharField(
+        max_length=64,
+        choices=CompletedBy.choices,
+        blank=True,
+        null=True,
+        help_text="Completion report done by...",
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -129,56 +210,11 @@ class PCRProject(models.Model):
     information specific to one project of that metacode.
     """
 
-    class FinancialFiguresStatus(models.TextChoices):
-        PROVISIONAL = "Provisional", "Provisional"
-        FINAL = "Final", "Final"
-
-    class ProjectGoalAchieved(models.TextChoices):
-        YES = "Yes", "Yes"
-        NO = "No", "No"
-        NA = "N/A", "N/A"
-
-    class Rating(models.TextChoices):
-        HIGHLY_SATISFACTORY = "Highly satisfactory", "Highly satisfactory"
-        SATISFACTORY_PLANNED = "Satisfactory as planned", "Satisfactory as planned"
-        SATISFACTORY_NOT_PLANNED = (
-            "Satisfactory but not as planned",
-            "Satisfactory but not as planned",
-        )
-        UNSATISFACTORY = "Unsatisfactory", "Unsatisfactory"
-        OTHER = "Other, please specify", "Other, please specify"
-
-    class CompletedBy(models.TextChoices):
-        LEAD_AGENCY = "Lead Agency", "Lead Agency"
-        COOPERATING_AGENCY = "Cooperating Agency", "Cooperating Agency"
-        NATIONAL_COORDINATING_AGENCY = (
-            "National coordinating agency/NOU",
-            "National coordinating agency/NOU",
-        )
-        LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
-        OTHER = "Other", "Other"
-
     pcr = models.ForeignKey(
         "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
     )
     project = models.OneToOneField(
         "Project", on_delete=models.PROTECT, related_name="pcr_project"
-    )
-
-    financial_figures_status = models.CharField(
-        max_length=32,
-        choices=FinancialFiguresStatus.choices,
-        help_text="Indicate whether the financial figures are provisional or final",
-    )
-    financial_figures_status_explanation = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Explanations if needed ( sub-section of row above)",
-    )
-    addresses = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Address(es) of enterprise(s) and project site(s), if applicable.",
     )
     funds_disbursed = models.DecimalField(
         max_digits=30,
@@ -188,30 +224,6 @@ class PCRProject(models.Model):
         help_text="Funds disbursed entered in the PCR summary of key data.",
     )
     planned_date_of_completion = models.DateField(null=True, blank=True)
-    project_goal_achieved = models.CharField(
-        max_length=16,
-        choices=ProjectGoalAchieved.choices,
-        help_text="Indicate whether the financial figures are provisional or final",
-    )
-    project_goal_achieved_explanation = models.TextField(
-        null=True,
-        blank=True,
-        help_text="If project goal achieved is No, this field provides a brief explanation",
-    )
-    rating = models.CharField(
-        max_length=64,
-        choices=Rating.choices,
-    )
-    rating_explaination = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Should be filled if rating has the value 'Other, please specify' ",
-    )
-    completed_by = models.CharField(
-        max_length=64,
-        choices=CompletedBy.choices,
-        help_text="Completion report done by...",
-    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 

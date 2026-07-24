@@ -47,14 +47,16 @@ def _create_pcr_project(project, created_at):
         project.meta_project = MetaProjectFactory.create(type=project.category)
         project.save(update_fields=["meta_project"])
 
-    pcr = PCR.objects.create(meta_project=project.meta_project)
+    pcr = PCR.objects.create(
+        meta_project=project.meta_project,
+        financial_figures_status=PCR.FinancialFiguresStatus.FINAL,
+        project_goal_achieved=PCR.ProjectGoalAchieved.YES,
+        rating=PCR.Rating.SATISFACTORY_PLANNED,
+        completed_by=PCR.CompletedBy.LEAD_AGENCY,
+    )
     pcr_project = PCRProject.objects.create(
         pcr=pcr,
         project=project,
-        financial_figures_status=PCRProject.FinancialFiguresStatus.FINAL,
-        project_goal_achieved=PCRProject.ProjectGoalAchieved.YES,
-        rating=PCRProject.Rating.SATISFACTORY_PLANNED,
-        completed_by=PCRProject.CompletedBy.LEAD_AGENCY,
     )
     PCRProject.objects.filter(pk=pcr_project.pk).update(date_created=created_at)
     pcr_project.refresh_from_db()
@@ -64,10 +66,6 @@ def _create_pcr_project(project, created_at):
 def _pcr_project_payload(project, **overrides):
     payload = {
         "project_id": project.id,
-        "financial_figures_status": PCRProject.FinancialFiguresStatus.FINAL,
-        "project_goal_achieved": PCRProject.ProjectGoalAchieved.YES,
-        "rating": PCRProject.Rating.SATISFACTORY_PLANNED,
-        "completed_by": PCRProject.CompletedBy.LEAD_AGENCY,
     }
     payload.update(overrides)
     return payload
@@ -243,10 +241,14 @@ def test_pcr_project_create(client, url, admin_user, decision):
             "phase_out_co2_eq_t_approved": Decimal(5),
             "phase_out_co2_eq_t_actual": Decimal(14),
             "decision_ids": [decision.id],
+            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+            "rating": PCR.Rating.SATISFACTORY_PLANNED,
+            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+            "addresses": "Test project address",
             "pcr_projects": [
                 _pcr_project_payload(
                     project,
-                    addresses="Test project address",
                     funds_disbursed="12345.67",
                     planned_date_of_completion="2026-06-30",
                     alternative_technologies=[
@@ -276,7 +278,11 @@ def test_pcr_project_create(client, url, admin_user, decision):
     pcr = PCR.objects.get(id=response.data["id"])
     pcr_project = PCRProject.objects.get(pcr=pcr, project=project)
     assert str(pcr.submission_date) == "2026-07-10"
-    assert pcr_project.addresses == "Test project address"
+    assert pcr.financial_figures_status == PCR.FinancialFiguresStatus.FINAL
+    assert pcr.project_goal_achieved == PCR.ProjectGoalAchieved.YES
+    assert pcr.rating == PCR.Rating.SATISFACTORY_PLANNED
+    assert pcr.completed_by == PCR.CompletedBy.LEAD_AGENCY
+    assert pcr.addresses == "Test project address"
     assert pcr_project.funds_disbursed == Decimal("12345.670000000000000")
     assert str(pcr_project.planned_date_of_completion) == "2026-06-30"
     assert list(
@@ -299,9 +305,6 @@ def test_pcr_project_create(client, url, admin_user, decision):
             "disposal_date": datetime(2026, 5, 31).date(),
         }
     ]
-    assert (
-        pcr_project.financial_figures_status == PCRProject.FinancialFiguresStatus.FINAL
-    )
     assert response.data["id"] == pcr.id
     assert response.data["meta_project_id"] == meta_project.id
     assert response.data["submission_date"] == "2026-07-10"
@@ -311,10 +314,10 @@ def test_pcr_project_create(client, url, admin_user, decision):
     assert Decimal(response.data["phase_out_ods_actual"]) == Decimal(2)
     assert Decimal(response.data["phase_out_co2_eq_t_approved"]) == Decimal(5)
     assert Decimal(response.data["phase_out_co2_eq_t_actual"]) == Decimal(14)
+    assert response.data["addresses"] == "Test project address"
     assert response.data["decisions"][0]["id"] == decision.id
     assert response.data["pcr_projects"][0]["id"] == pcr_project.id
     assert response.data["pcr_projects"][0]["project_id"] == project.id
-    assert response.data["pcr_projects"][0]["addresses"] == "Test project address"
     assert response.data["pcr_projects"][0]["funds_disbursed"] == (
         "12345.670000000000000"
     )
@@ -346,8 +349,16 @@ def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
         url,
         {
             "meta_project_id": meta_project.id,
+            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+            "rating": PCR.Rating.SATISFACTORY_PLANNED,
+            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+            "addresses": "First project",
             "pcr_projects": [
-                _pcr_project_payload(projects[0], addresses="First project")
+                _pcr_project_payload(
+                    projects[0],
+                    planned_date_of_completion="2026-06-30",
+                )
             ],
         },
         format="json",
@@ -357,8 +368,13 @@ def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
         project.id for project in projects
     ]
     assert PCRProject.objects.filter(pcr_id=response.data["id"]).count() == 2
-    assert PCRProject.objects.get(project=projects[0]).addresses == "First project"
-    assert PCRProject.objects.get(project=projects[1]).addresses is None
+    assert (
+        str(PCRProject.objects.get(project=projects[0]).planned_date_of_completion)
+        == "2026-06-30"
+    )
+    assert (
+        PCRProject.objects.get(project=projects[1]).planned_date_of_completion is None
+    )
 
 
 def test_pcr_project_create_rejects_nonexistent_meta_project(client, url, admin_user):
@@ -673,10 +689,14 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
         detail_url,
         {
             "submission_date": "2026-07-10",
+            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+            "rating": PCR.Rating.SATISFACTORY_PLANNED,
+            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+            "addresses": "Updated address",
             "pcr_projects": [
                 _pcr_project_payload(
                     projects[0],
-                    addresses="Updated address",
                     funds_disbursed="9876.54",
                     planned_date_of_completion="2026-08-31",
                     alternative_technologies=[
@@ -707,7 +727,6 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
     for pcr_project in pcr_projects:
         pcr_project.refresh_from_db()
     assert str(pcr.submission_date) == "2026-07-10"
-    assert pcr_projects[0].addresses == "Updated address"
     assert pcr_projects[0].funds_disbursed == Decimal("9876.540000000000000")
     assert str(pcr_projects[0].planned_date_of_completion) == "2026-08-31"
     assert not PCRProjectEnterprise.objects.filter(id=existing_enterprise.id).exists()
@@ -716,9 +735,6 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
             "substance_from_id", "substance_to_id"
         )
     ) == [{"substance_from_id": substance_from.id, "substance_to_id": substance_to.id}]
-    assert list(pcr_projects[0].enterprises.values("name", "address")) == [
-        {"name": "Updated enterprise", "address": "Updated address"}
-    ]
     assert list(
         pcr_projects[0].equipments.values(
             "name", "description", "disposal_type", "disposal_date"
@@ -731,11 +747,10 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
             "disposal_date": datetime(2026, 9, 30).date(),
         }
     ]
-    assert pcr_projects[1].addresses is None
     assert pcr_projects[1].alternative_technologies.count() == 0
     assert response.data["id"] == pcr.id
     assert response.data["submission_date"] == "2026-07-10"
-    assert response.data["pcr_projects"][0]["addresses"] == "Updated address"
+    assert response.data["addresses"] == "Updated address"
     assert response.data["pcr_projects"][0]["funds_disbursed"] == (
         "9876.540000000000000"
     )
@@ -787,7 +802,10 @@ def test_pcr_update_rolls_back_parent_and_nested_projects(client, admin_user):
             {
                 "submission_date": "2026-07-10",
                 "pcr_projects": [
-                    {"project_id": project.id, "addresses": f"Address {project.id}"}
+                    {
+                        "project_id": project.id,
+                        "planned_date_of_completion": "2026-07-10",
+                    }
                     for project in projects
                 ],
             },
@@ -799,7 +817,10 @@ def test_pcr_update_rolls_back_parent_and_nested_projects(client, admin_user):
     for pcr_project in pcr_projects:
         pcr_project.refresh_from_db()
     assert pcr.submission_date is None
-    assert [pcr_project.addresses for pcr_project in pcr_projects] == [None, None]
+    assert [pcr_project.planned_date_of_completion for pcr_project in pcr_projects] == [
+        None,
+        None,
+    ]
 
 
 def test_pcr_update_nonexistent_pcr(client, admin_user):
