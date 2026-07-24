@@ -892,17 +892,19 @@ class APRSummaryTablesExportWriter:
         ws = self.workbook[self.SHEET_COMPLETION_YEAR]
 
         # Filter and group by cluster in-memory, to avoid repeated DB hits.
-        # Use pcr_due_denorm (the project transitioned into COM/FIN during the year),
-        # rather than current project status, so historically-completed projects
-        # don't inflate the count when their APRs are carried into subsequent years.
+        # Use the agency-reported date_actual_completion falling within the report
+        # year, rather than pcr_due_denorm: increase_version() never updates the
+        # effective-date fields (post_excom_decision/meeting/date_approved), so a
+        # plain status-only transition to COM/FIN is invisible to that version-chain
+        # comparison for every year, not just this one.
         if self.year:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.pcr_due_denorm
-                and apr.report
-                and apr.report.progress_report
-                and apr.report.progress_report.year == self.year
+                if apr.date_actual_completion
+                and apr.date_actual_completion.year == self.year
+                and apr.project.status
+                and apr.project.status.code in ("COM", "FIN")
             ]
         else:
             completed_records = [
@@ -1454,23 +1456,28 @@ class APRSummaryTablesExportWriter:
                 apr.production_phased_out_co2 or 0 for apr in records
             )
 
-            # Cost effectiveness uses derived (proposal/denorm) phase-out data rather
-            # than agency-reported actuals, since actuals are often not yet reported
-            # and would otherwise make the ratio artificially large.
-            total_phaseout_combined = sum(
-                (apr.consumption_phased_out_odp_proposal_denorm or 0)
-                + (apr.production_phased_out_odp_proposal_denorm or 0)
-                for apr in records
-            )
-            total_phaseout_combined_kg = total_phaseout_combined * 1000
+            total_odp = total_consumption_odp + total_production_odp
             data["cost_effectiveness"] = (
-                data["total_approved_funding"] / total_phaseout_combined_kg
-                if total_phaseout_combined_kg
-                else 0
+                data["total_approved_funding"] / (total_odp * 1000) if total_odp else 0
             )
 
             if sheet_type == "ongoing_investment":
-                data["total_phaseout_combined_kg"] = total_phaseout_combined_kg
+                # Cost effectiveness for ongoing projects uses derived (proposal/denorm)
+                # phase-out data rather than agency-reported actuals, since actuals are
+                # often not yet reported and would otherwise make the ratio artificially
+                # large. Completed projects (cumulative sheets) use actual phaseout
+                # above, since actuals are final once a project is complete.
+                total_phaseout_combined = sum(
+                    (apr.consumption_phased_out_odp_proposal_denorm or 0)
+                    + (apr.production_phased_out_odp_proposal_denorm or 0)
+                    for apr in records
+                )
+                data["total_phaseout_combined_kg"] = total_phaseout_combined * 1000
+                data["cost_effectiveness"] = (
+                    data["total_approved_funding"] / data["total_phaseout_combined_kg"]
+                    if data["total_phaseout_combined_kg"]
+                    else 0
+                )
 
         return data
 

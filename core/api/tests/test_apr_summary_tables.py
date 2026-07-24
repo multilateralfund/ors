@@ -629,10 +629,11 @@ class TestAPRSummaryTablesExport(BaseTest):
             status=project_completed_status,
             cluster=cluster,
         )
-        apr = AnnualProjectReportFactory(
+        AnnualProjectReportFactory(
             report=annual_agency_report,
             project=project,
             status="Completed",
+            date_actual_completion=date(annual_progress_report.year, 6, 1),
             consumption_phased_out_odp=10,
             production_phased_out_odp=5,
             consumption_phased_out_mt=100,
@@ -640,11 +641,6 @@ class TestAPRSummaryTablesExport(BaseTest):
             consumption_phased_out_co2=1000,
             production_phased_out_co2=500,
         )
-        # pcr_due (the ONG->COM/FIN transition) is exercised by the dedicated
-        # tests in test_annual_project_report.py; here we only need the flag set
-        # so the completion sheet has a row to render. post_generation resets it
-        # via populate_derived_fields(), so set it directly with update().
-        type(apr).objects.filter(pk=apr.pk).update(pcr_due_denorm=True)
 
         self.client.force_authenticate(user=apr_agency_viewer_user)
         report_year = annual_progress_report.year

@@ -13,6 +13,7 @@ import {
   canEditField,
   formatOptions,
   getFieldExtraLabel,
+  getProjectDuration,
   isOtherOdsReplacement,
   onTextareaFocus,
 } from '../utils'
@@ -22,6 +23,7 @@ import {
   FieldHandler,
   OptionsType,
   SpecificFields,
+  ProjectData,
 } from '../interfaces'
 import {
   defaultProps,
@@ -626,6 +628,10 @@ const DateWidget = <T,>(
               )
 
               if (fieldName === 'date_completion') {
+                const { crossCuttingFields } = fields as ProjectData
+                const { project_start_date } = crossCuttingFields
+                const project_end_date = value.target.value || null
+
                 changeHandler[field.data_type]<T, SpecificFields>(
                   value,
                   'project_end_date' as keyof SpecificFields,
@@ -633,6 +639,13 @@ const DateWidget = <T,>(
                   'crossCuttingFields' as keyof T,
                   subField,
                   index,
+                )
+
+                changeField(
+                  getProjectDuration({ project_start_date, project_end_date }),
+                  'project_duration',
+                  setFields,
+                  'crossCuttingFields' as keyof T,
                 )
               }
             }}
