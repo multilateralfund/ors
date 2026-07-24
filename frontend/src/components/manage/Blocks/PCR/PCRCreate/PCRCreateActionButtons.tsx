@@ -11,17 +11,12 @@ import { PCRActionButtons } from '../interfaces'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
-import { omit } from 'lodash'
+import { pick } from 'lodash'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
-  const {
-    PCRData,
-    pcrMetaproject,
-    pcrDefaultData,
-    fundsByAgency,
-    ratingOptions,
-  } = useContext(PCRDataContext)
+  const { PCRData, pcrMetaproject, pcrDefaultData, ratingOptions } =
+    useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
   const { overview } = PCRData
 
@@ -38,7 +33,14 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       }
 
       const overviewPrefilledData = {
-        ...omit(pcrDefaultData.data, ['meta_project_id', 'decisions']),
+        ...pick(pcrDefaultData.data, [
+          'project_date_approved',
+          'project_date_completion',
+          'phase_out_ods_actual',
+          'phase_out_ods_approved',
+          'phase_out_co2_eq_t_actual',
+          'phase_out_co2_eq_t_approved',
+        ]),
         decision_ids: pcrDefaultData.data?.decisions,
       }
 
@@ -53,7 +55,6 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       const payload = {
         meta_project_id: metaProjectId,
         ...overviewPrefilledData,
-        ...fundsByAgency,
         ...overviewData,
         pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }

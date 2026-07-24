@@ -6,23 +6,26 @@ import {
   PCRFormData,
   PCROverviewProps,
   OptionsType,
+  PCRFilesInterface,
+  PCRFileMetadataInterface,
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 
-type PCRDataContextProps = PCRFormData & {
-  pcrMetaproject: ReturnType<typeof useGetPCRProject>
-  pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
-  fundsByAgency: PCROverviewProps
-  financialFiguresTypeOptions: OptionsType[]
-  projectGoalsAchievedOptions: OptionsType[]
-  ratingOptions: OptionsType[]
-  userTypeOptions: OptionsType[]
-  completionReportDoneByOptions: OptionsType[]
-  projectComponentOptions: OptionsType[]
-  causeOfDelayOptions: OptionsType[]
-  lessonLearnedOptions: OptionsType[]
-  sdgsOptions: OptionsType[]
-  projectPhaseOptions: OptionsType[]
-}
+type PCRDataContextProps = PCRFormData &
+  PCRFilesInterface &
+  PCRFileMetadataInterface & {
+    pcrMetaproject: ReturnType<typeof useGetPCRProject>
+    pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
+    fundsByAgency: PCROverviewProps
+    ratingOptions: OptionsType[]
+    userTypeOptions: OptionsType[]
+    completionReportDoneByOptions: OptionsType[]
+    projectComponentOptions: OptionsType[]
+    causeOfDelayOptions: OptionsType[]
+    lessonLearnedOptions: OptionsType[]
+    sdgsOptions: OptionsType[]
+    projectPhaseOptions: OptionsType[]
+    fileSectionOptions: OptionsType[]
+  }
 
 const PCRDataContext = createContext<PCRDataContextProps>(
   null as unknown as PCRDataContextProps,

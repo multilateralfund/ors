@@ -10,7 +10,8 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { map, uniq } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
+  const { pcrMetaproject, setPCRData, setFiles, setFilesMetadata } =
+    useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
   const agencyIds = useMemo(
@@ -41,6 +42,23 @@ const PCRCreateWrapper = () => {
       })),
     [agencyIds],
   )
+  const initialFiles = useMemo(
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        newFiles: [],
+        deletedFilesIds: [],
+      })),
+    [agencyIds],
+  )
+  const initialFilesMetadata = useMemo(
+    () =>
+      map(agencyIds, (agency_id) => ({
+        agency_id,
+        filesMetadata: [],
+      })),
+    [agencyIds],
+  )
 
   useEffect(() => {
     setPCRData((prevData) => ({
@@ -56,6 +74,14 @@ const PCRCreateWrapper = () => {
     initialSdgsData,
     setPCRData,
   ])
+
+  useEffect(() => {
+    setFiles(initialFiles)
+  }, [initialFiles, setFiles])
+
+  useEffect(() => {
+    setFilesMetadata(initialFilesMetadata)
+  }, [initialFilesMetadata, setFilesMetadata])
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 

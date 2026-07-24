@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, RefObject } from 'react'
 
+import { FileMetaDataType } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { useGetPCRProjects } from './hooks/useGetPCRProjects'
 import { PCRMetaProjectType } from '@ors/types/api_projects'
 
@@ -201,6 +202,27 @@ export type PCRActionButtons = {
 }
 
 export type OptionsType = {
-  id: number
+  id: number | string
   name: string
+}
+
+export type PCRFile = {
+  agency_id: number
+  newFiles: File[]
+  deletedFilesIds: number[]
+}
+
+export interface PCRFilesInterface {
+  files: PCRFile[]
+  setFiles: Dispatch<SetStateAction<PCRFile[]>>
+}
+
+export type PCRFileMetadata = {
+  agency_id: number
+  filesMetadata: FileMetaDataType[]
+}
+
+export interface PCRFileMetadataInterface {
+  filesMetadata: PCRFileMetadata[]
+  setFilesMetadata: Dispatch<SetStateAction<PCRFileMetadata[]>>
 }

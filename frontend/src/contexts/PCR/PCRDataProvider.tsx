@@ -9,13 +9,17 @@ import {
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
-import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
+import {
+  PCRData,
+  PCRFile,
+  PCRFileMetadata,
+} from '@ors/components/manage/Blocks/PCR/interfaces'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
+import { map, reduce } from 'lodash'
 import { useParams } from 'wouter'
-import { reduce } from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -53,6 +57,9 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     },
     [addUpdatedField],
   )
+
+  const [files, setFiles] = useState<PCRFile[]>([])
+  const [filesMetadata, setFilesMetadata] = useState<PCRFileMetadata[]>([])
 
   const fundsByAgency = useMemo(() => {
     const {
@@ -138,6 +145,24 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     }
   }, [projects, PCRData.summary_of_key_data])
 
+  const { data: ratings } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-report/rating/',
+  })
+  const ratingOptions = map(ratings, (rating) => ({
+    id: rating[0],
+    name: rating[1],
+  }))
+
+  const { data: completedBy } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-report/completed-by/',
+  })
+  const completionReportDoneByOptions = map(completedBy, (userType) => ({
+    id: userType[0],
+    name: userType[1],
+  }))
+
   const { data: projectComponentOptions } = useApi({
     options: { withStoreCache: true },
     path: 'api/project-completion-reports/project-component-options/',
@@ -154,25 +179,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   })
 
   //to update
-  const financialFiguresTypeOptions = [
-    { id: 1, name: 'Provisional' },
-    { id: 2, name: 'Final' },
-  ]
-
-  const projectGoalsAchievedOptions = [
-    { id: 1, name: 'Yes' },
-    { id: 2, name: 'No' },
-    { id: 3, name: 'N/A' },
-  ]
-
-  const ratingOptions = [
-    { id: 1, name: 'Highly satisfactory' },
-    { id: 2, name: 'Satisfactory as planned' },
-    { id: 3, name: 'Satisfactory but not as planned' },
-    { id: 4, name: 'Unsatisfactory' },
-    { id: 5, name: 'Other, please specify' },
-  ]
-
   const userTypeOptions = [
     { id: 1, name: 'Cooperating agency' },
     { id: 2, name: 'Government/NOU' },
@@ -183,14 +189,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       name: 'Project management officers in the Multilateral Fund Secretariat',
     },
     { id: 6, name: 'Other, please specify' },
-  ]
-
-  const completionReportDoneByOptions = [
-    { id: 1, name: 'Lead agency' },
-    { id: 2, name: 'Cooperating agency' },
-    { id: 3, name: 'National coordinating agency/NOU' },
-    { id: 4, name: 'Local executing agency' },
-    { id: 5, name: 'Other' },
   ]
 
   const sdgsOptions = [
@@ -220,6 +218,16 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     { id: 4, name: 'Monitoring and Reporting' },
   ]
 
+  const fileSectionOptions = [
+    { id: 1, name: 'Overview' },
+    { id: 2, name: 'Summary of key data on project and implementation delay' },
+    { id: 3, name: 'Project results overall assessment' },
+    { id: 4, name: 'Causes of delay' },
+    { id: 5, name: 'Lessons learned' },
+    { id: 6, name: 'Gender mainstreaming' },
+    { id: 7, name: 'SDGs contribution (optional)' },
+  ]
+
   const value = useMemo(
     () => ({
       pcrMetaproject,
@@ -227,8 +235,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       PCRData,
       setPCRData,
       fundsByAgency,
-      financialFiguresTypeOptions,
-      projectGoalsAchievedOptions,
       ratingOptions,
       userTypeOptions,
       completionReportDoneByOptions,
@@ -237,6 +243,11 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
+      fileSectionOptions,
+      files,
+      setFiles,
+      filesMetadata,
+      setFilesMetadata,
     }),
     [
       pcrMetaproject,
@@ -244,8 +255,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       PCRData,
       setPCRData,
       fundsByAgency,
-      financialFiguresTypeOptions,
-      projectGoalsAchievedOptions,
       ratingOptions,
       userTypeOptions,
       completionReportDoneByOptions,
@@ -254,6 +263,11 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       lessonLearnedOptions,
       sdgsOptions,
       projectPhaseOptions,
+      fileSectionOptions,
+      files,
+      setFiles,
+      filesMetadata,
+      setFilesMetadata,
     ],
   )
 

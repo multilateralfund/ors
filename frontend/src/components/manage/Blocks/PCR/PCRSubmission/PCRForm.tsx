@@ -6,6 +6,7 @@ import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
 import PCRLessonsLearned from './PCRLessonsLearned'
 import PCRCausesOfDelay from './PCRCausesOfDelay'
+import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
 
@@ -59,7 +60,7 @@ const PCRForm = () => {
     {
       id: 'pcr-supporting-evidence',
       label: <TabLabel title="Other supporting evidence" />,
-      component: <>Other supporting evidence</>,
+      component: <PCRDocumentation />,
     },
   ]
 

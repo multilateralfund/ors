@@ -4,6 +4,7 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCROverviewPrefilledData from './PCROverviewPrefilledData'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { financialFiguresTypeOptions, booleanFieldsOpts } from '../constants'
 import { getOtherOptionId } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
@@ -17,8 +18,6 @@ const PCROverview = () => {
   const {
     PCRData,
     setPCRData,
-    financialFiguresTypeOptions,
-    projectGoalsAchievedOptions,
     ratingOptions,
     userTypeOptions,
     completionReportDoneByOptions,
@@ -93,7 +92,7 @@ const PCROverview = () => {
           <PCRSelectWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="project_goal_achieved"
-            options={projectGoalsAchievedOptions}
+            options={booleanFieldsOpts}
             errors={{}}
           />
           <PCRTextAreaWidget

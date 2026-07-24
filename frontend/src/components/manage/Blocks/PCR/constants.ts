@@ -93,6 +93,11 @@ export const booleanFieldsOpts = [
   { id: 'N/A', name: 'N/A' },
 ]
 
+export const financialFiguresTypeOptions = [
+  { id: 'Provisional', name: 'Provisional' },
+  { id: 'Final', name: 'Final' },
+]
+
 export const initialOverviewData = {
   financial_figures_status: null,
   financial_figures_status_explanation: '',
