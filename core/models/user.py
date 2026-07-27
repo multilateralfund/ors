@@ -40,6 +40,9 @@ class User(AbstractUser, PermissionsMixin):
         BP_VIEWER = "bp_viewer", _("Business Plan Viewer")
         BP_EDITOR = "bp_editor", _("Business Plan Editor")
 
+        # PCR
+        PCR_USER = "pcr_user", _("PCR User")
+
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE
     )

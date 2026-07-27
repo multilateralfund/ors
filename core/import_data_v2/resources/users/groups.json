@@ -355,5 +355,50 @@
             "has_apr_submit_access",
             "can_view_only_own_agency"
         ]
+    },
+    {
+        "name": "PCR - Viewer",
+        "permissions": [
+            "has_pcr_view_access"
+        ]
+    },
+    {
+        "name": "PCR - Inputter",
+        "permissions": [
+            "has_pcr_view_access",
+            "has_pcr_edit_access"
+        ]
+    },
+    {
+        "name": "PCR - Submitter",
+        "permissions": [
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "has_pcr_submit_access"
+        ]
+    },
+    {
+        "name": "PCR - Secretariat",
+        "permissions": [
+            "has_pcr_view_access",
+            "has_pcr_admin_log_access",
+            "has_project_v2_view_access",
+            "has_project_v2_pcr_mark_pcr_due_access"
+        ]
+    },
+    {
+        "name": "PCR - Full access",
+        "permissions": [
+            "has_pcr_view_access",
+            "has_pcr_edit_access",
+            "has_pcr_submit_access",
+            "has_pcr_lock_access",
+            "has_pcr_unlock_access",
+            "has_pcr_admin_log_access",
+            "has_project_v2_view_access",
+            "has_project_v2_pcr_waive_pcr_access",
+            "has_project_v2_pcr_mark_pcr_due_access"
+        ]
     }
+
 ]
