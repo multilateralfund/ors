@@ -217,9 +217,13 @@ export interface PCRFilesInterface {
   setFiles: Dispatch<SetStateAction<PCRFile[]>>
 }
 
+export type PCRFileMetaDataType = Omit<FileMetaDataType, 'type'> & {
+  section: string | null
+}
+
 export type PCRFileMetadata = {
   agency_id: number
-  filesMetadata: FileMetaDataType[]
+  filesMetadata: PCRFileMetaDataType[]
 }
 
 export interface PCRFileMetadataInterface {

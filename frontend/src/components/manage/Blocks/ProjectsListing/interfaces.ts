@@ -371,7 +371,7 @@ export interface BpDataProps {
 export interface FileMetaDataType {
   id: number | null
   name: string
-  section: string | null
+  type: string | null
   size?: number
 }
 
