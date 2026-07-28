@@ -1,6 +1,10 @@
+import os
+import shutil
 from decimal import Decimal
 
 from django.db import models
+from django.db import transaction
+from django.apps import apps
 from django.utils.functional import cached_property
 
 from core.models.agency import Agency
@@ -10,6 +14,30 @@ from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
 # pylint: disable=no-member
+
+PCR_RELATED_MODELS = [
+    "PCRProject",
+    "PCRActivity",
+    "PCRAdditionalComment",
+    "PCRProjectComponent",
+    "PCRGenderMainstreaming",
+    "PCRSustainableDevelopmentGoal",
+    "PCRSupportingEvidence",
+]
+
+PCR_PROJECT_RELATED_MODELS = [
+    "PCRProjectAlternativeTechnology",
+    "PCRProjectEnterprise",
+    "PCRProjectEquipment",
+    "PCRAdditionalComment",
+]
+
+
+def _get_new_file_path(original_file_name, new_project_id):
+    # Generate a new file path for the duplicated file
+    base_dir, file_name = os.path.split(original_file_name)
+    new_file_name = f"{file_name}_{new_project_id}"
+    return os.path.join(base_dir, new_file_name)
 
 
 class PCRManager(models.Manager):
@@ -205,6 +233,31 @@ class PCR(models.Model):
         verbose_name_plural = "PCR"
 
 
+    def copy_pcr(self):
+        with transaction.atomic():
+            new_pcr = PCR.objects.get(pk=self.pk)
+            new_pcr.pk = None
+            new_pcr.decisions.set(self.decisions.all())
+            new_pcr.save()
+
+            for model_name in PCR_RELATED_MODELS:
+                model_class = apps.get_model("core", model_name)
+                items = model_class.objects.filter(pcr=self)
+                for item in items:
+                    item.make_copy(new_pcr)
+
+            return new_pcr
+
+    def increase_version(self, user):
+        archived_pcr = self.copy_pcr()
+        archived_pcr.latest_pcr = self
+        archived_pcr.save()
+
+        self.version += 1
+        self.version_created_by = user
+        self.save()
+
+
 class PCRProject(models.Model):
     """
     Holds PCR information that is specific to a single project.
@@ -249,6 +302,20 @@ class PCRProject(models.Model):
         """
         return self.funds_approved - (self.funds_disbursed or 0)
 
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.project = self.project
+        new_item.save()
+        for model_name in PCR_PROJECT_RELATED_MODELS:
+            model_class = apps.get_model("core", model_name)
+            items = model_class.objects.filter(pcr_project=self)
+            for item in items:
+                item.make_copy(new_item)
+
+        return new_item
+
 
 class PCRProjectAlternativeTechnology(models.Model):
     pcr_project = models.ForeignKey(
@@ -277,6 +344,15 @@ class PCRProjectAlternativeTechnology(models.Model):
     def __str__(self):
         return f"{self.pcr_project} - {self.substance_from} to {self.substance_to}"
 
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.substance_from = self.substance_from
+        new_item.substance_to = self.substance_to
+        new_item.save()
+        return new_item
+
 
 class PCRProjectEnterprise(models.Model):
     pcr_project = models.ForeignKey(
@@ -292,6 +368,13 @@ class PCRProjectEnterprise(models.Model):
 
     def __str__(self):
         return f"{self.pcr_project} - {self.name}"
+
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.save()
+        return new_item
 
 
 class PCRProjectEquipment(models.Model):
@@ -310,6 +393,13 @@ class PCRProjectEquipment(models.Model):
 
     def __str__(self):
         return f"{self.pcr_project} - {self.name}"
+
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.save()
+        return new_item
 
 
 class PCRAdditionalComment(models.Model):
@@ -347,6 +437,13 @@ class PCRAdditionalComment(models.Model):
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code} - {self.entity}"
 
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.save()
+        return new_item
+
 
 class PCRActivity(models.Model):
     pcr = models.ForeignKey("PCR", on_delete=models.PROTECT, related_name="activities")
@@ -375,6 +472,14 @@ class PCRActivity(models.Model):
 
     def __str__(self):
         return f"{self.pcr} - {self.type_of_activity}"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+        return new_item
 
 
 class PCRProjectComponentOptionManager(models.Manager):
@@ -439,6 +544,14 @@ class PCRProjectComponent(models.Model):
 
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+        return new_item
 
 
 class PCRDelayCause(models.Model):
@@ -523,6 +636,14 @@ class PCRGenderMainstreaming(models.Model):
     class Meta:
         verbose_name_plural = "PCR gender mainstreamings"
 
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+        return new_item
+
 
 class PCRGoal(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
@@ -556,6 +677,20 @@ class PCRSustainableDevelopmentGoal(models.Model):
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code} - {self.agency.name}"
 
+    def make_copy(self, new_pcr: "PCR"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+
+        descriptions = PCRSustainableDevelopmentGoalDescription.objects.filter(sgr=self)
+
+        for desc in descriptions:
+            desc.make_copy(new_item)
+
+        new_item.save()
+        return new_item
+
 
 class PCRSustainableDevelopmentGoalDescription(models.Model):
     goal = models.ForeignKey(PCRGoal, on_delete=models.PROTECT)
@@ -563,6 +698,15 @@ class PCRSustainableDevelopmentGoalDescription(models.Model):
     description = models.TextField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    def make_copy(self, sgr: "PCRSustainableDevelopmentGoal"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.goal = self.goal
+        new_item.sgr = sgr
+        new_item.save()
+        return new_item
+
 
 
 class PCRSupportingEvidenceSection(models.Model):
@@ -600,6 +744,24 @@ class PCRSupportingEvidence(models.Model):
 
     class Meta:
         verbose_name_plural = "PCR supporting evidences"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.section = self.section
+
+        original_file_path = self.file.path
+        new_file_path = _get_new_file_path(self.file.name, new_item.id)
+        storage = get_protected_storage()
+        with storage.open(original_file_path, "rb") as original_file:
+            with storage.open(new_file_path, "wb") as new_file:
+                shutil.copyfileobj(original_file, new_file)
+        new_item.file.name = new_file_path
+
+        new_item.save()
+        return new_item
 
 
 class OLD_DelayCategory(models.Model):
