@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.utils.functional import cached_property
 
@@ -238,7 +240,7 @@ class PCRProject(models.Model):
         """
         MLF funding approved
         """
-        return self.project.total_fund or 0
+        return Decimal(self.project.total_fund or 0)
 
     @cached_property
     def funds_returned(self):
@@ -327,8 +329,8 @@ class PCRAdditionalComment(models.Model):
         )
         OTHER = "Other, please specify", "Other, please specify"
 
-    pcr_project = models.ForeignKey(
-        "PCRProject", on_delete=models.PROTECT, related_name="additional_comments"
+    pcr = models.ForeignKey(
+        "PCR", on_delete=models.PROTECT, related_name="additional_comments"
     )
     entity = models.CharField(
         max_length=64,
@@ -343,7 +345,7 @@ class PCRAdditionalComment(models.Model):
         verbose_name_plural = "PCR additional comments"
 
     def __str__(self):
-        return f"{self.pcr_project.pcr.meta_project.umbrella_code} - {self.pcr_project.project}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.entity}"
 
 
 class PCRActivity(models.Model):
@@ -419,23 +421,12 @@ class PCRDelayCategory(models.Model):
         return self.name
 
 
-class PCRAgency(models.Model):
-    pcr = models.ForeignKey(PCR, on_delete=models.PROTECT, related_name="agencies")
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ("pcr", "agency")
-        verbose_name_plural = "PCR agencies"
-
-    def __str__(self):
-        return f"{self.pcr.meta_project.umbrella_code} - {self.agency}"
-
-
 class PCRProjectComponent(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="components"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="project_components"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="project_components"
     )
     project_component_option = models.ForeignKey(
         PCRProjectComponentOption, on_delete=models.PROTECT
@@ -447,7 +438,7 @@ class PCRProjectComponent(models.Model):
         verbose_name_plural = "PCR project components"
 
     def __str__(self):
-        return f"{self.pcr_agency.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
 
 
 class PCRDelayCause(models.Model):
@@ -460,7 +451,7 @@ class PCRDelayCause(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.pcr_project_component.pcr_agency.pcr.meta_project.umbrella_code} - {self.delay}"
+        return f"{self.pcr_project_component.pcr.meta_project.umbrella_code} - {self.delay}"
 
     class Meta:
         verbose_name_plural = "PCR delay causes"
@@ -513,8 +504,11 @@ class PCRGenderMainstreaming(models.Model):
             "Monitoring and Reporting",
         )
 
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="gender_mainstreamings"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="gender_mainstreamings"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="gender_mainstreamings"
     )
     project_preparation = models.CharField(
         max_length=32,
@@ -542,10 +536,11 @@ class PCRGoal(models.Model):
 
 
 class PCRSustainableDevelopmentGoal(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency,
-        on_delete=models.PROTECT,
-        related_name="sustainable_development_goals",
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="sustainable_development_goals"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="sustainable_development_goals"
     )
     goals = models.ManyToManyField(
         PCRGoal,
@@ -559,7 +554,7 @@ class PCRSustainableDevelopmentGoal(models.Model):
         verbose_name_plural = "PCR sustainable development goals"
 
     def __str__(self):
-        return f"{self.pcr_agency.pcr.meta_project.umbrella_code} - {self.pcr_agency.agency.name}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.agency.name}"
 
 
 class PCRSustainableDevelopmentGoalDescription(models.Model):
@@ -583,8 +578,11 @@ class PCRSupportingEvidenceSection(models.Model):
 
 
 class PCRSupportingEvidence(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="supporting_evidences"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="supporting_evidences"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="supporting_evidences"
     )
     section = models.ForeignKey(
         PCRSupportingEvidenceSection,

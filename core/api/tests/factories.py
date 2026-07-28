@@ -55,7 +55,15 @@ from core.models.enterprise import (
     EnterpriseOdsOdp,
     EnterpriseStatus,
 )
-from core.models.project_completion_report import PCR, PCRProject, PCRProjectEnterprise
+from core.models.project_completion_report import (
+    PCR,
+    PCRGoal,
+    PCRDelayCategory,
+    PCRLearnedLessonCategory,
+    PCRProjectComponentOption,
+    PCRProject,
+    PCRProjectEnterprise,
+)
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -917,3 +925,25 @@ class PCRProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     pcr_project = factory.SubFactory(PCRProjectFactory)
     name = factory.Faker("pystr", max_chars=20)
     address = factory.Faker("pystr", max_chars=100)
+
+
+class PCRDelayCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRDelayCategory
+
+
+class PCRLearnedLessonCategoryFactory(factory.django.DjangoModelFactory):
+    obsolete = factory.Faker("pybool")
+
+    class Meta:
+        model = PCRLearnedLessonCategory
+
+
+class PCRProjectComponentOptionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRProjectComponentOption
+
+
+class PCRGoalFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRGoal

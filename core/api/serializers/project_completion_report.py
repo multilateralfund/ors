@@ -14,13 +14,20 @@ from core.models.project import MetaProject, Project
 from core.models.project_completion_report import (
     PCR,
     PCRActivity,
+    PCRAdditionalComment,
+    PCRDelayCause,
     PCRDelayCategory,
+    PCRGenderMainstreaming,
     PCRLearnedLessonCategory,
+    PCRLearnedLesson,
     PCRProject,
     PCRProjectAlternativeTechnology,
+    PCRProjectComponent,
     PCRProjectComponentOption,
     PCRProjectEnterprise,
     PCRProjectEquipment,
+    PCRSustainableDevelopmentGoal,
+    PCRSustainableDevelopmentGoalDescription,
 )
 from core.models.substance import Substance
 
@@ -78,6 +85,17 @@ PCR_PROJECT_NESTED_MODELS = {
 
 PCR_NESTED_MODELS = {
     "activities": PCRActivity,
+    "additional_comments": PCRAdditionalComment,
+    "gender_mainstreamings": PCRGenderMainstreaming,
+}
+
+PCR_PROJECT_COMPONENT_NESTED_MODELS = {
+    "delay_causes": PCRDelayCause,
+    "learned_lessons": PCRLearnedLesson,
+}
+
+PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS = {
+    "pcrsustainabledevelopmentgoaldescription_set": PCRSustainableDevelopmentGoalDescription,
 }
 
 
@@ -181,7 +199,132 @@ class PCRActivitySerializer(serializers.ModelSerializer):
         ]
 
 
+class PCRAdditionalCommentSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = PCRAdditionalComment
+        fields = [
+            "id",
+            "pcr_id",
+            "entity",
+            "comment",
+        ]
+
+
+class PCRDelayCauseSerializer(serializers.ModelSerializer):
+    pcr_project_component_id = serializers.IntegerField(read_only=True)
+    delay = PCRDelayCategorySerializer(read_only=True)
+    delay_id = serializers.IntegerField()
+
+    class Meta:
+        model = PCRDelayCause
+        fields = [
+            "id",
+            "delay",
+            "delay_id",
+            "description",
+            "pcr_project_component_id",
+        ]
+
+
+class PCRLearnedLessonSerializer(serializers.ModelSerializer):
+    pcr_project_component_id = serializers.IntegerField(read_only=True)
+    lesson = PCRLearnedLessonCategorySerializer(read_only=True)
+    lesson_id = serializers.IntegerField()
+
+    class Meta:
+        model = PCRLearnedLesson
+        fields = [
+            "id",
+            "description",
+            "lesson",
+            "lesson_id",
+            "pcr_project_component_id",
+        ]
+
+
+class PCRGenderMainstreamingSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = PCRGenderMainstreaming
+        fields = [
+            "id",
+            "agency",
+            "agency_id",
+            "pcr_id",
+            "project_preparation",
+            "prefilled",
+            "qualitative_description",
+        ]
+
+
+class PCRSustainableDevelopmentGoalDescriptionSerializer(serializers.ModelSerializer):
+    sgr_id = serializers.IntegerField(read_only=True)
+    goal_id = serializers.IntegerField()
+    goal = serializers.SlugRelatedField("name", read_only=True)
+
+    class Meta:
+        model = PCRSustainableDevelopmentGoalDescription
+        fields = [
+            "id",
+            "sgr_id",
+            "goal_id",
+            "goal",
+            "description",
+        ]
+
+
+class PCRSustainableDevelopmentGoalSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    goals = PCRSustainableDevelopmentGoalDescriptionSerializer(
+        many=True,
+        source="pcrsustainabledevelopmentgoaldescription_set",
+        required=False,
+    )
+
+    class Meta:
+        model = PCRSustainableDevelopmentGoal
+        fields = [
+            "id",
+            "agency",
+            "agency_id",
+            "pcr_id",
+            "goals",
+        ]
+
+
+class PCRProjectComponentSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    project_component_option = PCRProjectComponentOptionSerializer(read_only=True)
+    project_component_option_id = serializers.IntegerField()
+    delay_causes = PCRDelayCauseSerializer(many=True, required=False)
+    learned_lessons = PCRLearnedLessonSerializer(many=True, required=False)
+
+    class Meta:
+        model = PCRProjectComponent
+        fields = [
+            "id",
+            "agency_id",
+            "agency",
+            "delay_causes",
+            "learned_lessons",
+            "project_component_option",
+            "project_component_option_id",
+            "pcr_id",
+        ]
+
+
 class PCRDetailSerializer(serializers.ModelSerializer):
+    activities = PCRActivitySerializer(many=True)
+    additional_comments = PCRAdditionalCommentSerializer(many=True)
     country = serializers.CharField(source="meta_project.name", read_only=True)
     country_id = serializers.IntegerField(
         source="meta_project.country.id", read_only=True
@@ -189,38 +332,44 @@ class PCRDetailSerializer(serializers.ModelSerializer):
     decisions = DecisionSerializer(many=True, read_only=True)
     meta_project_id = serializers.IntegerField(read_only=True)
     pcr_projects = serializers.SerializerMethodField()
-    activities = PCRActivitySerializer(many=True)
+    project_components = PCRProjectComponentSerializer(many=True)
+    gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True)
+    sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(many=True)
 
     class Meta:
         model = PCR
         fields = [
             "id",
             "activities",
+            "additional_comments",
+            "addresses",
             "country",
             "country_id",
+            "completed_by",
             "decisions",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "gender_mainstreamings",
             "meta_project_id",
+            "pcr_projects",
+            "project_components",
             "project_date_approved",
             "project_date_completion",
+            "project_goal_achieved",
+            "project_goal_achieved_explanation",
             "phase_out_ods_approved",
             "phase_out_ods_actual",
             "phase_out_co2_eq_t_approved",
             "phase_out_co2_eq_t_actual",
+            "rating",
+            "rating_explanation",
+            "rating_explanation_other",
+            "submission_date",
+            "sustainable_development_goals",
             "total_number_of_enterprises",
             "total_funds_approved",
             "total_funds_disbursed",
             "total_funds_returned",
-            "financial_figures_status",
-            "financial_figures_status_explanation",
-            "addresses",
-            "project_goal_achieved",
-            "project_goal_achieved_explanation",
-            "rating",
-            "rating_explanation",
-            "rating_explanation_other",
-            "completed_by",
-            "submission_date",
-            "pcr_projects",
         ]
 
     def get_pcr_projects(self, instance):
@@ -230,11 +379,8 @@ class PCRDetailSerializer(serializers.ModelSerializer):
 
 
 class PCRCreateSerializer(serializers.ModelSerializer):
-    meta_project_id = serializers.PrimaryKeyRelatedField(
-        queryset=MetaProject.objects.all(), source="meta_project"
-    )
-    pcr_projects = PCRProjectSerializer(many=True, required=False)
     activities = PCRActivitySerializer(many=True, required=False)
+    additional_comments = PCRAdditionalCommentSerializer(many=True, required=False)
     decision_ids = serializers.PrimaryKeyRelatedField(
         allow_empty=True,
         many=True,
@@ -242,30 +388,43 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         required=False,
         queryset=Decision.objects.all(),
     )
+    meta_project_id = serializers.PrimaryKeyRelatedField(
+        queryset=MetaProject.objects.all(), source="meta_project"
+    )
+    pcr_projects = PCRProjectSerializer(many=True, required=False)
+    project_components = PCRProjectComponentSerializer(many=True, required=False)
+    gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True, required=False)
+    sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(
+        many=True, required=False
+    )
 
     class Meta:
         model = PCR
         fields = [
+            "activities",
+            "additional_comments",
+            "addresses",
+            "completed_by",
+            "decision_ids",
+            "financial_figures_status",
+            "financial_figures_status_explanation",
+            "gender_mainstreamings",
             "meta_project_id",
             "phase_out_ods_actual",
-            "project_date_approved",
-            "project_date_completion",
             "phase_out_ods_approved",
             "phase_out_co2_eq_t_approved",
             "phase_out_co2_eq_t_actual",
-            "financial_figures_status",
-            "financial_figures_status_explanation",
-            "addresses",
+            "project_components",
+            "project_date_approved",
+            "project_date_completion",
             "project_goal_achieved",
             "project_goal_achieved_explanation",
+            "pcr_projects",
             "rating",
             "rating_explanation",
             "rating_explanation_other",
-            "completed_by",
+            "sustainable_development_goals",
             "submission_date",
-            "pcr_projects",
-            "activities",
-            "decision_ids",
         ]
 
     def validate_meta_project_id(self, meta_project):
@@ -334,6 +493,10 @@ class PCRCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         pcr_projects_data = validated_data.pop("pcr_projects", [])
         decisions_data = validated_data.pop("decision_ids", [])
+        project_components_data = validated_data.pop("project_components", [])
+        sustainable_development_goals_data = validated_data.pop(
+            "sustainable_development_goals", []
+        )
 
         pcr_projects_by_project_id = {
             pcr_project_data["project"].id: pcr_project_data
@@ -362,6 +525,35 @@ class PCRCreateSerializer(serializers.ModelSerializer):
                 "pcr_project",
                 nested_data_pcr_project,
                 PCR_PROJECT_NESTED_MODELS,
+            )
+
+        for project_component_data in project_components_data:
+            nested_data_project_component = pop_nested_data(
+                project_component_data, PCR_PROJECT_COMPONENT_NESTED_MODELS
+            )
+            project_component = PCRProjectComponent.objects.create(
+                pcr=pcr, **project_component_data
+            )
+            replace_nested_data(
+                project_component,
+                "pcr_project_component",
+                nested_data_project_component,
+                PCR_PROJECT_COMPONENT_NESTED_MODELS,
+            )
+
+        for sustainable_development_goal_data in sustainable_development_goals_data:
+            nested_data_sustainable_development_goal = pop_nested_data(
+                sustainable_development_goal_data,
+                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
+            )
+            sustainable_development_goal = PCRSustainableDevelopmentGoal.objects.create(
+                pcr=pcr, **sustainable_development_goal_data
+            )
+            replace_nested_data(
+                sustainable_development_goal,
+                "sgr",
+                nested_data_sustainable_development_goal,
+                PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
             )
         return pcr
 

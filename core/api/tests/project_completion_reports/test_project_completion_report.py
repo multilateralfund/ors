@@ -11,9 +11,13 @@ from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
     MetaProjectFactory,
+    PCRDelayCategoryFactory,
+    PCRLearnedLessonCategoryFactory,
     PCRFactory,
+    PCRGoalFactory,
     PCRProjectFactory,
     PCRProjectEnterpriseFactory,
+    PCRProjectComponentOptionFactory,
     ProjectClusterFactory,
     ProjectFactory,
     ProjectSectorFactory,
@@ -33,7 +37,7 @@ from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
 pytestmark = pytest.mark.django_db
 
-# pylint: disable=too-many-locals,unused-argument
+# pylint: disable=too-many-locals,too-many-lines, unused-argument,too-many-statements
 
 
 def _results(response):
@@ -222,12 +226,20 @@ def test_pcr_project_list_permissions(client, url, user, admin_user, pcr_listing
     assert response.status_code == 200
 
 
-def test_pcr_project_create(client, url, admin_user, decision):
+def test_pcr_project_create(client, url, admin_user, decision, agency, new_agency):
     meta_project = MetaProjectFactory.create()
     project = ProjectFactory.create(meta_project=meta_project)
     substance_from = SubstanceFactory.create()
     substance_to = SubstanceFactory.create()
     client.force_authenticate(user=admin_user)
+    delay1 = PCRDelayCategoryFactory()
+    delay2 = PCRDelayCategoryFactory()
+    lesson1 = PCRLearnedLessonCategoryFactory(obsolete=False)
+    lesson2 = PCRLearnedLessonCategoryFactory(obsolete=False)
+    project_component_option = PCRProjectComponentOptionFactory()
+    goal1 = PCRGoalFactory()
+    goal2 = PCRGoalFactory()
+    goal3 = PCRGoalFactory()
 
     response = client.post(
         url,
@@ -242,10 +254,74 @@ def test_pcr_project_create(client, url, admin_user, decision):
             "phase_out_co2_eq_t_actual": Decimal(14),
             "decision_ids": [decision.id],
             "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+            "financial_figures_status_explanation": "test financial figures explanation 1",
             "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+            "project_goal_achieved_explanation": "Project goal achieved explanation 1",
             "rating": PCR.Rating.SATISFACTORY_PLANNED,
+            "rating_explanation": "Rating explanation 1",
             "completed_by": PCR.CompletedBy.LEAD_AGENCY,
             "addresses": "Test project address",
+            "activities": [
+                {
+                    "agency_id": agency.id,
+                    "activity_title": "Activity title 1",
+                    "type_of_activity": "Type of activity 1",
+                    "type_of_sector": "Type of sector 1",
+                    "planned_output": "Planned output 1",
+                    "actual_activity_output": "Actual activity output 1",
+                    "additional_remarks": "Additional remarks 1",
+                },
+                {
+                    "agency_id": new_agency.id,
+                    "activity_title": "Activity title 2",
+                    "type_of_activity": "Type of activity 2",
+                    "type_of_sector": "Type of sector 2",
+                    "planned_output": "Planned output 2",
+                    "actual_activity_output": "Actual activity output 2",
+                    "additional_remarks": "Additional remarks 2",
+                },
+            ],
+            "additional_comments": [
+                {"entity": "Cooperating agency", "comment": "Comment 1"},
+                {"entity": "Consultants", "comment": "Comment 2"},
+            ],
+            "project_components": [
+                {
+                    "agency_id": agency.id,
+                    "project_component_option_id": project_component_option.id,
+                    "delay_causes": [
+                        {"delay_id": delay1.id, "description": "Description 1"},
+                        {"delay_id": delay2.id, "description": "Description 2"},
+                    ],
+                    "learned_lessons": [
+                        {"description": "Description 1", "lesson_id": lesson1.id},
+                        {"description": "Description 2", "lesson_id": lesson2.id},
+                    ],
+                },
+            ],
+            "gender_mainstreamings": [
+                {
+                    "agency_id": agency.id,
+                    "project_preparation": "Project preparation",
+                    "prefilled": True,
+                    "qualitative_description": "Description 1",
+                },
+            ],
+            "sustainable_development_goals": [
+                {
+                    "agency_id": new_agency.id,
+                    "goals": [
+                        {"goal_id": goal1.id, "description": "Description 1"},
+                        {"goal_id": goal2.id, "description": "Description 2"},
+                    ],
+                },
+                {
+                    "agency_id": agency.id,
+                    "goals": [
+                        {"goal_id": goal3.id, "description": "Description 3"},
+                    ],
+                },
+            ],
             "pcr_projects": [
                 _pcr_project_payload(
                     project,
@@ -305,6 +381,13 @@ def test_pcr_project_create(client, url, admin_user, decision):
             "disposal_date": datetime(2026, 5, 31).date(),
         }
     ]
+
+    assert len(pcr.activities.all()) == 2
+    assert len(pcr.additional_comments.all()) == 2
+    assert len(pcr.project_components.all()) == 1
+    assert len(pcr.gender_mainstreamings.all()) == 1
+    assert len(pcr.sustainable_development_goals.all()) == 2
+
     assert response.data["id"] == pcr.id
     assert response.data["meta_project_id"] == meta_project.id
     assert response.data["submission_date"] == "2026-07-10"
@@ -316,6 +399,92 @@ def test_pcr_project_create(client, url, admin_user, decision):
     assert Decimal(response.data["phase_out_co2_eq_t_actual"]) == Decimal(14)
     assert response.data["addresses"] == "Test project address"
     assert response.data["decisions"][0]["id"] == decision.id
+
+    # activities
+    assert len(response.data["activities"]) == 2
+    assert response.data["activities"][0]["agency_id"] == agency.id
+    assert response.data["activities"][1]["agency_id"] == new_agency.id
+
+    # additional comments
+    assert len(response.data["additional_comments"]) == 2
+    assert response.data["additional_comments"][0]["entity"] == "Cooperating agency"
+    assert response.data["additional_comments"][0]["comment"] == "Comment 1"
+    assert response.data["additional_comments"][1]["entity"] == "Consultants"
+    assert response.data["additional_comments"][1]["comment"] == "Comment 2"
+
+    # project components
+    assert len(response.data["project_components"]) == 1
+    assert response.data["project_components"][0]["agency_id"] == agency.id
+    assert (
+        response.data["project_components"][0]["project_component_option_id"]
+        == project_component_option.id
+    )
+    assert len(response.data["project_components"][0]["delay_causes"]) == 2
+    assert (
+        response.data["project_components"][0]["delay_causes"][0]["delay_id"]
+        == delay1.id
+    )
+    assert (
+        response.data["project_components"][0]["delay_causes"][1]["delay_id"]
+        == delay2.id
+    )
+    assert len(response.data["project_components"][0]["learned_lessons"]) == 2
+    assert (
+        response.data["project_components"][0]["learned_lessons"][0]["lesson_id"]
+        == lesson1.id
+    )
+    assert (
+        response.data["project_components"][0]["learned_lessons"][1]["lesson_id"]
+        == lesson2.id
+    )
+
+    # gender mainstreamings
+    assert len(response.data["gender_mainstreamings"]) == 1
+    assert response.data["gender_mainstreamings"][0]["agency_id"] == agency.id
+    assert (
+        response.data["gender_mainstreamings"][0]["project_preparation"]
+        == "Project preparation"
+    )
+    assert response.data["gender_mainstreamings"][0]["prefilled"] is True
+    assert (
+        response.data["gender_mainstreamings"][0]["qualitative_description"]
+        == "Description 1"
+    )
+
+    # sustainable_development_goals
+    assert len(response.data["sustainable_development_goals"]) == 2
+    assert (
+        response.data["sustainable_development_goals"][0]["agency_id"] == new_agency.id
+    )
+    assert len(response.data["sustainable_development_goals"][0]["goals"]) == 2
+    assert (
+        response.data["sustainable_development_goals"][0]["goals"][0]["goal_id"]
+        == goal1.id
+    )
+    assert (
+        response.data["sustainable_development_goals"][0]["goals"][0]["description"]
+        == "Description 1"
+    )
+    assert (
+        response.data["sustainable_development_goals"][0]["goals"][1]["goal_id"]
+        == goal2.id
+    )
+    assert (
+        response.data["sustainable_development_goals"][0]["goals"][1]["description"]
+        == "Description 2"
+    )
+
+    assert response.data["sustainable_development_goals"][1]["agency_id"] == agency.id
+    assert len(response.data["sustainable_development_goals"][1]["goals"]) == 1
+    assert (
+        response.data["sustainable_development_goals"][1]["goals"][0]["goal_id"]
+        == goal3.id
+    )
+    assert (
+        response.data["sustainable_development_goals"][1]["goals"][0]["description"]
+        == "Description 3"
+    )
+
     assert response.data["pcr_projects"][0]["id"] == pcr_project.id
     assert response.data["pcr_projects"][0]["project_id"] == project.id
     assert response.data["pcr_projects"][0]["funds_disbursed"] == (

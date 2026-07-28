@@ -11,7 +11,6 @@ from core.models.project_completion_report import (
     PCRLearnedLesson,
     PCRLearnedLessonCategory,
     PCR,
-    PCRAgency,
     PCRActivity,
     PCRProject,
     PCRAdditionalComment,
@@ -78,16 +77,16 @@ class PCRProjectAdmin(admin.ModelAdmin):
 class PCRAdditionalCommentAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
-        "pcr_project__pcr__meta_project__umbrella_code",
+        "pcr__meta_project__umbrella_code",
     ]
     list_display = [
-        "pcr_project",
+        "pcr",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_project", "pcr_project"),
+        AutocompleteFilterFactory("pcr", "pcr"),
     ]
     raw_id_fields = [
-        "pcr_project",
+        "pcr",
     ]
 
 
@@ -131,50 +130,28 @@ class PCRDelayCategoryAdmin(admin.ModelAdmin):
         return PCRDelayCategory.objects.really_all()
 
 
-@admin.register(PCRAgency)
-class PCRAgencyAdmin(admin.ModelAdmin):
-    admin_group = "PCR"
-    search_fields = [
-        "pcr__meta_project__umbrella_code",
-        "agency",
-    ]
-    list_filter = [
-        AutocompleteFilterFactory("pcr", "pcr"),
-        AutocompleteFilterFactory("agency", "agency"),
-    ]
-    raw_id_fields = [
-        "pcr",
-    ]
-    autocomplete_fields = [
-        "agency",
-    ]
-
-    def get_list_display(self, request):
-        exclude = []
-        return get_final_display_list(PCRAgency, exclude)
-
-
 @admin.register(PCRProjectComponent)
 class PCRProjectComponentAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
-        "pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr__meta_project__umbrella_code",
         "project_component_option__name",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_agency", "pcr_agency"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory(
             "project_component_option", "project_component_option"
         ),
     ]
     raw_id_fields = [
-        "pcr_agency",
+        "pcr",
     ]
 
     def get_list_display(self, request):
         exclude = [
-            "delaycause",
-            "lessonslearned",
+            "delay_causes",
+            "learned_lessons",
         ]
         return get_final_display_list(PCRProjectComponent, exclude)
 
@@ -183,7 +160,7 @@ class PCRProjectComponentAdmin(admin.ModelAdmin):
 class PCRDelayCauseAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
-        "pcr_project_component__pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr_project_component__pcr__meta_project__umbrella_code",
         "delay",
     ]
     list_filter = [
@@ -217,7 +194,7 @@ class PCRLearnedLessonCategoryAdmin(admin.ModelAdmin):
 class PCRLearnedLessonAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
-        "pcr_project_component__pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr_project_component__pcr__meta_project__umbrella_code",
         "lesson",
     ]
     list_filter = [
@@ -238,14 +215,15 @@ class PCRGenderMainstreamingAdmin(admin.ModelAdmin):
     admin_group = "PCR"
 
     search_fields = [
-        "pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr__meta_project__umbrella_code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_agency", "pcr_agency"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
         "project_preparation",
     ]
     raw_id_fields = [
-        "pcr_agency",
+        "pcr",
     ]
 
 
@@ -279,13 +257,14 @@ class PCRSustainableDevelopmentGoalAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     inlines = [PCRSustainableDevelopmentGoalDescriptionInline]
     search_fields = [
-        "pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr__meta_project__umbrella_code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_agency", "pcr_agency"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
         "goals",
     ]
-    raw_id_fields = ["pcr_agency"]
+    raw_id_fields = ["pcr"]
 
 
 @admin.register(PCRSupportingEvidenceSection)
@@ -306,14 +285,15 @@ class PCRSupportingEvidenceSectionAdmin(admin.ModelAdmin):
 class PCRSupportingEvidenceAdmin(admin.ModelAdmin):
     admin_group = "PCR"
     search_fields = [
-        "pcr_agency__pcr__meta_project__umbrella_code",
+        "pcr__meta_project__umbrella_code",
     ]
     list_filter = [
-        AutocompleteFilterFactory("pcr_agency", "pcr_agency"),
+        AutocompleteFilterFactory("pcr", "pcr"),
+        AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory("section", "section"),
     ]
     raw_id_fields = [
-        "pcr_agency",
+        "pcr",
     ]
     autocomplete_fields = [
         "section",
