@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name,too-many-statements,too-many-arguments,too-many-locals
 from decimal import Decimal
 
 import pytest
@@ -23,6 +24,7 @@ from core.models import PCRDelayCause
 from core.models import PCRGoal
 
 pytestmark = pytest.mark.django_db
+
 
 @pytest.fixture
 def original_pcr(decision, secretariat_user):
@@ -221,7 +223,9 @@ def test_increase_version(
     assert PCRAdditionalComment.objects.filter(pcr=archived_pcr).exists()
     assert PCRActivity.objects.filter(pcr=archived_pcr).exists()
     assert PCRProjectComponent.objects.filter(pcr=archived_pcr).exists()
-    assert PCRDelayCause.objects.filter(pcr_project_component__pcr=archived_pcr).exists()
+    assert PCRDelayCause.objects.filter(
+        pcr_project_component__pcr=archived_pcr
+    ).exists()
     assert PCRSustainableDevelopmentGoal.objects.filter(pcr=archived_pcr).exists()
     assert PCRSupportingEvidence.objects.filter(pcr=archived_pcr).exists()
 
@@ -290,7 +294,9 @@ def test_increase_version(
     )
 
     # Check that the duplicated PCRDelayCause has the correct fields
-    new_pcr_delay_cause = PCRDelayCause.objects.get(pcr_project_component__pcr=archived_pcr)
+    new_pcr_delay_cause = PCRDelayCause.objects.get(
+        pcr_project_component__pcr=archived_pcr
+    )
     assert new_pcr_delay_cause.delay == pcr_delay_cause.delay
     assert new_pcr_delay_cause.description == pcr_delay_cause.description
 
@@ -309,7 +315,9 @@ def test_increase_version(
 
     # Check that the duplicated PCRSustainableDevelopmentGoalDescription has the correct fields
     original_pcr_sdg_descriptions = (
-        PCRSustainableDevelopmentGoalDescription.objects.filter(sgr=pcr_sustainable_development_goal)
+        PCRSustainableDevelopmentGoalDescription.objects.filter(
+            sgr=pcr_sustainable_development_goal
+        )
     )
     new_pcr_sdg_descriptions = PCRSustainableDevelopmentGoalDescription.objects.filter(
         sgr=new_pcr_sustainable_development_goal
