@@ -108,7 +108,7 @@ class ProjectFilter(filters.FilterSet):
     )
 
     pcr_submission_date = filters.DateFromToRangeFilter(
-        field_name="pcr_project__pcr__submission_date",
+        field_name="pcr_projects__pcr__submission_date",
         help_text="Filter by PCR submission date range. Format: YYYY-MM-DD",
     )  ### pcr submission date
     pcr_due = filters.MultipleChoiceFilter(
@@ -222,9 +222,9 @@ class ProjectFilter(filters.FilterSet):
         query_filters = Q()
         for option in value:
             if option == "Yes":
-                query_filters |= Q(pcr_project__isnull=False)
+                query_filters |= Q(pcr_projects__isnull=False)
             elif option in ["No", "N/A"]:
-                query_filters |= Q(pcr_project__isnull=True)
+                query_filters |= Q(pcr_projects__isnull=True)
         if not query_filters:
             return queryset
         return queryset.filter(query_filters)

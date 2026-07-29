@@ -284,7 +284,7 @@ class PCRProject(models.Model):
         "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
     )
     project = models.ForeignKey(
-        "Project", on_delete=models.PROTECT, related_name="pcr_project"
+        "Project", on_delete=models.PROTECT, related_name="pcr_projects"
     )
     funds_disbursed = models.DecimalField(
         max_digits=30,
@@ -798,6 +798,7 @@ class PCRSupportingEvidence(models.Model):
             with storage.open(new_file_path, "wb") as new_file:
                 shutil.copyfileobj(original_file, new_file)
         new_item.file.name = new_file_path
+        new_item.filename = self.filename
 
         new_item.save()
         return new_item

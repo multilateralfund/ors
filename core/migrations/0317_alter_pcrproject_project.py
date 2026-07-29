@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name="project",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.PROTECT,
-                related_name="pcr_project",
+                related_name="pcr_projects",
                 to="core.project",
             ),
         ),
