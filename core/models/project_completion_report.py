@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.db import models
 from django.db import transaction
 from django.apps import apps
+from django.conf import settings
 from django.utils.functional import cached_property
 
 from core.models.agency import Agency
@@ -84,6 +85,15 @@ class PCR(models.Model):
         OTHER = "Other", "Other"
 
     meta_project = models.ForeignKey("MetaProject", on_delete=models.PROTECT)
+    version_created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="created_pcrs_version",
+        help_text="User who created this PCR version",
+    )
     version = models.IntegerField(default=1)
     latest_pcr = models.ForeignKey(
         "self",
@@ -232,13 +242,13 @@ class PCR(models.Model):
     class Meta:
         verbose_name_plural = "PCR"
 
-
     def copy_pcr(self):
         with transaction.atomic():
             new_pcr = PCR.objects.get(pk=self.pk)
             new_pcr.pk = None
-            new_pcr.decisions.set(self.decisions.all())
             new_pcr.save()
+
+            new_pcr.decisions.set(self.decisions.all())
 
             for model_name in PCR_RELATED_MODELS:
                 model_class = apps.get_model("core", model_name)
@@ -246,6 +256,7 @@ class PCR(models.Model):
                 for item in items:
                     item.make_copy(new_pcr)
 
+            new_pcr.save()
             return new_pcr
 
     def increase_version(self, user):
@@ -706,7 +717,6 @@ class PCRSustainableDevelopmentGoalDescription(models.Model):
         new_item.sgr = sgr
         new_item.save()
         return new_item
-
 
 
 class PCRSupportingEvidenceSection(models.Model):
