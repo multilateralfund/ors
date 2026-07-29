@@ -30,7 +30,11 @@ PCR_PROJECT_RELATED_MODELS = [
     "PCRProjectAlternativeTechnology",
     "PCRProjectEnterprise",
     "PCRProjectEquipment",
-    "PCRAdditionalComment",
+]
+
+PCR_PROJECT_COMPONENT_RELATED_MODELS = [
+    "PCRDelayCause",
+    "PCRLearnedLesson",
 ]
 
 
@@ -279,7 +283,7 @@ class PCRProject(models.Model):
     pcr = models.ForeignKey(
         "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
     )
-    project = models.OneToOneField(
+    project = models.ForeignKey(
         "Project", on_delete=models.PROTECT, related_name="pcr_project"
     )
     funds_disbursed = models.DecimalField(
@@ -448,10 +452,10 @@ class PCRAdditionalComment(models.Model):
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code} - {self.entity}"
 
-    def make_copy(self, new_pcr_project: "PCRProject"):
+    def make_copy(self, new_pcr: "PCR"):
         new_item = self.__class__.objects.get(pk=self.pk)
         new_item.pk = None
-        new_item.pcr_project = new_pcr_project
+        new_item.pcr = new_pcr
         new_item.save()
         return new_item
 
@@ -562,6 +566,13 @@ class PCRProjectComponent(models.Model):
         new_item.pcr = new_pcr
         new_item.agency = self.agency
         new_item.save()
+
+        for model_name in PCR_PROJECT_COMPONENT_RELATED_MODELS:
+            model_class = apps.get_model("core", model_name)
+            items = model_class.objects.filter(pcr_project_component=self)
+            for item in items:
+                item.make_copy(new_item)
+
         return new_item
 
 
@@ -579,6 +590,14 @@ class PCRDelayCause(models.Model):
 
     class Meta:
         verbose_name_plural = "PCR delay causes"
+
+    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project_component = new_pcr_project_component
+        new_item.delay = self.delay
+        new_item.save()
+        return new_item
 
 
 class PCRLearnedLessonCategoryManager(models.Manager):
@@ -616,6 +635,14 @@ class PCRLearnedLesson(models.Model):
 
     class Meta:
         verbose_name_plural = "PCR learned lessons"
+
+    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project_component = new_pcr_project_component
+        new_item.lesson = self.lesson
+        new_item.save()
+        return new_item
 
 
 class PCRGenderMainstreaming(models.Model):
@@ -695,6 +722,8 @@ class PCRSustainableDevelopmentGoal(models.Model):
         new_item.agency = self.agency
 
         descriptions = PCRSustainableDevelopmentGoalDescription.objects.filter(sgr=self)
+
+        new_item.save()
 
         for desc in descriptions:
             desc.make_copy(new_item)
