@@ -26,10 +26,13 @@ from core.models.project_completion_report import (
     PCRProjectComponentOption,
     PCRProjectEnterprise,
     PCRProjectEquipment,
+    PCRSupportingEvidence,
     PCRSustainableDevelopmentGoal,
     PCRSustainableDevelopmentGoalDescription,
 )
 from core.models.substance import Substance
+
+# pylint: disable=too-many-locals
 
 
 class PCRProjectAlternativeTechnologySerializer(serializers.ModelSerializer):
@@ -122,6 +125,30 @@ def replace_nested_data(
                 for row in rows
             ]
         )
+
+
+class PCRSupportingEvidenceSerializer(serializers.ModelSerializer):
+    pcr_id = serializers.IntegerField(read_only=True)
+    agency_id = serializers.IntegerField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
+    section_id = serializers.IntegerField()
+    section = serializers.SlugRelatedField("name", read_only=True)
+    file = serializers.FileField(required=False, allow_null=True)
+    filename = serializers.CharField(required=False)
+
+    class Meta:
+        model = PCRSupportingEvidence
+        fields = [
+            "id",
+            "agency_id",
+            "agency",
+            "pcr_id",
+            "section_id",
+            "section",
+            "link",
+            "filename",
+            "file",
+        ]
 
 
 class PCRProjectSerializer(serializers.ModelSerializer):
@@ -381,6 +408,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
 class PCRCreateSerializer(serializers.ModelSerializer):
     activities = PCRActivitySerializer(many=True, required=False)
     additional_comments = PCRAdditionalCommentSerializer(many=True, required=False)
+    supporting_evidences = PCRSupportingEvidenceSerializer(many=True, required=False)
     decision_ids = serializers.PrimaryKeyRelatedField(
         allow_empty=True,
         many=True,
@@ -424,6 +452,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "rating_explanation",
             "rating_explanation_other",
             "sustainable_development_goals",
+            "supporting_evidences",
             "submission_date",
         ]
 
@@ -448,6 +477,15 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "id", flat=True
         )
         validate_pcr_project_references(pcr_projects, allowed_project_ids)
+
+        files_by_name = self._get_files_by_name()
+
+        supporting_evidences = attrs.get("supporting_evidences", [])
+        for evidence in supporting_evidences:
+            filename = evidence.get("filename")
+            if filename and filename in files_by_name:
+                evidence["file"] = files_by_name[filename]
+
         return attrs
 
     def build_initial_data(self, meta_project, pcr):
@@ -489,6 +527,9 @@ class PCRCreateSerializer(serializers.ModelSerializer):
             "total_number_of_trainnes": meta_project.total_number_of_trainnes,
         }
 
+    def _get_files_by_name(self):
+        return {file_obj.name: file_obj for file_obj in self.context.get("files", [])}
+
     @transaction.atomic
     def create(self, validated_data):
         pcr_projects_data = validated_data.pop("pcr_projects", [])
@@ -497,6 +538,7 @@ class PCRCreateSerializer(serializers.ModelSerializer):
         sustainable_development_goals_data = validated_data.pop(
             "sustainable_development_goals", []
         )
+        supporting_evidences_data = validated_data.pop("supporting_evidences", [])
 
         pcr_projects_by_project_id = {
             pcr_project_data["project"].id: pcr_project_data
@@ -555,6 +597,20 @@ class PCRCreateSerializer(serializers.ModelSerializer):
                 nested_data_sustainable_development_goal,
                 PCR_SUSTAINABLE_DEVELOPMENT_GOAL_NESTED_MODELS,
             )
+
+        for evidence_data in supporting_evidences_data:
+            file_obj = evidence_data.pop("file", None)
+
+            PCRSupportingEvidence.objects.create(
+                pcr=pcr,
+                agency_id=evidence_data.get("agency_id"),
+                section_id=evidence_data.get("section_id"),
+                filename=evidence_data.get("filename")
+                or (file_obj.name if file_obj else None),
+                link=evidence_data.get("link"),
+                file=file_obj,
+            )
+
         return pcr
 
     def to_representation(self, instance):

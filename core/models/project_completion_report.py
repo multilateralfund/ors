@@ -776,7 +776,7 @@ class PCRSupportingEvidence(models.Model):
         storage=get_protected_storage,
         upload_to="pcr_files/",
     )
-    filename = models.CharField(max_length=100)
+    filename = models.CharField(max_length=100, null=True, blank=True)
     link = models.URLField(blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)

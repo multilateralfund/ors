@@ -459,6 +459,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_AUTHENTICATION": [
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 SIMPLE_JWT = {

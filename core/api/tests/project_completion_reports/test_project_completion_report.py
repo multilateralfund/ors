@@ -1,9 +1,13 @@
-from datetime import datetime, timezone as dt_timezone, date
+import json
 from decimal import Decimal
+from datetime import datetime, timezone as dt_timezone, date
+import pytest
 from unittest.mock import patch
 
-import pytest
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+
 from rest_framework import serializers
 from rest_framework.test import APIClient
 
@@ -18,6 +22,7 @@ from core.api.tests.factories import (
     PCRProjectFactory,
     PCRProjectEnterpriseFactory,
     PCRProjectComponentOptionFactory,
+    PCRSupportingEvidenceSectionFactory,
     ProjectClusterFactory,
     ProjectFactory,
     ProjectSectorFactory,
@@ -31,13 +36,13 @@ from core.models.project_completion_report import (
     PCR,
     PCRProject,
     PCRProjectEnterprise,
+    PCRSupportingEvidence,
 )
 from core.models.project_pcr_exclusion import ProjectPCRRequiredExclusionRule
 
+# pylint: disable=too-many-locals,too-many-lines,unused-argument,too-many-statements,too-many-arguments
 
 pytestmark = pytest.mark.django_db
-
-# pylint: disable=too-many-locals,too-many-lines, unused-argument,too-many-statements
 
 
 def _results(response):
@@ -226,7 +231,9 @@ def test_pcr_project_list_permissions(client, url, user, admin_user, pcr_listing
     assert response.status_code == 200
 
 
-def test_pcr_project_create(client, url, admin_user, decision, agency, new_agency):
+def test_pcr_project_create(
+    client, url, admin_user, decision, agency, new_agency, test_file1, test_file2
+):
     meta_project = MetaProjectFactory.create()
     project = ProjectFactory.create(meta_project=meta_project)
     substance_from = SubstanceFactory.create()
@@ -241,115 +248,149 @@ def test_pcr_project_create(client, url, admin_user, decision, agency, new_agenc
     goal2 = PCRGoalFactory()
     goal3 = PCRGoalFactory()
 
+    f1 = SimpleUploadedFile(
+        "doc1.pdf", b"file1-content", content_type="application/pdf"
+    )
+    f2 = SimpleUploadedFile(
+        "doc2.pdf", b"file2-content", content_type="application/pdf"
+    )
+    section1 = PCRSupportingEvidenceSectionFactory()
+    section2 = PCRSupportingEvidenceSectionFactory()
     response = client.post(
         url,
         {
-            "meta_project_id": meta_project.id,
-            "submission_date": "2026-07-10",
-            "project_date_approved": "2026-07-20",
-            "project_date_completion": "2026-07-21",
-            "phase_out_ods_approved": Decimal(10),
-            "phase_out_ods_actual": Decimal(2),
-            "phase_out_co2_eq_t_approved": Decimal(5),
-            "phase_out_co2_eq_t_actual": Decimal(14),
-            "decision_ids": [decision.id],
-            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
-            "financial_figures_status_explanation": "test financial figures explanation 1",
-            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
-            "project_goal_achieved_explanation": "Project goal achieved explanation 1",
-            "rating": PCR.Rating.SATISFACTORY_PLANNED,
-            "rating_explanation": "Rating explanation 1",
-            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
-            "addresses": "Test project address",
-            "activities": [
+            "metadata": json.dumps(
                 {
-                    "agency_id": agency.id,
-                    "activity_title": "Activity title 1",
-                    "type_of_activity": "Type of activity 1",
-                    "type_of_sector": "Type of sector 1",
-                    "planned_output": "Planned output 1",
-                    "actual_activity_output": "Actual activity output 1",
-                    "additional_remarks": "Additional remarks 1",
-                },
-                {
-                    "agency_id": new_agency.id,
-                    "activity_title": "Activity title 2",
-                    "type_of_activity": "Type of activity 2",
-                    "type_of_sector": "Type of sector 2",
-                    "planned_output": "Planned output 2",
-                    "actual_activity_output": "Actual activity output 2",
-                    "additional_remarks": "Additional remarks 2",
-                },
-            ],
-            "additional_comments": [
-                {"entity": "Cooperating agency", "comment": "Comment 1"},
-                {"entity": "Consultants", "comment": "Comment 2"},
-            ],
-            "project_components": [
-                {
-                    "agency_id": agency.id,
-                    "project_component_option_id": project_component_option.id,
-                    "delay_causes": [
-                        {"delay_id": delay1.id, "description": "Description 1"},
-                        {"delay_id": delay2.id, "description": "Description 2"},
-                    ],
-                    "learned_lessons": [
-                        {"description": "Description 1", "lesson_id": lesson1.id},
-                        {"description": "Description 2", "lesson_id": lesson2.id},
-                    ],
-                },
-            ],
-            "gender_mainstreamings": [
-                {
-                    "agency_id": agency.id,
-                    "project_preparation": "Project preparation",
-                    "prefilled": True,
-                    "qualitative_description": "Description 1",
-                },
-            ],
-            "sustainable_development_goals": [
-                {
-                    "agency_id": new_agency.id,
-                    "goals": [
-                        {"goal_id": goal1.id, "description": "Description 1"},
-                        {"goal_id": goal2.id, "description": "Description 2"},
-                    ],
-                },
-                {
-                    "agency_id": agency.id,
-                    "goals": [
-                        {"goal_id": goal3.id, "description": "Description 3"},
-                    ],
-                },
-            ],
-            "pcr_projects": [
-                _pcr_project_payload(
-                    project,
-                    funds_disbursed="12345.67",
-                    planned_date_of_completion="2026-06-30",
-                    alternative_technologies=[
+                    "meta_project_id": meta_project.id,
+                    "submission_date": "2026-07-10",
+                    "project_date_approved": "2026-07-20",
+                    "project_date_completion": "2026-07-21",
+                    "phase_out_ods_approved": Decimal(10),
+                    "phase_out_ods_actual": Decimal(2),
+                    "phase_out_co2_eq_t_approved": Decimal(5),
+                    "phase_out_co2_eq_t_actual": Decimal(14),
+                    "decision_ids": [decision.id],
+                    "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+                    "financial_figures_status_explanation": "test financial figures explanation 1",
+                    "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+                    "project_goal_achieved_explanation": "Project goal achieved explanation 1",
+                    "rating": PCR.Rating.SATISFACTORY_PLANNED,
+                    "rating_explanation": "Rating explanation 1",
+                    "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+                    "addresses": "Test project address",
+                    "activities": [
                         {
-                            "substance_from": substance_from.id,
-                            "substance_to": substance_to.id,
-                        }
-                    ],
-                    enterprises=[
-                        {"name": "Enterprise A", "address": "Test project address"}
-                    ],
-                    equipments=[
+                            "agency_id": agency.id,
+                            "activity_title": "Activity title 1",
+                            "type_of_activity": "Type of activity 1",
+                            "type_of_sector": "Type of sector 1",
+                            "planned_output": "Planned output 1",
+                            "actual_activity_output": "Actual activity output 1",
+                            "additional_remarks": "Additional remarks 1",
+                        },
                         {
-                            "name": "Equipment A",
-                            "description": "Rendered unusable",
-                            "disposal_type": 1,
-                            "disposal_date": "2026-05-31",
-                        }
+                            "agency_id": new_agency.id,
+                            "activity_title": "Activity title 2",
+                            "type_of_activity": "Type of activity 2",
+                            "type_of_sector": "Type of sector 2",
+                            "planned_output": "Planned output 2",
+                            "actual_activity_output": "Actual activity output 2",
+                            "additional_remarks": "Additional remarks 2",
+                        },
                     ],
-                )
-            ],
+                    "additional_comments": [
+                        {"entity": "Cooperating agency", "comment": "Comment 1"},
+                        {"entity": "Consultants", "comment": "Comment 2"},
+                    ],
+                    "project_components": [
+                        {
+                            "agency_id": agency.id,
+                            "project_component_option_id": project_component_option.id,
+                            "delay_causes": [
+                                {"delay_id": delay1.id, "description": "Description 1"},
+                                {"delay_id": delay2.id, "description": "Description 2"},
+                            ],
+                            "learned_lessons": [
+                                {
+                                    "description": "Description 1",
+                                    "lesson_id": lesson1.id,
+                                },
+                                {
+                                    "description": "Description 2",
+                                    "lesson_id": lesson2.id,
+                                },
+                            ],
+                        },
+                    ],
+                    "gender_mainstreamings": [
+                        {
+                            "agency_id": agency.id,
+                            "project_preparation": "Project preparation",
+                            "prefilled": True,
+                            "qualitative_description": "Description 1",
+                        },
+                    ],
+                    "sustainable_development_goals": [
+                        {
+                            "agency_id": new_agency.id,
+                            "goals": [
+                                {"goal_id": goal1.id, "description": "Description 1"},
+                                {"goal_id": goal2.id, "description": "Description 2"},
+                            ],
+                        },
+                        {
+                            "agency_id": agency.id,
+                            "goals": [
+                                {"goal_id": goal3.id, "description": "Description 3"},
+                            ],
+                        },
+                    ],
+                    "pcr_projects": [
+                        _pcr_project_payload(
+                            project,
+                            funds_disbursed="12345.67",
+                            planned_date_of_completion="2026-06-30",
+                            alternative_technologies=[
+                                {
+                                    "substance_from": substance_from.id,
+                                    "substance_to": substance_to.id,
+                                }
+                            ],
+                            enterprises=[
+                                {
+                                    "name": "Enterprise A",
+                                    "address": "Test project address",
+                                }
+                            ],
+                            equipments=[
+                                {
+                                    "name": "Equipment A",
+                                    "description": "Rendered unusable",
+                                    "disposal_type": 1,
+                                    "disposal_date": "2026-05-31",
+                                }
+                            ],
+                        )
+                    ],
+                    "supporting_evidences": [
+                        {
+                            "agency_id": agency.id,
+                            "section_id": section1.id,
+                            "filename": "doc1.pdf",
+                        },
+                        {
+                            "agency_id": new_agency.id,
+                            "section_id": section2.id,
+                            "filename": "doc2.pdf",
+                        },
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [f1, f2],
         },
-        format="json",
+        format="multipart",
     )
-
     assert response.status_code == 201
     pcr = PCR.objects.get(id=response.data["id"])
     pcr_project = PCRProject.objects.get(pcr=pcr, project=project)
@@ -359,6 +400,11 @@ def test_pcr_project_create(client, url, admin_user, decision, agency, new_agenc
     assert pcr.rating == PCR.Rating.SATISFACTORY_PLANNED
     assert pcr.completed_by == PCR.CompletedBy.LEAD_AGENCY
     assert pcr.addresses == "Test project address"
+
+    assert PCRSupportingEvidence.objects.filter(pcr=pcr).count() == 2
+    filenames = {se.filename for se in PCRSupportingEvidence.objects.filter(pcr=pcr)}
+    assert filenames == {"doc1.pdf", "doc2.pdf"}
+
     assert pcr_project.funds_disbursed == Decimal("12345.670000000000000")
     assert str(pcr_project.planned_date_of_completion) == "2026-06-30"
     assert list(
@@ -517,20 +563,26 @@ def test_pcr_project_create_with_multiple_projects(client, url, admin_user):
     response = client.post(
         url,
         {
-            "meta_project_id": meta_project.id,
-            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
-            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
-            "rating": PCR.Rating.SATISFACTORY_PLANNED,
-            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
-            "addresses": "First project",
-            "pcr_projects": [
-                _pcr_project_payload(
-                    projects[0],
-                    planned_date_of_completion="2026-06-30",
-                )
-            ],
+            "metadata": json.dumps(
+                {
+                    "meta_project_id": meta_project.id,
+                    "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+                    "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+                    "rating": PCR.Rating.SATISFACTORY_PLANNED,
+                    "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+                    "addresses": "First project",
+                    "pcr_projects": [
+                        _pcr_project_payload(
+                            projects[0],
+                            planned_date_of_completion="2026-06-30",
+                        )
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
         },
-        format="json",
+        format="multipart",
     )
     assert response.status_code == 201
     assert [item["project_id"] for item in response.data["pcr_projects"]] == [
@@ -552,8 +604,13 @@ def test_pcr_project_create_rejects_nonexistent_meta_project(client, url, admin_
 
     response = client.post(
         url,
-        {"meta_project_id": nonexistent_meta_project_id},
-        format="json",
+        {
+            "metadata": json.dumps(
+                {"meta_project_id": nonexistent_meta_project_id}, cls=DjangoJSONEncoder
+            ),
+            "files": [],
+        },
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -571,10 +628,16 @@ def test_pcr_project_create_rejects_nonexistent_nested_project(client, url, admi
     response = client.post(
         url,
         {
-            "meta_project_id": meta_project.id,
-            "pcr_projects": [{"project_id": nonexistent_project_id}],
+            "metadata": json.dumps(
+                {
+                    "meta_project_id": meta_project.id,
+                    "pcr_projects": [{"project_id": nonexistent_project_id}],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
         },
-        format="json",
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -592,10 +655,16 @@ def test_pcr_project_create_rejects_unrelated_nested_project(client, url, admin_
     response = client.post(
         url,
         {
-            "meta_project_id": meta_project.id,
-            "pcr_projects": [{"project_id": unrelated_project.id}],
+            "metadata": json.dumps(
+                {
+                    "meta_project_id": meta_project.id,
+                    "pcr_projects": [{"project_id": unrelated_project.id}],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
         },
-        format="json",
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -613,13 +682,19 @@ def test_pcr_project_create_rejects_duplicate_nested_projects(client, url, admin
     response = client.post(
         url,
         {
-            "meta_project_id": meta_project.id,
-            "pcr_projects": [
-                {"project_id": project.id},
-                {"project_id": project.id},
-            ],
+            "metadata": json.dumps(
+                {
+                    "meta_project_id": meta_project.id,
+                    "pcr_projects": [
+                        {"project_id": project.id},
+                        {"project_id": project.id},
+                    ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
         },
-        format="json",
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -640,8 +715,16 @@ def test_pcr_project_create_rejects_project_already_assigned_to_pcr(
 
     response = client.post(
         url,
-        {"meta_project_id": meta_project.id},
-        format="json",
+        {
+            "metadata": json.dumps(
+                {
+                    "meta_project_id": meta_project.id,
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -671,8 +754,16 @@ def test_pcr_project_create_rolls_back_when_nested_creation_fails(
     with patch.object(PCRProject.objects, "create", side_effect=create_then_fail):
         response = client.post(
             url,
-            {"meta_project_id": meta_project.id},
-            format="json",
+            {
+                "metadata": json.dumps(
+                    {
+                        "meta_project_id": meta_project.id,
+                    },
+                    cls=DjangoJSONEncoder,
+                ),
+                "files": [],
+            },
+            format="multipart",
         )
 
     assert response.status_code == 400
@@ -683,17 +774,24 @@ def test_pcr_project_create_rolls_back_when_nested_creation_fails(
 def test_pcr_project_create_permissions(client, url, user, admin_user):
     meta_project = MetaProjectFactory.create()
     ProjectFactory.create(meta_project=meta_project)
-    payload = {"meta_project_id": meta_project.id}
-
-    response = client.post(url, payload, format="json")
+    payload = {
+        "metadata": json.dumps(
+            {
+                "meta_project_id": meta_project.id,
+            },
+            cls=DjangoJSONEncoder,
+        ),
+        "files": [],
+    }
+    response = client.post(url, payload, format="multipart")
     assert response.status_code == 403
 
     client.force_authenticate(user=user)
-    response = client.post(url, payload, format="json")
+    response = client.post(url, payload, format="multipart")
     assert response.status_code == 403
 
     client.force_authenticate(user=admin_user)
-    response = client.post(url, payload, format="json")
+    response = client.post(url, payload, format="multipart")
     assert response.status_code == 201
 
 
@@ -857,38 +955,47 @@ def test_pcr_update_submission_date_and_nested_project(client, admin_user, metho
     response = getattr(client, method)(
         detail_url,
         {
-            "submission_date": "2026-07-10",
-            "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
-            "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
-            "rating": PCR.Rating.SATISFACTORY_PLANNED,
-            "completed_by": PCR.CompletedBy.LEAD_AGENCY,
-            "addresses": "Updated address",
-            "pcr_projects": [
-                _pcr_project_payload(
-                    projects[0],
-                    funds_disbursed="9876.54",
-                    planned_date_of_completion="2026-08-31",
-                    alternative_technologies=[
-                        {
-                            "substance_from": substance_from.id,
-                            "substance_to": substance_to.id,
-                        }
+            "metadata": json.dumps(
+                {
+                    "submission_date": "2026-07-10",
+                    "financial_figures_status": PCR.FinancialFiguresStatus.FINAL,
+                    "project_goal_achieved": PCR.ProjectGoalAchieved.YES,
+                    "rating": PCR.Rating.SATISFACTORY_PLANNED,
+                    "completed_by": PCR.CompletedBy.LEAD_AGENCY,
+                    "addresses": "Updated address",
+                    "pcr_projects": [
+                        _pcr_project_payload(
+                            projects[0],
+                            funds_disbursed="9876.54",
+                            planned_date_of_completion="2026-08-31",
+                            alternative_technologies=[
+                                {
+                                    "substance_from": substance_from.id,
+                                    "substance_to": substance_to.id,
+                                }
+                            ],
+                            enterprises=[
+                                {
+                                    "name": "Updated enterprise",
+                                    "address": "Updated address",
+                                }
+                            ],
+                            equipments=[
+                                {
+                                    "name": "Updated equipment",
+                                    "description": "Disposed",
+                                    "disposal_type": 2,
+                                    "disposal_date": "2026-09-30",
+                                }
+                            ],
+                        )
                     ],
-                    enterprises=[
-                        {"name": "Updated enterprise", "address": "Updated address"}
-                    ],
-                    equipments=[
-                        {
-                            "name": "Updated equipment",
-                            "description": "Disposed",
-                            "disposal_type": 2,
-                            "disposal_date": "2026-09-30",
-                        }
-                    ],
-                )
-            ],
+                },
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
         },
-        format="json",
+        format="multipart",
     )
 
     assert response.status_code == 200
@@ -936,8 +1043,14 @@ def test_pcr_update_rejects_unrelated_nested_project(client, admin_user):
 
     response = client.patch(
         detail_url,
-        {"pcr_projects": [{"project_id": unrelated_project.id}]},
-        format="json",
+        {
+            "metadata": json.dumps(
+                {"pcr_projects": [{"project_id": unrelated_project.id}]},
+                cls=DjangoJSONEncoder,
+            ),
+            "files": [],
+        },
+        format="multipart",
     )
 
     assert response.status_code == 400
@@ -969,16 +1082,22 @@ def test_pcr_update_rolls_back_parent_and_nested_projects(client, admin_user):
         response = client.patch(
             detail_url,
             {
-                "submission_date": "2026-07-10",
-                "pcr_projects": [
+                "metadata": json.dumps(
                     {
-                        "project_id": project.id,
-                        "planned_date_of_completion": "2026-07-10",
-                    }
-                    for project in projects
-                ],
+                        "submission_date": "2026-07-10",
+                        "pcr_projects": [
+                            {
+                                "project_id": project.id,
+                                "planned_date_of_completion": "2026-07-10",
+                            }
+                            for project in projects
+                        ],
+                    },
+                    cls=DjangoJSONEncoder,
+                ),
+                "files": [],
             },
-            format="json",
+            format="multipart",
         )
 
     assert response.status_code == 400
@@ -998,8 +1117,13 @@ def test_pcr_update_nonexistent_pcr(client, admin_user):
 
     response = client.patch(
         detail_url,
-        {"submission_date": "2026-07-10"},
-        format="json",
+        {
+            "metadata": json.dumps(
+                {"submission_date": "2026-07-10"}, cls=DjangoJSONEncoder
+            ),
+            "files": [],
+        },
+        format="multipart",
     )
 
     assert response.status_code == 404
@@ -1009,17 +1133,22 @@ def test_pcr_update_permissions(client, user, admin_user):
     meta_project = MetaProjectFactory.create()
     pcr = PCR.objects.create(meta_project=meta_project)
     detail_url = reverse("project-completion-report-detail", args=[pcr.id])
-    payload = {"submission_date": "2026-07-10"}
+    payload = {
+        "metadata": json.dumps(
+            {"submission_date": "2026-07-10"}, cls=DjangoJSONEncoder
+        ),
+        "files": [],
+    }
 
-    response = client.patch(detail_url, payload, format="json")
+    response = client.patch(detail_url, payload, format="multipart")
     assert response.status_code == 403
 
     client.force_authenticate(user=user)
-    response = client.patch(detail_url, payload, format="json")
+    response = client.patch(detail_url, payload, format="multipart")
     assert response.status_code == 403
 
     client.force_authenticate(user=admin_user)
-    response = client.patch(detail_url, payload, format="json")
+    response = client.patch(detail_url, payload, format="multipart")
     assert response.status_code == 200
 
 

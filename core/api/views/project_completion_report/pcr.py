@@ -1,15 +1,21 @@
+import json
+
+from django.shortcuts import get_object_or_404
+from django.db.models import Exists, OuterRef, Q, QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
+
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.utils import extend_schema
-
-from django.db.models import Exists, OuterRef, Q, QuerySet
-from django.shortcuts import get_object_or_404
-
-from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import inline_serializer
 
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import serializers
+
+# pylint: disable=broad-exception-caught
 
 from core.api.filters.project_completion_report import (
     PCRProjectFilter,
@@ -66,6 +72,8 @@ class PCRProjectViewSet(
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
 ):
+    parser_classes = (MultiPartParser, FormParser)
+
     serializer_class = PCRProjectListSerializer
     filterset_class = PCRProjectFilter
     filter_backends = [
@@ -107,6 +115,18 @@ class PCRProjectViewSet(
         if self.action in ["update", "partial_update"]:
             return PCRUpdateSerializer
         return PCRProjectListSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        files = []
+        if "files" in self.request.FILES:
+            files = self.request.FILES.getlist("files")
+        else:
+            files = list(self.request.FILES.values())
+
+        context["files"] = files
+        return context
 
     def filter_queryset(self, queryset):
         if self.action in ["retrieve", "update", "partial_update"]:
@@ -280,3 +300,86 @@ class PCRProjectViewSet(
             pcr = get_object_or_404(PCR, pk=pcr_id)
         serializer = self.get_serializer()
         return Response(serializer.build_initial_data(meta_project, pcr))
+
+    @extend_schema(
+        description="""
+        This endpoint is used create a PCR with all its nested objects.
+        The PCRSupportingEvidence also receives files and as such, the endpoint
+        will receive data in the multipart/form-data format.
+        """,
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesValidationRequest",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=True,
+                        help_text="List of documents",
+                    ),
+                    "metadata": PCRCreateSerializer(),
+                },
+            )
+        },
+    )
+    def create(self, request, *args, **kwargs):
+        raw_metadata = request.data.get("metadata")
+        if isinstance(raw_metadata, str):
+            try:
+                metadata = json.loads(raw_metadata)
+            except Exception:
+                return Response(
+                    {"detail": "invalid metadata JSON"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            metadata = raw_metadata or {}
+
+        serializer = self.get_serializer(data=metadata)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @extend_schema(
+        description="""
+        This endpoint updates a PCR with all its nested objects.
+        The PCRSupportingEvidence also receives files and as such, the endpoint
+        will receive data in the multipart/form-data format.
+        """,
+        request={
+            "multipart/form-data": inline_serializer(
+                name="MultipleFilesValidationRequestUpdate",
+                fields={
+                    "files": serializers.ListField(
+                        child=serializers.FileField(),
+                        required=False,
+                        help_text="List of documents",
+                    ),
+                    "metadata": PCRUpdateSerializer(),
+                },
+            )
+        },
+    )
+    def update(self, request, *args, **kwargs):
+        raw_metadata = request.data.get("metadata")
+        if isinstance(raw_metadata, str):
+            try:
+                metadata = json.loads(raw_metadata)
+            except Exception:
+                return Response(
+                    {"detail": "invalid metadata JSON"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            metadata = raw_metadata or {}
+
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=metadata, partial=kwargs.get("partial", False)
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

@@ -63,6 +63,7 @@ from core.models.project_completion_report import (
     PCRProjectComponentOption,
     PCRProject,
     PCRProjectEnterprise,
+    PCRSupportingEvidenceSection,
 )
 from core.models.project_metadata import (
     ProjectCluster,
@@ -947,3 +948,8 @@ class PCRProjectComponentOptionFactory(factory.django.DjangoModelFactory):
 class PCRGoalFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PCRGoal
+
+
+class PCRSupportingEvidenceSectionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PCRSupportingEvidenceSection
