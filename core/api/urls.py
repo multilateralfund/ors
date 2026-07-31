@@ -134,6 +134,12 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_completion_report.metadata import (
     PCRRatingView,
     PCRCompletedByView,
+    PCRDelayCategoryView,
+    PCREntityView,
+    PCRGoalView,
+    PCRLearnedLessonCategoryView,
+    PCRProjectComponentOptionView,
+    PCRSupportingEvidenceSectionView,
 )
 from core.api.views.project_completion_report.pcr import PCRProjectViewSet
 from core.api.views.project_completion_report.pcr import (
@@ -337,7 +343,37 @@ urlpatterns = [
     path(
         "project-completion-report/completed-by/",
         PCRCompletedByView.as_view(),
-        name="project-completed-by-rating",
+        name="project-completion-report-completed-by",
+    ),
+    path(
+        "project-completion-report/entity/",
+        PCREntityView.as_view(),
+        name="project-completion-report-entity",
+    ),
+    path(
+        "project-completion-report/delay-category/",
+        PCRDelayCategoryView.as_view(),
+        name="project-completion-report-delay-category",
+    ),
+    path(
+        "project-completion-report/goal/",
+        PCRGoalView.as_view(),
+        name="project-completion-report-goal",
+    ),
+    path(
+        "project-completion-report/learned-lesson-category/",
+        PCRLearnedLessonCategoryView.as_view(),
+        name="project-completion-report-learned-lesson-category",
+    ),
+    path(
+        "project-completion-report/project-component-option/",
+        PCRProjectComponentOptionView.as_view(),
+        name="project-completion-report-project-component-option",
+    ),
+    path(
+        "project-completion-report/supporting-evidence-section/",
+        PCRSupportingEvidenceSectionView.as_view(),
+        name="project-completion-report-supporting-evidence-section",
     ),
     path(
         "agencies/",

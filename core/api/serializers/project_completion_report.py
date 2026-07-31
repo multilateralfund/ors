@@ -18,6 +18,7 @@ from core.models.project_completion_report import (
     PCRDelayCause,
     PCRDelayCategory,
     PCRGenderMainstreaming,
+    PCRGoal,
     PCRLearnedLessonCategory,
     PCRLearnedLesson,
     PCRProject,
@@ -27,6 +28,7 @@ from core.models.project_completion_report import (
     PCRProjectEnterprise,
     PCRProjectEquipment,
     PCRSupportingEvidence,
+    PCRSupportingEvidenceSection,
     PCRSustainableDevelopmentGoal,
     PCRSustainableDevelopmentGoalDescription,
 )
@@ -75,9 +77,19 @@ class PCRDelayCategorySerializer(PCRLookupSerializer):
         model = PCRDelayCategory
 
 
+class PCRGoalSerializer(PCRLookupSerializer):
+    class Meta(PCRLookupSerializer.Meta):
+        model = PCRGoal
+
+
 class PCRLearnedLessonCategorySerializer(PCRLookupSerializer):
     class Meta(PCRLookupSerializer.Meta):
         model = PCRLearnedLessonCategory
+
+
+class PCRSupportingEvidenceSectionSerializer(PCRLookupSerializer):
+    class Meta(PCRLookupSerializer.Meta):
+        model = PCRSupportingEvidenceSection
 
 
 PCR_PROJECT_NESTED_MODELS = {

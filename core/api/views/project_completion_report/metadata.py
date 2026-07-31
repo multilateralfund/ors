@@ -1,6 +1,24 @@
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from core.models.project_completion_report import PCR
+
+from core.models.project_completion_report import (
+    PCR,
+    PCRAdditionalComment,
+    PCRDelayCategory,
+    PCRGoal,
+    PCRLearnedLessonCategory,
+    PCRProjectComponentOption,
+    PCRSupportingEvidenceSection,
+)
+
+from core.api.serializers.project_completion_report import (
+    PCRDelayCategorySerializer,
+    PCRGoalSerializer,
+    PCRLearnedLessonCategorySerializer,
+    PCRProjectComponentOptionSerializer,
+    PCRSupportingEvidenceSectionSerializer,
+)
 
 
 class PCRRatingView(APIView):
@@ -21,3 +39,38 @@ class PCRCompletedByView(APIView):
     def get(self, request, *args, **kwargs):
         choices = PCR.CompletedBy.choices
         return Response(choices)
+
+
+class PCREntityView(APIView):
+    """
+    View to return a list of all PCRAdditionalComment Entity choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = PCRAdditionalComment.Entity.choices
+        return Response(choices)
+
+
+class PCRDelayCategoryView(ListAPIView):
+    queryset = PCRDelayCategory.objects.all()
+    serializer_class = PCRDelayCategorySerializer
+
+
+class PCRGoalView(ListAPIView):
+    queryset = PCRGoal.objects.all()
+    serializer_class = PCRGoalSerializer
+
+
+class PCRLearnedLessonCategoryView(ListAPIView):
+    queryset = PCRLearnedLessonCategory.objects.all()
+    serializer_class = PCRLearnedLessonCategorySerializer
+
+
+class PCRProjectComponentOptionView(ListAPIView):
+    queryset = PCRProjectComponentOption.objects.all()
+    serializer_class = PCRProjectComponentOptionSerializer
+
+
+class PCRSupportingEvidenceSectionView(ListAPIView):
+    queryset = PCRSupportingEvidenceSection.objects.all()
+    serializer_class = PCRSupportingEvidenceSectionSerializer
