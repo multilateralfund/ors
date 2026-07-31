@@ -1,5 +1,7 @@
 # pylint: disable=redefined-outer-name,too-many-statements,too-many-arguments,too-many-locals
+from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
@@ -335,3 +337,103 @@ def test_increase_version(
     assert new_pcr_supporting_evidence.file.name != pcr_supporting_evidence.file.name
     assert new_pcr_supporting_evidence.filename == pcr_supporting_evidence.filename
     assert new_pcr_supporting_evidence.link == pcr_supporting_evidence.link
+
+
+def test_repeated_revisions_preserve_submission_history_and_creators(
+    original_pcr,
+    admin_user,
+    secretariat_user,
+):
+    """Each review/rework cycle keeps the submitted revision as an archive."""
+    original_pcr.submission_date = date(2026, 1, 10)
+    original_pcr.addresses = "Initially submitted address"
+    original_pcr.save()
+
+    original_pcr.increase_version(admin_user)
+    original_pcr.submission_date = date(2026, 2, 15)
+    original_pcr.addresses = "First revised address"
+    original_pcr.save()
+
+    original_pcr.increase_version(secretariat_user)
+    original_pcr.submission_date = date(2026, 3, 20)
+    original_pcr.addresses = "Latest revised address"
+    original_pcr.save()
+
+    archived_versions = list(
+        PCR.objects.really_all().filter(latest_pcr=original_pcr).order_by("version")
+    )
+
+    assert [pcr.version for pcr in archived_versions] == [1, 2]
+    assert [pcr.submission_date for pcr in archived_versions] == [
+        date(2026, 1, 10),
+        date(2026, 2, 15),
+    ]
+    assert [pcr.addresses for pcr in archived_versions] == [
+        "Initially submitted address",
+        "First revised address",
+    ]
+    assert [pcr.version_created_by for pcr in archived_versions] == [
+        secretariat_user,
+        admin_user,
+    ]
+
+    original_pcr.refresh_from_db()
+    assert original_pcr.version == 3
+    assert original_pcr.version_created_by == secretariat_user
+    assert original_pcr.submission_date == date(2026, 3, 20)
+    assert original_pcr.addresses == "Latest revised address"
+
+    assert list(PCR.objects.all()) == [original_pcr]
+    assert PCR.objects.really_all().count() == 3
+
+
+def test_archived_revision_is_unchanged_when_current_pcr_is_edited(
+    original_pcr,
+    secretariat_user,
+    pcr_project,
+    pcr_activity,
+    pcr_additional_comment,
+):
+    """Reopened PCR edits must not mutate the version submitted for review."""
+    original_pcr.increase_version(secretariat_user)
+    archived_pcr = PCR.objects.really_all().get(latest_pcr=original_pcr)
+
+    pcr_project.funds_disbursed = Decimal("250.00")
+    pcr_project.save()
+    pcr_activity.actual_activity_output = "Revised output"
+    pcr_activity.save()
+    pcr_additional_comment.comment = "Revised comment"
+    pcr_additional_comment.save()
+
+    archived_project = PCRProject.objects.get(pcr=archived_pcr)
+    archived_activity = PCRActivity.objects.get(pcr=archived_pcr)
+    archived_comment = PCRAdditionalComment.objects.get(pcr=archived_pcr)
+
+    assert archived_project.funds_disbursed == Decimal("100.00")
+    assert archived_activity.actual_activity_output == "Actual Output"
+    assert archived_comment.comment == "Some comment"
+
+
+def test_increase_version_rolls_back_when_snapshot_creation_fails(
+    original_pcr,
+    secretariat_user,
+    pcr_activity,
+):
+    """A failed snapshot must leave the submitted PCR and its version unchanged."""
+    assert pcr_activity.pcr == original_pcr
+
+    with patch.object(
+        PCRActivity,
+        "make_copy",
+        side_effect=RuntimeError("Unable to copy PCR activity"),
+    ):
+        with pytest.raises(RuntimeError, match="Unable to copy PCR activity"):
+            original_pcr.increase_version(secretariat_user)
+
+    original_pcr.refresh_from_db()
+    assert original_pcr.version == 1
+    assert (
+        PCR.objects.really_all().filter(meta_project=original_pcr.meta_project).count()
+        == 1
+    )
+    assert PCRActivity.objects.filter(pcr=original_pcr).count() == 1
