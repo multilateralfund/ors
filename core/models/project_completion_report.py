@@ -790,15 +790,19 @@ class PCRSupportingEvidence(models.Model):
         new_item.pcr = new_pcr
         new_item.agency = self.agency
         new_item.section = self.section
+        new_item.file = ""
+        new_item.save()
 
-        original_file_path = self.file.path
-        new_file_path = _get_new_file_path(self.file.name, new_item.id)
+        if not self.file:
+            return new_item
+
+        original_file_path = self.file.name
+        new_file_path = _get_new_file_path(original_file_path, new_item.id)
         storage = get_protected_storage()
         with storage.open(original_file_path, "rb") as original_file:
             with storage.open(new_file_path, "wb") as new_file:
                 shutil.copyfileobj(original_file, new_file)
         new_item.file.name = new_file_path
-        new_item.filename = self.filename
 
         new_item.save()
         return new_item

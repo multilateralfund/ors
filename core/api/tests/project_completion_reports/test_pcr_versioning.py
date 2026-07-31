@@ -335,8 +335,34 @@ def test_increase_version(
     assert new_pcr_supporting_evidence.agency == pcr_supporting_evidence.agency
     assert new_pcr_supporting_evidence.section == pcr_supporting_evidence.section
     assert new_pcr_supporting_evidence.file.name != pcr_supporting_evidence.file.name
+    assert f"_{new_pcr_supporting_evidence.id}" in new_pcr_supporting_evidence.file.name
+    assert "_None" not in new_pcr_supporting_evidence.file.name
     assert new_pcr_supporting_evidence.filename == pcr_supporting_evidence.filename
     assert new_pcr_supporting_evidence.link == pcr_supporting_evidence.link
+
+
+def test_increase_version_copies_link_only_supporting_evidence(
+    original_pcr,
+    secretariat_user,
+    agency,
+    pcr_supporting_evidence_section,
+):
+    PCRSupportingEvidence.objects.create(
+        pcr=original_pcr,
+        agency=agency,
+        section=pcr_supporting_evidence_section,
+        filename="External evidence",
+        link="https://example.com/evidence",
+    )
+
+    original_pcr.increase_version(secretariat_user)
+
+    archived_pcr = PCR.objects.really_all().get(latest_pcr=original_pcr)
+    archived_evidence = PCRSupportingEvidence.objects.get(pcr=archived_pcr)
+
+    assert archived_evidence.file.name == ""
+    assert archived_evidence.filename == "External evidence"
+    assert archived_evidence.link == "https://example.com/evidence"
 
 
 def test_repeated_revisions_preserve_submission_history_and_creators(
