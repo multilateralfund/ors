@@ -79,17 +79,18 @@ class ProjectAssociationViewSet(
         )
         project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs
-        project = None
         project_id = self.request.query_params.get("project_id", None)
         if project_id:
             project = Project.objects.filter(id=project_id).first()
-        if project:
-            if project.meta_project:
-                # Exclude the meta project associated with the given project_id
-                filtered_projects_qs = filtered_projects_qs.exclude(
-                    meta_project__id=project.meta_project.id
+            if project:
+                if project.meta_project:
+                    # Exclude the meta project associated with the given project_id
+                    filtered_projects_qs = filtered_projects_qs.exclude(
+                        meta_project=project.meta_project
+                    )
+                filtered_projects_qs = filtered_projects_qs.filter(
+                    country=project.country
                 )
-            filtered_projects_qs = filtered_projects_qs.filter(country=project.country)
 
         search_filter = filters.SearchFilter()
         # SearchFilter expects a view instance, so pass self
@@ -111,9 +112,10 @@ class ProjectAssociationViewSet(
             ),
             to_attr="filtered_projects",
         )
-        queryset = MetaProject.objects.all()
+        queryset = MetaProject.objects.filter(
+            projects__in=filtered_projects_qs
+        ).order_by("id")
         queryset = queryset.select_related("lead_agency").prefetch_related(prefetch)
-        queryset = [meta for meta in queryset if getattr(meta, "filtered_projects", [])]
         return queryset
 
     @extend_schema(

@@ -24,10 +24,12 @@ class CountrySerializer(serializers.ModelSerializer):
 
 class CountryDetailsSerializer(CountrySerializer):
     parent = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    region = serializers.SerializerMethodField()
 
     class Meta(CountrySerializer.Meta):
         fields = CountrySerializer.Meta.fields + [
             "parent",
+            "region",
             "location_type",
             "ozone_unit",
             "consumption_category",
@@ -35,3 +37,11 @@ class CountryDetailsSerializer(CountrySerializer):
             "is_lvc",
             "lvc_baseline",
         ]
+
+    def get_region(self, obj):
+        country = obj
+        while country is not None:
+            if country.location_type == "Region":
+                return {"id": country.id, "name": country.name}
+            country = country.parent
+        return None

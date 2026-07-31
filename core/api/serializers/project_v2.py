@@ -267,6 +267,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "country_id",
             "date_approved",
             "date_created",
+            "date_updated",
             "date_completion",
             "date_per_agreement",
             "decision",
