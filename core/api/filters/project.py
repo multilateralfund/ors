@@ -180,6 +180,12 @@ class ProjectFilter(filters.FilterSet):
         method="filter_exclude_project",
     )  # exludes given project and the projects with the same meta project
 
+    updated_since = filters.DateFilter(
+        field_name="date_updated",
+        lookup_expr="gte",
+        help_text="Return projects updated on or after this date (YYYY-MM-DD)",
+    )
+
     def filter_blanket_or_individual_consideration(self, queryset, name, value):
         if not value:
             return queryset
