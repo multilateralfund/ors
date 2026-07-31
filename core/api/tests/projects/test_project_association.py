@@ -190,12 +190,12 @@ class TestProjectAssociationListing(BaseTest):
         project1.save()
 
         self.client.force_authenticate(user=secretariat_viewer_user)
-        response = self.client.get(self.url)
+        response = self.client.get(self.url + "?ordering=type")
         assert response.status_code == 200
         assert len(response.data) == 2
-        assert response.data[0]["code"] == meta_project_mya.code
-        assert response.data[0]["projects"][0]["code"] == project2.code
-        assert response.data[0]["projects"][0]["title"] == project2.title
-        assert response.data[1]["code"] == meta_project.code
-        assert response.data[1]["projects"][0]["code"] == project1.code
-        assert response.data[1]["projects"][0]["title"] == project1.title
+        assert response.data[0]["code"] == meta_project.code
+        assert response.data[0]["projects"][0]["code"] == project1.code
+        assert response.data[0]["projects"][0]["title"] == project1.title
+        assert response.data[1]["code"] == meta_project_mya.code
+        assert response.data[1]["projects"][0]["code"] == project2.code
+        assert response.data[1]["projects"][0]["title"] == project2.title

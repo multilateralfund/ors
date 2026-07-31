@@ -112,7 +112,9 @@ class ProjectAssociationViewSet(
             ),
             to_attr="filtered_projects",
         )
-        queryset = MetaProject.objects.filter(projects__in=filtered_projects_qs)
+        queryset = MetaProject.objects.filter(
+            projects__in=filtered_projects_qs
+        ).order_by("id")
         queryset = queryset.select_related("lead_agency").prefetch_related(prefetch)
         return queryset
 
