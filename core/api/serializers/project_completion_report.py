@@ -369,10 +369,14 @@ class PCRDetailSerializer(serializers.ModelSerializer):
         source="meta_project.country.id", read_only=True
     )
     decisions = DecisionSerializer(many=True, read_only=True)
+    decision_ids = serializers.PrimaryKeyRelatedField(
+        source="decisions", many=True, read_only=True
+    )
     meta_project_id = serializers.IntegerField(read_only=True)
     pcr_projects = serializers.SerializerMethodField()
     project_components = PCRProjectComponentSerializer(many=True)
     gender_mainstreamings = PCRGenderMainstreamingSerializer(many=True)
+    supporting_evidences = PCRSupportingEvidenceSerializer(many=True)
     sustainable_development_goals = PCRSustainableDevelopmentGoalSerializer(many=True)
 
     class Meta:
@@ -385,6 +389,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "country",
             "country_id",
             "completed_by",
+            "decision_ids",
             "decisions",
             "financial_figures_status",
             "financial_figures_status_explanation",
@@ -404,6 +409,7 @@ class PCRDetailSerializer(serializers.ModelSerializer):
             "rating_explanation",
             "rating_explanation_other",
             "submission_date",
+            "supporting_evidences",
             "sustainable_development_goals",
             "total_number_of_enterprises",
             "total_funds_approved",

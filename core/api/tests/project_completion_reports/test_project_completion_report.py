@@ -394,6 +394,14 @@ def test_pcr_project_create(
     assert response.status_code == 201
     pcr = PCR.objects.get(id=response.data["id"])
     pcr_project = PCRProject.objects.get(pcr=pcr, project=project)
+    assert response.data["decision_ids"] == [decision.id]
+    assert {
+        (evidence["agency_id"], evidence["section_id"], evidence["filename"])
+        for evidence in response.data["supporting_evidences"]
+    } == {
+        (agency.id, section1.id, "doc1.pdf"),
+        (new_agency.id, section2.id, "doc2.pdf"),
+    }
     assert str(pcr.submission_date) == "2026-07-10"
     assert pcr.financial_figures_status == PCR.FinancialFiguresStatus.FINAL
     assert pcr.project_goal_achieved == PCR.ProjectGoalAchieved.YES

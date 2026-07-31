@@ -217,7 +217,7 @@ class PCR(models.Model):
                 pcr_project.funds_approved or 0
                 for pcr_project in self.pcr_projects.all()
             ),
-            9,
+            0,
         )
 
     @cached_property
