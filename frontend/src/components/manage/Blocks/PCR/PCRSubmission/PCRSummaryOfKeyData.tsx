@@ -36,8 +36,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
+  Tab,
+  Tabs,
   TextareaAutosize,
 } from '@mui/material'
 import {
@@ -146,13 +147,13 @@ const SubstanceSelect = ({
   value,
 }: {
   id: string
-  label: string
+  label?: string
   onChange: (value: number | null) => void
   options: SubstanceOption[]
   value: number | null
 }) => (
   <div className="min-w-56 sm:min-w-64">
-    <Label htmlFor={id}>{label}</Label>
+    {label && <Label htmlFor={id}>{label}</Label>}
     <Field
       id={id}
       widget="autocomplete"
@@ -171,18 +172,22 @@ const SubstanceSelect = ({
 const DisposalTypeSelect = ({
   id,
   label,
+  labelClassName,
   onChange,
   options,
   value,
 }: {
   id: string
   label: string
+  labelClassName?: string
   onChange: (value: number | null) => void
   options: DisposalTypeOption[]
   value: number | null
 }) => (
   <div className="min-w-56 sm:min-w-64">
-    <Label htmlFor={id}>{label}</Label>
+    <div className={labelClassName}>
+      <Label htmlFor={id}>{label}</Label>
+    </div>
     <Field
       id={id}
       widget="autocomplete"
@@ -201,6 +206,7 @@ const DisposalTypeSelect = ({
 const PCRSummaryOfKeyData = () => {
   const {PCRData, pcrMetaproject, setPCRData} = useContext(PCRDataContext)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
+  const [currentTab, setCurrentTab] = useState(0)
   const [draftSummaryData, setDraftSummaryData] =
     useState<PCRSummaryOfKeyDataType | null>(null)
   const {data: metaproject, loaded: metaprojectLoaded, loading} = pcrMetaproject
@@ -242,6 +248,7 @@ const PCRSummaryOfKeyData = () => {
   const closeDialog = () => {
     setEditingProjectId(null)
     setDraftSummaryData(null)
+    setCurrentTab(0)
   }
 
   const openDialog = useCallback((projectId: number | null | undefined) => {
@@ -250,6 +257,7 @@ const PCRSummaryOfKeyData = () => {
     }
     setEditingProjectId(projectId)
     setDraftSummaryData(cloneSummaryData(getSummaryData(projectId)))
+    setCurrentTab(0)
   }, [getSummaryData])
 
   const saveSummaryData = () => {
@@ -461,8 +469,35 @@ const PCRSummaryOfKeyData = () => {
             Project {editingProject.code}
           </DialogTitle>
           <DialogContent dividers={true}>
-            <div className="flex flex-col gap-y-6 py-2">
-              <FieldGroup>
+            <Tabs
+              aria-label="summary-of-key-data-tabs"
+              className="sectionsTabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              TabIndicatorProps={{
+                className: 'h-0',
+                style: {transitionDuration: '150ms'},
+              }}
+              value={currentTab}
+              onChange={(_, newValue) => setCurrentTab(newValue)}
+            >
+              <Tab id="general" aria-controls="general" label="General"/>
+              <Tab
+                id="alternative-technology"
+                aria-controls="alternative-technology"
+                label="Alternative technology"
+              />
+              <Tab
+                id="enterprises"
+                aria-controls="enterprises"
+                label="Enterprises"
+              />
+              <Tab id="equipment" aria-controls="equipment" label="Equipment"/>
+            </Tabs>
+            <div className="flex flex-col gap-y-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+              {currentTab === 0 && (
+                <FieldGroup>
                 <div className="flex flex-wrap gap-x-7 gap-y-4">
                   <div>
                     <Label htmlFor={`funds-disbursed-${editingProject.id}`}>
@@ -507,12 +542,21 @@ const PCRSummaryOfKeyData = () => {
                   <EmptyField label="Actual duration (months)"/>
                   <EmptyField label="Delay (months)"/>
                 </div>
-              </FieldGroup>
+                </FieldGroup>
+              )}
 
-              <Divider/>
+              {currentTab === 1 && (
+                <FieldGroup title="Alternative technology">
 
-              <FieldGroup title="Alternative technology">
                 <div className="flex flex-col gap-y-4">
+                  <div className="flex gap-x-7">
+                    <div className="min-w-56 sm:min-w-64">
+                      <Label>Substance converted from</Label>
+                    </div>
+                    <div className="min-w-56 sm:min-w-64">
+                      <Label>Substance converted to</Label>
+                    </div>
+                  </div>
                   {summaryData.alternative_technologies.map((entry, index) => (
                     <div
                       key={index}
@@ -520,7 +564,6 @@ const PCRSummaryOfKeyData = () => {
                     >
                       <SubstanceSelect
                         id={`substance-from-${editingProject.id}-${index}`}
-                        label="Substance converted from"
                         options={substanceOptions}
                         value={entry.substance_from}
                         onChange={(value) =>
@@ -533,7 +576,6 @@ const PCRSummaryOfKeyData = () => {
                       />
                       <SubstanceSelect
                         id={`substance-to-${editingProject.id}-${index}`}
-                        label="Substance converted to"
                         options={substanceOptions}
                         value={entry.substance_to}
                         onChange={(value) =>
@@ -578,23 +620,27 @@ const PCRSummaryOfKeyData = () => {
                   }
                   className="mr-auto h-8"
                 />
-              </FieldGroup>
+                </FieldGroup>
+              )}
 
-              <Divider/>
+              {currentTab === 2 && (
+                <FieldGroup>
 
-              <FieldGroup>
                 <div className="flex flex-col gap-y-4">
+                  <div className="grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]">
+                    <div>
+                      <Label>Name of Enterprise</Label>
+                    </div>
+                    <div>
+                      <Label>Address of enterprises</Label>
+                    </div>
+                  </div>
                   {summaryData.enterprises.map((entry, index) => (
                     <div
                       key={index}
                       className="grid max-w-5xl grid-cols-1 items-start gap-4 md:grid-cols-[16rem_minmax(24rem,36rem)_auto]"
                     >
                       <div className="w-full">
-                        <Label
-                          htmlFor={`enterprise-name-${editingProject.id}-${index}`}
-                        >
-                          Name of Enterprise
-                        </Label>
                         <SimpleInput
                           id={`enterprise-name-${editingProject.id}-${index}`}
                           label=""
@@ -606,11 +652,6 @@ const PCRSummaryOfKeyData = () => {
                         />
                       </div>
                       <div className="w-full">
-                        <Label
-                          htmlFor={`enterprise-address-${editingProject.id}-${index}`}
-                        >
-                          Address of enterprises
-                        </Label>
                         <TextareaAutosize
                           id={`enterprise-address-${editingProject.id}-${index}`}
                           className={`${textAreaClassname} min-h-24 w-full pb-2`}
@@ -660,23 +701,32 @@ const PCRSummaryOfKeyData = () => {
                   }
                   className="mr-auto h-8"
                 />
-              </FieldGroup>
+                </FieldGroup>
+              )}
 
-              <Divider/>
+              {currentTab === 3 && (
+                <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
 
-              <FieldGroup title="Fate of ODS-BASED PRODUCTION EQUIPMENT - List of equipment rendered unusable(baseline) (optional)">
                 <div className="flex flex-col gap-y-4">
+                  <div className="hidden max-w-[84rem] grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto] gap-4 xl:grid">
+                    <Label>Name of equipment</Label>
+                    <Label>Description</Label>
+                    <Label>Disposal type</Label>
+                    <Label>Date of disposal</Label>
+                  </div>
                   {summaryData.equipments.map((entry, index) => (
                     <div
                       key={index}
                       className="grid max-w-[84rem] grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[16rem_minmax(22rem,28rem)_16rem_14rem_auto]"
                     >
                       <div className="w-full">
-                        <Label
-                          htmlFor={`equipment-name-${editingProject.id}-${index}`}
-                        >
-                          Name of equipment
-                        </Label>
+                        <div className="xl:hidden">
+                          <Label
+                            htmlFor={`equipment-name-${editingProject.id}-${index}`}
+                          >
+                            Name of equipment
+                          </Label>
+                        </div>
                         <SimpleInput
                           id={`equipment-name-${editingProject.id}-${index}`}
                           label=""
@@ -688,15 +738,17 @@ const PCRSummaryOfKeyData = () => {
                         />
                       </div>
                       <div className="w-full md:col-span-2 xl:col-span-1">
-                        <Label
-                          htmlFor={`equipment-description-${editingProject.id}-${index}`}
-                        >
-                          Description
-                        </Label>
+                        <div className="xl:hidden">
+                          <Label
+                            htmlFor={`equipment-description-${editingProject.id}-${index}`}
+                          >
+                            Description
+                          </Label>
+                        </div>
                         <TextareaAutosize
                           id={`equipment-description-${editingProject.id}-${index}`}
-                          className={`${textAreaClassname} min-h-24 w-full pb-2`}
-                          minRows={3}
+                          className={`${textAreaClassname} min-h-10 w-full pb-2`}
+                          minRows={1}
                           style={STYLE}
                           value={entry.description}
                           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
@@ -711,6 +763,7 @@ const PCRSummaryOfKeyData = () => {
                       <DisposalTypeSelect
                         id={`equipment-disposal_type-${editingProject.id}-${index}`}
                         label="Disposal type"
+                        labelClassName="xl:hidden"
                         options={disposalTypeOptions}
                         value={entry.disposal_type}
                         onChange={(value) =>
@@ -718,11 +771,13 @@ const PCRSummaryOfKeyData = () => {
                         }
                       />
                       <div className="w-full">
-                        <Label
-                          htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
-                        >
-                          Date of disposal
-                        </Label>
+                        <div className="xl:hidden">
+                          <Label
+                            htmlFor={`equipment-disposal_date-${editingProject.id}-${index}`}
+                          >
+                            Date of disposal
+                          </Label>
+                        </div>
                         <DateInput
                           id={`equipment-disposal_date-${editingProject.id}-${index}`}
                           className="w-full !m-0"
@@ -738,7 +793,7 @@ const PCRSummaryOfKeyData = () => {
                       </div>
                       <IconButton
                         aria-label="Remove equipment"
-                        className="mt-7 justify-self-start"
+                        className="justify-self-start xl:self-center"
                         onClick={() =>
                           updateSummaryData(
                             (projectData) => ({
@@ -770,7 +825,8 @@ const PCRSummaryOfKeyData = () => {
                   }
                   className="mr-auto h-8"
                 />
-              </FieldGroup>
+                </FieldGroup>
+              )}
             </div>
           </DialogContent>
           <DialogActions>
