@@ -398,8 +398,14 @@ export const formatApprovalData = (
     'support_cost_psc',
   ]
 
+  const formattedApprovalFields = Object.fromEntries(
+    Object.entries(approvalFields).map(([key, value]) => [
+      key,
+      key.startsWith('total') && value === undefined ? null : value,
+    ]),
+  )
   const crtProjectSpecificFields = pick(
-    { ...crossCuttingFields, ...approvalFields },
+    { ...crossCuttingFields, ...formattedApprovalFields },
     specificFieldsAvailable,
   )
 
