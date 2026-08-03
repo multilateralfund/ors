@@ -93,16 +93,14 @@ const changeNestedField: FieldHandler = (
       }
 
       let computedTotal: Record<string, number> = {}
+      let totals: Record<string, number | undefined> = {}
 
       const approvalField = Object.keys(approvalToOdsMap).find(
         (key) =>
           approvalToOdsMap[key as keyof typeof approvalToOdsMap] === field,
       )
 
-      if (
-        approvalField &&
-        isUndefined(prevData[approvalIdentifier][approvalField])
-      ) {
+      if (approvalField) {
         const computedField = `computed_${approvalField}`
 
         const total = subSectionData.reduce(
@@ -111,17 +109,19 @@ const changeNestedField: FieldHandler = (
         )
 
         computedTotal[computedField] = total
+
+        if (!isUndefined(prevData[approvalIdentifier][approvalField])) {
+          totals[approvalField] = undefined
+        }
       }
 
       return {
         ...prevData,
-        [section]: {
-          ...prevData[section],
-          [subField]: subSectionData,
-        },
+        [section]: { ...prevData[section], [subField]: subSectionData },
         [approvalIdentifier]: {
           ...prevData[approvalIdentifier],
           ...computedTotal,
+          ...totals,
         },
       }
     }, field)
@@ -132,10 +132,7 @@ export const changeField: FieldHandler = (value, field, setState, section) => {
   setState(
     (prevData) => ({
       ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value,
-      },
+      [section]: { ...prevData[section], [field]: value },
     }),
     field,
   )
