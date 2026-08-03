@@ -35,7 +35,6 @@ import { ApiDecision } from '@ors/types/api_meetings.ts'
 import { find, map, omit } from 'lodash'
 import cx from 'classnames'
 import { useGetFundingWindow } from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/hooks.ts'
-import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 
 type DecisionOption = {
   name: string
