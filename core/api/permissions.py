@@ -404,6 +404,30 @@ class HasSectorsAndSubsectorsEditAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_sectors_and_subsectors_edit_access")
 
 
+class HasPCRViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view PCR.
+        """
+        return request.user.has_perm("core.has_pcr_view_access")
+
+
+class HasPCREditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit PCR.
+        """
+        return request.user.has_perm("core.has_pcr_edit_access")
+
+
+class HasPCRSubmitAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to submit PCR.
+        """
+        return request.user.has_perm("core.has_pcr_submit_access")
+
+
 class DenyAll(permissions.BasePermission):
     def has_permission(self, request, view):
         return False
