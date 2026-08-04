@@ -99,7 +99,7 @@ const PCREditWrapper = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <PCRHeader mode="edit" />
+      <PCRHeader mode="edit" pcrMetaproject={pcrMetaproject.data}/>
       <PCRForm />
     </>
   )

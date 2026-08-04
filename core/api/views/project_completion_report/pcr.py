@@ -1,3 +1,4 @@
+from typing import cast
 import json
 
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,7 @@ from rest_framework import serializers
 
 # pylint: disable=broad-exception-caught
 
+from core.models import User
 from core.api.filters.project_completion_report import (
     PCRProjectFilter,
     project_has_cooperating_agency_q,
@@ -108,18 +110,21 @@ class PCRProjectViewSet(
         return [DenyAll]
 
     def get_serializer_class(self):
-        if self.action in ["create", "create_defaults"]:
-            return PCRCreateSerializer
-        if self.action == "retrieve":
-            return PCRDetailSerializer
-        if self.action in ["update", "partial_update"]:
-            return PCRUpdateSerializer
-        return PCRProjectListSerializer
+        match self.action:
+            case "create" | "create_defaults":
+                return PCRCreateSerializer
+            case "retrieve":
+                return PCRDetailSerializer
+            case "update" | "partial_update":
+                return PCRUpdateSerializer
+            case "list":
+                return PCRProjectListSerializer
+            case _:
+                raise ValueError(f"Unmapped or invalid action: '${self.action}'")
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
 
-        files = []
         if "files" in self.request.FILES:
             files = self.request.FILES.getlist("files")
         else:
@@ -134,7 +139,7 @@ class PCRProjectViewSet(
         return super().filter_queryset(queryset)
 
     def _filter_project_permissions_queryset(self, queryset):
-        user = self.request.user
+        user = cast(User, self.request.user)
         if user.is_superuser:
             return queryset
 
@@ -267,6 +272,46 @@ class PCRProjectViewSet(
         }
         return Response(result)
 
+    @staticmethod
+    def _build_initial_data(meta_project, pcr):
+        if pcr:
+            return {
+                "meta_project_id": meta_project.id,
+                "country": meta_project.country.id,
+                "decisions": [decision.id for decision in pcr.decisions.all()],
+                "project_date_approved": pcr.project_date_approved,
+                "project_date_completion": pcr.project_date_completion,
+                "phase_out_ods_approved": pcr.phase_out_ods_approved,
+                "phase_out_ods_actual": pcr.phase_out_ods_actual,
+                "phase_out_co2_eq_t_approved": pcr.phase_out_co2_eq_t_approved,
+                "phase_out_co2_eq_t_actual": pcr.phase_out_co2_eq_t_actual,
+                "total_number_of_enterprises": pcr.total_number_of_enterprises,
+                "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+            }
+
+        first_project = meta_project.projects.order_by("date_created").first()
+        first_project_version_3_date_approved = getattr(
+            first_project.get_version(3), "date_approved", None
+        )
+        return {
+            "meta_project_id": meta_project.id,
+            "country": meta_project.country.id,
+            "decisions": [
+                project.post_excom_decision.id
+                for project in meta_project.projects.filter(
+                    post_excom_decision__isnull=False
+                )
+            ],
+            "project_date_approved": first_project_version_3_date_approved,
+            "project_date_completion": first_project.date_completion,
+            "phase_out_ods_approved": meta_project.phase_out_odp,
+            "phase_out_ods_actual": None,  # no field on meta_project
+            "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
+            "phase_out_co2_eq_t_actual": None,  # no field on meta_project
+            "total_number_of_enterprises": 0,
+            "total_number_of_trainnes": meta_project.total_number_of_trainnes,
+        }
+
     @extend_schema(
         parameters=[
             OpenApiParameter(
@@ -288,7 +333,7 @@ class PCRProjectViewSet(
         ],
     )
     @action(methods=["GET"], detail=False, url_path="create")
-    def create_defaults(self, request, *args, **kwargs):
+    def create_defaults(self, request, *_args, **_kwargs):
         meta_project_id = request.query_params.get("meta_project_id")
         if not meta_project_id:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -298,8 +343,8 @@ class PCRProjectViewSet(
         pcr = None
         if pcr_id:
             pcr = get_object_or_404(PCR, pk=pcr_id)
-        serializer = self.get_serializer()
-        return Response(serializer.build_initial_data(meta_project, pcr))
+        initial_data = self._build_initial_data(meta_project, pcr)
+        return Response(initial_data)
 
     @extend_schema(
         description="""
@@ -321,7 +366,7 @@ class PCRProjectViewSet(
             )
         },
     )
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *_args, **_kwargs):
         raw_metadata = request.data.get("metadata")
         if isinstance(raw_metadata, str):
             try:

@@ -12,7 +12,7 @@ import { PCRHeaderType } from '../interfaces'
 import { CircularProgress } from '@mui/material'
 import { useLocation } from 'wouter'
 
-const PCRHeader = ({ mode }: PCRHeaderType) => {
+const PCRHeader = ({ mode, pcrMetaproject }: PCRHeaderType) => {
   const [_, setLocation] = useLocation()
 
   const { updatedFields } = useUpdatedFields()
@@ -34,7 +34,10 @@ const PCRHeader = ({ mode }: PCRHeaderType) => {
         <div className="flex flex-col">
           <RedirectBackButton withRedirect={false} onAction={onCancel} />
           <PageHeading>
-            {mode === 'edit' ? 'Update PCR' : 'New PCR submission'}
+            {mode === 'edit' ? <>
+              <span className="font-medium text-[#4D4D4D]">Update PCR: </span>
+              <span>{pcrMetaproject?.umbrella_code}</span>
+            </> : 'New PCR submission'}
           </PageHeading>
         </div>
         {isCancelModalOpen && (

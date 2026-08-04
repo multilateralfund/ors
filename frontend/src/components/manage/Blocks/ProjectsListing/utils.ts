@@ -57,7 +57,7 @@ import {
   reduce,
 } from 'lodash'
 
-const getFieldId = <T>(
+const getFieldId = <T,>(
   field: ProjectSpecificFields,
   data: T,
   projectData?: ProjectTypeApi,
@@ -71,7 +71,7 @@ const getFieldId = <T>(
 export const getFormattedDecimalValue = (value: string | null) =>
   !isNil(value) ? Number(value).toString() : value
 
-export const getDefaultValues = <T>(
+export const getDefaultValues = <T,>(
   fields: ProjectSpecificFields[],
   data?: T,
   projectData?: ProjectTypeApi,
@@ -989,7 +989,7 @@ export const getMenus = (
     canUpdatePostExcom,
     canTransferProjects,
     canViewMetaProjects,
-    canViewProjects,
+    canViewPCR,
   } = permissions
   const {
     projectId,
@@ -1062,11 +1062,15 @@ export const getMenus = (
       title: 'Reporting',
       menuItems: [
         { title: 'Annual Progress Reports', url: '/apr' },
+        // {
+        //   title: 'Project Completion Reports',
+        //   url: '/projects-listing/pcr-listing',
+        // },
         {
           title: 'Project Completion Reports',
-          url: '/projects-listing/pcr-listing',
+          url: '/pcr',
+          disabled: !canViewPCR,
         },
-        { title: 'PCR view', url: '/pcr', disabled: !canViewProjects },
       ],
     },
   ]

@@ -26,8 +26,6 @@ const PCRTable = ({
     () =>
       results.map((metaproject) => {
         const projects = [...metaproject.projects]
-        const pcrId =
-          projects.find((project) => project.pcr_id)?.pcr_id ?? null
 
         return {
           ...metaproject,
@@ -35,7 +33,6 @@ const PCRTable = ({
           isMetaproject: true,
           isExpanded: false,
           metaprojectId: metaproject.id,
-          pcrId,
           ...(metaproject.type === 'Multi-year agreement'
             ? { title: metaproject.umbrella_code ?? 'N/A' }
             : { ...projects[0] }),

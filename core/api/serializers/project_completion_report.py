@@ -506,45 +506,6 @@ class PCRCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def build_initial_data(self, meta_project, pcr):
-        if pcr:
-            return {
-                "meta_project_id": meta_project.id,
-                "country": meta_project.country.id,
-                "decisions": [decision.id for decision in pcr.decisions.all()],
-                "project_date_approved": pcr.project_date_approved,
-                "project_date_completion": pcr.project_date_completion,
-                "phase_out_ods_approved": pcr.phase_out_ods_approved,
-                "phase_out_ods_actual": pcr.phase_out_ods_actual,
-                "phase_out_co2_eq_t_approved": pcr.phase_out_co2_eq_t_approved,
-                "phase_out_co2_eq_t_actual": pcr.phase_out_co2_eq_t_actual,
-                "total_number_of_enterprises": pcr.total_number_of_enterprises,
-                "total_number_of_trainnes": meta_project.total_number_of_trainnes,
-            }
-
-        first_project = meta_project.projects.order_by("date_created").first()
-        first_project_version_3_date_approved = getattr(
-            first_project.get_version(3), "date_approved", None
-        )
-        return {
-            "meta_project_id": meta_project.id,
-            "country": meta_project.country.id,
-            "decisions": [
-                project.post_excom_decision.id
-                for project in meta_project.projects.filter(
-                    post_excom_decision__isnull=False
-                )
-            ],
-            "project_date_approved": first_project_version_3_date_approved,
-            "project_date_completion": first_project.date_completion,
-            "phase_out_ods_approved": meta_project.phase_out_odp,
-            "phase_out_ods_actual": None,  # no field on meta_project
-            "phase_out_co2_eq_t_approved": meta_project.phase_out_co2_eq_t,
-            "phase_out_co2_eq_t_actual": None,  # no field on meta_project
-            "total_number_of_enterprises": 0,
-            "total_number_of_trainnes": meta_project.total_number_of_trainnes,
-        }
-
     def _get_files_by_name(self):
         return {file_obj.name: file_obj for file_obj in self.context.get("files", [])}
 
@@ -813,7 +774,6 @@ class PCRProjectListSerializer(serializers.ModelSerializer):
 
 
 class ProjectListForPCRSerializer(serializers.ModelSerializer):
-
     actual_date_of_completion = serializers.SerializerMethodField()
     agency = serializers.SlugRelatedField("name", read_only=True)
     agency_id = serializers.IntegerField(read_only=True, source="agency.id")
@@ -916,6 +876,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
     """
 
     projects = serializers.SerializerMethodField()
+    pcr_id = serializers.SerializerMethodField()
 
     class Meta:
         model = MetaProject
@@ -924,6 +885,7 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
             "umbrella_code",
             "type",
             "projects",
+            "pcr_id",
         ]
 
     @extend_schema_field(ProjectListForPCRSerializer(many=True))
@@ -931,3 +893,9 @@ class PCRMetaProjectSerializer(serializers.ModelSerializer):
         # Use filtered_projects if available, otherwise fallback to all projects
         projects = getattr(obj, "filtered_projects", obj.projects.all())
         return ProjectListForPCRSerializer(projects, many=True).data
+
+    def get_pcr_id(self, obj):
+        pcr = PCR.objects.filter(meta_project=obj).first()
+        if pcr:
+            return pcr.id
+        return None

@@ -40,6 +40,9 @@ export interface PermissionsContextProps {
   canViewAPR: boolean
   canEditAPR: boolean
   canSubmitAPR: boolean
+  canViewPCR: boolean
+  canEditPCR: boolean
+  canSubmitPCR: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

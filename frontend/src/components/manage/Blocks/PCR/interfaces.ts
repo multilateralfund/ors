@@ -8,7 +8,6 @@ export type PCRUpdatedMetaproject = PCRMetaProjectType & {
   isMetaproject: boolean
   isExpanded: boolean
   metaprojectId: number
-  pcrId: number | null
 }
 
 export type PCRTableProps = {
@@ -210,6 +209,7 @@ export type FieldHandler = (
 
 export type PCRHeaderType = {
   mode: string
+  pcrMetaproject?: PCRMetaProjectType | null
 }
 
 export type PCRActionButtons = {
