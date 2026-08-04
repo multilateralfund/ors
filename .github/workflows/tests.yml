@@ -30,6 +30,9 @@ jobs:
       - name: "Top"
         run: |
           docker compose top
+      - name: "Frontend tests"
+        run: |
+          docker compose run --rm --no-deps --entrypoint npm nextjs test
       - name: "Backend tests"
         id: "backendTests"
         run: |
