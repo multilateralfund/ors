@@ -4,6 +4,7 @@ Tests for APR Summary Tables Export functionality.
 
 from datetime import date
 from io import BytesIO
+from types import SimpleNamespace
 
 import pytest
 from django.contrib.auth.models import Group
@@ -1002,3 +1003,18 @@ def test_apr_summary_tables_number_formats():
     # Column specs for CO2 fields report 0-decimal format
     assert spec_map["total_consumption_co2"] == "#,##0"
     assert spec_map["total_production_co2"] == "#,##0"
+
+
+def test_avg_delay_positive_for_late_project():
+    # pylint: disable=protected-access
+    writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
+    record = SimpleNamespace(
+        approved_funding_plus_adjustment_denorm=0,
+        funds_disbursed=0,
+        date_approved_denorm=None,
+        date_first_disbursement=None,
+        date_planned_completion=date(2023, 1, 1),
+        date_of_completion_per_agreement_or_decisions_denorm=date(2023, 4, 1),
+    )
+    data = writer._compute_group_data([record], False, "ongoing_non_investment")
+    assert data["avg_delay"] == 3
