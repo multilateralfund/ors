@@ -42,8 +42,8 @@ export interface PCRDefaultData {
 }
 
 type AdditionalCommentType = {
-  user_type: number | null
-  user_comment: string
+  entity: number | null
+  comment: string
 }
 
 export interface PCROverviewProps {
@@ -63,19 +63,30 @@ export interface PCROverviewData {
   project_goal_achieved: number | null
   project_goal_achieved_explanation: string
   rating: number | null
-  other_rating_explanation: string
+  rating_explanation_other: string
   rating_explanation: string
   additional_comments: AdditionalCommentType[]
   completed_by: number | null
 }
 
-export interface PCRResultsAssessmentData {
+type Activity = {
   activity_title: string
   type_of_activity: string
   type_of_sector: string
   planned_output: string
   actual_activity_output: string
   additional_remarks: string
+}
+
+export interface PCRResultsAssessmentData {
+  agency_id: number
+  agency: string
+  activities: Activity[]
+}
+
+export type FormattedResultsAssessmentData = Activity & {
+  agency_id: number
+  agency: string
 }
 
 export interface PCRAlternativeTechnologyType {
@@ -116,6 +127,7 @@ type CauseOfDelayProjectComponent = {
 
 export interface PCRCausesOfDelayData {
   agency_id: number
+  agency: string
   pcr_project_component: CauseOfDelayProjectComponent[]
 }
 
@@ -131,6 +143,7 @@ type LessonLearnedProjectComponent = {
 
 export interface PCRLessonsLearnedData {
   agency_id: number
+  agency: string
   pcr_project_component: LessonLearnedProjectComponent[]
 }
 
@@ -142,6 +155,7 @@ type ProjectPhase = {
 
 export interface PCRGenderMainstreamingData {
   agency_id: number
+  agency: string
   project_phases: ProjectPhase[]
 }
 
@@ -152,6 +166,7 @@ type Sdgs = {
 
 export interface PCRSdgsData {
   agency_id: number
+  agency: string
   sdgs: Sdgs[]
 }
 
@@ -208,6 +223,7 @@ export type OptionsType = {
 
 export type PCRFile = {
   agency_id: number
+  agency: string
   newFiles: File[]
   deletedFilesIds: number[]
 }
@@ -223,6 +239,7 @@ export type PCRFileMetaDataType = Omit<FileMetaDataType, 'type'> & {
 
 export type PCRFileMetadata = {
   agency_id: number
+  agency: string
   filesMetadata: PCRFileMetaDataType[]
 }
 

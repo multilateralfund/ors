@@ -71,10 +71,6 @@ const getValue = (
     return subSectionData[dataIndex][field]
   }
 
-  if (indexesLength === 1) {
-    return sectionData[dataIndex][field]
-  }
-
   return sectionData[field]
 }
 
@@ -116,30 +112,6 @@ const changeSubsectionField: FieldHandler = (
       },
     }
   }, field)
-}
-
-export const changeArrayField: FieldHandler = (
-  value,
-  section,
-  field,
-  setState,
-  indexes,
-) => {
-  const [dataIndex] = indexes ?? []
-
-  if (!isNil(dataIndex)) {
-    setState((prevData) => {
-      const sectionData = prevData[section] || []
-
-      if (!Array.isArray(sectionData)) {
-        return prevData
-      }
-
-      sectionData[dataIndex] = { ...sectionData[dataIndex], [field]: value }
-
-      return { ...prevData, [section]: sectionData }
-    }, field)
-  }
 }
 
 export const changeNestedField: FieldHandler = (
@@ -224,7 +196,7 @@ export const changeDeepNestedField: FieldHandler = (
   }, field)
 }
 
-export const onFieldChange: FieldHandler = (
+const onFieldChange: FieldHandler = (
   value,
   section,
   field,
@@ -247,11 +219,6 @@ export const onFieldChange: FieldHandler = (
 
   if (indexesLength === 1 && subfieldsLength === 1) {
     changeSubsectionField(value, section, field, setState, indexes, subFields)
-    return
-  }
-
-  if (indexesLength === 1) {
-    changeArrayField(value, section, field, setState, indexes)
     return
   }
 

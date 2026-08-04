@@ -6,19 +6,19 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { api } from '@ors/helpers'
+import { FormattedResultsAssessmentData, PCRActionButtons } from '../interfaces'
 import { buildPCRProjectPayload, getOtherOptionId } from '../utils'
-import { PCRActionButtons } from '../interfaces'
 
+import { forEach, pick, reduce } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
-import { pick } from 'lodash'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
   const { PCRData, pcrMetaproject, pcrDefaultData, ratingOptions } =
     useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
-  const { overview } = PCRData
+  const { overview, results_assessment } = PCRData
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
@@ -41,21 +41,37 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
           'phase_out_co2_eq_t_actual',
           'phase_out_co2_eq_t_approved',
         ]),
-        decision_ids: pcrDefaultData.data?.decisions,
       }
 
       const overviewData = {
         ...overview,
-        other_rating_explanation:
+        rating_explanation_other:
           overview.rating === getOtherOptionId(ratingOptions)
-            ? overview.other_rating_explanation
+            ? overview.rating_explanation_other
             : null,
       }
+
+      const resultsAssessmentData = reduce(
+        results_assessment,
+        (acc: FormattedResultsAssessmentData[], entry) => {
+          forEach(entry.activities, (activity) => {
+            acc.push({
+              agency_id: entry.agency_id,
+              agency: entry.agency,
+              ...activity,
+            })
+          })
+
+          return acc
+        },
+        [],
+      )
 
       const payload = {
         meta_project_id: metaProjectId,
         ...overviewPrefilledData,
         ...overviewData,
+        activities: resultsAssessmentData,
         pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }
 

@@ -19,7 +19,7 @@ const PCROverview = () => {
     PCRData,
     setPCRData,
     ratingOptions,
-    userTypeOptions,
+    entityOptions,
     completionReportDoneByOptions,
   } = useContext(PCRDataContext)
 
@@ -31,7 +31,7 @@ const PCROverview = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const subsectionData = sectionData[additionalCommentsField] || []
-      const initialAdditionalComment = { user_type: null, user_comment: '' }
+      const initialAdditionalComment = { entity: null, comment: '' }
 
       return {
         ...prevData,
@@ -111,7 +111,7 @@ const PCROverview = () => {
           {rating === getOtherOptionId(ratingOptions) && (
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
-              field="other_rating_explanation"
+              field="rating_explanation_other"
               errors={{}}
             />
           )}
@@ -129,15 +129,15 @@ const PCROverview = () => {
               <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                 <PCRSelectWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="user_type"
-                  options={userTypeOptions}
+                  field="entity"
+                  options={entityOptions}
                   errors={{}}
                   indexes={[commentIndex]}
                   subFields={[additionalCommentsField]}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="user_comment"
+                  field="comment"
                   errors={{}}
                   indexes={[commentIndex]}
                   subFields={[additionalCommentsField]}

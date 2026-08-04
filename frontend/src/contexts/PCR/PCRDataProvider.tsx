@@ -9,6 +9,7 @@ import {
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
+import { formatOptions } from '@ors/components/manage/Blocks/PCR/utils'
 import {
   PCRData,
   PCRFile,
@@ -18,8 +19,8 @@ import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
-import { map, reduce } from 'lodash'
 import { useParams } from 'wouter'
+import { reduce } from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -149,19 +150,19 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     options: { withStoreCache: true },
     path: 'api/project-completion-report/rating/',
   })
-  const ratingOptions = map(ratings, (rating) => ({
-    id: rating[0],
-    name: rating[1],
-  }))
+  const ratingOptions = formatOptions(ratings)
+
+  const { data: entities } = useApi({
+    options: { withStoreCache: true },
+    path: 'api/project-completion-report/entity/',
+  })
+  const entityOptions = formatOptions(entities)
 
   const { data: completedBy } = useApi({
     options: { withStoreCache: true },
     path: 'api/project-completion-report/completed-by/',
   })
-  const completionReportDoneByOptions = map(completedBy, (userType) => ({
-    id: userType[0],
-    name: userType[1],
-  }))
+  const completionReportDoneByOptions = formatOptions(completedBy)
 
   const { data: projectComponentOptions } = useApi({
     options: { withStoreCache: true },
@@ -179,17 +180,6 @@ const PCRDataProvider = (props: PropsWithChildren) => {
   })
 
   //to update
-  const userTypeOptions = [
-    { id: 1, name: 'Cooperating agency' },
-    { id: 2, name: 'Government/NOU' },
-    { id: 3, name: 'Enterprises' },
-    { id: 4, name: 'Consultants' },
-    {
-      id: 5,
-      name: 'Project management officers in the Multilateral Fund Secretariat',
-    },
-    { id: 6, name: 'Other, please specify' },
-  ]
 
   const sdgsOptions = [
     { id: 1, name: 'Goal 1: No poverty' },
@@ -236,7 +226,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       setPCRData,
       fundsByAgency,
       ratingOptions,
-      userTypeOptions,
+      entityOptions,
       completionReportDoneByOptions,
       projectComponentOptions,
       causeOfDelayOptions,
@@ -256,7 +246,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       setPCRData,
       fundsByAgency,
       ratingOptions,
-      userTypeOptions,
+      entityOptions,
       completionReportDoneByOptions,
       projectComponentOptions,
       causeOfDelayOptions,

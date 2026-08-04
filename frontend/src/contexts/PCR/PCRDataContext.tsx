@@ -17,7 +17,7 @@ type PCRDataContextProps = PCRFormData &
     pcrDefaultData: ReturnType<typeof useGetPCRDefaults>
     fundsByAgency: PCROverviewProps
     ratingOptions: OptionsType[]
-    userTypeOptions: OptionsType[]
+    entityOptions: OptionsType[]
     completionReportDoneByOptions: OptionsType[]
     projectComponentOptions: OptionsType[]
     causeOfDelayOptions: OptionsType[]
