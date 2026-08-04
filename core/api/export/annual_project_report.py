@@ -1419,8 +1419,8 @@ class APRSummaryTablesExportWriter:
             )
             data["avg_delay"] = self._calculate_avg_months(
                 records,
-                "date_of_completion_per_agreement_or_decisions_denorm",
                 "date_planned_completion",
+                "date_of_completion_per_agreement_or_decisions_denorm",
             )
             num_disbursing = sum(
                 1 for apr in records if apr.funds_disbursed and apr.funds_disbursed > 0
