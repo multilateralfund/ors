@@ -12,6 +12,7 @@ from openpyxl.utils import get_column_letter
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     CountryFactory,
+    FundingWindowFactory,
     MetaProjectFactory,
     ProjectFactory,
     ProjectTypeFactory,
@@ -41,6 +42,11 @@ def get_project_row(sheet, project_id):
         ),
         None,
     )
+
+
+def funding_window_column(headers):
+    # Labelled from ProjectField when that table is populated, else the field name.
+    return headers.get("Funding window") or headers["funding_window"]
 
 
 def load_projects_sheet(response):
@@ -592,6 +598,37 @@ class TestProjectsDashboardExport(BaseTest):
         row = get_project_row(sheet, approved_project.id)
         assert row is not None, "Project not found in export"
         assert sheet[f"{headers['Type Simple']}{row}"].value == "Non-Investment"
+
+    # Funding window
+    def test_funding_window_shows_decision_number(
+        self, secretariat_viewer_user, approved_project
+    ):
+        approved_project.funding_window = FundingWindowFactory.create(
+            decision__number="91/65"
+        )
+        approved_project.save()
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
+        sheet = load_projects_sheet(response)
+        headers = get_sheet_headers(sheet)
+        row = get_project_row(sheet, approved_project.id)
+        assert row is not None, "Project not found in export"
+        assert sheet[f"{funding_window_column(headers)}{row}"].value == "91/65"
+
+    def test_funding_window_empty_when_unset(
+        self, secretariat_viewer_user, approved_project
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
+        response = self.client.get(
+            self.url, {"latest_only": "false", "mock_data": "false"}
+        )
+        sheet = load_projects_sheet(response)
+        headers = get_sheet_headers(sheet)
+        row = get_project_row(sheet, approved_project.id)
+        assert row is not None, "Project not found in export"
+        assert sheet[f"{funding_window_column(headers)}{row}"].value is None
 
     # Substances sheet
     def test_substances_sheet_includes_ods_odp_rows(
