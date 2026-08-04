@@ -23,8 +23,8 @@ from core.api.filters.project_completion_report import (
 )
 from core.api.permissions import (
     DenyAll,
-    HasProjectV2EditAccess,
-    HasProjectV2ViewAccess,
+    HasPCRViewAccess,
+    HasPCREditAccess,
 )
 from core.api.serializers.project_completion_report import (
     PCRCreateSerializer,
@@ -48,19 +48,19 @@ from core.models.project_completion_report import (
 
 
 class PCRProjectComponentOptionListView(generics.ListAPIView):
-    permission_classes = [HasProjectV2ViewAccess]
+    permission_classes = [HasPCRViewAccess]
     queryset = PCRProjectComponentOption.objects.order_by("sort_order", "name")
     serializer_class = PCRProjectComponentOptionSerializer
 
 
 class PCRDelayCategoryListView(generics.ListAPIView):
-    permission_classes = [HasProjectV2ViewAccess]
+    permission_classes = [HasPCRViewAccess]
     queryset = PCRDelayCategory.objects.order_by("sort_order", "name")
     serializer_class = PCRDelayCategorySerializer
 
 
 class PCRLearnedLessonCategoryListView(generics.ListAPIView):
-    permission_classes = [HasProjectV2ViewAccess]
+    permission_classes = [HasPCRViewAccess]
     queryset = PCRLearnedLessonCategory.objects.order_by("sort_order", "name")
     serializer_class = PCRLearnedLessonCategorySerializer
 
@@ -102,9 +102,9 @@ class PCRProjectViewSet(
     @property
     def permission_classes(self):
         if self.action in ["list", "list_filters", "retrieve"]:
-            return [HasProjectV2ViewAccess]
+            return [HasPCRViewAccess]
         if self.action in ["create", "create_defaults", "update", "partial_update"]:
-            return [HasProjectV2EditAccess]
+            return [HasPCREditAccess]
         return [DenyAll]
 
     def get_serializer_class(self):

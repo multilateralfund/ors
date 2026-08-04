@@ -21,8 +21,14 @@ from core.api.serializers.project_completion_report import (
     PCRSupportingEvidenceSectionSerializer,
 )
 
+from core.api.permissions import HasPCRViewAccess
 
-class PCRRatingView(APIView):
+
+class BaseMetadataView(APIView):
+    permission_classes = [HasPCRViewAccess]
+
+
+class PCRRatingView(BaseMetadataView):
     """
     View to return a list of all PCR Rating choices
     """
@@ -42,7 +48,7 @@ class PCRRatingView(APIView):
         return Response(choices)
 
 
-class PCRCompletedByView(APIView):
+class PCRCompletedByView(BaseMetadataView):
     """
     View to return a list of all PCR CompletedBy choices
     """
@@ -62,7 +68,7 @@ class PCRCompletedByView(APIView):
         return Response(choices)
 
 
-class PCREntityView(APIView):
+class PCREntityView(BaseMetadataView):
     """
     View to return a list of all PCRAdditionalComment Entity choices
     """
