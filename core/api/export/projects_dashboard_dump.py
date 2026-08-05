@@ -128,14 +128,6 @@ def get_subregion(p, _):
     return ""
 
 
-def get_funding_window(p, _):
-    # The base dump str()s the FK ("FundingWindow object (5)"). Render the
-    # decision code instead, e.g. "91/65", as the inventory report does.
-    if not p.funding_window:
-        return ""
-    return getattr(p.funding_window.decision, "number", "") or ""
-
-
 def get_type_simple(p, _):
     if p.project_type and p.project_type.code == "INV":
         return "Investment"
@@ -249,9 +241,6 @@ class ProjectsDashboardDumpWriter(ProjectsV2DumpWriter):
 
     def _build_headers(self, fields, source=None):
         result = super()._build_headers(fields, source)
-        for header in result:
-            if header["id"] == "funding_window":
-                header["method"] = get_funding_window
         return [h for h in result if h["id"] not in ("actual_total_fund", "actual_psc")]
 
 

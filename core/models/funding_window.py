@@ -30,3 +30,7 @@ class FundingWindow(models.Model):
         help_text="Funding Window Amount (US$)",
     )
     remarks = models.TextField(null=True, blank=True, help_text="Remarks")
+
+    def __str__(self):
+        # A funding window is identified by its decision code, e.g. "91/65".
+        return (self.decision.number if self.decision else "") or ""
