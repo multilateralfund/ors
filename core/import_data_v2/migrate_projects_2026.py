@@ -1,12 +1,14 @@
 # pylint: disable=C0302
 
+from typing import cast
 import logging
 from datetime import datetime
 import pandas as pd
 import pytz
+from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, DecimalField
 
 from core.api.utils import log_project_history
 from core.import_data.utils import (
@@ -406,7 +408,7 @@ def process_master_data_sheet(dry_run=True, second_parameter=""):
         ):
             if project.code.split("/")[1] != project.metacode.split("/")[1]:
                 logger.warning(
-                    f"""⚠️ Project with legacy code '{project.legacy_code}' has metacode '{project.metacode}' 
+                    f"""⚠️ Project with legacy code '{project.legacy_code}' has metacode '{project.metacode}'
                         not matching the cluster code in the project code '{project.code}'.
                     """
                 )
@@ -976,6 +978,51 @@ def fill_total_phase_out_values_in_project(dry_run=True):
             project.save()
 
 
+def update_total_phase_out_values_in_project(dry_run=True):
+    projects = (
+        Project.objects.really_all()
+        .filter(submission_status__name__in=["Recommended", "Approved"])
+        .prefetch_related("ods_odp")
+    )
+
+    stored_field_names = [
+        "total_phase_out_metric_tonnes",
+        "total_phase_out_odp_tonnes",
+        "total_phase_out_co2_tonnes",
+    ]
+    computed_field_names = [f"computed_{name}" for name in stored_field_names]
+    field_pairs = list(zip(stored_field_names, computed_field_names))
+
+    updated = []
+
+    for project in projects:
+        changed = False
+
+        for stored_name, computed_name in field_pairs:
+            field = cast(DecimalField, Project._meta.get_field(stored_name))
+            quant = Decimal(f"0.{(field.decimal_places - 1) * '0'}1")
+            stored_value = (getattr(project, stored_name) or Decimal("0.0")).quantize(
+                quant
+            )
+            computed_value = Decimal(str(getattr(project, computed_name))).quantize(
+                quant
+            )
+
+            if stored_value != computed_value:
+                setattr(project, stored_name, computed_value)
+                changed = True
+                logger.info("%s != %s", stored_value, computed_value)
+
+        if changed:
+            logger.info("Matched project %s version %s.", project.id, project.version)
+            updated.append(project)
+
+    if updated and not dry_run:
+        Project.objects.really_all().bulk_update(updated, stored_field_names)
+
+    logger.info("%s %s projects.", "Matched" if dry_run else "Updated", len(updated))
+
+
 def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
     meta_projects = MetaProject.objects.all()
     for meta_project in meta_projects:
@@ -1084,3 +1131,5 @@ def migrate_projects_2026(
         fill_total_phase_out_values_in_project(dry_run=dry_run)
     elif option == "fill_project_end_date_mya_with_date_per_agreement":
         fill_project_end_date_mya_with_date_per_agreement(dry_run=dry_run)
+    elif option == "update_total_phase_out_values_in_project":
+        update_total_phase_out_values_in_project(dry_run=dry_run)
