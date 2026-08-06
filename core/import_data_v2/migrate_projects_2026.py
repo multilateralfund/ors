@@ -979,6 +979,9 @@ def fill_total_phase_out_values_in_project(dry_run=True):
 
 
 def update_total_phase_out_values_in_project(dry_run=True):
+    if dry_run:
+        logger.info("Dry run requested, nothing will be saved.")
+
     projects = (
         Project.objects.really_all()
         .filter(submission_status__name__in=["Recommended", "Approved"])
@@ -999,6 +1002,9 @@ def update_total_phase_out_values_in_project(dry_run=True):
         changed = False
 
         for stored_name, computed_name in field_pairs:
+            # Decimal.quantize used so that floating point precision errors such as
+            # Decimal("0.30000000000000004") gets interpreted as Decimal("0.300000000000000")
+            # thus avoiding 0.30000000000000004 != 0.3 during comparisons.
             field = cast(DecimalField, Project._meta.get_field(stored_name))
             quant = Decimal(f"0.{(field.decimal_places - 1) * '0'}1")
             stored_value = (getattr(project, stored_name) or Decimal("0.0")).quantize(
@@ -1011,10 +1017,15 @@ def update_total_phase_out_values_in_project(dry_run=True):
             if stored_value != computed_value:
                 setattr(project, stored_name, computed_value)
                 changed = True
-                logger.info("%s != %s", stored_value, computed_value)
+                logger.info(
+                    "%s | %s | %s != %s",
+                    project.pk,
+                    stored_name,
+                    stored_value,
+                    computed_value,
+                )
 
         if changed:
-            logger.info("Matched project %s version %s.", project.id, project.version)
             updated.append(project)
 
     if updated and not dry_run:

@@ -45,7 +45,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--dry-run",
-            type=bool,
+            action="store_true",
             help="Run the migration without saving any changes to the database",
         )
         parser.add_argument(
