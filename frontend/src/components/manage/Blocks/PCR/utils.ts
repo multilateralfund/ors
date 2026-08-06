@@ -5,7 +5,7 @@ import {
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
 } from './interfaces'
-import { find, lowerCase, map } from 'lodash'
+import { find, forEach, lowerCase, map, reduce } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -97,3 +97,19 @@ export const formatOptions = (options: [string, string][]) =>
     id: option[0],
     name: option[1],
   }))
+
+export const formatAgencyData = <T extends { agency_id: number }>(
+  data: T[],
+  subField: keyof T,
+) =>
+  reduce(
+    data,
+    (acc: object[], entry) => {
+      forEach(entry[subField] as object[], (subEntry) => {
+        acc.push({ agency_id: entry.agency_id, ...subEntry })
+      })
+
+      return acc
+    },
+    [],
+  )

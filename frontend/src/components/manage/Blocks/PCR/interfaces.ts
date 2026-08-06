@@ -40,10 +40,7 @@ export interface PCRDefaultData {
   total_number_of_trainnes: string | null
 }
 
-type AdditionalCommentType = {
-  entity: number | null
-  comment: string
-}
+type AdditionalCommentType = { entity: number | null; comment: string }
 
 export interface PCROverviewProps {
   mlf_funding_approved: Record<number, number>
@@ -79,14 +76,10 @@ type Activity = {
 
 export interface PCRResultsAssessmentData {
   agency_id: number
-  agency: string
   activities: Activity[]
 }
 
-export type FormattedResultsAssessmentData = Activity & {
-  agency_id: number
-  agency: string
-}
+export type FormattedResultsAssessmentData = Activity & { agency_id: number }
 
 export interface PCRAlternativeTechnologyType {
   substance_from: number | null
@@ -114,10 +107,7 @@ export interface PCRSummaryOfKeyDataType {
   equipments: PCREquipmentType[]
 }
 
-type CauseOfDelay = {
-  cause_of_delay_id: number | null
-  description: string
-}
+type CauseOfDelay = { cause_of_delay_id: number | null; description: string }
 
 type CauseOfDelayProjectComponent = {
   pcr_project_component_id: number | null
@@ -126,14 +116,10 @@ type CauseOfDelayProjectComponent = {
 
 export interface PCRCausesOfDelayData {
   agency_id: number
-  agency: string
   pcr_project_component: CauseOfDelayProjectComponent[]
 }
 
-type LessonLearned = {
-  lesson_learned_id: number | null
-  description: string
-}
+type LessonLearned = { lesson_learned_id: number | null; description: string }
 
 type LessonLearnedProjectComponent = {
   pcr_project_component_id: number | null
@@ -142,7 +128,6 @@ type LessonLearnedProjectComponent = {
 
 export interface PCRLessonsLearnedData {
   agency_id: number
-  agency: string
   pcr_project_component: LessonLearnedProjectComponent[]
 }
 
@@ -154,18 +139,13 @@ type ProjectPhase = {
 
 export interface PCRGenderMainstreamingData {
   agency_id: number
-  agency: string
   project_phases: ProjectPhase[]
 }
 
-type Sdgs = {
-  sdg_id: number | null
-  description: string
-}
+type Sdgs = { sdg_id: number | null; description: string }
 
 export interface PCRSdgsData {
   agency_id: number
-  agency: string
   sdgs: Sdgs[]
 }
 
@@ -212,18 +192,12 @@ export type PCRHeaderType = {
   pcrMetaproject?: PCRMetaProjectType | null
 }
 
-export type PCRActionButtons = {
-  setIsLoading: (isLoading: boolean) => void
-}
+export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 
-export type OptionsType = {
-  id: number | string
-  name: string
-}
+export type OptionsType = { id: number | string; name: string }
 
 export type PCRFile = {
   agency_id: number
-  agency: string
   newFiles: File[]
   deletedFilesIds: number[]
 }
@@ -239,7 +213,6 @@ export type PCRFileMetaDataType = Omit<FileMetaDataType, 'type'> & {
 
 export type PCRFileMetadata = {
   agency_id: number
-  agency: string
   filesMetadata: PCRFileMetaDataType[]
 }
 

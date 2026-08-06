@@ -7,49 +7,46 @@ import PCRHeader from '../PCRSubmission/PCRHeader'
 import PCRForm from '../PCRSubmission/PCRForm'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
-import { map, uniqBy } from 'lodash'
+import { map, uniq } from 'lodash'
 
 const PCRCreateWrapper = () => {
   const { pcrMetaproject, setPCRData, setFiles, setFilesMetadata } =
     useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
-  const agencyData = useMemo(
-    () =>
-      uniqBy(
-        map(data?.projects, ({ agency_id, agency }) => ({ agency_id, agency })),
-        'agency_id',
-      ),
+  const agencyIds = useMemo(
+    () => uniq(map(data?.projects, 'agency_id')),
     [data],
   )
   const initialResultsAssessment = useMemo(
-    () => map(agencyData, (data) => ({ ...data, activities: [] })),
-    [agencyData],
+    () => map(agencyIds, (agency_id) => ({ agency_id, activities: [] })),
+    [agencyIds],
   )
   const initialProjectComponentData = useMemo(
-    () => map(agencyData, (data) => ({ ...data, pcr_project_component: [] })),
-    [agencyData],
+    () =>
+      map(agencyIds, (agency_id) => ({ agency_id, pcr_project_component: [] })),
+    [agencyIds],
   )
   const initialGenderMainstreamingData = useMemo(
-    () => map(agencyData, (data) => ({ ...data, project_phases: [] })),
-    [agencyData],
+    () => map(agencyIds, (agency_id) => ({ agency_id, project_phases: [] })),
+    [agencyIds],
   )
   const initialSdgsData = useMemo(
-    () => map(agencyData, (data) => ({ ...data, sdgs: [] })),
-    [agencyData],
+    () => map(agencyIds, (agency_id) => ({ agency_id, sdgs: [] })),
+    [agencyIds],
   )
   const initialFiles = useMemo(
     () =>
-      map(agencyData, (data) => ({
-        ...data,
+      map(agencyIds, (agency_id) => ({
+        agency_id,
         newFiles: [],
         deletedFilesIds: [],
       })),
-    [agencyData],
+    [agencyIds],
   )
   const initialFilesMetadata = useMemo(
-    () => map(agencyData, (data) => ({ ...data, filesMetadata: [] })),
-    [agencyData],
+    () => map(agencyIds, (agency_id) => ({ agency_id, filesMetadata: [] })),
+    [agencyIds],
   )
 
   useEffect(() => {
@@ -62,6 +59,7 @@ const PCRCreateWrapper = () => {
       sdgs_contribution: initialSdgsData,
     }))
   }, [
+    initialResultsAssessment,
     initialProjectComponentData,
     initialGenderMainstreamingData,
     initialSdgsData,
