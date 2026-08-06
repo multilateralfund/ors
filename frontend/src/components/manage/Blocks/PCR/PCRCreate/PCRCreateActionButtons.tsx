@@ -46,6 +46,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
           'phase_out_co2_eq_t_actual',
           'phase_out_co2_eq_t_approved',
         ]),
+        decision_ids: pcrDefaultData.data?.decisions,
       }
 
       const overviewData = {
