@@ -23,6 +23,7 @@ interface IDashboardDataApiResponse {
     undp: number
     unep: number
     unido: number
+    wmo: number
     world_bank: number
   }
   as_of_date: string
@@ -101,6 +102,7 @@ interface IALLOCATIONS {
   undp: IEntry
   unep: IEntry
   unido: IEntry
+  wmo: IEntry
   world_bank: IEntry
 }
 

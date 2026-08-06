@@ -194,6 +194,9 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
     unido = serializers.DecimalField(
         max_digits=30, decimal_places=15, required=False, allow_null=True
     )
+    wmo = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
     world_bank = serializers.DecimalField(
         max_digits=30, decimal_places=15, required=False, allow_null=True
     )
@@ -232,6 +235,7 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
             "undp",
             "unep",
             "unido",
+            "wmo",
             "world_bank",
             "staff_contracts",
             "treasury_fees",

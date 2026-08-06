@@ -1378,6 +1378,7 @@ class ReplenishmentDashboardView(views.APIView):
             undp=models.Sum("undp", default=0),
             unep=models.Sum("unep", default=0),
             unido=models.Sum("unido", default=0),
+            wmo=models.Sum("wmo", default=0),
             world_bank=models.Sum("world_bank", default=0),
             staff_contracts=models.Sum("staff_contracts", default=0),
             treasury_fees=models.Sum("treasury_fees", default=0),
@@ -1553,6 +1554,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             undp=models.Sum("undp", default=0),
             unep=models.Sum("unep", default=0),
             unido=models.Sum("unido", default=0),
+            wmo=models.Sum("wmo", default=0),
             world_bank=models.Sum("world_bank", default=0),
             staff_contracts=models.Sum("staff_contracts", default=0),
             treasury_fees=models.Sum("treasury_fees", default=0),
@@ -1591,6 +1593,7 @@ class ReplenishmentDashboardExportView(views.APIView):
                 allocations["undp"],
                 allocations["unep"],
                 allocations["unido"],
+                allocations["wmo"],
                 allocations["world_bank"],
             ]
         )
@@ -1652,6 +1655,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             (None, allocations["undp"], None),
             (None, allocations["unep"], None),
             (None, allocations["unido"], None),
+            (None, allocations["wmo"], None),
             (None, allocations["world_bank"], None),
             (None, "-", None),
             (None, "-", None),

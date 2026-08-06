@@ -75,6 +75,7 @@ const ALLOCATIONS: IALLOCATIONS = {
   undp: { label: 'UNDP', value: null },
   unep: { label: 'UNEP', value: null },
   unido: { label: 'UNIDO', value: null },
+  wmo: { label: 'WMO', value: null },
   world_bank: { label: 'World Bank', value: null },
 }
 
@@ -143,6 +144,7 @@ function buildProvisions(
     data.allocations.undp,
     data.allocations.unep,
     data.allocations.unido,
+    data.allocations.wmo,
     data.allocations.world_bank,
   ])
   return result
@@ -204,6 +206,7 @@ const updateObjectValues = (fetchedData: IDashboardDataApiResponse) => {
   ALLOCATIONS.undp.value = fetchedData.allocations.undp
   ALLOCATIONS.unep.value = fetchedData.allocations.unep
   ALLOCATIONS.unido.value = fetchedData.allocations.unido
+  ALLOCATIONS.wmo.value = fetchedData.allocations.wmo
   ALLOCATIONS.world_bank.value = fetchedData.allocations.world_bank
   ALLOCATIONS.total.value = calculateTotal(ALLOCATIONS)
 }
