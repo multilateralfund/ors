@@ -401,7 +401,9 @@ export const formatApprovalData = (
   const formattedApprovalFields = Object.fromEntries(
     Object.entries(approvalFields).map(([key, value]) => [
       key,
-      key.startsWith('total') && value === undefined ? null : value,
+      key.startsWith('total') && value === undefined
+        ? approvalFields[`computed_${key}` as keyof typeof approvalFields]
+        : value,
     ]),
   )
   const crtProjectSpecificFields = pick(
