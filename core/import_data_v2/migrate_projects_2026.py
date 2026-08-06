@@ -1093,6 +1093,11 @@ def fill_project_end_date_mya_with_date_per_agreement(dry_run=True):
 def migrate_projects_2026(
     option, second_parameter="", dry_run=True, only_transfered=False
 ):
+    if option == "update_total_phase_out_values_in_project":
+        update_total_phase_out_values_in_project(dry_run=dry_run)
+        # Avoid potential missing file we don't care about.
+        return
+
     consumption_and_production_projects_legacy_codes = (
         extract_consumption_and_production_projects_to_ignore_list()
     )
@@ -1142,5 +1147,3 @@ def migrate_projects_2026(
         fill_total_phase_out_values_in_project(dry_run=dry_run)
     elif option == "fill_project_end_date_mya_with_date_per_agreement":
         fill_project_end_date_mya_with_date_per_agreement(dry_run=dry_run)
-    elif option == "update_total_phase_out_values_in_project":
-        update_total_phase_out_values_in_project(dry_run=dry_run)
