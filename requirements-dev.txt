@@ -13,5 +13,5 @@ pylint-django==2.6.1
 pylint-secure-coding-standard==1.5.1
 pytest
 pytest-cov
-pytest-django
+pytest-django<4.13  # 4.13 dropped Django 4.2, but doesn't say so in its metadata
 pytest-subtests
