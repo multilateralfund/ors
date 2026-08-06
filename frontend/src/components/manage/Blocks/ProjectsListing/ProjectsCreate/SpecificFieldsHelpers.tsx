@@ -52,6 +52,7 @@ import {
 const getFieldDefaultProps = (
   editableFields: string[],
   field: ProjectSpecificFields,
+  isDisabled: boolean = false,
 ) => {
   const fieldName = field.write_field_name
   const isOdp = field.table === 'ods_odp' && field.section !== 'Approval'
@@ -61,7 +62,8 @@ const getFieldDefaultProps = (
       ...defaultPropsSimpleField,
       className: cx('!ml-0 h-10', defaultPropsSimpleField.className, {
         'w-[125px]': isOdp,
-        [disabledClassName]: !canEditField(editableFields, fieldName),
+        [disabledClassName]:
+          !canEditField(editableFields, fieldName) || isDisabled,
         '!flex-grow-0': field.data_type === 'date',
         '!bg-mlfs-bannerColor': field.is_actual,
       }),
@@ -450,6 +452,9 @@ const NumberWidget = <T,>(
 ) => {
   const isApprovalOdp =
     field.section === 'Approval' && field.table === 'ods_odp'
+  const isApprovalFieldDisabled = isApprovalOdp
+    ? (fields as ProjectData).projectSpecificFields.ods_odp?.length > 1
+    : false
 
   const fieldName = field.write_field_name
 
@@ -492,8 +497,10 @@ const NumberWidget = <T,>(
           value={value ?? ''}
           withoutDefaultValue={true}
           decimalDigits={field.data_type === 'number' ? 0 : 2}
-          disabled={!canEditField(editableFields, fieldName)}
-          onChange={(value) =>
+          disabled={
+            !canEditField(editableFields, fieldName) || isApprovalFieldDisabled
+          }
+          onChange={(value) => {
             changeHandler[field.data_type]<T, SpecificFields>(
               value,
               fieldName,
@@ -502,9 +509,24 @@ const NumberWidget = <T,>(
               subField,
               index,
             )
-          }
+
+            if (isApprovalOdp) {
+              changeHandler[field.data_type]<T, SpecificFields>(
+                value,
+                approvalToOdsMap[fieldName],
+                setFields,
+                'projectSpecificFields' as keyof T,
+                'ods_odp',
+                0,
+              )
+            }
+          }}
           {...omit(
-            getFieldDefaultProps(editableFields, field),
+            getFieldDefaultProps(
+              editableFields,
+              field,
+              isApprovalFieldDisabled,
+            ),
             'containerClassName',
           )}
         />
