@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import openpyxl
 import pytest
+from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 from core.api.tests.base import BaseTest
@@ -12,6 +13,7 @@ from core.api.tests.factories import DecisionFactory
 from core.api.tests.factories import FundingWindowFactory
 from core.api.tests.factories import MeetingFactory
 from core.api.tests.factories import ProjectFactory
+from core.api.tests.factories import UserFactory
 
 from core.api.views import funding_window_export
 
@@ -84,3 +86,78 @@ class TestFundingWindowExport(BaseTest):
         assert sheet["E3"].value == 0
         assert sheet["F3"].value == pytest.approx(50.0)
         assert sheet["G3"].value == "Second remarks"
+
+
+class TestFundingWindowPermissions(BaseTest):
+    url = reverse("funding-window-export").replace("export/", "")
+
+    @staticmethod
+    def _view_only_user():
+        user = UserFactory.create(username="funding_window_viewer")
+        permission = Permission.objects.get(
+            codename="has_project_v2_funding_window_view_access"
+        )
+        user.user_permissions.add(permission)
+        return user
+
+    @staticmethod
+    def _payload():
+        meeting = MeetingFactory.create()
+        decision = DecisionFactory.create(meeting=meeting)
+        return {
+            "meeting_id": meeting.id,
+            "decision_id": decision.id,
+            "description": "Funding window",
+            "amount": "100.00",
+            "remarks": "Remarks",
+        }
+
+    def test_agency_submitter_cannot_view_funding_window(self, agency_user):
+        self.client.force_authenticate(user=agency_user)
+
+        list_response = self.client.get(self.url)
+        export_response = self.client.get(reverse("funding-window-export"))
+
+        assert list_response.status_code == HTTPStatus.FORBIDDEN
+        assert export_response.status_code == HTTPStatus.FORBIDDEN
+
+    def test_view_permission_can_view_but_not_manage(self):
+        funding_window = FundingWindowFactory.create()
+        detail_url = f"{self.url}{funding_window.id}/"
+        user = self._view_only_user()
+
+        self.client.force_authenticate(user=user)
+
+        list_response = self.client.get(self.url)
+        detail_response = self.client.get(detail_url)
+        create_response = self.client.post(self.url, self._payload(), format="json")
+        update_response = self.client.put(
+            detail_url,
+            self._payload(),
+            format="json",
+        )
+
+        assert list_response.status_code == HTTPStatus.OK
+        assert detail_response.status_code == HTTPStatus.OK
+        assert create_response.status_code == HTTPStatus.FORBIDDEN
+        assert update_response.status_code == HTTPStatus.FORBIDDEN
+
+    def test_secretariat_viewer_can_view_but_not_manage(self, secretariat_viewer_user):
+        funding_window = FundingWindowFactory.create()
+        detail_url = f"{self.url}{funding_window.id}/"
+
+        self.client.force_authenticate(user=secretariat_viewer_user)
+
+        list_response = self.client.get(self.url)
+        detail_response = self.client.get(detail_url)
+        create_response = self.client.post(self.url, self._payload(), format="json")
+        update_response = self.client.put(
+            detail_url,
+            self._payload(),
+            format="json",
+        )
+
+        assert list_response.status_code == HTTPStatus.OK
+        assert detail_response.status_code == HTTPStatus.OK
+        assert create_response.status_code == HTTPStatus.FORBIDDEN
+        assert update_response.status_code == HTTPStatus.FORBIDDEN

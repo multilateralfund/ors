@@ -44,7 +44,7 @@ const ProjectUmbrellaProjectDetails = ({
   isPrevButtonDisabled?: boolean
   setErrors?: (value: { [key: string]: [] }) => void
 }) => {
-  const { canViewMetaProjects } = useContext(PermissionsContext)
+  const { canViewMyaData } = useContext(PermissionsContext)
   const { allMpErrors } = useStore((state) => state.mpData)
   const { inlineMessage } = useStore((state) => state.inlineMessage)
 
@@ -70,7 +70,7 @@ const ProjectUmbrellaProjectDetails = ({
         />
       ),
     },
-    ...(canViewMetaProjects && isMya
+    ...(canViewMyaData && isMya
       ? [
           {
             id: 'mya-updates',

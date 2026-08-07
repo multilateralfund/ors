@@ -322,12 +322,40 @@ class HasProjectV2RecommendAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_project_v2_recommend_projects_access")
 
 
-class HasProjectV2MyaAccess(permissions.BasePermission):
+class HasProjectV2MyaManageAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
         Check if the user has permission to manage MYA in Project V2.
         """
-        return request.user.has_perm("core.has_project_v2_mya_access")
+        return request.user.has_perm("core.has_project_v2_mya_manage_access")
+
+
+class HasProjectV2MyaViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view MYA in Project V2.
+        """
+        return request.user.has_perm(
+            "core.has_project_v2_mya_view_access"
+        ) or request.user.has_perm("core.has_project_v2_mya_manage_access")
+
+
+class HasProjectV2FundingWindowManageAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to manage funding windows in Project V2.
+        """
+        return request.user.has_perm("core.has_project_v2_funding_window_manage_access")
+
+
+class HasProjectV2FundingWindowViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view funding windows in Project V2.
+        """
+        return request.user.has_perm(
+            "core.has_project_v2_funding_window_view_access"
+        ) or request.user.has_perm("core.has_project_v2_funding_window_manage_access")
 
 
 class HasProjectV2TransferAccess(permissions.BasePermission):

@@ -1,6 +1,7 @@
 from rest_framework import generics
 
-from core.api.permissions import HasMetaProjectsViewAccess
+from core.api.permissions import HasProjectV2FundingWindowManageAccess
+from core.api.permissions import HasProjectV2FundingWindowViewAccess
 from core.api.serializers.funding_window import FundingWindowSerializerForCreateUpdate
 from core.api.serializers.funding_window import FundingWindowSerializerForListing
 from core.api.views.funding_window_export import FundingWindowExport
@@ -12,8 +13,12 @@ class FundingWindowListCreateView(generics.ListCreateAPIView):
     List and create funding windows.
     """
 
-    permission_classes = [HasMetaProjectsViewAccess]
     queryset = FundingWindow.objects.all().order_by("id")
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [HasProjectV2FundingWindowManageAccess()]
+        return [HasProjectV2FundingWindowViewAccess()]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -22,14 +27,18 @@ class FundingWindowListCreateView(generics.ListCreateAPIView):
 
 
 class FundingWindowUpdateView(generics.RetrieveAPIView, generics.UpdateAPIView):
-    permission_classes = [HasMetaProjectsViewAccess]
     queryset = FundingWindow.objects.all()
     serializer_class = FundingWindowSerializerForCreateUpdate
     lookup_field = "id"
 
+    def get_permissions(self):
+        if self.request.method in ("PUT", "PATCH"):
+            return [HasProjectV2FundingWindowManageAccess()]
+        return [HasProjectV2FundingWindowViewAccess()]
+
 
 class FundingWindowExportView(generics.GenericAPIView):
-    permission_classes = [HasMetaProjectsViewAccess]
+    permission_classes = [HasProjectV2FundingWindowViewAccess]
     queryset = FundingWindow.objects.select_related(
         "meeting",
         "decision",

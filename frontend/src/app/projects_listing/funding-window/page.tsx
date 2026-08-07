@@ -1,12 +1,22 @@
+import { useContext } from 'react'
+import { Redirect } from 'wouter'
+
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle.tsx'
 import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
 import FundingWindow from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/FundingWindow.tsx'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 export default function FundingWindowPage() {
+  const { canViewFundingWindow } = useContext(PermissionsContext)
+
   usePageTitle('Projects - Funding window')
+
+  if (!canViewFundingWindow) {
+    return <Redirect to="/projects-listing" />
+  }
 
   return (
     <PageWrapper>

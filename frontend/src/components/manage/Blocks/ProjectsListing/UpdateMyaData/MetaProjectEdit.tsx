@@ -59,8 +59,9 @@ export const MetaProjectEdit = (props: {
   mp: MetaProjectDetailType
   refreshMetaProjectDetails: () => void
   onCancel: () => void
+  readOnly?: boolean
 }) => {
-  const { mp, refreshMetaProjectDetails, onCancel } = props
+  const { mp, refreshMetaProjectDetails, onCancel, readOnly = false } = props
 
   const { updatedFields, addUpdatedField, clearUpdatedFields } =
     useUpdatedFields()
@@ -110,6 +111,10 @@ export const MetaProjectEdit = (props: {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const handleSave = async () => {
+    if (readOnly) {
+      return
+    }
+
     try {
       const result = await api(`api/meta-projects/${mp.id}/`, {
         data: form,
@@ -197,6 +202,7 @@ export const MetaProjectEdit = (props: {
       fd.name === 'extended_date_of_completion' && !hasEndDate
 
     const isFieldDisabled =
+      readOnly ||
       fd.name === projectDuration ||
       isEndDateDisabled ||
       isExtendedDateCOmpletionDisabled
@@ -225,6 +231,7 @@ export const MetaProjectEdit = (props: {
             prefix={monetaryFields.includes(fd.name) ? '$' : ''}
             value={fieldValue}
             onChange={changeSimpleInput(fd.name, { numeric: true })}
+            disabled={isFieldDisabled}
           />
         )
       default:
@@ -335,12 +342,14 @@ export const MetaProjectEdit = (props: {
           >
             Close
           </Button>
+          {!readOnly && (
           <Button
             className="bg-primary text-white hover:text-mlfs-hlYellow"
             onClick={handleSave}
           >
             Save
           </Button>
+          )}
         </DialogActions>
       </Dialog>
       {isCancelModalOpen && (
