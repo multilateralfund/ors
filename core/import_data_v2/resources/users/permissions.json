@@ -126,8 +126,26 @@
         "model_name": "project"
     },
     {
-        "permission_codename": "has_project_v2_mya_access",
+        "permission_codename": "has_project_v2_mya_view_access",
+        "permission_name": "Has project v2 view MYA access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_mya_manage_access",
         "permission_name": "Has project v2 manage MYA access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_funding_window_view_access",
+        "permission_name": "Has project v2 funding window view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_funding_window_manage_access",
+        "permission_name": "Has project v2 funding window manage access",
         "app_label": "core",
         "model_name": "project"
     },

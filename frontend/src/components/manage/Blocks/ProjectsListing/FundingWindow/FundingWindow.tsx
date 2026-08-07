@@ -9,27 +9,35 @@ import {
 import { useGetFundingWindow } from '@ors/components/manage/Blocks/ProjectsListing/FundingWindow/hooks.ts'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils.ts'
 import { FaPlusCircle, FaEdit, FaFileDownload } from 'react-icons/fa'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import FundingWindowModal from './FundingWindowModal.tsx'
 import api from '../../../../../helpers/Api/_api.ts'
 import Link from '@ors/components/ui/Link/Link.tsx'
 import { formatApiUrl } from '@ors/helpers'
+import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 
 const dollarValueOrNull = (value: number | string) =>
   value ? `$${formatNumberValue(value)}` : null
 
 export default function FundingWindow() {
+  const { canManageFundingWindow } = useContext(PermissionsContext)
   const [modalOpen, setModalOpen] = useState(false)
   const [editData, setEditData] = useState<FundingWindowType | null>(null)
   const { loaded, loading, results, count, refetch, setParams } =
     useGetFundingWindow()
 
   const handleOpenCreate = () => {
+    if (!canManageFundingWindow) {
+      return
+    }
     setEditData(null)
     setModalOpen(true)
   }
 
   const handleOpenEdit = (data: FundingWindowType) => {
+    if (!canManageFundingWindow) {
+      return
+    }
     setEditData(data)
     setModalOpen(true)
   }
@@ -44,10 +52,12 @@ export default function FundingWindow() {
     requestParams: FundingWindowPostType,
     id?: number,
   ) => {
+    if (!canManageFundingWindow) {
+      return
+    }
+
     const url = id ? `api/funding-window/${id}/` : 'api/funding-window'
     const method = id ? 'PUT' : 'POST'
-
-    console.log(requestParams)
 
     await api(url, {
       data: requestParams,
@@ -106,21 +116,25 @@ export default function FundingWindow() {
       tooltipField: 'remarks',
       sortable: false,
     },
-    {
-      headerName: 'Actions',
-      sortable: false,
-      filter: false,
-      width: 100,
-      cellRenderer: (params: { data: FundingWindowType }) => (
-        <mui.IconButton
-          size="small"
-          onClick={() => handleOpenEdit(params.data)}
-          title="Edit"
-        >
-          <FaEdit size={16} />
-        </mui.IconButton>
-      ),
-    },
+    ...(canManageFundingWindow
+      ? [
+          {
+            headerName: 'Actions',
+            sortable: false,
+            filter: false,
+            width: 100,
+            cellRenderer: (params: { data: FundingWindowType }) => (
+              <mui.IconButton
+                size="small"
+                onClick={() => handleOpenEdit(params.data)}
+                title="Edit"
+              >
+                <FaEdit size={16} />
+              </mui.IconButton>
+            ),
+          },
+        ]
+      : []),
   ]
 
   return (
@@ -135,22 +149,26 @@ export default function FundingWindow() {
           >
             Download report
           </Link>
-          <mui.Button
-            variant="contained"
-            color="primary"
-            startIcon={<FaPlusCircle size={14} />}
-            onClick={handleOpenCreate}
-          >
-            Add funding window
-          </mui.Button>
+          {canManageFundingWindow && (
+            <mui.Button
+              variant="contained"
+              color="primary"
+              startIcon={<FaPlusCircle size={14} />}
+              onClick={handleOpenCreate}
+            >
+              Add funding window
+            </mui.Button>
+          )}
         </div>
 
-        <FundingWindowModal
-          open={modalOpen}
-          onClose={handleModalClose}
-          onSubmit={handleSubmit}
-          editData={editData}
-        />
+        {canManageFundingWindow && (
+          <FundingWindowModal
+            open={modalOpen}
+            onClose={handleModalClose}
+            onSubmit={handleSubmit}
+            editData={editData}
+          />
+        )}
 
         <ViewTable
           columnDefs={[...columnDefs]}

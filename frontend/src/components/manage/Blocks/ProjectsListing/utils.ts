@@ -990,7 +990,8 @@ export const getMenus = (
     canViewEnterprises,
     canUpdatePostExcom,
     canTransferProjects,
-    canViewMetaProjects,
+    canViewFundingWindow,
+    canViewMyaData,
     canViewProjects,
   } = permissions
   const {
@@ -1024,7 +1025,7 @@ export const getMenus = (
           title: 'Update MYA data',
           url: `/projects-listing/update-mya-data${projectId ? `/${projectMetaprojectId}` : ''}`,
           disabled:
-            !canViewMetaProjects ||
+            !canViewMyaData ||
             (!!projectId &&
               !(
                 projectSubmissionStatus === 'Approved' && !!projectMetaprojectId
@@ -1056,7 +1057,7 @@ export const getMenus = (
         {
           title: 'Funding window',
           url: '/projects-listing/funding-window',
-          disabled: !canViewMetaProjects,
+          disabled: !canViewFundingWindow,
         },
       ],
     },

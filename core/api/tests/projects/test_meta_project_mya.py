@@ -4,7 +4,9 @@ from django.urls import reverse
 from core.api.serializers.meta_project import MetaProjectMyaSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import AgencyFactory
+from core.api.tests.factories import CountryFactory
 from core.api.tests.factories import MetaProjectFactory
+from core.api.tests.factories import ProjectClusterFactory
 from core.api.tests.factories import ProjectFactory
 from core.api.tests.factories import ProjectOdsOdpFactory
 from core.models.project import MetaProject
@@ -215,6 +217,216 @@ class TestProjectV2List(BaseTest):
 
         assert response.status_code == 200
         assert response.data["lead_agency"] is None
+
+    def test_agency_submitter_only_lists_lead_or_implementing_agency_metaprojects(
+        self,
+        agency_user,
+        other_agency,
+        project_approved_status,
+    ):
+        lead_agency_mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        implementing_agency_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA
+        )
+        other_mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=lead_agency_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=agency_user.agency,
+        )
+        ProjectFactory.create(
+            meta_project=implementing_agency_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=agency_user.agency,
+            lead_agency=other_agency,
+        )
+        ProjectFactory.create(
+            meta_project=other_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=other_agency,
+            lead_agency=other_agency,
+        )
+
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.get(self.url, format="json")
+
+        assert response.status_code == 200
+        ids = {item["id"] for item in response.data}
+        assert lead_agency_mp.id in ids
+        assert implementing_agency_mp.id in ids
+        assert other_mp.id not in ids
+
+    def test_agency_submitter_filter_options_are_scoped_to_accessible_myas(
+        self,
+        agency_user,
+        other_agency,
+        project_approved_status,
+    ):
+        hidden_agency = AgencyFactory.create()
+        lead_country = CountryFactory.create()
+        implementing_country = CountryFactory.create()
+        hidden_country = CountryFactory.create()
+        lead_cluster = ProjectClusterFactory.create()
+        implementing_cluster = ProjectClusterFactory.create()
+        hidden_cluster = ProjectClusterFactory.create()
+
+        lead_agency_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            country=lead_country,
+            cluster=lead_cluster,
+            is_draft=False,
+        )
+        implementing_agency_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            country=implementing_country,
+            cluster=implementing_cluster,
+            is_draft=False,
+        )
+        hidden_mp = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            country=hidden_country,
+            cluster=hidden_cluster,
+            is_draft=False,
+        )
+
+        ProjectFactory.create(
+            meta_project=lead_agency_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=agency_user.agency,
+            lead_agency=agency_user.agency,
+            country=lead_country,
+            cluster=lead_cluster,
+        )
+        ProjectFactory.create(
+            meta_project=implementing_agency_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=agency_user.agency,
+            lead_agency=other_agency,
+            country=implementing_country,
+            cluster=implementing_cluster,
+        )
+        ProjectFactory.create(
+            meta_project=hidden_mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=hidden_agency,
+            lead_agency=hidden_agency,
+            country=hidden_country,
+            cluster=hidden_cluster,
+        )
+
+        self.client.force_authenticate(user=agency_user)
+
+        countries_response = self.client.get(
+            reverse("countries-list"),
+            {"values_exclusive_for": "meta_project"},
+            format="json",
+        )
+        meta_project_countries_response = self.client.get(
+            reverse("meta-project-country-list"), format="json"
+        )
+        clusters_response = self.client.get(
+            reverse("meta-project-cluster-list"), format="json"
+        )
+        agencies_response = self.client.get(
+            reverse("meta-project-lead-agency-list"), format="json"
+        )
+
+        assert countries_response.status_code == 200
+        assert meta_project_countries_response.status_code == 200
+        assert clusters_response.status_code == 200
+        assert agencies_response.status_code == 200
+
+        country_ids = {item["id"] for item in countries_response.data}
+        meta_project_country_ids = {
+            item["id"] for item in meta_project_countries_response.data
+        }
+        cluster_ids = {item["id"] for item in clusters_response.data}
+        agency_ids = {item["id"] for item in agencies_response.data}
+
+        assert lead_country.id in country_ids
+        assert implementing_country.id in country_ids
+        assert hidden_country.id not in country_ids
+        assert country_ids == meta_project_country_ids
+
+        assert lead_cluster.id in cluster_ids
+        assert implementing_cluster.id in cluster_ids
+        assert hidden_cluster.id not in cluster_ids
+
+        assert agency_user.agency.id in agency_ids
+        assert other_agency.id in agency_ids
+        assert hidden_agency.id not in agency_ids
+
+    def test_agency_submitter_can_view_implementing_agency_metaproject(
+        self,
+        agency_user,
+        other_agency,
+        project_approved_status,
+    ):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=agency_user.agency,
+            lead_agency=other_agency,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 200
+        assert response.data["id"] == mp.id
+
+    def test_agency_submitter_cannot_view_other_agency_metaproject(
+        self,
+        agency_user,
+        other_agency,
+        project_approved_status,
+    ):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            agency=other_agency,
+            lead_agency=other_agency,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.get(mp_url, format="json")
+
+        assert response.status_code == 404
+
+    def test_agency_submitter_cannot_edit_own_agency_metaproject(
+        self,
+        agency_user,
+        project_approved_status,
+    ):
+        mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)
+        ProjectFactory.create(
+            meta_project=mp,
+            category=Project.Category.MYA,
+            submission_status=project_approved_status,
+            lead_agency=agency_user.agency,
+        )
+        mp_url = reverse("meta-project-view", args=(mp.id,))
+
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.put(
+            mp_url, data={"project_funding": 20.20}, format="json"
+        )
+
+        mp.refresh_from_db()
+        assert response.status_code == 403
+        assert mp.project_funding is None
 
     def test_first_approved_mya_project_returns_none_without_approved_projects(self):
         mp = MetaProjectFactory.create(type=MetaProject.MetaProjectType.MYA)

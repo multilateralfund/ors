@@ -25,9 +25,11 @@ from core.api.permissions import (
     HasProjectStatisticsViewAccess,
     HasProjectViewAccess,
     HasProjectEditAccess,
-    HasProjectV2MyaAccess,
+    HasProjectV2MyaManageAccess,
+    HasProjectV2MyaViewAccess,
     DenyAll,
 )
+from core.api.utils import scope_mya_queryset_to_user_agency
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project import (
@@ -116,7 +118,9 @@ class MetaProjectCountryListView(generics.ListAPIView):
     serializer_class = CountrySerializer
 
     def get_queryset(self):
-        meta_projects = MetaProject.objects.for_mya_export()
+        meta_projects = scope_mya_queryset_to_user_agency(
+            MetaProject.objects.for_mya_export(), self.request.user
+        )
 
         return Country.objects.filter(meta_projects__in=meta_projects).distinct()
 
@@ -130,7 +134,9 @@ class MetaProjectClusterListView(generics.ListAPIView):
     serializer_class = ProjectClusterSerializer
 
     def get_queryset(self):
-        meta_projects = MetaProject.objects.for_mya_export()
+        meta_projects = scope_mya_queryset_to_user_agency(
+            MetaProject.objects.for_mya_export(), self.request.user
+        )
 
         return ProjectCluster.objects.filter(meta_projects__in=meta_projects).distinct()
 
@@ -146,10 +152,13 @@ class MetaProjectLeadAgencyListView(generics.ListAPIView):
     serializer_class = AgencySerializer
 
     def get_queryset(self):
+        meta_projects = scope_mya_queryset_to_user_agency(
+            MetaProject.objects.for_mya_export(), self.request.user
+        )
         projects = Project.objects.filter(
             category=Project.Category.MYA,
             submission_status__name="Approved",
-            meta_project__in=MetaProject.objects.for_mya_export(),
+            meta_project__in=meta_projects,
         ).distinct()
 
         agencies = Agency.objects.filter(
@@ -163,7 +172,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
     List meta projects available for MYA update.
     """
 
-    permission_classes = [HasProjectV2MyaAccess]
+    permission_classes = [HasProjectV2MyaViewAccess]
     serializer_class = MetaProjectMyaSerializer
     filterset_class = MetaProjectMyaFilter
     filter_backends = [
@@ -190,6 +199,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
             # )
             .distinct()
         )
+        result = scope_mya_queryset_to_user_agency(result, self.request.user)
         return result
 
 
@@ -201,7 +211,17 @@ class MetaProjectMyaDetailsViewSet(
 ):
     serializer_class = MetaProjecMyaDetailsSerializer
     queryset = MetaProject.objects.all()
-    permission_classes = [HasProjectV2MyaAccess]
+    permission_classes = [HasProjectV2MyaViewAccess]
+
+    def get_permissions(self):
+        if self.action == "update":
+            return [HasProjectV2MyaManageAccess()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        return scope_mya_queryset_to_user_agency(
+            super().get_queryset(), self.request.user
+        )
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -238,7 +258,7 @@ class MetaProjectMyaDetailsViewSet(
         if kwargs["category"] != Project.Category.MYA:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         obj = get_object_or_404(
-            MetaProject.objects.prefetch_related("projects"),
+            self.get_queryset().prefetch_related("projects"),
             country_id=kwargs["country_id"],
             cluster_id=kwargs["cluster_id"],
             type=Project.Category.MYA,

@@ -82,9 +82,18 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProductionProjects = user_permissions.includes(
     'can_view_production_projects',
   )
-  const canViewMetaProjects = user_permissions.includes(
-    'has_project_v2_mya_access',
+  const canManageMyaData = user_permissions.includes(
+    'has_project_v2_mya_manage_access',
   )
+  const canViewMyaData =
+    canManageMyaData ||
+    user_permissions.includes('has_project_v2_mya_view_access')
+  const canManageFundingWindow = user_permissions.includes(
+    'has_project_v2_funding_window_manage_access',
+  )
+  const canViewFundingWindow =
+    canManageFundingWindow ||
+    user_permissions.includes('has_project_v2_funding_window_view_access')
   const canUpdatePostExcom = user_permissions.includes(
     'has_project_v2_edit_post_excom',
   )
@@ -163,7 +172,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewProductionProjects,
         canUpdatePostExcom,
         canTransferProjects,
-        canViewMetaProjects,
+        canViewMyaData,
+        canManageMyaData,
+        canViewFundingWindow,
+        canManageFundingWindow,
         canViewEnterprises,
         canEditEnterprise,
         canSetProjectSettings,
