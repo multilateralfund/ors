@@ -2,8 +2,10 @@
 # pylint: disable=C0302
 
 import decimal
+import io
 from decimal import Decimal
 
+import openpyxl
 import pytest
 from constance import config
 from django.urls import reverse
@@ -962,6 +964,35 @@ class TestStatusOfContributions:
         )
         assert "disputed_contributions_per_country" in response.data
         assert len(response.data["disputed_contributions_per_country"]) == 2
+
+    def test_status_of_contributions_export_tab_order(self, stakeholder_user):
+        self.client.force_authenticate(user=stakeholder_user)
+
+        url = reverse("replenishment-status-of-contributions-export")
+        response = self.client.get(
+            url,
+            {
+                # Deliberately shuffled, to check the endpoint sorts itself.
+                "triennials": "2021,2024",
+                "years": "2022,2026,2024,2021,2023,2025,2010",
+            },
+        )
+        assert response.status_code == 200
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Summary Status of Contributions",
+            "2024-2026 Contributions",
+            "2026 Contributions",
+            "2025 Contributions",
+            "2024 Contributions",
+            "2021-2023 Contributions",
+            "2023 Contributions",
+            "2022 Contributions",
+            "2021 Contributions",
+            # 2010 isn't in a requested triennium, so it's appended at the end.
+            "2010 Contributions",
+        ]
 
 
 class TestDisputedContributions(BaseTest):

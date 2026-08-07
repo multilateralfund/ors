@@ -540,10 +540,75 @@ class AnnualStatusOfContributionsExportView(views.APIView):
         return workbook_response(f"Status of Contributions {year}", wb)
 
 
+def _build_soc_country_data(soc_qs):
+    return [
+        {
+            "no": index + 1,
+            "country": country.name,
+            "agreed_contributions": country.agreed_contributions,
+            "cash_payments": country.cash_payments,
+            "bilateral_assistance": country.bilateral_assistance,
+            "promissory_notes": country.promissory_notes,
+            "outstanding_contributions": country.outstanding_contributions,
+            "gain_loss": country.gain_loss,
+        }
+        for index, country in enumerate(soc_qs)
+    ]
+
+
 class StatusOfContributionsExportView(views.APIView):
     permission_classes = [HasReplenishmentViewPermission]
     SUMMARY_WORKSHEET_NAME = "Summary Status of Contributions"
     TRIENIAL_WORKSHEET_NAME = "2024-26 Contributions"
+
+    @staticmethod
+    def _write_triennial_sheet(wb, triennial_ws, start_year, end_year, as_of_date):
+        agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
+
+        soc_qs = agg.get_status_of_contributions_qs()
+        triennial_data = _build_soc_country_data(soc_qs)
+        disputed_contributions = agg.get_disputed_contribution_amount()
+        ceit_countries_qs = agg.get_ceit_countries()
+        ceit_data = agg.get_ceit_data(ceit_countries_qs)
+
+        ws = wb.copy_worksheet(triennial_ws)
+        StatusOfContributionsTriennialTemplateWriter(
+            ws,
+            triennial_data,
+            len(triennial_data),
+            start_year,
+            as_of_date=as_of_date,
+            disputed_contributions=disputed_contributions,
+            ceit_data=ceit_data,
+        ).write()
+        # Save sheet with the updated title
+        ws.title = f"{start_year}-{end_year} Contributions"
+        return ws.title
+
+    @staticmethod
+    def _write_annual_sheet(wb, triennial_ws, year, as_of_date):
+        # We can use the same writer as for the triennial sheets
+        agg = AnnualStatusOfContributionsAggregator(year)
+
+        soc_qs = agg.get_status_of_contributions_qs()
+        annual_data = _build_soc_country_data(soc_qs)
+        disputed_contributions = agg.get_disputed_contribution_amount()
+        ceit_countries_qs = agg.get_ceit_countries()
+        ceit_data = agg.get_ceit_data(ceit_countries_qs)
+
+        ws = wb.copy_worksheet(triennial_ws)
+        StatusOfContributionsAnnualTemplateWriter(
+            ws,
+            annual_data,
+            len(annual_data),
+            year,
+            as_of_date=as_of_date,
+            disputed_contributions=disputed_contributions,
+            ceit_data=ceit_data,
+        ).write()
+        # Save sheet with the updated title
+        ws.title = f"{year} Contributions"
+        return ws.title
 
     def get(self, request, *args, **kwargs):
 
@@ -556,19 +621,7 @@ class StatusOfContributionsExportView(views.APIView):
 
         agg = SummaryStatusOfContributionsAggregator()
         soc_qs = agg.get_status_of_contributions_qs()
-        summary_data = [
-            {
-                "no": index + 1,
-                "country": country.name,
-                "agreed_contributions": country.agreed_contributions,
-                "cash_payments": country.cash_payments,
-                "bilateral_assistance": country.bilateral_assistance,
-                "promissory_notes": country.promissory_notes,
-                "outstanding_contributions": country.outstanding_contributions,
-                "gain_loss": country.gain_loss,
-            }
-            for index, country in enumerate(soc_qs)
-        ]
+        summary_data = _build_soc_country_data(soc_qs)
         data_count = len(summary_data)
         disputed_contributions = agg.get_disputed_contribution_amount()
 
@@ -593,87 +646,40 @@ class StatusOfContributionsExportView(views.APIView):
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
         triennial_ws = wb[self.TRIENIAL_WORKSHEET_NAME]
-        # Now add triennials
+
         triennial_start_years = (
             [] if not triennial_start_years else triennial_start_years.split(",")
         )
-        for triennial_start_year in triennial_start_years:
-            start_year = int(triennial_start_year)
-            end_year = start_year + 2
-            agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
+        triennial_start_years = sorted(
+            (int(start_year) for start_year in triennial_start_years), reverse=True
+        )
 
-            soc_qs = agg.get_status_of_contributions_qs()
-            triennial_data = [
-                {
-                    "no": index + 1,
-                    "country": country.name,
-                    "agreed_contributions": country.agreed_contributions,
-                    "cash_payments": country.cash_payments,
-                    "bilateral_assistance": country.bilateral_assistance,
-                    "promissory_notes": country.promissory_notes,
-                    "outstanding_contributions": country.outstanding_contributions,
-                    "gain_loss": country.gain_loss,
-                }
-                for index, country in enumerate(soc_qs)
-            ]
-            disputed_contributions = agg.get_disputed_contribution_amount()
-            ceit_countries_qs = agg.get_ceit_countries()
-            ceit_data = agg.get_ceit_data(ceit_countries_qs)
-
-            ws = wb.copy_worksheet(triennial_ws)
-            StatusOfContributionsTriennialTemplateWriter(
-                ws,
-                triennial_data,
-                len(triennial_data),
-                start_year,
-                as_of_date=as_of_date,
-                disputed_contributions=disputed_contributions,
-                ceit_data=ceit_data,
-            ).write()
-            sheet_name = f"{start_year}-{end_year} Contributions"
-            # Save sheet with the updated title
-            ws.title = sheet_name
-            # Make sure sheet doesn't get deleted in the end
-            sheet_names.append(sheet_name)
-
-        # Now add years
         years = [] if not years else years.split(",")
-        for year in years:
-            year = int(year)
-            # We can use the same writer
-            agg = AnnualStatusOfContributionsAggregator(year)
+        remaining_years = sorted((int(year) for year in years), reverse=True)
 
-            soc_qs = agg.get_status_of_contributions_qs()
-            annual_data = [
-                {
-                    "no": index + 1,
-                    "country": country.name,
-                    "agreed_contributions": country.agreed_contributions,
-                    "cash_payments": country.cash_payments,
-                    "bilateral_assistance": country.bilateral_assistance,
-                    "promissory_notes": country.promissory_notes,
-                    "outstanding_contributions": country.outstanding_contributions,
-                    "gain_loss": country.gain_loss,
-                }
-                for index, country in enumerate(soc_qs)
-            ]
-            disputed_contributions = agg.get_disputed_contribution_amount()
-            ceit_countries_qs = agg.get_ceit_countries()
-            ceit_data = agg.get_ceit_data(ceit_countries_qs)
+        # Each triennium (most recent first) followed by its own years (most recent first).
+        export_plan = []
+        for start_year in triennial_start_years:
+            end_year = start_year + 2
+            export_plan.append(("triennial", start_year, end_year))
+            for year in range(end_year, start_year - 1, -1):
+                if year in remaining_years:
+                    export_plan.append(("year", year))
+                    remaining_years.remove(year)
+        for year in remaining_years:
+            export_plan.append(("year", year))
 
-            ws = wb.copy_worksheet(triennial_ws)
-            StatusOfContributionsAnnualTemplateWriter(
-                ws,
-                annual_data,
-                len(annual_data),
-                year,
-                as_of_date=as_of_date,
-                disputed_contributions=disputed_contributions,
-                ceit_data=ceit_data,
-            ).write()
-            sheet_name = f"{year} Contributions"
-            # Save sheet with the updated title
-            ws.title = sheet_name
+        for item in export_plan:
+            if item[0] == "triennial":
+                _, start_year, end_year = item
+                sheet_name = self._write_triennial_sheet(
+                    wb, triennial_ws, start_year, end_year, as_of_date
+                )
+            else:
+                _, year = item
+                sheet_name = self._write_annual_sheet(
+                    wb, triennial_ws, year, as_of_date
+                )
             # Make sure sheet doesn't get deleted in the end
             sheet_names.append(sheet_name)
 
