@@ -286,8 +286,11 @@ class ProjectsDashboardDump(ProjectsV2Dump):
             if t.strip()
         }
         # Extend the parent queryset with the geo traversal needed for
-        # country_iso, Region, and Sub-Region columns.
-        self.queryset = self.queryset.select_related("country__parent__parent")
+        # country_iso, Region, and Sub-Region columns, and the decision behind
+        # the funding window column.
+        self.queryset = self.queryset.select_related(
+            "country__parent__parent", "funding_window__decision"
+        )
 
     def _apply_filters(self, projects):
         if self.latest_only:

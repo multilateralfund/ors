@@ -16,6 +16,7 @@ export const allocationsOrder: (keyof IALLOCATIONS)[] = [
   'undp',
   'unep',
   'unido',
+  'wmo',
   'world_bank',
 ]
 

@@ -27,6 +27,7 @@ class Command(BaseCommand):
                 "import_hfc_plus",
                 "process_master_data_sheet",
                 "c_and_p",
+                "update_total_phase_out_values_in_project",
             ],
         )
         parser.add_argument(
@@ -44,7 +45,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--dry-run",
-            type=bool,
+            action="store_true",
             help="Run the migration without saving any changes to the database",
         )
         parser.add_argument(

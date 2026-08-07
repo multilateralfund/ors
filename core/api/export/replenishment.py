@@ -694,7 +694,7 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     }
 
     TEMPLATE_FIRST_DATA_ROW = 12
-    TEMPLATE_LAST_DATA_ROW = 42
+    TEMPLATE_LAST_DATA_ROW = 43
 
     MEETING_ROW = 1
     MEETING_COLUMN = 2
@@ -1154,6 +1154,7 @@ class ConsolidatedInputDataWriter:
             ("UNDP", "undp"),
             ("UNEP", "unep"),
             ("UNIDO", "unido"),
+            ("WMO", "wmo"),
             ("World Bank", "world_bank"),
         ]
         self.write_headers(ws, columns)

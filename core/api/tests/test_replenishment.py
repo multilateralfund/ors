@@ -1150,6 +1150,7 @@ class TestReplenishmentDashboard(BaseTest):
             undp=decimal.Decimal("100"),
             unep=decimal.Decimal("100"),
             unido=decimal.Decimal("100"),
+            wmo=decimal.Decimal("100"),
             world_bank=decimal.Decimal("100"),
             staff_contracts=decimal.Decimal("100"),
             treasury_fees=decimal.Decimal("100"),
@@ -1238,6 +1239,7 @@ class TestReplenishmentDashboard(BaseTest):
                 "undp": external_allocation.undp.quantize(self.fifteen_decimals),
                 "unep": external_allocation.unep.quantize(self.fifteen_decimals),
                 "unido": external_allocation.unido.quantize(self.fifteen_decimals),
+                "wmo": external_allocation.wmo.quantize(self.fifteen_decimals),
                 "world_bank": external_allocation.world_bank.quantize(
                     self.fifteen_decimals
                 ),
@@ -1343,6 +1345,7 @@ class TestReplenishmentDashboard(BaseTest):
             - correct_response["allocations"]["undp"]
             - correct_response["allocations"]["unep"]
             - correct_response["allocations"]["unido"]
+            - correct_response["allocations"]["wmo"]
             - correct_response["allocations"]["world_bank"]
             - correct_response["allocations"]["staff_contracts"]
             - correct_response["allocations"]["treasury_fees"]

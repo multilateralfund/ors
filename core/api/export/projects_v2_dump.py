@@ -474,7 +474,10 @@ class ProjectsV2Dump:
         )
         queryset = (
             Project.objects.really_all()
-            .select_related(*self.get_fk_fields(self.project_fields))
+            .select_related(
+                *self.get_fk_fields(self.project_fields),
+                "funding_window__decision",
+            )
             .prefetch_related(
                 *self.get_m2m_fields(self.project_fields),
                 "component__projects",

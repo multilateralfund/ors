@@ -586,6 +586,7 @@ class ExternalAllocation(models.Model):
     undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unido = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    wmo = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     world_bank = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )

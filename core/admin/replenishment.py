@@ -130,6 +130,7 @@ class ExternalAllocationAdmin(admin.ModelAdmin):
             "undp",
             "unep",
             "unido",
+            "wmo",
             "world_bank",
             "comment",
         ]
