@@ -27,7 +27,10 @@ export interface PermissionsContextProps {
   canViewProductionProjects: boolean
   canUpdatePostExcom: boolean
   canTransferProjects: boolean
-  canViewMetaProjects: boolean
+  canViewMyaData: boolean
+  canManageMyaData: boolean
+  canViewFundingWindow: boolean
+  canManageFundingWindow: boolean
   canViewEnterprises: boolean
   canEditEnterprise: boolean
   canSetProjectSettings: boolean

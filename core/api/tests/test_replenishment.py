@@ -2,8 +2,10 @@
 # pylint: disable=C0302
 
 import decimal
+import io
 from decimal import Decimal
 
+import openpyxl
 import pytest
 from constance import config
 from django.urls import reverse
@@ -963,6 +965,35 @@ class TestStatusOfContributions:
         assert "disputed_contributions_per_country" in response.data
         assert len(response.data["disputed_contributions_per_country"]) == 2
 
+    def test_status_of_contributions_export_tab_order(self, stakeholder_user):
+        self.client.force_authenticate(user=stakeholder_user)
+
+        url = reverse("replenishment-status-of-contributions-export")
+        response = self.client.get(
+            url,
+            {
+                # Deliberately shuffled, to check the endpoint sorts itself.
+                "triennials": "2021,2024",
+                "years": "2022,2026,2024,2021,2023,2025,2010",
+            },
+        )
+        assert response.status_code == 200
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        assert wb.sheetnames == [
+            "Summary Status of Contributions",
+            "2024-2026 Contributions",
+            "2026 Contributions",
+            "2025 Contributions",
+            "2024 Contributions",
+            "2021-2023 Contributions",
+            "2023 Contributions",
+            "2022 Contributions",
+            "2021 Contributions",
+            # 2010 isn't in a requested triennium, so it's appended at the end.
+            "2010 Contributions",
+        ]
+
 
 class TestDisputedContributions(BaseTest):
     url = reverse("replenishment-disputed-contributions-list")
@@ -1150,6 +1181,7 @@ class TestReplenishmentDashboard(BaseTest):
             undp=decimal.Decimal("100"),
             unep=decimal.Decimal("100"),
             unido=decimal.Decimal("100"),
+            wmo=decimal.Decimal("100"),
             world_bank=decimal.Decimal("100"),
             staff_contracts=decimal.Decimal("100"),
             treasury_fees=decimal.Decimal("100"),
@@ -1238,6 +1270,7 @@ class TestReplenishmentDashboard(BaseTest):
                 "undp": external_allocation.undp.quantize(self.fifteen_decimals),
                 "unep": external_allocation.unep.quantize(self.fifteen_decimals),
                 "unido": external_allocation.unido.quantize(self.fifteen_decimals),
+                "wmo": external_allocation.wmo.quantize(self.fifteen_decimals),
                 "world_bank": external_allocation.world_bank.quantize(
                     self.fifteen_decimals
                 ),
@@ -1343,6 +1376,7 @@ class TestReplenishmentDashboard(BaseTest):
             - correct_response["allocations"]["undp"]
             - correct_response["allocations"]["unep"]
             - correct_response["allocations"]["unido"]
+            - correct_response["allocations"]["wmo"]
             - correct_response["allocations"]["world_bank"]
             - correct_response["allocations"]["staff_contracts"]
             - correct_response["allocations"]["treasury_fees"]

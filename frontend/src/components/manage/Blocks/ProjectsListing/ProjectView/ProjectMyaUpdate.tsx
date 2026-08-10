@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import {
@@ -26,6 +26,7 @@ import {
 import { MetaProjectDetailType } from '../UpdateMyaData/types'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import { CircularProgress, Typography, Button } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
@@ -48,12 +49,15 @@ const ProjectMyaUpdate = ({
   const { mpData, setMpData, loadingMpData, defaultMpErrors, allMpErrors } =
     useStore((state) => state.mpData)
   const { setInlineMessage } = useStore((state) => state.inlineMessage)
+  const { canManageMyaData } = useContext(PermissionsContext)
 
   const { addUpdatedField, clearUpdatedFields } = useUpdatedFields()
 
   const isDraftMetaProject = metaprojectData?.is_draft
   const isSaveDisabled =
-    !isDraftMetaProject || hasSectionErrors(defaultMpErrors)
+    !canManageMyaData ||
+    !isDraftMetaProject ||
+    hasSectionErrors(defaultMpErrors)
 
   const isFieldDisabled = (field: string) => {
     const hasEndDate = !!metaprojectData?.field_data?.end_date?.value
@@ -66,7 +70,8 @@ const ProjectMyaUpdate = ({
       field === projectDuration ||
       isEndDateDisabled ||
       isExtendedDateCOmpletionDisabled ||
-      !isDraftMetaProject
+      !isDraftMetaProject ||
+      !canManageMyaData
     )
   }
 
@@ -220,6 +225,10 @@ const ProjectMyaUpdate = ({
   )
 
   const onMyaUpdate = async () => {
+    if (!canManageMyaData) {
+      return
+    }
+
     try {
       await api(`api/meta-projects/${metaprojectData?.id}/`, {
         data: mpData,
@@ -285,7 +294,7 @@ const ProjectMyaUpdate = ({
               {metaprojectData?.lead_agency?.name || '-'}
             </Typography>
 
-            {mode !== 'view' && (
+            {mode !== 'view' && canManageMyaData && (
               <Button
                 className={cx('ml-auto h-8 px-4 py-2 shadow-none', {
                   [enabledButtonClassname]: !isSaveDisabled,

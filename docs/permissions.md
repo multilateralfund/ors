@@ -81,8 +81,14 @@
 | country-programme-archive/print/                                      | GET    | has_cp_report_view_access                | Entries filtered for `can_view_only_own_country`. |
 | countries/                                                            | GET    | -                                        | Entries filtered for `can_view_only_own_country`. |
 | meta-projects/                                                        | GET    | has_meta_projects_view_access            | |
-| meta-projects/{id}/                                                   | PUT    | has_project_v2_mya_access                | |
-| meta-projects-for-mya-update/                                         | GET    | has_project_v2_mya_access                | |
+| meta-projects/{id}/                                                   | GET    | has_project_v2_mya_view_access           | Entries filtered for `can_view_only_own_agency`. |
+| meta-projects/{id}/                                                   | PUT    | has_project_v2_mya_manage_access         | Entries filtered for `can_view_only_own_agency`. |
+| meta-projects-for-mya-update/                                         | GET    | has_project_v2_mya_view_access           | Entries filtered for `can_view_only_own_agency`. |
+| funding-window/                                                       | GET    | has_project_v2_funding_window_view_access | |
+| funding-window/                                                       | POST   | has_project_v2_funding_window_manage_access | |
+| funding-window/{id}/                                                  | GET    | has_project_v2_funding_window_view_access | |
+| funding-window/{id}/                                                  | PUT    | has_project_v2_funding_window_manage_access | |
+| funding-window/export/                                                | GET    | has_project_v2_funding_window_view_access | |
 | project-statuses/                                                     | GET    | has_project_metainfo_view_access         | |
 | project-submission-statuses/                                          | GET    | has_project_metainfo_view_access         | |
 | project-types/                                                        | GET    | has_project_metainfo_view_access         | |

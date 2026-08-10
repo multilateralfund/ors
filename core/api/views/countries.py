@@ -6,6 +6,7 @@ from rest_framework import mixins, generics
 
 from core.api.filters.countries import CountryFilter
 from core.api.serializers import CountryDetailsSerializer
+from core.api.utils import scope_mya_queryset_to_user_agency
 from core.models import Country, MetaProject
 
 
@@ -48,6 +49,7 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
                     projects__submission_status__name="Approved",
                     is_draft=False,
                 ).distinct()
+                meta_projects = scope_mya_queryset_to_user_agency(meta_projects, user)
 
                 queryset = Country.objects.filter(
                     meta_projects__in=meta_projects

@@ -23,11 +23,18 @@ env:
   REGISTRY: ghcr.io
   IMAGE_TAG: 1.0.${{ github.run_number }}
 
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+
 jobs:
   build-and-push-images:
     runs-on: ubuntu-latest
 
     strategy:
+      max-parallel: 1
       matrix:
         include:
           - dockerfile: ./docker/app.docker
@@ -68,8 +75,8 @@ jobs:
         with:
           context: .
           push: true
-          pull: true
-          no-cache: true
+          pull: false
+          no-cache: false
           file: ${{ matrix.dockerfile }}
           tags: ${{ matrix.image }}:latest
           labels: ${{ steps.meta.outputs.labels }}

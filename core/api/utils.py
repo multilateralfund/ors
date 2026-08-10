@@ -7,7 +7,7 @@ from typing import TypedDict
 import django.core.exceptions
 from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 
@@ -89,6 +89,26 @@ class RelatedExistsFilter(filters.BooleanFilter):
         if value:
             return qs.filter(subquery)
         return qs.exclude(subquery)
+
+
+def scope_mya_queryset_to_user_agency(queryset, user):
+    if user.has_perm("core.can_view_all_agencies"):
+        return queryset
+
+    if user.has_perm("core.can_view_only_own_agency"):
+        if not user.agency_id:
+            return queryset.none()
+
+        agency_project_filter = Q(projects__lead_agency_id=user.agency_id) | Q(
+            projects__agency_id=user.agency_id
+        )
+        return queryset.filter(
+            agency_project_filter,
+            projects__category=Project.Category.MYA,
+            projects__submission_status__name="Approved",
+        ).distinct()
+
+    return queryset.none()
 
 
 def workbook_response(name, wb):

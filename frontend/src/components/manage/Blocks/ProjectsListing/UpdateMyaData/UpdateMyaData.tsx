@@ -66,12 +66,14 @@ export default function UpdateMyaData() {
 
   const [selected, setSelected] = useState<MetaProjectType | null>(null)
 
-  const { canViewProjects, canViewMetaProjects } =
+  const { canViewProjects, canViewMyaData, canManageMyaData } =
     useContext(PermissionsContext)
+  const canEditMyaData = canManageMyaData
 
-  const params = metaproject_id
-    ? { ...initialParams, id: metaproject_id }
-    : initialParams
+  const params = {
+    ...initialParams,
+    ...(metaproject_id ? { id: metaproject_id } : {}),
+  }
 
   const { loaded, loading, results, count, setParams } =
     useGetMetaProjects(params)
@@ -93,9 +95,9 @@ export default function UpdateMyaData() {
     if (!!metaproject_id) {
       setSelected({ id: Number(metaproject_id) } as MetaProjectType)
     }
-  }, [])
+  }, [metaproject_id])
 
-  if (!(canViewProjects && canViewMetaProjects)) {
+  if (!(canViewProjects && canViewMyaData)) {
     return <Redirect to="/projects-listing" />
   }
 
@@ -229,6 +231,7 @@ export default function UpdateMyaData() {
           mp={metaproject}
           refreshMetaProjectDetails={refreshMetaProjectDetails}
           onCancel={() => setSelected(null)}
+          readOnly={!canEditMyaData}
         />
       ) : null}
     </>
