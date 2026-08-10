@@ -9,20 +9,24 @@ import { Tab, Tabs } from '@mui/material'
 import { find, map } from 'lodash'
 
 const PCRDocumentation = () => {
+  const sectionIdentifier = 'supporting_evidences'
+
   const { agencies } = useContext(ProjectsDataContext)
-  const { files } = useContext(PCRDataContext)
+  const { PCRData } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
+  const sectionData = PCRData[sectionIdentifier] || []
+
   const crtAgencies = map(
-    files,
+    sectionData,
     (entry) => find(agencies, (agency) => agency.id === entry.agency_id)?.name,
   )
 
   return (
     <>
       <Tabs
-        aria-label="supporting-evidence-tabs"
+        aria-label="supporting-evidences-tabs"
         className="sectionsTabs"
         variant="scrollable"
         scrollButtons="auto"

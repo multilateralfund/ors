@@ -1,19 +1,16 @@
 import { useContext, ChangeEvent } from 'react'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 
 import { TextField } from '@mui/material'
 import { map } from 'lodash'
 
 const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
-  const { files, setFiles, filesMetadata, setFilesMetadata } =
-    useContext(PCRDataContext)
+  const sectionIdentifier = 'supporting_evidences'
+  const evidencesField = 'evidences'
 
-  const { addUpdatedField } = useUpdatedFields()
-
-  const { newFiles = [] } = files[crtTab] || {}
+  const { setPCRData } = useContext(PCRDataContext)
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const inputFiles = event.target.files
@@ -21,40 +18,27 @@ const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
     if (inputFiles && inputFiles.length > 0) {
       const uploadedFiles = Array.from(inputFiles)
 
-      const updatedFiles = map(files, (file, fileIndex) =>
-        fileIndex === crtTab
-          ? {
-              ...file,
-              newFiles: [...newFiles, ...uploadedFiles],
-            }
-          : file,
-      )
-      setFiles(updatedFiles)
+      const updatedFiles = map(uploadedFiles, (file) => ({
+        file,
+        filename: file.name,
+        section_id: null,
+      }))
 
-      const updatedFilesMetadata = map(
-        filesMetadata,
-        (metadata, metadataIndex) => {
-          const newFilesMetadata = uploadedFiles.map((file) => ({
-            id: null,
-            name: file.name,
-            size: file.size,
-            section: null,
-          }))
+      setPCRData((prevData) => {
+        const sectionData = prevData[sectionIdentifier] || []
 
-          return metadataIndex === crtTab
-            ? {
-                ...metadata,
-                filesMetadata: [
-                  ...(metadata.filesMetadata ?? []),
-                  ...newFilesMetadata,
-                ],
-              }
-            : metadata
-        },
-      )
-      setFilesMetadata(updatedFilesMetadata)
-
-      addUpdatedField('files')
+        return {
+          ...prevData,
+          [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+            dataIndex === crtTab
+              ? {
+                  ...data,
+                  [evidencesField]: [...data[evidencesField], ...updatedFiles],
+                }
+              : data,
+          ),
+        }
+      }, evidencesField)
     }
   }
 
@@ -65,7 +49,7 @@ const PCRFilesInput = ({ crtTab }: { crtTab: number }) => {
         fullWidth
         variant="standard"
         className="md:w-[612px]"
-        value={newFiles.length === 0 ? 'No files selected' : ''}
+        value="Select files"
         InputProps={{
           readOnly: true,
           disableUnderline: true,

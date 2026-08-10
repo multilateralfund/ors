@@ -10,8 +10,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { map, uniq } from 'lodash'
 
 const PCRCreateWrapper = () => {
-  const { pcrMetaproject, setPCRData, setFiles, setFilesMetadata } =
-    useContext(PCRDataContext)
+  const { pcrMetaproject, setPCRData } = useContext(PCRDataContext)
   const { data, loading } = pcrMetaproject
 
   const agencyIds = useMemo(
@@ -32,20 +31,11 @@ const PCRCreateWrapper = () => {
     [agencyIds],
   )
   const initialSdgsData = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, sdgs: [] })),
+    () => map(agencyIds, (agency_id) => ({ agency_id, goals: [] })),
     [agencyIds],
   )
-  const initialFiles = useMemo(
-    () =>
-      map(agencyIds, (agency_id) => ({
-        agency_id,
-        newFiles: [],
-        deletedFilesIds: [],
-      })),
-    [agencyIds],
-  )
-  const initialFilesMetadata = useMemo(
-    () => map(agencyIds, (agency_id) => ({ agency_id, filesMetadata: [] })),
+  const initialSupportingEvidencesData = useMemo(
+    () => map(agencyIds, (agency_id) => ({ agency_id, evidences: [] })),
     [agencyIds],
   )
 
@@ -57,22 +47,16 @@ const PCRCreateWrapper = () => {
       lessons_learned: initialProjectComponentData,
       gender_mainstreaming: initialGenderMainstreamingData,
       sdgs_contribution: initialSdgsData,
+      supporting_evidences: initialSupportingEvidencesData,
     }))
   }, [
     initialResultsAssessment,
     initialProjectComponentData,
     initialGenderMainstreamingData,
     initialSdgsData,
+    initialSupportingEvidencesData,
     setPCRData,
   ])
-
-  useEffect(() => {
-    setFiles(initialFiles)
-  }, [initialFiles, setFiles])
-
-  useEffect(() => {
-    setFilesMetadata(initialFilesMetadata)
-  }, [initialFilesMetadata, setFilesMetadata])
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 

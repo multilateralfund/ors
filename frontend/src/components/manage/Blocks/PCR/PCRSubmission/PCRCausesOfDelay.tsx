@@ -13,7 +13,7 @@ import cx from 'classnames'
 const PCRCausesOfDelay = () => {
   const sectionIdentifier = 'causes_of_delay'
   const pcField = 'pcr_project_component'
-  const cdField = 'delay'
+  const cdField = 'delay_causes'
 
   const { agencies } = useContext(ProjectsDataContext)
   const { PCRData, setPCRData, projectComponentOptions, causeOfDelayOptions } =
@@ -33,8 +33,8 @@ const PCRCausesOfDelay = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
-        pcr_project_component_id: null,
-        delay: [],
+        project_component_option_id: null,
+        delay_causes: [],
       }
 
       return {
@@ -74,7 +74,7 @@ const PCRCausesOfDelay = () => {
   const onAddCauseOfDelay = (agencyIndex: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialCauseOfDelay = { cause_of_delay_id: null, description: '' }
+      const initialCauseOfDelay = { delay_id: null, description: '' }
 
       return {
         ...prevData,
@@ -159,7 +159,7 @@ const PCRCausesOfDelay = () => {
                 <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
                   <PCRSelectWidget
                     {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="pcr_project_component_id"
+                    field="project_component_option_id"
                     options={projectComponentOptions}
                     errors={{}}
                     indexes={[crtTab, pcIndex]}
@@ -172,7 +172,7 @@ const PCRCausesOfDelay = () => {
                         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                           <PCRSelectWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="cause_of_delay_id"
+                            field="delay_id"
                             options={causeOfDelayOptions}
                             errors={{}}
                             indexes={[crtTab, pcIndex, cdIndex]}

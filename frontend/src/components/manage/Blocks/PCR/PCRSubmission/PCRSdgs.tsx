@@ -12,7 +12,7 @@ import cx from 'classnames'
 
 const PCRSdgs = () => {
   const sectionIdentifier = 'sdgs_contribution'
-  const sdgsField = 'sdgs'
+  const sdgsField = 'goals'
 
   const { agencies } = useContext(ProjectsDataContext)
   const { PCRData, setPCRData, sdgsOptions } = useContext(PCRDataContext)
@@ -30,7 +30,7 @@ const PCRSdgs = () => {
   const onAddSdg = (agencyIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialSdgsData = { sdg_id: null, description: '' }
+      const initialSdgsData = { goal_id: null, description: '' }
 
       return {
         ...prevData,
@@ -94,7 +94,7 @@ const PCRSdgs = () => {
               <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                 <PCRSelectWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="sdg_id"
+                  field="goal_id"
                   options={sdgsOptions}
                   errors={{}}
                   indexes={[crtTab, sdgIndex]}

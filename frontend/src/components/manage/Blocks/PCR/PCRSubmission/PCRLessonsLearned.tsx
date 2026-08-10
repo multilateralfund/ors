@@ -13,7 +13,7 @@ import cx from 'classnames'
 const PCRLessonsLearned = () => {
   const sectionIdentifier = 'lessons_learned'
   const pcField = 'pcr_project_component'
-  const llField = 'lesson'
+  const llField = 'learned_lessons'
 
   const { agencies } = useContext(ProjectsDataContext)
   const { PCRData, setPCRData, projectComponentOptions, lessonLearnedOptions } =
@@ -33,8 +33,8 @@ const PCRLessonsLearned = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
-        pcr_project_component_id: null,
-        lesson: [],
+        project_component_option_id: null,
+        learned_lessons: [],
       }
 
       return {
@@ -74,7 +74,7 @@ const PCRLessonsLearned = () => {
   const onAddLessonLearned = (agencyIndex: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
-      const initialLessonLearned = { lesson_learned_id: null, description: '' }
+      const initialLessonLearned = { lesson_id: null, description: '' }
 
       return {
         ...prevData,
@@ -159,7 +159,7 @@ const PCRLessonsLearned = () => {
                 <div className="relative flex flex-1 flex-col gap-y-4 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
                   <PCRSelectWidget
                     {...{ PCRData, setPCRData, sectionIdentifier }}
-                    field="pcr_project_component_id"
+                    field="project_component_option_id"
                     options={projectComponentOptions}
                     errors={{}}
                     indexes={[crtTab, pcIndex]}
@@ -172,7 +172,7 @@ const PCRLessonsLearned = () => {
                         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                           <PCRSelectWidget
                             {...{ PCRData, setPCRData, sectionIdentifier }}
-                            field="lesson_learned_id"
+                            field="lesson_id"
                             options={lessonLearnedOptions}
                             errors={{}}
                             indexes={[crtTab, pcIndex, llIndex]}

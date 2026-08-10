@@ -73,13 +73,14 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   planned_output: 'Planned output(s)',
   actual_activity_output: 'Actual activity output(s)',
   additional_remarks: 'Additional remarks, if applicable',
-  pcr_project_component_id: 'Project component',
-  cause_of_delay_id: 'Cause of delay',
+  project_component_option_id: 'Project component',
+  delay_id: 'Cause of delay',
   description: 'Description',
-  lesson_learned_id: 'Lesson learned',
-  sdg_id: 'SDG',
-  project_phase_id: 'Project cycle phase',
-  gender_policy: 'Gender policy for all projects approved from 85th meeting',
+  lesson_id: 'Lesson learned',
+  project_preparation: 'Project cycle phase',
+  qualitative_description: 'Qualitative description',
+  prefilled: 'Gender policy for all projects approved from 85th meeting',
+  goal_id: 'SDG',
 }
 
 export const categoryOpts = [
@@ -96,6 +97,13 @@ export const booleanFieldsOpts = [
 export const financialFiguresTypeOptions = [
   { id: 'Provisional', name: 'Provisional' },
   { id: 'Final', name: 'Final' },
+]
+
+export const projectPhaseOptions = [
+  { id: 'Project preparation', name: 'Project preparation' },
+  { id: 'Planning/Formulation', name: 'Planning/Formulation' },
+  { id: 'Implementation', name: 'Implementation' },
+  { id: 'Monitoring and Reporting', name: 'Monitoring and Reporting' },
 ]
 
 export const initialOverviewData = {

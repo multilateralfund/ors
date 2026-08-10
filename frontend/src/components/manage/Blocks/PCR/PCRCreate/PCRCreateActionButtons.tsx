@@ -5,25 +5,39 @@ import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/Help
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
-import { PCRActionButtons, PCRResultsAssessmentData } from '../interfaces'
+import {
+  PCRActionButtons,
+  PCRResultsAssessmentData,
+  PCRGenderMainstreamingData,
+  PCRSupportingEvidencesData,
+  FormattedSupportingEvidencesData,
+} from '../interfaces'
 import {
   buildPCRProjectPayload,
   formatAgencyData,
   getOtherOptionId,
 } from '../utils'
-import { api } from '@ors/helpers'
+import { formatApiUrl } from '@ors/helpers'
 
-import { flatMap, map, pick } from 'lodash'
+import { flatMap, map, omit, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
+import Cookies from 'js-cookie'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
   const { PCRData, pcrMetaproject, pcrDefaultData, ratingOptions } =
     useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
-  const { overview, results_assessment, causes_of_delay, lessons_learned } =
-    PCRData
+  const {
+    overview,
+    results_assessment,
+    causes_of_delay,
+    lessons_learned,
+    gender_mainstreaming,
+    sdgs_contribution,
+    supporting_evidences,
+  } = PCRData
 
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
@@ -65,31 +79,29 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       const causesOfDelayProjectComponents = flatMap(
         causes_of_delay,
         ({ agency_id, pcr_project_component }) =>
-          map(pcr_project_component, (component) => ({
-            agency_id,
-            project_component_option_id:
-              component.pcr_project_component_id ?? null,
-            delay_causes: map(component.delay, (delay) => ({
-              delay_id: delay.cause_of_delay_id,
-              description: delay.description,
-            })),
-            learned_lessons: [],
-          })),
+          map(
+            pcr_project_component,
+            ({ project_component_option_id, delay_causes }) => ({
+              agency_id,
+              project_component_option_id,
+              delay_causes,
+              learned_lessons: [],
+            }),
+          ),
       )
 
       const lessonsLearnedProjectComponents = flatMap(
         lessons_learned,
         ({ agency_id, pcr_project_component }) =>
-          map(pcr_project_component, (component) => ({
-            agency_id,
-            project_component_option_id:
-              component.pcr_project_component_id ?? null,
-            delay_causes: [],
-            learned_lessons: map(component.lesson, (lesson) => ({
-              lesson_id: lesson.lesson_learned_id,
-              description: lesson.description,
-            })),
-          })),
+          map(
+            pcr_project_component,
+            ({ project_component_option_id, learned_lessons }) => ({
+              agency_id,
+              project_component_option_id,
+              delay_causes: [],
+              learned_lessons,
+            }),
+          ),
       )
 
       const projectComponentsData = [
@@ -97,22 +109,58 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
         ...lessonsLearnedProjectComponents,
       ]
 
+      const genderMainstreamingsData =
+        formatAgencyData<PCRGenderMainstreamingData>(
+          gender_mainstreaming,
+          'project_phases',
+        )
+
+      const formattedSupportingEvidence =
+        formatAgencyData<PCRSupportingEvidencesData>(
+          supporting_evidences,
+          'evidences',
+        ) as FormattedSupportingEvidencesData[]
+
+      const supportingEvidencesData = map(
+        formattedSupportingEvidence,
+        (evidence) => omit(evidence, 'file'),
+      )
+
       const payload = {
         meta_project_id: metaProjectId,
         ...overviewPrefilledData,
         ...overviewData,
         activities: resultsAssessmentData,
         project_components: projectComponentsData,
+        gender_mainstreamings: genderMainstreamingsData,
+        sustainable_development_goals: sdgs_contribution,
+        supporting_evidences: supportingEvidencesData,
         pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
       }
 
-      await api('api/project-completion-reports/', {
-        data: {
-          meta_project_id: metaProjectId,
-          pcr_projects: PCRData.summary_of_key_data.map(buildPCRProjectPayload),
-        },
-        method: 'POST',
+      const formData = new FormData()
+      formData.append('metadata', JSON.stringify(payload))
+      formattedSupportingEvidence.forEach((evidence) => {
+        formData.append('files', evidence.file)
       })
+
+      const csrftoken = Cookies.get('csrftoken')
+
+      const response = await fetch(
+        formatApiUrl('api/project-completion-reports/'),
+        {
+          body: formData,
+          headers: { ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}) },
+          credentials: 'include',
+          method: 'POST',
+        },
+      )
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        throw data ?? { message: 'An error occurred' }
+      }
+
       enqueueSnackbar(<>PCR created successfully.</>, {
         variant: 'success',
       })

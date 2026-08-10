@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction, RefObject } from 'react'
 
-import { FileMetaDataType } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { useGetPCRProjects } from './hooks/useGetPCRProjects'
 import { PCRMetaProjectType } from '@ors/types/api_projects'
 
@@ -79,8 +78,6 @@ export interface PCRResultsAssessmentData {
   activities: Activity[]
 }
 
-export type FormattedResultsAssessmentData = Activity & { agency_id: number }
-
 export interface PCRAlternativeTechnologyType {
   substance_from: number | null
   substance_to: number | null
@@ -107,11 +104,11 @@ export interface PCRSummaryOfKeyDataType {
   equipments: PCREquipmentType[]
 }
 
-type CauseOfDelay = { cause_of_delay_id: number | null; description: string }
+type CauseOfDelay = { delay_id: number | null; description: string }
 
 type CauseOfDelayProjectComponent = {
-  pcr_project_component_id: number | null
-  delay: CauseOfDelay[]
+  project_component_option_id: number | null
+  delay_causes: CauseOfDelay[]
 }
 
 export interface PCRCausesOfDelayData {
@@ -119,11 +116,11 @@ export interface PCRCausesOfDelayData {
   pcr_project_component: CauseOfDelayProjectComponent[]
 }
 
-type LessonLearned = { lesson_learned_id: number | null; description: string }
+type LessonLearned = { lesson_id: number | null; description: string }
 
 type LessonLearnedProjectComponent = {
-  pcr_project_component_id: number | null
-  lesson: LessonLearned[]
+  project_component_option_id: number | null
+  learned_lessons: LessonLearned[]
 }
 
 export interface PCRLessonsLearnedData {
@@ -132,9 +129,9 @@ export interface PCRLessonsLearnedData {
 }
 
 type ProjectPhase = {
-  project_phase_id: number | null
-  gender_policy: boolean | null
-  description: string
+  project_preparation: number | null
+  prefilled: boolean
+  qualitative_description: string
 }
 
 export interface PCRGenderMainstreamingData {
@@ -142,12 +139,26 @@ export interface PCRGenderMainstreamingData {
   project_phases: ProjectPhase[]
 }
 
-type Sdgs = { sdg_id: number | null; description: string }
+type Sdgs = { goal_id: number | null; description: string }
 
 export interface PCRSdgsData {
   agency_id: number
-  sdgs: Sdgs[]
+  goals: Sdgs[]
 }
+
+type Evidence = {
+  section_id: number | null
+  filename: string
+  file: File
+  link?: string
+}
+
+export interface PCRSupportingEvidencesData {
+  agency_id: number
+  evidences: Evidence[]
+}
+
+export type FormattedSupportingEvidencesData = Evidence & { agency_id: number }
 
 export interface PCRData {
   overview: PCROverviewData
@@ -157,6 +168,7 @@ export interface PCRData {
   lessons_learned: PCRLessonsLearnedData[]
   gender_mainstreaming: PCRGenderMainstreamingData[]
   sdgs_contribution: PCRSdgsData[]
+  supporting_evidences: PCRSupportingEvidencesData[]
 }
 
 export type SetPCRData = (
@@ -195,28 +207,3 @@ export type PCRHeaderType = {
 export type PCRActionButtons = { setIsLoading: (isLoading: boolean) => void }
 
 export type OptionsType = { id: number | string; name: string }
-
-export type PCRFile = {
-  agency_id: number
-  newFiles: File[]
-  deletedFilesIds: number[]
-}
-
-export interface PCRFilesInterface {
-  files: PCRFile[]
-  setFiles: Dispatch<SetStateAction<PCRFile[]>>
-}
-
-export type PCRFileMetaDataType = Omit<FileMetaDataType, 'type'> & {
-  section: string | null
-}
-
-export type PCRFileMetadata = {
-  agency_id: number
-  filesMetadata: PCRFileMetaDataType[]
-}
-
-export interface PCRFileMetadataInterface {
-  filesMetadata: PCRFileMetadata[]
-  setFilesMetadata: Dispatch<SetStateAction<PCRFileMetadata[]>>
-}

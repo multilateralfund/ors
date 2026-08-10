@@ -33,7 +33,7 @@ const additionalProperties: Record<string, Record<string, unknown>> = {
   project_goal_achieved: overviewFieldsClassName,
   rating: overviewFieldsClassName,
   completed_by: overviewFieldsClassName,
-  project_phase_id: formatClassName('min-w-56 md:min-w-60'),
+  project_preparation: formatClassName('min-w-56 md:min-w-60'),
 }
 
 const getValue = (

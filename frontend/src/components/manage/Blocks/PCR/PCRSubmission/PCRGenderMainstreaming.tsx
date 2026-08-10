@@ -8,6 +8,7 @@ import {
   PCRTextAreaWidget,
   PCRBooleanWidget,
 } from './PCRWidgets'
+import { projectPhaseOptions } from '../constants'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -19,8 +20,7 @@ const PCRGenderMainstreaming = () => {
   const ppField = 'project_phases'
 
   const { agencies } = useContext(ProjectsDataContext)
-  const { PCRData, setPCRData, projectPhaseOptions } =
-    useContext(PCRDataContext)
+  const { PCRData, setPCRData } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
@@ -36,9 +36,9 @@ const PCRGenderMainstreaming = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectPhaseData = {
-        project_phase_id: null,
-        gender_policy: null,
-        description: '',
+        project_preparation: null,
+        prefilled: false,
+        qualitative_description: '',
       }
 
       return {
@@ -103,7 +103,7 @@ const PCRGenderMainstreaming = () => {
               <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
                 <PCRSelectWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="project_phase_id"
+                  field="project_preparation"
                   options={projectPhaseOptions}
                   errors={{}}
                   indexes={[crtTab, ppIndex]}
@@ -111,14 +111,14 @@ const PCRGenderMainstreaming = () => {
                 />
                 <PCRBooleanWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="gender_policy"
+                  field="prefilled"
                   errors={{}}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
-                  field="description"
+                  field="qualitative_description"
                   errors={{}}
                   indexes={[crtTab, ppIndex]}
                   subFields={['', ppField]}

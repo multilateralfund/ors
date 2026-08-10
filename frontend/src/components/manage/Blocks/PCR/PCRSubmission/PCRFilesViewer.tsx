@@ -1,33 +1,24 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { defaultProps } from '@ors/components/manage/Blocks/ProjectsListing/constants'
-import { ProjectFile } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
-import { useUpdatedFields } from '@ors/contexts/Projects/UpdatedFieldsContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { TbFiles } from 'react-icons/tb'
-import { filter, map } from 'lodash'
 
 const PCRFilesViewer = ({ crtTab }: { crtTab: number }) => {
-  const { files, setFiles, filesMetadata, setFilesMetadata } =
-    useContext(PCRDataContext)
-  const { fileSectionOptions } = useContext(PCRDataContext)
+  const sectionIdentifier = 'supporting_evidences'
+  const evidencesField = 'evidences'
 
-  const { addUpdatedField } = useUpdatedFields()
+  const { PCRData, setPCRData, fileSectionOptions } = useContext(PCRDataContext)
 
-  const [allFiles, setAllFiles] = useState<(ProjectFile | File)[]>([])
-
-  useEffect(() => {
-    const newFiles = files[crtTab].newFiles || []
-
-    setAllFiles([...newFiles])
-  }, [files])
+  const sectionData = PCRData[sectionIdentifier] || []
+  const evidencesData = sectionData[crtTab][evidencesField] || []
 
   const fileFieldProps = {
     ...defaultProps,
@@ -37,83 +28,60 @@ const PCRFilesViewer = ({ crtTab }: { crtTab: number }) => {
   }
 
   const handleChangeFileSection = (value: any, fileIndex: number) => {
-    const updatedFilesMetadata = map(
-      filesMetadata,
-      (metadata, metadataIndex) => {
-        const updatedMetadata = map(metadata.filesMetadata, (data, index) =>
-          fileIndex === index ? { ...data, section: value?.id ?? null } : data,
-        )
+    const formattedVal = value?.id ?? null
 
-        return metadataIndex === crtTab
-          ? { ...metadata, filesMetadata: updatedMetadata }
-          : metadata
-      },
-    )
-    setFilesMetadata(updatedFilesMetadata)
+    setPCRData((prevData) => {
+      const sectionData = prevData[sectionIdentifier] || []
 
-    addUpdatedField('files')
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === crtTab
+            ? {
+                ...data,
+                [evidencesField]: data[evidencesField].map(
+                  (evidence, evidenceIndex) =>
+                    evidenceIndex === fileIndex
+                      ? { ...evidence, section_id: formattedVal }
+                      : evidence,
+                ),
+              }
+            : data,
+        ),
+      }
+    }, evidencesField)
   }
 
-  const handleDeleteFile = (file: ProjectFile | File, fileIndex: number) => {
-    const isNewFile = !(file as ProjectFile).id
+  const handleDeleteFile = (fileIndex: number) => {
+    setPCRData((prevData) => {
+      const sectionData = prevData[sectionIdentifier] || []
 
-    const updatedAllFiles = filter(allFiles, (crtFile) =>
-      isNewFile
-        ? crtFile !== file
-        : (crtFile as ProjectFile).id !== (file as ProjectFile).id,
-    )
-
-    setAllFiles(updatedAllFiles)
-
-    const updatedFiles = map(files, (fileEntry, fileIndex) => {
-      const agencyNewFiles = files[crtTab].newFiles || []
-      const agencyDeletedFilesIds = files[crtTab].deletedFilesIds || []
-
-      const newFiles = isNewFile
-        ? agencyNewFiles.filter((f) => f !== file)
-        : agencyNewFiles
-
-      const deletedFilesIds = isNewFile
-        ? agencyDeletedFilesIds
-        : [...agencyDeletedFilesIds, (file as ProjectFile).id]
-
-      return crtTab === fileIndex
-        ? { ...fileEntry, newFiles, deletedFilesIds }
-        : fileEntry
-    })
-    setFiles(updatedFiles)
-
-    const updatedFilesMetadata = map(
-      filesMetadata,
-      (metadata, metadataIndex) =>
-        metadataIndex === crtTab
-          ? {
-              ...metadata,
-              filesMetadata: filter(
-                metadata.filesMetadata,
-                (_, index) => fileIndex !== index,
-              ),
-            }
-          : metadata,
-    )
-    setFilesMetadata(updatedFilesMetadata)
-
-    addUpdatedField('files')
+      return {
+        ...prevData,
+        [sectionIdentifier]: sectionData.map((data, dataIndex) =>
+          dataIndex === crtTab
+            ? {
+                ...data,
+                [evidencesField]: data[evidencesField].filter(
+                  (_, crtFileIndex) => crtFileIndex !== fileIndex,
+                ),
+              }
+            : data,
+        ),
+      }
+    }, evidencesField)
   }
 
   return (
     <div>
       <HeaderWithIcon title="File attachments" Icon={TbFiles} />
       <div className="mt-3">
-        {allFiles.length === 0 ? (
+        {evidencesData.length === 0 ? (
           <p className="m-1 ml-0 text-lg text-gray-500">No files available</p>
         ) : (
-          allFiles.map((file, index) => {
-            const fileName = (file as ProjectFile).filename || file.name
-            const downloadUrl = (file as ProjectFile).download_url
-
-            const agencyFileMetadata = filesMetadata[crtTab].filesMetadata
-            const value = agencyFileMetadata[index].section
+          evidencesData.map((file, index) => {
+            const fileName = file.filename
+            const downloadUrl = file.link
 
             return (
               <div
@@ -126,7 +94,7 @@ const PCRFilesViewer = ({ crtTab }: { crtTab: number }) => {
                   href={
                     downloadUrl
                       ? formatApiUrl(downloadUrl)
-                      : URL.createObjectURL(file as File)
+                      : URL.createObjectURL(file.file)
                   }
                   {...(!downloadUrl && {
                     target: '_blank',
@@ -142,7 +110,7 @@ const PCRFilesViewer = ({ crtTab }: { crtTab: number }) => {
                     <Field
                       widget="autocomplete"
                       options={fileSectionOptions}
-                      value={value}
+                      value={file.section_id}
                       onChange={(_, value) =>
                         handleChangeFileSection(value, index)
                       }
@@ -155,7 +123,7 @@ const PCRFilesViewer = ({ crtTab }: { crtTab: number }) => {
                 </div>
                 <IoTrash
                   className="mb-1.5 min-h-6 min-w-6 cursor-pointer fill-gray-400"
-                  onClick={() => handleDeleteFile(file, index)}
+                  onClick={() => handleDeleteFile(index)}
                 />
               </div>
             )
