@@ -83,6 +83,10 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   goal_id: 'SDG',
 }
 
+export const pcrFieldsErrorsMapping: { [key: string]: string } = {
+  additional_comments: 'Additional comment',
+}
+
 export const categoryOpts = [
   { id: 'Individual', name: 'IND' },
   { id: 'Multi-year agreement', name: 'MYA' },

@@ -1,11 +1,17 @@
 import {
+  initialOverviewData,
+  pcrFieldsMapping,
+  pcrFieldsErrorsMapping,
+} from './constants'
+import {
   OptionsType,
   PCRAlternativeTechnologyType,
   PCREnterpriseType,
   PCREquipmentType,
   PCRSummaryOfKeyDataType,
 } from './interfaces'
-import { find, forEach, lowerCase, map, reduce } from 'lodash'
+
+import { find, forEach, keys, lowerCase, map, pick, reduce } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -113,3 +119,45 @@ export const formatAgencyData = <T extends { agency_id: number }>(
     },
     [],
   )
+
+export const groupErrors = (errors: Record<string, any[]>) => {
+  const overviewFields = keys(initialOverviewData)
+  const overviewErrors = pick(errors, overviewFields)
+
+  return { overview: overviewErrors }
+}
+
+export const formatErrors = (errors: { [key: string]: string[] }) => {
+  const crtFieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+
+  return Object.entries(errors)
+    .filter(([, errorMsgs]) => errorMsgs.length > 0)
+    .flatMap(([field, errorMsgs]) =>
+      errorMsgs.map((errMsg, idx) => {
+        if (typeof errMsg === 'string') {
+          return {
+            id: `${field}-${idx}`,
+            message: `${crtFieldNames[field]}: ${errMsg}`,
+          }
+        } else {
+          const errorFields = Object.keys(errMsg)
+
+          if (errorFields.length !== 0) {
+            const fieldNames = map(
+              errorFields,
+              (field) => crtFieldNames[field],
+            ).join(', ')
+            const errorMessage =
+              errorFields.length > 1 ? 'These fields are' : 'This field is'
+
+            return {
+              id: `${field}-${idx}`,
+              message: `${crtFieldNames[field]} ${idx + 1} : ${fieldNames} - ${errorMessage} not valid.`,
+            }
+          }
+
+          return null
+        }
+      }),
+    )
+}

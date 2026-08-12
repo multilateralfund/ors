@@ -1,4 +1,4 @@
-import { Fragment, useContext } from 'react'
+import { Fragment, useContext, useEffect } from 'react'
 
 import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
@@ -9,7 +9,7 @@ import { getOtherOptionId } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
-import { map } from 'lodash'
+import { map, omit } from 'lodash'
 
 const PCROverview = () => {
   const sectionIdentifier = 'overview'
@@ -18,6 +18,8 @@ const PCROverview = () => {
   const {
     PCRData,
     setPCRData,
+    errors,
+    setErrors,
     ratingOptions,
     entityOptions,
     completionReportDoneByOptions,
@@ -26,6 +28,30 @@ const PCROverview = () => {
   const sectionData = PCRData[sectionIdentifier] || []
   const { rating } = sectionData
   const additionalCommentsData = sectionData[additionalCommentsField] || []
+
+  const { overview: overviewErrors } = errors
+  const additionalCommentsErrors = overviewErrors[additionalCommentsField]
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [additionalCommentsField]: map(
+        additionalCommentsData,
+        (comment, index) => {
+          const requiredMessage = 'This field is required.'
+          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
+
+          if (!comment.entity) {
+            return { ...existingErrors, entity: [requiredMessage] }
+          }
+
+          return existingErrors.entity?.includes(requiredMessage)
+            ? omit(existingErrors, ['entity'])
+            : existingErrors
+        },
+      ),
+    }))
+  }, [JSON.stringify(additionalCommentsData)])
 
   const onAddAdditionalComment = () => {
     setPCRData((prevData) => {
@@ -73,19 +99,19 @@ const PCROverview = () => {
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="financial_figures_status"
             options={financialFiguresTypeOptions}
-            errors={{}}
+            errors={overviewErrors}
           />
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="financial_figures_status_explanation"
-            errors={{}}
+            errors={overviewErrors}
           />
         </div>
         <div className="flex">
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="addresses"
-            errors={{}}
+            errors={overviewErrors}
           />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
@@ -93,12 +119,12 @@ const PCROverview = () => {
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="project_goal_achieved"
             options={booleanFieldsOpts}
-            errors={{}}
+            errors={overviewErrors}
           />
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="project_goal_achieved_explanation"
-            errors={{}}
+            errors={overviewErrors}
           />
         </div>
         <div className="flex flex-row flex-wrap gap-x-7 gap-y-4">
@@ -106,13 +132,13 @@ const PCROverview = () => {
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="rating"
             options={ratingOptions}
-            errors={{}}
+            errors={overviewErrors}
           />
           {rating === getOtherOptionId(ratingOptions) && (
             <PCRTextAreaWidget
               {...{ PCRData, setPCRData, sectionIdentifier }}
               field="rating_explanation_other"
-              errors={{}}
+              errors={overviewErrors}
             />
           )}
         </div>
@@ -120,7 +146,7 @@ const PCROverview = () => {
           <PCRTextAreaWidget
             {...{ PCRData, setPCRData, sectionIdentifier }}
             field="rating_explanation"
-            errors={{}}
+            errors={overviewErrors}
           />
         </div>
         <div className="flex flex-col gap-y-4">
@@ -131,14 +157,14 @@ const PCROverview = () => {
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="entity"
                   options={entityOptions}
-                  errors={{}}
+                  errors={additionalCommentsErrors}
                   indexes={[commentIndex]}
                   subFields={[additionalCommentsField]}
                 />
                 <PCRTextAreaWidget
                   {...{ PCRData, setPCRData, sectionIdentifier }}
                   field="comment"
-                  errors={{}}
+                  errors={additionalCommentsErrors}
                   indexes={[commentIndex]}
                   subFields={[additionalCommentsField]}
                 />
@@ -165,7 +191,7 @@ const PCROverview = () => {
           {...{ PCRData, setPCRData, sectionIdentifier }}
           field="completed_by"
           options={completionReportDoneByOptions}
-          errors={{}}
+          errors={overviewErrors}
         />
       </div>
     </>

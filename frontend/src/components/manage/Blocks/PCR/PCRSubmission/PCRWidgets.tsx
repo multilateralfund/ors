@@ -240,6 +240,20 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
   },
 }
 
+const formatErrors = (
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  indexes?: number[],
+) => {
+  const indexesLength = indexes?.length
+  const [dataIndex] = indexes ?? []
+
+  if (Array.isArray(errors) && indexesLength === 1) {
+    return errors[dataIndex]
+  }
+
+  return errors
+}
+
 export const PCRSelectWidget = ({
   PCRData,
   setPCRData,
@@ -252,6 +266,7 @@ export const PCRSelectWidget = ({
 }: WidgetPprops & { options: OptionsType[] }) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
   const formattedValue = find(options, { id: value }) || null
+  const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div>
@@ -276,14 +291,7 @@ export const PCRSelectWidget = ({
           {...formatClassName('min-w-56 md:min-w-[370px]')}
           {...(additionalProperties[field] ?? {})}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(indexes?.[0])
-              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
-              : errors
-          }
-          field={field}
-        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
     </div>
   )
@@ -348,6 +356,7 @@ export const PCRTextAreaWidget = ({
   subFields,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div className="w-full md:w-auto">
@@ -373,14 +382,7 @@ export const PCRTextAreaWidget = ({
           style={STYLE}
           minRows={7}
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(indexes?.[0])
-              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
-              : errors
-          }
-          field={field}
-        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
     </div>
   )

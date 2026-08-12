@@ -9,8 +9,11 @@ import {
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
-import { formatOptions } from '@ors/components/manage/Blocks/PCR/utils'
 import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
+import {
+  formatOptions,
+  groupErrors,
+} from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
@@ -40,6 +43,7 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     sdgs_contribution: [],
     supporting_evidences: [],
   })
+  const [initialErrors, setErrors] = useState({})
 
   const setPCRData = useCallback(
     (updater: SetStateAction<PCRData>, fieldName?: string) => {
@@ -55,6 +59,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     },
     [addUpdatedField],
   )
+
+  const errors = useMemo(() => groupErrors(initialErrors), [initialErrors])
 
   const fundsByAgency = useMemo(() => {
     const {
@@ -189,6 +195,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pcrDefaultData,
       PCRData,
       setPCRData,
+      errors,
+      setErrors,
       fundsByAgency,
       ratingOptions,
       entityOptions,
@@ -204,6 +212,8 @@ const PCRDataProvider = (props: PropsWithChildren) => {
       pcrDefaultData,
       PCRData,
       setPCRData,
+      errors,
+      setErrors,
       fundsByAgency,
       ratingOptions,
       entityOptions,

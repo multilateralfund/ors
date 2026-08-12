@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { NavigationButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import { hasSectionErrors } from '@ors/components/manage/Blocks/ProjectsListing/utils'
+import {
+  ErrorsList,
+  NavigationButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import PCRGenderMainstreaming from './PCRGenderMainstreaming'
 import PCRResultsAssessment from './PCRResultsAssessment'
 import PCRSummaryOfKeyData from './PCRSummaryOfKeyData'
@@ -9,57 +15,80 @@ import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
+import { formatErrors } from '../utils'
 
 import { Tabs, Tab } from '@mui/material'
 
 const PCRForm = () => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const TabLabel = ({ title }: { title: string }) => (
+  const { errors } = useContext(PCRDataContext)
+
+  const tabMapping = {
+    overview: { title: 'Overview', errors: errors.overview },
+    summary_of_key_data: {
+      title: 'Summary of key data (tranches)',
+      errors: {},
+    },
+    results_assessment: {
+      title: 'Project results overall assessment',
+      errors: {},
+    },
+    causes_of_delay: { title: 'Causes of delay', errors: {} },
+    lessons_learned: { title: 'Lessons learned', errors: {} },
+    gender_mainstreaming: { title: 'Gender mainstreaming', errors: {} },
+    sdgs_contribution: { title: 'SDGs (optional)', errors: {} },
+    supporting_evidences: { title: 'Other supporting evidence', errors: {} },
+  }
+
+  const TabLabel = ({ field }: { field: keyof typeof tabMapping }) => (
     <div className="relative flex items-center justify-between gap-x-2">
-      <div className="leading-tight">{title}</div>
+      <div className="leading-tight">{tabMapping[field].title}</div>
+      {hasSectionErrors(tabMapping[field].errors) && (
+        <SectionErrorIndicator errors={[]} />
+      )}
     </div>
   )
 
   const tabs = [
     {
-      id: 'pcr-overview',
-      label: <TabLabel title="Overview" />,
+      id: 'overview',
+      label: <TabLabel field="overview" />,
       component: <PCROverview />,
     },
     {
-      id: 'pcr-summary-of-key-data',
-      label: <TabLabel title="Summary of key data (tranches)" />,
+      id: 'summary_of_key_data',
+      label: <TabLabel field="summary_of_key_data" />,
       component: <PCRSummaryOfKeyData />,
     },
     {
-      id: 'pcr-results-assessment',
-      label: <TabLabel title="Project results overall assessment" />,
+      id: 'results_assessment',
+      label: <TabLabel field="results_assessment" />,
       component: <PCRResultsAssessment />,
     },
     {
-      id: 'pcr-causes-of-delay',
-      label: <TabLabel title="Causes of delay" />,
+      id: 'causes_of_delay',
+      label: <TabLabel field="causes_of_delay" />,
       component: <PCRCausesOfDelay />,
     },
     {
-      id: 'pcr-lessons-learned',
-      label: <TabLabel title="Lessons learned" />,
+      id: 'lessons_learned',
+      label: <TabLabel field="lessons_learned" />,
       component: <PCRLessonsLearned />,
     },
     {
-      id: 'pcr-gender-mainstreaming',
-      label: <TabLabel title="Gender mainstreaming" />,
+      id: 'gender_mainstreaming',
+      label: <TabLabel field="gender_mainstreaming" />,
       component: <PCRGenderMainstreaming />,
     },
     {
-      id: 'pcr-sdgs',
-      label: <TabLabel title="SDGs (optional)" />,
+      id: 'sdgs_contribution',
+      label: <TabLabel field="sdgs_contribution" />,
       component: <PCRSdgs />,
     },
     {
-      id: 'pcr-supporting-evidence',
-      label: <TabLabel title="Other supporting evidence" />,
+      id: 'supporting_evidences',
+      label: <TabLabel field="supporting_evidences" />,
       component: <PCRDocumentation />,
     },
   ]
@@ -88,22 +117,31 @@ const PCRForm = () => {
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs
           .filter((_, index) => index === currentTab)
-          .map(({ id, component }) => (
-            <span key={id}>
-              {component}
-              <div className="mt-5 flex flex-wrap items-center gap-2.5">
-                {currentTab !== 0 && (
-                  <NavigationButton
-                    type="previous"
-                    setCurrentTab={setCurrentTab}
-                  />
+          .map(({ id, component }) => {
+            const tabErrors = formatErrors(
+              tabMapping[id as keyof typeof tabMapping].errors,
+            )
+
+            return (
+              <span key={id}>
+                {tabErrors && tabErrors.length > 0 && (
+                  <ErrorsList errors={tabErrors} />
                 )}
-                {currentTab !== tabs.length - 1 && (
-                  <NavigationButton setCurrentTab={setCurrentTab} />
-                )}
-              </div>
-            </span>
-          ))}
+                {component}
+                <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                  {currentTab !== 0 && (
+                    <NavigationButton
+                      type="previous"
+                      setCurrentTab={setCurrentTab}
+                    />
+                  )}
+                  {currentTab !== tabs.length - 1 && (
+                    <NavigationButton setCurrentTab={setCurrentTab} />
+                  )}
+                </div>
+              </span>
+            )
+          })}
       </div>
     </>
   )

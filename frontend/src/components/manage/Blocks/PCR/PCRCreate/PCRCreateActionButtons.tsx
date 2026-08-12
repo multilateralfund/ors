@@ -19,15 +19,21 @@ import {
 } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
 
-import { flatMap, map, omit, pick } from 'lodash'
+import { find, flatMap, map, omit, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import Cookies from 'js-cookie'
 
 const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const [_, setLocation] = useLocation()
-  const { PCRData, pcrMetaproject, pcrDefaultData, ratingOptions } =
-    useContext(PCRDataContext)
+  const {
+    PCRData,
+    errors,
+    setErrors,
+    pcrMetaproject,
+    pcrDefaultData,
+    ratingOptions,
+  } = useContext(PCRDataContext)
   const metaProjectId = pcrMetaproject.data?.id
   const {
     overview,
@@ -42,6 +48,12 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
   const { updatedFields, clearUpdatedFields } = useUpdatedFields()
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+
+  const hasOverviewDefaultErrors = find(
+    errors.overview?.additional_comments,
+    (error) => find(error.entity, (msg) => msg === 'This field is required.'),
+  )
+  const isSaveDisabled = !metaProjectId || hasOverviewDefaultErrors
 
   const createPCR = async () => {
     setIsLoading(true)
@@ -158,6 +170,8 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       const data = await response.json().catch(() => null)
 
       if (!response.ok) {
+        setErrors(data)
+
         throw data ?? { message: 'An error occurred' }
       }
 
@@ -189,7 +203,7 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
       <SubmitButton
         title="Create PCR"
         onSubmit={createPCR}
-        isDisabled={!metaProjectId}
+        isDisabled={isSaveDisabled}
         className="!py-2"
       />
       {isCancelModalOpen && (
