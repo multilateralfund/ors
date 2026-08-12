@@ -61,10 +61,9 @@ def trf_or_adj(project: Project | None):
     return None
 
 
-def not_trf_or_adj(project: Project | None):
-    if project and not project.adjustment:
-        return not (project.fund_transferred or project.psc_transferred)
-    return None
+def not_adj(project: Project | None):
+    """Return whether a project version represents an approval event."""
+    return bool(project and not project.adjustment)
 
 
 # pylint: disable-next=too-many-public-methods,too-many-lines
@@ -137,7 +136,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "actual_fund",
                     "headerName": "Total Funds Approved",
                     "type": "number",
-                    "cell_format": "#,##0;-#,##0;;@",
+                    "cell_format": "#,##0;-#,##0;0;@",
+                    "show_zero": True,
                     "align": "right",
                     "method": lambda project, _: self._p_actual_fund(project),
                 },
@@ -145,7 +145,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "id": "actual_psc",
                     "headerName": "Total Support Costs Approved",
                     "type": "number",
-                    "cell_format": "#,##0;-#,##0;;@",
+                    "cell_format": "#,##0;-#,##0;0;@",
+                    "show_zero": True,
                     "align": "right",
                     "method": lambda project, _: self._p_actual_psc(project),
                 },
@@ -702,7 +703,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
             value = getattr(project, header["id"], None)
 
         if header_type == "number":
-            return float(value or 0) or None
+            number = float(value or 0)
+            return number if header.get("show_zero") else number or None
         if header_type == "int":
             return int(value or 0) or None
         if header_type == "bool":
@@ -1078,7 +1080,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return projects
 
     def _p_fund_approved(self, project):
-        if project is None or project.fund_transferred:
+        if project is None:
             return None
 
         total_fund = project.total_fund or 0
@@ -1091,7 +1093,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return total_fund
 
     def _p_psc_approved(self, project):
-        if project is None or project.psc_transferred:
+        if project is None:
             return None
 
         support_cost_psc = project.support_cost_psc or 0
@@ -1120,7 +1122,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
         prev_version = self.get_version(project, project.version - 1)
         prev_value = (get_value(prev_version) or 0) if prev_version else 0
 
-        return cur_value - prev_value
+        difference = cur_value - prev_value
+        return difference if project.adjustment else -difference
 
     def _p_psc_transferred(self, project):
         if project is None:
@@ -1137,19 +1140,20 @@ class ProjectsInventoryReportWriter(BaseWriter):
         prev_version = self.get_version(project, project.version - 1)
         prev_value = (get_value(prev_version) or 0) if prev_version else 0
 
-        return cur_value - prev_value
+        difference = cur_value - prev_value
+        return difference if project.adjustment else -difference
 
     def _p_actual_fund(self, project):
         if project.status.name == "Transferred":
             tf = project.fund_transferred or 0
-            result = (project.total_fund or 0) + tf
+            result = (project.total_fund or 0) - tf
             return result or 0
         return project.total_fund or 0
 
     def _p_actual_psc(self, project):
         if project.status.name == "Transferred":
             tpsc = project.psc_transferred or 0
-            result = (project.support_cost_psc or 0) + tpsc
+            result = (project.support_cost_psc or 0) - tpsc
             return result
         return project.support_cost_psc or 0
 
@@ -1239,7 +1243,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if project is None:
             return None
 
-        meeting = project.post_excom_meeting or project.transfer_meeting
+        meeting = (
+            project.post_excom_meeting
+            if project.adjustment
+            else project.transfer_meeting
+        )
 
         if meeting:
             return meeting.number
@@ -1256,7 +1264,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Funds Approved {idx}",
                 "method": lambda project, _: (
                     self._p_fund_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if not_adj(self.get_version(project, version))
                     else None
                 ),
                 "type": "number",
@@ -1268,7 +1276,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Support Costs Approved {idx}",
                 "method": lambda project, _: (
                     self._p_psc_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if not_adj(self.get_version(project, version))
                     else None
                 ),
                 "type": "number",
@@ -1280,7 +1288,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Meeting Approved {idx}",
                 "method": lambda project, _: (
                     self._p_meeting_approved(self.get_version(project, version))
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if not_adj(self.get_version(project, version))
                     else None
                 ),
             },
@@ -1291,7 +1299,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "cell_format": "MMM-YYYY",
                 "method": lambda project, _: (
                     self.get_version(project, version).date_approved
-                    if not_trf_or_adj(self.get_version(project, version))
+                    if not_adj(self.get_version(project, version))
                     else None
                 ),
             },
