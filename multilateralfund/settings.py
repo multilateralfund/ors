@@ -476,11 +476,12 @@ if ADFS_ENABLED:
         "CLAIM_MAPPING": {
             "first_name": "given_name",
             "last_name": "family_name",
-            "email": "upn",
+            "email": "email",
         },
         "GROUPS_CLAIM": None,
         "MIRROR_GROUPS": False,
         "USERNAME_CLAIM": "upn",
+        "GUEST_USERNAME_CLAIM": "email",
         "TENANT_ID": env.str("TENANT_ID", default=""),
         "RELYING_PARTY_ID": env.str("APPLICATION_ID", default=""),
         "LOGIN_EXEMPT_URLS": [
