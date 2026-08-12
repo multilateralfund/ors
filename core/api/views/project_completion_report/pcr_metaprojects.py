@@ -5,8 +5,9 @@ from rest_framework import viewsets, filters
 from rest_framework.response import Response
 
 from core.api.filters.project import ProjectFilter, ProjectFilterBackend
-from core.api.permissions import HasProjectV2ViewAccess
+from core.api.permissions import HasPCRViewAccess
 from core.api.serializers.project_completion_report import PCRMetaProjectSerializer
+from core.models.annual_project_report import AnnualProjectReport
 from core.models.project import MetaProject, Project
 
 
@@ -16,7 +17,7 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
     allow the creation of a project completion report (PCR) for each project in the metaproject.
     """
 
-    permission_classes = [HasProjectV2ViewAccess]
+    permission_classes = [HasPCRViewAccess]
     filter_backends = [
         ProjectFilterBackend,
         DjangoFilterBackend,
@@ -69,6 +70,16 @@ class PCRMetaprojectsViewSet(viewsets.ReadOnlyModelViewSet):
                 "meeting",
                 "status",
                 "submission_status",
+            ).prefetch_related(
+                Prefetch(
+                    "annual_reports",
+                    queryset=AnnualProjectReport.objects.filter(
+                        report__progress_report__endorsed=True
+                    )
+                    .select_related("report__progress_report")
+                    .order_by("-report__progress_report__year"),
+                    to_attr="prefetched_endorsed_aprs",
+                )
             ),
             to_attr="filtered_projects",
         )

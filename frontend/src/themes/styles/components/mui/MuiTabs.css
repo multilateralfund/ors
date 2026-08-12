@@ -84,3 +84,7 @@
     @apply text-gray-400;
   }
 }
+
+.sectionsTabs.pcrTabs .MuiButtonBase-root {
+  max-width: 380px;
+}

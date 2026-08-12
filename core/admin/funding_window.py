@@ -7,6 +7,7 @@ from core.models import FundingWindow
 
 @admin.register(FundingWindow)
 class FundingWindowAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     list_filter = [
         AutocompleteFilterFactory("meeting", "meeting"),
         AutocompleteFilterFactory("decision", "decision"),

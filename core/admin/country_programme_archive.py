@@ -7,6 +7,7 @@ from core.models.country_programme_archive import CPReportArchive, CPUsageArchiv
 
 @admin.register(CPReportArchive)
 class CPReportArchiveAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = ["name", "year", "country__name"]
 
     list_filter = [
@@ -41,6 +42,7 @@ class CPReportArchiveAdmin(admin.ModelAdmin):
 
 @admin.register(CPUsageArchive)
 class CPUsageArchiveAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     list_filter = [
         AutocompleteFilterFactory(
             "country", "country_programme_record__country_programme_report__country"

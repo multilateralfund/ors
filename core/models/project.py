@@ -332,6 +332,26 @@ class MetaProject(models.Model):
         )
         return result
 
+    @cached_property
+    def total_number_of_trainnes(self):
+        total_sum = 0
+        projects = self.projects.all()
+        for project in projects:
+            total_sum += project.total_number_of_customs_officers_trained or 0
+            total_sum += project.total_number_of_technicians_trained_actual or 0
+            total_sum += project.total_number_of_trainers_trained_actual or 0
+        return total_sum
+
+    @cached_property
+    def total_number_of_female_trainnes(self):
+        total_sum = 0
+        projects = self.projects.all()
+        for project in projects:
+            total_sum += project.number_of_female_customs_officers_trained_actual or 0
+            total_sum += project.number_of_female_technicians_trained_actual or 0
+            total_sum += project.number_of_female_trainers_trained_actual or 0
+        return total_sum
+
     def __str__(self):
         return f"{self.umbrella_code}"
 

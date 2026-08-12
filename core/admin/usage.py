@@ -6,6 +6,7 @@ from core.models.usage import ExcludedUsage, Usage
 
 @admin.register(Usage)
 class UsageAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "name",
         "full_name",
@@ -29,6 +30,7 @@ class UsageAdmin(admin.ModelAdmin):
 
 @admin.register(ExcludedUsage)
 class ExcludedUsageAdmin(admin.ModelAdmin):
+    admin_group = "Country programme"
     search_fields = [
         "blend__name",
         "substance__name",

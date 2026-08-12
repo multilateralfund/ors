@@ -143,6 +143,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditAPR = user_permissions.includes('has_apr_edit_access')
   const canSubmitAPR = user_permissions.includes('has_apr_submit_access')
 
+  const canViewPCR = user_permissions.includes('has_pcr_view_access')
+  const canEditPCR = user_permissions.includes('has_pcr_edit_access')
+  const canSubmitPCR = user_permissions.includes('has_pcr_submit_access')
+
   return (
     <PermissionsContext.Provider
       value={{
@@ -188,6 +192,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewAPR,
         canEditAPR,
         canSubmitAPR,
+        canViewPCR,
+        canEditPCR,
+        canSubmitPCR,
       }}
     >
       {children}

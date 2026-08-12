@@ -1,8 +1,48 @@
-from django.db import models
-from core.models.agency import Agency
+import os
+import shutil
+from decimal import Decimal
 
+from django.db import models
+from django.db import transaction
+from django.apps import apps
+from django.conf import settings
+from django.utils.functional import cached_property
+
+from core.models.agency import Agency
 from core.models.project import MetaProject
+from core.models.meeting import Decision
+from core.models.substance import Substance
 from core.models.utils import get_protected_storage
+
+# pylint: disable=no-member
+
+PCR_RELATED_MODELS = [
+    "PCRProject",
+    "PCRActivity",
+    "PCRAdditionalComment",
+    "PCRProjectComponent",
+    "PCRGenderMainstreaming",
+    "PCRSustainableDevelopmentGoal",
+    "PCRSupportingEvidence",
+]
+
+PCR_PROJECT_RELATED_MODELS = [
+    "PCRProjectAlternativeTechnology",
+    "PCRProjectEnterprise",
+    "PCRProjectEquipment",
+]
+
+PCR_PROJECT_COMPONENT_RELATED_MODELS = [
+    "PCRDelayCause",
+    "PCRLearnedLesson",
+]
+
+
+def _get_new_file_path(original_file_name, new_project_id):
+    # Generate a new file path for the duplicated file
+    base_dir, file_name = os.path.split(original_file_name)
+    new_file_name = f"{file_name}_{new_project_id}"
+    return os.path.join(base_dir, new_file_name)
 
 
 class PCRManager(models.Manager):
@@ -15,34 +55,6 @@ class PCRManager(models.Manager):
 
 class PCR(models.Model):
     """
-    The PCR should give information specific to one metacode, but this model contains
-    information specific to one project of that metacode.
-    """
-
-    meta_project = models.ForeignKey("MetaProject", on_delete=models.PROTECT)
-    version = models.IntegerField(default=1)
-    latest_pcr = models.ForeignKey(
-        "self",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="previous_versions",
-    )
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    submission_date = models.DateField(null=True, blank=True)
-    objects = PCRManager()
-
-    def __str__(self):
-        return self.meta_project.umbrella_code
-
-    class Meta:
-        verbose_name_plural = "PCR"
-
-
-class PCRProject(models.Model):
-    """
-    Holds PCR information that is specific to a single project.
     The PCR should give information specific to one metacode, but this model contains
     information specific to one project of that metacode.
     """
@@ -76,39 +88,66 @@ class PCRProject(models.Model):
         LOCAL_EXECUTING_AGENCY = "Local executing agency", "Local executing agency"
         OTHER = "Other", "Other"
 
-    pcr = models.ForeignKey(
-        "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
+    meta_project = models.ForeignKey("MetaProject", on_delete=models.PROTECT)
+    version_created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="created_pcrs_version",
+        help_text="User who created this PCR version",
     )
-    project = models.OneToOneField(
-        "Project", on_delete=models.PROTECT, related_name="pcr_project"
+    version = models.IntegerField(default=1)
+    latest_pcr = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="previous_versions",
     )
-
-    # TODO the following fields can either be calculated/retrieved from project or should be cached/denormalized.
-
-    # country - from project
-    # metacode - from project
-    # executive_committee_meeting - Relevant Decision(s) from project
-    # project_date_approved - Date of approval of the project
-    # project_date_completion - Approved
-    # Date of completion of the project:
-    # ODP phase-out (Approved)
-    # ODP phase out (Actual)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Approved)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Actual)
-    # HFCs PHASED‑DOWN (CO2 eq‑tonnes) (Approved)
-    # Conversion/alternative technology used:
-    # Number of enterprises
-    # Total number of trainees (e.g technicians)*
-    # MLF funding approved
-    # MLF funding disbursed
-    # MLF funding retunrned
-    # Total MLF funding approved
-    # Total MLF funding disbursed
-    # Total project (metacode) MLF funding retunrned
-
+    decisions = models.ManyToManyField(
+        Decision, related_name="pcrs", help_text="Executive Commitee meeting"
+    )
+    project_date_approved = models.DateField(
+        null=True, blank=True, help_text="Date of approval of the project"
+    )
+    project_date_completion = models.DateField(
+        null=True, blank=True, help_text="Date of completion of the project"
+    )
+    phase_out_ods_approved = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="ODP phase-out (Approved)",
+    )
+    phase_out_ods_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="ODP phase out (Actual)",
+    )
+    phase_out_co2_eq_t_approved = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="HFCs PHASED-DOWN (CO2 eq-tonnes) (Approved)",
+    )
+    phase_out_co2_eq_t_actual = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="HFCs PHASED-DOWN (CO2 eq-tonnes) (Actual)",
+    )
     financial_figures_status = models.CharField(
         max_length=32,
         choices=FinancialFiguresStatus.choices,
+        blank=True,
+        null=True,
         help_text="Indicate whether the financial figures are provisional or final",
     )
     financial_figures_status_explanation = models.TextField(
@@ -123,6 +162,8 @@ class PCRProject(models.Model):
     )
     project_goal_achieved = models.CharField(
         max_length=16,
+        blank=True,
+        null=True,
         choices=ProjectGoalAchieved.choices,
         help_text="Indicate whether the financial figures are provisional or final",
     )
@@ -133,9 +174,16 @@ class PCRProject(models.Model):
     )
     rating = models.CharField(
         max_length=64,
+        blank=True,
+        null=True,
         choices=Rating.choices,
     )
-    rating_explaination = models.TextField(
+    rating_explanation = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Please explain your rating ( sub-section of row above) ",
+    )
+    rating_explanation_other = models.TextField(
         null=True,
         blank=True,
         help_text="Should be filled if rating has the value 'Other, please specify' ",
@@ -143,8 +191,109 @@ class PCRProject(models.Model):
     completed_by = models.CharField(
         max_length=64,
         choices=CompletedBy.choices,
+        blank=True,
+        null=True,
         help_text="Completion report done by...",
     )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    submission_date = models.DateField(null=True, blank=True)
+    objects = PCRManager()
+
+    def __str__(self):
+        return self.meta_project.umbrella_code
+
+    @cached_property
+    def total_number_of_enterprises(self):
+        return sum(
+            (pcr_project.enterprises.count() for pcr_project in self.pcr_projects.all())
+        )
+
+    @cached_property
+    def total_funds_approved(self):
+        """Total MLF funding approved"""
+        return sum(
+            (
+                pcr_project.funds_approved or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            0,
+        )
+
+    @cached_property
+    def total_funds_disbursed(self):
+        """Total MLF funding disbursed"""
+        return sum(
+            (
+                pcr_project.funds_disbursed or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            0,
+        )
+
+    @cached_property
+    def total_funds_returned(self):
+        """Total project (metacode) MLF funding returned"""
+        result = sum(
+            (
+                pcr_project.funds_returned or 0
+                for pcr_project in self.pcr_projects.all()
+            ),
+            0,
+        )
+        return result
+
+    class Meta:
+        verbose_name_plural = "PCR"
+
+    def copy_pcr(self):
+        with transaction.atomic():
+            new_pcr = PCR.objects.get(pk=self.pk)
+            new_pcr.pk = None
+            new_pcr.save()
+
+            new_pcr.decisions.set(self.decisions.all())
+
+            for model_name in PCR_RELATED_MODELS:
+                model_class = apps.get_model("core", model_name)
+                items = model_class.objects.filter(pcr=self)
+                for item in items:
+                    item.make_copy(new_pcr)
+
+            new_pcr.save()
+            return new_pcr
+
+    def increase_version(self, user):
+        archived_pcr = self.copy_pcr()
+        archived_pcr.latest_pcr = self
+        archived_pcr.save()
+
+        self.version += 1
+        self.version_created_by = user
+        self.save()
+
+
+class PCRProject(models.Model):
+    """
+    Holds PCR information that is specific to a single project.
+    The PCR should give information specific to one metacode, but this model contains
+    information specific to one project of that metacode.
+    """
+
+    pcr = models.ForeignKey(
+        "PCR", on_delete=models.PROTECT, related_name="pcr_projects"
+    )
+    project = models.ForeignKey(
+        "Project", on_delete=models.PROTECT, related_name="pcr_projects"
+    )
+    funds_disbursed = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Funds disbursed entered in the PCR summary of key data.",
+    )
+    planned_date_of_completion = models.DateField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
@@ -153,6 +302,119 @@ class PCRProject(models.Model):
 
     def __str__(self):
         return f"{self.pcr.meta_project.umbrella_code}"
+
+    @cached_property
+    def funds_approved(self):
+        """
+        MLF funding approved
+        """
+        return Decimal(self.project.total_fund or 0)
+
+    @cached_property
+    def funds_returned(self):
+        """
+        MLF funding returned
+        """
+        return self.funds_approved - (self.funds_disbursed or 0)
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.project = self.project
+        new_item.save()
+        for model_name in PCR_PROJECT_RELATED_MODELS:
+            model_class = apps.get_model("core", model_name)
+            items = model_class.objects.filter(pcr_project=self)
+            for item in items:
+                item.make_copy(new_item)
+
+        return new_item
+
+
+class PCRProjectAlternativeTechnology(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="alternative_technologies"
+    )
+    substance_from = models.ForeignKey(
+        Substance,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    substance_to = models.ForeignKey(
+        Substance,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR project alternative technologies"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.substance_from} to {self.substance_to}"
+
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.substance_from = self.substance_from
+        new_item.substance_to = self.substance_to
+        new_item.save()
+        return new_item
+
+
+class PCRProjectEnterprise(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="enterprises"
+    )
+    name = models.CharField(max_length=255, blank=True)
+    address = models.TextField(blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR project enterprises"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.name}"
+
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.save()
+        return new_item
+
+
+class PCRProjectEquipment(models.Model):
+    pcr_project = models.ForeignKey(
+        "PCRProject", on_delete=models.CASCADE, related_name="equipments"
+    )
+    name = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
+    disposal_type = models.PositiveSmallIntegerField(null=True, blank=True)
+    disposal_date = models.DateField(null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "PCR project equipment"
+
+    def __str__(self):
+        return f"{self.pcr_project} - {self.name}"
+
+    def make_copy(self, new_pcr_project: "PCRProject"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project = new_pcr_project
+        new_item.save()
+        return new_item
 
 
 class PCRAdditionalComment(models.Model):
@@ -172,8 +434,8 @@ class PCRAdditionalComment(models.Model):
         )
         OTHER = "Other, please specify", "Other, please specify"
 
-    pcr_project = models.ForeignKey(
-        "PCRProject", on_delete=models.PROTECT, related_name="additional_comments"
+    pcr = models.ForeignKey(
+        "PCR", on_delete=models.PROTECT, related_name="additional_comments"
     )
     entity = models.CharField(
         max_length=64,
@@ -188,14 +450,26 @@ class PCRAdditionalComment(models.Model):
         verbose_name_plural = "PCR additional comments"
 
     def __str__(self):
-        return f"{self.pcr_project.pcr.meta_project.umbrella_code} - {self.pcr_project.project}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.entity}"
+
+    def make_copy(self, new_pcr: "PCR"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.save()
+        return new_item
 
 
 class PCRActivity(models.Model):
     pcr = models.ForeignKey("PCR", on_delete=models.PROTECT, related_name="activities")
+    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
     type_of_activity = models.TextField(
         blank=True, null=True, help_text="Type of activity"
     )
+    activity_title = models.TextField(
+        blank=True, null=True, help_text="Type of activity"
+    )
+    type_of_sector = models.TextField(blank=True, null=True, help_text="Type of sector")
     planned_output = models.TextField(
         blank=True, null=True, help_text="Planned output(s)"
     )
@@ -213,6 +487,14 @@ class PCRActivity(models.Model):
 
     def __str__(self):
         return f"{self.pcr} - {self.type_of_activity}"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+        return new_item
 
 
 class PCRProjectComponentOptionManager(models.Manager):
@@ -259,23 +541,12 @@ class PCRDelayCategory(models.Model):
         return self.name
 
 
-class PCRAgency(models.Model):
-    pcr = models.ForeignKey(PCR, on_delete=models.PROTECT, related_name="agencies")
-    agency = models.ForeignKey(Agency, on_delete=models.PROTECT)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ("pcr", "agency")
-        verbose_name_plural = "PCR agencies"
-
-    def __str__(self):
-        return f"{self.pcr.meta_project.umbrella_code} - {self.agency}"
-
-
 class PCRProjectComponent(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="components"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="project_components"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="project_components"
     )
     project_component_option = models.ForeignKey(
         PCRProjectComponentOption, on_delete=models.PROTECT
@@ -287,7 +558,22 @@ class PCRProjectComponent(models.Model):
         verbose_name_plural = "PCR project components"
 
     def __str__(self):
-        return f"{self.pcr_agency.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.project_component_option.name}"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+
+        for model_name in PCR_PROJECT_COMPONENT_RELATED_MODELS:
+            model_class = apps.get_model("core", model_name)
+            items = model_class.objects.filter(pcr_project_component=self)
+            for item in items:
+                item.make_copy(new_item)
+
+        return new_item
 
 
 class PCRDelayCause(models.Model):
@@ -300,10 +586,18 @@ class PCRDelayCause(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.pcr_project_component.pcr_agency.pcr.meta_project.umbrella_code} - {self.delay}"
+        return f"{self.pcr_project_component.pcr.meta_project.umbrella_code} - {self.delay}"
 
     class Meta:
         verbose_name_plural = "PCR delay causes"
+
+    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project_component = new_pcr_project_component
+        new_item.delay = self.delay
+        new_item.save()
+        return new_item
 
 
 class PCRLearnedLessonCategoryManager(models.Manager):
@@ -342,6 +636,14 @@ class PCRLearnedLesson(models.Model):
     class Meta:
         verbose_name_plural = "PCR learned lessons"
 
+    def make_copy(self, new_pcr_project_component: "PCRProjectComponent"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr_project_component = new_pcr_project_component
+        new_item.lesson = self.lesson
+        new_item.save()
+        return new_item
+
 
 class PCRGenderMainstreaming(models.Model):
     class ProjectPreparation(models.TextChoices):
@@ -353,8 +655,11 @@ class PCRGenderMainstreaming(models.Model):
             "Monitoring and Reporting",
         )
 
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="gender_mainstreamings"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="gender_mainstreamings"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="gender_mainstreamings"
     )
     project_preparation = models.CharField(
         max_length=32,
@@ -369,6 +674,14 @@ class PCRGenderMainstreaming(models.Model):
     class Meta:
         verbose_name_plural = "PCR gender mainstreamings"
 
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.save()
+        return new_item
+
 
 class PCRGoal(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
@@ -382,10 +695,11 @@ class PCRGoal(models.Model):
 
 
 class PCRSustainableDevelopmentGoal(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency,
-        on_delete=models.PROTECT,
-        related_name="sustainable_development_goals",
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="sustainable_development_goals"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="sustainable_development_goals"
     )
     goals = models.ManyToManyField(
         PCRGoal,
@@ -399,7 +713,23 @@ class PCRSustainableDevelopmentGoal(models.Model):
         verbose_name_plural = "PCR sustainable development goals"
 
     def __str__(self):
-        return f"{self.pcr_agency.pcr.meta_project.umbrella_code} - {self.pcr_agency.agency.name}"
+        return f"{self.pcr.meta_project.umbrella_code} - {self.agency.name}"
+
+    def make_copy(self, new_pcr: "PCR"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+
+        descriptions = PCRSustainableDevelopmentGoalDescription.objects.filter(sgr=self)
+
+        new_item.save()
+
+        for desc in descriptions:
+            desc.make_copy(new_item)
+
+        new_item.save()
+        return new_item
 
 
 class PCRSustainableDevelopmentGoalDescription(models.Model):
@@ -408,6 +738,14 @@ class PCRSustainableDevelopmentGoalDescription(models.Model):
     description = models.TextField(null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    def make_copy(self, sgr: "PCRSustainableDevelopmentGoal"):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.goal = self.goal
+        new_item.sgr = sgr
+        new_item.save()
+        return new_item
 
 
 class PCRSupportingEvidenceSection(models.Model):
@@ -423,8 +761,11 @@ class PCRSupportingEvidenceSection(models.Model):
 
 
 class PCRSupportingEvidence(models.Model):
-    pcr_agency = models.ForeignKey(
-        PCRAgency, on_delete=models.PROTECT, related_name="supporting_evidences"
+    pcr = models.ForeignKey(
+        PCR, on_delete=models.PROTECT, related_name="supporting_evidences"
+    )
+    agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, related_name="supporting_evidences"
     )
     section = models.ForeignKey(
         PCRSupportingEvidenceSection,
@@ -435,13 +776,36 @@ class PCRSupportingEvidence(models.Model):
         storage=get_protected_storage,
         upload_to="pcr_files/",
     )
-    filename = models.CharField(max_length=100)
+    filename = models.CharField(max_length=100, null=True, blank=True)
     link = models.URLField(blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "PCR supporting evidences"
+
+    def make_copy(self, new_pcr):
+        new_item = self.__class__.objects.get(pk=self.pk)
+        new_item.pk = None
+        new_item.pcr = new_pcr
+        new_item.agency = self.agency
+        new_item.section = self.section
+        new_item.file = ""
+        new_item.save()
+
+        if not self.file:
+            return new_item
+
+        original_file_path = self.file.name
+        new_file_path = _get_new_file_path(original_file_path, new_item.id)
+        storage = get_protected_storage()
+        with storage.open(original_file_path, "rb") as original_file:
+            with storage.open(new_file_path, "wb") as new_file:
+                shutil.copyfileobj(original_file, new_file)
+        new_item.file.name = new_file_path
+
+        new_item.save()
+        return new_item
 
 
 class OLD_DelayCategory(models.Model):

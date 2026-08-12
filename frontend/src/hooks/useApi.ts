@@ -124,14 +124,35 @@ export default function useApi<DT = DataType, PT = Record<string, any>>(
       return
     }
 
-    if (apiSettings.path !== props.path) {
-      setApiSettings((prev) => ({ ...prev, path: props.path }))
+    const triggerIf = props.options?.triggerIf
+    const shouldUpdate =
+      apiSettings.path !== props.path ||
+      apiSettings.options?.triggerIf !== triggerIf
+
+    if (shouldUpdate) {
+      setApiSettings((prev) => ({
+        ...prev,
+        options: {
+          ...prev.options,
+          ...props.options,
+          params: prev.options?.params ?? props.options?.params,
+        },
+        path: props.path,
+      }))
       refetch()
     }
 
     // Yes, props.path, as the "path" in the code comes from state so it's not reactive
     // unless manually set
-  }, [apiSettings.path, props.path, reactivePath, refetch])
+  }, [
+    apiSettings.options?.triggerIf,
+    apiSettings.path,
+    props.options,
+    props.options?.triggerIf,
+    props.path,
+    reactivePath,
+    refetch,
+  ])
 
   return {
     apiSettings,

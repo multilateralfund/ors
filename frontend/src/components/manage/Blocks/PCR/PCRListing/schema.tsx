@@ -3,9 +3,14 @@ import { formatDate } from '@ors/components/manage/Blocks/AnnualProgressReport/u
 import { PCRUpdatedMetaproject } from '../interfaces'
 import { pcrFieldsMapping } from '../constants'
 
-import { MdExpandLess, MdExpandMore } from 'react-icons/md'
+import {
+  MdExpandLess,
+  MdExpandMore,
+  MdCheckCircleOutline,
+  MdCheckCircle,
+} from 'react-icons/md'
 import { isNil, map, sumBy } from 'lodash'
-import { Checkbox } from '@mui/material'
+import { Checkbox, Tooltip } from '@mui/material'
 import {
   ValueGetterParams,
   ICellRendererParams,
@@ -68,6 +73,7 @@ const getColumnDefs = (
   pcrProjectsData: PCRUpdatedMetaproject[],
   projectId: number | null,
   setProjectId: (id: number | null) => void,
+  setPcrId: (id: number | null) => void,
 ) => ({
   columnDefs: [
     {
@@ -97,9 +103,9 @@ const getColumnDefs = (
               <Checkbox
                 checked={projectId == props.data.metaprojectId}
                 onChange={(event) => {
-                  setProjectId(
-                    event.target.checked ? props.data.metaprojectId : null,
-                  )
+                  const isChecked = event.target.checked
+                  setProjectId(isChecked ? props.data.metaprojectId : null)
+                  setPcrId(isChecked ? (props.data.pcr_id ?? null) : null)
                 }}
                 sx={{ color: 'black' }}
               />
@@ -107,9 +113,16 @@ const getColumnDefs = (
           ) : (
             <div className="flex w-14 shrink-0" />
           )}
-          <span className="overflow-hidden truncate whitespace-nowrap">
+          <span className="flex-1 overflow-hidden truncate whitespace-nowrap">
             {props.value}
           </span>
+          {props.data.pcr_id ? (
+            <Tooltip title="Has PCR" placement="top" arrow>
+              <span className="text-secondary">
+                <MdCheckCircle size={18} />
+              </span>
+            </Tooltip>
+          ) : null}
         </div>
       ),
     },

@@ -40,6 +40,51 @@ export const pcrFieldsMapping: { [key: string]: string } = {
   agency: 'Agency',
   total_fund: 'Project funding',
   support_cost_psc: 'Project support costs',
+  decisions: 'Relevant decision(s)',
+  project_date_approved: 'Date of approval of the project',
+  project_date_completion: 'Date of completion of the project',
+  phase_out_ods_actual: 'ODP phase-out (Actual)',
+  phase_out_ods_approved: 'ODP phase-out (Approved)',
+  phase_out_co2_eq_t_actual: 'HFCs phased down (CO2 eq-tonnes) (Actual)',
+  phase_out_co2_eq_t_approved: 'HFCs phased down (CO2 eq-tonnes) (Approved)',
+  total_number_of_enterprises: 'Number of enterprises',
+  total_number_of_trainnes: 'Total number of trainees',
+  mlf_funding_approved: 'MLF funding approved',
+  mlf_funding_disbursed: 'MLF funding disbursed',
+  mlf_funding_returned: 'MLF funding returned',
+  total_mlf_funding_approved: 'Total MLF funding approved',
+  total_mlf_funding_disbursed: 'Total MLF funding disbursed',
+  total_mlf_funding_returned: 'Total MLF funding returned',
+  financial_figures_status: 'Financial figures status',
+  financial_figures_status_explanation: 'Explanations if needed',
+  addresses: 'Address(es) of enterprise(s) and project site(s), if applicable',
+  project_goal_achieved: 'All project goals achieved',
+  project_goal_achieved_explanation:
+    'If no, please provide a brief explanation',
+  rating: 'Rating',
+  rating_explanation_other: 'Specify rating',
+  rating_explanation: 'Please explain your rating',
+  entity: 'Entity user inputting the comment on behalf',
+  comment: 'Add comment',
+  completed_by: 'Completion report done by',
+  activity_title: 'Activity title',
+  type_of_activity: 'Type of activity',
+  type_of_sector: 'Type of sector',
+  planned_output: 'Planned output(s)',
+  actual_activity_output: 'Actual activity output(s)',
+  additional_remarks: 'Additional remarks, if applicable',
+  project_component_option_id: 'Project component',
+  delay_id: 'Cause of delay',
+  description: 'Description',
+  lesson_id: 'Lesson learned',
+  project_preparation: 'Project cycle phase',
+  qualitative_description: 'Qualitative description',
+  prefilled: 'Gender policy for all projects approved from 85th meeting',
+  goal_id: 'SDG',
+}
+
+export const pcrFieldsErrorsMapping: { [key: string]: string } = {
+  additional_comments: 'Additional comment',
 }
 
 export const categoryOpts = [
@@ -52,3 +97,28 @@ export const booleanFieldsOpts = [
   { id: 'No', name: 'No' },
   { id: 'N/A', name: 'N/A' },
 ]
+
+export const financialFiguresTypeOptions = [
+  { id: 'Provisional', name: 'Provisional' },
+  { id: 'Final', name: 'Final' },
+]
+
+export const projectPhaseOptions = [
+  { id: 'Project preparation', name: 'Project preparation' },
+  { id: 'Planning/Formulation', name: 'Planning/Formulation' },
+  { id: 'Implementation', name: 'Implementation' },
+  { id: 'Monitoring and Reporting', name: 'Monitoring and Reporting' },
+]
+
+export const initialOverviewData = {
+  financial_figures_status: null,
+  financial_figures_status_explanation: '',
+  addresses: '',
+  project_goal_achieved: null,
+  project_goal_achieved_explanation: '',
+  rating: null,
+  rating_explanation_other: '',
+  rating_explanation: '',
+  additional_comments: [],
+  completed_by: null,
+}

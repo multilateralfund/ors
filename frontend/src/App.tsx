@@ -77,6 +77,7 @@ import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterpris
 import EnterprisesDataProvider from './contexts/Enterprises/EnterprisesDataProvider'
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
+import PCRListingProvider from './contexts/PCR/PCRListingProvider'
 import PCRDataProvider from './contexts/PCR/PCRDataProvider'
 
 import PermissionsContext from './contexts/PermissionsContext'
@@ -93,6 +94,7 @@ import AprRedirect from '@ors/components/manage/Blocks/AnnualProgressReport/AprR
 
 import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
+import PCREditPage from '@ors/app/pcr/edit/page'
 
 function RedirectToSection() {
   const { canEditReplenishment } = useContext(PermissionsContext)
@@ -468,13 +470,24 @@ export default function App() {
         {/* PCR routes */}
         <Route path="/pcr">
           <ProjectsDataProvider>
-            <PCRDataProvider>
+            <PCRListingProvider>
               <PCRListingPage />
-            </PCRDataProvider>
+            </PCRListingProvider>
           </ProjectsDataProvider>
         </Route>
         <Route path="/pcr/:project_id/create">
-          <PCRCreatePage />
+          <ProjectsDataProvider>
+            <PCRDataProvider>
+              <PCRCreatePage />
+            </PCRDataProvider>
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/pcr/:project_id/:pcr_id/edit">
+          <ProjectsDataProvider>
+            <PCRDataProvider>
+              <PCREditPage />
+            </PCRDataProvider>
+          </ProjectsDataProvider>
         </Route>
         <Route>
           <NotFoundPage />

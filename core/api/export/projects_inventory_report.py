@@ -67,6 +67,49 @@ def not_trf_or_adj(project: Project | None):
     return None
 
 
+def get_latest_endorsed_apr(project):
+    aprs = getattr(project, "prefetched_endorsed_aprs", None)
+    return next(iter(aprs), None) if aprs else None
+
+
+def apr_phase_out_total(apr, consumption_field, production_field):
+    if apr is None:
+        return None
+    consumption = getattr(apr, consumption_field, None)
+    production = getattr(apr, production_field, None)
+    if consumption is None and production is None:
+        return None
+    return (consumption or 0) + (production or 0)
+
+
+def project_actual_fund(project):
+    if project.status.name == "Transferred":
+        tf = project.fund_transferred or 0
+        result = (project.total_fund or 0) + tf
+        return result or 0
+    return project.total_fund or 0
+
+
+def project_apr_date_completed(project):
+    return getattr(get_latest_endorsed_apr(project), "date_actual_completion", None)
+
+
+def project_apr_odp_actual(project):
+    return apr_phase_out_total(
+        get_latest_endorsed_apr(project),
+        "consumption_phased_out_odp",
+        "production_phased_out_odp",
+    )
+
+
+def project_apr_co2_actual(project):
+    return apr_phase_out_total(
+        get_latest_endorsed_apr(project),
+        "consumption_phased_out_co2",
+        "production_phased_out_co2",
+    )
+
+
 # pylint: disable-next=too-many-public-methods,too-many-lines
 class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
@@ -606,18 +649,11 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
     @staticmethod
     def _get_latest_apr(project):
-        aprs = getattr(project, "prefetched_endorsed_aprs", None)
-        return next(iter(aprs), None) if aprs else None
+        return get_latest_endorsed_apr(project)
 
     @staticmethod
     def _apr_phase_out_total(apr, consumption_field, production_field):
-        if apr is None:
-            return None
-        consumption = getattr(apr, consumption_field, None)
-        production = getattr(apr, production_field, None)
-        if consumption is None and production is None:
-            return None
-        return (consumption or 0) + (production or 0)
+        return apr_phase_out_total(apr, consumption_field, production_field)
 
     @staticmethod
     def build_version_map(projects):
@@ -1140,11 +1176,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return cur_value - prev_value
 
     def _p_actual_fund(self, project):
-        if project.status.name == "Transferred":
-            tf = project.fund_transferred or 0
-            result = (project.total_fund or 0) + tf
-            return result or 0
-        return project.total_fund or 0
+        return project_actual_fund(project)
 
     def _p_actual_psc(self, project):
         if project.status.name == "Transferred":

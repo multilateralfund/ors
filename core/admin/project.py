@@ -28,6 +28,7 @@ from core.models.rbm_measures import RBMMeasure
 
 @admin.register(MetaProject)
 class MetaProjectAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "projects__title",
         "umbrella_code",
@@ -59,6 +60,7 @@ class MetaProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectComponents)
 class ProjectComponentsAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "id",
     ]
@@ -114,6 +116,7 @@ class LatestProjectVersionsFilter(SimpleListFilter):
 
 @admin.register(ProjectHistory)
 class ProjectHistoryAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "project__title",
     ]
@@ -125,6 +128,7 @@ class ProjectHistoryAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
 
     class BlanketOrIndividualFilter(admin.SimpleListFilter):
         title = _("Blanket or Individual Consideration")
@@ -283,6 +287,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectProgressReport)
 class ProjectProgressReportAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     list_filter = [
         "status",
     ]
@@ -304,6 +309,7 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectFile)
 class ProjectFileAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     list_filter = [
         AutocompleteFilterFactory("project", "project"),
     ]
@@ -322,6 +328,7 @@ class ProjectFileAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectComment)
 class ProjectCommentAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     list_filter = []
     search_fields = [
         "project__title",
@@ -341,6 +348,7 @@ class ProjectCommentAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectOdsOdp)
 class ProjectOdsOdpAdmin(admin.ModelAdmin):
+    admin_group = "Projects"
     search_fields = [
         "project__id",
         "project__title",
@@ -371,6 +379,7 @@ class ProjectOdsOdpAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectFund)
 class ProjectFundAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     search_fields = [
         "project__title",
     ]
@@ -395,6 +404,7 @@ class ProjectFundAdmin(admin.ModelAdmin):
 
 @admin.register(SubmissionAmount)
 class SubmissionAmountAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     search_fields = [
         "project__title",
     ]
@@ -420,6 +430,7 @@ class SubmissionAmountAdmin(admin.ModelAdmin):
 
 @admin.register(Meeting)
 class MeetingAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = [
         "number",
     ]
@@ -455,6 +466,7 @@ class MeetingAdmin(admin.ModelAdmin):
 
 @admin.register(Decision)
 class DecisionAdmin(admin.ModelAdmin):
+    admin_group = "Common"
     search_fields = ["number"]
 
     list_filter = [
@@ -481,6 +493,7 @@ class DecisionAdmin(admin.ModelAdmin):
 
 @admin.register(RBMMeasure)
 class RBMMeasureAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     search_fields = ["name"]
 
     def get_list_display(self, request):
@@ -490,6 +503,7 @@ class RBMMeasureAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectRBMMeasure)
 class ProjectRbmMeasureAdmin(admin.ModelAdmin):
+    admin_group = "Projects (OBSOLETE)"
     search_fields = ["project__title", "measure__name"]
     list_filter = ["measure"]
 
