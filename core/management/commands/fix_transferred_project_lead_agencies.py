@@ -1,15 +1,14 @@
 from django.core.management import BaseCommand
 from django.db import transaction
-from django.db.models import F
-from django.db.models import Q
 
 from core.models import Project
 
 
 class Command(BaseCommand):
     help = (
-        "Set the lead agency of existing receiving transfer projects to their "
-        "implementing agency. Use --dry-run to preview changes without writing."
+        "Correct lead agencies on receiving transfer projects based on whether "
+        "the transferred portion belonged to the original lead agency. Use "
+        "--dry-run to preview changes without writing."
     )
 
     def add_arguments(self, parser):
@@ -22,39 +21,66 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
-        projects = (
+        projects = list(
             Project.objects.filter(transferred_from_id__isnull=False)
-            .filter(
-                Q(lead_agency_id__isnull=True)
-                | ~Q(lead_agency_id=F("agency_id"))
-                | Q(lead_agency_submitting_on_behalf=True)
+            .select_related(
+                "agency",
+                "lead_agency",
+                "transferred_from__agency",
+                "transferred_from__lead_agency",
             )
-            .select_related("agency", "lead_agency")
             .order_by("id")
         )
-        project_ids = list(projects.values_list("id", flat=True))
+        changes = []
+        for project in projects:
+            source = project.transferred_from
+            if (
+                source.lead_agency_id is None
+                or source.agency_id == source.lead_agency_id
+            ):
+                target_lead_agency = project.agency
+            else:
+                target_lead_agency = source.lead_agency
+            target_submitting_on_behalf = target_lead_agency.id != project.agency_id
+
+            if (
+                project.lead_agency_id != target_lead_agency.id
+                or project.lead_agency_submitting_on_behalf
+                != target_submitting_on_behalf
+            ):
+                changes.append(
+                    (
+                        project,
+                        target_lead_agency,
+                        target_submitting_on_behalf,
+                    )
+                )
 
         mode = "DRY RUN" if dry_run else "LIVE"
-        self.stdout.write(f"{mode}: {len(project_ids)} receiving project(s) to fix.")
+        self.stdout.write(f"{mode}: {len(changes)} receiving project(s) to fix.")
 
-        for project in projects:
+        for project, target_lead_agency, target_submitting_on_behalf in changes:
             old_lead_agency = (
                 project.lead_agency.name if project.lead_agency else "None"
             )
             self.stdout.write(
                 f"Project {project.id}: lead agency {old_lead_agency} -> "
-                f"{project.agency.name}; submitting on behalf "
-                f"{project.lead_agency_submitting_on_behalf} -> False"
+                f"{target_lead_agency.name}; submitting on behalf "
+                f"{project.lead_agency_submitting_on_behalf} -> "
+                f"{target_submitting_on_behalf}"
             )
 
-        if dry_run or not project_ids:
+        if dry_run or not changes:
             self.stdout.write("No database changes were made.")
             return
 
-        updated = Project.objects.filter(id__in=project_ids).update(
-            lead_agency_id=F("agency_id"),
-            lead_agency_submitting_on_behalf=False,
+        for project, target_lead_agency, target_submitting_on_behalf in changes:
+            project.lead_agency = target_lead_agency
+            project.lead_agency_submitting_on_behalf = target_submitting_on_behalf
+        Project.objects.bulk_update(
+            [project for project, _, _ in changes],
+            ["lead_agency", "lead_agency_submitting_on_behalf"],
         )
         self.stdout.write(
-            self.style.SUCCESS(f"Updated {updated} receiving project(s).")
+            self.style.SUCCESS(f"Updated {len(changes)} receiving project(s).")
         )

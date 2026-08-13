@@ -1657,8 +1657,16 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.status = ProjectStatus.objects.get(code="ONG")
         new_agency = self.validated_data.get("agency")
         new_transfer_project.agency = new_agency
-        new_transfer_project.lead_agency = new_agency
-        new_transfer_project.lead_agency_submitting_on_behalf = False
+        if (
+            project.lead_agency_id is None
+            or project.agency_id == project.lead_agency_id
+        ):
+            new_transfer_project.lead_agency = new_agency
+        else:
+            new_transfer_project.lead_agency = project.lead_agency
+        new_transfer_project.lead_agency_submitting_on_behalf = (
+            new_transfer_project.lead_agency_id != new_agency.id
+        )
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
