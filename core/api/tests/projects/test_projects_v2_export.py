@@ -837,6 +837,69 @@ class TestProjectV2ExportXLSX(BaseTest):
                 == values["date"]
             )
 
+    def test_export_inventory_report_preserves_approval_and_subtracts_transfer(
+        self, admin_user, project_approved_status
+    ):
+        approval_date = date(2024, 3, 15)
+        project = ProjectFactory.create(
+            version=3,
+            code="TRANSFERRED-CODE",
+            total_fund=400,
+            support_cost_psc=40,
+            fund_transferred=400,
+            psc_transferred=40,
+            meeting=MeetingFactory.create(number=303),
+            transfer_meeting=MeetingFactory.create(
+                number=304,
+                date=date(2025, 6, 16),
+                end_date=date(2025, 6, 20),
+            ),
+            date_approved=approval_date,
+            status__name="Transferred",
+            status__code="TRF",
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        expected = {
+            "Funds Approved 1": 400,
+            "Support Costs Approved 1": 40,
+            "Meeting Approved 1": 303,
+            "Fund Adjustments 1": -400,
+            "Support Cost Adjustments 1": -40,
+            "Adjustments Meeting 1": 304,
+            "Total Fund Adjustments": -400,
+            "Total Support Cost Adjustments": -40,
+            "Total Funds Approved": 0,
+            "Total Support Costs Approved": 0,
+        }
+        for header, value in expected.items():
+            assert sheet[f"{headers[header]}{row}"].value == value
+
+        assert sheet[f"{headers['Date Approved 1']}{row}"].value.date() == approval_date
+        assert (
+            sheet[f"{headers['Adjustments Date 1']}{row}"].value.date() == approval_date
+        )
+        visible_zero_format = "#,##0;-#,##0;0;@"
+        assert (
+            sheet[f"{headers['Total Funds Approved']}{row}"].number_format
+            == visible_zero_format
+        )
+        assert (
+            sheet[f"{headers['Total Support Costs Approved']}{row}"].number_format
+            == visible_zero_format
+        )
+
     def test_export_mya_adds_filters_and_totals(
         self,
         secretariat_viewer_user,
