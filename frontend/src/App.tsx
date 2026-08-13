@@ -84,7 +84,6 @@ import NotFoundPage from '@ors/app/not-found'
 import DownloadPage from '@ors/app/download/page'
 
 import RootLayout from './app/layout'
-import { useStore } from '@ors/store.tsx'
 import APRWorkspace from '@ors/app/annual-project-report/[year]/workspace/page.tsx'
 import APRMLFSWorkspace from '@ors/app/annual-project-report/[year]/mlfs/workspace/page.tsx'
 import APREdit from '@ors/app/annual-project-report/[year]/edit/page.tsx'
@@ -95,35 +94,37 @@ import PCRListingPage from '@ors/app/pcr/page'
 import PCRCreatePage from '@ors/app/pcr/create/page'
 
 function RedirectToSection() {
-  const { canEditReplenishment } = useContext(PermissionsContext)
+  const permissions = useContext(PermissionsContext)
 
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
-  const isOnlyBpUser =
-    user_permissions.includes('has_business_plan_view_access') &&
-    ![
-      'has_replenishment_view_access',
-      'has_cp_report_view_access',
-      'has_project_v2_view_access',
-    ].some((permission) => user_permissions.includes(permission))
-  const isOnlyProjectsUser =
-    user_permissions.includes('has_project_v2_view_access') &&
-    ![
-      'has_replenishment_view_access',
-      'has_cp_report_view_access',
-      'has_business_plan_view_access',
-    ].some((permission) => user_permissions.includes(permission))
+  if (permissions.canViewProjects) {
+    return <Redirect to="/projects-listing/listing" replace />
+  }
+  if (permissions.canViewBp) {
+    return <Redirect to="/business-plans" replace />
+  }
+  if (permissions.canSetProjectSettings) {
+    return <Redirect to="/projects-listing/settings" replace />
+  }
+  if (permissions.canViewEnterprises) {
+    return <Redirect to="/projects-listing/enterprises" replace />
+  }
+  if (permissions.canViewCPReports) {
+    return <Redirect to="/country-programme/reports" replace />
+  }
+  if (permissions.canEditCPReports) {
+    return <Redirect to="/country-programme/create" replace />
+  }
+  if (permissions.canExportCPReports) {
+    return <Redirect to="/country-programme/export-data" replace />
+  }
+  if (permissions.canViewReplenishment || permissions.canEditReplenishment) {
+    return <Redirect to="/replenishment/dashboard/cummulative" replace />
+  }
+  if (permissions.canViewAPR) {
+    return <Redirect to="/apr" replace />
+  }
 
-  if (canEditReplenishment) {
-    return <Redirect to={'/replenishment/dashboard/cummulative'} />
-  }
-  if (isOnlyBpUser) {
-    return <Redirect to={'/business-plans'} />
-  }
-  if (isOnlyProjectsUser) {
-    return <Redirect to={'/projects-listing/listing'} />
-  }
-  return <Redirect to={'/country-programme/reports'} />
+  return <NotFoundPage />
 }
 
 export default function App() {
