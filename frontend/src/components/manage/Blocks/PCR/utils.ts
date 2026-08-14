@@ -1,8 +1,4 @@
-import {
-  initialOverviewData,
-  pcrFieldsMapping,
-  pcrFieldsErrorsMapping,
-} from './constants'
+import { pcrFieldsMapping, pcrFieldsErrorsMapping } from './constants'
 import {
   OptionsType,
   PCRAlternativeTechnologyType,
@@ -11,7 +7,7 @@ import {
   PCRSummaryOfKeyDataType,
 } from './interfaces'
 
-import { find, forEach, keys, lowerCase, map, pick, reduce } from 'lodash'
+import { find, forEach, lowerCase, map, reduce } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -110,7 +106,7 @@ export const formatAgencyData = <T extends { agency_id: number }>(
 ) =>
   reduce(
     data,
-    (acc: object[], entry) => {
+    (acc: Record<string, any>[], entry) => {
       forEach(entry[subField] as object[], (subEntry) => {
         acc.push({ agency_id: entry.agency_id, ...subEntry })
       })
@@ -120,44 +116,93 @@ export const formatAgencyData = <T extends { agency_id: number }>(
     [],
   )
 
-export const groupErrors = (errors: Record<string, any[]>) => {
-  const overviewFields = keys(initialOverviewData)
-  const overviewErrors = pick(errors, overviewFields)
+export const hasSectionErrors = (errors: Record<string, any>) =>
+  Object.values(errors).some((error) => {
+    if (!Array.isArray(error)) {
+      return Object.values(error as Record<string, any>).some((nestedError) =>
+        nestedError.some(
+          (item: Record<string, any>) =>
+            item.errors && Object.keys(item.errors).length > 0,
+        ),
+      )
+    }
 
-  return { overview: overviewErrors }
+    return error.some((item) => {
+      if (Array.isArray(item)) {
+        return item.some((entry) => entry && Object.keys(entry).length > 0)
+      }
+
+      return typeof item === 'string' || (item && Object.keys(item).length > 0)
+    })
+  })
+
+const formatNestedErrors = (
+  errors: Record<string, any>,
+  crtFieldNames: Record<string, string>,
+  field: string,
+  index: number,
+) => {
+  const errorFields = Object.keys(errors)
+
+  if (errorFields.length !== 0) {
+    const fieldNames = map(errorFields, (field) => crtFieldNames[field]).join(
+      ', ',
+    )
+    const errorMessage =
+      errorFields.length > 1 ? 'These fields are' : 'This field is'
+
+    return {
+      id: `${field}-${index}`,
+      message: `${crtFieldNames[field]} ${index + 1} : ${fieldNames} - ${errorMessage} not valid.`,
+    }
+  }
+
+  return null
 }
 
-export const formatErrors = (errors: { [key: string]: string[] }) => {
-  const crtFieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
+export const formatErrors = (
+  errors: { [key: string]: string[] },
+  nestedField?: string,
+) => {
+  const fieldNames = { ...pcrFieldsMapping, ...pcrFieldsErrorsMapping }
 
   return Object.entries(errors)
-    .filter(([, errorMsgs]) => errorMsgs.length > 0)
-    .flatMap(([field, errorMsgs]) =>
-      errorMsgs.map((errMsg, idx) => {
-        if (typeof errMsg === 'string') {
-          return {
-            id: `${field}-${idx}`,
-            message: `${crtFieldNames[field]}: ${errMsg}`,
-          }
-        } else {
-          const errorFields = Object.keys(errMsg)
-
-          if (errorFields.length !== 0) {
-            const fieldNames = map(
-              errorFields,
-              (field) => crtFieldNames[field],
-            ).join(', ')
-            const errorMessage =
-              errorFields.length > 1 ? 'These fields are' : 'This field is'
-
+    .filter(([, error]) => error.length > 0)
+    .flatMap(([field, error]) =>
+      error
+        .flatMap((nestedError, index) => {
+          if (typeof nestedError === 'string') {
             return {
-              id: `${field}-${idx}`,
-              message: `${crtFieldNames[field]} ${idx + 1} : ${fieldNames} - ${errorMessage} not valid.`,
+              id: `${field}-${index}`,
+              message: `${fieldNames[field]}: ${nestedError}`,
             }
-          }
+          } else {
+            if (Array.isArray(nestedError)) {
+              return reduce(
+                nestedError,
+                (acc: any[], entry: Record<string, any>, nestedIndex) => [
+                  ...acc,
+                  formatNestedErrors(entry, fieldNames, field, nestedIndex),
+                  ...map(entry[nestedField!], (nestedEntry, deepNestedIndex) =>
+                    formatNestedErrors(
+                      nestedEntry,
+                      fieldNames,
+                      nestedField!,
+                      deepNestedIndex,
+                    ),
+                  ),
+                ],
+                [],
+              )
+            }
 
-          return null
-        }
-      }),
+            if (Object.keys(nestedError).length !== 0) {
+              return formatNestedErrors(nestedError, fieldNames, field, index)
+            }
+
+            return null
+          }
+        })
+        .filter(Boolean),
     )
 }

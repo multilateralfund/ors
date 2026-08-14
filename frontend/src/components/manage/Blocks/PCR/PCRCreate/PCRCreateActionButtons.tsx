@@ -90,9 +90,9 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
       const causesOfDelayProjectComponents = flatMap(
         causes_of_delay,
-        ({ agency_id, pcr_project_component }) =>
+        ({ agency_id, project_components }) =>
           map(
-            pcr_project_component,
+            project_components,
             ({ project_component_option_id, delay_causes }) => ({
               agency_id,
               project_component_option_id,
@@ -104,9 +104,9 @@ const PCRCreateActionButtons = ({ setIsLoading }: PCRActionButtons) => {
 
       const lessonsLearnedProjectComponents = flatMap(
         lessons_learned,
-        ({ agency_id, pcr_project_component }) =>
+        ({ agency_id, project_components }) =>
           map(
-            pcr_project_component,
+            project_components,
             ({ project_component_option_id, learned_lessons }) => ({
               agency_id,
               project_component_option_id,

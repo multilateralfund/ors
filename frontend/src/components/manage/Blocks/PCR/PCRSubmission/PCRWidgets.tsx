@@ -20,6 +20,7 @@ import {
   FieldType,
   FieldHandler,
   OptionsType,
+  ErrorType,
 } from '../interfaces'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
@@ -240,18 +241,21 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
   },
 }
 
-const formatErrors = (
-  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
-  indexes?: number[],
-) => {
+const formatErrors = (errors: ErrorType, indexes?: number[]) => {
   const indexesLength = indexes?.length
-  const [dataIndex] = indexes ?? []
+  const [dataIndex, nestedDataIndex, deepNestedDataIndex] = indexes ?? []
 
-  if (Array.isArray(errors) && indexesLength === 1) {
-    return errors[dataIndex]
+  if (!Array.isArray(errors)) {
+    return errors
   }
 
-  return errors
+  if (errors.length > 0 && errors.every(Array.isArray)) {
+    return indexesLength === 2
+      ? errors[0][nestedDataIndex]
+      : errors[0][nestedDataIndex]?.[deepNestedDataIndex]
+  }
+
+  return indexesLength === 2 ? errors[nestedDataIndex] : errors[dataIndex]
 }
 
 export const PCRSelectWidget = ({
@@ -307,6 +311,7 @@ export const PCRTextWidget = ({
   subFields,
 }: WidgetPprops) => {
   const value = getValue(PCRData, sectionIdentifier, field, indexes, subFields)
+  const formattedErrors = formatErrors(errors, indexes)
 
   return (
     <div>
@@ -333,14 +338,7 @@ export const PCRTextWidget = ({
             ' !min-w-56 md:!min-w-[600px]'
           }
         />
-        <FieldErrorIndicator
-          errors={
-            !isNil(indexes?.[0])
-              ? (errors as { [key: string]: string[] }[])[indexes?.[0]]
-              : errors
-          }
-          field={field}
-        />
+        <FieldErrorIndicator errors={formattedErrors} field={field} />
       </div>
     </div>
   )

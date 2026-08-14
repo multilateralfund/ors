@@ -32,27 +32,6 @@ const PCROverview = () => {
   const { overview: overviewErrors } = errors
   const additionalCommentsErrors = overviewErrors[additionalCommentsField]
 
-  useEffect(() => {
-    setErrors((prev: Record<string, any[]>) => ({
-      ...prev,
-      [additionalCommentsField]: map(
-        additionalCommentsData,
-        (comment, index) => {
-          const requiredMessage = 'This field is required.'
-          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
-
-          if (!comment.entity) {
-            return { ...existingErrors, entity: [requiredMessage] }
-          }
-
-          return existingErrors.entity?.includes(requiredMessage)
-            ? omit(existingErrors, ['entity'])
-            : existingErrors
-        },
-      ),
-    }))
-  }, [JSON.stringify(additionalCommentsData)])
-
   const onAddAdditionalComment = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
@@ -88,6 +67,27 @@ const PCROverview = () => {
       }
     }, additionalCommentsField)
   }
+
+  useEffect(() => {
+    setErrors((prev: Record<string, any[]>) => ({
+      ...prev,
+      [additionalCommentsField]: map(
+        additionalCommentsData,
+        (comment, index) => {
+          const requiredMessage = 'This field is required.'
+          const existingErrors = prev[additionalCommentsField]?.[index] ?? {}
+
+          if (!comment.entity) {
+            return { ...existingErrors, entity: [requiredMessage] }
+          }
+
+          return existingErrors.entity?.includes(requiredMessage)
+            ? omit(existingErrors, ['entity'])
+            : existingErrors
+        },
+      ),
+    }))
+  }, [JSON.stringify(additionalCommentsData)])
 
   return (
     <>

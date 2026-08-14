@@ -9,7 +9,7 @@ import {
 } from '@ors/components/manage/Blocks/PCR/interfaces'
 
 type PCRDataContextProps = PCRFormData & {
-  errors: Record<string, Record<string, any[]>>
+  errors: Record<string, any>
   setErrors: Dispatch<SetStateAction<(error: Record<string, any[]>) => void>>
   pcrMetaproject: ReturnType<typeof useGetPCRProject>
   pcrDefaultData: ReturnType<typeof useGetPCRDefaults>

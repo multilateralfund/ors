@@ -1,7 +1,6 @@
 import { useContext, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
-import { hasSectionErrors } from '@ors/components/manage/Blocks/ProjectsListing/utils'
 import {
   ErrorsList,
   NavigationButton,
@@ -15,7 +14,7 @@ import PCRCausesOfDelay from './PCRCausesOfDelay'
 import PCRDocumentation from './PCRDocumentation'
 import PCROverview from './PCROverview'
 import PCRSdgs from './PCRSdgs'
-import { formatErrors } from '../utils'
+import { formatErrors, hasSectionErrors } from '../utils'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -32,10 +31,16 @@ const PCRForm = () => {
     },
     results_assessment: {
       title: 'Project results overall assessment',
-      errors: {},
+      errors: errors.results_assessment,
     },
-    causes_of_delay: { title: 'Causes of delay', errors: {} },
-    lessons_learned: { title: 'Lessons learned', errors: {} },
+    causes_of_delay: {
+      title: 'Causes of delay',
+      errors: errors.causes_of_delay,
+    },
+    lessons_learned: {
+      title: 'Lessons learned',
+      errors: errors.lessons_learned,
+    },
     gender_mainstreaming: { title: 'Gender mainstreaming', errors: {} },
     sdgs_contribution: { title: 'SDGs (optional)', errors: {} },
     supporting_evidences: { title: 'Other supporting evidence', errors: {} },
@@ -55,6 +60,7 @@ const PCRForm = () => {
       id: 'overview',
       label: <TabLabel field="overview" />,
       component: <PCROverview />,
+      shouldDisplayErrors: true,
     },
     {
       id: 'summary_of_key_data',
@@ -117,14 +123,14 @@ const PCRForm = () => {
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {tabs
           .filter((_, index) => index === currentTab)
-          .map(({ id, component }) => {
+          .map(({ id, component, shouldDisplayErrors }) => {
             const tabErrors = formatErrors(
               tabMapping[id as keyof typeof tabMapping].errors,
             )
 
             return (
               <span key={id}>
-                {tabErrors && tabErrors.length > 0 && (
+                {shouldDisplayErrors && tabErrors && tabErrors.length > 0 && (
                   <ErrorsList errors={tabErrors} />
                 )}
                 {component}

@@ -1,9 +1,15 @@
 import { Fragment, useContext, useState } from 'react'
 
-import { SubmitButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator'
+import {
+  ErrorsList,
+  SubmitButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRTextWidget, PCRTextAreaWidget } from './PCRWidgets'
+import { formatErrors, hasSectionErrors } from '../utils'
+import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
@@ -14,18 +20,41 @@ const PCRResultsAssessment = () => {
   const sectionIdentifier = 'results_assessment'
   const activityField = 'activities'
 
-  const { PCRData, setPCRData } = useContext(PCRDataContext)
+  const { PCRData, setPCRData, errors } = useContext(PCRDataContext)
   const { agencies } = useContext(ProjectsDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
 
   const sectionData = PCRData[sectionIdentifier] || []
   const activitiesData = sectionData[crtTab][activityField] || []
+  const crtAgencyId = sectionData[crtTab].agency_id
 
-  const crtAgencies = map(
-    sectionData,
-    (entry) => find(agencies, (agency) => agency.id === entry.agency_id)?.name,
-  )
+  const { results_assessment: resultsAssessmentErrors } = errors
+  const activitiesErrors = resultsAssessmentErrors[activityField]
+
+  const agencyErrors = map(activitiesErrors[crtAgencyId], 'errors')
+  const formattedAgencyErrors = formatErrors({ [activityField]: agencyErrors })
+
+  const crtAgencies =
+    agencies && agencies.length > 0
+      ? map(
+          sectionData,
+          (entry) => find(agencies, (agency) => agency.id === entry.agency_id)!,
+        )
+      : []
+
+  const TabLabel = ({ agency }: { agency: ApiAgency }) => {
+    const tabErrors = {
+      [activityField]: map(activitiesErrors[agency.id], 'errors'),
+    }
+
+    return (
+      <div className="relative flex items-center justify-between gap-x-2">
+        <div className="leading-tight">{agency.name}</div>
+        {hasSectionErrors(tabErrors) && <SectionErrorIndicator errors={[]} />}
+      </div>
+    )
+  }
 
   const initialActivitiesData = {
     activity_title: '',
@@ -94,18 +123,26 @@ const PCRResultsAssessment = () => {
           setCrtTab(newValue)
         }}
       >
-        {crtAgencies.map((agency) => (
-          <Tab key={agency} aria-controls={agency} id={agency} label={agency} />
+        {map(crtAgencies, (agency) => (
+          <Tab
+            key={agency.name}
+            aria-controls={agency.name}
+            id={agency.name}
+            label={<TabLabel {...{ agency }} />}
+          />
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {formattedAgencyErrors && formattedAgencyErrors.length > 0 && (
+          <ErrorsList errors={formattedAgencyErrors} />
+        )}
         <div className="flex flex-col gap-y-4">
           {map(activitiesData, (_, activityIndex) => (
             <Fragment key={activityIndex}>
               <PCRTextWidget
                 {...{ PCRData, setPCRData, sectionIdentifier }}
                 field="activity_title"
-                errors={{}}
+                errors={agencyErrors}
                 indexes={[crtTab, activityIndex]}
                 subFields={['', activityField]}
               />
@@ -116,7 +153,7 @@ const PCRResultsAssessment = () => {
                     <Fragment key={fieldIndex}>
                       <PCRTextAreaWidget
                         {...{ PCRData, setPCRData, sectionIdentifier, field }}
-                        errors={{}}
+                        errors={agencyErrors}
                         indexes={[crtTab, activityIndex]}
                         subFields={['', activityField]}
                       />

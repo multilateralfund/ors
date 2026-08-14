@@ -85,6 +85,10 @@ export const pcrFieldsMapping: { [key: string]: string } = {
 
 export const pcrFieldsErrorsMapping: { [key: string]: string } = {
   additional_comments: 'Additional comment',
+  activities: 'Activity',
+  project_components: 'Project component',
+  delay_causes: 'Cause of delay',
+  learned_lessons: 'Lesson learned',
 }
 
 export const categoryOpts = [

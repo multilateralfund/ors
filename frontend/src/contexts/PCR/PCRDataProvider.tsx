@@ -9,17 +9,22 @@ import {
 import { useGetPCRDefaults } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRDefaults'
 import { useGetPCRProject } from '@ors/components/manage/Blocks/PCR/hooks/useGetPCRProject'
 import { initialOverviewData } from '@ors/components/manage/Blocks/PCR/constants'
-import { PCRData } from '@ors/components/manage/Blocks/PCR/interfaces'
 import {
+  PCRData,
+  PCRResultsAssessmentData,
+  PCRCausesOfDelayData,
+  PCRLessonsLearnedData,
+} from '@ors/components/manage/Blocks/PCR/interfaces'
+import {
+  formatAgencyData,
   formatOptions,
-  groupErrors,
 } from '@ors/components/manage/Blocks/PCR/utils'
 import PCRDataContext from './PCRDataContext'
 import { useUpdatedFields } from '../Projects/UpdatedFieldsContext'
 import useApi from '@ors/hooks/useApi'
 
+import { filter, groupBy, keys, map, pick, reduce } from 'lodash'
 import { useParams } from 'wouter'
-import { reduce } from 'lodash'
 
 const PCRDataProvider = (props: PropsWithChildren) => {
   const { children } = props
@@ -59,6 +64,69 @@ const PCRDataProvider = (props: PropsWithChildren) => {
     },
     [addUpdatedField],
   )
+
+  const formatResultsAssessmentErrors = (errors: Record<string, any[]>) => {
+    const resultsAssessmentData = formatAgencyData<PCRResultsAssessmentData>(
+      PCRData.results_assessment || [],
+      'activities',
+    )
+
+    const agenciesErrors = map(resultsAssessmentData, (data, index) => ({
+      agency_id: data.agency_id,
+      errors: errors?.activities?.[index] ?? {},
+    }))
+
+    return { activities: groupBy(agenciesErrors, 'agency_id') }
+  }
+
+  const formatProjectComponentsErrors = (errors: Record<string, any[]>) => {
+    let crtErrorIndex = 0
+
+    const formatAgencyErrors = (
+      data: (PCRCausesOfDelayData | PCRLessonsLearnedData)[],
+    ) =>
+      groupBy(
+        map(
+          filter(data || [], (entry) => entry.project_components.length > 0),
+          ({ agency_id, project_components }) => ({
+            agency_id,
+            errors: map(project_components, () => {
+              const pcErrors = errors?.project_components?.[crtErrorIndex] ?? {}
+              crtErrorIndex++
+
+              return pcErrors
+            }),
+          }),
+        ),
+        'agency_id',
+      )
+
+    const causesOfDelayErrors = formatAgencyErrors(PCRData.causes_of_delay)
+    const lessonsLearnedErrors = formatAgencyErrors(PCRData.lessons_learned)
+
+    return {
+      causes_of_delay: { project_components: causesOfDelayErrors },
+      lessons_learned: { project_components: lessonsLearnedErrors },
+    }
+  }
+
+  const groupErrors = (errors: Record<string, any[]>) => {
+    const overviewFields = keys(initialOverviewData)
+    const overviewErrors = pick(errors, overviewFields)
+    const resultsAssessmentErrors = formatResultsAssessmentErrors(
+      pick(errors, 'activities'),
+    )
+    const projectComponentsErrors = formatProjectComponentsErrors(
+      pick(errors, 'project_components'),
+    )
+
+    return {
+      overview: overviewErrors,
+      results_assessment: resultsAssessmentErrors,
+      causes_of_delay: projectComponentsErrors.causes_of_delay,
+      lessons_learned: projectComponentsErrors.lessons_learned,
+    }
+  }
 
   const errors = useMemo(() => groupErrors(initialErrors), [initialErrors])
 

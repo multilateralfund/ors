@@ -113,7 +113,7 @@ type CauseOfDelayProjectComponent = {
 
 export interface PCRCausesOfDelayData {
   agency_id: number
-  pcr_project_component: CauseOfDelayProjectComponent[]
+  project_components: CauseOfDelayProjectComponent[]
 }
 
 type LessonLearned = { lesson_id: number | null; description: string }
@@ -125,7 +125,7 @@ type LessonLearnedProjectComponent = {
 
 export interface PCRLessonsLearnedData {
   agency_id: number
-  pcr_project_component: LessonLearnedProjectComponent[]
+  project_components: LessonLearnedProjectComponent[]
 }
 
 type ProjectPhase = {
@@ -178,12 +178,17 @@ export type SetPCRData = (
 
 export type PCRFormData = { PCRData: PCRData; setPCRData: SetPCRData }
 
+export type ErrorType =
+  | { [key: string]: string[] }
+  | { [key: string]: string[] }[]
+  | { [key: string]: string[] }[][]
+
 export type WidgetPprops = {
   PCRData: PCRData
   setPCRData: Dispatch<SetStateAction<PCRData>>
   sectionIdentifier: keyof PCRData
   field: string
-  errors: { [key: string]: string[] } | { [key: string]: string[] }[]
+  errors: ErrorType
   indexes?: number[]
   subFields?: string[]
 }
