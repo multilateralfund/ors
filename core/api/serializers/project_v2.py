@@ -1655,22 +1655,25 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             name="Approved"
         )
         new_transfer_project.status = ProjectStatus.objects.get(code="ONG")
-        new_agency = self.validated_data.get("agency")
-        new_transfer_project.agency = new_agency
-        if (
-            project.lead_agency_id is None
-            or project.agency_id == project.lead_agency_id
-        ):
-            new_transfer_project.lead_agency = new_agency
-        else:
-            new_transfer_project.lead_agency = project.lead_agency
-        new_transfer_project.lead_agency_submitting_on_behalf = (
-            new_transfer_project.lead_agency_id != new_agency.id
-        )
+        new_transfer_project.agency = self.validated_data.get("agency")
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        if (
+            new_transfer_project.category == Project.Category.MYA
+            and not new_transfer_project.lead_agency
+        ):
+            new_transfer_project.lead_agency = (
+                new_transfer_project.meta_project.projects.exclude(
+                    id=new_transfer_project.id
+                )
+                .first()
+                .lead_agency
+            )
+
+        elif new_transfer_project.category == Project.Category.IND:
+            new_transfer_project.lead_agency = self.validated_data.get("agency")
 
         new_transfer_project.metacode = project.metacode
         new_transfer_project.code = get_project_sub_code(
@@ -1690,6 +1693,8 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.country.id
         )
         new_transfer_project.transferred_from = project
+        if self.validated_data.get("agency") != project.lead_agency:
+            new_transfer_project.lead_agency_submitting_on_behalf = True
 
         new_transfer_project.save()
 
