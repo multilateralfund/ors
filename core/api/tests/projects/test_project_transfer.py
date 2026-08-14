@@ -13,7 +13,7 @@ from core.models import Project
 pytestmark = pytest.mark.django_db
 
 
-def test_transfer_updates_lead_agency_only_on_receiving_project():
+def test_transfer_preserves_mya_lead_agency():
     ProjectStatusFactory.create(name="Ongoing", code="ONG")
     ProjectStatusFactory.create(name="Transferred", code="TRF")
     approved_status = ProjectSubmissionStatusFactory.create(
@@ -50,8 +50,8 @@ def test_transfer_updates_lead_agency_only_on_receiving_project():
 
     assert receiving_project.transferred_from == original_project
     assert receiving_project.agency == receiving_agency
-    assert receiving_project.lead_agency == receiving_agency
-    assert receiving_project.lead_agency_submitting_on_behalf is False
+    assert receiving_project.lead_agency == original_agency
+    assert receiving_project.lead_agency_submitting_on_behalf is True
     assert original_project.agency == original_agency
     assert original_project.lead_agency == original_agency
 
