@@ -8,12 +8,12 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, hasSectionErrors } from '../utils'
+import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
+import { filter, find, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
-import { find, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRCausesOfDelay = () => {
@@ -28,6 +28,7 @@ const PCRCausesOfDelay = () => {
     projectComponentOptions,
     causeOfDelayOptions,
     errors,
+    setErrors,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -65,7 +66,7 @@ const PCRCausesOfDelay = () => {
     )
   }
 
-  const onAddProjectComponent = (agencyIndex: number) => {
+  const onAddProjectComponent = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
@@ -76,7 +77,7 @@ const PCRCausesOfDelay = () => {
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: [...data[pcField], initialProjectComponentData],
@@ -87,14 +88,14 @@ const PCRCausesOfDelay = () => {
     }, pcField)
   }
 
-  const onRemoveProjectComponent = (pcIndex: number, agencyIndex: number) => {
+  const onRemoveProjectComponent = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: data[pcField].filter(
@@ -105,9 +106,26 @@ const PCRCausesOfDelay = () => {
         ),
       }
     }, pcField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        pcField,
+        crtAgencyId,
+        pcIndex,
+      )
+
+      return {
+        ...prevData,
+        [pcField]: filter(
+          prevData[pcField],
+          (_, index) => index !== errorIndex,
+        ),
+      }
+    })
   }
 
-  const onAddCauseOfDelay = (agencyIndex: number, pcIndex: number) => {
+  const onAddCauseOfDelay = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialCauseOfDelay = { delay_id: null, description: '' }
@@ -115,7 +133,7 @@ const PCRCausesOfDelay = () => {
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: data[pcField].map((pc, crtPcIndex) =>
@@ -133,18 +151,14 @@ const PCRCausesOfDelay = () => {
     }, cdField)
   }
 
-  const onRemoveCauseOfDelay = (
-    cdIndex: number,
-    pcIndex: number,
-    agencyIndex: number,
-  ) => {
+  const onRemoveCauseOfDelay = (cdIndex: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: map(data[pcField], (pc, crtPcIndex) =>
@@ -162,6 +176,33 @@ const PCRCausesOfDelay = () => {
         ),
       }
     }, cdField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        pcField,
+        crtAgencyId,
+        pcIndex,
+      )
+
+      return {
+        ...prevData,
+        [pcField]: map(prevData[pcField], (component, index) => {
+          if (index !== errorIndex) {
+            return component
+          }
+
+          const updatedCausesOfDelay = filter(
+            component[cdField],
+            (_, delayIndex: number) => delayIndex !== cdIndex,
+          )
+
+          return updatedCausesOfDelay.length
+            ? { ...component, [cdField]: updatedCausesOfDelay }
+            : omit(component, [cdField])
+        }),
+      }
+    })
   }
 
   return (
@@ -233,7 +274,7 @@ const PCRCausesOfDelay = () => {
                             className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
                             size={16}
                             onClick={() => {
-                              onRemoveCauseOfDelay(cdIndex, pcIndex, crtTab)
+                              onRemoveCauseOfDelay(cdIndex, pcIndex)
                             }}
                           />
                         </div>
@@ -245,7 +286,7 @@ const PCRCausesOfDelay = () => {
                   </div>
                   <SubmitButton
                     title="Add cause of delay"
-                    onSubmit={() => onAddCauseOfDelay(crtTab, pcIndex)}
+                    onSubmit={() => onAddCauseOfDelay(pcIndex)}
                     className="mr-auto mt-5 h-8"
                   />
                 </div>
@@ -253,7 +294,7 @@ const PCRCausesOfDelay = () => {
                   className="min-h-6 min-w-6 cursor-pointer fill-gray-400"
                   size={16}
                   onClick={() => {
-                    onRemoveProjectComponent(pcIndex, crtTab)
+                    onRemoveProjectComponent(pcIndex)
                   }}
                 />
               </div>
@@ -262,7 +303,7 @@ const PCRCausesOfDelay = () => {
         </div>
         <SubmitButton
           title="Add project component"
-          onSubmit={() => onAddProjectComponent(crtTab)}
+          onSubmit={onAddProjectComponent}
           className={cx('mr-auto h-8', { 'mt-4': pcData.length > 0 })}
         />
       </div>

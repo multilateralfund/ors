@@ -7,7 +7,7 @@ import {
   PCRSummaryOfKeyDataType,
 } from './interfaces'
 
-import { find, forEach, lowerCase, map, reduce } from 'lodash'
+import { find, findIndex, forEach, lowerCase, map, reduce, sumBy } from 'lodash'
 
 export type PCRSummaryProjectPayload = {
   project_id: number
@@ -205,4 +205,27 @@ export const formatErrors = (
         })
         .filter(Boolean),
     )
+}
+
+export const getErrorIndex = (
+  sectionData: any,
+  field: string,
+  crtAgencyId: number,
+  index: number,
+) => {
+  const countByAgency = map(sectionData, (data) => ({
+    [data.agency_id]: data[field].length,
+  }))
+
+  const crtAgencyIndex = findIndex(
+    countByAgency,
+    (entry) => Object.keys(entry)[0] === String(crtAgencyId),
+  )
+
+  return (
+    sumBy(
+      countByAgency.slice(0, crtAgencyIndex),
+      (entry) => Object.values(entry)[0],
+    ) + index
+  )
 }

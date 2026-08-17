@@ -8,12 +8,12 @@ import {
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PCRDataContext from '@ors/contexts/PCR/PCRDataContext'
 import { PCRSelectWidget, PCRTextAreaWidget } from './PCRWidgets'
-import { formatErrors, hasSectionErrors } from '../utils'
+import { formatErrors, getErrorIndex, hasSectionErrors } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
 
 import { Tabs, Tab, Divider } from '@mui/material'
+import { filter, find, map, omit } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
-import { find, map } from 'lodash'
 import cx from 'classnames'
 
 const PCRLessonsLearned = () => {
@@ -28,6 +28,7 @@ const PCRLessonsLearned = () => {
     projectComponentOptions,
     lessonLearnedOptions,
     errors,
+    setErrors,
   } = useContext(PCRDataContext)
 
   const [crtTab, setCrtTab] = useState(0)
@@ -65,7 +66,7 @@ const PCRLessonsLearned = () => {
     )
   }
 
-  const onAddProjectComponent = (agencyIndex: number) => {
+  const onAddProjectComponent = () => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialProjectComponentData = {
@@ -76,7 +77,7 @@ const PCRLessonsLearned = () => {
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: [...data[pcField], initialProjectComponentData],
@@ -87,14 +88,15 @@ const PCRLessonsLearned = () => {
     }, pcField)
   }
 
-  const onRemoveProjectComponent = (pcIndex: number, agencyIndex: number) => {
+  //TODO: take into account causes of delay are also included here
+  const onRemoveProjectComponent = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: data[pcField].filter(
@@ -105,9 +107,26 @@ const PCRLessonsLearned = () => {
         ),
       }
     }, pcField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        pcField,
+        crtAgencyId,
+        pcIndex,
+      )
+
+      return {
+        ...prevData,
+        [pcField]: filter(
+          prevData[pcField],
+          (_, index) => index !== errorIndex,
+        ),
+      }
+    })
   }
 
-  const onAddLessonLearned = (agencyIndex: number, pcIndex: number) => {
+  const onAddLessonLearned = (pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
       const initialLessonLearned = { lesson_id: null, description: '' }
@@ -115,7 +134,7 @@ const PCRLessonsLearned = () => {
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: data[pcField].map((pc, crtPcIndex) =>
@@ -133,18 +152,15 @@ const PCRLessonsLearned = () => {
     }, llField)
   }
 
-  const onRemoveLessonLearned = (
-    llIndex: number,
-    pcIndex: number,
-    agencyIndex: number,
-  ) => {
+  //TODO: take into account causes of delay are also included here
+  const onRemoveLessonLearned = (llIndex: number, pcIndex: number) => {
     setPCRData((prevData) => {
       const sectionData = prevData[sectionIdentifier] || []
 
       return {
         ...prevData,
         [sectionIdentifier]: sectionData.map((data, dataIndex) =>
-          dataIndex === agencyIndex
+          dataIndex === crtTab
             ? {
                 ...data,
                 [pcField]: map(data[pcField], (pc, crtPcIndex) =>
@@ -162,6 +178,33 @@ const PCRLessonsLearned = () => {
         ),
       }
     }, llField)
+
+    setErrors((prevData: Record<string, any[]>) => {
+      const errorIndex = getErrorIndex(
+        sectionData,
+        pcField,
+        crtAgencyId,
+        pcIndex,
+      )
+
+      return {
+        ...prevData,
+        [pcField]: map(prevData[pcField], (component, index) => {
+          if (index !== errorIndex) {
+            return component
+          }
+
+          const updatedLessonsLearned = filter(
+            component[llField],
+            (_, lessonIndex: number) => lessonIndex !== llIndex,
+          )
+
+          return updatedLessonsLearned.length
+            ? { ...component, [llField]: updatedLessonsLearned }
+            : omit(component, [llField])
+        }),
+      }
+    })
   }
 
   return (
@@ -233,7 +276,7 @@ const PCRLessonsLearned = () => {
                             className="mt-12 min-h-6 min-w-6 cursor-pointer fill-gray-400"
                             size={16}
                             onClick={() => {
-                              onRemoveLessonLearned(llIndex, pcIndex, crtTab)
+                              onRemoveLessonLearned(llIndex, pcIndex)
                             }}
                           />
                         </div>
@@ -245,7 +288,7 @@ const PCRLessonsLearned = () => {
                   </div>
                   <SubmitButton
                     title="Add lesson learned"
-                    onSubmit={() => onAddLessonLearned(crtTab, pcIndex)}
+                    onSubmit={() => onAddLessonLearned(pcIndex)}
                     className="mr-auto mt-5 h-8"
                   />
                 </div>
@@ -253,7 +296,7 @@ const PCRLessonsLearned = () => {
                   className="min-h-6 min-w-6 cursor-pointer fill-gray-400"
                   size={16}
                   onClick={() => {
-                    onRemoveProjectComponent(pcIndex, crtTab)
+                    onRemoveProjectComponent(pcIndex)
                   }}
                 />
               </div>
@@ -262,7 +305,7 @@ const PCRLessonsLearned = () => {
         </div>
         <SubmitButton
           title="Add project component"
-          onSubmit={() => onAddProjectComponent(crtTab)}
+          onSubmit={onAddProjectComponent}
           className={cx('mr-auto h-8', { 'mt-4': pcData.length > 0 })}
         />
       </div>
