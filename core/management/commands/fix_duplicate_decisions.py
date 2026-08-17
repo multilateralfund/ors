@@ -54,7 +54,8 @@ def fix_decisions(dry_run=False):
 
     for d in duplicates:
         stale, latest = sorted(d, key=attrgetter("pk"))
-        assert stale.api_changed <= latest.api_changed
+        if stale.api_changed and latest.api_changed:
+            assert stale.api_changed <= latest.api_changed
 
         has_side_effects = check_side_effects([latest])
         if has_side_effects:
