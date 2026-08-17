@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from core.api.serializers.project_v2 import ProjectV2TransferSerializer
@@ -21,13 +23,18 @@ def test_transfer_preserves_mya_lead_agency():
     )
     original_agency = AgencyFactory.create(name="UNEP", code="UNEP")
     receiving_agency = AgencyFactory.create(name="UNDP", code="UNDP")
-    transfer_meeting = MeetingFactory.create(number=100)
+    transfer_meeting = MeetingFactory.create(
+        number=100,
+        date=date(2026, 6, 1),
+        end_date=date(2026, 6, 5),
+    )
     original_project = ProjectFactory.create(
         version=3,
         agency=original_agency,
         lead_agency=original_agency,
         total_fund=1_000,
         support_cost_psc=100,
+        date_approved=date(2025, 5, 30),
         submission_status=approved_status,
         category=Project.Category.MYA,
     )
@@ -52,6 +59,7 @@ def test_transfer_preserves_mya_lead_agency():
     assert receiving_project.agency == receiving_agency
     assert receiving_project.lead_agency == original_agency
     assert receiving_project.lead_agency_submitting_on_behalf is True
+    assert receiving_project.date_approved == transfer_meeting.date
     assert original_project.agency == original_agency
     assert original_project.lead_agency == original_agency
 
@@ -79,7 +87,11 @@ def test_transfer_preserves_independent_lead_agency():
         original_project,
         data={
             "agency": receiving_agency.id,
-            "transfer_meeting": MeetingFactory.create(number=100).id,
+            "transfer_meeting": MeetingFactory.create(
+                number=100,
+                date=date(2026, 6, 1),
+                end_date=date(2026, 6, 5),
+            ).id,
             "fund_transferred": "400.00",
             "psc_transferred": "40.00",
             "psc_received": "40.00",
@@ -95,5 +107,6 @@ def test_transfer_preserves_independent_lead_agency():
     assert receiving_project.agency == receiving_agency
     assert receiving_project.lead_agency == lead_agency
     assert receiving_project.lead_agency_submitting_on_behalf is True
+    assert receiving_project.date_approved == date(2026, 6, 1)
     assert original_project.agency == original_agency
     assert original_project.lead_agency == lead_agency

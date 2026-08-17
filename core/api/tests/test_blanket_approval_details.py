@@ -7,6 +7,7 @@ from core.api.serializers.project_v2 import ProjectV2CreateUpdateSerializer
 from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
+    MeetingFactory,
     ProjectClusterFactory,
     ProjectFactory,
     ProjectOdsOdpFactory,
@@ -21,8 +22,8 @@ pytestmark = pytest.mark.django_db
 # pylint: disable=protected-access
 
 
-def get_blanket_approval_view():
-    request = APIRequestFactory().get("/api/blanket-approval-details")
+def get_blanket_approval_view(params=None):
+    request = APIRequestFactory().get("/api/blanket-approval-details", data=params)
     request.user = AnonymousUser()
 
     view = BlanketApprovalDetailsViewset()
@@ -31,6 +32,38 @@ def get_blanket_approval_view():
     view.kwargs = {}
 
     return view
+
+
+def test_blanket_approval_details_excludes_projects_created_by_transfer():
+    draft_status = ProjectSubmissionStatusFactory.create(name="Draft")
+    approved_status = ProjectSubmissionStatusFactory.create(name="Approved")
+    meeting = MeetingFactory.create(number=98)
+    source_project = ProjectFactory.create(submission_status=draft_status)
+    transferred_project = ProjectFactory.create(
+        title="Created by transfer",
+        transferred_from=source_project,
+        meeting=meeting,
+        submission_status=approved_status,
+    )
+    approved_project = ProjectFactory.create(
+        title="Approved at meeting",
+        meeting=meeting,
+        submission_status=approved_status,
+    )
+
+    total_projects, _, result = get_blanket_approval_view(
+        {"meeting_id": meeting.id}
+    )._extract_data()
+
+    project_ids = {
+        project["project_id"]
+        for country in result
+        for country_data in country["country_data"]
+        for project in country_data["projects"]
+    }
+    assert total_projects == 1
+    assert project_ids == {approved_project.id}
+    assert transferred_project.id not in project_ids
 
 
 def test_blanket_approval_details_aggregates_phaseout_once_per_project():

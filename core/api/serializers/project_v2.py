@@ -1657,6 +1657,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         new_transfer_project.status = ProjectStatus.objects.get(code="ONG")
         new_transfer_project.agency = self.validated_data.get("agency")
         new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
+        new_transfer_project.date_approved = (
+            new_transfer_project.meeting.date if new_transfer_project.meeting else None
+        )
         new_transfer_project.decision = self.validated_data.get("transfer_decision")
         new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
         new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
