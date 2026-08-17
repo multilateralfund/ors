@@ -31,7 +31,8 @@ concurrency:
 
 jobs:
   build-and-push-images:
-    runs-on: ubuntu-latest
+    # runs-on: ubuntu-latest
+    runs-on: docker # see https://helpdesk.eaudeweb.ro/issues/38046
 
     strategy:
       max-parallel: 1
