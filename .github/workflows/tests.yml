@@ -32,9 +32,9 @@ jobs:
           docker compose build --pull
           docker compose up -d
           docker compose exec -T app wait_for_services.sh
-      - name: "Top"
+      - name: "Show running services"
         run: |
-          docker compose top
+          docker compose ps
       - name: "Backend tests"
         id: "backendTests"
         run: |
