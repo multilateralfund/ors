@@ -1679,6 +1679,9 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
             new_transfer_project.lead_agency = self.validated_data.get("agency")
 
         new_transfer_project.metacode = project.metacode
+        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
+            new_transfer_project.country.id
+        )
         new_transfer_project.code = get_project_sub_code(
             new_transfer_project.country,
             new_transfer_project.cluster,
@@ -1691,9 +1694,6 @@ class ProjectV2TransferSerializer(serializers.ModelSerializer):
         )
         new_transfer_project.excom_provision = self.validated_data.get(
             "transfer_excom_provision"
-        )
-        new_transfer_project.serial_number = Project.objects.get_next_serial_number(
-            new_transfer_project.country.id
         )
         new_transfer_project.transferred_from = project
         if self.validated_data.get("agency") != project.lead_agency:

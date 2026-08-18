@@ -37,6 +37,7 @@ def test_transfer_preserves_mya_lead_agency():
         date_approved=date(2025, 5, 30),
         submission_status=approved_status,
         category=Project.Category.MYA,
+        serial_number=226,
     )
     serializer = ProjectV2TransferSerializer(
         original_project,
@@ -60,6 +61,7 @@ def test_transfer_preserves_mya_lead_agency():
     assert receiving_project.lead_agency == original_agency
     assert receiving_project.lead_agency_submitting_on_behalf is True
     assert receiving_project.date_approved == transfer_meeting.date
+    assert receiving_project.code.split("/")[2] == str(receiving_project.serial_number)
     assert original_project.agency == original_agency
     assert original_project.lead_agency == original_agency
 
