@@ -5,10 +5,7 @@ services:
       dockerfile: docker/dev.docker
     environment:
       - GUNICORN_CMD_ARGS=--workers=2 --threads=2
-      - CLAMD_ENABLED=no
     mem_limit: 0
-    depends_on: !override
-      - postgres
 
   nextjs:
     build:
@@ -16,12 +13,12 @@ services:
       dockerfile: docker/nextjs.docker
 
   nginx:
-    profiles:
-      - disabled
+    build:
+      context: .
+      dockerfile: docker/nginx.docker
 
   clamav:
-    profiles:
-      - disabled
+    mem_limit: 0
 
   celery:
     profiles:
