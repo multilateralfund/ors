@@ -33,6 +33,23 @@ from core.models.project_metadata import ProjectCluster, ProjectType
 # pylint: disable=W0221,W0613,R0913,R0914,R0904,C0302
 
 
+@pytest.fixture(scope="module", autouse=True)
+def use_sanitized_apr_summary_template():
+    """Use the reduced workbook fixture for this export test module only."""
+    # pylint: disable=protected-access
+    original_path = APRSummaryTablesExportWriter.TEMPLATE_PATH
+    original_template_bytes = APRSummaryTablesExportWriter._template_bytes
+    APRSummaryTablesExportWriter.TEMPLATE_PATH = original_path.with_name(
+        "APRSummaryTables_sanitized.xlsx"
+    )
+    APRSummaryTablesExportWriter._template_bytes = None
+
+    yield
+
+    APRSummaryTablesExportWriter.TEMPLATE_PATH = original_path
+    APRSummaryTablesExportWriter._template_bytes = original_template_bytes
+
+
 @pytest.mark.django_db
 class TestAPRSummaryTablesExport(BaseTest):
     """Test the summary tables export functionality"""
