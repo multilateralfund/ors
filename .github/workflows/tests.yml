@@ -39,7 +39,7 @@ jobs:
         id: "backendTests"
         run: |
           docker compose exec -T app ./manage.py makemigrations --check
-          docker compose exec -T app pytest -vv --cov
+          docker compose exec -T app pytest -vv
       - name: Display container logs if tests fail
         if: failure()
         run: |
