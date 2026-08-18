@@ -24,6 +24,9 @@ jobs:
         run: |
           cp .env.test.example .env
           cp docker-compose.override.test.yml docker-compose.override.yml
+      - name: "Remove leftovers from a previous run"
+        run: |
+          docker compose down -v --remove-orphans || true
       - name: "Start services"
         run: |
           docker compose build --pull
@@ -41,3 +44,12 @@ jobs:
         if: failure()
         run: |
           docker compose logs
+      - name: "Tear down services"
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+      - name: "Reclaim Docker disk space on the runner"
+        if: always()
+        run: |
+          docker image prune -a -f
+          docker builder prune -a -f

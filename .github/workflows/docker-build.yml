@@ -55,6 +55,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Remove stale buildx builders from an interrupted run
+        run: docker buildx rm --all-inactive --force || true
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
