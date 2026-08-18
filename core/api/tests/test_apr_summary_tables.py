@@ -36,6 +36,7 @@ from core.models.project_metadata import ProjectCluster, ProjectType
 @pytest.fixture(scope="module", autouse=True)
 def use_sanitized_apr_summary_template():
     """Use the reduced workbook fixture for this export test module only."""
+    # pylint: disable=protected-access
     original_path = APRSummaryTablesExportWriter.TEMPLATE_PATH
     original_template_bytes = APRSummaryTablesExportWriter._template_bytes
     APRSummaryTablesExportWriter.TEMPLATE_PATH = original_path.with_name(
