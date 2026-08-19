@@ -423,7 +423,10 @@ const ProjectsEdit = ({
           ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
           meeting: project.meeting_id,
           decision: project.decision_id,
-          date_completion: project.project_end_date,
+          date_completion:
+            project.submission_status === 'Recommended'
+              ? project.project_end_date
+              : project.date_completion,
           funding_window: project.funding_window,
           ...computedFieldsValues,
           ...totalFieldsValues,

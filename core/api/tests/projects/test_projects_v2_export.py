@@ -17,6 +17,10 @@ from django.urls import reverse
 from openpyxl.utils import get_column_letter
 from rest_framework.response import Response
 
+from core.api.export.projects_inventory_report import is_legacy_project
+from core.api.export.projects_inventory_report import ProjectsInventoryReportWriter
+from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
+from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import AgencyFactory
@@ -28,12 +32,11 @@ from core.api.tests.factories import MetaProjectFactory
 from core.api.tests.factories import MeetingFactory
 from core.api.tests.factories import ProjectClusterFactory
 from core.api.tests.factories import ProjectFactory
+from core.api.tests.factories import ProjectStatusFactory
 from core.api.tests.factories import ProjectSubSectorFactory
 from core.api.tests.factories import ProjectTypeFactory
 from core.api.tests.factories import SubstanceAltNameFactory
 from core.api.tests.factories import SubstanceFactory
-from core.api.export.single_project_v2.helpers import get_activity_data_from_instance
-from core.api.export.single_project_v2.helpers import get_activity_data_from_json
 from core.api.views import mya_export
 from core.models import MetaProject
 from core.models import Project
@@ -45,6 +48,13 @@ from core.models.substance import Substance
 from core.models.user import User
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.parametrize("legacy_code,expected", [(None, False), ("LEGACY", True)])
+def test_is_legacy_project(legacy_code, expected):
+    project = ProjectFactory.create(legacy_code=legacy_code)
+
+    assert is_legacy_project(project) is expected
 
 
 def validate_docx_export(
@@ -274,7 +284,7 @@ def _project_with_deleted_linked_bp(project_with_linked_bp: Project):
     return project_with_linked_bp
 
 
-class TestProjectV2ExportXLSX(BaseTest):
+class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-methods
     url = reverse("project-v2-export")
 
     def test_bp_json_structure(self, project_with_linked_bp):
@@ -367,6 +377,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
 
+    # pylint: disable-next=too-many-statements
     def test_export_inventory_report_reads_project_objects_directly(
         self, admin_user, project_approved_status
     ):
@@ -389,6 +400,9 @@ class TestProjectV2ExportXLSX(BaseTest):
             excom_provision="Provision text",
             products_manufactured="Manufactured product",
             tranche=4,
+            date_completion=date(2007, 12, 1),
+            project_end_date=date(2008, 8, 1),
+            date_per_agreement=date(2026, 12, 31),
             additional_funding=True,
             production=True,
             lead_agency=lead_agency,
@@ -465,8 +479,13 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert last_header == "cost_effectiveness_co2_actual"
         assert (
             sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
-            == meta_project.end_date.date()
+            == project.date_per_agreement
         )
+        assert (
+            sheet[f"{headers['Approved Date Completion']}{row}"].value.date()
+            == project.date_completion
+        )
+        assert sheet[f"{headers['Extended date']}{row}"].value in (None, "")
         assert sheet[f"{headers['Transfer Meeting']}{row}"].value in (None, "")
         assert sheet[f"{headers['Transfer Decision']}{row}"].value in (None, "")
         assert sheet[f"{headers['Agency Transferred From']}{row}"].value in (None, "")
@@ -548,6 +567,7 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         inv_project.increase_version(admin_user)
         inv_project.project_end_date = date(2025, 12, 1)
+        inv_project.post_excom_meeting = MeetingFactory.create()
         inv_project.save()
 
         self.client.force_authenticate(user=admin_user)
@@ -564,6 +584,129 @@ class TestProjectV2ExportXLSX(BaseTest):
         assert sheet[f"{headers['Extended date']}{inv_row}"].value.date() == date(
             2025, 12, 1
         )
+        assert sheet[
+            f"{headers['Approved Date Completion']}{inv_row}"
+        ].value.date() == date(2021, 12, 1)
+
+    def test_export_inventory_report_legacy_extended_date_uses_agreement_date(
+        self, admin_user, project_approved_status
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            extended_date_of_completion=datetime(2026, 12, 31, tzinfo=timezone.utc),
+        )
+        inv_type = ProjectTypeFactory.create(code="INV")
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_type=inv_type,
+            legacy_code="LEGACY-EXTENDED",
+            date_per_agreement=date(2026, 12, 1),
+            project_end_date=date(2018, 12, 1),
+            submission_status=project_approved_status,
+        )
+        ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_type=inv_type,
+            legacy_code="LEGACY-REVISED",
+            date_comp_revised=date(2021, 12, 1),
+            submission_status=project_approved_status,
+        )
+
+        project.increase_version(admin_user)
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        assert sheet[f"{headers['Extended date']}{row}"].value.date() == date(
+            2026, 12, 1
+        )
+
+    @pytest.mark.parametrize(
+        "legacy_code,agreement_date,mya_completion_date,extended_date,"
+        "project_end_date,expected_date",
+        [
+            (
+                "LEGACY-EXTENDED",
+                date(2026, 12, 1),
+                datetime(2021, 12, 1, tzinfo=timezone.utc),
+                datetime(2026, 12, 31, tzinfo=timezone.utc),
+                date(2018, 12, 1),
+                date(2026, 12, 1),
+            ),
+            (
+                "LEGACY-MYA-DATE",
+                date(2021, 12, 1),
+                datetime(2021, 12, 31, tzinfo=timezone.utc),
+                datetime(2022, 9, 30, tzinfo=timezone.utc),
+                date(2018, 12, 1),
+                None,
+            ),
+            (
+                "LEGACY-NO-AGREEMENT",
+                None,
+                None,
+                datetime(2022, 12, 31, tzinfo=timezone.utc),
+                date(2024, 12, 1),
+                None,
+            ),
+            (
+                "LEGACY-UMBRELLA-FALLBACK",
+                None,
+                None,
+                datetime(2020, 12, 31, tzinfo=timezone.utc),
+                None,
+                date(2020, 12, 31),
+            ),
+            (
+                "LEGACY-DUPLICATED-END",
+                date(2023, 12, 1),
+                datetime(2023, 12, 31, tzinfo=timezone.utc),
+                datetime(2023, 12, 31, tzinfo=timezone.utc),
+                date(2023, 12, 1),
+                None,
+            ),
+        ],
+    )
+    # pylint: disable-next=too-many-arguments
+    def test_legacy_extended_date_uses_only_qualified_dates(
+        self,
+        legacy_code,
+        agreement_date,
+        mya_completion_date,
+        extended_date,
+        project_end_date,
+        expected_date,
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=mya_completion_date,
+            extended_date_of_completion=extended_date,
+        )
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            legacy_code=legacy_code,
+            date_per_agreement=agreement_date,
+            project_end_date=project_end_date,
+        )
+
+        # pylint: disable-next=protected-access
+        value = ProjectsInventoryReportWriter._get_legacy_extended_date(project)
+
+        assert (value.date() if value else None) == expected_date
 
     @pytest.mark.parametrize(
         "stored_end_date, project_end_date, expected_end_date",
@@ -611,6 +754,64 @@ class TestProjectV2ExportXLSX(BaseTest):
             sheet[f"{headers['MYA Completion Date']}{row}"].value.date()
             == expected_end_date
         )
+
+    @pytest.mark.parametrize(
+        "date_per_agreement,stored_end_date,project_end_date,status_code,expected_end_date",
+        [
+            (None, None, date(2015, 12, 1), "COM", None),
+            (date(2018, 12, 1), None, date(2007, 12, 1), "COM", None),
+            (date(2031, 12, 1), None, None, "ONG", date(2031, 12, 1)),
+            (
+                date(2026, 12, 1),
+                datetime(2021, 12, 1, tzinfo=timezone.utc),
+                None,
+                "COM",
+                date(2026, 12, 1),
+            ),
+        ],
+    )
+    # pylint: disable-next=too-many-arguments
+    def test_export_inventory_report_uses_legacy_mya_agreement_date(
+        self,
+        admin_user,
+        project_approved_status,
+        date_per_agreement,
+        stored_end_date,
+        project_end_date,
+        status_code,
+        expected_end_date,
+    ):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=stored_end_date,
+        )
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            legacy_code="LEGACY-MYA",
+            date_per_agreement=date_per_agreement,
+            project_end_date=project_end_date,
+            status=ProjectStatusFactory.create(code=status_code),
+            submission_status=project_approved_status,
+        )
+
+        self.client.force_authenticate(user=admin_user)
+        response: FileResponse = self.client.get(self.url, {"inventory_report": "true"})
+
+        assert response.status_code == HTTPStatus.OK
+
+        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
+        sheet = wb["Projects"]
+        headers = get_inventory_headers(sheet)
+        row = get_inventory_project_row(sheet, project.id)
+
+        assert row is not None
+        value = sheet[f"{headers['MYA Completion Date']}{row}"].value
+        if expected_end_date:
+            assert value.date() == expected_end_date
+        else:
+            assert value in (None, "")
 
     def test_export_inventory_report_derives_substance_from_ods_and_legacy_sector(
         self, admin_user, project_approved_status
@@ -759,7 +960,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             total_fund=160,
             support_cost_psc=16,
             meeting=MeetingFactory.create(number=306),
-            post_excom_meeting=MeetingFactory.create(number=206),
+            post_excom_meeting=MeetingFactory.create(
+                number=206,
+                date=date(2024, 6, 15),
+            ),
             date_actual=date(2024, 6, 15),
             date_approved=date(2024, 6, 15),
             adjustment=True,
@@ -781,7 +985,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             total_fund=120,
             support_cost_psc=12,
             meeting=MeetingFactory.create(number=304),
-            post_excom_meeting=MeetingFactory.create(number=204),
+            post_excom_meeting=MeetingFactory.create(
+                number=204,
+                date=date(2024, 4, 15),
+            ),
             date_actual=date(2024, 4, 15),
             date_approved=date(2024, 4, 15),
             adjustment=True,
@@ -794,7 +1001,10 @@ class TestProjectV2ExportXLSX(BaseTest):
             total_fund=140,
             support_cost_psc=14,
             meeting=MeetingFactory.create(number=305),
-            post_excom_meeting=MeetingFactory.create(number=205),
+            post_excom_meeting=MeetingFactory.create(
+                number=205,
+                date=date(2024, 5, 15),
+            ),
             date_actual=date(2024, 5, 15),
             date_approved=date(2024, 5, 15),
             adjustment=True,
@@ -841,6 +1051,7 @@ class TestProjectV2ExportXLSX(BaseTest):
         self, admin_user, project_approved_status
     ):
         approval_date = date(2024, 3, 15)
+        transfer_date = date(2025, 6, 16)
         project = ProjectFactory.create(
             version=3,
             code="TRANSFERRED-CODE",
@@ -851,7 +1062,7 @@ class TestProjectV2ExportXLSX(BaseTest):
             meeting=MeetingFactory.create(number=303),
             transfer_meeting=MeetingFactory.create(
                 number=304,
-                date=date(2025, 6, 16),
+                date=transfer_date,
                 end_date=date(2025, 6, 20),
             ),
             date_approved=approval_date,
@@ -888,7 +1099,7 @@ class TestProjectV2ExportXLSX(BaseTest):
 
         assert sheet[f"{headers['Date Approved 1']}{row}"].value.date() == approval_date
         assert (
-            sheet[f"{headers['Adjustments Date 1']}{row}"].value.date() == approval_date
+            sheet[f"{headers['Adjustments Date 1']}{row}"].value.date() == transfer_date
         )
         visible_zero_format = "#,##0;-#,##0;0;@"
         assert (
