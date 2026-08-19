@@ -16,7 +16,7 @@ on:
 jobs:
   suite:
     # runs-on: ubuntu-latest
-    runs-on: docker-ors # see https://helpdesk.eaudeweb.ro/issues/38046
+    runs-on: docker-ors-2 # see https://helpdesk.eaudeweb.ro/issues/38046
 
     steps:
       - uses: actions/checkout@v6
