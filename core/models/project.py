@@ -376,12 +376,14 @@ class ProjectQuerySet(models.QuerySet["Project"]):
 
 class ProjectManager(models.Manager["Project"].from_queryset(ProjectQuerySet)):
     def get_next_serial_number(self, country_id):
-        return (
-            self.select_for_update()
-            .filter(country_id=country_id, submission_status__name="Approved")
-            .count()
-            + 1
-        )
+        Country.objects.select_for_update().get(id=country_id)
+
+        max_serial = self.filter(
+            country_id=country_id,
+            submission_status__name="Approved",
+        ).aggregate(max_serial=models.Max("serial_number"))["max_serial"]
+
+        return (max_serial or 0) + 1
 
     def get_queryset(self):
         # by default, get projects that don't have latest_project set

@@ -656,6 +656,7 @@ class TestProjectVersioning:
         project.decision = decision
         project.excom_provision = "Executive Committee provision"
         project.date_completion = datetime.date(2024, 9, 30)
+        project.project_end_date = datetime.date(2025, 1, 31)
         project.save()
 
         self.client.force_authenticate(user=admin_user)
@@ -666,6 +667,7 @@ class TestProjectVersioning:
         project.refresh_from_db()
         assert project.submission_status == project_approved_status
         assert project.status == project_ongoing_status
+        assert project.project_end_date == project.date_completion
 
     def test_send_back_to_draft_permissions(
         self,

@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from django.db import transaction
+
 from core.api.serializers.project_v2 import (
     ProjectDetailsV2Serializer,
     ProjectV2EditApprovalFieldsSerializer,
@@ -67,6 +69,7 @@ class ProjectApproveRejectMixin:
         },
     )
     @action(methods=["POST"], detail=True)
+    @transaction.atomic
     def approve(self, request, *args, **kwargs):
         project = self.get_object()
         context = self.get_serializer_context()
@@ -87,6 +90,7 @@ class ProjectApproveRejectMixin:
         project.serial_number = Project.objects.get_next_serial_number(
             project.country.id
         )
+        project.project_end_date = project.date_completion
         project.submission_status = ProjectSubmissionStatus.objects.get(name="Approved")
         project.status = ProjectStatus.objects.get(code="ONG")
         log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)

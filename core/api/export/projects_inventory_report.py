@@ -66,6 +66,16 @@ def not_adj(project: Project | None):
     return bool(project and not project.adjustment)
 
 
+def is_legacy_project(project: Project):
+    return bool(project.legacy_code)
+
+
+def is_same_month(first, second):
+    return bool(
+        first and second and first.year == second.year and first.month == second.month
+    )
+
+
 # pylint: disable-next=too-many-public-methods,too-many-lines
 class ProjectsInventoryReportWriter(BaseWriter):
     ROW_HEIGHT = 35
@@ -293,7 +303,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
                     "headerName": "Extended date",
                     "type": "date",
                     "cell_format": "MMM-YYYY",
-                    "method": lambda project, _: project.final_version.project_end_date,
+                    "method": lambda project, _: self._get_extended_date(project),
                 },
             ]
         )
@@ -519,40 +529,91 @@ class ProjectsInventoryReportWriter(BaseWriter):
         result = None
         v3 = self.get_version(project, 3)
         if v3:
-            result = v3.project_end_date
+            result = v3.date_completion if v3.legacy_code else v3.project_end_date
         return result
 
     def _get_extended_date(self, project):
-        meta_project = project.meta_project
+        if is_legacy_project(project):
+            return self._get_legacy_extended_date(project)
+        return self._get_modern_extended_date(project)
 
-        p_date = tz_naive(project.final_version.project_end_date)
+    @staticmethod
+    def _get_legacy_extended_date(project):
+        meta_project = project.meta_project
+        final_version = project.final_version
+
+        if (
+            not meta_project
+            or meta_project.type != MetaProject.MetaProjectType.MYA
+            or not meta_project.extended_date_of_completion
+        ):
+            return None
+
+        agreement_date = tz_naive(final_version.date_per_agreement)
+        project_end_date = tz_naive(final_version.project_end_date)
+        mya_completion_date = tz_naive(meta_project.end_date)
+        extended_date = tz_naive(meta_project.extended_date_of_completion)
+
+        if not agreement_date:
+            return extended_date if not project_end_date else None
+
+        # A migrated agreement date that is still the original MYA completion
+        # date is not, by itself, evidence that the project was extended.
+        if is_same_month(agreement_date, mya_completion_date) and not is_same_month(
+            mya_completion_date, extended_date
+        ):
+            return None
+
+        # When all three dates are the same, the agreement date only repeats the
+        # project's end date and does not represent a separate extension.
+        if is_same_month(agreement_date, project_end_date) and is_same_month(
+            agreement_date, extended_date
+        ):
+            return None
+
+        return agreement_date
+
+    def _get_modern_extended_date(self, project):
+        meta_project = project.meta_project
+        final_version = project.final_version
+        if not final_version.post_excom_meeting_id:
+            return None
+
+        p_date = tz_naive(final_version.project_end_date)
 
         if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
             return p_date
 
-        mya_type_revised_date = self.mya_type_revised_completion_dates.get(
-            (project.meta_project_id, project.project_type_id)
+        mya_type_revised_date = tz_naive(
+            self.mya_type_revised_completion_dates.get(
+                (project.meta_project_id, project.project_type_id)
+            )
         )
         if mya_type_revised_date:
             return mya_type_revised_date
 
         mya_completion_date = self._get_mya_completion_date(project)
-
-        if not mya_completion_date:
-            return p_date
-
-        if not p_date:
-            return mya_completion_date
-
-        if mya_completion_date > p_date:
-            return mya_completion_date
-
-        return p_date
+        return max(
+            (value for value in (p_date, mya_completion_date) if value),
+            default=None,
+        )
 
     def _get_mya_completion_date(self, project):
         meta_project = project.meta_project
         if not meta_project or meta_project.type != MetaProject.MetaProjectType.MYA:
             return None
+
+        if is_legacy_project(project):
+            final_version = project.final_version
+            meta_end_date = tz_naive(meta_project.end_date)
+            is_ongoing = final_version.status and final_version.status.code == "ONG"
+
+            # A cleared legacy MYA end date suppresses the migrated agreement date,
+            # except while the project is still ongoing.
+            if not meta_end_date and not is_ongoing:
+                return None
+
+            return tz_naive(final_version.date_per_agreement)
 
         meta_end_date = tz_naive(meta_project.end_date)
         if meta_end_date:
@@ -561,18 +622,16 @@ class ProjectsInventoryReportWriter(BaseWriter):
         return self.mya_completion_dates.get(project.meta_project_id)
 
     def _get_substance(self, project):
+        if is_legacy_project(project):
+            return project.substance_type
+
         for ods_odp in project.ods_odp.all():
             substance_type = self._substance_type_from_ods_odp(ods_odp)
             if substance_type:
                 return substance_type
 
-        legacy_sector = project.sector_legacy
-        if not legacy_sector and project.legacy_code:
-            parts = project.legacy_code.split("/")
-            legacy_sector = parts[1] if len(parts) > 1 else None
-
         return (
-            self._substance_type_from_legacy_sector(legacy_sector)
+            self._substance_type_from_legacy_sector(project.sector_legacy)
             or project.substance_type
         )
 
@@ -1249,10 +1308,25 @@ class ProjectsInventoryReportWriter(BaseWriter):
             else project.transfer_meeting
         )
 
-        if meeting:
-            return meeting.number
+        return meeting
 
-        return None
+    def _p_adjustment_meeting_number(self, project):
+        result = None
+
+        meeting = self._p_adjustment_meeting(project)
+        if meeting:
+            result = meeting.number
+
+        return result
+
+    def _p_adjustment_meeting_date(self, project):
+        result = None
+
+        meeting = self._p_adjustment_meeting(project)
+        if meeting:
+            result = meeting.date
+
+        return result
 
     def funding_headers(self, version, idx):
         if version < MIN_PROJECT_VERSION:
@@ -1330,7 +1404,7 @@ class ProjectsInventoryReportWriter(BaseWriter):
             {
                 "id": f"adjustment_meeting_v{idx}",
                 "headerName": f"Adjustments Meeting {idx}",
-                "method": lambda project, _: self._p_adjustment_meeting(
+                "method": lambda project, _: self._p_adjustment_meeting_number(
                     self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
@@ -1339,10 +1413,8 @@ class ProjectsInventoryReportWriter(BaseWriter):
                 "headerName": f"Adjustments Date {idx}",
                 "type": "date",
                 "cell_format": "MMM-YYYY",
-                "method": lambda project, _: (
-                    self.get_trf_or_adj_version(project, v_idx).date_approved
-                    if self.get_trf_or_adj_version(project, v_idx)
-                    else None
+                "method": lambda project, _: self._p_adjustment_meeting_date(
+                    self.get_trf_or_adj_version(project, v_idx)
                 ),
             },
         ]

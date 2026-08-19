@@ -1040,6 +1040,9 @@ class TestProjectsV2Update:
         substance,
         project,
     ):
+        original_project_end_date = "2022-01-01"
+        project.project_end_date = original_project_end_date
+        project.save(update_fields=["project_end_date"])
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
             "meeting": meeting.id,
@@ -1091,7 +1094,7 @@ class TestProjectsV2Update:
         assert response.data["pcr_waived"] is True
         assert response.data["ad_hoc_pcr"] is False
         assert response.data["date_approved"] == meeting.end_date
-        assert response.data["project_end_date"] == data["date_completion"]
+        assert response.data["project_end_date"] == original_project_end_date
 
     @pytest.mark.parametrize(
         "test_user,expected_response_status",
