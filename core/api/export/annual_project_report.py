@@ -1220,7 +1220,7 @@ class APRSummaryTablesExportWriter:
             region = apr.main_region
             if region is None:
                 return None
-            return region.name_for_apr or region.name
+            return region.apr_name
 
         region_items = list(
             self._compute_grouped_data(

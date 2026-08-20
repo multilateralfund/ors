@@ -1035,3 +1035,78 @@ def test_avg_delay_positive_for_late_project():
     )
     data = writer._compute_group_data([record], False, "ongoing_non_investment")
     assert data["avg_delay"] == 3
+
+
+@pytest.mark.django_db
+class TestAPRRegionLabels:
+    """
+    Regions the APR does not relabel have no name_for_apr/abbr_for_apr, so both
+    the UI and the exports have to fall back to the country tree's own values.
+    """
+
+    def test_apr_labels_fall_back_to_the_plain_name_and_abbr(self):
+        region = CountryFactory(
+            name="Europe",
+            abbr="EUR",
+            location_type=Country.LocationType.REGION,
+            name_for_apr=None,
+            abbr_for_apr=None,
+        )
+
+        assert region.apr_name == "Europe"
+        assert region.apr_abbr == "EUR"
+
+    def test_apr_labels_prefer_the_override_when_it_is_set(self):
+        region = CountryFactory(
+            name="Region: Europe and Central Asia",
+            abbr="ECA",
+            location_type=Country.LocationType.REGION,
+            name_for_apr="Europe",
+            abbr_for_apr="EUR",
+        )
+
+        assert region.apr_name == "Europe"
+        assert region.apr_abbr == "EUR"
+
+    def test_region_reaches_the_api_without_an_apr_override(
+        self, apr_agency_viewer_user, annual_agency_report, project_ongoing_status
+    ):
+        """Regression: the region column and its filter were blank in the UI."""
+        region = CountryFactory(
+            name="Europe",
+            abbr="EUR",
+            location_type=Country.LocationType.REGION,
+            abbr_for_apr=None,
+        )
+        country = CountryFactory(
+            name="Bulgaria", location_type=Country.LocationType.COUNTRY, parent=region
+        )
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            country=country,
+            status=project_ongoing_status,
+            code="BUL/REF/90/INV/1",
+        )
+        report = AnnualProjectReportFactory(
+            report=annual_agency_report, project=project
+        )
+        report.populate_derived_fields()
+        report.save()
+
+        client = APIClient()
+        client.force_authenticate(user=apr_agency_viewer_user)
+        response = client.get(
+            reverse(
+                "apr-workspace",
+                kwargs={"year": annual_agency_report.progress_report.year},
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        rows = [
+            row
+            for row in response.data["project_reports"]
+            if row["project_code"] == project.code
+        ]
+        assert rows
+        assert rows[0]["region_name"] == "EUR"

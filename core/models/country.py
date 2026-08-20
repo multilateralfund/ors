@@ -70,6 +70,22 @@ class Country(models.Model):
 
     objects = CountryManager()
 
+    @property
+    def apr_name(self):
+        """
+        Name to display for this location in APR views and exports.
+
+        name_for_apr is an optional override, only populated for the regions
+        that the APR reports under a different label than the country tree
+        uses, so everything else has to fall back to the plain name.
+        """
+        return self.name_for_apr or self.name
+
+    @property
+    def apr_abbr(self):
+        """Abbreviation to display in APR views and exports. See apr_name."""
+        return self.abbr_for_apr or self.abbr
+
     def is_ceit_for_year(self, year):
         """
         Returns CEIT status of this Country for given year
