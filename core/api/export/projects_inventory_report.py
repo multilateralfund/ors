@@ -557,46 +557,28 @@ class ProjectsInventoryReportWriter(BaseWriter):
         if not agreement_date:
             return extended_date if not project_end_date else None
 
-        # A migrated agreement date that is still the original MYA completion
+        # A legacy imported agreement date that is still the original MYA completion
         # date is not, by itself, evidence that the project was extended.
         if is_same_month(agreement_date, mya_completion_date) and not is_same_month(
             mya_completion_date, extended_date
         ):
             return None
 
-        # When all three dates are the same, the agreement date only repeats the
-        # project's end date and does not represent a separate extension.
+        # Preserve the repeated project/agreement/extension date when it is later
+        # than the original umbrella MYA completion date. If all four dates repeat
+        # the same month, there is no evidence of a separate extension.
         if is_same_month(agreement_date, project_end_date) and is_same_month(
             agreement_date, extended_date
         ):
+            if not is_same_month(agreement_date, mya_completion_date):
+                return agreement_date
             return None
 
         return agreement_date
 
-    def _get_modern_extended_date(self, project):
-        meta_project = project.meta_project
-        final_version = project.final_version
-        if not final_version.post_excom_meeting_id:
-            return None
-
-        p_date = tz_naive(final_version.project_end_date)
-
-        if meta_project and meta_project.type == MetaProject.MetaProjectType.IND:
-            return p_date
-
-        mya_type_revised_date = tz_naive(
-            self.mya_type_revised_completion_dates.get(
-                (project.meta_project_id, project.project_type_id)
-            )
-        )
-        if mya_type_revised_date:
-            return mya_type_revised_date
-
-        mya_completion_date = self._get_mya_completion_date(project)
-        return max(
-            (value for value in (p_date, mya_completion_date) if value),
-            default=None,
-        )
+    @staticmethod
+    def _get_modern_extended_date(project):
+        return tz_naive(project.final_version.project_end_date)
 
     def _get_mya_completion_date(self, project):
         meta_project = project.meta_project
@@ -605,15 +587,17 @@ class ProjectsInventoryReportWriter(BaseWriter):
 
         if is_legacy_project(project):
             final_version = project.final_version
+            agreement_date = tz_naive(final_version.date_per_agreement)
             meta_end_date = tz_naive(meta_project.end_date)
             is_ongoing = final_version.status and final_version.status.code == "ONG"
 
-            # A cleared legacy MYA end date suppresses the migrated agreement date,
-            # except while the project is still ongoing.
-            if not meta_end_date and not is_ongoing:
+            if not agreement_date:
                 return None
 
-            return tz_naive(final_version.date_per_agreement)
+            if is_ongoing:
+                return agreement_date
+
+            return meta_end_date
 
         meta_end_date = tz_naive(meta_project.end_date)
         if meta_end_date:

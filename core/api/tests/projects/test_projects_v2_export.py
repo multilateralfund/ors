@@ -588,6 +588,24 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
             f"{headers['Approved Date Completion']}{inv_row}"
         ].value.date() == date(2021, 12, 1)
 
+    def test_modern_extended_date_uses_final_project_end_without_post_excom(self):
+        meta_project = MetaProjectFactory.create(
+            type=MetaProject.MetaProjectType.MYA,
+            end_date=datetime(2030, 12, 1, tzinfo=timezone.utc),
+        )
+        project = ProjectFactory.create(
+            version=3,
+            category=Project.Category.MYA,
+            meta_project=meta_project,
+            project_end_date=date(2028, 6, 1),
+            post_excom_meeting=None,
+        )
+
+        # pylint: disable-next=protected-access
+        value = ProjectsInventoryReportWriter._get_modern_extended_date(project)
+
+        assert value.date() == date(2028, 6, 1)
+
     def test_export_inventory_report_legacy_extended_date_uses_agreement_date(
         self, admin_user, project_approved_status
     ):
@@ -676,6 +694,14 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
                 datetime(2023, 12, 31, tzinfo=timezone.utc),
                 date(2023, 12, 1),
                 None,
+            ),
+            (
+                "LEGACY-DUPLICATED-LATER-END",
+                date(2023, 12, 1),
+                datetime(2021, 12, 31, tzinfo=timezone.utc),
+                datetime(2023, 12, 31, tzinfo=timezone.utc),
+                date(2023, 12, 1),
+                date(2023, 12, 1),
             ),
         ],
     )
@@ -766,12 +792,19 @@ class TestProjectV2ExportXLSX(BaseTest):  # pylint: disable=too-many-public-meth
                 datetime(2021, 12, 1, tzinfo=timezone.utc),
                 None,
                 "COM",
+                date(2021, 12, 1),
+            ),
+            (
+                date(2026, 12, 1),
+                datetime(2021, 12, 1, tzinfo=timezone.utc),
+                None,
+                "ONG",
                 date(2026, 12, 1),
             ),
         ],
     )
     # pylint: disable-next=too-many-arguments
-    def test_export_inventory_report_uses_legacy_mya_agreement_date(
+    def test_export_inventory_report_uses_legacy_mya_date_rules(
         self,
         admin_user,
         project_approved_status,
