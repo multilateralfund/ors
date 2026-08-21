@@ -1098,19 +1098,56 @@ def test_apr_summary_tables_number_formats():
     assert spec_map["total_production_co2"] == "#,##0"
 
 
-def test_avg_delay_positive_for_late_project():
+def _avg_delay_for(date_approved, proposal, planned):
+    """avg_delay for a single ongoing record with the given three dates."""
     # pylint: disable=protected-access
     writer = APRSummaryTablesExportWriter.__new__(APRSummaryTablesExportWriter)
     record = SimpleNamespace(
         approved_funding_plus_adjustment_denorm=0,
         funds_disbursed=0,
-        date_approved_denorm=None,
+        date_approved_denorm=date_approved,
         date_first_disbursement=None,
-        date_planned_completion=date(2023, 1, 1),
-        date_of_completion_per_agreement_or_decisions_denorm=date(2023, 4, 1),
+        date_completion_proposal_denorm=proposal,
+        date_planned_completion=planned,
     )
     data = writer._compute_group_data([record], False, "ongoing_non_investment")
-    assert data["avg_delay"] == 3
+    return data["avg_delay"]
+
+
+def test_avg_delay_positive_for_late_project():
+    # Now planned 3 months beyond the date originally proposed.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2022, 1, 1),
+            proposal=date(2023, 1, 1),
+            planned=date(2023, 4, 1),
+        )
+        == 3
+    )
+
+
+def test_avg_delay_negative_for_project_running_ahead_of_schedule():
+    # The Secretariat's own formula reports these as negative rather than zero.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2022, 1, 1),
+            proposal=date(2023, 4, 1),
+            planned=date(2023, 1, 1),
+        )
+        == -3
+    )
+
+
+def test_avg_delay_skips_records_whose_dates_precede_approval():
+    # Neither span can be measured, so the record is left out of the average.
+    assert (
+        _avg_delay_for(
+            date_approved=date(2024, 1, 1),
+            proposal=date(2023, 1, 1),
+            planned=date(2023, 4, 1),
+        )
+        == 0
+    )
 
 
 @pytest.mark.django_db
