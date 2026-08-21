@@ -687,6 +687,82 @@ class TestAPRSummaryTablesExport(BaseTest):
 
         assert found_cluster
 
+    def _completed_cluster_count(self, response, cluster_name):
+        """Number of projects the completion tab reports for one cluster."""
+        sheet = load_workbook(BytesIO(response.content))[
+            APRSummaryTablesExportWriter.SHEET_COMPLETION_YEAR
+        ]
+        for row in range(
+            APRSummaryTablesExportWriter.CLUSTER_DATA_START_ROW, sheet.max_row + 1
+        ):
+            if sheet.cell(row, 1).value == cluster_name:
+                return sheet.cell(row, 2).value
+        return 0
+
+    def test_project_completion_counts_apr_status_while_project_still_ongoing(
+        self,
+        apr_agency_viewer_user,
+        annual_progress_report,
+        annual_agency_report,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        """
+        Regression: the tab came out empty. The project record only catches up
+        once the APR is endorsed, so it still reads ONG while the agency has
+        already reported the project as completed.
+        """
+        cluster = ProjectCluster.objects.create(name="HPMP stage I", sort_order=1)
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            date_approved=date(2023, 1, 15),
+            status=project_ongoing_status,
+            cluster=cluster,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            status="Completed",
+            date_actual_completion=date(annual_progress_report.year, 6, 1),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        report_year = annual_progress_report.year
+        url = reverse("apr-summary-tables-export") + f"?year={report_year}"
+        response = self.client.get(url)
+
+        assert self._completed_cluster_count(response, "HPMP stage I") == 1
+
+    def test_project_completion_excludes_apr_still_reported_as_ongoing(
+        self,
+        apr_agency_viewer_user,
+        annual_progress_report,
+        annual_agency_report,
+        project_ongoing_status,
+        project_completed_status,
+    ):
+        """The mirror case: the agency's own report decides, not the project."""
+        cluster = ProjectCluster.objects.create(name="HPMP stage II", sort_order=2)
+        project = ProjectFactory(
+            agency=apr_agency_viewer_user.agency,
+            date_approved=date(2023, 1, 15),
+            status=project_completed_status,
+            cluster=cluster,
+        )
+        AnnualProjectReportFactory(
+            report=annual_agency_report,
+            project=project,
+            status="Ongoing",
+            date_actual_completion=date(annual_progress_report.year, 6, 1),
+        )
+
+        self.client.force_authenticate(user=apr_agency_viewer_user)
+        report_year = annual_progress_report.year
+        url = reverse("apr-summary-tables-export") + f"?year={report_year}"
+        response = self.client.get(url)
+
+        assert self._completed_cluster_count(response, "HPMP stage II") == 0
+
     def test_sector_header_row_when_more_regions_than_template(
         self,
         apr_agency_viewer_user,

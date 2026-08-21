@@ -897,20 +897,21 @@ class APRSummaryTablesExportWriter:
         # effective-date fields (post_excom_decision/meeting/date_approved), so a
         # plain status-only transition to COM/FIN is invisible to that version-chain
         # comparison for every year, not just this one.
+        # Completion is read from the APR row's own status rather than the project's:
+        # the project record only catches up once the APR is endorsed.
         if self.year:
             completed_records = [
                 apr
                 for apr in self.records
                 if apr.date_actual_completion
                 and apr.date_actual_completion.year == self.year
-                and apr.project.status
-                and apr.project.status.code in ("COM", "FIN")
+                and apr.status in self._completed_status_names
             ]
         else:
             completed_records = [
                 apr
                 for apr in self.records
-                if apr.project.status and apr.project.status.code in ("COM", "FIN")
+                if apr.status in self._completed_status_names
             ]
 
         cluster_buckets = {}
